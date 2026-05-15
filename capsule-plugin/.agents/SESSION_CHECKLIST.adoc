@@ -5,9 +5,9 @@
 . [ ] Lire `PROMPT_REPRISE.adoc` — contexte de la session precedente
 . [ ] Lire `AGENT.adoc` — regles absolues (7 regles)
 . [ ] Lire `.agents/INDEX.adoc` — roadmap, etat des EPICs, portefeuille
-. [ ] Verifier l'etat git (`git status`)
-. [ ] Verifier que le build compile (`./gradlew :capsule:compileKotlin`)
-. [ ] Verifier que `./gradlew tasks` fonctionne
+. [ ] Verifier l'etat git (`git status` depuis `capsule-gradle/`)
+. [ ] Verifier que le build compile (`./gradlew compileKotlin` depuis `capsule-plugin/`)
+. [ ] Verifier que `./gradlew tasks` fonctionne (depuis `capsule-plugin/`)
 
 == Pendant la session
 
