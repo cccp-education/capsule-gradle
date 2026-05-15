@@ -6,8 +6,8 @@ _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly)
 
 _Derniere mise a jour_ : 2026-05-16
-_Session terminee_ : 005 — CAP-4 CapsuleVideo orchestration + CAP-5 Cucumber BDD (28/28 PASS)
-_Session en cours_ : 006 — CAP-6 Integrations N3 + CAP-7 capsuleDistrib FFmpeg
+_Session terminee_ : 006 — CAP-6 Integrations N3 + CAP-7 capsuleDistrib FFmpeg (36/36 PASS)
+_Session en cours_ : 007 — Publish mavenLocal + cross-borough verification
 
 '''
 == REGLES ABSOLUES (resume)

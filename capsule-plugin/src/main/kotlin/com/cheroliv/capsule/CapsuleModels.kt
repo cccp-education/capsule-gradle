@@ -48,4 +48,16 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
 
     val deckSourceDir: Property<String> = objects.property(String::class.java)
         .convention("docs/asciidocRevealJs")
+
+    val ffmpegExecutablePath: Property<String> = objects.property(String::class.java)
+        .convention("ffmpeg")
+
+    val distribOutputWidth: Property<Int> = objects.property(Int::class.java)
+        .convention(1080)
+
+    val distribOutputHeight: Property<Int> = objects.property(Int::class.java)
+        .convention(1920)
+
+    val compositeContextOutputFile: Property<String> = objects.property(String::class.java)
+        .convention("capsule/capsule-context.json")
 }

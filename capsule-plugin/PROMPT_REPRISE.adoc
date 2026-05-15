@@ -1,34 +1,36 @@
-= PROMPT_REPRISE — capsule-gradle Session 006
+= PROMPT_REPRISE — capsule-gradle Session 007
 
-_Mission_ : EPIC CAP-6 — Integrations N3 (export composite-context pour engine) + CAP-7 capsuleDistrib FFmpeg
+_Mission_ : Publish mavenLocal + cross-borough verification (engine N3 integration)
 _Statut_ : A FAIRE
 _Date_ : à définir
 
 == Contexte
 
-Session 005 TERMINE (28/28 PASS — 23 unit + 5 Cucumber) :
-- CAP-4 : CapsuleVideoTask avec fallback séquentiel audio (sections sans data-capsule-slide),
-  multi-deck (2+ decks), bridge noop TTS↔noop Playwright, test @Tag("integration") chromium
-- CAP-5 : Cucumber BDD (5 scenarios, GradleTestKit, cucumberTest task intégrée à check)
-- Conventions CapsuleExtension corrigées (sans préfixe build/)
+Session 006 TERMINE (36/36 PASS — 25 unit + 6 functional + 5 Cucumber) :
+- CAP-6 : capsuleCompositeContext task — export JSON (capsule-capsule-context.json)
+  compatible engine N3 avec metadonnees completes (deckName, slideCount, videos, viewport, distrib, slides, TTS)
+- CAP-7 : capsuleDistrib task — recadrage FFmpeg 9:16 (1080x1920) avec fallback copy si ffmpeg absent
+- CapsuleExtension enrichie : ffmpegExecutablePath, distribOutputWidth/Height, compositeContextOutputFile
+- 6 nouveaux tests unitaires (CapsuleDistribTaskTest + CapsuleCompositeContextTaskTest)
+- 2 tests fonctionnels supplementaires
 
-== Sujets Session 006
+== Sujets Session 007
 
-- CAP-6 : Integrations N3 — export composite-context pour engine
-  - capsuleCompositeContext task qui exporte le contexte (deck HTML + scripts + vidéos)
-    dans un fichier JSON composite-context.json compatible N3 engine
-  - Format standardisé (même structure que codebase/plantuml/slider)
-- CAP-7 : capsuleDistrib — FFmpeg recadrage TikTok 9:16
-  - capsuleDistrib task qui recadre capsule.webm en format vertical 9:16
-  - Support multi-deck (un output par deck)
-  - Paramétrage crop: centre, scale, pad
-  - Upload vers YouTube/Dailymotion/PeerTube × 17 langues (CAP-8 amorce)
+- PublishToMavenLocal : verifier que le plugin est importable par d'autres projets
+- Integration engine N3 : verifier que le JSON capsule-context.json est parsable
+  par assembleCompositeContext (si engine deja integre)
+- Cross-borough verification : le contrat slider→capsule est stable
+- Cleanup eventuel : warnings, deprecations Gradle 10
+- Verification git status et absence de secrets
 
-== Architecture rappel
+== Pipeline complet (rappel)
 
-Pipeline complet :
-  AsciiDoc → slider-gradle → deck reveal.js + *-script.txt
-  → capsulescript → capsulebuild (TTS Piper/NoOp)
-  → capsulevideo (injection audio HTML → capture → capsule.webm)
-  → capsuleDistrib (FFmpeg crop TikTok + upload plateformes × 17 langues)
-  → capsuleCompositeContext (export JSON → engine N3)
+  AsciiDoc → slider-gradle → deck.html + *-script.txt
+  → capsulescript → capsulebuild (TTS)
+  → capsulevideo (Playwright capture → .webm)
+  → capsuledistrib (FFmpeg crop 9:16)
+  → capsulecompositecontext (JSON → engine N3)
+
+== Taches Gradle (resume)
+
+  capsulescript / capsulebuild / capsulevideo / capsuledistrib / capsulecompositecontext

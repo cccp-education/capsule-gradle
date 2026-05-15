@@ -3,6 +3,7 @@ package com.cheroliv.capsule
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
@@ -16,6 +17,8 @@ class CapsuleManager(private val project: Project) {
         project.registerCapsuleScriptTask()
         project.registerCapsuleBuildTask()
         project.registerCapsuleVideoTask()
+        project.registerCapsuleDistribTask()
+        project.registerCapsuleCompositeContextTask()
     }
 
     private fun Project.registerCapsuleScriptTask() {
@@ -40,6 +43,24 @@ class CapsuleManager(private val project: Project) {
             task.group = "capsule"
             task.description = "Injects TTS audio into deck HTML then captures video via Playwright Java"
             task.dependsOn("capsulebuild")
+            task.capsuleExtension = this@CapsuleManager.capsuleExt
+        }
+    }
+
+    private fun Project.registerCapsuleDistribTask() {
+        tasks.register("capsuledistrib", CapsuleDistribTask::class.java) { task ->
+            task.group = "capsule"
+            task.description = "Recadre les capsules en format vertical 9:16 (TikTok/Shorts) via FFmpeg"
+            task.dependsOn("capsulevideo")
+            task.capsuleExtension = this@CapsuleManager.capsuleExt
+        }
+    }
+
+    private fun Project.registerCapsuleCompositeContextTask() {
+        tasks.register("capsulecompositecontext", CapsuleCompositeContextTask::class.java) { task ->
+            task.group = "capsule"
+            task.description = "Exporte le contexte des capsules (chemins videos + metadonnees) en JSON compatible engine N3"
+            task.dependsOn("capsuledistrib")
             task.capsuleExtension = this@CapsuleManager.capsuleExt
         }
     }
@@ -590,5 +611,229 @@ open class CapsuleVideoTask : DefaultTask() {
         if (sliderOutput != null && sliderOutput.exists()) return sliderOutput
 
         return candidate
+    }
+}
+
+@org.gradle.work.DisableCachingByDefault(because = "Filesystem-bound: invokes FFmpeg process for video cropping")
+open class CapsuleDistribTask : DefaultTask() {
+
+    @get:OutputDirectory
+    val outputDir: DirectoryProperty = project.objects.directoryProperty()
+
+    @get:org.gradle.api.tasks.Internal
+    lateinit var capsuleExtension: CapsuleExtension
+
+    init {
+        outputDir.convention(project.layout.buildDirectory.dir("capsule/distrib"))
+    }
+
+    @TaskAction
+    fun execute() {
+        val capDir = project.layout.buildDirectory.dir(
+            capsuleExtension.outputDir.get()
+        ).get().asFile
+
+        val videos = capDir.listFiles { f -> f.name.endsWith(".webm") }?.toList()
+            ?: emptyList()
+
+        if (videos.isEmpty()) {
+            logger.warn("No capsule videos found in {}. Run 'capsulevideo' first.", capDir.absolutePath)
+            return
+        }
+
+        val distDir = outputDir.get().asFile
+        distDir.mkdirs()
+
+        val ffmpeg = capsuleExtension.ffmpegExecutablePath.get()
+        val targetWidth = capsuleExtension.distribOutputWidth.get()
+        val targetHeight = capsuleExtension.distribOutputHeight.get()
+
+        if (!isFfmpegAvailable(ffmpeg)) {
+            logger.warn("FFmpeg not available at '{}' — copying videos as-is to distrib", ffmpeg)
+            for (video in videos) {
+                val dest = distDir.resolve(video.name)
+                video.copyTo(dest, overwrite = true)
+                logger.lifecycle("  COPY → {}", dest.absolutePath)
+            }
+            return
+        }
+
+        for (video in videos) {
+            val outputFile = distDir.resolve(video.name)
+            logger.lifecycle("DISTRIB → {} (crop {}x{})", video.name, targetWidth, targetHeight)
+
+            try {
+                cropVideo(video, outputFile, ffmpeg, targetWidth, targetHeight)
+                logger.lifecycle("  OK → {}", outputFile.absolutePath)
+            } catch (e: Exception) {
+                logger.error("  FAILED {}: {}", video.name, e.message)
+                throw e
+            }
+        }
+    }
+
+    private fun cropVideo(
+        input: File,
+        output: File,
+        ffmpeg: String,
+        targetWidth: Int,
+        targetHeight: Int
+    ) {
+        val proc = ProcessBuilder(
+            ffmpeg, "-y",
+            "-i", input.absolutePath,
+            "-vf", "scale=$targetWidth:$targetHeight:force_original_aspect_ratio=increase,crop=$targetWidth:$targetHeight",
+            "-c:a", "copy",
+            output.absolutePath
+        ).redirectErrorStream(true).start()
+
+        val exitCode = proc.waitFor()
+        if (exitCode != 0) {
+            val stderr = proc.inputStream.bufferedReader().readText()
+            throw RuntimeException("FFmpeg exited with code $exitCode: $stderr")
+        }
+    }
+
+    private fun isFfmpegAvailable(ffmpegPath: String): Boolean {
+        return try {
+            val proc = ProcessBuilder(ffmpegPath, "-version")
+                .redirectErrorStream(true)
+                .start()
+            proc.waitFor()
+            proc.exitValue() == 0
+        } catch (e: Exception) {
+            false
+        }
+    }
+}
+
+@org.gradle.work.DisableCachingByDefault(because = "Filesystem-bound: scans capsule output directory and generates JSON context")
+open class CapsuleCompositeContextTask : DefaultTask() {
+
+    @get:OutputFile
+    val outputFile: org.gradle.api.file.RegularFileProperty = project.objects.fileProperty()
+
+    @get:org.gradle.api.tasks.Internal
+    lateinit var capsuleExtension: CapsuleExtension
+
+    init {
+        outputFile.convention(
+            project.layout.buildDirectory.file("capsule/capsule-context.json")
+        )
+    }
+
+    @TaskAction
+    fun execute() {
+        val capDir = project.layout.buildDirectory.dir(
+            capsuleExtension.outputDir.get()
+        ).get().asFile
+        val distDir = project.layout.buildDirectory.dir("capsule/distrib").get().asFile
+        val scriptDir = project.layout.buildDirectory.dir(
+            capsuleExtension.sliderScriptDir.get()
+        ).get().asFile
+
+        val scripts = CapsuleManager.readScriptFiles(scriptDir)
+
+        val capsuleEntries = mutableListOf<Map<String, Any>>()
+
+        for (script in scripts) {
+            val parsed = CapsuleManager.parseScript(script)
+            val deckName = parsed.deckName
+
+            val originalVideo = capDir.resolve("$deckName.webm")
+            val distribVideo = distDir.resolve("$deckName.webm")
+
+            val slideInfos = parsed.slides.map { seg ->
+                mapOf(
+                    "index" to seg.index,
+                    "title" to seg.title,
+                    "speakerNoteLength" to seg.speakerNote.length
+                )
+            }
+
+            capsuleEntries.add(mapOf<String, Any>(
+                "source" to "capsule",
+                "deckName" to deckName,
+                "slideCount" to parsed.slides.size,
+                "originalVideo" to originalVideo.absolutePath,
+                "distribVideo" to (if (distribVideo.exists()) distribVideo.absolutePath else ""),
+                "viewport" to mapOf(
+                    "width" to capsuleExtension.viewportWidth.get(),
+                    "height" to capsuleExtension.viewportHeight.get()
+                ),
+                "distribDimensions" to mapOf(
+                    "width" to capsuleExtension.distribOutputWidth.get(),
+                    "height" to capsuleExtension.distribOutputHeight.get()
+                ),
+                "slides" to slideInfos,
+                "ttsEngine" to capsuleExtension.ttsEngine.get(),
+                "ttsVoice" to capsuleExtension.ttsVoice.get()
+            ))
+        }
+
+        val result = mapOf(
+            "source" to "capsule",
+            "version" to (project.version as String),
+            "entries" to capsuleEntries,
+            "timestamp" to System.currentTimeMillis()
+        )
+
+        val json = buildJsonString(result)
+        val outFile = outputFile.get().asFile
+        outFile.parentFile.mkdirs()
+        outFile.writeText(json)
+
+        logger.lifecycle(
+            "CAPSULE COMPOSITE CONTEXT -> {} ({} decks)",
+            outFile.absolutePath, capsuleEntries.size
+        )
+    }
+
+    private fun buildJsonString(map: Map<*, *>): String {
+        val sb = StringBuilder()
+        sb.append("{\n")
+        map.entries.forEachIndexed { idx, (key, value) ->
+            sb.append("  \"$key\": ")
+            sb.append(valueToJson(value))
+            if (idx < map.size - 1) sb.append(",")
+            sb.append("\n")
+        }
+        sb.append("}")
+        return sb.toString()
+    }
+
+    private fun valueToJson(value: Any?): String {
+        return when (value) {
+            is String -> "\"${value.escapeJson()}\""
+            is Number -> value.toString()
+            is Boolean -> value.toString()
+            is Map<*, *> -> buildJsonString(value)
+            is List<*> -> {
+                val sb = StringBuilder()
+                sb.append("[")
+                if (value.isNotEmpty()) {
+                    sb.append("\n")
+                    value.forEachIndexed { idx, item ->
+                        sb.append("    ")
+                        sb.append(valueToJson(item))
+                        if (idx < value.size - 1) sb.append(",")
+                        sb.append("\n")
+                    }
+                    sb.append("  ")
+                }
+                sb.append("]")
+                sb.toString()
+            }
+            else -> "\"$value\""
+        }
+    }
+
+    private fun String.escapeJson(): String {
+        return this
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t")
     }
 }

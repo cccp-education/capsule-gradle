@@ -87,4 +87,40 @@ class CapsulePluginFunctionalTest {
 
         assertTrue(result.output.contains("No *-deck.html files found") || result.output.contains("No *-script.txt files found"))
     }
+
+    @Test
+    fun `can run capsuledistrib task`() {
+        setupBuild("""
+            capsule {
+                ttsEngine = "noop"
+            }
+        """.trimIndent())
+
+        val runner = GradleRunner.create()
+        runner.forwardOutput()
+        runner.withPluginClasspath()
+        runner.withArguments("capsuledistrib")
+        runner.withProjectDir(projectDir)
+        val result = runner.build()
+
+        assertTrue(result.output.contains("No capsule videos found") || result.output.contains("UP-TO-DATE"))
+    }
+
+    @Test
+    fun `can run capsulecompositecontext task`() {
+        setupBuild("""
+            capsule {
+                ttsEngine = "noop"
+            }
+        """.trimIndent())
+
+        val runner = GradleRunner.create()
+        runner.forwardOutput()
+        runner.withPluginClasspath()
+        runner.withArguments("capsulecompositecontext")
+        runner.withProjectDir(projectDir)
+        val result = runner.build()
+
+        assertTrue(result.output.contains("CAPSULE COMPOSITE CONTEXT") || result.output.contains("UP-TO-DATE"))
+    }
 }
