@@ -53,3 +53,24 @@ Feature: Capsule video generation from a reveal.js deck
     Then the parsed output contains "deckName"
     And the parsed output contains "originalVideo"
     And the parsed output is a valid JSON array
+
+  Scenario: Audio constraint — real TTS must produce binary MP3 not text
+    Given a Gradle project with the capsule plugin configured for espeak TTS
+    And a reveal.js deck "audio-real-deck.html" with 1 slides and data-capsule-slide attributes
+    And a capsule script "audio-real-script.txt" with 1 slide segments
+    When I run the task "capsulebuild" with espeak TTS
+    Then the generated MP3 files must be binary audio not text placeholder
+
+  Scenario: Output constraint — capsule video must be written to capsules/ directory
+    Given a Gradle project with the capsule plugin configured for noop TTS
+    And a reveal.js deck "out-deck.html" with 1 slides and data-capsule-slide attributes
+    And a capsule script "out-script.txt" with 1 slide segments
+    When I run the task "capsulevideo" with NoOp capture
+    Then the video file "out.webm" exists in the "capsules" directory not in build/
+
+  Scenario: WebM validity constraint — generated video must have EBML header
+    Given a Gradle project with the capsule plugin configured for noop TTS
+    And a reveal.js deck "webm-deck.html" with 1 slides and data-capsule-slide attributes
+    And a capsule script "webm-script.txt" with 1 slide segments
+    When I run the task "capsulevideo" with NoOp capture
+    Then the video file "webm.webm" has a valid WebM EBML header

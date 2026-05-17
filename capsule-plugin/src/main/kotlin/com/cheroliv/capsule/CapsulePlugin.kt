@@ -5,6 +5,11 @@ import org.gradle.api.Project
 
 class CapsulePlugin : Plugin<Project> {
     override fun apply(project: Project) {
+        try {
+            project.plugins.apply("com.cheroliv.slider")
+        } catch (_: Exception) {
+            project.logger.debug("slider-gradle not on classpath, skipping auto-apply")
+        }
         project.extensions.create("capsule", CapsuleExtension::class.java)
         CapsuleManager(project).registerTasks()
     }

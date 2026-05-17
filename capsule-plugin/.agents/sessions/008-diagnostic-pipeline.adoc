@@ -1,0 +1,74 @@
+= Session 008 — Diagnostic Pipeline Capsule (4 bugs identifiés)
+:type: audit
+:date: 2026-05-17
+:score: 8/10
+
+== Résumé
+
+Session d'audit du pipeline capsule complet. Le build compile et les tâches s'exécutent,
+mais 4 bugs bloquent la génération de vidéos fonctionnelles.
+
+== Bugs Identifiés
+
+=== BUG 1 — Liens reveal.js cassés dans HTML injecté (CRITIQUE)
+
+Le HTML injecté est écrit dans `build/capsule/injected/` mais les ressources `reveal.js/`
+(CSS, JS) sont dans `build/docs/asciidocRevealJs/`. Quand Playwright ouvre le deck via
+`file://`, les chemins relatifs `reveal.js/dist/reveal.js` ne résolvent pas.
+
+Symptôme : Le JS ne charge jamais → `Reveal` est undefined → `Reveal.next()` ne fait rien
+→ la vidéo capture une page statique blanche/sans transitions.
+
+Fix requis : Écrire le HTML injecté dans le même répertoire que le deck original
+(`build/docs/asciidocRevealJs/`) ou copier le dossier `reveal.js/` dans `injected/`.
+
+=== BUG 2 — example-deck pollution
+
+`example-deck-context.yml` (template slider, 1 slide vide) est traité comme un vrai deck.
+Il génère un `architecture-plugin-deck.webm` + `example-deck.webm` fantôme.
+
+Fix requis : Exclure les fichiers `*-context.yml` du traitement capsule, ou filtrer
+les decks sans script réel.
+
+=== BUG 3 — Format string Python dans Kotlin
+
+`CapsuleVideoTask.kt` ligne ~356 :
+```kotlin
+logger.lifecycle("Playwright capture: available ({} slides, {:.1f}s/slide)", slideCount, capsuleExtension.slideDurationSeconds.get())
+```
+
+`{:.1f}` est la syntaxe Python, pas SLF4J/Kotlin. Le format ne s'applique pas.
+
+Fix requis : Remplacer `{:.1f}` par `{}` ou utiliser `String.format("%.1f", value)`.
+
+=== BUG 4 — Injection audio sautée avec TTS noop
+
+`CapsuleVideoTask.injectAudio()` vérifie `hasRealAudio` (fichiers > 500 octets sans
+en-tête `# TTS PLACEHOLDER`). Avec TTS noop, tous les fichiers sont des placeholders
+→ `hasRealAudio = false` → le HTML est copié tel quel sans injection audio.
+
+Conséquence : Même si le HTML est corrigé (BUG 1), l'audio ne sera jamais injecté
+tant que TTS noop est actif.
+
+Fix requis : Soit injecter l'audio même avec des placeholders (pour tester le pipeline),
+soit ajouter un flag `forceAudioInjection` pour les tests.
+
+== Vérification Pipeline
+
+```
+asciidocCapsule    → ✅ architecture-plugin-deck-script.txt (15 slides)
+capsulescript      → ✅ 2 scripts (architecture-plugin-deck + example-deck)
+capsulebuild       → ✅ 16 fichiers MP3 (noop placeholders)
+capsulevideo       → ✅ 2 fichiers WebM générés (mais statiques)
+```
+
+== État des Tests
+
+42/42 PASS maintenu (session 007). Aucun test modifié cette session.
+
+== Règles Respectées
+
+- ✅ Pas de commit sans permission
+- ✅ DAG N2 respecté
+- ✅ Zéro secret
+- ✅ Build compile

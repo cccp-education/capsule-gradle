@@ -9,7 +9,7 @@ import java.io.File
 import java.nio.file.Paths
 
 interface PlaywrightCapture {
-    fun capture(deckHtmlPath: String, outputDir: File, viewportWidth: Int, viewportHeight: Int, slideCount: Int)
+    fun capture(deckHtmlPath: String, outputDir: File, viewportWidth: Int, viewportHeight: Int, slideDurations: List<Double>)
     fun isAvailable(): Boolean
     fun name(): String
     fun close()
@@ -18,7 +18,8 @@ interface PlaywrightCapture {
 class PlaywrightCaptureImpl(
     private val timeout: Double = 120_000.0,
     private val transitionPause: Double = 500.0,
-    private val endMargin: Double = 2000.0
+    private val endMargin: Double = 2000.0,
+    private val defaultSlideDuration: Double = 5.0
 ) : PlaywrightCapture {
 
     private var playwright: Playwright? = null
@@ -42,8 +43,9 @@ class PlaywrightCaptureImpl(
         outputDir: File,
         viewportWidth: Int,
         viewportHeight: Int,
-        slideCount: Int
+        slideDurations: List<Double>
     ) {
+        val slideCount = slideDurations.size
         playwright = Playwright.create()
         browser = playwright!!.chromium().launch(
             BrowserType.LaunchOptions().setHeadless(true)
@@ -59,15 +61,31 @@ class PlaywrightCaptureImpl(
         val absolutePath = File(deckHtmlPath).absolutePath
         page!!.navigate("file://$absolutePath")
 
+        page!!.waitForSelector(".reveal",
+            Page.WaitForSelectorOptions().setTimeout(timeout))
+
+        page!!.waitForTimeout(2000.0)
+
+        val audioIds = page!!.evaluate("Array.from(document.querySelectorAll('audio')).map(a => a.id)") as? List<*> ?: listOf<Any>()
+        val hasAudioElements = audioIds.isNotEmpty()
+
+        println("  Playwright: hasAudio=${hasAudioElements} audioCount=${audioIds.size} slides=$slideCount")
+
         for (i in 0 until slideCount) {
-            page!!.waitForFunction(
-                "document.getElementById('audio-$i')?.ended === true",
-                null,
-                Page.WaitForFunctionOptions().setTimeout(timeout)
-            )
+            val slideMs = (slideDurations[i] * 1000).toLong()
+            if (hasAudioElements) {
+                val raceTimeoutMs = slideMs + 2000
+                page!!.waitForFunction(
+                    "new Promise(r => { var a = document.getElementById('audio-$i'); if (a && !a.ended) { var t = setTimeout(r, $raceTimeoutMs); a.onended = r; } else { r(); } })",
+                    null,
+                    Page.WaitForFunctionOptions().setTimeout(timeout)
+                )
+            } else {
+                page!!.waitForTimeout(slideMs.toDouble())
+            }
             page!!.waitForTimeout(transitionPause)
             if (i < slideCount - 1) {
-                page!!.evaluate("Reveal.next()")
+                page!!.evaluate("typeof Reveal !== 'undefined' && Reveal.next()")
             }
         }
 
@@ -94,13 +112,13 @@ class NoOpPlaywrightCapture : PlaywrightCapture {
         outputDir: File,
         viewportWidth: Int,
         viewportHeight: Int,
-        slideCount: Int
+        slideDurations: List<Double>
     ) {
         outputDir.mkdirs()
         val placeholder = listOf(
             "# PLAYWRIGHT CAPTURE PLACEHOLDER (noop engine)",
             "# Deck: $deckHtmlPath",
-            "# Slides: $slideCount",
+            "# Slides: ${slideDurations.size}",
             "# Viewport: ${viewportWidth}x$viewportHeight"
         ).joinToString("\n")
         outputDir.resolve("capsule.webm").writeText(placeholder)

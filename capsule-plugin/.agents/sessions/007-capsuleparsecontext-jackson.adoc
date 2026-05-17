@@ -1,0 +1,49 @@
+= Session 007 — CapsuleParseContextTask + Jackson engine N3
+:type: dev
+:date: 2026-05-16
+:score: 10/10
+
+== Résumé
+
+Session livrée en cross-borough capsule-gradle ↔ engine.
+42/42 tests PASS (28 unit + 8 functional + 6 Cucumber).
+
+== CapsuleParseContextTask
+
+Tâche `capsuleparsecontext` (pendant de `capsuleCompositeContext`) :
+- Parse `capsule-context.json` avec Jackson `jacksonObjectMapper().readValue()`
+- Extrait `entries[]` → `List<Map<String, Any>>` (deckName, slideCount, originalVideo, distribVideo, ttsEngine, ttsVoice)
+- Sortie fichier `capsule-parse-results.json` (pretty print Jackson)
+- Gère fichier absent (retourne `[]`)
+
+Tâche `capsuleretrieve` (contrat engine N3) :
+- Accepte `-PoutputFile=<path>` (même pattern que codexRetrieve/trainingRetrieve)
+- Utilise `CapsuleParseContextTask` en dessous
+
+Fichiers modifiés : `CapsuleManager.kt` (+CapsuleParseContextTask ~50 lignes, +isValidWebM), `CapsuleModels.kt` (inchangé)
+
+== CapsuleDistrib fix
+
+`isValidWebM()` — détection signature EBML (0x1a 0x45 0xdf 0xa3).
+Les placeholders NoOp sont copiés as-is sans erreur FFmpeg.
+
+== Engine N3 — Jackson replace Groovy
+
+Fichier modifié : `engine/build.gradle.kts`
+- `buildscript { classpath jackson-module-kotlin + jackson-databind 2.18.3 }`
+- `groovy.json.JsonSlurper` → `jacksonObjectMapper().readValue()`
+- `groovy.json.JsonOutput.toJson()` → `jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString()`
+- `capsuleEntries` dans `assembleCompositeContext` (ProcessBuilder → `capsuleretrieve`)
+
+== Tests (TDD complet)
+
+- 3 unitaires : CapsuleParseContextTaskTest (parse, empty list, missing file)
+- 2 fonctionnels : capsuleparsecontext, capsuleretrieve -PoutputFile
+- 1 Cucumber : Composite context JSON is parsed for engine N3 contract (capsulevideo → capsuledistrib → capsulecompositecontext → capsuleparsecontext → asserts deckName/originalVideo/valid JSON array)
+
+== Règles respectées
+
+- ✅ Pas de commit sans permission
+- ✅ DAG N2 respecté (capsule consomme slider, est consommé par engine)
+- ✅ Zéro secret
+- ✅ Jackson (Kotlin) remplace Groovy

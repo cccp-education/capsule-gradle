@@ -148,7 +148,7 @@ class PlaywrightCaptureTest {
         tmpDir.mkdirs()
         tmpDir.deleteOnExit()
 
-        capture.capture("/fake/deck.html", tmpDir, 1408, 792, 3)
+        capture.capture("/fake/deck.html", tmpDir, 1408, 792, listOf(5.0, 5.0, 5.0))
 
         val placeholder = tmpDir.resolve("capsule.webm")
         assertTrue(placeholder.exists())
@@ -165,7 +165,7 @@ class PlaywrightCaptureTest {
         tmpDir.delete()
         tmpDir.deleteOnExit()
 
-        capture.capture("/deck.html", tmpDir, 1024, 768, 1)
+        capture.capture("/deck.html", tmpDir, 1024, 768, listOf(5.0))
 
         assertTrue(tmpDir.exists())
         assertTrue(tmpDir.isDirectory)
@@ -254,13 +254,11 @@ Voici le contenu principal.
         )
         task.execute()
 
-        val expectedVideo = java.io.File(tempDir, "build/capsule/mon-cours.webm")
+        val expectedVideo = java.io.File(tempDir, "capsule/mon-cours.webm")
         assertTrue(expectedVideo.exists(), "Expected video at ${expectedVideo.absolutePath}")
         assertTrue(expectedVideo.readText().contains("PLAYWRIGHT CAPTURE PLACEHOLDER"))
 
-        val injectedDir = java.io.File(tempDir, "build/capsule/injected")
-        assertTrue(injectedDir.exists())
-        val injectedDeck = java.io.File(injectedDir, "mon-cours-deck.html")
+        val injectedDeck = java.io.File(deckDir, "mon-cours-deck.html")
         assertTrue(injectedDeck.exists())
         assertTrue(injectedDeck.readText().contains("data-audio"))
     }
@@ -301,9 +299,7 @@ Contenu slide 3.
         )
         task.execute()
 
-        val injectedDir = java.io.File(tempDir, "build/capsule/injected")
-        assertTrue(injectedDir.exists())
-        val injectedDeck = java.io.File(injectedDir, "cours-deck.html")
+        val injectedDeck = java.io.File(deckDir, "cours-deck.html")
         assertTrue(injectedDeck.exists())
         val injectedContent = injectedDeck.readText()
         assertTrue(injectedContent.contains("data-audio"), "Should have audio attributes")
@@ -355,7 +351,7 @@ Deck B.
         )
         task.execute()
 
-        val capDir = java.io.File(tempDir, "build/capsule")
+        val capDir = java.io.File(tempDir, "capsule")
         val videoA = java.io.File(capDir, "cours-a.webm")
         val videoB = java.io.File(capDir, "cours-b.webm")
         assertTrue(videoA.exists(), "Expected video for cours-a")
@@ -395,7 +391,7 @@ Deck B.
         val outputDir = java.io.File(tempDir, "integration-video").also { it.mkdirs() }
 
         try {
-            impl.capture(deckFile.absolutePath, outputDir, 1408, 792, 2)
+            impl.capture(deckFile.absolutePath, outputDir, 1408, 792, listOf(5.0, 5.0))
             impl.close()
 
             val videoFiles = outputDir.listFiles { f -> f.name.endsWith(".webm") }
@@ -664,5 +660,138 @@ class CapsuleParseContextTaskTest {
         assertTrue(outputFile.exists())
         val content = outputFile.readText()
         assertTrue(content.contains("[]") || content.contains("[ ]"))
+    }
+}
+
+class AudioQualityConstraintTest {
+
+    private val webmSignature = byteArrayOf(0x1a.toByte(), 0x45.toByte(), 0xdf.toByte(), 0xa3.toByte())
+
+    private val mp3Signatures = listOf(
+        byteArrayOf(0xFF.toByte(), 0xFB.toByte()),
+        byteArrayOf(0xFF.toByte(), 0xF3.toByte()),
+        byteArrayOf(0xFF.toByte(), 0xF2.toByte()),
+        byteArrayOf(0x49, 0x44, 0x33),
+        byteArrayOf(0xFF.toByte(), 0xFA.toByte())
+    )
+
+    @Test
+    fun `real TTS engine must produce binary audio larger than placeholder`() {
+        val espeak = EspeakTtsEngine()
+        if (!espeak.isAvailable()) return
+
+        val tmpFile = File.createTempFile("audio-constraint", ".mp3")
+        tmpFile.deleteOnExit()
+        espeak.synthesize("Ceci est un test de contrainte audio pour la capsule video.", tmpFile)
+        assertTrue(tmpFile.exists(), "Audio file must exist")
+        assertTrue(tmpFile.length() > 1024, "Real audio must be > 1KB, got ${tmpFile.length()} bytes")
+    }
+
+    @Test
+    fun `real TTS output must not be a text placeholder`() {
+        val espeak = EspeakTtsEngine()
+        if (!espeak.isAvailable()) return
+
+        val tmpFile = File.createTempFile("audio-notext", ".mp3")
+        tmpFile.deleteOnExit()
+        espeak.synthesize("Test.", tmpFile)
+
+        val content = tmpFile.readText(Charsets.ISO_8859_1)
+        assertTrue(!content.contains("TTS PLACEHOLDER"), "Real audio must not be a text placeholder")
+    }
+
+    @Test
+    fun `generated WebM video must have EBML header signature`() {
+        val espeak = EspeakTtsEngine()
+        if (!espeak.isAvailable()) return
+
+        val impl = PlaywrightCaptureImpl(defaultSlideDuration = 3.0)
+        if (!impl.isAvailable()) return
+
+        val tmpDir = File.createTempFile("webm-constraint", null)
+        tmpDir.delete()
+        tmpDir.mkdirs()
+        tmpDir.deleteOnExit()
+
+        val deckFile = File(tmpDir, "test-deck.html")
+        deckFile.writeText("""
+<html><head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+</head><body>
+<div class="reveal">
+  <div class="slides">
+    <section><h2>Slide</h2></section>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>Reveal.initialize();</script>
+</body></html>
+        """.trimIndent())
+
+        val outputDir = File(tmpDir, "video").also { it.mkdirs() }
+
+        try {
+            impl.capture(deckFile.absolutePath, outputDir, 1408, 792, listOf(5.0))
+            impl.close()
+
+            val videos = outputDir.listFiles { f -> f.name.endsWith(".webm") }
+            assertTrue(videos != null && videos.isNotEmpty(), "Must produce a video file")
+            val video = videos.first()
+            assertTrue(video.length() > 1024, "Video must be > 1KB, got ${video.length()} bytes")
+
+            val header = ByteArray(4)
+            video.inputStream().use { it.read(header) }
+            assertTrue(header.contentEquals(webmSignature), "Video must have EBML WebM header")
+        } catch (e: CapturingException) {
+            impl.close()
+            throw e
+        }
+    }
+}
+
+class RevealJsRenderingConstraintTest {
+
+    @Test
+    @Tag("integration")
+    fun `playwright capture must render reveal js slides individually not all on one page`() {
+        val impl = PlaywrightCaptureImpl(defaultSlideDuration = 2.0)
+        if (!impl.isAvailable()) return
+
+        val tmpDir = File.createTempFile("reveal-constraint", null)
+        tmpDir.delete()
+        tmpDir.mkdirs()
+        tmpDir.deleteOnExit()
+
+        val deckFile = File(tmpDir, "reveal-test.html")
+        deckFile.writeText("""
+<html><head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+</head><body>
+<div class="reveal">
+  <div class="slides">
+    <section><h2>Slide A</h2></section>
+    <section><h2>Slide B</h2></section>
+    <section><h2>Slide C</h2></section>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>Reveal.initialize();</script>
+</body></html>
+        """.trimIndent())
+
+        val outputDir = File(tmpDir, "video").also { it.mkdirs() }
+
+        try {
+            impl.capture(deckFile.absolutePath, outputDir, 1408, 792, listOf(5.0, 5.0, 5.0))
+            impl.close()
+
+            val videos = outputDir.listFiles { f -> f.name.endsWith(".webm") }
+            assertTrue(videos != null && videos.isNotEmpty(), "Must produce a video file")
+            val video = videos.first()
+            assertTrue(video.length() > 1024, "Video must be > 1KB, got ${video.length()} bytes")
+        } catch (e: CapturingException) {
+            impl.close()
+            throw e
+        }
     }
 }

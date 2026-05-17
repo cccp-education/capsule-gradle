@@ -1,4 +1,20 @@
 plugins {
+    alias(libs.plugins.slider)
     alias(libs.plugins.capsule)
-    alias(libs.plugins.readme)
+}
+//opencode -s ses_1cfe069beffeleql0GVIXgr5Np
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+capsule {
+    outputDir.set("capsules")
+    sliderScriptDir.set("capsule")
+    deckSourceDir.set("docs/asciidocRevealJs")
+    ttsEngine.set("espeak")
+}
+
+tasks.named("capsulevideo") {
+    dependsOn("asciidoctorRevealJs", "asciidocCapsule")
 }

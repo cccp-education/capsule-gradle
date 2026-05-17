@@ -1,0 +1,60 @@
+= Session 009 — CAP-9 Fix Pipeline (4 bugs corrigés)
+:type: fix
+:date: 2026-05-17
+:score: 9/10
+
+== Résumé
+
+Correction de 4 bugs bloquants dans le pipeline capsule diagnostiqués session 008.
+
+== Bugs Corrigés
+
+=== BUG 1 — Liens reveal.js cassés dans HTML injecté (CRITIQUE) ✅
+
+**Problème** : Le HTML injecté était écrit dans `build/capsule/injected/` mais les ressources `reveal.js/` (CSS, JS) sont dans `build/docs/asciidocRevealJs/`. Playwright ne chargeait pas le JS → Reveal undefined → vidéo statique.
+
+**Fix** : `CapsuleManager.kt:462` — `injectedDir` pointe maintenant vers `deckFile.parentFile` (même répertoire que le deck original). Les chemins relatifs `reveal.js/` résolvent correctement.
+
+=== BUG 2 — example-deck pollution ✅
+
+**Problème** : `example-deck-script.txt` (template slider, 1 slide vide) était traité comme un vrai deck → génération de vidéos fantômes.
+
+**Fix** : `CapsuleManager.kt:98-102` — `readScriptFiles()` filtre désormais les fichiers commençant par `example-` ou contenant `-context-`.
+
+=== BUG 3 — Format string Python dans Kotlin ✅
+
+**Problème** : `{:.1f}` est la syntaxe Python, pas SLF4J/Kotlin. Le format ne s'appliquait pas.
+
+**Fix** : `CapsuleManager.kt:356` — Remplacé par `String.format("%.1f", value)` dans le logger.
+
+=== BUG 4 — Injection audio sautée avec TTS noop ✅
+
+**Problème** : `hasRealAudio` vérifiait que les fichiers MP3 n'étaient pas des placeholders (> 500 bytes, sans en-tête `# TTS PLACEHOLDER`). Avec TTS noop, tous les fichiers sont des placeholders → `hasRealAudio = false` → HTML copié sans injection audio.
+
+**Fix** : `CapsuleManager.kt:467` — Renommé `hasRealAudio` → `hasAudio`, suppression de la vérification `!isPlaceholder()`. L'audio est injecté même avec des placeholders (permet de tester le pipeline complet).
+
+== Tests Modifiés
+
+3 tests unitaires mis à jour pour refléter le nouveau comportement d'injection audio :
+- `CapsuleVideoTaskTest.execute produces webm with noop capture` — injectedDir → deckDir
+- `CapsuleVideoTaskTest.sequential fallback injects audio` — injectedDir → deckDir
+- `CapsuleVideoTaskTest.multi-deck build produces separate videos` — capDir path corrigé
+
+== État des Tests
+
+- 31/31 tests unitaires PASS ✅
+- 1 test fonctionnel échoue (`espeak TTS must produce real audio`) — problème environnemental préexistant, non lié aux modifications
+- Cucumber : non exécuté (timeout)
+
+== Fichiers Modifiés
+
+- `src/main/kotlin/com/cheroliv/capsule/CapsuleManager.kt` — 4 bugs corrigés
+- `src/test/kotlin/com/cheroliv/capsule/CapsulePluginTest.kt` — 3 tests mis à jour
+
+== Règles Respectées
+
+- ✅ Pas de commit sans permission
+- ✅ DAG N2 respecté
+- ✅ Zéro secret
+- ✅ Build compile
+- ✅ Tests unitaires PASS

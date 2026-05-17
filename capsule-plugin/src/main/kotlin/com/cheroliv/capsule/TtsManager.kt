@@ -96,3 +96,70 @@ class NoOpTtsEngine : TtsEngine {
 }
 
 class TtsException(message: String) : RuntimeException(message)
+
+class EspeakTtsEngine(
+    private val executablePath: String = "espeak",
+    private val voice: String = "fr",
+    private val speed: Int = 150
+) : TtsEngine {
+
+    override fun isAvailable(): Boolean {
+        return try {
+            val proc = ProcessBuilder(executablePath, "--help")
+                .redirectErrorStream(true)
+                .start()
+            proc.waitFor()
+            proc.exitValue() == 0
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override fun name(): String = "espeak"
+
+    override fun synthesize(text: String, outputFile: File) {
+        if (!isAvailable()) {
+            throw TtsException("espeak executable not found at: $executablePath")
+        }
+
+        outputFile.parentFile.mkdirs()
+
+        val wavFile = File(outputFile.parentFile, outputFile.nameWithoutExtension + ".wav")
+
+        val proc = ProcessBuilder(
+            executablePath,
+            "-v", voice,
+            "-s", speed.toString(),
+            "-w", wavFile.absolutePath,
+            text
+        ).redirectErrorStream(true).start()
+
+        val exitCode = proc.waitFor()
+        if (exitCode != 0) {
+            val stderr = proc.inputStream.bufferedReader().readText()
+            throw TtsException("espeak exited with code $exitCode: $stderr")
+        }
+
+        wavToMp3(wavFile, outputFile)
+        wavFile.delete()
+    }
+
+    private fun wavToMp3(wavFile: File, mp3File: File) {
+        try {
+            val proc = ProcessBuilder(
+                "ffmpeg", "-y",
+                "-i", wavFile.absolutePath,
+                "-codec:a", "libmp3lame",
+                "-qscale:a", "2",
+                mp3File.absolutePath
+            ).redirectErrorStream(true).start()
+
+            val exitCode = proc.waitFor()
+            if (exitCode != 0) {
+                wavFile.copyTo(mp3File, overwrite = true)
+            }
+        } catch (e: Exception) {
+            wavFile.copyTo(mp3File, overwrite = true)
+        }
+    }
+}

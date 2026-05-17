@@ -1,36 +1,53 @@
-= PROMPT_REPRISE — capsule-gradle Session 007
+= PROMPT_REPRISE — Session 2026-05-17 — CAP-9 Pipeline E2E + Audio FFmpeg + Timing Dynamique
+:author: cheroliv + opencode (deepseek-v4-pro)
+:date: 2026-05-17
 
-_Mission_ : Publish mavenLocal + cross-borough verification (engine N3 integration)
-_Statut_ : A FAIRE
-_Date_ : à définir
+[abstract]
+Pipeline capsule complète validée e2e : AsciiDoc → reveal.js → TTS espeak → concat FFmpeg → Playwright capture → WebM 322s avec audio Vorbis continu.
 
-== Contexte
+== Contexte de Reprise (EAGER)
 
-Session 006 TERMINE (36/36 PASS — 25 unit + 6 functional + 5 Cucumber) :
-- CAP-6 : capsuleCompositeContext task — export JSON (capsule-capsule-context.json)
-  compatible engine N3 avec metadonnees completes (deckName, slideCount, videos, viewport, distrib, slides, TTS)
-- CAP-7 : capsuleDistrib task — recadrage FFmpeg 9:16 (1080x1920) avec fallback copy si ffmpeg absent
-- CapsuleExtension enrichie : ffmpegExecutablePath, distribOutputWidth/Height, compositeContextOutputFile
-- 6 nouveaux tests unitaires (CapsuleDistribTaskTest + CapsuleCompositeContextTaskTest)
-- 2 tests fonctionnels supplementaires
+=== Ce qui a ete accompli — Session 009
 
-== Sujets Session 007
+- **CAP-9 — Pipeline E2E complet** : AsciiDoc deck (15 slides) → espeak TTS (15 MP3, 13-43s chacun) → concat FFmpeg → video Playwright 322s
+- **Audio mix FFmpeg** : Playwright ne capture pas l'audio → concaténation brute des MP3 post-capture
+- **Timing dynamique** : `PlaywrightCapture` accepte `List<Double>` pour les durées par slide (calculées par ffprobe)
+- **TTS espeak** : moteur ajouté aux deux `resolveTtsEngine()`, audio MPEG layer III réel (124-406K/slide)
+- **4 bugs pipeline corrigés** : reveal.js paths, example-deck, format string, audio injection
+- **CapsulePlugin auto-applique slider conditionnel** : try-catch, `compileOnly`, consommateur déclare slider
+- **WebM final** : 23.7MB, 322s, Vorbis mono 22050Hz, aucune coupure silence sur toute la durée
+- **Tests** : 31/31 unit + 10/10 functional PASS
 
-- PublishToMavenLocal : verifier que le plugin est importable par d'autres projets
-- Integration engine N3 : verifier que le JSON capsule-context.json est parsable
-  par assembleCompositeContext (si engine deja integre)
-- Cross-borough verification : le contrat slider→capsule est stable
-- Cleanup eventuel : warnings, deprecations Gradle 10
-- Verification git status et absence de secrets
+=== État des EPICs
 
-== Pipeline complet (rappel)
+[cols="2,2", options="header"]
+|===
+| EPIC | Statut
+| CAP-0→CAP-8 | ✅ Tous terminés
+| CAP-9 | ✅ Fix Pipeline (4 bugs + TTS espeak + Audio mix + Timing dynamique)
+|===
 
-  AsciiDoc → slider-gradle → deck.html + *-script.txt
-  → capsulescript → capsulebuild (TTS)
-  → capsulevideo (Playwright capture → .webm)
-  → capsuledistrib (FFmpeg crop 9:16)
-  → capsulecompositecontext (JSON → engine N3)
+== Mission de la Prochaine Session
 
-== Taches Gradle (resume)
+=== capsule-gradle Session 010 — Piper TTS + Intégration N3 engine
 
-  capsulescript / capsulebuild / capsulevideo / capsuledistrib / capsulecompositecontext
+- **Piper TTS** : installer Piper en local pour TTS offline haute qualité (remplacer espeak)
+- **Calibration précise** : remplacer `slideDurationSeconds` fixe par `max(realAudioDur, configMinDur)`
+- **Intégration N3 engine** : brancher capsule dans le DAG New Jersey (`engine`)
+- **Tests** : lancer `./gradlew check` complet (unitaires + Cucumber + fonctionnels)
+
+=== Backlog — Priorité Moindre
+
+- **EPIC G — Migration Namespace CCCP** : com.cheroliv → cccp.education
+- **EPIC H — Site Documentation Officiel**
+
+== Rappel — Regles Globales (EAGER)
+
+. Zero commit/push sans permission explicite
+. Zero token/secret dans le code
+. DAG N2 → N3
+. Procedure fermeture obligatoire (6 etapes)
+
+[.text-right]
+*PROMPT_REPRISE mis a jour le 17 mai 2026.*
+*Prochaine session : capsule-gradle 010 — Piper TTS + Intégration N3.*

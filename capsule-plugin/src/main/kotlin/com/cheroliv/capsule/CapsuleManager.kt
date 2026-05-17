@@ -96,7 +96,11 @@ class CapsuleManager(private val project: Project) {
 
     companion object {
         fun readScriptFiles(dir: File): List<File> {
-            return dir.listFiles { f -> f.name.endsWith("-script.txt") }
+            return dir.listFiles { f ->
+                f.name.endsWith("-script.txt") &&
+                !f.name.startsWith("example-") &&
+                !f.name.contains("-context-")
+            }
                 ?.toList() ?: emptyList()
         }
 
@@ -244,6 +248,16 @@ open class CapsuleBuildTask : DefaultTask() {
                     throw TtsException("Piper not available at: $piperPath and fallback is disabled")
                 }
             }
+            "espeak" -> {
+                val engine = EspeakTtsEngine()
+                if (engine.isAvailable()) {
+                    logger.lifecycle("TTS engine: espeak")
+                    engine
+                } else {
+                    logger.warn("espeak not available, falling back to noop placeholder")
+                    NoOpTtsEngine()
+                }
+            }
             "noop" -> {
                 logger.lifecycle("TTS engine: noop (placeholder)")
                 NoOpTtsEngine()
@@ -345,20 +359,20 @@ open class CapsuleVideoTask : DefaultTask() {
         )
     }
 
-    private fun resolvePlaywrightCapture(): PlaywrightCapture {
+    private fun resolvePlaywrightCapture(slideDurations: List<Double>): PlaywrightCapture {
         if (playwrightCapture != null) return playwrightCapture!!
 
-        if (capsuleExtension.ttsEngine.get().lowercase() == "noop") {
-            logger.lifecycle("TTS engine is noop — using noop capture fallback")
-            return NoOpPlaywrightCapture()
-        }
-
+        val defaultDur = capsuleExtension.slideDurationSeconds.get()
         val impl = PlaywrightCaptureImpl(
             timeout = capsuleExtension.playwrightTimeout.get(),
+            defaultSlideDuration = defaultDur
         )
         return if (impl.isAvailable()) {
+            val totalSecs = slideDurations.sum()
+            logger.lifecycle("Playwright capture: available ({} slides, {}s total)", slideDurations.size, String.format("%.1f", totalSecs))
             impl
         } else {
+            logger.warn("Playwright not available, falling back to noop capture")
             NoOpPlaywrightCapture()
         }
     }
@@ -374,7 +388,23 @@ open class CapsuleVideoTask : DefaultTask() {
                 )
                 if (engine.isAvailable()) engine else NoOpTtsEngine()
             }
+            "espeak" -> {
+                val engine = EspeakTtsEngine()
+                if (engine.isAvailable()) engine else NoOpTtsEngine()
+            }
             else -> NoOpTtsEngine()
+        }
+    }
+
+    private fun computeSlideDurations(parsed: CapsuleScript, audioDir: File): List<Double> {
+        val defaultDur = capsuleExtension.slideDurationSeconds.get()
+        return parsed.slides.map { seg ->
+            val idx = String.format("%02d", seg.index)
+            val mp3 = audioDir.resolve("slide-$idx.mp3")
+            if (mp3.exists()) {
+                val realDur = ffprobeDuration(mp3)
+                if (realDur > 0.0) realDur else defaultDur
+            } else defaultDur
         }
     }
 
@@ -398,9 +428,9 @@ open class CapsuleVideoTask : DefaultTask() {
             return
         }
 
-        val outDir = project.layout.buildDirectory.dir(
+        val outDir = project.projectDir.resolve(
             capsuleExtension.outputDir.get()
-        ).get().asFile
+        )
         outDir.mkdirs()
 
         val engine = resolveTtsEngine()
@@ -434,14 +464,15 @@ open class CapsuleVideoTask : DefaultTask() {
             val videoOutputDir = outDir.resolve(parsed.deckName).resolve("video")
             videoOutputDir.mkdirs()
 
-            val deckCapture = resolvePlaywrightCapture()
+            val slideDurations = computeSlideDurations(parsed, audioDir)
+            val deckCapture = resolvePlaywrightCapture(slideDurations)
             try {
                 deckCapture.capture(
                     deckHtmlPath = modifiedDeck.absolutePath,
                     outputDir = videoOutputDir,
                     viewportWidth = capsuleExtension.viewportWidth.get(),
                     viewportHeight = capsuleExtension.viewportHeight.get(),
-                    slideCount = parsed.slides.size
+                    slideDurations = slideDurations
                 )
                 deckCapture.close()
 
@@ -450,6 +481,7 @@ open class CapsuleVideoTask : DefaultTask() {
                 if (generatedVideo != null) {
                     val finalVideo = outDir.resolve("${parsed.deckName}.webm")
                     generatedVideo.copyTo(finalVideo, overwrite = true)
+                    mixAudioWithVideo(finalVideo, audioDir, parsed.slides, capsuleExtension.slideDurationSeconds.get())
                     logger.lifecycle("CAPSULE → {}", finalVideo.absolutePath)
                 } else {
                     logger.warn("No video generated by Playwright capture for '{}'", parsed.deckName)
@@ -463,8 +495,20 @@ open class CapsuleVideoTask : DefaultTask() {
 
     private fun injectAudio(deckFile: File, script: CapsuleScript, audioDir: File): File {
         val originalHtml = deckFile.readText()
-        val injectedDir = project.layout.buildDirectory.dir("capsule/injected").get().asFile
+        val injectedDir = deckFile.parentFile
         injectedDir.mkdirs()
+
+        val hasAudio = script.slides.any { seg ->
+            val idx = String.format("%02d", seg.index)
+            val audioFile = audioDir.resolve("slide-$idx.mp3")
+            audioFile.exists()
+        }
+
+        if (!hasAudio) {
+            val outFile = injectedDir.resolve(deckFile.name)
+            outFile.writeText(originalHtml)
+            return outFile
+        }
 
         val hasDataCapsuleSlide = originalHtml.contains("data-capsule-slide=")
 
@@ -497,7 +541,6 @@ open class CapsuleVideoTask : DefaultTask() {
 <script>
 (function() {
   var currentAudio = null;
-  var currentIndex = -1;
   var sections = document.querySelectorAll('.reveal .slides section[data-audio]');
   var audios = [];
   sections.forEach(function(sec) {
@@ -535,6 +578,10 @@ open class CapsuleVideoTask : DefaultTask() {
         val outFile = injectedDir.resolve(deckFile.name)
         outFile.writeText(injected)
         return outFile
+    }
+
+    private fun isPlaceholder(file: File): Boolean {
+        return file.length() < 500 && file.readText().startsWith("# TTS PLACEHOLDER")
     }
 
     private fun injectAudioSequentialFallback(
@@ -640,6 +687,60 @@ open class CapsuleVideoTask : DefaultTask() {
         if (sliderOutput != null && sliderOutput.exists()) return sliderOutput
 
         return candidate
+    }
+
+    private fun mixAudioWithVideo(videoFile: File, audioDir: File, slides: List<SlideSegment>, slideDurationSeconds: Double) {
+        val mp3Files = slides.mapNotNull { seg ->
+            val idx = String.format("%02d", seg.index)
+            val f = audioDir.resolve("slide-$idx.mp3")
+            f.takeIf { it.exists() }
+        }
+        if (mp3Files.isEmpty()) return
+
+        val cmd = mutableListOf("ffmpeg", "-y", "-i", videoFile.absolutePath)
+        val concatInputs = mutableListOf<String>()
+
+        for ((i, mp3) in mp3Files.withIndex()) {
+            val inputIdx = i + 1
+            cmd.addAll(listOf("-i", mp3.absolutePath))
+            concatInputs.add("[$inputIdx:a]")
+        }
+
+        val filterComplex = "${concatInputs.joinToString("")}concat=n=${mp3Files.size}:v=0:a=1[aout]"
+        cmd.addAll(listOf("-filter_complex", filterComplex, "-map", "0:v", "-map", "[aout]", "-c:v", "copy", "-c:a", "libvorbis", "-shortest"))
+
+        val tmpFile = File(videoFile.absolutePath + ".tmp.webm")
+        cmd.add(tmpFile.absolutePath)
+
+        try {
+            val proc = ProcessBuilder(cmd).redirectErrorStream(true).start()
+            val exitCode = proc.waitFor()
+            if (exitCode == 0 && tmpFile.exists()) {
+                tmpFile.renameTo(videoFile)
+                val totalSlides = mp3Files.size
+                val audioDur = mp3Files.sumOf { f ->
+                    ffprobeDuration(f)
+                }
+                logger.lifecycle("  Audio mix: {} slides concatenated (audio={}s, video={}s)", totalSlides, String.format("%.1f", audioDur), String.format("%.1f", ffprobeDuration(videoFile)))
+            } else {
+                logger.warn("  Audio mix failed (ffmpeg exit code {}), video remains silent", exitCode)
+                tmpFile.delete()
+            }
+        } catch (e: Exception) {
+            logger.warn("  Audio mix error: {} — video remains silent", e.message)
+            tmpFile.delete()
+        }
+    }
+
+    private fun ffprobeDuration(file: File): Double {
+        return try {
+            val proc = ProcessBuilder("ffprobe", "-v", "quiet", "-show_entries", "format=duration", "-of", "csv=p=0", file.absolutePath)
+                .redirectErrorStream(true)
+                .start()
+            val out = proc.inputStream.bufferedReader().readText().trim()
+            proc.waitFor()
+            out.toDoubleOrNull() ?: 0.0
+        } catch (_: Exception) { 0.0 }
     }
 }
 

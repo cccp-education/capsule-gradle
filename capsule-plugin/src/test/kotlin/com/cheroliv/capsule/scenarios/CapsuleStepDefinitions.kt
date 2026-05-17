@@ -207,4 +207,83 @@ $slides
         assertTrue(content.startsWith("["), "Should start with [")
         assertTrue(content.endsWith("]"), "Should end with ]")
     }
+
+    @Given("a Gradle project with the capsule plugin configured for espeak TTS")
+    fun aGradleProjectWithTheCapsulePluginConfiguredForEspeakTts() {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-espeak-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('com.cheroliv.capsule')
+            }
+            capsule {
+                ttsEngine = "espeak"
+                outputDir = "capsules"
+            }
+        """.trimIndent())
+    }
+
+    @Given("a Gradle project with the capsule plugin configured for noop TTS")
+    fun aGradleProjectWithTheCapsulePluginConfiguredForNoopTts() {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-noop-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('com.cheroliv.capsule')
+            }
+            capsule {
+                ttsEngine = "noop"
+                outputDir = "capsules"
+            }
+        """.trimIndent())
+    }
+
+    @When("I run the task {string} with espeak TTS")
+    fun iRunTheTaskWithEspeakTts(taskName: String) {
+        runTask(taskName)
+    }
+
+    @Then("the generated MP3 files must be binary audio not text placeholder")
+    fun theGeneratedMp3FilesMustBeBinaryAudioNotTextPlaceholder() {
+        val capDir = projectDir.resolve("capsules")
+        val mp3Files = capDir.walk()
+            .filter { it.name.endsWith(".mp3") }
+            .toList()
+        assertTrue(mp3Files.isNotEmpty(), "Must produce MP3 files in capsules/")
+        for (mp3 in mp3Files) {
+            assertTrue(mp3.length() > 500, "MP3 must be > 500 bytes, got ${mp3.length()} for ${mp3.name}")
+            val content = mp3.readText(Charsets.ISO_8859_1)
+            assertTrue(!content.contains("TTS PLACEHOLDER"), "MP3 ${mp3.name} must not be a text placeholder")
+        }
+    }
+
+    @Then("the video file {string} exists in the {string} directory not in build/")
+    fun theVideoFileExistsInTheDirectoryNotInBuild(videoName: String, dirName: String) {
+        val videoFile = projectDir.resolve("$dirName/$videoName")
+        assertTrue(videoFile.exists(), "Video must be in $dirName/$videoName, expected: ${videoFile.absolutePath}")
+
+        val buildVideo = projectDir.resolve("build/$dirName/$videoName")
+        if (buildVideo.exists()) {
+            error("Video must NOT be in build/ directory, found at ${buildVideo.absolutePath}")
+        }
+    }
+
+    private val webmSignature = byteArrayOf(0x1a.toByte(), 0x45.toByte(), 0xdf.toByte(), 0xa3.toByte())
+
+    @Then("the video file {string} has a valid WebM EBML header")
+    fun theVideoFileHasAValidWebmEbmlHeader(videoName: String) {
+        val videoFile = projectDir.resolve("capsules/$videoName")
+        assertTrue(videoFile.exists(), "Video must exist at ${videoFile.absolutePath}")
+        assertTrue(videoFile.length() > 0, "Video must not be empty")
+
+        val header = ByteArray(4)
+        videoFile.inputStream().use { it.read(header) }
+        assertTrue(header.contentEquals(webmSignature), "Video must have EBML WebM header, got: ${header.joinToString { "%02x".format(it) }}")
+    }
 }

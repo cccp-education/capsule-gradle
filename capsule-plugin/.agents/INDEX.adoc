@@ -5,9 +5,9 @@ _Regles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly)
 
-_Derniere mise a jour_ : 2026-05-16
-_Session terminee_ : 006 — CAP-6 Integrations N3 + CAP-7 capsuleDistrib FFmpeg (36/36 PASS)
-_Session en cours_ : 007 — Publish mavenLocal + cross-borough verification
+_Derniere mise a jour_ : 2026-05-17
+_Session terminee_ : 009 — Pipeline E2E + TTS espeak + Audio mix FFmpeg + Timing dynamique
+_Prochaine session_ : 010 — Piper TTS + Intégration N3 engine
 
 '''
 == REGLES ABSOLUES (resume)
@@ -25,6 +25,9 @@ _Session en cours_ : 007 — Publish mavenLocal + cross-borough verification
 
 |===
 | # | Date | Type | Sujet | Score
+| 009 | 2026-05-17 | feat+fix | CAP-9 Pipeline E2E + TTS espeak + Audio mix FFmpeg + Timing dynamique (31 unit + 10 functional PASS, WebM 322s) | 10/10
+| 008 | 2026-05-17 | audit | Diagnostic pipeline (4 bugs : reveal.js paths, example-deck, format string, audio injection) | 8/10
+| 007 | 2026-05-16 | dev | CapsuleParseContextTask (Jackson JSON) + capsuleretrieve N3 + CapsuleDistrib isValidWebM fix + Jackson engine (42/42 PASS) | 10/10
 | 005 | 2026-05-16 | dev | CAP-4 CapsuleVideo orchestration (sequential fallback, multi-deck, noop bridge, @Tag integration chromium) + CAP-5 Cucumber BDD (5 scenarios Gherkin, cucumberTest task, 28/28 PASS) | 10/10
 | 004 | 2026-05-15 | dev | CAP-3 — Playwright Java capture (PlaywrightCapture interface/Impl/NoOp, capsulevideo task, injectAudio HTML, Kover 0.9.1, 19/19 PASS) | 10/10
 | 003 | 2026-05-15 | dev | CAP-2 — Intégration TTS Piper (TtsEngine interface, PiperTtsEngine CLI réel, NoOpTtsEngine fallback, 11/11 PASS) | 10/10
@@ -44,7 +47,10 @@ _Session en cours_ : 007 — Publish mavenLocal + cross-borough verification
 | CAP-3 | Playwright Java capture — pilotage reveal.js + API JVM native + injectAudio HTML | ✅ TERMINE (session 004) | P1
 | CAP-4 | CapsuleVideo task — orchestration TTS + Playwright → livrable video unique | ✅ TERMINE (session 005) | P1
 | CAP-5 | Tests — Cucumber BDD + fonctionnels + unitaires (GradleTestKit) | ✅ TERMINE (session 005) | P2
-| CAP-6 | Integrations N3 — export composite-context pour engine | 🔲 A VENIR | P3
+| CAP-6 | Integrations N3 — export composite-context pour engine | ✅ TERMINE (session 006) | P3
+| CAP-7 | CapsuleDistrib — FFmpeg recadrage TikTok 9:16 | ✅ TERMINE (session 006) | P3
+| CAP-8 | CapsuleParseContext — parse JSON Jackson + capsuleretrieve engine contract | ✅ TERMINE (session 007) | P3
+| CAP-9 | Fix Pipeline E2E — 4 bugs + TTS espeak + auto-apply slider + Playwright timeout | ✅ TERMINE (session 009) | P0
 |===
 
 '''

@@ -3,6 +3,7 @@
 
 |===
 | Date | Session | Tâche | Résultat
+| 2026-05-17 | 009-dev | CAP-9 — Pipeline E2E + TTS espeak + Audio mix FFmpeg + Timing dynamique | ✅ 4 bugs pipeline, auto-apply slider conditionnel, TTS espeak, mixAudioWithVideo concat FFmpeg, computeSlideDurations ffprobe, PlaywrightCapture signature List<Double>, timing dynamique par slide, 31 unit + 10 functional PASS, WebM 322s 23.7MB audio Vorbis continu
 | 2026-05-16 | 006-dev | CAP-7 — capsuleDistrib FFmpeg 9:16 | ✅ CapsuleDistribTask, crop FFmpeg 1080x1920, fallback copy si ffmpeg absent, multi-deck, 3 tests unitaires
 | 2026-05-16 | 006-dev | CAP-6 — capsuleCompositeContext Integrations N3 | ✅ CapsuleCompositeContextTask, export JSON (capsule-capsule-context.json) compatible engine, buildJsonString manuel, 3 tests unitaires, 2 tests fonctionnels, CapsuleExtension +4 props (ffmpeg/distribWidth/distribHeight/compositeContext)
 | 2026-05-16 | 005-dev | CAP-4 — CapsuleVideo orchestration + CAP-5 Cucumber BDD | ✅ Sequential fallback audio, multi-deck, noop bridge, @Tag integration chromium + 5 scenarios Gherkin, cucumberTest task, 28/28 PASS

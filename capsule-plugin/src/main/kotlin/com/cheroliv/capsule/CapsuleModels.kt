@@ -60,4 +60,7 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
 
     val compositeContextOutputFile: Property<String> = objects.property(String::class.java)
         .convention("capsule/capsule-context.json")
+
+    val slideDurationSeconds: Property<Double> = objects.property(Double::class.java)
+        .convention(5.0)
 }

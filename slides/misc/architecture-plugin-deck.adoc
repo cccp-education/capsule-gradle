@@ -1,0 +1,276 @@
+= L'Architecture « Plugin Indépendant + Racine Consommateur »
+Cheroliv <cheroliv@cheroliv.com>
+:imagesdir: images
+:source-highlighter: highlight.js
+:toc: left
+
+== Le Problème de Départ
+
+Vous clonez un dépôt de plugin Gradle. Vous ouvrez un terminal.
+Qu'est-ce que vous tapez ensuite ? `./gradlew tasks`, bien sûr.
+Mais dans quel dossier ? Faut-il lire un README ?
+Si vous hésitez, l'architecture est cassée.
+
+[NOTE.speaker]
+--
+Voici comment j'ai résolu ce problème une fois pour toutes — et pourquoi ce
+pattern est aujourd'hui la signature de tous mes plugins Gradle dans foundry/public.
+Présentons d'abord les trois approches que j'ai testées, et leurs défauts.
+--
+
+== Option 1 : Le Plugin Isolé
+
+Le projet ne contient que le plugin. Pas d'exemple de consommation.
+Pour le tester, il faut créer un projet externe, le référencer
+via mavenLocal ou un composite build, et seulement là vérifier.
+
+[WARNING]
+====
+Un plugin Gradle sans exemple de consommation, c'est une bibliothèque sans
+tests d'intégration. Vous ne savez jamais si la modification a cassé l'UX.
+====
+
+[NOTE.speaker]
+--
+Cette approche est la plus frustrante. Le plugin compile, mais vous ne savez
+jamais s'il fonctionne vraiment dans un contexte réel. C'est comme livrer une
+bibliothèque sans jamais écrire de tests d'intégration. On fait mieux.
+--
+
+== Option 2 : Le Monorepo Classique
+
+`settings.gradle.kts` avec `include("plugin")`. Le root et le sous-module
+partagent le même daemon, les mêmes configurations, les mêmes catalogues.
+
+* Le root doit avoir la même version de Gradle
+* `libs.versions.toml` partagé — dépendances qui fuient
+* Impossible de builder le plugin indépendamment
+* CI doit builder les deux modules
+
+[NOTE.speaker]
+--
+Le monorepo classique semble pratique au début : tout est dans le même projet,
+les dépendances sont partagées automatiquement. Mais ce couplage devient vite un
+problème. Version de Gradle verrouillée, catalogue de dépendances gonflé, CI
+lente. Pratique au début, douloureux à maintenir.
+--
+
+== Option 3 : Le Composite Build
+
+On sépare en deux builds Gradle distincts reliés via `includeBuild()`.
+
+C'est déjà mieux. Le build du plugin est isolé. Mais le consommateur
+doit explicitement référencer le build externe — et la sortie de
+`./gradlew tasks` dépend de la bonne configuration du composite.
+
+[NOTE.speaker]
+--
+Le composite build est une amélioration réelle par rapport au monorepo. Le plugin
+est isolé, il a son propre cycle de vie. Mais il reste un défaut : le clonage n'est
+pas zero-config. Un nouveau contributeur doit comprendre que le plugin est dans un
+dossier à part, que le root le référence. Je cherchais mieux. Beaucoup mieux.
+--
+
+== La Solution : Deux Builds Indépendants
+
+Voici le pattern que j'ai fini par adopter : un dossier `{name}-plugin/`
+qui est un projet Gradle complet et autonome, et une racine consommateur
+qui ne fait qu'appliquer le plugin.
+
+Le plugin a son propre wrapper, son propre settings, son propre catalogue.
+Il se clone, se build, se teste, et se publie sans que le root
+soit au courant de son existence.
+
+[NOTE.speaker]
+--
+C'est la clé du pattern. Le dossier plugin est un projet Gradle complet et autonome.
+Wrapper indépendant, settings indépendant, catalogue de versions indépendant. Il peut
+être cloné, buildé, testé et publié en totale isolation. Le root, lui, applique juste
+le plugin — 3 lignes de configuration. C'est tout.
+--
+
+== Le Root Consommateur
+
+Le build.gradle.kts racine fait 3 lignes. Rien de plus.
+
+* Zéro `include()`
+* Zéro `includeBuild()`
+* Zéro sous-projet
+
+Un build Gradle classique qui applique un plugin comme n'importe
+quel consommateur le ferait.
+
+[NOTE.speaker]
+--
+Regardez comme c'est simple. Le root applique le plugin en trois lignes, comme un
+client externe. Pas de magie, pas de configuration cachée. C'est la documentation
+exécutable du plugin : quiconque clone le dépôt voit immédiatement comment utiliser
+le plugin, parce que le build.gradle.kts racine est l'exemple vivant.
+--
+
+== Le Workflow Concret
+
+Étape 1 : `cd {name}-plugin && ./gradlew publishToMavenLocal`
+Étape 2 : `cd .. && ./gradlew tasks`
+
+La boucle est fermée. Le plugin est testé dans des conditions
+réelles de consommation, par le projet même qui l'héberge.
+
+[NOTE.speaker]
+--
+Le workflow est d'une simplicité absolue. Vous publiez le plugin en local avec
+publishToMavenLocal, puis vous l'exercez depuis la racine. C'est du dogfooding natif :
+le plugin est testé exactement comme un client externe l'utilisera. Si le plugin
+est cassé, le build racine le dit immédiatement. C'est le smoke test définitif.
+--
+
+== Bénéfice 1 : Dogfooding Natif
+
+Le meilleur test d'un plugin Gradle, c'est de l'utiliser.
+Pas un test unitaire mocké. Pas un GradleRunner avec un projet de test.
+Un vrai build qui applique le plugin sur de vrais fichiers.
+
+La règle est simple : si la racine compile et que `./gradlew tasks`
+affiche vos tâches de plugin, le plugin est fonctionnel.
+
+[NOTE.speaker]
+--
+Le dogfooding natif est le premier bénéfice. Vous n'avez pas besoin de test mocké,
+vous exercez le plugin sur de vrais fichiers dans un vrai projet. C'est le test
+d'intégration le plus fiable qui soit. Et c'est le premier réflexe de tout nouveau
+contributeur : `git clone && ./gradlew tasks`. Si ça marche, le plugin est sain.
+--
+
+== Bénéfice 2 : Clonage Zero-Config
+
+Un `git clone && ./gradlew tasks` et tout marche sans rien configurer.
+Le `build.gradle.kts` racine est la documentation vivante du plugin.
+
+La documentation la plus robuste n'est pas celle qu'on lit.
+C'est celle qu'on exécute.
+
+[NOTE.speaker]
+--
+Le clonage zero-config est le deuxième grand bénéfice. Comparez avec un README de
+trois paragraphes qui explique comment construire le plugin et le projet de test.
+Ici, le build.gradle.kts racine est la documentation exécutable. Pas de README à
+lire, pas de configuration à deviner. L'information est directement exécutable.
+--
+
+== Bénéfice 3 : Builds Isolés
+
+Le plugin a son propre wrapper, son propre cycle de vie, ses propres tests.
+Vous pouvez upgrader Gradle dans le plugin sans toucher au root,
+avoir une CI plugin indépendante, ou casser le plugin sans impacter le root.
+
+Les catalogues indépendants éliminent les collisions de dépendances
+par construction.
+
+[NOTE.speaker]
+--
+L'isolation des builds est le troisième pilier. Chaque build a son propre scope de
+dépendances, sa propre version de Gradle, ses propres tests. Les catalogues de
+versions sont séparés : le root a 2-3 dépendances pour consommer, le plugin en a
+30+ pour builder. La confusion est impossible. Et vous pouvez avoir une CI
+dédiée au plugin, indépendante de la CI du root.
+--
+
+== Les Deux Catalogues de Versions
+
+| Racine : 2-3 dépendances | Plugin : 30+ dépendances
+
+Le root a un catalogue volontairement minimal pour consommer.
+Le plugin a un catalogue complet pour builder.
+Chaque build a son propre scope. La confusion est impossible.
+
+[NOTE.speaker]
+--
+Regardons de plus près les catalogues. Le root a un catalogue minimal — juste la
+version du plugin à consommer. Le plugin a un catalogue complet avec toutes les
+dépendances de build. Deux fichiers distincts, deux usages distincts, zéro
+collision. Ce n'est pas de la duplication, c'est de la séparation des
+responsabilités appliquée au système de build.
+--
+
+== La Seule Contrainte
+
+Le root ne build pas le plugin. Vous devez `publishToMavenLocal`
+avant que le root puisse le consommer.
+
+C'est un coût minime, et c'est la bonne contrainte. Le root
+consomme le plugin comme un client externe, via Maven.
+Si le plugin n'est pas publiable, le root vous le dit immédiatement.
+
+[NOTE.speaker]
+--
+La seule friction du pattern : une commande publishToMavenLocal entre le build du
+plugin et le build du root. C'est tout. Et c'est une bonne contrainte, car elle
+garantit que le plugin est toujours publiable. Si le plugin ne peut pas être publié,
+le root échoue — exactement comme un client externe échouerait. C'est un garde-fou,
+pas une limitation.
+--
+
+== Le Contrat DAG
+
+N3 — Racine : build.gradle.kts de 3 lignes, aucune logique métier.
+N2 — Plugin : toute la complexité dans le sous-dossier, CI dédiée.
+
+La charge de la preuve est sur le plugin propriétaire.
+La racine est un terminal qui applique des hubs.
+
+[NOTE.speaker]
+--
+Ce pattern s'intègre naturellement dans le DAG N0 à N3 de mon workspace. Le plugin
+N2 est le hub de ses propres dépendances, la racine N3 est un terminal qui applique
+des hubs. La charge de la preuve est sur le plugin propriétaire — c'est à lui de
+garantir qu'il est publiable et fonctionnel. La racine ne fait que consommer.
+--
+
+
+== Comparaison : Les Trois Architectures Face au Dogfooding
+
+[cols="2,2,2,2,2"]
+|===
+| | Plugin isolé | Monorepo `include()` | Composite `includeBuild()` | **Racine + plugin indép.**
+| `git clone && gradlew tasks` donne les tâches du plugin | ❌ | ✅ | ✅ | ✅
+| Build plugin indépendant du root | ✅ | ❌ | ✅ | ✅
+| Catalogue versions séparé | ✅ | ❌ | ✅ | ✅
+| Pas de `include()` ni `includeBuild()` | ✅ | ❌ | ❌ | ✅
+| Dogfood natif sans config | ❌ | ✅ | ⚠️ | ✅
+| CI plugin indépendante | ✅ | ❌ | ✅ | ✅
+| Le root est un exemple de conso réel | ❌ | ⚠️ | ✅ | ✅
+|===
+
+La colonne de droite coche toutes les cases.
+
+[NOTE.speaker]
+--
+Regardez ce tableau comparatif. Notre pattern coche toutes les cases, là où chaque
+alternative échoue sur au moins un critère critique. Plugin isolé : pas de dogfooding.
+Monorepo : builds couplés. Composite build : configuration implicite. Notre pattern
+combine le meilleur de chaque monde : isolation, dogfooding, et zero-config.
+--
+
+== Conclusion
+
+Ce n'est pas de la duplication. C'est de la séparation des responsabilités
+appliquée au système de build.
+
+Chaque build fait une chose, et une seule :
+la racine consomme, le plugin se build.
+
+Le coût : une commande `publishToMavenLocal`.
+Le gain : une clarté architecturale qui supprime des heures de débogage.
+
+[NOTE.speaker]
+--
+Quand je montre cette structure, la première réaction est souvent : mais tu as deux
+gradlew, deux settings, deux catalogues, c'est de la duplication ! Non. La
+duplication, c'est reproduire la même information deux fois. Ici, ce sont deux
+fichiers distincts pour deux usages distincts. C'est de la séparation des
+responsabilités appliquée au build. Depuis que j'ai adopté ce pattern sur tous mes
+plugins foundry/public, je n'ai plus jamais hésité en ouvrant un terminal. Le
+premier réflexe — ./gradlew tasks — marche toujours, donne toujours les bonnes
+tâches, et me dit instantanément si tout est sain. C'est ça, la bonne architecture.
+Elle ne se lit pas dans un README, elle s'éprouve dans un terminal, en dix secondes.
+--

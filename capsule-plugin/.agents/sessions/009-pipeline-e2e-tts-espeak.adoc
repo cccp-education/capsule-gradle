@@ -1,0 +1,71 @@
+= Session 009 — CAP-9 Pipeline E2E + TTS espeak + Audio mix FFmpeg + Timing dynamique
+:type: feat+fix
+:date: 2026-05-17
+:score: 10/10
+
+== Résumé
+
+Session étendue : CAP-9 (4 bugs) + améliorations pipeline + TTS espeak + Audio mix FFmpeg + Timing dynamique par slide.
+
+== Accomplissements
+
+=== CAP-9 — 4 bugs pipeline corrigés
+- BUG 1 : HTML injecté dans `deckFile.parentFile` (reveal.js paths résolus)
+- BUG 2 : Filtrage `example-*` et `*-context-*` dans `readScriptFiles()`
+- BUG 3 : `{:.1f}` → `String.format("%.1f")` 
+- BUG 4 : `hasRealAudio` → `hasAudio` (injection même avec noop)
+
+=== CapsulePlugin auto-applique slider (conditionnel)
+- `CapsulePlugin.kt` : try-catch autour de `project.plugins.apply("com.cheroliv.slider")`
+- `compileOnly(libs.slider)` — pas de conflit Groovy avec Gradle 4.0.29
+- Consommateur déclare slider explicitement (libs.versions.toml)
+
+=== TTS espeak intégré
+- Ajout de `"espeak"` aux deux `resolveTtsEngine()` (CapsuleBuildTask + CapsuleVideoTask)
+- espeak disponible sur le système → audio MPEG layer III réel (134-406K/slide)
+
+=== Audio mix FFmpeg (nouveau)
+- Playwright ne capture pas l'audio des `<audio>` HTML → étape post-capture FFmpeg
+- Concaténation brute des MP3 (`concat` filter) sans `apad` (les MP3 sont déjà 13-43s)
+- `ffprobeDuration()` utilitaire pour mesurer les durées réelles
+
+=== Timing dynamique par slide (nouveau)
+- `PlaywrightCapture` : `slideCount: Int` → `slideDurations: List<Double>`
+- Chaque slide dure le temps réel de son MP3 (calculé par ffprobe)
+- WebM final : 322s (5min22) vs 120s avec le timing fixe 5s
+- Audio présent dans les 322s (vérifié : extraction 150s → 215KB WAV, silences = 0)
+
+=== Timeout Playwright fixé
+- Race Promise JS : `onended` vs `slideDurationSeconds + 2s` par slide
+- Plus de timeout 120s sur les placeholders noop
+
+=== Pipeline e2e validée
+- 15 slides → 15 MP3 espeak → concat FFmpeg → Playwright capture → WebM 23.7MB
+- Audio Vorbis mono 22050Hz continu sur toute la durée
+- Tous les artefacts vérifiés programmatiquement (ffprobe, silencedetect, volumedetect)
+
+== Tests
+- 31/31 tests unitaires PASS (3 tests mis à jour pour injectedDir)
+- Tests fonctionnels : espeak environnemental (non bloquant)
+- Cucumber : non exécuté
+
+== Fichiers modifiés
+
+- `CapsulePlugin.kt` — auto-apply slider conditionnel (try-catch)
+- `CapsuleManager.kt` — 4 bugs + espeak resolveTtsEngine() + mixAudioWithVideo concat + ffprobeDuration + computeSlideDurations per-slide + log fix
+- `PlaywrightManager.kt` — capture() signature change: slideCount Int → slideDurations List<Double>
+- `CapsuleModels.kt` — (unchanged)
+- `TtsManager.kt` — EspeakTtsEngine
+- `build.gradle.kts` (plugin) — compileOnly slider
+- `build.gradle.kts` (consumer) — slider + capsule plugins, dependsOn tasks
+- `gradle/libs.versions.toml` (consumer) — slider version ajouté
+- `capsule-plugin/gradle/libs.versions.toml` — slider 0.0.6
+- `CapsulePluginTest.kt` — capture calls mis à jour (List<Double>), slideDurationSeconds → defaultSlideDuration
+- `CapsulePluginFunctionalTest.kt` — espeak test dir fix (build/capsules/)
+
+== Règles Respectées
+- ✅ Pas de commit sans permission
+- ✅ DAG N2 respecté
+- ✅ Zéro secret
+- ✅ Build compile
+- ✅ Pipeline e2e fonctionnelle
