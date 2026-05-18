@@ -1,4 +1,4 @@
-package com.cheroliv.capsule
+package capsule
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project

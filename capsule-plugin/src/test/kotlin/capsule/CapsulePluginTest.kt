@@ -1,4 +1,4 @@
-package com.cheroliv.capsule
+package capsule
 
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Tag
@@ -182,11 +182,11 @@ class PlaywrightCaptureTest {
 class CapsuleVideoTaskTest {
 
     @TempDir
-    lateinit var tempDir: java.io.File
+    lateinit var tempDir: File
 
     private fun createTask(
-        deckDir: java.io.File,
-        scriptDir: java.io.File,
+        deckDir: File,
+        scriptDir: File,
         capture: PlaywrightCapture? = null,
         engine: TtsEngine? = null
     ): CapsuleVideoTask {
@@ -206,25 +206,25 @@ class CapsuleVideoTaskTest {
 
     @Test
     fun `execute warns when no deck files found`() {
-        val emptyDir = java.io.File(tempDir, "empty-decks").also { it.mkdirs() }
-        val scriptDir = java.io.File(tempDir, "scripts").also { it.mkdirs() }
+        val emptyDir = File(tempDir, "empty-decks").also { it.mkdirs() }
+        val scriptDir = File(tempDir, "scripts").also { it.mkdirs() }
         val task = createTask(emptyDir, scriptDir)
         task.execute()
     }
 
     @Test
     fun `execute warns when no script files found`() {
-        val deckDir = java.io.File(tempDir, "decks").also { it.mkdirs() }
-        java.io.File(deckDir, "test-deck.html").writeText("<html></html>")
-        val scriptDir = java.io.File(tempDir, "scripts").also { it.mkdirs() }
+        val deckDir = File(tempDir, "decks").also { it.mkdirs() }
+        File(deckDir, "test-deck.html").writeText("<html></html>")
+        val scriptDir = File(tempDir, "scripts").also { it.mkdirs() }
         val task = createTask(deckDir, scriptDir)
         task.execute()
     }
 
     @Test
     fun `execute produces webm with noop capture`() {
-        val deckDir = java.io.File(tempDir, "decks").also { it.mkdirs() }
-        val deckFile = java.io.File(deckDir, "mon-cours-deck.html")
+        val deckDir = File(tempDir, "decks").also { it.mkdirs() }
+        val deckFile = File(deckDir, "mon-cours-deck.html")
         deckFile.writeText("""
 <html><body>
 <div class="reveal">
@@ -236,8 +236,8 @@ class CapsuleVideoTaskTest {
 </body></html>
         """.trimIndent())
 
-        val scriptDir = java.io.File(tempDir, "scripts").also { it.mkdirs() }
-        val scriptFile = java.io.File(scriptDir, "mon-cours-script.txt")
+        val scriptDir = File(tempDir, "scripts").also { it.mkdirs() }
+        val scriptFile = File(scriptDir, "mon-cours-script.txt")
         scriptFile.writeText("""
 === CAPSULE SCRIPT : mon-cours ===
 --- SLIDE 1 : Intro ---
@@ -254,19 +254,19 @@ Voici le contenu principal.
         )
         task.execute()
 
-        val expectedVideo = java.io.File(tempDir, "capsule/mon-cours.webm")
+        val expectedVideo = File(tempDir, "capsule/mon-cours.webm")
         assertTrue(expectedVideo.exists(), "Expected video at ${expectedVideo.absolutePath}")
         assertTrue(expectedVideo.readText().contains("PLAYWRIGHT CAPTURE PLACEHOLDER"))
 
-        val injectedDeck = java.io.File(deckDir, "mon-cours-deck.html")
+        val injectedDeck = File(deckDir, "mon-cours-deck.html")
         assertTrue(injectedDeck.exists())
         assertTrue(injectedDeck.readText().contains("data-audio"))
     }
 
     @Test
     fun `sequential fallback injects audio into sections without data-capsule-slide`() {
-        val deckDir = java.io.File(tempDir, "decks").also { it.mkdirs() }
-        val deckFile = java.io.File(deckDir, "cours-deck.html")
+        val deckDir = File(tempDir, "decks").also { it.mkdirs() }
+        val deckFile = File(deckDir, "cours-deck.html")
         deckFile.writeText("""
 <html><body>
 <div class="reveal">
@@ -279,8 +279,8 @@ Voici le contenu principal.
 </body></html>
         """.trimIndent())
 
-        val scriptDir = java.io.File(tempDir, "scripts").also { it.mkdirs() }
-        val scriptFile = java.io.File(scriptDir, "cours-script.txt")
+        val scriptDir = File(tempDir, "scripts").also { it.mkdirs() }
+        val scriptFile = File(scriptDir, "cours-script.txt")
         scriptFile.writeText("""
 === CAPSULE SCRIPT : cours ===
 --- SLIDE 1 : Slide 1 ---
@@ -299,7 +299,7 @@ Contenu slide 3.
         )
         task.execute()
 
-        val injectedDeck = java.io.File(deckDir, "cours-deck.html")
+        val injectedDeck = File(deckDir, "cours-deck.html")
         assertTrue(injectedDeck.exists())
         val injectedContent = injectedDeck.readText()
         assertTrue(injectedContent.contains("data-audio"), "Should have audio attributes")
@@ -309,8 +309,8 @@ Contenu slide 3.
 
     @Test
     fun `multi-deck build produces separate videos`() {
-        val deckDir = java.io.File(tempDir, "decks").also { it.mkdirs() }
-        val deck1 = java.io.File(deckDir, "cours-a-deck.html")
+        val deckDir = File(tempDir, "decks").also { it.mkdirs() }
+        val deck1 = File(deckDir, "cours-a-deck.html")
         deck1.writeText("""
 <html><body>
 <div class="reveal">
@@ -320,7 +320,7 @@ Contenu slide 3.
 </div>
 </body></html>
         """.trimIndent())
-        val deck2 = java.io.File(deckDir, "cours-b-deck.html")
+        val deck2 = File(deckDir, "cours-b-deck.html")
         deck2.writeText("""
 <html><body>
 <div class="reveal">
@@ -331,13 +331,13 @@ Contenu slide 3.
 </body></html>
         """.trimIndent())
 
-        val scriptDir = java.io.File(tempDir, "scripts").also { it.mkdirs() }
-        java.io.File(scriptDir, "cours-a-script.txt").writeText("""
+        val scriptDir = File(tempDir, "scripts").also { it.mkdirs() }
+        File(scriptDir, "cours-a-script.txt").writeText("""
 === CAPSULE SCRIPT : cours-a ===
 --- SLIDE 1 : A1 ---
 Deck A.
         """.trimIndent())
-        java.io.File(scriptDir, "cours-b-script.txt").writeText("""
+        File(scriptDir, "cours-b-script.txt").writeText("""
 === CAPSULE SCRIPT : cours-b ===
 --- SLIDE 1 : B1 ---
 Deck B.
@@ -351,9 +351,9 @@ Deck B.
         )
         task.execute()
 
-        val capDir = java.io.File(tempDir, "capsule")
-        val videoA = java.io.File(capDir, "cours-a.webm")
-        val videoB = java.io.File(capDir, "cours-b.webm")
+        val capDir = File(tempDir, "capsule")
+        val videoA = File(capDir, "cours-a.webm")
+        val videoB = File(capDir, "cours-b.webm")
         assertTrue(videoA.exists(), "Expected video for cours-a")
         assertTrue(videoB.exists(), "Expected video for cours-b")
         assertTrue(videoA.readText().contains("PLAYWRIGHT CAPTURE PLACEHOLDER"))
@@ -368,8 +368,8 @@ Deck B.
             return
         }
 
-        val deckDir = java.io.File(tempDir, "integration-decks").also { it.mkdirs() }
-        val deckFile = java.io.File(deckDir, "test-deck.html")
+        val deckDir = File(tempDir, "integration-decks").also { it.mkdirs() }
+        val deckFile = File(deckDir, "test-deck.html")
         deckFile.writeText("""
 <html><head>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
@@ -388,7 +388,7 @@ Deck B.
 </body></html>
         """.trimIndent())
 
-        val outputDir = java.io.File(tempDir, "integration-video").also { it.mkdirs() }
+        val outputDir = File(tempDir, "integration-video").also { it.mkdirs() }
 
         try {
             impl.capture(deckFile.absolutePath, outputDir, 1408, 792, listOf(5.0, 5.0))
@@ -409,10 +409,10 @@ Deck B.
 class CapsuleDistribTaskTest {
 
     @TempDir
-    lateinit var tempDir: java.io.File
+    lateinit var tempDir: File
 
     private fun createTask(
-        captDir: java.io.File,
+        captDir: File,
         ffmpegAvailable: Boolean = false
     ): CapsuleDistribTask {
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
@@ -427,36 +427,36 @@ class CapsuleDistribTaskTest {
 
     @Test
     fun `execution warns when no videos found`() {
-        val capDir = java.io.File(tempDir, "build/capsule").also { it.mkdirs() }
+        val capDir = File(tempDir, "build/capsule").also { it.mkdirs() }
         val task = createTask(capDir)
         task.execute()
     }
 
     @Test
     fun `execution copies videos when ffmpeg not available`() {
-        val capDir = java.io.File(tempDir, "build/capsule").also { it.mkdirs() }
-        val videoFile = java.io.File(capDir, "test.webm")
+        val capDir = File(tempDir, "build/capsule").also { it.mkdirs() }
+        val videoFile = File(capDir, "test.webm")
         videoFile.writeText("fake webm content")
 
         val task = createTask(capDir, ffmpegAvailable = false)
         task.execute()
 
-        val distFile = java.io.File(tempDir, "build/capsule/distrib/test.webm")
+        val distFile = File(tempDir, "build/capsule/distrib/test.webm")
         assertTrue(distFile.exists(), "Video should be copied to distrib dir")
         assertEquals("fake webm content", distFile.readText())
     }
 
     @Test
     fun `execution handles multiple videos`() {
-        val capDir = java.io.File(tempDir, "build/capsule").also { it.mkdirs() }
-        java.io.File(capDir, "deck-a.webm").writeText("video a")
-        java.io.File(capDir, "deck-b.webm").writeText("video b")
+        val capDir = File(tempDir, "build/capsule").also { it.mkdirs() }
+        File(capDir, "deck-a.webm").writeText("video a")
+        File(capDir, "deck-b.webm").writeText("video b")
 
         val task = createTask(capDir, ffmpegAvailable = false)
         task.execute()
 
-        val distribA = java.io.File(tempDir, "build/capsule/distrib/deck-a.webm")
-        val distribB = java.io.File(tempDir, "build/capsule/distrib/deck-b.webm")
+        val distribA = File(tempDir, "build/capsule/distrib/deck-a.webm")
+        val distribB = File(tempDir, "build/capsule/distrib/deck-b.webm")
         assertTrue(distribA.exists())
         assertTrue(distribB.exists())
         assertEquals("video a", distribA.readText())
@@ -467,12 +467,12 @@ class CapsuleDistribTaskTest {
 class CapsuleCompositeContextTaskTest {
 
     @TempDir
-    lateinit var tempDir: java.io.File
+    lateinit var tempDir: File
 
     private fun createTask(
-        scriptDir: java.io.File,
-        captDir: java.io.File,
-        distribDir: java.io.File
+        scriptDir: File,
+        captDir: File,
+        distribDir: File
     ): CapsuleCompositeContextTask {
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         project.version = "0.1.0-SNAPSHOT"
@@ -492,12 +492,12 @@ class CapsuleCompositeContextTaskTest {
 
     @Test
     fun `execution creates json context file`() {
-        val buildDir = java.io.File(tempDir, "build")
-        val scriptDir = java.io.File(buildDir, "capsule").also { it.mkdirs() }
-        val capDir = java.io.File(buildDir, "capsule").also { it.mkdirs() }
-        val distDir = java.io.File(buildDir, "capsule/distrib").also { it.mkdirs() }
+        val buildDir = File(tempDir, "build")
+        val scriptDir = File(buildDir, "capsule").also { it.mkdirs() }
+        val capDir = File(buildDir, "capsule").also { it.mkdirs() }
+        val distDir = File(buildDir, "capsule/distrib").also { it.mkdirs() }
 
-        val scriptFile = java.io.File(scriptDir, "test-cours-script.txt")
+        val scriptFile = File(scriptDir, "test-cours-script.txt")
         scriptFile.writeText("""
 === CAPSULE SCRIPT : test-cours ===
 --- SLIDE 1 : Introduction ---
@@ -509,7 +509,7 @@ Voici le contenu principal de la formation.
         val task = createTask(scriptDir, capDir, distDir)
         task.execute()
 
-        val jsonFile = java.io.File(buildDir, "capsule/capsule-context.json")
+        val jsonFile = File(buildDir, "capsule/capsule-context.json")
         assertTrue(jsonFile.exists(), "JSON context file should be created")
         val content = jsonFile.readText()
         assertTrue(content.contains("capsule"), "Should contain source=capsule")
@@ -521,17 +521,17 @@ Voici le contenu principal de la formation.
 
     @Test
     fun `execution handles multiple decks`() {
-        val buildDir = java.io.File(tempDir, "build")
-        val scriptDir = java.io.File(buildDir, "capsule").also { it.mkdirs() }
-        val capDir = java.io.File(buildDir, "capsule").also { it.mkdirs() }
-        val distDir = java.io.File(buildDir, "capsule/distrib").also { it.mkdirs() }
+        val buildDir = File(tempDir, "build")
+        val scriptDir = File(buildDir, "capsule").also { it.mkdirs() }
+        val capDir = File(buildDir, "capsule").also { it.mkdirs() }
+        val distDir = File(buildDir, "capsule/distrib").also { it.mkdirs() }
 
-        java.io.File(scriptDir, "cours-a-script.txt").writeText("""
+        File(scriptDir, "cours-a-script.txt").writeText("""
 === CAPSULE SCRIPT : cours-a ===
 --- SLIDE 1 : A1 ---
 Deck A.
         """.trimIndent())
-        java.io.File(scriptDir, "cours-b-script.txt").writeText("""
+        File(scriptDir, "cours-b-script.txt").writeText("""
 === CAPSULE SCRIPT : cours-b ===
 --- SLIDE 1 : B1 ---
 Deck B.
@@ -540,7 +540,7 @@ Deck B.
         val task = createTask(scriptDir, capDir, distDir)
         task.execute()
 
-        val jsonFile = java.io.File(buildDir, "capsule/capsule-context.json")
+        val jsonFile = File(buildDir, "capsule/capsule-context.json")
         val content = jsonFile.readText()
         assertTrue(content.contains("cours-a"))
         assertTrue(content.contains("cours-b"))
@@ -548,14 +548,14 @@ Deck B.
 
     @Test
     fun `execution includes distribVideo path when available`() {
-        val buildDir = java.io.File(tempDir, "build")
-        val scriptDir = java.io.File(buildDir, "capsule").also { it.mkdirs() }
-        val capDir = java.io.File(buildDir, "capsule").also { it.mkdirs() }
-        val distDir = java.io.File(buildDir, "capsule/distrib").also { it.mkdirs() }
+        val buildDir = File(tempDir, "build")
+        val scriptDir = File(buildDir, "capsule").also { it.mkdirs() }
+        val capDir = File(buildDir, "capsule").also { it.mkdirs() }
+        val distDir = File(buildDir, "capsule/distrib").also { it.mkdirs() }
 
-        java.io.File(distDir, "cours.webm").writeText("fake distrib video")
+        File(distDir, "cours.webm").writeText("fake distrib video")
 
-        java.io.File(scriptDir, "cours-script.txt").writeText("""
+        File(scriptDir, "cours-script.txt").writeText("""
 === CAPSULE SCRIPT : cours ===
 --- SLIDE 1 : X ---
 Note.
@@ -564,7 +564,7 @@ Note.
         val task = createTask(scriptDir, capDir, distDir)
         task.execute()
 
-        val content = java.io.File(buildDir, "capsule/capsule-context.json").readText()
+        val content = File(buildDir, "capsule/capsule-context.json").readText()
         assertTrue(content.contains("distribVideo"))
         assertTrue(content.contains("distrib"))
     }
@@ -573,11 +573,11 @@ Note.
 class CapsuleParseContextTaskTest {
 
     @TempDir
-    lateinit var tempDir: java.io.File
+    lateinit var tempDir: File
 
     private fun createTask(
-        contextJsonFile: java.io.File,
-        outputFile: java.io.File
+        contextJsonFile: File,
+        outputFile: File
     ): CapsuleParseContextTask {
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         val t = project.tasks.register("capsuleparsecontext", CapsuleParseContextTask::class.java).get()
@@ -588,7 +588,7 @@ class CapsuleParseContextTaskTest {
 
     @Test
     fun `parses capsule-context json and outputs list of maps`() {
-        val contextFile = java.io.File(tempDir, "capsule-context.json")
+        val contextFile = File(tempDir, "capsule-context.json")
         contextFile.writeText("""
 {
   "source": "capsule",
@@ -614,7 +614,7 @@ class CapsuleParseContextTaskTest {
 }
         """.trimIndent())
 
-        val outputFile = java.io.File(tempDir, "parsed-results.json")
+        val outputFile = File(tempDir, "parsed-results.json")
 
         val task = createTask(contextFile, outputFile)
         task.execute()
@@ -629,7 +629,7 @@ class CapsuleParseContextTaskTest {
 
     @Test
     fun `returns empty list when no entries`() {
-        val contextFile = java.io.File(tempDir, "capsule-context.json")
+        val contextFile = File(tempDir, "capsule-context.json")
         contextFile.writeText("""
 {
   "source": "capsule",
@@ -639,7 +639,7 @@ class CapsuleParseContextTaskTest {
 }
         """.trimIndent())
 
-        val outputFile = java.io.File(tempDir, "parsed-results.json")
+        val outputFile = File(tempDir, "parsed-results.json")
 
         val task = createTask(contextFile, outputFile)
         task.execute()
@@ -651,8 +651,8 @@ class CapsuleParseContextTaskTest {
 
     @Test
     fun `handles missing file gracefully`() {
-        val contextFile = java.io.File(tempDir, "nonexistent.json")
-        val outputFile = java.io.File(tempDir, "parsed-results.json")
+        val contextFile = File(tempDir, "nonexistent.json")
+        val outputFile = File(tempDir, "parsed-results.json")
 
         val task = createTask(contextFile, outputFile)
         task.execute()

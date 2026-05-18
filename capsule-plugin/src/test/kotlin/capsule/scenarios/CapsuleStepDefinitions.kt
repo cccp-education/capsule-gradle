@@ -1,4 +1,4 @@
-package com.cheroliv.capsule.scenarios
+package capsule.scenarios
 
 import io.cucumber.java.en.And
 import io.cucumber.java.en.Given

@@ -38,7 +38,7 @@ dependencies {
 gradlePlugin {
     val capsule by plugins.creating {
         id = "com.cheroliv.capsule"
-        implementationClass = "com.cheroliv.capsule.CapsulePlugin"
+        implementationClass = "capsule.CapsulePlugin"
     }
 }
 
@@ -69,7 +69,7 @@ tasks.named<Test>("test") {
         excludeTags("integration")
     }
     filter {
-        excludeTestsMatching("com.cheroliv.capsule.scenarios.**")
+        excludeTestsMatching("capsule.scenarios.**")
     }
 }
 

@@ -1,4 +1,4 @@
-package com.cheroliv.capsule
+package capsule
 
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property

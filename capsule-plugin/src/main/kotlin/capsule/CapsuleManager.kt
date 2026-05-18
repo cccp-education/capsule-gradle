@@ -1,15 +1,16 @@
-package com.cheroliv.capsule
+package capsule
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import org.gradle.api.tasks.Internal
+import org.gradle.work.DisableCachingByDefault
 import java.io.File
 
 class CapsuleManager(private val project: Project) {
@@ -155,13 +156,13 @@ class CapsuleManager(private val project: Project) {
     }
 }
 
-@org.gradle.work.DisableCachingByDefault(because = "Filesystem-bound: reads slider output and produces TTS artifacts")
+@DisableCachingByDefault(because = "Filesystem-bound: reads slider output and produces TTS artifacts")
 open class CapsuleScriptTask : DefaultTask() {
 
     @get:OutputDirectory
     val outputDir: DirectoryProperty = project.objects.directoryProperty()
 
-    @get:org.gradle.api.tasks.Internal
+    @get:Internal
     lateinit var capsuleExtension: CapsuleExtension
 
     init {
@@ -213,20 +214,20 @@ open class CapsuleScriptTask : DefaultTask() {
     }
 }
 
-@org.gradle.work.DisableCachingByDefault(because = "Filesystem-bound: reads script files and writes TTS placeholder audio")
+@DisableCachingByDefault(because = "Filesystem-bound: reads script files and writes TTS placeholder audio")
 open class CapsuleBuildTask : DefaultTask() {
 
     @get:OutputDirectory
     val outputDir: DirectoryProperty = project.objects.directoryProperty()
 
-    @get:org.gradle.api.tasks.Internal
+    @get:Internal
     lateinit var capsuleExtension: CapsuleExtension
 
     init {
         outputDir.convention(project.layout.buildDirectory.dir("capsule"))
     }
 
-    @get:org.gradle.api.tasks.Internal
+    @get:Internal
     internal var ttsEngine: TtsEngine? = null
 
     private fun resolveTtsEngine(): TtsEngine {
@@ -338,19 +339,19 @@ open class CapsuleBuildTask : DefaultTask() {
     }
 }
 
-@org.gradle.work.DisableCachingByDefault(because = "Filesystem-bound: injects audio into HTML deck and captures video via Playwright")
+@DisableCachingByDefault(because = "Filesystem-bound: injects audio into HTML deck and captures video via Playwright")
 open class CapsuleVideoTask : DefaultTask() {
 
     @get:OutputFile
-    val outputFile: org.gradle.api.file.RegularFileProperty = project.objects.fileProperty()
+    val outputFile: RegularFileProperty = project.objects.fileProperty()
 
-    @get:org.gradle.api.tasks.Internal
+    @get:Internal
     lateinit var capsuleExtension: CapsuleExtension
 
-    @get:org.gradle.api.tasks.Internal
+    @get:Internal
     internal var playwrightCapture: PlaywrightCapture? = null
 
-    @get:org.gradle.api.tasks.Internal
+    @get:Internal
     internal var ttsEngine: TtsEngine? = null
 
     init {
@@ -744,13 +745,13 @@ open class CapsuleVideoTask : DefaultTask() {
     }
 }
 
-@org.gradle.work.DisableCachingByDefault(because = "Filesystem-bound: invokes FFmpeg process for video cropping")
+@DisableCachingByDefault(because = "Filesystem-bound: invokes FFmpeg process for video cropping")
 open class CapsuleDistribTask : DefaultTask() {
 
     @get:OutputDirectory
     val outputDir: DirectoryProperty = project.objects.directoryProperty()
 
-    @get:org.gradle.api.tasks.Internal
+    @get:Internal
     lateinit var capsuleExtension: CapsuleExtension
 
     init {
@@ -858,13 +859,13 @@ open class CapsuleDistribTask : DefaultTask() {
     }
 }
 
-@org.gradle.work.DisableCachingByDefault(because = "Filesystem-bound: scans capsule output directory and generates JSON context")
+@DisableCachingByDefault(because = "Filesystem-bound: scans capsule output directory and generates JSON context")
 open class CapsuleCompositeContextTask : DefaultTask() {
 
     @get:OutputFile
-    val outputFile: org.gradle.api.file.RegularFileProperty = project.objects.fileProperty()
+    val outputFile: RegularFileProperty = project.objects.fileProperty()
 
-    @get:org.gradle.api.tasks.Internal
+    @get:Internal
     lateinit var capsuleExtension: CapsuleExtension
 
     init {
@@ -989,10 +990,10 @@ open class CapsuleCompositeContextTask : DefaultTask() {
     }
 }
 
-@org.gradle.work.DisableCachingByDefault(because = "Filesystem-bound: reads capsule context JSON and writes parsed results")
+@DisableCachingByDefault(because = "Filesystem-bound: reads capsule context JSON and writes parsed results")
 open class CapsuleParseContextTask : DefaultTask() {
 
-    @get:org.gradle.api.tasks.Internal
+    @get:Internal
     val contextFile: RegularFileProperty = project.objects.fileProperty()
 
     @get:OutputFile

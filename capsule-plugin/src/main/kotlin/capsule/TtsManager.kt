@@ -1,4 +1,4 @@
-package com.cheroliv.capsule
+package capsule
 
 import java.io.File
 

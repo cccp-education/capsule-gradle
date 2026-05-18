@@ -1,4 +1,4 @@
-package com.cheroliv.capsule
+package capsule
 
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserContext
