@@ -6,6 +6,7 @@ _Date creation_ : 2026-05-14
 
 |===
 | # | Date | Type | Sujet | Score
+| 012 | 2026-05-19 | documentation | EPIC K K-5 — INDEX.adoc synchronise taxonomie 4 verbes + metadata.json + convention over config. EPIC K ferme (K-0→K-5). | ✅
 | 011 | 2026-05-19 | migration | EPIC K-1 — Renommage taxonomie (7 tâches : generateCapsuleScript, generateCapsule, generateCapsuleVideo, deployCapsule, collectCapsuleContext, transformCapsuleContext, collectCapsuleRetrieve) — 12 fichiers modifiés, Compile OK | 10/10
 | 010 | 2026-05-18 | migration | CCCP — namespace rename cccp.education.capsule → capsule (8 fichiers + build) | 10/10
 | 009 | 2026-05-17 | feat+fix | CAP-9 Pipeline E2E + TTS espeak + Audio mix FFmpeg + Timing dynamique (WebM 322s, 31+10 tests PASS) | 10/10
