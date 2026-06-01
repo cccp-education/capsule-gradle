@@ -5,9 +5,9 @@ _Regles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly)
 
-_Derniere mise a jour_ : 2026-05-19 (EPIC K fermé, K-5 terminé)
-_Session terminee_ : 011 — EPIC K-1 Renommage taxonomie (7 tâches)
-_Prochaine session_ : 012 — Piper TTS + Intégration N3 runner-gradle
+_Derniere mise a jour_ : 2026-06-01 (Session 013 — Renommage Détroit)
+_Session terminee_ : 013 — Renommage borough "Brooklyn Tech" → "Détroit" (24 fichiers)
+_Prochaine session_ : 014 — Audit fork lion92 — parallélisme pipeline + Manim + refactor output dirs
 
 '''
 == REGLES ABSOLUES (resume)
@@ -49,6 +49,7 @@ _Prochaine session_ : 012 — Piper TTS + Intégration N3 runner-gradle
 | 003 | 2026-05-15 | dev | CAP-2 — Intégration TTS Piper (TtsEngine interface, PiperTtsEngine CLI réel, NoOpTtsEngine fallback, 11/11 PASS) | 10/10
 | 002 | 2026-05-15 | dev | CAP-1 — Plugin Gradle capsule (compileOnly slider, 2 taches generateCapsuleScript+generateCapsule, CapsuleExtension DSL, 5/5 PASS) | 10/10
 | 001 | 2026-05-15 | build | CAP-0.3 — Initialisation build Gradle (root + capsule-plugin, CapsulePlugin stub, wrapper 9.5.0, 2/2 PASS) | 10/10
+| 013 | 2026-06-01 | rename | Renommage borough "Brooklyn Tech" → "Détroit" (24 fichiers live, gouv + docs + code Kotlin) | 10/10
 | 000 | 2026-05-14 | bootstrap | Gouvernance agent + cadrage architecture CAP-0 | ✅ TERMINE
 |===
 
