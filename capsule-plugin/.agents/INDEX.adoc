@@ -5,9 +5,9 @@ _Regles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly)
 
-_Derniere mise a jour_ : 2026-06-01 (Session 013 — Renommage Détroit)
-_Session terminee_ : 013 — Renommage borough "Brooklyn Tech" → "Détroit" (24 fichiers)
-_Prochaine session_ : 014 — Audit fork lion92 — parallélisme pipeline + Manim + refactor output dirs
+_Derniere mise a jour_ : 2026-06-02 (Session 015 — Revert merge fork lion92 + Cleanup)
+_Session terminee_ : 015 — Revert du merge intempestif audit/lion92-fork → main, retour à 0d69a94
+_Prochaine session_ : 016 — Intégration sélective et manuelle des refactos fork lion92 (pièce par pièce, veto explicite)
 
 '''
 == REGLES ABSOLUES (resume)
@@ -39,17 +39,21 @@ _Prochaine session_ : 014 — Audit fork lion92 — parallélisme pipeline + Man
 
 |===
 | # | Date | Type | Sujet | Score
+| 015 | 2026-06-02 | audit | Revert merge fork lion92 + Cleanup (retour 0d69a94, branche supprimée) | 8/10
+| 014 | 2026-06-01 | audit | Audit fork lion92 (parallélisme TTS, ScreenshotCapture, Manim, DRY refacto) | 10/10
+| 013 | 2026-06-01 | rename | Renommage borough "Brooklyn Tech" → "Détroit" (24 fichiers live, gouv + docs + code Kotlin) | 10/10
+| 012 | 2026-05-19 | doc | EPIC K-5 — INDEX.adoc synchronise taxonomie 4 verbes. EPIC K fermé. | ✅
 | 011 | 2026-05-19 | migration | EPIC K-1 — Renommage taxonomie (7 tâches : generateCapsuleScript, generateCapsule, generateCapsuleVideo, deployCapsule, collectCapsuleContext, transformCapsuleContext, collectCapsuleRetrieve) | 10/10
 | 010 | 2026-05-18 | migration | CCCP — namespace rename capsule (8 fichiers + build) | 10/10
 | 009 | 2026-05-17 | feat+fix | CAP-9 Pipeline E2E + TTS espeak + Audio mix FFmpeg + Timing dynamique (31 unit + 10 functional PASS, WebM 322s) | 10/10
 | 008 | 2026-05-17 | audit | Diagnostic pipeline (4 bugs : reveal.js paths, example-deck, format string, audio injection) | 8/10
 | 007 | 2026-05-16 | dev | CapsuleParseContextTask (Jackson JSON) + collectCapsuleRetrieve N3 + CapsuleDistrib isValidWebM fix + Jackson runner-gradle (42/42 PASS) | 10/10
-| 005 | 2026-05-16 | dev | CAP-4 CapsuleVideo orchestration (sequential fallback, multi-deck, noop bridge, @Tag integration chromium) + CAP-5 Cucumber BDD (5 scenarios Gherkin, cucumberTest task, 28/28 PASS) | 10/10
-| 004 | 2026-05-15 | dev | CAP-3 — Playwright Java capture (PlaywrightCapture interface/Impl/NoOp, generateCapsuleVideo task, injectAudio HTML, Kover 0.9.1, 19/19 PASS) | 10/10
-| 003 | 2026-05-15 | dev | CAP-2 — Intégration TTS Piper (TtsEngine interface, PiperTtsEngine CLI réel, NoOpTtsEngine fallback, 11/11 PASS) | 10/10
-| 002 | 2026-05-15 | dev | CAP-1 — Plugin Gradle capsule (compileOnly slider, 2 taches generateCapsuleScript+generateCapsule, CapsuleExtension DSL, 5/5 PASS) | 10/10
-| 001 | 2026-05-15 | build | CAP-0.3 — Initialisation build Gradle (root + capsule-plugin, CapsulePlugin stub, wrapper 9.5.0, 2/2 PASS) | 10/10
-| 013 | 2026-06-01 | rename | Renommage borough "Brooklyn Tech" → "Détroit" (24 fichiers live, gouv + docs + code Kotlin) | 10/10
+| 006 | 2026-05-16 | dev | CAP-6 N3 (capsuleCompositeContext, export JSON engine) + CAP-7 capsuleDistrib (FFmpeg crop 9:16, 36/36 PASS) | 10/10
+| 005 | 2026-05-16 | dev | CAP-4 CapsuleVideo orchestration + CAP-5 Cucumber BDD (5 scenarios Gherkin, 28/28 PASS) | 10/10
+| 004 | 2026-05-15 | dev | CAP-3 — Playwright Java capture (PlaywrightCapture interface/Impl/NoOp, 19/19 PASS) | 10/10
+| 003 | 2026-05-15 | dev | CAP-2 — Intégration TTS Piper (TtsEngine interface, PiperTtsEngine CLI, NoOpTtsEngine) | 10/10
+| 002 | 2026-05-15 | dev | CAP-1 — Plugin Gradle capsule (compileOnly slider, 2 tâches, CapsuleExtension DSL, 5/5 PASS) | 10/10
+| 001 | 2026-05-15 | build | CAP-0.3 — Initialisation build Gradle (root + capsule-plugin, wrapper 9.5.0, 2/2 PASS) | 10/10
 | 000 | 2026-05-14 | bootstrap | Gouvernance agent + cadrage architecture CAP-0 | ✅ TERMINE
 |===
 

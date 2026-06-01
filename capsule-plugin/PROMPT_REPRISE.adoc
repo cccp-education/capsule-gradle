@@ -1,126 +1,32 @@
-= PROMPT_REPRISE — Session 014 : Audit fork lion92 — parallélisme pipeline capsule
+= PROMPT_REPRISE — Session 016 : Intégration sélective fork lion92
 
 == Contexte
 
-Le fork https://github.com/lion92/capsule-gradle (branche `fix/pipeline-outputdir-parallel-capture`)
-a été code-reviewé. 2 commits, 8 fichiers modifiés, ~500 lignes ajoutées.
+Session 015 — Revert du merge intempestif. Le fork lion92/capsule-gradle
+a été audité en lecture seule en session 014. Les commits d'absorption
+sont perdus (branche supprimée), mais le code source du fork lion92
+reste disponible pour consultation.
 
-Ce fork corrige des bugs réels (output dirs, parallélisme) et ajoute une feature
-Manim (mathématiques animées). L'objectif de cette session est d'auditer,
-tester et merger proprement.
+== Principe
 
-== Delta du fork
+*ZÉRO merge*, *ZÉRO copier-coller sauvage*.
+Chaque refacto du fork lion92 est évalué, discuté, et intégré
+manuellement pièce par pièce, avec ton accord explicite.
 
-=== Commit 1 : `136079e fix: correct pipeline output dirs, plugin ID, parallel capture and TTS`
+== Référence — Refactos identifiés en session 014
 
-Fichiers impactés :
-- `CapsuleManager.kt` — lourd refactor : resolveScriptDir/DeckDir → companion object,
-  parsing slide type HTML/MANIM, parseScript enrichi
-- `CapsuleModels.kt` — nouveau `SlideType` enum, `SlideSegment.type` + `manimScene`,
-  nouvelles options espeakVoice/espeakSpeed, manimExecutablePath/manimQuality/manimScriptsDir
-- `ManimEngine.kt` — NOUVEAU : 90 lignes, sous-processus manim → MP4 → WebM
-- `PlaywrightManager.kt` — NOUVEAU `ScreenshotCaptureImpl` (PNG → FFmpeg WebM,
-  plus fiable que Playwright video recording). Timeout fix. Logique audio wait supprimée
-  (audio ne joue pas en headless Chromium)
-- `CapsuleVideoTask.kt` — refactor lourd :
-  * outputFile (RegularFileProperty) → outputDir (DirectoryProperty)
-  * captureSlideParallel() avec thread pool, dispatch HTML→ScreenshotCaptureImpl / MANIM→ManimEngine
-  * createSingleSlideHtml() — isole chaque slide dans une page HTML indépendante
-  * concatWebmFiles() — FFmpeg concat des segments parallèles
-  * AUDIO_INJECT_SCRIPT externalisé en companion constant (plus de duplicat)
-  * injectAudio/injectAudioSequentialFallback utilisent la constante
-  * ffprobeDuration() déplacée en méthode privée
-  * mixAudioWithVideo() inchangé
-- `CapsulePluginTest.kt` — chemins mis à jour (`build/capsule/injected/`)
-- `CapsuleStepDefinitions.kt` — Cucumber step "not in build/" → "exists in build/"
-- `capsule.feature` — scénario mis à jour
-- `build.gradle.kts` — plugin ID `com.cheroliv.capsule` → `education.cccp.capsule`,
-  JDK 24 → 21
+. Parallélisme TTS — génération MP3 concurrente (Coroutine-based)
+. ScreenshotCapture — capture screenshot statique par slide (avant/après)
+. ManimEngine — animations mathématiques via Manim (Python bridge)
+. DRY refacto — nettoyage CapsuleManager.kt (split, extraction)
+. createSingleSlideHtml() — batch writing (perf)
 
-=== Commit 2 : `e845db4 feat(manim): intégration Manim pour capsules mathématiques`
+== Ordre du jour session 016
 
-- `ManimEngine.kt` — render() avec subprocess manim, probeDuration() via ffprobe
-- `CapsuleModels.kt` — config manim (executablePath, quality, scriptsDir)
-- `CapsuleManager.kt` — dispatch MANIM dans captureSlideParallel()
-- Format script : `--- SLIDE 3 : Démonstration --- [manim:ProofScene]`
+Passer en revue les refactos un par un, avec ton veto à chaque étape.
+Aucun commit sans ton OK.
 
-== Code review — points à auditer prioritairement
+== État git
 
-=== HAUTE PRIORITÉ (à corriger avant merge)
-
-1. **fail-late TTS** — `CapsuleBuildTask.execute()` :
-   Avant : fail-fast (throw dès la première erreur TTS)
-   Après : on collecte toutes les erreurs, throw à la fin
-   → Vérifier que c'est intentionnel. Si oui, le documenter.
-   → Si non, remettre le throw dans le catch (comportement historique).
-
-2. **ManimEngine — pas de isAvailable() upfront** :
-   `captureSlideParallel()` appelle `ManimEngine.render()` sans vérifier
-   que manim est installé. On découvre l'échec slide par slide.
-   → Ajouter ManimEngine.isAvailable() check en pré-vol, avant le dispatch.
-
-=== MOYENNE PRIORITÉ
-
-3. **`ExecutorService.submit<R>` non typé** :
-   `Future<*>` au lieu de `Future<File?>` ou `Future<Unit>`.
-   → Changer en `executor.submit<File?> { ... }` pour la sécurité de type.
-
-4. **`isPlaceholder()` supprimé sans remplacement** :
-   La méthode détectait les fichiers TTS factices (< 500 octets, # TTS PLACEHOLDER).
-   Si encore utile, la restaurer ou justifier sa suppression.
-
-=== BASSE PRIORITÉ
-
-5. **`AUDIO_INJECT_SCRIPT` hardcodé** :
-   35 lignes de JS multilignes dans le companion object.
-   → Externaliser dans `src/main/resources/audio-inject-script.js`.
-
-6. **`createSingleSlideHtml()` lit/écrit le deck N fois** :
-   24 slides = 24 lectures + 24 écritures du fichier HTML complet.
-   → Lire une fois en RAM, générer les N variantes, écrire en batch.
-
-7. **`ManimEngine.render()` — `mediaDir.walk()` lent** :
-   DFS sur tout le dossier media → préférer le chemin standard Manim :
-   `mediaDir/videos/{quality}/{sceneName}.mp4`
-
-8. **`ScreenshotCaptureImpl` accepte `List<Double>` mais n'utilise que `firstOrNull()`** :
-   → Changer la signature en `duration: Double` pour clarifier l'API.
-
-=== TESTS À AJOUTER
-
-9. **Test parallélisme** : vérifier que `captureSlideParallel()` produit les bons
-   segments WebM dans le bon ordre, avec concat correct.
-
-10. **Test Manim** : scénario Cucumber "slide [manim:SceneName]" → vidéo produite
-    (mock manim si pas installé, ou skip avec @DisabledIfNoManim)
-
-== Dépendances croisées
-
-- Plugin ID : `education.cccp.capsule` (aligné CCCP)
-- GroupId : `education.cccp`
-- DAG N2 — dépend de slider-gradle (compileOnly) pour les scripts/decks
-- Manim : Python 3.9+, `pip install manim`. Non requis pour le pipeline HTML de base.
-- JDK : 21 (fork rétropédale de 24 à 21, à confirmer)
-
-== Tags de rappel
-
-- Ne pas casser la rétrocompat HTML-only (les capsules existantes sans Manim)
-- Vérifier que `ScreenshotCaptureImpl` fonctionne sans Playwright installé
-- Le fork utilise `build/capsule/` comme output dir — cohérent avec les tests
-- Ne pas oublier de supprimer le remote lion92 après merge
-
-== Procédure de session
-
-1. git remote add lion92 https://github.com/lion92/capsule-gradle.git
-2. git fetch lion92
-3. Créer une branche locale : git checkout -b audit/lion92-fork
-4. Appliquer les commits : git cherry-pick lion92/fix/pipeline-outputdir-parallel-capture
-   (ou merger, selon l'approche)
-5. Pour chaque point de la code review :
-   a. Lire le diff
-   b. Décider : corriger, documenter, ignorer
-   c. Appliquer les changements
-6. `./gradlew :capsule-plugin:check` — tous les tests doivent PASS
-7. Vérifier les tests Cucumber : `./gradlew :capsule-plugin:cucumberTest`
-8. Commit + push sur la branche d'audit
-9. Retour à l'orchestre pour validation merge
+main → 0d69a94 (propre)
+Aucune branche latérale.

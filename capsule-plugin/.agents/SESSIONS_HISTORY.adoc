@@ -6,6 +6,9 @@ _Date creation_ : 2026-05-14
 
 |===
 | # | Date | Type | Sujet | Score
+| 015 | 2026-06-02 | audit | Revert merge fork lion92 + Cleanup — retour main à 0d69a94, suppression branche audit/lion92-fork (locale+remote). Leçon : zero merge cross-fork. | 8/10
+| 014 | 2026-06-01 | audit | Audit fork lion92 — parallélisme TTS, ScreenshotCapture, Manim, DRY refacto. Commit 17adafb sur audit/lion92-fork. | 10/10
+| 013 | 2026-06-01 | rename | Renommage borough "Brooklyn Tech" → "Détroit" (24 fichiers live, gouv + docs + code Kotlin) | 10/10
 | 012 | 2026-05-19 | documentation | EPIC K K-5 — INDEX.adoc synchronise taxonomie 4 verbes + metadata.json + convention over config. EPIC K ferme (K-0→K-5). | ✅
 | 011 | 2026-05-19 | migration | EPIC K-1 — Renommage taxonomie (7 tâches : generateCapsuleScript, generateCapsule, generateCapsuleVideo, deployCapsule, collectCapsuleContext, transformCapsuleContext, collectCapsuleRetrieve) — 12 fichiers modifiés, Compile OK | 10/10
 | 010 | 2026-05-18 | migration | CCCP — namespace rename cccp.education.capsule → capsule (8 fichiers + build) | 10/10
