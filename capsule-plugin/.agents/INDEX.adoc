@@ -5,9 +5,9 @@ _Regles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly)
 
-_Derniere mise a jour_ : 2026-06-02 (Session 015 — Revert merge fork lion92 + Cleanup)
-_Session terminee_ : 015 — Revert du merge intempestif audit/lion92-fork → main, retour à 0d69a94
-_Prochaine session_ : 016 — Intégration sélective et manuelle des refactos fork lion92 (pièce par pièce, veto explicite)
+_Derniere mise a jour_ : 2026-06-02 (Session 016 — Intégration sélective fork lion92, 2/5 refactos)
+_Session terminee_ : 016 — CapsuleModels + DRY companion + parseScript [manim] + espeak voice/speed (2/5 refactos intégrés)
+_Prochaine session_ : 017 — Parallélisme TTS + ScreenshotCapture + ManimEngine (3/5 restants)
 
 '''
 == REGLES ABSOLUES (resume)
@@ -39,6 +39,7 @@ _Prochaine session_ : 016 — Intégration sélective et manuelle des refactos f
 
 |===
 | # | Date | Type | Sujet | Score
+| 016 | 2026-06-02 | dev | Intégration sélective fork lion92 (2/5) : CapsuleModels SlideType + DRY companion + parseScript [manim] | 7/10
 | 015 | 2026-06-02 | audit | Revert merge fork lion92 + Cleanup (retour 0d69a94, branche supprimée) | 8/10
 | 014 | 2026-06-01 | audit | Audit fork lion92 (parallélisme TTS, ScreenshotCapture, Manim, DRY refacto) | 10/10
 | 013 | 2026-06-01 | rename | Renommage borough "Brooklyn Tech" → "Détroit" (24 fichiers live, gouv + docs + code Kotlin) | 10/10

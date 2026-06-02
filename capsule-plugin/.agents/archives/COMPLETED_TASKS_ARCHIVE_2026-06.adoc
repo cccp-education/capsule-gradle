@@ -3,5 +3,7 @@
 
 |===
 | Date | Session | Tâche | Résultat
-| 2026-06-02 | 015-audit | Revert merge fork lion92 + Cleanup | ✅ Retour main à 0d69a94 via reset hard + force push. Suppression définitive audit/lion92-fork (local + remote). Aucun code lion92 sur main. Préparation PROMPT_REPRISE session 016 pour intégration sélective.
+| 2026-06-02 | 015-audit | Revert merge fork lion92 + Cleanup | ✅ Retour main à 0d69a94 via reset hard + force push. Branche audit/lion92-fork restaurée (reflog) + repoussée origin.
+| 2026-06-02 | 016-dev | CapsuleModels SlideType + espeak/manim config | ✅ enum SlideType{HTML,MANIM}, SlideSegment +2 champs, CapsuleExtension +5 props, 4 unit tests. Commit 4218a70.
+| 2026-06-02 | 016-dev | DRY CapsuleManager companion + parseScript [manim] | ✅ resolveScriptDir/DeckDir companion, AUDIO_INJECT_SCRIPT constant, parseScript [manim:Scene]/[html], espeak voice/speed, 2 unit tests. Commit 72366b1.
 |===

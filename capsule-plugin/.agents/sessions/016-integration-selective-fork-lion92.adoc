@@ -1,0 +1,54 @@
+= Session 016 — Intégration sélective fork lion92 (début)
+:date: 2026-06-02
+:type: dev
+:sujet: Intégration sélective des refactos du fork lion92 pièce par pièce
+:score: 7/10
+
+== Contexte
+
+Session 015 a reverté le merge intempestif de audit/lion92-fork dans main.
+La branche a été restaurée depuis le reflog et repoussée sur origin.
+Sessions 013 et 014 historisées sur main depuis audit/lion92-fork.
+
+== Méthodologie
+
+Baby step DDD/TDD/BDD : Unit → Functional → Cucumber → compile → commit.
+Un commit par refacto. Zéro merge de branche.
+
+== Refactos complétés (2/5)
+
+=== Refacto 1/5 : CapsuleModels.kt
+
+- `enum class SlideType { HTML, MANIM }`
+- `SlideSegment` : +2 champs (`type`, `manimScene`) avec defaults
+- `CapsuleExtension` : +5 props (`espeakVoice`, `espeakSpeed`, `manimExecutablePath`, `manimQuality`, `manimScriptsDir`)
+- 4 tests unitaires `SlideSegmentModelTest` (RED→GREEN)
+- Commit : `4218a70`
+
+=== Refacto 3/5 : DRY CapsuleManager.kt (avant parallélisme car dépendance)
+
+- `resolveScriptDir()` / `resolveDeckDir()` → companion object `CapsuleManager`
+- `AUDIO_INJECT_SCRIPT` → companion constant `CapsuleVideoTask`
+- `parseScript` enrichi : extraction `[manim:SceneName]` + `[html]` → `SlideType.MANIM/HTML`
+- `espeakVoice` / `espeakSpeed` utilisés dans `CapsuleBuildTask` + `CapsuleVideoTask`
+- `injectAudioSequentialFallback` : variante `(sequential fallback)` du script audio
+- 2 tests unitaires `CapsuleParseScriptTest` (RED→GREEN)
+- Commit : `72366b1`
+
+== Refactos restants (3/5)
+
+. Parallélisme TTS — `Executors.newFixedThreadPool` + `AtomicInteger` + `Future<File?>`
+. ScreenshotCapture — `ScreenshotCaptureImpl` dans PlaywrightManager.kt
+. ManimEngine — nouveau fichier, Python bridge
+
+== État git
+
+main → `72366b1` (3 commits avance sur origin, 4 sur 0d69a94)
+audit/lion92-fork → `6860a60` (local + remote)
+Compile OK, 27/29 tests pass (2 pré-existants UnknownPluginException)
+
+== Erreurs session
+
+Merge intempestif en début de session (corrigé par reset hard + force push).
+Branche audit/lion92-fork supprimée puis recréée depuis reflog.
+Leçon : demander confirmation explicite AVANT tout merge cross-fork.

@@ -1,32 +1,31 @@
-= PROMPT_REPRISE — Session 016 : Intégration sélective fork lion92
+= PROMPT_REPRISE — Session 017 : Intégration sélective fork lion92 (suite)
 
 == Contexte
 
-Session 015 — Revert du merge intempestif. Le fork lion92/capsule-gradle
-a été audité en lecture seule en session 014. Les commits d'absorption
-sont perdus (branche supprimée), mais le code source du fork lion92
-reste disponible pour consultation.
+Session 016 — 2/5 refactos intégrés (CapsuleModels + DRY). 3 restants.
+Méthodologie : baby step TDD, Unit → Functional → Cucumber, un commit par refacto.
 
-== Principe
+== Refactos restants
 
-*ZÉRO merge*, *ZÉRO copier-coller sauvage*.
-Chaque refacto du fork lion92 est évalué, discuté, et intégré
-manuellement pièce par pièce, avec ton accord explicite.
+. **Parallélisme TTS** — CapsuleBuildTask.execute() : séquentiel → Executors.newFixedThreadPool(cores) + AtomicInteger + Future<File?>. Imports : java.util.concurrent.Executors, Future, AtomicInteger.
+. **ScreenshotCapture** — ScreenshotCaptureImpl dans PlaywrightManager.kt : PNG screenshot + FFmpeg → WebM. Plus fiable et rapide que Playwright video. Signature duration: Double.
+. **ManimEngine** — Nouveau fichier. Manim Python → MP4 → WebM via ProcessBuilder. isAvailable() pre-flight. Chemin standard videos/{sceneName}/{quality}/.
 
-== Référence — Refactos identifiés en session 014
+== Refactos complétés (session 016)
 
-. Parallélisme TTS — génération MP3 concurrente (Coroutine-based)
-. ScreenshotCapture — capture screenshot statique par slide (avant/après)
-. ManimEngine — animations mathématiques via Manim (Python bridge)
-. DRY refacto — nettoyage CapsuleManager.kt (split, extraction)
-. createSingleSlideHtml() — batch writing (perf)
+| Refacto | Commit | Tests |
+| CapsuleModels (SlideType, espeak, manim config) | 4218a70 | 4 unit |
+| DRY (companion, AUDIO_INJECT_SCRIPT, parseScript [manim]) | 72366b1 | 2 unit |
 
-== Ordre du jour session 016
+== Améliorations post-intégration
 
-Passer en revue les refactos un par un, avec ton veto à chaque étape.
-Aucun commit sans ton OK.
+. createSingleSlideHtml() — lecture RAM + batch writing
+. Split CapsuleManager.kt (~1000 lignes)
+. Jackson mapper dans CapsuleCompositeContextTask (remplacer buildJsonString manuel)
+. Cucumber [manim:SceneName] avec mock ou skip conditionnel
 
 == État git
 
-main → 0d69a94 (propre)
-Aucune branche latérale.
+main → 72366b1 (3 commits non pushés, + les docs de session)
+audit/lion92-fork → 6860a60 (local + remote)
+Pré-existant : 7 tests UnknownPluginException (pluginUnderTestMetadata)

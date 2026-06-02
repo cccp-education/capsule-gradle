@@ -6,7 +6,8 @@ _Date creation_ : 2026-05-14
 
 |===
 | # | Date | Type | Sujet | Score
-| 015 | 2026-06-02 | audit | Revert merge fork lion92 + Cleanup — retour main à 0d69a94, suppression branche audit/lion92-fork (locale+remote). Leçon : zero merge cross-fork. | 8/10
+| 016 | 2026-06-02 | dev | Intégration sélective fork lion92 2/5 : CapsuleModels (SlideType, espeak, manim config) + DRY (companion resolveScriptDir/DeckDir, AUDIO_INJECT_SCRIPT, parseScript [manim:Scene]). 6 unit tests TDD. | 7/10
+| 015 | 2026-06-02 | audit | Revert merge fork lion92 + Cleanup — retour main à 0d69a94, suppression branche audit/lion92-fork. Leçon : zero merge cross-fork. | 8/10
 | 014 | 2026-06-01 | audit | Audit fork lion92 — parallélisme TTS, ScreenshotCapture, Manim, DRY refacto. Commit 17adafb sur audit/lion92-fork. | 10/10
 | 013 | 2026-06-01 | rename | Renommage borough "Brooklyn Tech" → "Détroit" (24 fichiers live, gouv + docs + code Kotlin) | 10/10
 | 012 | 2026-05-19 | documentation | EPIC K K-5 — INDEX.adoc synchronise taxonomie 4 verbes + metadata.json + convention over config. EPIC K ferme (K-0→K-5). | ✅
