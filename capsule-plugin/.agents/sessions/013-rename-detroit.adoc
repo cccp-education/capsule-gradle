@@ -1,0 +1,54 @@
+= Session 013 — Renommage borough "Brooklyn Tech" → "Détroit"
+:date: 2026-06-01
+:type: rename
+:sujet: Renommage du borough capsule-gradle de "Brooklyn Tech" vers "Détroit"
+:score: 10/10
+
+== Contexte
+
+Le borough "Brooklyn Tech" était un nom de travail. Le renommage définitif
+"Détroit" reflète l'identité industrielle et la métaphore automobile
+(capsules, chaîne de montage, pipeline).
+
+== Actions réalisées
+
+24 fichiers live modifiés (aucune archive historique touchée).
+
+=== Gouvernance et docs racine
+- `AGENTS.adoc` (root workspace) — ligne capsule-gradle
+- `AGENTS.adoc` (config workspace) — colonne capsule
+- `PLAN_GLOBAL.adoc` — références Brooklyn Tech
+- `BACKLOG.adoc` — références Brooklyn Tech
+
+=== Gouvernance borough
+- `foundry/public/readme-gradle/capsule-plugin/.agents/INDEX.adoc` — référence
+- `foundry/public/capsule-gradle/capsule-plugin/note_book_playwright.adoc`
+
+=== Source Kotlin
+- `VerifyBoroughsTask.kt` — liste des boroughs référencés
+- `InferMetadataAsciiDocTask.kt` — référence Brooklyn Tech
+
+=== Code Review et Visions
+- `GLOBAL_CODE_REVIEW.adoc` — 3 références
+- `MOBILE_VISIONS.adoc` — 2 références
+
+=== Sessions historiques
+- 3 rapports de session (références croisées)
+
+=== Blog
+- Article #0125 — mention borough
+
+== Fichiers non modifiés
+
+Les archives `configuration/vision-archive/` n'ont pas été touchées
+(préservation de l'historique).
+
+== Résultat
+
+Tous les 24 fichiers mis à jour. Le borough s'appelle désormais "Détroit"
+dans toute la documentation live et le code source.
+
+== Prochaine étape
+
+Session 014 — Piper TTS + Intégration N3 runner-gradle (planifiée initialement
+comme session 012).

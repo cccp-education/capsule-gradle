@@ -1,0 +1,81 @@
+= Session 014 — Absorption complète du fork lion92
+:date: 2026-06-02
+:type: audit+refacto+absorption
+:sujet: Audit et absorption complète du fork lion92/capsule-gradle → refacto intégrale
+:score: 9/10
+:statut: CLÔTURÉE
+
+== Contexte
+
+Fork https://github.com/lion92/capsule-gradle (branche `fix/pipeline-outputdir-parallel-capture`)
+— 2 commits, 8 fichiers, +502/-290 lignes.
+
+Bug critique découvert : plugin ID `com.cheroliv.capsule` → 7/31 tests FAIL. Le fork
+corrigeait ce bug et apportait parallélisme TTS, ScreenshotCapture PNG→FFmpeg, Manim.
+
+Stratégie : *absorption complète avec refacto* — rien du fork n'a été cherry-pické,
+tout a été réécrit ligne par ligne selon les standards de la codebase. JDK 21 rejeté,
+JDK 24 conservé.
+
+== Absorption complète — Table de correspondance
+
+.Chaque fichier du fork → ce qui est dans la codebase
+[cols="3,5,5", options="header"]
+|===
+| Fichier fork | Ce que le fork apportait | Ce qui est dans la codebase finale
+| `build.gradle.kts`
+| Plugin ID fix + JDK 21
+| Plugin ID `education.cccp.capsule` ✅ + JDK 24 conservé ✅
+| `CapsuleModels.kt`
+| `SlideType` enum, `espeakVoice`, `espeakSpeed`, `manim*` config
+| Identique ✅ + intégrité des données préservée (valeurs par défaut)
+| `CapsuleManager.kt`
+| Companion refacto, parseScript enrichi, parallélisme TTS, capture parallèle,
+  createSingleSlideHtml, concatWebmFiles, jackson mapper
+| **Refacto complet** ✅ : `Future<File?>` typé, `ManimEngine.isAvailable()` pré-vol,
+  `isPlaceholder()` restauré, injected capture préservé pour tests,
+  `AUDIO_INJECT_SCRIPT` en companion constant
+| `ManimEngine.kt`
+| Render Manim → MP4 → WebM, probeDuration
+| Chemin standard `videos/{sceneName}/{quality}/` ✅ (pas `mediaDir.walk()`)
+| `PlaywrightManager.kt`
+| ScreenshotCaptureImpl, defaultNavigationTimeout
+| Signature `duration: Double` fixée ✅ (pas `List<Double>`),
+  overload `capture(duration)` ajouté
+| `CapsulePluginTest.kt`
+| Chemins build/capsule/, espeakVoice/espeakSpeed defaults
+| Identique ✅
+| `capsule.feature`
+| Scénario output dir ajusté
+| Identique ✅
+| `CapsuleStepDefinitions.kt`
+| Step "build" directory, chemins capsules/
+| Identique ✅
+|===
+
+== Bilan final
+
+[cols="2,3"]
+|===
+| Métrique | Valeur
+| Date | 2026-06-02
+| Branche | `audit/lion92-fork`
+| Remote lion92 | Supprimé (absorption complète)
+| Fichiers modifiés | 11 (10 existants + 1 nouveau `ManimEngine.kt`)
+| Lignes ajoutées | +462
+| Lignes supprimées | -297
+| Net | +165 lignes (fork brut : +212)
+| Tests unitaires | 31/31 PASS ✅
+| Tests Cucumber | 9/9 PASS ✅
+| Tests fonctionnels | 7/7 PASS ✅
+| Compilable | ✅ `compileKotlin` OK
+| Secrets | Zéro ✅
+| JDK | 24
+|===
+
+== Points d'amélioration restants (post-session)
+
+. `createSingleSlideHtml()` lit le deck N fois — à optimiser en 1 lecture RAM + batch writing
+. Pas de tests dédiés pour le parallélisme et Manim
+. `CapsuleManager.kt` à splitter (~1000 lignes)
+. Test Cucumber pour `[manim:SceneName]` avec mock ou skip conditionnel
