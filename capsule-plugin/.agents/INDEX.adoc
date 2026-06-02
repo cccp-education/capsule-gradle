@@ -5,9 +5,9 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly)
 
-_Derniere mise a jour_ : 2026-06-02 (Session 028 — Code review complète : 8/10, 12 tickets backlog dont 3 P0 DRY)
-_Session terminee_ : 028 — Code review complète (7 648 LOC, 19 sources, 10 tests, 173 unit GREEN)
-_Prochaine session_ : 029 — Refactoring DRY top priorité (ffprobeDuration ×3, extractTopLevelSections ×2, wavToMp3 ×2)
+_Derniere mise a jour_ : 2026-06-02 (Session 028 — Manim Parallel Render CAP-20 : 195 unit tests, 22 Cucumber, ManimParallelRenderer + parallelRender config)
+_Session terminee_ : 028 — Manim Parallel Render (ManimParallelRenderer interface + NoOp + Impl + factory + CapsuleVideoTask refactor + parallelRender DSL + 22 tests)
+_Prochaine session_ : 029 — ManimEngine Real Integration
 
 '''
 == REGLES ABSOLUES (resume)
@@ -56,7 +56,7 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 
 |===
 | # | Date | Type | Sujet | Score
-| 028 | 2026-06-02 | audit | Code review complète — 19 fichiers source, 7 648 LOC, 173 unit + 8 func + 27 Cucumber. Score 8/10. 12 tickets backlog (3 P0 DRY, 2 P1, 4 P2, 3 P3). Voir `.agents/sessions/028-code-review.adoc` | 8/10
+| 028 | 2026-06-02 | dev | CAP-20 Manim Parallel Render — ManimParallelRenderer + NoOp + Impl + factory + CapsuleVideoTask refactor + parallelRender DSL 4 sources + 22 tests (195 unit GREEN) | 9/10
 | 027 | 2026-06-02 | dev | Cucumber @config @manim ManimConfig — 5 scénarios BDD + 8 step defs + lifecycle log + scaffold outputDir (173 unit = 5 Cucumber PASSED) | 9/10
 | 026 | 2026-06-02 | dev | CAP-19 ManimEngine configurable — ManimConfig outputDir + VALID_QUALITIES + validate() + 4 sources merger + 19 tests GREEN → 173 total | 9/10
 | 023 | 2026-06-02 | dev | ManimVideoMixer wiring + mux MP4+TTS (133 unit + 16 nouveaux + 2 Cucumber @manim) | 8/10
@@ -102,6 +102,7 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 | CAP-13 | Config Multi-Source (4 sources) | ✅ TERMINE | P0
 | CAP-17 | ManimVideoMixer (mux MP4 + TTS audio) | ✅ TERMINE (session 023) | P1
 | CAP-19 | ManimEngine configurable (ManimConfig outputDir, VALID_QUALITIES, validate, 4 sources) | ✅ TERMINE (session 026) | P1
+| CAP-20 | Manim Parallel Render (ManimParallelRenderer + thread pool + parallelRender config) | ✅ TERMINE (session 028) | P1
 | K-1 | Renommage taxonomie (4 verbes) | ✅ TERMINE | P0
 | CAP-0 | Bootstrap gouvernance agent | ✅ TERMINE | P0
 | CAP-1 | Plugin Gradle capsule | ✅ TERMINE | P0

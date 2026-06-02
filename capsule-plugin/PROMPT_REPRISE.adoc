@@ -1,22 +1,25 @@
-= PROMPT_REPRISE — Session 029 : Refactoring DRY top priorité
+= PROMPT_REPRISE — Session 029 : ManimEngine Real Integration
 
 == Contexte
 
-Session 028 — Code review complète de capsule-gradle. Score 8/10. 19 fichiers source, 7 648 LOC, 173 unit + 8 functional + 27 Cucumber. Pipeline complet TTS→Capture→Manim→Mix→Distrib fonctionnel.
+Session 028 — Manim Parallel Render (CAP-20) terminé. 195 unit tests GREEN. ManimParallelRenderer interface + NoOp + Impl (thread pool) + factory + CapsuleVideoTask wiring refactor (renderAll parallèle → mux séquentiel). Config DSL parallelRender propagé dans 4 sources (ENV < props < YAML < CLI) + scaffold. 22 scénarios Cucumber.
 
-== Problèmes identifiés en top priorité (code review session 028)
+== Livrables session 028
 
-1. **DRY ffprobeDuration ×3** — CapsuleVideoTask, ManimEngineImpl, ManimVideoMixerImpl
-2. **DRY extractTopLevelSections ×2** — CapsuleVideoTask, ManimSlideReplacer
-3. **DRY wavToMp3 ×2** — PiperTtsEngine, EspeakTtsEngine
-4. **println → logger** dans PlaywrightCaptureImpl (l.75)
-5. **Resource leak Playwright** — close() pas dans finally
+1. **ManimParallelRenderer.kt** — Interface + NoOpManimParallelRenderer + ManimParallelRendererImpl (Callable + thread pool, parallelism configurable)
+2. **14 unit tests** ManimParallelRendererTest (NoOp, Impl, factory, edge cases)
+3. **CapsuleVideoTask refactor** — renderAll() parallèle + mux séquentiel + slide replacement via renderedFiles map
+4. **Config DSL parallelRender** — ManimConfig.parallelRender + CapsuleExtension.manimParallelRender + 4 sources merger + scaffold + 8 tests
+5. **Scenario Cucumber @manim @parallel** — 2 step definitions
 
-== Prochaine étape
+== Prochaines étapes (priorité décroissante)
 
-Attaquer les 3 DRY P0 : factoriser ffprobeDuration, extractTopLevelSections, wavToMp3 dans des utilitaires partagés.
+. **ManimEngine real integration** — Scénario @manim-real avec vrai binaire manim
+. **EPIC CAP-18** — Manim slide path replacement + probe duration (COMPLETE)
+. **EPIC CAP-21** — Parallel capture for HTML slides (reuse ManimParallelRenderer pattern?)
 
 == État git
 
-main → modifications non commitées (session 027 + session 028)
-BACKLOG mis à jour avec 12 tickets (3 P0, 2 P1, 4 P2, 3 P3)
+Modifications non commitées (session 028 : ManimParallelRenderer + parallelRender config + 22 tests)
+Unit tests: 195 GREEN
+Cucumber: 22 scénarios (5 @config @manim + 3 @manim + 1 @parallel + 13 autres)

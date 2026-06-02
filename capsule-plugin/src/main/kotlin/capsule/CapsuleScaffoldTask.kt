@@ -72,6 +72,7 @@ manim:
   # quality: l
   # scriptsDir: src/manim
   # outputDir: build/capsule/manim
+  # parallelRender: false
 """.trimIndent()
     }
 }

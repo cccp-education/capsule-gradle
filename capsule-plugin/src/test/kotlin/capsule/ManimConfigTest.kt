@@ -121,6 +121,27 @@ class ManimConfigTest {
         assertEquals("custom/output", config.outputDir)
     }
 
+    // ─── parallelRender ──────────────────────────────────────────────
+
+    @Test
+    fun `ManimConfig default parallelRender is false`() {
+        val config = ManimConfig()
+        assertEquals(false, config.parallelRender, "Default parallelRender should be false")
+    }
+
+    @Test
+    fun `ManimConfig can set parallelRender to true`() {
+        val config = ManimConfig(parallelRender = true)
+        assertEquals(true, config.parallelRender, "parallelRender should be true when explicitly set")
+    }
+
+    @Test
+    fun `ManimConfig validate allows parallelRender true`() {
+        val config = ManimConfig(parallelRender = true)
+        val errors = config.validate()
+        assertTrue(errors.isEmpty(), "parallelRender=true should be valid, got: $errors")
+    }
+
     // ─── Quality preset documentation ───────────────────────────────
 
     @Test

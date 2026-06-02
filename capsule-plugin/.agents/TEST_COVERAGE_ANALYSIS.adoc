@@ -1,37 +1,51 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-06-02
-:session: 024 ManimSlideReplacer + probeDuration + Wiring
+:session: 028 Manim Parallel Render
 
-== Couverture — 2 juin 2026 (après session 024)
+== Couverture — 2 juin 2026 (après session 028)
 
 |===
 | Classe | Type | Tests | Couverture
-| CapsulePlugin.kt | main | 6 unitaires | Enregistrement extension + 5 taches
-| CapsuleModels.kt | main | 5 unitaires | CapsuleExtension 14 propriétés + SlideType enum + SlideSegment defaults + manimScene
-| CapsuleManager.kt | main | 2 unitaires | parseScript [manim:SceneName] + resolveManimEngine + resolveManimVideoMixer + resolveManimSlideReplacer
-| CapsuleScriptTask.kt | main | 0 | (loggé uniquement, pas de logique testable isolément)
+| CapsulePlugin.kt | main | 7 unitaires | Enregistrement extension + 5 taches + collectCliParams + pushConfigIntoExtension (inc. parallelRender)
+| CapsuleModels.kt | main | 5 unitaires | CapsuleExtension 15 propriétés + SlideType enum + SlideSegment defaults + manimScene + manimParallelRender
+| CapsuleManager.kt | main | 4 unitaires | parseScript + resolveManimEngine + resolveManimVideoMixer + resolveManimSlideReplacer + resolveManimParallelRenderer
+| CapsuleScriptTask.kt | main | 0 | (loggé uniquement)
 | CapsuleBuildTask.kt | main | 3 unitaires | Parallélisme (Executors+AtomicInteger+Future), failures+fallback, empty scripts
-| CapsuleVideoTask.kt | main | 19 unitaires | empty deck/script warn, e2e NoOp + injectAudio + sequential fallback + multi-deck + parallel capture + concatWebmFiles + createSingleSlideHtml + computeSlideDurationsWithManim + captureSlideParallel cap 4 + manimSlideReplacer wiring
+| CapsuleVideoTask.kt | main | 19 unitaires | empty deck/script warn, e2e NoOp + injectAudio + sequential fallback + multi-deck + parallel capture + concatWebmFiles + createSingleSlideHtml + computeSlideDurationsWithManim + captureSlideParallel cap 4 + manimSlideReplacer wiring + manimParallelRenderer wiring
 | CapsuleDistribTask.kt | main | 3 unitaires | no videos warn, ffmpeg unavailable copy, multiple videos
-| CapsuleCompositeContextTask.kt | main | 4 unitaires | json context file, multiple decks, distribVideo, valid parseable JSON (Jackson)
+| CapsuleCompositeContextTask.kt | main | 4 unitaires | json context file, multiple decks, distribVideo, valid parseable JSON
 | CapsuleParseContextTask.kt | main | 3 unitaires | parse JSON, empty entries, missing file graceful
-| ManimEngine.kt | main | 6 unitaires | NoOpManimEngine (3) + ManimEngineImpl (3 : unavailable, ManimException, name)
-| ManimVideoMixer.kt | main | 11 unitaires | NoOpManimVideoMixer (4 including probeDuration) + ManimVideoMixerImpl (4 including probeDuration) + resolveManimVideoMixer factory (2) + MixerException
-| ManimSlideReplacer.kt | main | 14 unitaires | NoOpManimVideoMixer (2) + ManimSlideReplacerImpl (10 : replace at index, first, last, video attrs, preserve structure, out of bounds, negative, single slide, nested sections, multi slide sequential, data-capsule-slide) + factory (1)
-| TtsManager.kt | main | 5 unitaires | NoOpTtsEngine, PiperTtsEngine, EspeakTtsEngine (3), TtsException
-| PlaywrightManager.kt | main | 6 unitaires | NoOpPlaywrightCapture (3) + ScreenshotCaptureImpl (3 : name, isAvailable, close)
-| AudioQualityConstraint | main | 3 unitaires | Real TTS > placeholder, not text, WebM EBML header
-| RevealJsRenderingConstraint | main | 1 unitaire | Chromium slide-by-slide (integration tag)
+| ManimEngine.kt | main | 9 unitaires | NoOpManimEngine (3) + ManimEngineImpl (6 : unavailable, ManimException, name, config quality, default, noop path)
+| ManimVideoMixer.kt | main | 11 unitaires | NoOpManimVideoMixer (4) + ManimVideoMixerImpl (4) + resolveManimVideoMixer factory (2) + MixerException
+| ManimSlideReplacer.kt | main | 14 unitaires | NoOpManimSlideReplacer (2) + ManimSlideReplacerImpl (10 : replace at index, first, last, video attrs, preserve structure, out of bounds, negative, single slide, nested sections, sequential, data-capsule-slide) + factory
+| ManimParallelRenderer.kt | main | 14 unitaires | NoOpManimParallelRenderer (5 : sequential, empty, available/name, skip null manimScene, skip missing script) + ManimParallelRendererImpl (6 : available, name, render 3 slides NoOp, empty, skip null manimScene, ManimException gracefully, default parallelism=4) + factory (2 : parallelism 1 → NoOp, parallelism > 1 → Impl)
+| TtsManager.kt | main | 5 unitaires | NoOpTtsEngine, PiperTtsEngine, EspeakTtsEngine, TtsException
+| PlaywrightManager.kt | main | 6 unitaires | NoOpPlaywrightCapture (3) + ScreenshotCaptureImpl (3)
 | CapsuleConfigLoader | main | 5 unitaires | YAML loading, defaults, env vars, missing file, empty file
 | CapsuleConfig | main | 5 unitaires | Defaults, capture section, distrib section, manim section, custom values
-| CapsuleConfigMerger | main | 21 unitaires | 4 precedence levels, partial overrides, edge cases
-| CapsuleScaffoldTask | main | 5 unitaires | Creates YAML, all sections, commented defaults, no overwrite, custom path, resolution order
+| CapsuleConfigMerger | main | 29 unitaires | 4 precedence levels, partial overrides, edge cases, manim outputDir, manim parallelRender (5 tests)
+| CapsuleScaffoldTask | main | 6 unitaires | Creates YAML, all sections, commented defaults, no overwrite, custom path, resolution order, manim section fields
+| ManimConfig | main | 16 unitaires | Defaults, VALID_QUALITIES, validate (7 tests), copy, presets, parallelRender (3)
 | ComputeSlideDurationsWithManim | main | 4 unitaires | Manim duration priority, fallback 0.0, mixed slides, empty map defaults
-| ManimSlideReplacementWiring | main | 3 unitaires | Replacer wiring during task, NoOp replacer, factory resolves impl
+| ManimSlideReplacementWiring | main | 3 unitaires | Replacer wiring, NoOp replacer, factory resolves impl
+| ManimEngineWiring | main | 3 unitaires | Engine wiring, NoOp engine, factory resolves
+| ManimVideoMixerWiring | main | 5 unitaires | Mixer wiring, NoOp mixer, factory resolves
+| AudioQualityConstraint | main | 3 unitaires | Real TTS > placeholder, not text, WebM EBML header
+| CapsulePluginWiring | main | 3 unitaires | Plugin wiring, NoOp engines, config merging
+| CapsuleParseScript | main | 2 unitaires | Script parsing, manim scene extraction
+| ParallelCapture | main | 6 unitaires | Parallel capture enable/disable, cap threads, fallback
+| ParallelCaptureSwitch | main | 2 unitaires | DSL switch, default value
+| ScreenshotCapture | main | 3 unitaires | Screenshot with viewport, close, NoOp
 |===
 
-- Unitaires: 154/154 PASS
-- Fonctionnels (GradleTestKit): 8/8 PASS
-- Cucumber BDD: 12/12 (2 @manim GREEN, 3 @config GREEN, 7 standard)
+- Unitaires: 195/195 PASS (+22 vs session 027)
+- Cucumber BDD: 22 scénarios (5 @config @manim + 3 @manim + 1 @manim @parallel + 13 standard)
 - Full check: BUILD SUCCESSFUL
 - Kover coverage: OK
+
+== Nouveaux tests session 028
+
+| Classe | Nouveaux | Description
+| ManimParallelRendererTest | 14 | NoOp (5) + Impl (6) + Factory (2) + Exception (1)
+| ManimConfigTest | +3 | parallelRender default=true, set true, validate
+| CapsuleConfigMergerTest | +5 | parallelRender default, CLI override, YAML, ENV, Props

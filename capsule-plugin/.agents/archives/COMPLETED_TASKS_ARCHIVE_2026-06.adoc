@@ -10,4 +10,7 @@
 | 2026-06-02 | 018-dev | captureSlideParallel + concatWebmFiles | ✅ 4-6 tests TDD. Pool 4 threads, captureFactory injectable, FFmpeg concat demuxer, cleanup safe.
 | 2026-06-02 | 018-dev | Split CapsuleManager.kt (957→195 lignes) → 8 fichiers | ✅ Convention 1 fichier = 1 top-level class. 0 régression, 73 tests PASS.
 | 2026-06-02 | 028-audit | Code review complète capsule-gradle | ✅ Score 8/10. BACKLOG mis à jour : 12 tickets (3 P0 DRY, 2 P1, 4 P2, 3 P3). Voir `.agents/sessions/028-code-review.adoc`
+| 2026-06-02 | 028-dev | CAP-20 Manim Parallel Render — ManimParallelRenderer interface + NoOp + Impl + factory | ✅ 14/14 tests TDD. Callable + Executors.newFixedThreadPool, parallelism configurable, factory resolveManimParallelRenderer.
+| 2026-06-02 | 028-dev | CapsuleVideoTask refactor — renderAll parallèle → mux séquentiel | ✅ Remplacement boucle séquentielle par manimParallelRenderer.renderAll(). renderedFiles map pour slide replacement.
+| 2026-06-02 | 028-dev | Config DSL parallelRender — ManimConfig + CapsuleExtension + CapsuleConfigMerger (4 sources) | ✅ 8 tests (3 ManimConfigTest + 5 CapsuleConfigMergerTest). ENV < props < YAML < CLI. Scaffold mis à jour.
 |===

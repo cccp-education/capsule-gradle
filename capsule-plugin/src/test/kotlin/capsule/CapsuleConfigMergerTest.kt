@@ -396,4 +396,52 @@ class CapsuleConfigMergerTest {
         val config = CapsuleConfigMerger.loadFromEnvironment()
         assertEquals("build/capsule/manim", config.manim.outputDir, "Default manim.outputDir should be build/capsule/manim")
     }
+
+    // ─── Manim parallelRender merge tests ─────────────────────────
+
+    @Test
+    fun `ManimConfig default parallelRender is false via merger`() {
+        val projectDir = File(tempDir, "manim-parallel-default").also { it.mkdirs() }
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
+        assertEquals(false, merged.manim.parallelRender, "Default manim.parallelRender should be false")
+    }
+
+    @Test
+    fun `merge handles manim parallelRender via CLI`() {
+        val projectDir = File(tempDir, "manim-parallel-cli").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(manim = ManimConfig(parallelRender = false))
+        val cliParams = mapOf("manim.parallelRender" to "true")
+
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, cliParams)
+
+        assertEquals(true, merged.manim.parallelRender, "CLI should override YAML for manim.parallelRender")
+    }
+
+    @Test
+    fun `merge handles manim parallelRender via YAML`() {
+        val projectDir = File(tempDir, "manim-parallel-yaml").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(manim = ManimConfig(parallelRender = true))
+
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+
+        assertEquals(true, merged.manim.parallelRender, "YAML manim.parallelRender should be preserved")
+    }
+
+    @Test
+    fun `loadFromEnvironment resolves manim parallelRender with default false`() {
+        val config = CapsuleConfigMerger.loadFromEnvironment()
+        assertEquals(false, config.manim.parallelRender, "Default manim.parallelRender from ENV should be false")
+    }
+
+    @Test
+    fun `loadFromGradleProperties reads manim parallelRender`() {
+        val projectDir = File(tempDir, "manim-parallel-props").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.manim.parallelRender=true
+        """.trimIndent())
+
+        val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
+
+        assertEquals(true, config.manim.parallelRender, "Props should set manim.parallelRender to true")
+    }
 }

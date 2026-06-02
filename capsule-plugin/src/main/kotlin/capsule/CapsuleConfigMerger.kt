@@ -109,7 +109,8 @@ object CapsuleConfigMerger {
                 executablePath = env["CAPSULE_MANIM_EXECUTABLE_PATH"] ?: "manim",
                 quality = env["CAPSULE_MANIM_QUALITY"] ?: "l",
                 scriptsDir = env["CAPSULE_MANIM_SCRIPTS_DIR"] ?: "src/manim",
-                outputDir = env["CAPSULE_MANIM_OUTPUT_DIR"] ?: "build/capsule/manim"
+                outputDir = env["CAPSULE_MANIM_OUTPUT_DIR"] ?: "build/capsule/manim",
+                parallelRender = env["CAPSULE_MANIM_PARALLEL_RENDER"]?.toBoolean() ?: false
             )
         )
     }
@@ -146,7 +147,8 @@ object CapsuleConfigMerger {
                 executablePath = props["capsule.manim.executablePath"] ?: "manim",
                 quality = props["capsule.manim.quality"] ?: "l",
                 scriptsDir = props["capsule.manim.scriptsDir"] ?: "src/manim",
-                outputDir = props["capsule.manim.outputDir"] ?: "build/capsule/manim"
+                outputDir = props["capsule.manim.outputDir"] ?: "build/capsule/manim",
+                parallelRender = props["capsule.manim.parallelRender"]?.toBoolean() ?: false
             )
         )
     }
@@ -205,7 +207,8 @@ object CapsuleConfigMerger {
             executablePath = cli["manim.executablePath"]?.toString() ?: yaml.executablePath.ifNotBlankOrElse(props.executablePath),
             quality = cli["manim.quality"]?.toString() ?: yaml.quality.ifNotBlankOrElse(props.quality),
             scriptsDir = cli["manim.scriptsDir"]?.toString() ?: yaml.scriptsDir.ifNotBlankOrElse(props.scriptsDir),
-            outputDir = cli["manim.outputDir"]?.toString() ?: yaml.outputDir.ifNotBlankOrElse(props.outputDir)
+            outputDir = cli["manim.outputDir"]?.toString() ?: yaml.outputDir.ifNotBlankOrElse(props.outputDir),
+            parallelRender = cli["manim.parallelRender"]?.toString()?.toBoolean() ?: yaml.parallelRender
         )
     }
 
@@ -259,7 +262,8 @@ object CapsuleConfigMerger {
             executablePath = cli["manim.executablePath"]?.toString() ?: props.executablePath.ifNotBlankOrElse(env.executablePath),
             quality = cli["manim.quality"]?.toString() ?: props.quality.ifNotBlankOrElse(env.quality),
             scriptsDir = cli["manim.scriptsDir"]?.toString() ?: props.scriptsDir.ifNotBlankOrElse(env.scriptsDir),
-            outputDir = cli["manim.outputDir"]?.toString() ?: props.outputDir.ifNotBlankOrElse(env.outputDir)
+            outputDir = cli["manim.outputDir"]?.toString() ?: props.outputDir.ifNotBlankOrElse(env.outputDir),
+            parallelRender = cli["manim.parallelRender"]?.toString()?.toBoolean() ?: props.parallelRender
         )
     }
 }

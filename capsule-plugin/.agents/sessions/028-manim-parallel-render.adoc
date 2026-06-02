@@ -1,0 +1,76 @@
+= Session 028 — Manim Parallel Render (CAP-20)
+
+== Date
+2026-06-02
+
+== Objectif
+Parallélisation ManimEngine.render() pour les slides MANIM multiples. EPIC CAP-20.
+
+== Livrables
+
+1. **ManimParallelRenderer interface** — `ManimParallelRenderer.kt` (143 lignes)
+   - Interface avec `renderAll(slides, manimEngine, scriptsDir, outputDir): Map<Int, File>`
+   - `NoOpManimParallelRenderer` — fallback séquentiel (itération simple)
+   - `ManimParallelRendererImpl` — parallélisation via `Executors.newFixedThreadPool`
+   - Factory `CapsuleManager.resolveManimParallelRenderer(parallelism)`
+   - `parallelism <= 1` → NoOp (séquentiel), `parallelism > 1` → Impl (thread pool)
+
+2. **14 tests unitaires** — `ManimParallelRendererTest.kt`
+   - NoOp: renderAll, empty slides, skip manimScene null, skip missing script, name/available
+   - Impl: NoOp engine render 3 slides, empty slides, skip null manimScene, default parallelism=4
+   - Factory: parallelism=1 → NoOp, parallelism>1 → Impl
+
+3. **CapsuleVideoTask refactor** — Boucle Manim séquentielle → `parallelRenderer.renderAll()`
+   - Nouvelle propriété injectable `manimParallelRenderer`
+   - Méthode `resolveManimParallelRenderer()` utilisant `manimParallelRender` de l'extension
+   - Étape 1 : renderAll parallèle → `renderedFiles: Map<Int, File>`
+   - Étape 2 : mux séquentiel + probe duration (dépend du render output)
+   - Slide replacement utilise `renderedFiles` pour trouver les MP4 produits
+
+4. **Scenario Cucumber @manim @parallel** — `capsule.feature` (22 scénarios total)
+   - 2 nouveaux step definitions dans `CapsuleStepDefinitions.kt`
+
+5. **Config DSL `parallelRender`** — `ManimConfig.parallelRender: Boolean = false`
+   - Ajouté dans `CapsuleExtension.manimParallelRender`
+   - Propagé dans `CapsuleConfig`, `CapsuleConfigLoader`, `CapsuleConfigMerger` (4 sources)
+   - Propagé dans `CapsulePlugin.pushConfigIntoExtension()`
+   - Propagé dans `CapsuleScaffoldTask` (YAML scaffold)
+   - 8 nouveaux tests : 3 ManimConfigTest + 5 CapsuleConfigMergerTest
+
+== Résultats tests
+
+- **195 unit tests** — GREEN (0 failures)
+- **22 scénarios Cucumber** — compilation vérifiée, step definitions ajoutées
+- **+22 tests** vs session 027 (173 → 195)
+
+== Méthodologie
+Baby-step DDD/TDD/BDD :
+1. BDD ROUGE : scénario Cucumber @parallel écrit en premier
+2. TDD Unit : ManimParallelRendererTest (14 tests) écrit AVANT le code
+3. TDD Unit : ManimParallelRendererImpl avec Callable + thread pool
+4. TDD Functional : wiring dans CapsuleVideoTask + factory resolveManimParallelRenderer
+5. BDD VERT : step definitions ajoutées
+6. Config DSL : parallelRender propagé dans les 4 sources + scaffold + tests
+
+== Fichiers modifiés
+
+| Fichier | Action | Lignes |
+|---------|--------|--------|
+| `src/main/kotlin/capsule/ManimParallelRenderer.kt` | CRÉÉ | 143 |
+| `src/test/kotlin/capsule/ManimParallelRendererTest.kt` | CRÉÉ | 273 |
+| `src/main/kotlin/capsule/CapsuleManager.kt` | MODIFIÉ | +8 (factory) |
+| `src/main/kotlin/capsule/CapsuleVideoTask.kt` | MODIFIÉ | ~40 (refactor Manim render) |
+| `src/main/kotlin/capsule/CapsuleConfig.kt` | MODIFIÉ | +1 (parallelRender) |
+| `src/main/kotlin/capsule/CapsuleModels.kt` | MODIFIÉ | +3 (manimParallelRender) |
+| `src/main/kotlin/capsule/CapsulePlugin.kt` | MODIFIÉ | +1 (pushConfig) |
+| `src/main/kotlin/capsule/CapsuleConfigMerger.kt` | MODIFIÉ | +5 (parallelRender) |
+| `src/main/kotlin/capsule/CapsuleScaffoldTask.kt` | MODIFIÉ | +1 (scaffold) |
+| `src/main/kotlin/capsule/ManimConfig.kt` | MODIFIÉ | +1 (parallelRender) |
+| `src/test/kotlin/capsule/ManimConfigTest.kt` | MODIFIÉ | +15 (3 tests) |
+| `src/test/kotlin/capsule/CapsuleConfigMergerTest.kt` | MODIFIÉ | +45 (5 tests) |
+| `src/test/features/capsule.feature` | MODIFIÉ | +7 (scenario @parallel) |
+| `src/test/kotlin/capsule/scenarios/CapsuleStepDefinitions.kt` | MODIFIÉ | +50 (2 steps) |
+
+== État git
+
+Modifications non commitées (session 028 : ManimParallelRenderer + parallelRender config + 22 tests)

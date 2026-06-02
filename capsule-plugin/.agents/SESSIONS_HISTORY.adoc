@@ -6,7 +6,7 @@ _Date creation_ : 2026-05-14
 
 |===
 | # | Date | Type | Sujet | Score
-| 028 | 2026-06-02 | audit | Code review complète — 19 fichiers source, 7 648 LOC, 173 unit + 8 func + 27 Cucumber. Score 8/10. BACKLOG mis à jour : 12 tickets (3 P0 DRY, 2 P1, 4 P2, 3 P3). Voir `.agents/sessions/028-code-review.adoc` | 8/10
+| 028 | 2026-06-02 | dev | CAP-20 Manim Parallel Render — ManimParallelRenderer interface + NoOp (sequential) + Impl (thread pool Callable) + factory resolveManimParallelRenderer + CapsuleVideoTask refactor renderAll→mux + Config DSL parallelRender (ManimConfig + CapsuleExtension + CapsuleConfigMerger 4 sources + CapsuleScaffoldTask) + 8 config tests + 3 ManimConfigTest + Cucumber @manim @parallel. 195 unit GREEN. | 9/10
 | 027 | 2026-06-02 | dev | Cucumber @config @manim — 5 scénarios BDD (quality YAML override, CLI -P override, defaults, outputDir YAML, scaffold manim fields) + 8 step defs + CapsulePlugin lifecycle log manim config + CapsuleScaffoldTask outputDir field. 173 unit GREEN, 5/5 Cucumber PASSED | 9/10
 | 026 | 2026-06-02 | dev | CAP-19 ManimEngine configurable — ManimConfig enrichment (outputDir, VALID_QUALITIES, validate) + ManimEngineImpl(config) + CapsuleExtension manimOutputDir + CapsuleConfigMerger 4 sources outputDir + CapsuleVideoTask ManimConfig résolu + 19 nouveaux tests (13+3+3) → 173 unit tests GREEN | 9/10
 | 025 | 2026-06-02 | dev | Cucumber @integration @manim E2E complet — CucumberIntegrationTestRunner (filtre not @wip and (@integration or @manim)), capsule.feature scénario E2E pipeline (NoOp render→mux→replace→deck validé), 4 new steps Manim E2E (noop config, .py script, placeholder MP4, muxed MP4, replaced deck). 154 unit tests GREEN. Cucumber @integration @manim PASSED. | 8/10
