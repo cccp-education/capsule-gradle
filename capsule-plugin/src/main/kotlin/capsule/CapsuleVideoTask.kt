@@ -230,7 +230,8 @@ open class CapsuleVideoTask : DefaultTask() {
         val config = ManimConfig(
             executablePath = capsuleExtension.manimExecutablePath.get(),
             quality = capsuleExtension.manimQuality.get(),
-            scriptsDir = capsuleExtension.manimScriptsDir.get()
+            scriptsDir = capsuleExtension.manimScriptsDir.get(),
+            outputDir = capsuleExtension.manimOutputDir.get()
         )
         val engine = CapsuleManager.resolveManimEngine(config)
         if (engine.isAvailable()) {
@@ -321,7 +322,13 @@ open class CapsuleVideoTask : DefaultTask() {
         val manim = resolveManimEngineInternal()
         val manimMixer = resolveManimVideoMixerInternal()
         val manimReplacer = resolveManimSlideReplacerInternal()
-        val manimScriptsDir = project.file(capsuleExtension.manimScriptsDir.get())
+        val manimConfig = ManimConfig(
+            executablePath = capsuleExtension.manimExecutablePath.get(),
+            quality = capsuleExtension.manimQuality.get(),
+            scriptsDir = capsuleExtension.manimScriptsDir.get(),
+            outputDir = capsuleExtension.manimOutputDir.get()
+        )
+        val manimScriptsDir = project.file(manimConfig.scriptsDir)
 
         for (script in scripts) {
             val parsed = CapsuleManager.parseScript(script)
@@ -364,7 +371,7 @@ open class CapsuleVideoTask : DefaultTask() {
                         logger.warn("    Manim script not found: {} — skipping slide {}", scriptPath.absolutePath, seg.index)
                         continue
                     }
-                    val manimOutputDir = videoOutputDir.resolve("manim")
+                    val manimOutputDir = project.layout.buildDirectory.dir(manimConfig.outputDir).get().asFile.resolve(parsed.deckName).resolve("manim")
                     manimOutputDir.mkdirs()
                     try {
                         val manimVideo = manim.render(sceneName, scriptPath, manimOutputDir)

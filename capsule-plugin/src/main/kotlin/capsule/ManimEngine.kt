@@ -10,13 +10,12 @@ interface ManimEngine {
 }
 
 class ManimEngineImpl(
-    private val executablePath: String = "manim",
-    private val quality: String = "l"
+    private val config: ManimConfig = ManimConfig()
 ) : ManimEngine {
 
     override fun isAvailable(): Boolean {
         return try {
-            val proc = ProcessBuilder(executablePath, "--version")
+            val proc = ProcessBuilder(config.executablePath, "--version")
                 .redirectErrorStream(true)
                 .start()
             proc.waitFor()
@@ -30,12 +29,12 @@ class ManimEngineImpl(
 
     override fun render(sceneName: String, scriptPath: File, outputDir: File): File {
         if (!isAvailable()) {
-            throw ManimException("Manim executable not found at: $executablePath")
+            throw ManimException("Manim executable not found at: ${config.executablePath}")
         }
 
-        val qualityFlag = "-q$quality"
+        val qualityFlag = "-q${config.quality}"
         val args = listOf(
-            executablePath,
+            config.executablePath,
             qualityFlag,
             scriptPath.absolutePath,
             sceneName
@@ -55,7 +54,7 @@ class ManimEngineImpl(
         val mediaDir = scriptPath.parentFile.resolve("media")
             .resolve("videos")
             .resolve(scriptPath.nameWithoutExtension)
-            .resolve("${quality}p60")
+            .resolve("${config.quality}p60")
         val mp4File = mediaDir.resolve("$sceneName.mp4")
         if (!mp4File.exists()) {
             throw ManimException("Expected output not found: ${mp4File.absolutePath}")

@@ -6,6 +6,7 @@ _Date creation_ : 2026-05-14
 
 |===
 | # | Date | Type | Sujet | Score
+| 026 | 2026-06-02 | dev | CAP-19 ManimEngine configurable — ManimConfig enrichment (outputDir, VALID_QUALITIES, validate) + ManimEngineImpl(config) + CapsuleExtension manimOutputDir + CapsuleConfigMerger 4 sources outputDir + CapsuleVideoTask ManimConfig résolu + 19 nouveaux tests (13+3+3) → 173 unit tests GREEN | 9/10
 | 025 | 2026-06-02 | dev | Cucumber @integration @manim E2E complet — CucumberIntegrationTestRunner (filtre not @wip and (@integration or @manim)), capsule.feature scénario E2E pipeline (NoOp render→mux→replace→deck validé), 4 new steps Manim E2E (noop config, .py script, placeholder MP4, muxed MP4, replaced deck). 154 unit tests GREEN. Cucumber @integration @manim PASSED. | 8/10
 | 024 | 2026-06-02 | dev | ManimSlideReplacer + computeSlideDurationsWithManim + probeDuration wiring (154 unit GREEN, 21 nouveaux : ManimSlideReplacerTest 14 + ComputeSlideDurationsWithManimTest 4 + ManimSlideReplacementWiringTest 3 + 1 Cucumber @manim slide replacement) | 9/10
 | 023 | 2026-06-02 | dev | ManimVideoMixer wiring + mux MP4+TTS (133 unit GREEN, 16 nouveaux : ManimVideoMixerTest 11 + ManimVideoMixerWiringTest 5 + 2 Cucumber @manim) | 8/10

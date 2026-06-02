@@ -1,25 +1,26 @@
-= PROMPT_REPRISE — Session 026 : ManimEngine configurable
+= PROMPT_REPRISE — Session 027 : Cucumber @config @manim ManimConfig
 
 == Contexte
 
-Session 025 — Cucumber @integration @manim E2E complet. Scénario Gherkin end-to-end validé avec NoOp ManimEngine + NoOp ManimVideoMixer + ManimSlideReplacer + deck final <video>. CucumberIntegrationTestRunner créé (filtre `not @wip and (@integration or @manim)`). 154 tests unitaires GREEN. 4 new steps Manim E2E.
+Session 026 — EPIC CAP-19 ManimEngine configurable terminé. ManimConfig enrichi avec outputDir, VALID_QUALITIES, validate(). ManimEngineImpl accepte ManimConfig. 4 sources (ENV, props, YAML, CLI) gèrent outputDir. 173 tests GREEN.
 
-== Livrables session 025
+== Livrables session 026
 
-1. **capsule.feature** — Nouveau scénario `@integration @manim` E2E pipeline (render → mux → replace → deck validé)
-2. **CucumberIntegrationTestRunner.kt** — Runner Cucumber dédié @integration + @manim
-3. **CapsuleStepDefinitions.kt** — 4 nouvelles steps Manim E2E (noop Manim config, Manim script .py, placeholder MP4, muxed MP4, replaced deck)
-4. **CucumberIntegrationTestRunner** — Scénario `Manim E2E pipeline` PASSED (4/4 steps)
+1. **ManimConfig** — outputDir, VALID_QUALITIES (l/m/h/p/k), validate()
+2. **ManimEngineImpl(config)** — constructeur ManimConfig complet
+3. **CapsuleExtension** — manimOutputDir ajouté
+4. **CapsuleConfigMerger** — outputDir dans 4 sources
+5. **CapsuleVideoTask** — ManimConfig résolu pour scriptsDir + outputDir
+6. **19 nouveaux tests** (13 ManimConfigTest + 3 ManimEngineTest + 3 CapsuleConfigMergerTest)
 
 == Prochaines étapes (priorité décroissante)
 
-. **ManimEngine configurable** — Scripts Manim en dehors de `src/manim/`, paramètres qualité, configuration via capsule-context.yml (ManimConfig déjà existant dans CapsuleConfig)
+. **Cucumber @config @manim** — Scénario BDD pour ManimConfig configurable via YAML (outputDir, quality, scriptsDir)
 . **Parallélisation Manim** — ManimEngine.render() en parallèle pour les slides MANIM multiples
-. **ManimEngine real integration** — Scénario @manim-real avec vrai manim binaire (+ tag @wip en CI)
+. **ManimEngine real integration** — Scénario @manim-real avec vrai binaire manim
 . **EPIC CAP-18** — Manim slide path replacement + probe duration (COMPLETE)
 
 == État git
 
-main → modifications non commitées (session 025 contenu : capsule.feature + CucumberIntegrationTestRunner + CapsuleStepDefinitions)
-Unit tests: BUILD SUCCESSFUL (154 unit = GREEN)
-Cucumber @integration @manim: PASSED
+main → modifications non commitées (session 026 : ManimConfig enrichment + 19 tests)
+Unit tests: BUILD SUCCESSFUL (173 unit = GREEN)

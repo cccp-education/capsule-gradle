@@ -108,7 +108,8 @@ object CapsuleConfigMerger {
             manim = ManimConfig(
                 executablePath = env["CAPSULE_MANIM_EXECUTABLE_PATH"] ?: "manim",
                 quality = env["CAPSULE_MANIM_QUALITY"] ?: "l",
-                scriptsDir = env["CAPSULE_MANIM_SCRIPTS_DIR"] ?: "src/manim"
+                scriptsDir = env["CAPSULE_MANIM_SCRIPTS_DIR"] ?: "src/manim",
+                outputDir = env["CAPSULE_MANIM_OUTPUT_DIR"] ?: "build/capsule/manim"
             )
         )
     }
@@ -144,7 +145,8 @@ object CapsuleConfigMerger {
             manim = ManimConfig(
                 executablePath = props["capsule.manim.executablePath"] ?: "manim",
                 quality = props["capsule.manim.quality"] ?: "l",
-                scriptsDir = props["capsule.manim.scriptsDir"] ?: "src/manim"
+                scriptsDir = props["capsule.manim.scriptsDir"] ?: "src/manim",
+                outputDir = props["capsule.manim.outputDir"] ?: "build/capsule/manim"
             )
         )
     }
@@ -202,7 +204,8 @@ object CapsuleConfigMerger {
         return ManimConfig(
             executablePath = cli["manim.executablePath"]?.toString() ?: yaml.executablePath.ifNotBlankOrElse(props.executablePath),
             quality = cli["manim.quality"]?.toString() ?: yaml.quality.ifNotBlankOrElse(props.quality),
-            scriptsDir = cli["manim.scriptsDir"]?.toString() ?: yaml.scriptsDir.ifNotBlankOrElse(props.scriptsDir)
+            scriptsDir = cli["manim.scriptsDir"]?.toString() ?: yaml.scriptsDir.ifNotBlankOrElse(props.scriptsDir),
+            outputDir = cli["manim.outputDir"]?.toString() ?: yaml.outputDir.ifNotBlankOrElse(props.outputDir)
         )
     }
 
@@ -255,7 +258,8 @@ object CapsuleConfigMerger {
         return ManimConfig(
             executablePath = cli["manim.executablePath"]?.toString() ?: props.executablePath.ifNotBlankOrElse(env.executablePath),
             quality = cli["manim.quality"]?.toString() ?: props.quality.ifNotBlankOrElse(env.quality),
-            scriptsDir = cli["manim.scriptsDir"]?.toString() ?: props.scriptsDir.ifNotBlankOrElse(env.scriptsDir)
+            scriptsDir = cli["manim.scriptsDir"]?.toString() ?: props.scriptsDir.ifNotBlankOrElse(env.scriptsDir),
+            outputDir = cli["manim.outputDir"]?.toString() ?: props.outputDir.ifNotBlankOrElse(env.outputDir)
         )
     }
 }

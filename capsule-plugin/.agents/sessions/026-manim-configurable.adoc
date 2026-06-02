@@ -1,0 +1,31 @@
+= Session 026 — CAP-19 ManimEngine configurable
+
+== Date
+2026-06-02
+
+== Contexte
+Reprise du borough Détroit (capsule-gradle) après renommage du provider opencode `ollama-realdeal-11436`.
+
+== Livrables
+
+1. **CapsuleConfig.kt** — ManimConfig enrichi : `outputDir`, companion `VALID_QUALITIES` (l/m/h/p/k), méthode `validate()`
+2. **ManimEngineImpl** — Constructeur accepte `ManimConfig` au lieu de params individuels
+3. **CapsuleManager** — `resolveManimEngine(config)` passe `ManimConfig` directement
+4. **CapsuleExtension** — Ajout `manimOutputDir` (convention "build/capsule/manim")
+5. **CapsuleConfigMerger** — `outputDir` ajouté aux 4 sources (ENV, props, YAML, CLI) + méthodes merge
+6. **CapsulePlugin** — `pushConfigIntoExtension()` pousse `manimOutputDir`
+7. **CapsuleVideoTask** — Utilise `ManimConfig` résolu (scriptsDir + outputDir) au lieu de l'extension directe
+8. **ManimConfigTest.kt** — 13 nouveaux tests (defaults, VALID_QUALITIES, validate, copy)
+9. **ManimEngineTest.kt** — 3 nouveaux tests + 3 mis à jour (ManimConfig constructor)
+10. **CapsuleConfigMergerTest.kt** — 3 nouveaux tests (manim outputDir ENV, YAML, CLI)
+
+== Métriques
+- Tests unitaires : 173 GREEN (154 avant → +19)
+- Failures : 0
+- Compilation : BUILD SUCCESSFUL
+
+== Prochaines étapes (priorité décroissante)
+. **CAP-19.10** — Cucumber `@config @manim` scenario pour ManimConfig configurable via YAML
+. **Parallélisation Manim** — ManimEngine.render() en parallèle pour les slides MANIM multiples
+. **ManimEngine real integration** — Scénario `@manim-real` avec vrai binaire manim (+ tag @wip en CI)
+. **EPIC CAP-18** — Manim slide path replacement + probe duration (COMPLETE)

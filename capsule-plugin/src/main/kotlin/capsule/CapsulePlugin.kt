@@ -94,5 +94,6 @@ class CapsulePlugin : Plugin<Project> {
         ext.manimExecutablePath.set(config.manim.executablePath)
         ext.manimQuality.set(config.manim.quality)
         ext.manimScriptsDir.set(config.manim.scriptsDir)
+        ext.manimOutputDir.set(config.manim.outputDir)
     }
 }

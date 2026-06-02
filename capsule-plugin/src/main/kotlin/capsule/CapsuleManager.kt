@@ -119,17 +119,14 @@ class CapsuleManager(private val project: Project) {
         /**
          * Resolves the appropriate ManimEngine based on configuration.
          * - If executablePath is "noop", returns NoOpManimEngine
-         * - Otherwise, creates ManimEngineImpl and falls back to NoOpManimEngine if unavailable
+         * - Otherwise, creates ManimEngineImpl(config) and falls back to NoOpManimEngine if unavailable
          */
         @JvmStatic
         fun resolveManimEngine(config: ManimConfig): ManimEngine {
             if (config.executablePath == "noop") {
                 return NoOpManimEngine()
             }
-            val engine = ManimEngineImpl(
-                executablePath = config.executablePath,
-                quality = config.quality
-            )
+            val engine = ManimEngineImpl(config)
             return if (engine.isAvailable()) engine else NoOpManimEngine()
         }
 

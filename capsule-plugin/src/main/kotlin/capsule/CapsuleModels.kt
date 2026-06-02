@@ -87,6 +87,9 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val manimScriptsDir: Property<String> = objects.property(String::class.java)
         .convention("src/manim")
 
+    val manimOutputDir: Property<String> = objects.property(String::class.java)
+        .convention("build/capsule/manim")
+
     val parallelCaptureEnabled: Property<Boolean> = objects.property(Boolean::class.java)
         .convention(false)
 }

@@ -85,6 +85,7 @@ class CapsuleConfigMergerTest {
             capsule.distrib.outputWidth=720
             capsule.manim.quality=h
             capsule.manim.scriptsDir=manim/scripts
+            capsule.manim.outputDir=custom/manim-output
         """.trimIndent())
 
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
@@ -93,6 +94,7 @@ class CapsuleConfigMergerTest {
         assertEquals(720, config.distrib.outputWidth)
         assertEquals("h", config.manim.quality)
         assertEquals("manim/scripts", config.manim.scriptsDir)
+        assertEquals("custom/manim-output", config.manim.outputDir)
     }
 
     // ─── loadFromEnvironment ─────────────────────────────────────
@@ -127,6 +129,7 @@ class CapsuleConfigMergerTest {
         assertEquals("manim", config.manim.executablePath)
         assertEquals("l", config.manim.quality)
         assertEquals("src/manim", config.manim.scriptsDir)
+        assertEquals("build/capsule/manim", config.manim.outputDir)
         assertEquals("capsule", config.input.outputDir)
         assertEquals("capsule", config.input.sliderScriptDir)
         assertEquals("docs/asciidocRevealJs", config.input.deckSourceDir)
@@ -363,5 +366,34 @@ class CapsuleConfigMergerTest {
         assertEquals("espeak", config.tts.engine)
         assertEquals("de", config.tts.espeakVoice)
         assertEquals(150, config.tts.espeakSpeed) // default (malformed line skipped)
+    }
+
+    // ─── Manim outputDir merge tests ────────────────────────────
+
+    @Test
+    fun `merge handles manim outputDir via CLI`() {
+        val projectDir = File(tempDir, "manim-cli").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(manim = ManimConfig(outputDir = "yaml/manim"))
+        val cliParams = mapOf("manim.outputDir" to "cli/manim")
+
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, cliParams)
+
+        assertEquals("cli/manim", merged.manim.outputDir, "CLI should override YAML for manim.outputDir")
+    }
+
+    @Test
+    fun `merge handles manim outputDir via YAML`() {
+        val projectDir = File(tempDir, "manim-yaml").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(manim = ManimConfig(outputDir = "custom/manim/output"))
+
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+
+        assertEquals("custom/manim/output", merged.manim.outputDir, "YAML manim.outputDir should be preserved")
+    }
+
+    @Test
+    fun `loadFromEnvironment resolves manim outputDir with fallbacks`() {
+        val config = CapsuleConfigMerger.loadFromEnvironment()
+        assertEquals("build/capsule/manim", config.manim.outputDir, "Default manim.outputDir should be build/capsule/manim")
     }
 }

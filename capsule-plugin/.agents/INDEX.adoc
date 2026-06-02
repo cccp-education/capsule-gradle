@@ -5,9 +5,9 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly)
 
-_Derniere mise a jour_ : 2026-06-02 (Session 025 — Cucumber @integration @manim E2E complet + CucumberIntegrationTestRunner)
-_Session terminee_ : 025 — Cucumber @integration @manim E2E pipeline (NoOp render → mux → replace, CucumberIntegrationTestRunner, 4 new steps)
-_Prochaine session_ : 026 — ManimEngine configurable
+_Derniere mise a jour_ : 2026-06-02 (Session 026 — CAP-19 ManimEngine configurable + ManimConfig enrichment)
+_Session terminee_ : 026 — EPIC CAP-19 ManimEngine configurable (ManimConfig outputDir, VALID_QUALITIES, validate() + ManimEngineImpl(config) + 4 sources outputDir + 19 tests → 173 GREEN)
+_Prochaine session_ : 027 — Cucumber @config @manim ManimConfig
 
 '''
 == REGLES ABSOLUES (resume)
@@ -56,7 +56,7 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 
 |===
 | # | Date | Type | Sujet | Score
-| 025 | 2026-06-02 | dev | Cucumber @integration @manim E2E complet (CucumberIntegrationTestRunner, 4 new steps, pipeline NoOp render→mux→replace validated) | 8/10
+| 026 | 2026-06-02 | dev | CAP-19 ManimEngine configurable — ManimConfig outputDir + VALID_QUALITIES + validate() + 4 sources merger + 19 tests GREEN → 173 total | 9/10
 | 024 | 2026-06-02 | dev | ManimSlideReplacer + computeSlideDurationsWithManim + probeDuration wiring (154 unit = 21 nouveaux + 1 Cucumber @manim) | 9/10
 | 023 | 2026-06-02 | dev | ManimVideoMixer wiring + mux MP4+TTS (133 unit + 16 nouveaux + 2 Cucumber @manim) | 8/10
 | 021 | 2026-06-02 | dev | Diagnostic Cucumber : 3 failures = environnementaux (espeak/ffmpeg/chromium), @config GREEN | 5/10
@@ -90,7 +90,7 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 | EPIC | Description | Statut | Priorite
 | CAP-13 | Config Multi-Source (4 sources) | ✅ TERMINE | P0
 | CAP-17 | ManimVideoMixer (mux MP4 + TTS audio) | ✅ TERMINE (session 023) | P1
-| CAP-18 | ManimSlideReplacer + probeDuration | ✅ TERMINE (session 024) | P1
+| CAP-19 | ManimEngine configurable (ManimConfig outputDir, VALID_QUALITIES, validate, 4 sources) | ✅ TERMINE (session 026) | P1
 | K-1 | Renommage taxonomie (4 verbes) | ✅ TERMINE | P0
 | CAP-0 | Bootstrap gouvernance agent | ✅ TERMINE | P0
 | CAP-1 | Plugin Gradle capsule | ✅ TERMINE | P0

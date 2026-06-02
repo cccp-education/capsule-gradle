@@ -49,5 +49,45 @@ data class DistribConfig(
 data class ManimConfig(
     val executablePath: String = "manim",
     val quality: String = "l",
-    val scriptsDir: String = "src/manim"
-)
+    val scriptsDir: String = "src/manim",
+    val outputDir: String = "build/capsule/manim"
+) {
+    companion object {
+        /**
+         * Valid Manim quality flags (manim -q{l|m|h|p|k}).
+         *
+         * | Flag | Resolution | FPS |
+         * |------|------------|-----|
+         * | l    | 480p       | 60  |
+         * | m    | 720p       | 60  |
+         * | h    | 1080p      | 60  |
+         * | p    | 1440p      | 60  |
+         * | k    | 2160p (4K)  | 60  |
+         */
+        val VALID_QUALITIES = setOf("l", "m", "h", "p", "k")
+    }
+
+    /**
+     * Validates ManimConfig fields. Returns a list of error messages.
+     * Empty list means the config is valid.
+     */
+    fun validate(): List<String> {
+        val errors = mutableListOf<String>()
+        if (executablePath.isBlank() && executablePath != "noop") {
+            errors.add("executablePath must not be blank (use 'noop' for testing)")
+        }
+        if (quality.isNotBlank() && quality != "noop" && quality !in VALID_QUALITIES) {
+            errors.add("quality '$quality' is not a valid Manim quality flag. Valid: ${VALID_QUALITIES.joinToString(", ")}")
+        }
+        if (scriptsDir.isBlank()) {
+            errors.add("scriptsDir must not be blank")
+        }
+        // "noop" is a special quality for NoOpManimEngine — skip quality validation
+        if (quality == "noop") {
+            // noop is valid, no error
+        } else if (quality.isBlank()) {
+            errors.add("quality must not be blank")
+        }
+        return errors
+    }
+}
