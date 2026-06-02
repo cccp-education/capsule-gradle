@@ -1,26 +1,24 @@
-= PROMPT_REPRISE — Session 027 : Cucumber @config @manim ManimConfig
+= PROMPT_REPRISE — Session 028 : Parallélisation Manim
 
 == Contexte
 
-Session 026 — EPIC CAP-19 ManimEngine configurable terminé. ManimConfig enrichi avec outputDir, VALID_QUALITIES, validate(). ManimEngineImpl accepte ManimConfig. 4 sources (ENV, props, YAML, CLI) gèrent outputDir. 173 tests GREEN.
+Session 027 — Cucumber @config @manim ManimConfig terminé. 5 scénarios BDD pour ManimConfig via 4 sources (ENV < props < YAML < CLI). CapsulePlugin.lifecycle log avec manim config résolue. Scaffold template enrichi avec outputDir. 173 unit tests GREEN + 5/5 Cucumber PASSED.
 
-== Livrables session 026
+== Livrables session 027
 
-1. **ManimConfig** — outputDir, VALID_QUALITIES (l/m/h/p/k), validate()
-2. **ManimEngineImpl(config)** — constructeur ManimConfig complet
-3. **CapsuleExtension** — manimOutputDir ajouté
-4. **CapsuleConfigMerger** — outputDir dans 4 sources
-5. **CapsuleVideoTask** — ManimConfig résolu pour scriptsDir + outputDir
-6. **19 nouveaux tests** (13 ManimConfigTest + 3 ManimEngineTest + 3 CapsuleConfigMergerTest)
+1. **5 scénarios Cucumber @config @manim** — qualité, scriptsDir, outputDir, CLI override, scaffold
+2. **8 step definitions** — manim quality/scriptsDir/outputDir resolution + CLI param + scaffold fields
+3. **CapsulePlugin.kt** — debug → lifecycle log : `manim=[path={}, quality={}, scriptsDir={}, outputDir={}]`
+4. **CapsuleScaffoldTask.kt** — ajout `outputDir: build/capsule/manim` dans template YAML
 
 == Prochaines étapes (priorité décroissante)
 
-. **Cucumber @config @manim** — Scénario BDD pour ManimConfig configurable via YAML (outputDir, quality, scriptsDir)
 . **Parallélisation Manim** — ManimEngine.render() en parallèle pour les slides MANIM multiples
 . **ManimEngine real integration** — Scénario @manim-real avec vrai binaire manim
 . **EPIC CAP-18** — Manim slide path replacement + probe duration (COMPLETE)
 
 == État git
 
-main → modifications non commitées (session 026 : ManimConfig enrichment + 19 tests)
-Unit tests: BUILD SUCCESSFUL (173 unit = GREEN)
+main → modifications non commitées (session 027 : 5 Cucumber @config @manim + step defs + lifecycle log + scaffold outputDir)
+Unit tests: 173 GREEN
+Cucumber: 5/5 @config @manim PASSED, 3/3 @manim PASSED, 1 E2E FAILED (environnement)

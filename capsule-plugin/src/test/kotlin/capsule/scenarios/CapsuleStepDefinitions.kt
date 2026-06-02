@@ -352,11 +352,115 @@ tts:
 
     @Then("the resolved TTS engine is espeak")
     fun theResolvedTtsEngineIsEspeak() {
-        // After evaluate, the YAML config should have set ttsEngine to espeak
-        // We verify by checking the build output for espeak-related messages
-        // or by examining the extension configuration
         assertTrue(lastBuildResult.contains("SUCCESS") || lastBuildResult.contains("espeak"),
             "YAML config should resolve tts engine to espeak. Output: $lastBuildResult")
+    }
+
+    // ─── Config @manim steps ─────────────────────────────────────
+
+    @Given("a Gradle project with the capsule plugin applied and a capsule-context.yml setting manim quality to {string} and scriptsDir to {string}")
+    fun aGradleProjectWithCapsuleContextYmlManimQualityAndScriptsDir(quality: String, scriptsDir: String) {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-manim-yaml-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('education.cccp.capsule')
+            }
+            capsule {
+                ttsEngine = "noop"
+            }
+        """.trimIndent())
+        projectDir.resolve("capsule-context.yml").writeText("""
+manim:
+  quality: $quality
+  scriptsDir: $scriptsDir
+        """.trimIndent())
+    }
+
+    @Then("the resolved manim quality is {string}")
+    fun theResolvedManimQualityIs(expectedQuality: String) {
+        assertTrue(lastBuildResult.contains("quality=$expectedQuality") || lastBuildResult.contains("quality=$expectedQuality,"),
+            "Resolved manim quality should be '$expectedQuality'. Build output: ${lastBuildResult.take(2000)}")
+    }
+
+    @Then("the resolved manim scriptsDir is {string}")
+    fun theResolvedManimScriptsDirIs(expectedScriptsDir: String) {
+        assertTrue(lastBuildResult.contains("scriptsDir=$expectedScriptsDir"),
+            "Resolved manim scriptsDir should be '$expectedScriptsDir'. Build output: ${lastBuildResult.take(2000)}")
+    }
+
+    @Given("a Gradle project with the capsule plugin applied and a capsule-context.yml setting manim quality to {string}")
+    fun aGradleProjectWithCapsuleContextYmlManimQuality(quality: String) {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-manim-quality-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('education.cccp.capsule')
+            }
+            capsule {
+                ttsEngine = "noop"
+            }
+        """.trimIndent())
+        projectDir.resolve("capsule-context.yml").writeText("""
+manim:
+  quality: $quality
+        """.trimIndent())
+    }
+
+    @When("I run the task {string} with CLI param {string}")
+    fun iRunTheTaskWithCLIParam(taskName: String, cliParam: String) {
+        val runner = GradleRunner.create()
+        runner.forwardOutput()
+        runner.withPluginClasspath()
+        runner.withArguments(taskName, cliParam)
+        runner.withProjectDir(projectDir)
+        val result = runner.build()
+        lastBuildResult = result.output
+    }
+
+    @Given("a Gradle project with the capsule plugin applied and a capsule-context.yml setting manim outputDir to {string}")
+    fun aGradleProjectWithCapsuleContextYmlManimOutputDir(outputDir: String) {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-manim-outputdir-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('education.cccp.capsule')
+            }
+            capsule {
+                ttsEngine = "noop"
+            }
+        """.trimIndent())
+        projectDir.resolve("capsule-context.yml").writeText("""
+manim:
+  outputDir: $outputDir
+        """.trimIndent())
+    }
+
+    @Then("the resolved manim outputDir is {string}")
+    fun theResolvedManimOutputDirIs(expectedOutputDir: String) {
+        assertTrue(lastBuildResult.contains("outputDir=$expectedOutputDir"),
+            "Resolved manim outputDir should be '$expectedOutputDir'. Build output: ${lastBuildResult.take(2000)}")
+    }
+
+    @Then("the scaffold file contains the manim section with executablePath, quality, scriptsDir, and outputDir")
+    fun theScaffoldFileContainsTheManimSectionWithAllFields() {
+        val scaffoldFile = projectDir.resolve("capsule-context.yml")
+        assertTrue(scaffoldFile.exists(), "Scaffold file should exist")
+        val content = scaffoldFile.readText()
+        assertTrue(content.contains("manim:"), "Should contain manim section")
+        assertTrue(content.contains("executablePath"), "Should contain executablePath field in manim section")
+        assertTrue(content.contains("quality"), "Should contain quality field in manim section")
+        assertTrue(content.contains("scriptsDir"), "Should contain scriptsDir field in manim section")
+        assertTrue(content.contains("outputDir"), "Should contain outputDir field in manim section")
     }
 
     // ─── Manim steps ─────────────────────────────────────────────

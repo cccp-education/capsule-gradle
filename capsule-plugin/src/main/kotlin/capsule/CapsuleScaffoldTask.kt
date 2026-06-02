@@ -71,6 +71,7 @@ manim:
   # executablePath: manim
   # quality: l
   # scriptsDir: src/manim
+  # outputDir: build/capsule/manim
 """.trimIndent()
     }
 }

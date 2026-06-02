@@ -33,11 +33,13 @@ class CapsulePlugin : Plugin<Project> {
             // Push resolved values into DSL Extension properties
             pushConfigIntoExtension(mergedConfig, capsuleExt)
 
-            project.logger.debug(
-                "Capsule config resolved: engine={}, voice={}, vw={}x{}, parallel={}",
+            project.logger.lifecycle(
+                "Capsule config resolved: engine={}, voice={}, vw={}x{}, parallel={}, manim=[path={}, quality={}, scriptsDir={}, outputDir={}]",
                 mergedConfig.tts.engine, mergedConfig.tts.voice,
                 mergedConfig.capture.viewportWidth, mergedConfig.capture.viewportHeight,
-                mergedConfig.capture.parallelCaptureEnabled
+                mergedConfig.capture.parallelCaptureEnabled,
+                mergedConfig.manim.executablePath, mergedConfig.manim.quality,
+                mergedConfig.manim.scriptsDir, mergedConfig.manim.outputDir
             )
         }
     }

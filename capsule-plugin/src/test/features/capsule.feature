@@ -130,3 +130,35 @@ Feature: Capsule video generation from a reveal.js deck
     Given a Gradle project with the capsule plugin applied and a capsule-context.yml setting espeak TTS
     When I run the task "generateCapsuleScript"
     Then the resolved TTS engine is espeak
+
+  @config @manim
+  Scenario: Manim YAML configuration overrides manim defaults for quality and scriptsDir
+    Given a Gradle project with the capsule plugin applied and a capsule-context.yml setting manim quality to "h" and scriptsDir to "custom/manim"
+    When I run the task "generateCapsuleScript"
+    Then the resolved manim quality is "h"
+    And the resolved manim scriptsDir is "custom/manim"
+
+  @config @manim
+  Scenario: Manim CLI -P params override YAML manim configuration
+    Given a Gradle project with the capsule plugin applied and a capsule-context.yml setting manim quality to "m"
+    When I run the task "generateCapsuleScript" with CLI param "-Pcapsule.manim.quality=k"
+    Then the resolved manim quality is "k"
+
+  @config @manim
+  Scenario: Manim default configuration has low quality and src/manim scriptsDir
+    Given a Gradle project with the capsule plugin applied
+    When I run the task "generateCapsuleScript"
+    Then the resolved manim quality is "l"
+    And the resolved manim scriptsDir is "src/manim"
+
+  @config @manim
+  Scenario: Manim outputDir is resolved from YAML configuration
+    Given a Gradle project with the capsule plugin applied and a capsule-context.yml setting manim outputDir to "custom/output"
+    When I run the task "generateCapsuleScript"
+    Then the resolved manim outputDir is "custom/output"
+
+  @config @manim
+  Scenario: Manim configuration section contains all 5 fields after scaffold
+    Given a Gradle project with the capsule plugin applied
+    When I run the task "scaffoldCapsuleContext"
+    Then the scaffold file contains the manim section with executablePath, quality, scriptsDir, and outputDir

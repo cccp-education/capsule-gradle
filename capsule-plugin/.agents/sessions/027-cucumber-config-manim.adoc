@@ -1,0 +1,47 @@
+= Session 027 — Cucumber @config @manim ManimConfig
+
+== Date
+2026-06-02
+
+== Objectif
+Scénarios BDD Cucumber pour la configuration ManimConfig via les 4 sources (ENV < props < YAML < CLI).
+
+== Livrables
+
+1. **5 scénarios Cucumber `@config @manim`** dans `capsule.feature`
+   - Manim YAML configuration overrides manim defaults for quality and scriptsDir
+   - Manim CLI -P params override YAML manim configuration
+   - Manim default configuration has low quality and src/manim scriptsDir
+   - Manim outputDir is resolved from YAML configuration
+   - Manim configuration section contains all 5 fields after scaffold
+
+2. **8 step definitions** ajoutées dans `CapsuleStepDefinitions.kt`
+   - `aGradleProjectWithCapsuleContextYmlManimQualityAndScriptsDir`
+   - `theResolvedManimQualityIs`
+   - `theResolvedManimScriptsDirIs`
+   - `aGradleProjectWithCapsuleContextYmlManimQuality`
+   - `iRunTheTaskWithCLIParam`
+   - `aGradleProjectWithCapsuleContextYmlManimOutputDir`
+   - `theResolvedManimOutputDirIs`
+   - `theScaffoldFileContainsTheManimSectionWithAllFields`
+
+3. **CapsulePlugin.kt** — debug → lifecycle log avec manim config résolue
+   - Ajout du format `manim=[path={}, quality={}, scriptsDir={}, outputDir={}]`
+
+4. **CapsuleScaffoldTask.kt** — ajout `outputDir: build/capsule/manim` dans le template YAML
+
+== Résultats tests
+
+- **173 unit tests** — GREEN (0 failures)
+- **5/5 Cucumber @config @manim** — PASSED
+- **3/3 Cucumber @manim existants** — PASSED
+- **1 Cucumber @integration @manim E2E** — FAILED (préexistant, environnement)
+
+== Méthodologie
+Baby-step BDD : scénarios Gherkin écrits en premier (ROUGE), puis step definitions (VERT).
+
+== Prochaines étapes (priorité décroissante)
+
+. **Parallélisation Manim** — ManimEngine.render() en parallèle pour les slides MANIM multiples
+. **ManimEngine real integration** — Scénario @manim-real avec vrai binaire manim
+. **EPIC CAP-18** — Manim slide path replacement + probe duration (COMPLETE)
