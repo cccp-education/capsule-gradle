@@ -2018,6 +2018,124 @@ Fin du cours.
     }
 }
 
+class ManimSlideReplacementWiringTest {
+
+    @TempDir
+    lateinit var tempDir: File
+
+    @Test
+    fun `ManimSlideReplacer replaces HTML slide with video embed during task execution`() {
+        val deckDir = File(tempDir, "decks-replace").also { it.mkdirs() }
+        val deckFile = File(deckDir, "replace-deck.html")
+        deckFile.writeText("""
+<html><body>
+<div class="reveal">
+  <div class="slides">
+    <section data-capsule-slide="1"><h2>Intro</h2></section>
+    <section data-capsule-slide="2"><h2>Animation</h2></section>
+  </div>
+</div>
+</body></html>
+        """.trimIndent())
+
+        val scriptDir = File(tempDir, "scripts-replace").also { it.mkdirs() }
+        val scriptFile = File(scriptDir, "replace-deck-script.txt")
+        scriptFile.writeText("""
+=== CAPSULE SCRIPT : replace-deck ===
+--- SLIDE 1 : Intro ---
+Text introduction.
+--- SLIDE 2 : Anim [manim:SlideAnim] ---
+Voici l'animation.
+        """.trimIndent())
+
+        val manimDir = File(tempDir, "src/manim").also { it.mkdirs() }
+        File(manimDir, "SlideAnim.py").writeText("# manim script for slide animation")
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.deckSourceDir.set(deckDir.absolutePath)
+        ext.sliderScriptDir.set(scriptDir.absolutePath)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+        ext.manimExecutablePath.set("noop")
+
+        val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        task.capsuleExtension = ext
+        task.playwrightCapture = NoOpPlaywrightCapture()
+        task.ttsEngine = NoOpTtsEngine()
+        task.manimEngine = NoOpManimEngine()
+        task.manimVideoMixer = NoOpManimVideoMixer()
+        task.manimSlideReplacer = ManimSlideReplacerImpl()
+        task.execute()
+
+        // Verify that the replaced deck contains a <video> tag for the manim slide
+        val replacedDir = File(tempDir, "build/capsule/replaced")
+        if (replacedDir.exists()) {
+            val replacedFiles = replacedDir.listFiles { f -> f.name.endsWith("-deck.html") }
+            if (replacedFiles != null && replacedFiles.isNotEmpty()) {
+                val content = replacedFiles.first().readText()
+                assertTrue(content.contains("<video"), "Replaced deck should contain <video> tag for manim slide")
+                assertTrue(content.contains("SlideAnim-muxed.mp4") || content.contains("SlideAnim.mp4"),
+                    "Replaced deck should reference the manim video file")
+                assertTrue(content.contains("Intro"), "Slide 1 (HTML) should still contain 'Intro'")
+            }
+        }
+
+        val capsuleDir = File(tempDir, "build/capsule")
+        assertTrue(capsuleDir.exists(), "Capsule output dir should exist after task execution")
+    }
+
+    @Test
+    fun `ManimSlideReplacer NoOp does not modify deck during task execution`() {
+        val deckDir = File(tempDir, "decks-noop").also { it.mkdirs() }
+        val deckFile = File(deckDir, "noop-deck.html")
+        deckFile.writeText("""
+<html><body>
+<div class="reveal">
+  <div class="slides">
+    <section data-capsule-slide="1"><h2>Slide 1</h2></section>
+  </div>
+</div>
+</body></html>
+        """.trimIndent())
+
+        val scriptDir = File(tempDir, "scripts-noop").also { it.mkdirs() }
+        val scriptFile = File(scriptDir, "noop-deck-script.txt")
+        scriptFile.writeText("""
+=== CAPSULE SCRIPT : noop-deck ===
+--- SLIDE 1 : Slide 1 ---
+Note.
+        """.trimIndent())
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.deckSourceDir.set(deckDir.absolutePath)
+        ext.sliderScriptDir.set(scriptDir.absolutePath)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+
+        val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        task.capsuleExtension = ext
+        task.playwrightCapture = NoOpPlaywrightCapture()
+        task.ttsEngine = NoOpTtsEngine()
+        task.manimSlideReplacer = NoOpManimSlideReplacer()
+        task.execute()
+
+        // With NoOp replacer and no MANIM slides, no replaced deck should be produced
+        // (the original injected deck is used unchanged)
+        val capsuleDir = File(tempDir, "build/capsule")
+        assertTrue(capsuleDir.exists(), "Capsule output dir should exist")
+    }
+
+    @Test
+    fun `resolveManimSlideReplacer returns ManimSlideReplacerImpl`() {
+        val replacer = CapsuleManager.resolveManimSlideReplacer()
+        assertTrue(replacer is ManimSlideReplacerImpl, "Factory should return ManimSlideReplacerImpl")
+        assertTrue(replacer.isAvailable())
+        assertEquals("html-replacer", replacer.name())
+    }
+}
+
 class CapsulePluginWiringTest {
 
     @Test

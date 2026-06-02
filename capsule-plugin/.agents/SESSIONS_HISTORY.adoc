@@ -6,6 +6,7 @@ _Date creation_ : 2026-05-14
 
 |===
 | # | Date | Type | Sujet | Score
+| 024 | 2026-06-02 | dev | ManimSlideReplacer + computeSlideDurationsWithManim + probeDuration wiring (154 unit GREEN, 21 nouveaux : ManimSlideReplacerTest 14 + ComputeSlideDurationsWithManimTest 4 + ManimSlideReplacementWiringTest 3 + 1 Cucumber @manim slide replacement) | 9/10
 | 023 | 2026-06-02 | dev | ManimVideoMixer wiring + mux MP4+TTS (133 unit GREEN, 16 nouveaux : ManimVideoMixerTest 11 + ManimVideoMixerWiringTest 5 + 2 Cucumber @manim) | 8/10
 | 022 | 2026-06-02 | dev | Tag @integration Cucumber + ManimEngine wiring + resolveManimEngine factory (117 unit tests GREEN, ManimEngineWiringTest 3/3, CucumberManimEngineTest 4/4) | 8/10
 | 021 | 2026-06-02 | dev | Diagnostic Cucumber : 3 failures = environnementaux (espeak/ffmpeg/chromium absents), @config GREEN | 5/10

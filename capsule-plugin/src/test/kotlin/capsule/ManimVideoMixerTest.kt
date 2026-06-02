@@ -1,23 +1,125 @@
 package capsule
 
+import org.gradle.testfixtures.ProjectBuilder
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlin.test.assertFalse
 
 /**
- * TDD Baby Step 1 — ManimVideoMixer unit tests.
+ * TDD Baby Step — ManimVideoMixer + computeSlideDurationsWithManim unit tests.
  *
  * ManimVideoMixer muxes a Manim MP4 video with a TTS MP3 audio track
  * to produce a final MP4 with synchronized audio.
+ *
+ * computeSlideDurationsWithManim uses Manim-probed video durations
+ * when available, falling back to TTS audio duration or default slide duration.
  *
  * Design:
  * - Interface ManimVideoMixer with mix(video, audio, output) + NoOpManimVideoMixer
  * - Real implementation: ManimVideoMixerImpl using ffmpeg
  * - NoOp: creates placeholder for testing
  */
+class ComputeSlideDurationsWithManimTest {
+
+    @TempDir
+    lateinit var tempDir: File
+
+    private fun createTask(
+        slideDurationSeconds: Double = 5.0
+    ): CapsuleVideoTask {
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.slideDurationSeconds.set(slideDurationSeconds)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+
+        val t = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        t.capsuleExtension = ext
+        return t
+    }
+
+    @Test
+    fun `computeSlideDurations uses manim duration when MP4 muxed file exists`() {
+        val task = createTask(slideDurationSeconds = 5.0)
+        val audioDir = File(tempDir, "audio").also { it.mkdirs() }
+        // Create a fake MP3 for slide 1 (HTML slide)
+        File(audioDir, "slide-01.mp3").writeText("fake mp3 not probed")
+
+        val script = CapsuleScript("test", listOf(
+            SlideSegment(1, "Intro", "Note HTML", type = SlideType.HTML),
+            SlideSegment(2, "Anim", "Note Manim", type = SlideType.MANIM, manimScene = "Scene1")
+        ))
+
+        // Manim slide 2 has a muxed MP4 with duration 8.5 seconds
+        val manimDurations = mapOf(2 to 8.5)
+        val durations = task.computeSlideDurationsWithManim(script, audioDir, manimDurations)
+
+        // Slide 1 (HTML) should use default since MP3 cannot be probed by ffprobe
+        assertEquals(5.0, durations[0], "HTML slide without probed MP3 should use default")
+        // Slide 2 (MANIM) should use the manim duration
+        assertEquals(8.5, durations[1], "MANIM slide should use probed manim duration")
+    }
+
+    @Test
+    fun `computeSlideDurations falls back to default when manim duration is 0`() {
+        val task = createTask(slideDurationSeconds = 5.0)
+        val audioDir = File(tempDir, "audio2").also { it.mkdirs() }
+
+        val script = CapsuleScript("test2", listOf(
+            SlideSegment(1, "Intro", "Note", type = SlideType.HTML),
+            SlideSegment(2, "Anim", "Note", type = SlideType.MANIM, manimScene = "Scene1")
+        ))
+
+        // Manim duration is 0.0 (probe failed)
+        val manimDurations = mapOf(2 to 0.0)
+        val durations = task.computeSlideDurationsWithManim(script, audioDir, manimDurations)
+
+        assertEquals(5.0, durations[1], "Should fall back to default when manim duration is 0.0")
+    }
+
+    @Test
+    fun `computeSlideDurations uses manim duration over default for all MANIM slides`() {
+        val task = createTask(slideDurationSeconds = 5.0)
+        val audioDir = File(tempDir, "audio3").also { it.mkdirs() }
+
+        val script = CapsuleScript("test3", listOf(
+            SlideSegment(1, "Intro", "Note", type = SlideType.HTML),
+            SlideSegment(2, "Anim1", "Note", type = SlideType.MANIM, manimScene = "Scene1"),
+            SlideSegment(3, "Anim2", "Note", type = SlideType.MANIM, manimScene = "Scene2"),
+            SlideSegment(4, "End", "Note", type = SlideType.HTML)
+        ))
+
+        val manimDurations = mapOf(2 to 12.0, 3 to 7.5)
+        val durations = task.computeSlideDurationsWithManim(script, audioDir, manimDurations)
+
+        assertEquals(5.0, durations[0], "HTML slide 1 should use default")
+        assertEquals(12.0, durations[1], "MANIM slide 2 should use probed duration")
+        assertEquals(7.5, durations[2], "MANIM slide 3 should use probed duration")
+        assertEquals(5.0, durations[3], "HTML slide 4 should use default")
+    }
+
+    @Test
+    fun `computeSlideDurations with empty manim durations uses defaults for all`() {
+        val task = createTask(slideDurationSeconds = 5.0)
+        val audioDir = File(tempDir, "audio4").also { it.mkdirs() }
+
+        val script = CapsuleScript("test4", listOf(
+            SlideSegment(1, "Intro", "Note", type = SlideType.MANIM, manimScene = "Scene1"),
+            SlideSegment(2, "End", "Note", type = SlideType.HTML)
+        ))
+
+        val manimDurations = emptyMap<Int, Double>()
+        val durations = task.computeSlideDurationsWithManim(script, audioDir, manimDurations)
+
+        assertEquals(5.0, durations[0], "MANIM slide without probe should use default")
+        assertEquals(5.0, durations[1], "HTML slide should use default")
+    }
+}
+
 class ManimVideoMixerTest {
 
     // ─── NoOpManimVideoMixer ─────────────────────────────────────

@@ -176,6 +176,9 @@ open class CapsuleVideoTask : DefaultTask() {
     @get:Internal
     internal var manimVideoMixer: ManimVideoMixer? = null
 
+    @get:Internal
+    internal var manimSlideReplacer: ManimSlideReplacer? = null
+
     init {
         outputDir.convention(
             project.layout.buildDirectory.dir("capsule")
@@ -251,15 +254,41 @@ open class CapsuleVideoTask : DefaultTask() {
         return mixer
     }
 
-    private fun computeSlideDurations(parsed: CapsuleScript, audioDir: File): List<Double> {
+    private fun resolveManimSlideReplacerInternal(): ManimSlideReplacer {
+        if (manimSlideReplacer != null) return manimSlideReplacer!!
+        val replacer = CapsuleManager.resolveManimSlideReplacer()
+        logger.lifecycle("Manim slide replacer: {} (available)", replacer.name())
+        return replacer
+    }
+
+    internal fun computeSlideDurations(parsed: CapsuleScript, audioDir: File): List<Double> {
+        return computeSlideDurationsWithManim(parsed, audioDir, emptyMap())
+    }
+
+    /**
+     * Computes slide durations, using Manim MP4 probe duration when available.
+     *
+     * Priority for each slide:
+     * 1. MANIM slide with probed duration > 0: use manim duration
+     * 2. TTS MP3 file exists with probed duration > 0: use audio duration
+     * 3. Fallback: use capsuleExtension.slideDurationSeconds default
+     */
+    internal fun computeSlideDurationsWithManim(parsed: CapsuleScript, audioDir: File, manimDurations: Map<Int, Double>): List<Double> {
         val defaultDur = capsuleExtension.slideDurationSeconds.get()
         return parsed.slides.map { seg ->
-            val idx = String.format("%02d", seg.index)
-            val mp3 = audioDir.resolve("slide-$idx.mp3")
-            if (mp3.exists()) {
-                val realDur = ffprobeDuration(mp3)
-                if (realDur > 0.0) realDur else defaultDur
-            } else defaultDur
+            // Priority 1: MANIM slide with probed video duration
+            val manimDur = manimDurations[seg.index]
+            if (seg.type == SlideType.MANIM && manimDur != null && manimDur > 0.0) {
+                manimDur
+            } else {
+                // Priority 2: TTS audio file with probed duration
+                val idx = String.format("%02d", seg.index)
+                val mp3 = audioDir.resolve("slide-$idx.mp3")
+                if (mp3.exists()) {
+                    val realDur = ffprobeDuration(mp3)
+                    if (realDur > 0.0) realDur else defaultDur
+                } else defaultDur
+            }
         }
     }
 
@@ -291,6 +320,7 @@ open class CapsuleVideoTask : DefaultTask() {
         val engine = resolveTtsEngine()
         val manim = resolveManimEngineInternal()
         val manimMixer = resolveManimVideoMixerInternal()
+        val manimReplacer = resolveManimSlideReplacerInternal()
         val manimScriptsDir = project.file(capsuleExtension.manimScriptsDir.get())
 
         for (script in scripts) {
@@ -324,6 +354,7 @@ open class CapsuleVideoTask : DefaultTask() {
 
             // Render Manim slides and mux with TTS audio
             val manimSlides = parsed.slides.filter { it.type == SlideType.MANIM }
+            val manimDurations = mutableMapOf<Int, Double>()
             if (manimSlides.isNotEmpty()) {
                 logger.lifecycle("  Manim slides detected: {} slides with Manim animations", manimSlides.size)
                 for (seg in manimSlides) {
@@ -339,6 +370,13 @@ open class CapsuleVideoTask : DefaultTask() {
                         val manimVideo = manim.render(sceneName, scriptPath, manimOutputDir)
                         logger.lifecycle("    Manim → {} (scene: {})", manimVideo.name, sceneName)
 
+                        // Probe Manim video duration for slide timing
+                        val probedDur = manim.probeDuration(manimVideo)
+                        if (probedDur > 0.0) {
+                            manimDurations[seg.index] = probedDur
+                            logger.lifecycle("    Manim duration: {}s (scene: {})", String.format("%.1f", probedDur), sceneName)
+                        }
+
                         // Mux Manim MP4 with TTS audio for this slide
                         val slideIdx = String.format("%02d", seg.index)
                         val ttsFile = audioDir.resolve("slide-$slideIdx.mp3")
@@ -346,6 +384,12 @@ open class CapsuleVideoTask : DefaultTask() {
                         try {
                             val muxed = manimMixer.mix(manimVideo, ttsFile, muxedFile)
                             logger.lifecycle("    Manim+TTS → {} ({} bytes)", muxed.name, muxed.length())
+                            // If muxed video exists, probe its duration (may differ from render-only duration)
+                            val muxedDur = manimMixer.probeDuration(muxed)
+                            if (muxedDur > 0.0) {
+                                manimDurations[seg.index] = muxedDur
+                                logger.lifecycle("    Muxed duration: {}s (scene: {})", String.format("%.1f", muxedDur), sceneName)
+                            }
                         } catch (e: MixerException) {
                             logger.warn("    Manim mux failed for scene '{}': {} — using unmixed video", sceneName, e.message)
                         }
@@ -355,13 +399,49 @@ open class CapsuleVideoTask : DefaultTask() {
                 }
             }
 
-            val slideDurations = computeSlideDurations(parsed, audioDir)
+            val slideDurations = computeSlideDurationsWithManim(parsed, audioDir, manimDurations)
+
+            // Replace Manim slide HTML sections with video embeds in the deck
+            var finalDeckHtml = modifiedDeck.readText()
+            val manimSlideIndices = manimSlides.mapIndexedNotNull { listIdx, seg ->
+                // Find the 0-based index of this MANIM slide in the full slides list
+                val fullIdx = parsed.slides.indexOf(seg)
+                if (fullIdx >= 0) {
+                    val slideIdx = String.format("%02d", seg.index)
+                    val muxedFile = videoOutputDir.resolve("manim/${seg.manimScene}-muxed.mp4")
+                    val manimFile = videoOutputDir.resolve("manim/${seg.manimScene}.mp4")
+                    // Prefer muxed file (manim+TTS), fallback to render-only file
+                    val videoPath = when {
+                        muxedFile.exists() -> muxedFile.absolutePath
+                        manimFile.exists() -> manimFile.absolutePath
+                        else -> null
+                    }
+                    if (videoPath != null) {
+                        logger.lifecycle("    Manim slide replacement: slide {} → {}", seg.index, videoPath)
+                        fullIdx to videoPath
+                    } else null
+                } else null
+            }
+
+            for ((slideIdx, videoPath) in manimSlideIndices) {
+                finalDeckHtml = manimReplacer.replaceSlideAt(finalDeckHtml, slideIdx, videoPath)
+            }
+
+            val finalDeckFile = modifiedDeck.let { mf ->
+                if (manimSlideIndices.isNotEmpty()) {
+                    val replacedDeck = project.layout.buildDirectory.dir("capsule/replaced").get().asFile
+                    replacedDeck.mkdirs()
+                    val outFile = replacedDeck.resolve(modifiedDeck.name)
+                    outFile.writeText(finalDeckHtml)
+                    outFile
+                } else mf
+            }
 
             if (capsuleExtension.parallelCaptureEnabled.get()) {
                 // Parallel path: createSingleSlideHtml per slide + captureSlideParallel
                 logger.lifecycle("  Parallel capture enabled for '{}' ({} slides)", parsed.deckName, parsed.slides.size)
                 captureSlideParallel(
-                    deckHtmlPath = modifiedDeck.absolutePath,
+                    deckHtmlPath = finalDeckFile.absolutePath,
                     outputDir = videoOutputDir,
                     viewportWidth = capsuleExtension.viewportWidth.get(),
                     viewportHeight = capsuleExtension.viewportHeight.get(),
@@ -382,7 +462,7 @@ open class CapsuleVideoTask : DefaultTask() {
                 val deckCapture = resolvePlaywrightCapture(slideDurations)
                 try {
                     deckCapture.capture(
-                        deckHtmlPath = modifiedDeck.absolutePath,
+                        deckHtmlPath = finalDeckFile.absolutePath,
                         outputDir = videoOutputDir,
                         viewportWidth = capsuleExtension.viewportWidth.get(),
                         viewportHeight = capsuleExtension.viewportHeight.get(),

@@ -107,6 +107,15 @@ class CapsuleManager(private val project: Project) {
         }
 
         /**
+         * Resolves the appropriate ManimSlideReplacer.
+         * Always returns ManimSlideReplacerImpl (always available, pure HTML manipulation).
+         */
+        @JvmStatic
+        fun resolveManimSlideReplacer(): ManimSlideReplacer {
+            return ManimSlideReplacerImpl()
+        }
+
+        /**
          * Resolves the appropriate ManimEngine based on configuration.
          * - If executablePath is "noop", returns NoOpManimEngine
          * - Otherwise, creates ManimEngineImpl and falls back to NoOpManimEngine if unavailable

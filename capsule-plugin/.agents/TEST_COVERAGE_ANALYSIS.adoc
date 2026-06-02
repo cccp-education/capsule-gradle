@@ -1,29 +1,37 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-06-02
-:session: 018 ManimEngine + Parallel Capture + Split CapsuleManager
+:session: 024 ManimSlideReplacer + probeDuration + Wiring
 
-== Couverture — 2 juin 2026 (après session 018)
+== Couverture — 2 juin 2026 (après session 024)
 
 |===
 | Classe | Type | Tests | Couverture
 | CapsulePlugin.kt | main | 6 unitaires | Enregistrement extension + 5 taches
 | CapsuleModels.kt | main | 5 unitaires | CapsuleExtension 14 propriétés + SlideType enum + SlideSegment defaults + manimScene
-| CapsuleManager.kt | main | 2 unitaires | parseScript [manim:SceneName] + [html] + default HTML type
+| CapsuleManager.kt | main | 2 unitaires | parseScript [manim:SceneName] + resolveManimEngine + resolveManimVideoMixer + resolveManimSlideReplacer
 | CapsuleScriptTask.kt | main | 0 | (loggé uniquement, pas de logique testable isolément)
 | CapsuleBuildTask.kt | main | 3 unitaires | Parallélisme (Executors+AtomicInteger+Future), failures+fallback, empty scripts
-| CapsuleVideoTask.kt | main | 9 unitaires | empty deck/script warn, e2e NoOp + injectAudio, sequential fallback, multi-deck + captureSlideParallel cap 4 + concatWebmFiles (4 tests)
+| CapsuleVideoTask.kt | main | 19 unitaires | empty deck/script warn, e2e NoOp + injectAudio + sequential fallback + multi-deck + parallel capture + concatWebmFiles + createSingleSlideHtml + computeSlideDurationsWithManim + captureSlideParallel cap 4 + manimSlideReplacer wiring
 | CapsuleDistribTask.kt | main | 3 unitaires | no videos warn, ffmpeg unavailable copy, multiple videos
 | CapsuleCompositeContextTask.kt | main | 4 unitaires | json context file, multiple decks, distribVideo, valid parseable JSON (Jackson)
 | CapsuleParseContextTask.kt | main | 3 unitaires | parse JSON, empty entries, missing file graceful
 | ManimEngine.kt | main | 6 unitaires | NoOpManimEngine (3) + ManimEngineImpl (3 : unavailable, ManimException, name)
+| ManimVideoMixer.kt | main | 11 unitaires | NoOpManimVideoMixer (4 including probeDuration) + ManimVideoMixerImpl (4 including probeDuration) + resolveManimVideoMixer factory (2) + MixerException
+| ManimSlideReplacer.kt | main | 14 unitaires | NoOpManimVideoMixer (2) + ManimSlideReplacerImpl (10 : replace at index, first, last, video attrs, preserve structure, out of bounds, negative, single slide, nested sections, multi slide sequential, data-capsule-slide) + factory (1)
 | TtsManager.kt | main | 5 unitaires | NoOpTtsEngine, PiperTtsEngine, EspeakTtsEngine (3), TtsException
 | PlaywrightManager.kt | main | 6 unitaires | NoOpPlaywrightCapture (3) + ScreenshotCaptureImpl (3 : name, isAvailable, close)
 | AudioQualityConstraint | main | 3 unitaires | Real TTS > placeholder, not text, WebM EBML header
 | RevealJsRenderingConstraint | main | 1 unitaire | Chromium slide-by-slide (integration tag)
+| CapsuleConfigLoader | main | 5 unitaires | YAML loading, defaults, env vars, missing file, empty file
+| CapsuleConfig | main | 5 unitaires | Defaults, capture section, distrib section, manim section, custom values
+| CapsuleConfigMerger | main | 21 unitaires | 4 precedence levels, partial overrides, edge cases
+| CapsuleScaffoldTask | main | 5 unitaires | Creates YAML, all sections, commented defaults, no overwrite, custom path, resolution order
+| ComputeSlideDurationsWithManim | main | 4 unitaires | Manim duration priority, fallback 0.0, mixed slides, empty map defaults
+| ManimSlideReplacementWiring | main | 3 unitaires | Replacer wiring during task, NoOp replacer, factory resolves impl
 |===
 
-- Unitaires: 56/56 PASS
+- Unitaires: 154/154 PASS
 - Fonctionnels (GradleTestKit): 8/8 PASS
-- Cucumber BDD: 9/9 PASS (7 scénarios noOp + 1 espeak audio constraint + 1 build/capsules output)
+- Cucumber BDD: 12/12 (2 @manim GREEN, 3 @config GREEN, 7 standard)
 - Full check: BUILD SUCCESSFUL
 - Kover coverage: OK

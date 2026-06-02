@@ -93,6 +93,13 @@ Feature: Capsule video generation from a reveal.js deck
     When I run the task "generateCapsuleVideo" with NoOp capture
     Then the ManimEngine render produces a muxed MP4 with TTS audio for the manim slide
 
+  @manim
+  Scenario: Manim slide HTML is replaced by video embed via ManimSlideReplacer
+    Given a reveal.js deck "replace-deck.html" with 2 slides and data-capsule-slide attributes
+    And a capsule script "replace-course-script.txt" with 1 manim slide segments
+    When I run the task "generateCapsuleVideo" with NoOp capture
+    Then the ManimSlideReplacer replaces the manim slide section with a video embed
+
   @config
   Scenario: Scaffold creates capsule-context yml with default configuration
     Given a Gradle project with the capsule plugin applied

@@ -1,0 +1,37 @@
+= Session 024 — Manim Slide Replacement + probeDuration + ManimSlideReplacer Wiring
+
+== Date
+2026-06-02
+
+== Contexte
+Session 023 — ManimVideoMixer : interface + Impl + NoOp + factory + wiring dans CapsuleVideoTask.execute().
+
+== Livrables session 024
+
+1. **ManimSlideReplacer.kt** — Interface + ManimSlideReplacerImpl (remplacement HTML `<section>` par `<video>`) + NoOpManimSlideReplacer + factory dans CapsuleManager.resolveManimSlideReplacer()
+2. **computeSlideDurationsWithManim()** — Méthode enrichie dans CapsuleVideoTask qui utilise les durées Manim probed (priorité : Manim video > TTS audio > default)
+3. **ManimSlideReplacerTest** — 14 tests unitaires TDD (NoOp, Impl, edge cases, factory)
+4. **ComputeSlideDurationsWithManimTest** — 4 tests unitaires TDD (manim duration priority, fallback, mixed slides)
+5. **ManimSlideReplacementWiringTest** — 3 tests unitaires (replacer wiring, NoOp, factory)
+6. **ManimVideoMixerTest** — Refactoré (séparé ComputeSlideDurationsWithManimTest + ManimVideoMixerTest)
+7. **CapsuleVideoTask.execute()** — Wiring complet : ManimSlideReplacer + manimDurations map + deck HTML replacement
+8. **capsule.feature** — Nouveau scénario @manim : "Manim slide HTML is replaced by video embed"
+9. **CapsuleStepDefinitions** — Step "the ManimSlideReplacer replaces the manim slide section with a video embed"
+
+== Tests
+
+- **154 tests unitaires GREEN** (0 failures)
+- **Nouveaux** : 14 (ManimSlideReplacer) + 4 (ComputeSlideDurations) + 3 (ManimSlideReplacementWiring) = 21 nouveaux
+- **Cucumber** : 1 nouveau scénario @manim (slide replacement)
+
+== Prochaines étapes (priorité décroissante)
+
+. **Cucumber @integration Manim** — Scénario Gherkin end-to-end complet avec ManimEngine noop + ManimVideoMixer noop + ManimSlideReplacer noop + validation output remplacé
+. **ManimEngine configurable** — Scripts Manim en dehors de `src/manim/`, paramètres qualité
+. **Parralélisation Manim** — ManimEngine.render() en parallèle pour les slides MANIM multiples
+. **EPIC CAP-18** — Manim slide path replacement + probe duration (COMPLETE)
+
+== État git
+
+main → modifications non commitées (session 024 contenu)
+Unit tests: BUILD SUCCESSFUL (154 unit = GREEN)
