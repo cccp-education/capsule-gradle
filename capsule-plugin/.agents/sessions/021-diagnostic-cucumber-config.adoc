@@ -1,0 +1,34 @@
+= Session 021 — Diagnostic Cucumber @config + Découverte 3 failures environnementaux
+
+== Date
+2026-06-02
+
+== Type
+dev (diagnostic)
+
+== Découverte clé
+
+Les 3 Cucumber failures identifiées en session 020 ne sont PAS les scénarios `@config`.
+Ce sont les 3 tests environnementaux préexistants qui échouent en l'absence d'outils système :
+
+. "Audio constraint — real TTS must produce binary MP3 not text" → espeak absent
+. "Output constraint — capsule video must be written to build/capsules/" → ffmpeg/chromium absent
+. "WebM validity constraint — generated video must have EBML header" → chromium absent
+
+Les 3 scénarios `@config` (scaffold, overwrite, YAML override) sont PASSÉS (0.6s chacun).
+
+== Action
+
+Pas de code modifié cette session. Le diagnostic a révélé que les failures sont
+des contraintes environnementales (espeak/ffmpeg/chromium non disponibles en CI),
+pas des bugs dans le code des scénarios @config.
+
+== Prochaines étapes (session 022)
+
+. **Taguer les 3 scénarios environnementaux `@integration`** pour les exclure du Cucumber runner normal (déjà filtré par `not @integration` dans CucumberTestRunner).
+. **Ajouter les 3 scénarios `@config` au Cucumber existant** vérifié GREEN.
+. **Cucumber BDD Manim** — Scénario Gherkin `[manim:SceneName]`.
+. **Intégration ManimEngine** dans CapsuleVideoTask.
+
+== Score
+5/10 (session de diagnostic uniquement, pas de code livré)

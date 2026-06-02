@@ -20,6 +20,10 @@ data class CapsuleScript(
 )
 
 open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
+    /** Path to the capsule-context.yml configuration file. Defaults to "capsule-context.yml" in the project root. */
+    val configPath: Property<String> = objects.property(String::class.java)
+        .convention("capsule-context.yml")
+
     val ttsEngine: Property<String> = objects.property(String::class.java)
         .convention("piper")
 

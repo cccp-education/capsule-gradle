@@ -74,3 +74,22 @@ Feature: Capsule video generation from a reveal.js deck
     And a capsule script "webm-script.txt" with 1 slide segments
     When I run the task "generateCapsuleVideo" with NoOp capture
     Then the video file "webm.webm" has a valid WebM EBML header
+
+  @config
+  Scenario: Scaffold creates capsule-context yml with default configuration
+    Given a Gradle project with the capsule plugin applied
+    When I run the task "scaffoldCapsuleContext"
+    Then a file named "capsule-context.yml" exists in the project directory
+    And the scaffold file contains all 5 configuration sections
+
+  @config
+  Scenario: Scaffold does not overwrite existing capsule-context yml
+    Given a Gradle project with the capsule plugin applied and an existing capsule-context.yml
+    When I run the task "scaffoldCapsuleContext"
+    Then the existing capsule-context.yml is preserved unchanged
+
+  @config
+  Scenario: YAML configuration overrides gradle.properties defaults
+    Given a Gradle project with the capsule plugin applied and a capsule-context.yml setting espeak TTS
+    When I run the task "generateCapsuleScript"
+    Then the resolved TTS engine is espeak

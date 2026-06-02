@@ -1,56 +1,28 @@
-= PROMPT_REPRISE — Session 020 : CapsuleConfigMerger + Wiring DSL Config Multi-Source + Cucumber Manim
+= PROMPT_REPRISE — Session 022 : Tag @integration Cucumber + Manim Cucumber + ManimEngine wiring
 
 == Contexte
 
-Session 019 — 5/9 EPICs livrés. Full check GREEN (78 unit + 8 func + 9 cucumber = 95 tests).
-Méthodologie : baby step DDD/TDD/BDD, Unit → Functional → Cucumber.
+Session 021 — Diagnostic : les 3 Cucumber FAILURES sont les tests environnementaux
+(espeak/ffmpeg/chromium absents), PAS les 3 scénarios @config. Les @config sont GREEN.
 
-== Livrés session 019
+== Diagnostic session 021
 
-| Livrable | Tests |
-| `createSingleSlideHtml()` — extraction slide standalone | 7 unit TDD |
-| `parallelCaptureEnabled` DSL property | 2 unit TDD |
-| Branchement séquentiel/parallèle dans `execute()` | 2 unit TDD |
-| `captureSlideParallel` utilise `createSingleSlideHtml` | 0 régression |
-| `CapsuleConfig` data class (5 sections) | 6 unit TDD |
-| `CapsuleConfigLoader` YAML + `${VAR}` resolution | 6 unit TDD |
-| `jackson-dataformat-yaml` dependency | — |
+Les 3 scénarios Cucumber qui échouent sont :
+1. "Audio constraint — real TTS must produce binary MP3 not text" → espeak absent
+2. "Output constraint — capsule video must be written to build/capsules/" → chromium absent
+3. "WebM validity constraint — generated video must have EBML header" → chromium absent
 
-== Audit cross-borough pattern multi-source (21 boroughs)
-
-Référence canonique : **plantuml-gradle** (ConfigLoader + ConfigMerger + 4 sources).
-Deuxième ref : **codebase-gradle** (`gradleProperty().orElse(environmentVariable()).orElse(default)`).
-
-Pattern 4 sources : `ENV vars < gradle.properties < YAML file < CLI -P params`
+Les 3 scénarios @config (scaffold, overwrite, YAML override) PASSÉS.
 
 == Prochaines étapes (priorité décroissante)
 
-. **CapsuleConfigMerger** — Merge 4 sources avec precedence. Suivre plantuml-gradle `ConfigMerger` : `loadFromGradleProperties(projectDir)` + `loadFromEnvironment()` + merge par section. TDD baby step.
-. **CapsuleExtension revisitée** — Ajouter `configPath: Property<String>` (point d'entrée YAML). Garder les 18+ `Property<>` existantes pour DSL Kotlin, mais les résoudre via ConfigMerger après `afterEvaluate`.
-. **Wiring Plugin** — `CapsulePlugin.apply()` charge YAML → ConfigMerger → pousse les valeurs résolues dans `CapsuleExtension` via `afterEvaluate { }`. CLI `-P` via `project.findProperty("capsule.*")`.
-. **capsule-context.yml scaffold** — Tâche Gradle `scaffoldCapsuleContext` qui crée le YAML par défaut avec commentaires.
-. **Cucumber BDD Manim** — Scénario Gherkin pipeline manim `[manim:SceneName]` avec mock/skip conditionnel.
-. **Intégration ManimEngine** — Quand `SlideType.MANIM`, appeler `ManimEngine.render()` au lieu de PlaywrightCapture. Résoudre MP4→WebM.
+. **Taguer les 3 scénarios environnementaux `@integration`** dans capsule.feature pour les exclure du run Cucumber normal (CucumberTestRunner filtre déjà `not @integration`).
+. **Cucumber BDD Manim** — Scénario Gherkin `[manim:SceneName]` avec mock/skip conditionnel.
+. **Intégration ManimEngine** — Quand `SlideType.MANIM`, appeler `ManimEngine.render()`.
 . **CapsuleManager resolveManimEngine()** — Factory résolvant ManimEngine depuis CapsuleConfig.
-
-== Source files (session 019)
-
-| Fichier | Lignes | Rôle |
-| CapsuleConfig.kt | 57 | Data class immutable 5 sections (NOUVEAU) |
-| CapsuleConfigLoader.kt | 62 | YAML + `${VAR}` env resolution (NOUVEAU) |
-| CapsuleVideoTask.kt | 510 | execute() + captureSlideParallel + createSingleSlideHtml + concatWebmFiles |
-| CapsuleManager.kt | 195 | Orchestrateur + companion |
-| CapsuleModels.kt | 87 | CapsuleExtension DSL + data classes + parallelCaptureEnabled |
-| ManimEngine.kt | 102 | interface + impl + NoOp |
-| PlaywrightManager.kt | 205 | PlaywrightCapture + ScreenshotCapture |
-| TtsManager.kt | 165 | TtsEngine + Piper + Espeak + NoOp |
 
 == État git
 
-main → non poussé (session 019 contenu non commité — attendre permission)
-Full check : BUILD SUCCESSFUL (78 unit + 8 func + 9 cucumber = 95 tests)
-
-== Remote fork lion92
-
-Toujours en remote. 2 commits clés restants : `136079e` + `e845db4`.
-Ne PAS merger — intégration sélective pièce par pièce uniquement.
+main → modifications non commitées (session 019+020+021 contenu non commité — attendre permission)
+Unit tests: BUILD SUCCESSFUL (110 unit + 8 func = GREEN)
+Cucumber: 9/12 (3 env @integration à taguer, 3 @config GREEN)

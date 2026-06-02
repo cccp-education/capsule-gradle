@@ -1,0 +1,59 @@
+= Session 020 — CapsuleConfigMerger + Scaffold + Wiring DSL Config Multi-Source
+
+== Date
+2026-06-02
+
+== Type
+dev
+
+== Livrés
+
+| Livrable | Tests |
+| `CapsuleConfigMerger.kt` — merge 4 sources (ENV < props < YAML < CLI) | 21 unit TDD |
+| `CapsuleScaffoldTask.kt` — scaffold capsule-context.yml par défaut | 6 unit TDD |
+| `configPath: Property<String>` sur CapsuleExtension | 1 unit TDD |
+| `CapsulePlugin.afterEvaluate` wiring → ConfigMerger → push Extension | 3 unit TDD |
+| 3 scénarios Cucumber `@config` ajoutés | 3 FAILED (à corriger 021) |
+
+== Détail technique
+
+=== CapsuleConfigMerger (318 lignes)
+- `loadFromGradleProperties(projectDir)` — lit `capsule.*` depuis `gradle.properties`
+- `loadFromEnvironment()` — lit `CAPSULE_*` env vars
+- `merge(projectDir, yamlConfig, cliParams, yamlLoaded)` — merge avec priorité CLI > YAML > Props > ENV
+- Paramètre `yamlLoaded: Boolean` distingue "pas de YAML" de "YAML avec defaults"
+- Méthodes `*NoYaml` (CLI > Props > ENV) quand `yamlLoaded = false`
+- Pattern aligné sur plantuml-gradle ConfigMerger
+
+=== CapsuleScaffoldTask (76 lignes)
+- Crée `capsule-context.yml` avec sections commentées (5 sections)
+- Préserve fichier existant (idempotent)
+- Respecte `configPath` personnalisé
+- Tâche `scaffoldCapsuleContext` dans group `generate`
+
+=== Wiring Plugin
+- `CapsulePlugin.apply()` → `afterEvaluate { }` charge YAML → merge → push Extension
+- `collectCliParams(project)` — extrait `-Pcapsule.*` en flat keys
+- `pushConfigIntoExtension(config, ext)` — pousse 18+ propriétés résolues
+
+=== Cucumber (3 scénarios @config)
+- Scaffold creates capsule-context.yml
+- Scaffold does not overwrite existing
+- YAML configuration overrides gradle.properties defaults
+
+== Tests
+
+| Catégorie | Count | Statut |
+| Unit | 110 (78 existants + 21 merger + 6 scaffold + 1 configPath + 3 wiring + 1 scaffold task reg) | GREEN ✅ |
+| Functional | 8 | GREEN ✅ |
+| Cucumber | 9 existants + 3 @config | 9/9 GREEN, 3/3 FAILED ❌ |
+
+== Problèmes connus
+
+- **3 Cucumber `@config` scenarios FAILED** : les step definitions `Given/When/Then` nécessitent
+  un ajustement (le `afterEvaluate` wiring dans le plugin GradleRunner est asynchrone,
+  les vérifications de fichier scaffold et de config YAML resolue nécessitent un flush).
+  À corriger session 021.
+
+== Score
+7/10 (Cucumber Config non validé)

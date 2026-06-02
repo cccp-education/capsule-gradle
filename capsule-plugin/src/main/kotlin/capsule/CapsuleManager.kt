@@ -14,6 +14,7 @@ class CapsuleManager(private val project: Project) {
         project.registerDeployCapsuleTask()
         project.registerCollectCapsuleContextTask()
         project.registerTransformCapsuleContextTask()
+        project.registerScaffoldCapsuleContextTask()
     }
 
     private fun Project.registerGenerateCapsuleScriptTask() {
@@ -82,6 +83,14 @@ class CapsuleManager(private val project: Project) {
             task.contextFile.convention(
                 project.layout.buildDirectory.file("capsule/capsule-context.json")
             )
+        }
+    }
+
+    private fun Project.registerScaffoldCapsuleContextTask() {
+        tasks.register("scaffoldCapsuleContext", CapsuleScaffoldTask::class.java) { task ->
+            task.group = "generate"
+            task.description = "Scaffolds a default capsule-context.yml configuration file with comments"
+            task.capsuleExtension = this@CapsuleManager.capsuleExt
         }
     }
 

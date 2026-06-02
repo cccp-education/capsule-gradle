@@ -1,3 +1,4 @@
 capsules/
 build/
 .gradle/
+.kotlin
