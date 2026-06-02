@@ -12,6 +12,9 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import org.gradle.api.tasks.Internal
 import org.gradle.work.DisableCachingByDefault
 import java.io.File
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.atomic.AtomicInteger
 
 class CapsuleManager(private val project: Project) {
 
@@ -318,8 +321,11 @@ open class CapsuleBuildTask : DefaultTask() {
         val engine = resolveTtsEngine()
         logger.lifecycle("TTS engine: {}", engine.name())
 
-        var totalSynthesized = 0
-        var totalFailed = 0
+        val cores = Runtime.getRuntime().availableProcessors()
+        val executor = Executors.newFixedThreadPool(cores)
+        val synthesized = AtomicInteger(0)
+        val failed = AtomicInteger(0)
+        val futures = mutableListOf<Future<*>>()
 
         for (script in scripts) {
             val parsed = CapsuleManager.parseScript(script)
@@ -330,21 +336,29 @@ open class CapsuleBuildTask : DefaultTask() {
                 val idx = String.format("%02d", seg.index)
                 val ttsFile = deckOutputDir.resolve("slide-$idx.mp3")
 
-                try {
-                    engine.synthesize(seg.speakerNote, ttsFile)
-                    totalSynthesized++
-                    logger.lifecycle("  TTS → {} ({} chars)", ttsFile.name, seg.speakerNote.length)
-                } catch (e: TtsException) {
-                    totalFailed++
-                    logger.error("  TTS FAILED slide {}: {}", seg.index, e.message)
-                    if (!capsuleExtension.ttsFallbackEnabled.get()) throw e
-                }
+                futures.add(executor.submit {
+                    try {
+                        engine.synthesize(seg.speakerNote, ttsFile)
+                        synthesized.incrementAndGet()
+                        logger.lifecycle("  TTS → {} ({} chars)", ttsFile.name, seg.speakerNote.length)
+                    } catch (e: TtsException) {
+                        failed.incrementAndGet()
+                        logger.error("  TTS FAILED slide {}: {}", seg.index, e.message)
+                    }
+                })
             }
         }
 
+        futures.forEach { it.get() }
+        executor.shutdown()
+
+        if (failed.get() > 0 && !capsuleExtension.ttsFallbackEnabled.get()) {
+            throw TtsException("${failed.get()} TTS synthesis failures (fallback disabled)")
+        }
+
         logger.lifecycle(
-            "TTS generation: {} synthesized, {} failed, {} engine",
-            totalSynthesized, totalFailed, engine.name()
+            "TTS generation: {} synthesized, {} failed, {} engine, {} cores",
+            synthesized.get(), failed.get(), engine.name(), cores
         )
     }
 }
@@ -352,8 +366,8 @@ open class CapsuleBuildTask : DefaultTask() {
 @DisableCachingByDefault(because = "Filesystem-bound: injects audio into HTML deck and captures video via Playwright")
 open class CapsuleVideoTask : DefaultTask() {
 
-    @get:OutputFile
-    val outputFile: RegularFileProperty = project.objects.fileProperty()
+    @get:OutputDirectory
+    val outputDir: DirectoryProperty = project.objects.directoryProperty()
 
     @get:Internal
     lateinit var capsuleExtension: CapsuleExtension
@@ -401,8 +415,8 @@ open class CapsuleVideoTask : DefaultTask() {
     internal var ttsEngine: TtsEngine? = null
 
     init {
-        outputFile.convention(
-            project.layout.buildDirectory.file("capsule/capsule.webm")
+        outputDir.convention(
+            project.layout.buildDirectory.dir("capsule")
         )
     }
 
@@ -477,9 +491,9 @@ open class CapsuleVideoTask : DefaultTask() {
             return
         }
 
-        val outDir = project.projectDir.resolve(
+        val outDir = project.layout.buildDirectory.dir(
             capsuleExtension.outputDir.get()
-        )
+        ).get().asFile
         outDir.mkdirs()
 
         val engine = resolveTtsEngine()
@@ -544,7 +558,7 @@ open class CapsuleVideoTask : DefaultTask() {
 
     private fun injectAudio(deckFile: File, script: CapsuleScript, audioDir: File): File {
         val originalHtml = deckFile.readText()
-        val injectedDir = deckFile.parentFile
+        val injectedDir = project.layout.buildDirectory.dir("capsule/injected").get().asFile
         injectedDir.mkdirs()
 
         val hasAudio = script.slides.any { seg ->
@@ -884,63 +898,15 @@ open class CapsuleCompositeContextTask : DefaultTask() {
             "timestamp" to System.currentTimeMillis()
         )
 
-        val json = buildJsonString(result)
+        val mapper = jacksonObjectMapper()
         val outFile = outputFile.get().asFile
         outFile.parentFile.mkdirs()
-        outFile.writeText(json)
+        mapper.writerWithDefaultPrettyPrinter().writeValue(outFile, result)
 
         logger.lifecycle(
             "CAPSULE COMPOSITE CONTEXT -> {} ({} decks)",
             outFile.absolutePath, capsuleEntries.size
         )
-    }
-
-    private fun buildJsonString(map: Map<*, *>): String {
-        val sb = StringBuilder()
-        sb.append("{\n")
-        map.entries.forEachIndexed { idx, (key, value) ->
-            sb.append("  \"$key\": ")
-            sb.append(valueToJson(value))
-            if (idx < map.size - 1) sb.append(",")
-            sb.append("\n")
-        }
-        sb.append("}")
-        return sb.toString()
-    }
-
-    private fun valueToJson(value: Any?): String {
-        return when (value) {
-            is String -> "\"${value.escapeJson()}\""
-            is Number -> value.toString()
-            is Boolean -> value.toString()
-            is Map<*, *> -> buildJsonString(value)
-            is List<*> -> {
-                val sb = StringBuilder()
-                sb.append("[")
-                if (value.isNotEmpty()) {
-                    sb.append("\n")
-                    value.forEachIndexed { idx, item ->
-                        sb.append("    ")
-                        sb.append(valueToJson(item))
-                        if (idx < value.size - 1) sb.append(",")
-                        sb.append("\n")
-                    }
-                    sb.append("  ")
-                }
-                sb.append("]")
-                sb.toString()
-            }
-            else -> "\"$value\""
-        }
-    }
-
-    private fun String.escapeJson(): String {
-        return this
-            .replace("\\", "\\\\")
-            .replace("\"", "\\\"")
-            .replace("\n", "\\n")
-            .replace("\r", "\\r")
-            .replace("\t", "\\t")
     }
 }
 

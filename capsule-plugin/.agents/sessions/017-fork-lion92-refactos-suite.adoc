@@ -1,0 +1,95 @@
+= Session 017 — Intégration sélective fork lion92 (suite)
+:date: 2026-06-02
+:type: dev
+:sujet: 5/5 refactos du fork intégrés + fix plugin ID + output dir → build/
+:score: 9/10
+
+== Contexte
+
+Session 016 — 2/5 refactos intégrés (CapsuleModels + DRY). 3 restants.
+Cette session termine l'intégration : 3 refactos restants + 2 correctifs découverts.
+
+== Audit du fork lion92 `fix/pipeline-outputdir-parallel-capture`
+
+2 commits significatifs :
+
+1. `136079e` — fix: correct pipeline output dirs, plugin ID, parallel capture and TTS
+2. `e845db4` — feat(manim): intégration Manim pour capsules mathématiques
+
+Analyse complète du diff. Décision : intégration sélective pièce par pièce, pas de merge cross-fork.
+
+== Refactos complétés (5/5 + 2 bonus)
+
+=== Fix bonus 1 : Plugin ID mismatch
+
+- `build.gradle.kts` : `id = "com.cheroliv.capsule"` → `id = "education.cccp.capsule"`
+- `build.gradle.kts` : `group = "com.cheroliv"` → `group = "education.cccp"`
+- 7 tests UnknownPluginException résolus (passe de 30/37 à 37/37)
+
+=== Fix bonus 2 : PlaywrightCaptureImpl timeout + headless fix
+
+- `setDefaultNavigationTimeout(timeout)` + `setDefaultTimeout(timeout)`
+- Audio ne joue pas en headless Chromium → toujours `waitForTimeout`
+- Supprime le `waitForFunction` audio race condition
+
+=== Refacto 2/5 : Parallélisme TTS
+
+- `CapsuleBuildTask.execute()` : séquentiel → `Executors.newFixedThreadPool(cores)` + `AtomicInteger` + `Future<?>`
+- 3 tests unitaires `CapsuleBuildTaskTest` (TDD RED→GREEN)
+  - `execute synthesizes TTS in parallel for multiple slides` — vérifie max concurrent > 1
+  - `execute reports failures and continues when fallback enabled`
+  - `execute warns when no script files found`
+
+=== Refacto 4/5 : ScreenshotCaptureImpl
+
+- Nouvelle classe dans `PlaywrightManager.kt`
+- PNG screenshot + FFmpeg → WebM (1 frame static, durée exacte)
+- Plus rapide et fiable que Playwright video recording
+- 3 tests unitaires `ScreenshotCaptureTest` (TDD RED→GREEN)
+
+=== Refacto 3/5 (bonus) : CapsuleCompositeContext Jackson
+
+- Supprime `buildJsonString` manuel (47 lignes) → `jacksonObjectMapper().writerWithDefaultPrettyPrinter()`
+- 1 test ajouté : `execution produces valid parseable JSON`
+
+=== Refacto 6/5 (bonus) : Output dir + inject dir
+
+- `CapsuleVideoTask` : `@OutputFile` → `@OutputDirectory`, convention `build/capsule`
+- `outDir` : `project.projectDir.resolve(outputDir)` → `project.layout.buildDirectory.dir(outputDir)`
+- `injectAudio` : écrit dans `build/capsule/injected/` au lieu de polluer le deck source
+- Adaptation : 3 tests unitaires + 3 Cucumber steps + 1 feature + 1 functional test
+
+== Tests
+
+| Catégorie | Résultat |
+| Unit (JUnit5) | 37/37 PASS |
+| Functional (GradleTestKit) | 8/8 PASS |
+| Cucumber BDD | 9/9 PASS |
+| Kover coverage | OK |
+| Plugin validation | OK |
+| **Total check** | **BUILD SUCCESSFUL** |
+
+== Refacto restant : ManimEngine
+
+- Nouveau fichier `ManimEngine.kt` déjà audité dans le fork (`e845db4`)
+- Intégration dans `captureSlideParallel` avec branchement `SlideType.MANIM`
+- Nécessite un nouveau Cucumber scenario + tests unitaires
+- Priorité basse — manim Python n'est pas installé en CI
+
+== Améliorations post-intégration
+
+. `createSingleSlideHtml()` — isoler slides par injection JS (du fork) + parallel capture
+. Split `CapsuleManager.kt` (~960 lignes) → tasks dans fichiers séparés
+. Parallel capture `captureSlideParallel()` + `concatWebmFiles()`
+. Cucumber `[manim:SceneName]` avec mock ou skip conditionnel
+
+== État git
+
+main → avance sur origin (non poussé)
+lion92/fix/pipeline-outputdir-parallel-capture → fetché en local
+
+== Leçons
+
+. Baby step TDD fonctionne parfaitement pour l'intégration sélective : chaque refacto est un cycle RED→GREEN→COMMIT
+. Le fork avait un problème de cohérence : commit 136079e supprime SlideType/Manim, commit e845db4 les ré-ajoute différemment. L'approche séquentielle pièce par pièce évite ce ping-pong.
+. Plugin ID mismatch = source majeure de UnknownPluginException. Toujours vérifier `gradlePlugin {}` vs tests après une migration namespace.

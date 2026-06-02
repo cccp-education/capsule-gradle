@@ -219,7 +219,7 @@ class CapsuleVideoOutputConstraintFunctionalTest {
     private val webmSignature = byteArrayOf(0x1a.toByte(), 0x45.toByte(), 0xdf.toByte(), 0xa3.toByte())
 
     @Test
-    fun `generateCapsuleVideo task must output to capsules directory not build`() {
+    fun `generateCapsuleVideo task must output to build capsules directory`() {
         projectDir.resolve("settings.gradle").writeText("")
         projectDir.resolve("build.gradle").writeText("""
             plugins {
@@ -256,7 +256,7 @@ Note content.
         runner.withProjectDir(projectDir)
         val result = runner.build()
 
-        val capFile = projectDir.resolve("capsules/test.webm")
-        assertTrue(capFile.exists(), "Video must be in capsules/ not build/, expected: ${capFile.absolutePath}")
+        val capFile = projectDir.resolve("build/capsules/test.webm")
+        assertTrue(capFile.exists(), "Video must be in build/capsules/, expected: ${capFile.absolutePath}")
     }
 }

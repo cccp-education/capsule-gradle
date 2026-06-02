@@ -1,31 +1,36 @@
-= PROMPT_REPRISE — Session 017 : Intégration sélective fork lion92 (suite)
+= PROMPT_REPRISE — Session 018 : ManimEngine + Parallel Capture + Split CapsuleManager.kt
 
 == Contexte
 
-Session 016 — 2/5 refactos intégrés (CapsuleModels + DRY). 3 restants.
+Session 017 — 5/5 refactos intégrés + 2 bonus. Full check GREEN (37 unit + 8 functional + 9 cucumber).
 Méthodologie : baby step TDD, Unit → Functional → Cucumber, un commit par refacto.
 
-== Refactos restants
+== Livrés session 017
 
-. **Parallélisme TTS** — CapsuleBuildTask.execute() : séquentiel → Executors.newFixedThreadPool(cores) + AtomicInteger + Future<File?>. Imports : java.util.concurrent.Executors, Future, AtomicInteger.
-. **ScreenshotCapture** — ScreenshotCaptureImpl dans PlaywrightManager.kt : PNG screenshot + FFmpeg → WebM. Plus fiable et rapide que Playwright video. Signature duration: Double.
-. **ManimEngine** — Nouveau fichier. Manim Python → MP4 → WebM via ProcessBuilder. isAvailable() pre-flight. Chemin standard videos/{sceneName}/{quality}/.
+| Refacto | Tests |
+| Plugin ID fix (education.cccp.capsule + group) | 7 UnknownPluginException résolus |
+| Parallélisme TTS (Executors+AtomicInteger+Future) | 3 unit |
+| ScreenshotCaptureImpl (PNG→FFmpeg→WebM) | 3 unit |
+| Jackson pour CapsuleCompositeContext | 1 unit |
+| Output dir → build/ + injectAudio → build/capsule/injected | 3 unit + 3 Cucumber + 1 functional adaptés |
+| PlaywrightCaptureImpl timeout + headless fix | stable |
 
-== Refactos complétés (session 016)
+== Prochaines étapes (priorité décroissante)
 
-| Refacto | Commit | Tests |
-| CapsuleModels (SlideType, espeak, manim config) | 4218a70 | 4 unit |
-| DRY (companion, AUDIO_INJECT_SCRIPT, parseScript [manim]) | 72366b1 | 2 unit |
-
-== Améliorations post-intégration
-
-. createSingleSlideHtml() — lecture RAM + batch writing
-. Split CapsuleManager.kt (~1000 lignes)
-. Jackson mapper dans CapsuleCompositeContextTask (remplacer buildJsonString manuel)
-. Cucumber [manim:SceneName] avec mock ou skip conditionnel
+. **ManimEngine** — Nouveau fichier `ManimEngine.kt` : Manim Python → MP4 → WebM via ProcessBuilder. isAvailable() + render() + probeDuration(). Fork commit `e845db4` comme source. TDD : test NoOp + isAvailable + render failure.
+. **Parallel capture** — `captureSlideParallel()` dans CapsuleVideoTask : N instances ScreenshotCaptureImpl (cap 4) + concatWebmFiles(). Fork commit `136079e` + `e845db4`. TDD : test avec mock capture.
+. **Split CapsuleManager.kt** (~960 lignes) → 1 classe par task. Convention foundry : 1 fichier = 1 top-level class.
+. **createSingleSlideHtml()** — Du fork. Injection JS pour isoler une slide. Fragile (dépend du DOM). À évaluer.
+. **Amélioration Cucumber** — [manim:SceneName] avec mock ou skip conditionnel.
 
 == État git
 
-main → 72366b1 (3 commits non pushés, + les docs de session)
-audit/lion92-fork → 6860a60 (local + remote)
-Pré-existant : 7 tests UnknownPluginException (pluginUnderTestMetadata)
+main → avance sur origin (non poussé, session 017 contenu)
+lion92/fix/pipeline-outputdir-parallel-capture → fetché en local
+Full check : BUILD SUCCESSFUL
+
+== Remote fork lion92
+
+Ajouté comme remote `lion92`. Branche `fix/pipeline-outputdir-parallel-capture` fetchée.
+2 commits clés : `136079e` (pipeline fix) et `e845db4` (manim).
+Ne PAS merger — intégration sélective pièce par pièce uniquement.

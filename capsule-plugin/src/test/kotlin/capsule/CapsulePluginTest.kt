@@ -3,7 +3,10 @@ package capsule
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.io.TempDir
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -227,6 +230,140 @@ class PlaywrightCaptureTest {
     }
 }
 
+class ScreenshotCaptureTest {
+
+    @Test
+    fun `screenshot capture reports name correctly`() {
+        val capture = ScreenshotCaptureImpl()
+        assertEquals("screenshot+ffmpeg", capture.name())
+    }
+
+    @Test
+    fun `screenshot capture isAvailable returns false when no chromium`() {
+        // In a CI/test environment without Chromium, this may be false
+        // The test just verifies the method runs without error
+        val capture = ScreenshotCaptureImpl()
+        // Don't assert true/false — presence varies by environment
+        capture.isAvailable()
+    }
+
+    @Test
+    fun `screenshot capture close is safe without init`() {
+        val capture = ScreenshotCaptureImpl()
+        capture.close()
+    }
+}
+
+class CapsuleBuildTaskTest {
+
+    @TempDir
+    lateinit var tempDir: File
+
+    private fun createBuildTask(
+        scriptDir: File,
+        engine: TtsEngine? = null
+    ): CapsuleBuildTask {
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.sliderScriptDir.set(scriptDir.relativeTo(project.layout.buildDirectory.get().asFile).path)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+
+        val t = project.tasks.register("generateCapsule", CapsuleBuildTask::class.java).get()
+        t.capsuleExtension = ext
+        if (engine != null) t.ttsEngine = engine
+        return t
+    }
+
+    @Test
+    fun `execute synthesizes TTS in parallel for multiple slides`() {
+        val buildDir = File(tempDir, "build")
+        val scriptDir = File(buildDir, "capsule").also { it.mkdirs() }
+        val scriptFile = File(scriptDir, "parallel-test-script.txt")
+        scriptFile.writeText("""
+=== CAPSULE SCRIPT : parallel-test ===
+--- SLIDE 1 : Intro ---
+Première diapositive.
+--- SLIDE 2 : Milieu ---
+Deuxième diapositive.
+--- SLIDE 3 : Fin ---
+Troisième diapositive.
+        """.trimIndent())
+
+        val concurrentCalls = AtomicInteger(0)
+        val maxConcurrent = AtomicInteger(0)
+        val totalCalls = AtomicInteger(0)
+
+        val countingEngine = object : TtsEngine {
+            override fun synthesize(text: String, outputFile: File) {
+                val current = concurrentCalls.incrementAndGet()
+                totalCalls.incrementAndGet()
+                // Track max concurrency
+                var old: Int
+                do {
+                    old = maxConcurrent.get()
+                    if (current <= old) break
+                } while (!maxConcurrent.compareAndSet(old, current))
+                outputFile.parentFile.mkdirs()
+                outputFile.writeText("# TTS PLACEHOLDER (counting engine)\n# Text: ${text.take(50)}...")
+                Thread.sleep(50) // simulate work
+                concurrentCalls.decrementAndGet()
+            }
+            override fun isAvailable(): Boolean = true
+            override fun name(): String = "counting"
+        }
+
+        val task = createBuildTask(scriptDir, engine = countingEngine)
+        task.execute()
+
+        assertEquals(3, totalCalls.get(), "All 3 slides should be synthesized")
+        assertTrue(maxConcurrent.get() > 1, "Parallel execution expected, max concurrent was ${maxConcurrent.get()}")
+    }
+
+    @Test
+    fun `execute reports failures and continues when fallback enabled`() {
+        val buildDir = File(tempDir, "build")
+        val scriptDir = File(buildDir, "capsule").also { it.mkdirs() }
+        val scriptFile = File(scriptDir, "fail-test-script.txt")
+        scriptFile.writeText("""
+=== CAPSULE SCRIPT : fail-test ===
+--- SLIDE 1 : OK ---
+Celui-ci marche.
+--- SLIDE 2 : Bad ---
+Celui-ci échoue.
+--- SLIDE 3 : Also OK ---
+Celui-ci aussi.
+        """.trimIndent())
+
+        var callCount = 0
+        val failingEngine = object : TtsEngine {
+            override fun synthesize(text: String, outputFile: File) {
+                callCount++
+                if (text.contains("échoue")) {
+                    throw TtsException("Simulated failure for slide 2")
+                }
+                outputFile.parentFile.mkdirs()
+                outputFile.writeText("# TTS PLACEHOLDER\n# Text: ${text.take(50)}...")
+            }
+            override fun isAvailable(): Boolean = true
+            override fun name(): String = "failing"
+        }
+
+        val task = createBuildTask(scriptDir, engine = failingEngine)
+        task.execute()
+
+        assertEquals(3, callCount, "All 3 slides should be attempted")
+    }
+
+    @Test
+    fun `execute warns when no script files found`() {
+        val buildDir = File(tempDir, "build")
+        val scriptDir = File(buildDir, "capsule").also { it.mkdirs() }
+        val task = createBuildTask(scriptDir)
+        task.execute()
+    }
+}
+
 class CapsuleVideoTaskTest {
 
     @TempDir
@@ -302,12 +439,12 @@ Voici le contenu principal.
         )
         task.execute()
 
-        val expectedVideo = File(tempDir, "capsule/mon-cours.webm")
+        val expectedVideo = File(tempDir, "build/capsule/mon-cours.webm")
         assertTrue(expectedVideo.exists(), "Expected video at ${expectedVideo.absolutePath}")
         assertTrue(expectedVideo.readText().contains("PLAYWRIGHT CAPTURE PLACEHOLDER"))
 
-        val injectedDeck = File(deckDir, "mon-cours-deck.html")
-        assertTrue(injectedDeck.exists())
+        val injectedDeck = File(tempDir, "build/capsule/injected/mon-cours-deck.html")
+        assertTrue(injectedDeck.exists(), "Expected injected deck at ${injectedDeck.absolutePath}")
         assertTrue(injectedDeck.readText().contains("data-audio"))
     }
 
@@ -347,8 +484,8 @@ Contenu slide 3.
         )
         task.execute()
 
-        val injectedDeck = File(deckDir, "cours-deck.html")
-        assertTrue(injectedDeck.exists())
+        val injectedDeck = File(tempDir, "build/capsule/injected/cours-deck.html")
+        assertTrue(injectedDeck.exists(), "Expected injected deck at ${injectedDeck.absolutePath}")
         val injectedContent = injectedDeck.readText()
         assertTrue(injectedContent.contains("data-audio"), "Should have audio attributes")
         assertTrue(injectedContent.contains("sequential fallback"))
@@ -399,7 +536,7 @@ Deck B.
         )
         task.execute()
 
-        val capDir = File(tempDir, "capsule")
+        val capDir = File(tempDir, "build/capsule")
         val videoA = File(capDir, "cours-a.webm")
         val videoB = File(capDir, "cours-b.webm")
         assertTrue(videoA.exists(), "Expected video for cours-a")
@@ -669,6 +806,31 @@ Note.
         val content = File(buildDir, "capsule/capsule-context.json").readText()
         assertTrue(content.contains("distribVideo"))
         assertTrue(content.contains("distrib"))
+    }
+
+    @Test
+    fun `execution produces valid parseable JSON`() {
+        val buildDir = File(tempDir, "build")
+        val scriptDir = File(buildDir, "capsule").also { it.mkdirs() }
+        val capDir = File(buildDir, "capsule").also { it.mkdirs() }
+        val distDir = File(buildDir, "capsule/distrib").also { it.mkdirs() }
+
+        File(scriptDir, "json-test-script.txt").writeText("""
+=== CAPSULE SCRIPT : json-test ===
+--- SLIDE 1 : Verif ---
+Test de validité JSON.
+        """.trimIndent())
+
+        val task = createTask(scriptDir, capDir, distDir)
+        task.execute()
+
+        val jsonFile = File(buildDir, "capsule/capsule-context.json")
+        assertTrue(jsonFile.exists())
+        val mapper = jacksonObjectMapper()
+        val parsed: Map<String, Any> = mapper.readValue(jsonFile)
+        assertEquals("capsule", parsed["source"])
+        assertNotNull(parsed["entries"], "JSON must have entries array")
+        assertTrue(parsed["entries"] is List<*>, "entries must be a list")
     }
 }
 

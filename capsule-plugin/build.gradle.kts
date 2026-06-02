@@ -10,7 +10,7 @@ plugins {
     alias(libs.plugins.kover)
 }
 
-group = "com.cheroliv"
+group = "education.cccp"
 version = libs.plugins.capsule.get().version
 kotlin.jvmToolchain(JavaVersion.VERSION_24.ordinal)
 
@@ -38,7 +38,7 @@ dependencies {
 
 gradlePlugin {
     val capsule by plugins.creating {
-        id = "com.cheroliv.capsule"
+        id = "education.cccp.capsule"
         implementationClass = "capsule.CapsulePlugin"
     }
 }
