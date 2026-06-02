@@ -1,0 +1,123 @@
+package capsule
+
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
+import java.io.File
+
+@DisableCachingByDefault(because = "Filesystem-bound: invokes FFmpeg process for video cropping")
+open class CapsuleDistribTask : DefaultTask() {
+
+    @get:OutputDirectory
+    val outputDir: DirectoryProperty = project.objects.directoryProperty()
+
+    @get:Internal
+    lateinit var capsuleExtension: CapsuleExtension
+
+    init {
+        outputDir.convention(project.layout.buildDirectory.dir("capsule/distrib"))
+    }
+
+    @TaskAction
+    fun execute() {
+        val capDir = project.layout.buildDirectory.dir(
+            capsuleExtension.outputDir.get()
+        ).get().asFile
+
+        val videos = capDir.listFiles { f -> f.name.endsWith(".webm") }?.toList()
+            ?: emptyList()
+
+        if (videos.isEmpty()) {
+            logger.warn("No capsule videos found in {}. Run 'generateCapsuleVideo' first.", capDir.absolutePath)
+            return
+        }
+
+        val distDir = outputDir.get().asFile
+        distDir.mkdirs()
+
+        val ffmpeg = capsuleExtension.ffmpegExecutablePath.get()
+        val targetWidth = capsuleExtension.distribOutputWidth.get()
+        val targetHeight = capsuleExtension.distribOutputHeight.get()
+
+        if (!isFfmpegAvailable(ffmpeg)) {
+            logger.warn("FFmpeg not available at '{}' — copying videos as-is to distrib", ffmpeg)
+            for (video in videos) {
+                val dest = distDir.resolve(video.name)
+                video.copyTo(dest, overwrite = true)
+                logger.lifecycle("  COPY → {}", dest.absolutePath)
+            }
+            return
+        }
+
+        for (video in videos) {
+            val outputFile = distDir.resolve(video.name)
+
+            if (!isValidWebM(video)) {
+                logger.lifecycle("DISTRIB → {} (placeholder, copy as-is)", video.name)
+                video.copyTo(outputFile, overwrite = true)
+                logger.lifecycle("  COPY → {}", outputFile.absolutePath)
+                continue
+            }
+
+            logger.lifecycle("DISTRIB → {} (crop {}x{})", video.name, targetWidth, targetHeight)
+
+            try {
+                cropVideo(video, outputFile, ffmpeg, targetWidth, targetHeight)
+                logger.lifecycle("  OK → {}", outputFile.absolutePath)
+            } catch (e: Exception) {
+                logger.error("  FAILED {}: {}", video.name, e.message)
+                throw e
+            }
+        }
+    }
+
+    private fun cropVideo(
+        input: File,
+        output: File,
+        ffmpeg: String,
+        targetWidth: Int,
+        targetHeight: Int
+    ) {
+        val proc = ProcessBuilder(
+            ffmpeg, "-y",
+            "-i", input.absolutePath,
+            "-vf", "scale=$targetWidth:$targetHeight:force_original_aspect_ratio=increase,crop=$targetWidth:$targetHeight",
+            "-c:a", "copy",
+            output.absolutePath
+        ).redirectErrorStream(true).start()
+
+        val exitCode = proc.waitFor()
+        if (exitCode != 0) {
+            val stderr = proc.inputStream.bufferedReader().readText()
+            throw RuntimeException("FFmpeg exited with code $exitCode: $stderr")
+        }
+    }
+
+    private fun isFfmpegAvailable(ffmpegPath: String): Boolean {
+        return try {
+            val proc = ProcessBuilder(ffmpegPath, "-version")
+                .redirectErrorStream(true)
+                .start()
+            proc.waitFor()
+            proc.exitValue() == 0
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private val webmSignature = byteArrayOf(0x1a.toByte(), 0x45.toByte(), 0xdf.toByte(), 0xa3.toByte())
+
+    private fun isValidWebM(file: File): Boolean {
+        if (file.length() < 4) return false
+        return try {
+            val header = ByteArray(4)
+            file.inputStream().use { it.read(header) }
+            header.contentEquals(webmSignature)
+        } catch (e: Exception) {
+            false
+        }
+    }
+}

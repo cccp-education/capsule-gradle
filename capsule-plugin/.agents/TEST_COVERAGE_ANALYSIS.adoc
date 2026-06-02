@@ -1,25 +1,28 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-06-02
-:session: 017 Intégration sélective fork lion92 (5/5+2)
+:session: 018 ManimEngine + Parallel Capture + Split CapsuleManager
 
-== Couverture — 2 juin 2026 (après session 017)
+== Couverture — 2 juin 2026 (après session 018)
 
 |===
 | Classe | Type | Tests | Couverture
 | CapsulePlugin.kt | main | 6 unitaires | Enregistrement extension + 5 taches
 | CapsuleModels.kt | main | 5 unitaires | CapsuleExtension 14 propriétés + SlideType enum + SlideSegment defaults + manimScene
-| CapsuleManager.kt (parseScript) | main | 2 unitaires | Parse [manim:SceneName] + [html] + default HTML type
+| CapsuleManager.kt | main | 2 unitaires | parseScript [manim:SceneName] + [html] + default HTML type
+| CapsuleScriptTask.kt | main | 0 | (loggé uniquement, pas de logique testable isolément)
 | CapsuleBuildTask.kt | main | 3 unitaires | Parallélisme (Executors+AtomicInteger+Future), failures+fallback, empty scripts
-| CapsuleVideoTask.kt | main | 5 unitaires | empty deck warn, empty script warn, e2e NoOp + injectAudio, sequential fallback, multi-deck
+| CapsuleVideoTask.kt | main | 9 unitaires | empty deck/script warn, e2e NoOp + injectAudio, sequential fallback, multi-deck + captureSlideParallel cap 4 + concatWebmFiles (4 tests)
 | CapsuleDistribTask.kt | main | 3 unitaires | no videos warn, ffmpeg unavailable copy, multiple videos
 | CapsuleCompositeContextTask.kt | main | 4 unitaires | json context file, multiple decks, distribVideo, valid parseable JSON (Jackson)
 | CapsuleParseContextTask.kt | main | 3 unitaires | parse JSON, empty entries, missing file graceful
+| ManimEngine.kt | main | 6 unitaires | NoOpManimEngine (3) + ManimEngineImpl (3 : unavailable, ManimException, name)
 | TtsManager.kt | main | 5 unitaires | NoOpTtsEngine, PiperTtsEngine, EspeakTtsEngine (3), TtsException
 | PlaywrightManager.kt | main | 6 unitaires | NoOpPlaywrightCapture (3) + ScreenshotCaptureImpl (3 : name, isAvailable, close)
 | AudioQualityConstraint | main | 3 unitaires | Real TTS > placeholder, not text, WebM EBML header
+| RevealJsRenderingConstraint | main | 1 unitaire | Chromium slide-by-slide (integration tag)
 |===
 
-- Unitaires: 37/37 PASS
+- Unitaires: 56/56 PASS
 - Fonctionnels (GradleTestKit): 8/8 PASS
 - Cucumber BDD: 9/9 PASS (7 scénarios noOp + 1 espeak audio constraint + 1 build/capsules output)
 - Full check: BUILD SUCCESSFUL

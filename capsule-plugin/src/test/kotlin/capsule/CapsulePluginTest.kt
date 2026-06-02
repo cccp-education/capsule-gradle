@@ -1013,6 +1013,175 @@ class AudioQualityConstraintTest {
     }
 }
 
+class ParallelCaptureTest {
+
+    @TempDir
+    lateinit var tempDir: File
+
+    private fun createTinyWebm(output: File) {
+        val proc = ProcessBuilder(
+            "ffmpeg", "-y", "-f", "lavfi", "-i", "testsrc=duration=1:size=2x2:rate=1",
+            "-pix_fmt", "yuv420p", output.absolutePath
+        ).redirectErrorStream(true).start()
+        proc.waitFor()
+    }
+
+    @Test
+    fun `concatWebmFiles creates output from multiple webm files`() {
+        val webm1 = File(tempDir, "slide1.webm").also { createTinyWebm(it) }
+        val webm2 = File(tempDir, "slide2.webm").also { createTinyWebm(it) }
+        val output = File(tempDir, "output.webm")
+
+        val result = CapsuleVideoTask.concatWebmFiles(listOf(webm1, webm2), output)
+
+        assertTrue(result, "concatWebmFiles should succeed")
+        assertTrue(output.exists(), "Output file should exist")
+        assertTrue(output.length() > 0, "Output file should not be empty")
+        assertTrue(!webm1.exists(), "Individual webm1 should be cleaned up")
+        assertTrue(!webm2.exists(), "Individual webm2 should be cleaned up")
+    }
+
+    @Test
+    fun `concatWebmFiles handles empty list gracefully`() {
+        val output = File(tempDir, "empty.webm")
+        val result = CapsuleVideoTask.concatWebmFiles(emptyList(), output)
+        assertTrue(!result, "Should return false for empty list")
+        assertTrue(!output.exists(), "No output should be created for empty list")
+    }
+
+    @Test
+    fun `concatWebmFiles cleans up individual webm files after concat`() {
+        val webm1 = File(tempDir, "a.webm").also { createTinyWebm(it) }
+        val output = File(tempDir, "out.webm")
+
+        CapsuleVideoTask.concatWebmFiles(listOf(webm1), output)
+
+        assertTrue(!webm1.exists(), "Input file should be deleted after concat")
+        assertTrue(output.exists(), "Output should exist")
+    }
+
+    @Test
+    fun `concatWebmFiles falls back gracefully when ffmpeg not available`() {
+        val webm1 = File(tempDir, "single.webm").also { createTinyWebm(it) }
+        val output = File(tempDir, "fallback.webm")
+
+        val result = CapsuleVideoTask.concatWebmFiles(listOf(webm1), output, "__nonexistent_ffmpeg__")
+        assertTrue(!result, "Should return false when ffmpeg not available")
+        assertTrue(!output.exists(), "No output should exist when ffmpeg not available")
+        assertTrue(webm1.exists(), "Input files should NOT be deleted when concat fails")
+    }
+
+    @Test
+    fun `captureSlideParallel limits concurrency to 4 instances`() {
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+        ext.viewportWidth.set(1408)
+        ext.viewportHeight.set(792)
+        ext.slideDurationSeconds.set(5.0)
+        ext.playwrightTimeout.set(120_000.0)
+
+        val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        task.capsuleExtension = ext
+
+        val activeFactories = AtomicInteger(0)
+        val maxConcurrentFactories = AtomicInteger(0)
+        val totalCreated = AtomicInteger(0)
+
+        val fakeCapture = object : PlaywrightCapture {
+            override fun capture(deckHtmlPath: String, outputDir: File, viewportWidth: Int, viewportHeight: Int, slideDurations: List<Double>) {
+                outputDir.mkdirs()
+                outputDir.resolve("slide.webm").writeText("fake")
+            }
+            override fun isAvailable() = true
+            override fun name() = "fake"
+            override fun close() {}
+        }
+
+        val factory: () -> PlaywrightCapture = {
+            val current = activeFactories.incrementAndGet()
+            totalCreated.incrementAndGet()
+            var old: Int
+            do {
+                old = maxConcurrentFactories.get()
+                if (current <= old) break
+            } while (!maxConcurrentFactories.compareAndSet(old, current))
+            Thread.sleep(50)
+            activeFactories.decrementAndGet()
+            fakeCapture
+        }
+
+        val script = CapsuleScript(
+            deckName = "parallel-test",
+            slides = (1..6).map { SlideSegment(it, "Slide $it", "Note $it") }
+        )
+        val audioDir = File(tempDir, "audio").also { it.mkdirs() }
+        val outputDir = File(tempDir, "video").also { it.mkdirs() }
+
+        task.captureSlideParallel(
+            deckHtmlPath = File(tempDir, "deck.html").absolutePath,
+            outputDir = outputDir,
+            viewportWidth = 1408,
+            viewportHeight = 792,
+            parsed = script,
+            audioDir = audioDir,
+            captureFactory = factory
+        )
+
+        assertEquals(6, totalCreated.get(), "All 6 slides should create a capture instance")
+        assertTrue(maxConcurrentFactories.get() <= 4, "Max concurrency should be capped at 4, was ${maxConcurrentFactories.get()}")
+    }
+
+    @Test
+    fun `captureSlideParallel creates one webm per slide`() {
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+        ext.viewportWidth.set(1408)
+        ext.viewportHeight.set(792)
+        ext.slideDurationSeconds.set(5.0)
+        ext.playwrightTimeout.set(120_000.0)
+
+        val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        task.capsuleExtension = ext
+
+        val capturedSlides = AtomicInteger(0)
+        val fakeCapture = object : PlaywrightCapture {
+            override fun capture(deckHtmlPath: String, outputDir: File, viewportWidth: Int, viewportHeight: Int, slideDurations: List<Double>) {
+                outputDir.mkdirs()
+                outputDir.resolve("slide.webm").writeText("fake webm content")
+                capturedSlides.incrementAndGet()
+            }
+            override fun isAvailable() = true
+            override fun name() = "fake"
+            override fun close() {}
+        }
+
+        val script = CapsuleScript(
+            deckName = "one-per-slide",
+            slides = (1..3).map { SlideSegment(it, "Slide $it", "Note $it") }
+        )
+        val audioDir = File(tempDir, "audio").also { it.mkdirs() }
+        val outputDir = File(tempDir, "video").also { it.mkdirs() }
+
+        task.captureSlideParallel(
+            deckHtmlPath = File(tempDir, "deck.html").absolutePath,
+            outputDir = outputDir,
+            viewportWidth = 1408,
+            viewportHeight = 792,
+            parsed = script,
+            audioDir = audioDir,
+            captureFactory = { fakeCapture }
+        )
+
+        assertEquals(3, capturedSlides.get(), "Should capture 3 slides")
+        // concatWebmFiles will fail with fake text files (no real WebM), which is expected
+        // The test verifies parallel capture orchestration, not FFmpeg integration
+    }
+}
+
 class RevealJsRenderingConstraintTest {
 
     @Test

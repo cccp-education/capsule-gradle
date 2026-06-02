@@ -6,4 +6,7 @@
 | 2026-06-02 | 015-audit | Revert merge fork lion92 + Cleanup | ✅ Retour main à 0d69a94 via reset hard + force push. Branche audit/lion92-fork restaurée (reflog) + repoussée origin.
 | 2026-06-02 | 016-dev | CapsuleModels SlideType + espeak/manim config | ✅ enum SlideType{HTML,MANIM}, SlideSegment +2 champs, CapsuleExtension +5 props, 4 unit tests. Commit 4218a70.
 | 2026-06-02 | 016-dev | DRY CapsuleManager companion + parseScript [manim] | ✅ resolveScriptDir/DeckDir companion, AUDIO_INJECT_SCRIPT constant, parseScript [manim:Scene]/[html], espeak voice/speed, 2 unit tests. Commit 72366b1.
+| 2026-06-02 | 018-dev | ManimEngine.kt — Interface + ManimEngineImpl + NoOpManimEngine + ManimException | ✅ 6/6 tests TDD. Pattern TtsManager (interface→impl→noop→exception). ProcessBuilder manim -q{l|m|h}.
+| 2026-06-02 | 018-dev | captureSlideParallel + concatWebmFiles | ✅ 4-6 tests TDD. Pool 4 threads, captureFactory injectable, FFmpeg concat demuxer, cleanup safe.
+| 2026-06-02 | 018-dev | Split CapsuleManager.kt (957→195 lignes) → 8 fichiers | ✅ Convention 1 fichier = 1 top-level class. 0 régression, 73 tests PASS.
 |===
