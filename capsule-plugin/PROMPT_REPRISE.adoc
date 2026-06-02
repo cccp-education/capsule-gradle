@@ -1,24 +1,22 @@
-= PROMPT_REPRISE — Session 028 : Parallélisation Manim
+= PROMPT_REPRISE — Session 029 : Refactoring DRY top priorité
 
 == Contexte
 
-Session 027 — Cucumber @config @manim ManimConfig terminé. 5 scénarios BDD pour ManimConfig via 4 sources (ENV < props < YAML < CLI). CapsulePlugin.lifecycle log avec manim config résolue. Scaffold template enrichi avec outputDir. 173 unit tests GREEN + 5/5 Cucumber PASSED.
+Session 028 — Code review complète de capsule-gradle. Score 8/10. 19 fichiers source, 7 648 LOC, 173 unit + 8 functional + 27 Cucumber. Pipeline complet TTS→Capture→Manim→Mix→Distrib fonctionnel.
 
-== Livrables session 027
+== Problèmes identifiés en top priorité (code review session 028)
 
-1. **5 scénarios Cucumber @config @manim** — qualité, scriptsDir, outputDir, CLI override, scaffold
-2. **8 step definitions** — manim quality/scriptsDir/outputDir resolution + CLI param + scaffold fields
-3. **CapsulePlugin.kt** — debug → lifecycle log : `manim=[path={}, quality={}, scriptsDir={}, outputDir={}]`
-4. **CapsuleScaffoldTask.kt** — ajout `outputDir: build/capsule/manim` dans template YAML
+1. **DRY ffprobeDuration ×3** — CapsuleVideoTask, ManimEngineImpl, ManimVideoMixerImpl
+2. **DRY extractTopLevelSections ×2** — CapsuleVideoTask, ManimSlideReplacer
+3. **DRY wavToMp3 ×2** — PiperTtsEngine, EspeakTtsEngine
+4. **println → logger** dans PlaywrightCaptureImpl (l.75)
+5. **Resource leak Playwright** — close() pas dans finally
 
-== Prochaines étapes (priorité décroissante)
+== Prochaine étape
 
-. **Parallélisation Manim** — ManimEngine.render() en parallèle pour les slides MANIM multiples
-. **ManimEngine real integration** — Scénario @manim-real avec vrai binaire manim
-. **EPIC CAP-18** — Manim slide path replacement + probe duration (COMPLETE)
+Attaquer les 3 DRY P0 : factoriser ffprobeDuration, extractTopLevelSections, wavToMp3 dans des utilitaires partagés.
 
 == État git
 
-main → modifications non commitées (session 027 : 5 Cucumber @config @manim + step defs + lifecycle log + scaffold outputDir)
-Unit tests: 173 GREEN
-Cucumber: 5/5 @config @manim PASSED, 3/3 @manim PASSED, 1 E2E FAILED (environnement)
+main → modifications non commitées (session 027 + session 028)
+BACKLOG mis à jour avec 12 tickets (3 P0, 2 P1, 4 P2, 3 P3)

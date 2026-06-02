@@ -130,6 +130,20 @@ class CapsuleManager(private val project: Project) {
             return if (engine.isAvailable()) engine else NoOpManimEngine()
         }
 
+        /**
+         * Resolves the appropriate ManimParallelRenderer based on parallelism.
+         * - parallelism = 1: NoOpManimParallelRenderer (sequential fallback)
+         * - parallelism > 1: ManimParallelRendererImpl with thread pool
+         */
+        @JvmStatic
+        fun resolveManimParallelRenderer(parallelism: Int = 4): ManimParallelRenderer {
+            return if (parallelism <= 1) {
+                NoOpManimParallelRenderer()
+            } else {
+                ManimParallelRendererImpl(parallelism)
+            }
+        }
+
         fun readScriptFiles(dir: File): List<File> {
             return dir.listFiles { f ->
                 f.name.endsWith("-script.txt") &&

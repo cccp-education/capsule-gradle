@@ -1,0 +1,236 @@
+= Session 028 — Code Review complète capsule-gradle
+:date: 2026-06-02
+:type: audit
+:score: 8/10
+
+== Contexte
+
+Code review du borough **Détroit (capsule-gradle)**, plugin Gradle N2
+de génération de capsules vidéo pédagogiques.
+
+- 27 sessions de développement (14 mai → 2 juin 2026)
+- 7 648 lignes Kotlin (19 sources + 10 tests)
+- 173 unit tests GREEN + 5/5 Cucumber @config @manim PASSED
+- Build compile OK (compileKotlin UP-TO-DATE)
+- Modifications non commitées (session 027 en cours)
+
+== Vue d'ensemble — Améliorations depuis le bootstrap
+
+|===
+| Session | Apport
+| 000 | Bootstrap gouvernance + cadrage architecture
+| 001-002 | CAP-1 Plugin Gradle + CAP-2 TTS Piper
+| 003-004 | Playwright Java capture + CAP-3
+| 005 | CAP-4 CapsuleVideo + CAP-5 Cucumber BDD
+| 006 | CAP-6 N3 + CAP-7 capsuleDistrib
+| 007 | CapsuleParseContextTask + Jackson
+| 009 | Pipeline E2E + TTS espeak
+| 010 | CCCP namespace rename
+| 011 | EPIC K-1 Renommage taxonomie
+| 013 | Renommage Détroit (ex-Brooklyn Tech)
+| 014-017 | Audit + intégration sélective fork lion92
+| 018-019 | ManimEngine + parallel capture + config multi-source
+| 020 | CapsuleConfigMerger + scaffold
+| 021-022 | Diagnostic Cucumber + ManimEngine wiring
+| 023 | ManimVideoMixer wiring + mux MP4/TTS
+| 024 | Manim slide replacement + probe duration
+| 025 | Cucumber @integration @manim E2E pipeline
+| 026 | CAP-19 ManimEngine configurable
+| 027 | Cucumber @config @manim — 5 scénarios BDD
+|===
+
+Le projet a énormément progressé : en 27 sessions, le pipeline complet
+est fonctionnel (TTS → Capture → Manim → Mix → Distrib).
+
+== Architecture — Points forts
+
+=== ✅ Interfaces + NoOp pattern
+Chaque couche critique (TtsEngine, PlaywrightCapture, ManimEngine,
+ManimVideoMixer, ManimSlideReplacer, ManimParallelRenderer) suit le
+pattern **interface + Impl réelle + NoOp fallback**.
+Cela permet :
+- Tests sans dépendances externes (playwright, ffmpeg, manim, piper, espeak)
+- Graceful degradation en production si un binaire manque
+- Injection facile dans les tests
+
+=== ✅ Config multi-source (CAP-13)
+Mécanisme à 4 niveaux bien conçu : ENV < gradle.properties < YAML < CLI.
+Le `CapsuleConfigMerger` gère proprement le cas avec/sans fichier YAML.
+Pattern aligné sur plantuml-gradle — cohérence cross-borough.
+
+=== ✅ Taxonomie EPIC K
+8 tâches Gradle avec verbes standardisés :
+- `generateCapsuleScript`, `generateCapsule`, `generateCapsuleVideo`
+- `deployCapsule`
+- `collectCapsuleContext`, `transformCapsuleContext`
+- `scaffoldCapsuleContext`, `collectCapsuleRetrieve`
+
+=== ✅ Tests solides
+- 173 unit tests (JUnit5) — couverture des cas nominaux + fallbacks
+- 8 functional tests (GradleTestKit) — vérification des tâches
+- 27+ scénarios Cucumber BDD — @config, @manim, @integration, @manim @parallel
+- Tests de contrainte : vérification signature WebM, taille MP3, etc.
+
+=== ✅ Parallélisation Manim
+`ManimParallelRendererImpl` avec thread pool pour le rendu simultané
+des slides MANIM multiples. Fallback séquentiel via `NoOpManimParallelRenderer`.
+
+=== ✅ Gestion des placeholders
+Tous les moteurs NoOp produisent des fichiers textes identifiables
+(`# TTS PLACEHOLDER`, `# MANIM PLACEHOLDER`, `# PLAYWRIGHT CAPTURE PLACEHOLDER`).
+La méthode `isPlaceholder()` dans CapsuleVideoTask permet de les détecter.
+Le `isValidWebM()` dans CapsuleDistribTask vérifie la signature EBML
+avant de crop, évitant de passer des placeholders à ffmpeg.
+
+== Problèmes identifiés
+
+=== 🔴 DRY — ffprobeDuration dupliqué 3 fois
+
+Même méthode `ffprobeDuration()` dans :
+1. `CapsuleVideoTask` (l.708-717) — private
+2. `ManimEngineImpl` (l.65-79) — override
+3. `ManimVideoMixerImpl` (l.106-120) — override
+
+*Solution* : Extraire dans un `object FfprobeUtils` ou `FFmpegProbe` utilitaire.
+
+=== 🔴 DRY — extractTopLevelSections dupliqué 2 fois
+
+Logique identique de parsing HTML section dans :
+1. `CapsuleVideoTask` (l.129-164) — companion
+2. `ManimSlideReplacer` (l.113-145) — private
+
+*Solution* : Factoriser dans une classe utilitaire partagée (ex: `HtmlSectionExtractor`).
+
+=== 🔴 DRY — wavToMp3 dupliqué 2 fois
+
+Même méthode de conversion WAV→MP3 dans :
+1. `PiperTtsEngine` (l.62-81) — private
+2. `EspeakTtsEngine` (l.147-164) — private
+
+*Solution* : Extraire dans une fonction utilitaire ou un helper object.
+
+=== 🟡 Magic numbers — parallélisme en dur
+
+- `captureSlideParallel()` dans CapsuleVideoTask (l.523) : `Executors.newFixedThreadPool(4)`
+- `resolveManimParallelRenderer()` dans CapsuleManager (l.139) : `parallelism = 4`
+
+Le 4 est un bon default mais devrait être configurable via l'extension.
+
+=== 🟡 Code mort — isPlaceholder()
+
+La méthode `isPlaceholder()` (l.616-618) est définie mais **n'est jamais appelée**.
+Probablement un vestige d'un refactoring.
+
+=== 🟡 println au lieu de logger
+
+`PlaywrightCaptureImpl` (l.75) :
+```kotlin
+println("  Playwright: hasAudio=${hasAudioElements} audioCount=${audioIds.size} slides=$slideCount")
+```
+Devrait être `logger.lifecycle(...)`.
+
+=== 🟡 Resource leak potentiel — Playwright
+
+Dans `CapsuleVideoTask.execute()` :
+- `deckCapture.capture()` crée playwright/browser/context
+- `deckCapture.close()` est appelé **dans le try** (l.494)
+- Si une exception survient entre capture et close (ex: ligne 496-504),
+  le close() n'est pas garanti → fuite de processus Chromium
+
+Dans `captureSlideParallel()` (l.514-561) :
+- `capture.close()` est dans un `finally` (correct ✓) mais capture est créée
+  dans le submit() — chaque thread ouvre/ferme sa propre instance.
+
+*Solution* : Wrap dans `use {}` ou garantir close() dans un finally block.
+
+=== 🟡 Resource leak — concat-{timestamp}.txt
+
+Dans `concatWebmFiles()` (l.61-76) :
+- Le fichier `concat-{timestamp}.txt` est créé puis `.delete()` après usage
+- Si ffmpeg plante entre les deux, le fichier temporaire reste
+
+*Solution* : Utiliser `File.deleteOnExit()` ou un bloc try/finally.
+
+=== 🟡 lateinit var sans garde
+
+Toutes les tâches utilisent `lateinit var capsuleExtension: CapsuleExtension`.
+Si la tâche est exécutée sans avoir été configurée par le plugin → crash sec.
+
+*Solution* : Optionnel : déléguer à `project.extensions.getByType()` avec lazy.
+
+=== 🟡 ManimConfig.validate() — logique perfectible
+
+```kotlin
+if (quality.isNotBlank() && quality != "noop" && quality !in VALID_QUALITIES) { ... }
+// ...
+if (quality == "noop") { /* noop */ }
+else if (quality.isBlank()) { errors.add(...) }
+```
+
+La logique est correcte mais difficile à lire. Suggestion : simplifier avec
+`when(quality) { "noop" -> /* ok */ in VALID_QUALITIES -> /* ok */ else -> errors }`.
+
+=== 🟢 Minime — `e: Exception` silencieux
+
+Plusieurs catch blocks attrapent `Exception` sans log :
+- `CapsulePlugin.kt` l.12 : `catch (_: Exception)` → juste debug log
+- `FfprobeDuration` dans les 3 classes → retourne 0.0 silencieusement
+
+C'est acceptable pour des soft-fallbacks mais mérite un `logger.debug()`.
+
+=== 🟢 Minime — slider en compileOnly jamais référencé
+
+build.gradle.kts : `compileOnly(libs.slider)` mais aucune import de slider
+dans le code Kotlin. La dépendance est utilisée uniquement via
+`project.plugins.apply("education.cccp.slider")` — réflexion.
+
+C'est correct (le contrat est le deck HTML, pas l'API Kotlin),
+mais la dépendance pourrait être `implementation` pour éviter les surprises.
+
+=== 🟢 Minime — JDK version hardcodée
+
+```kotlin
+kotlin.jvmToolchain(JavaVersion.VERSION_24.ordinal)
+```
+24 est la version de dev. Devrait utiliser le toolchain du workspace BOM.
+
+== Métriques
+
+| Métrique | Valeur |
+|----------|--------|
+| Fichiers source | 19 |
+| Fichiers de test | 10 |
+| LOC totales | 7 648 |
+| Tests unitaires | 173 GREEN |
+| Tests fonctionnels | 8 |
+| Scénarios Cucumber | 27+ (config, manim, integration, parallel) |
+| Sessions | 27 (000-027) |
+| Score code review | **8/10** |
+
+== Recommandations — Priorité décroissante
+
+| Priorité | Action | Impact |
+|----------|--------|--------|
+| P0 | Extraire `ffprobeDuration()` dans utilitaire partagé | DRY, maintenance |
+| P0 | Extraire `extractTopLevelSections()` dans utilitaire partagé | DRY, maintenance |
+| P1 | Extraire `wavToMp3()` dans utilitaire partagé | DRY, maintenance |
+| P1 | Remplacer `println` par logger dans PlaywrightCaptureImpl | Qualité |
+| P1 | Garantir close() Playwright dans finally block | Resource leak |
+| P2 | Configurer le parallélisme (4) via extension | Configurabilité |
+| P2 | Supprimer `isPlaceholder()` mort ou le réutiliser | Cleanup |
+| P2 | Simplifier `ManimConfig.validate()` | Lisibilité |
+| P3 | Remplacer `lateinit` par lazy delegation | Robustesse |
+| P3 | try/finally sur concat-{timestamp}.txt | Cleanup |
+
+== Conclusion
+
+**Capsule-gradle s'est considérablement amélioré** depuis le bootstrap.
+Le pipeline complet est fonctionnel : TTS → Capture → Manim → Mix → Distrib.
+L'architecture avec interfaces + NoOp fallback est exemplaire.
+
+Les DRY violations (ffprobeDuration ×3, extractTopLevelSections ×2, wavToMp3 ×2)
+sont les principaux défauts techniques. La gestion des resources Playwright
+pourrait être renforcée.
+
+**Score : 8/10** — Solide, bien architecturé, bien testé.
+Quelques refactorings DRY P0/P1 pour passer à 9/10.

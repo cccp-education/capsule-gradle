@@ -162,3 +162,11 @@ Feature: Capsule video generation from a reveal.js deck
     Given a Gradle project with the capsule plugin applied
     When I run the task "scaffoldCapsuleContext"
     Then the scaffold file contains the manim section with executablePath, quality, scriptsDir, and outputDir
+
+  @manim @parallel
+  Scenario: Manim parallel render — multiple manim slides are rendered in parallel
+    Given a reveal.js deck "parallel-deck.html" with 3 slides and data-capsule-slide attributes
+    And a capsule script "parallel-course-script.txt" with 2 manim slide segments
+    When I run the task "generateCapsuleVideo" with NoOp capture
+    Then the ManimEngine renders all manim slides for the deck
+    And each manim slide produces a rendered video file in the output directory

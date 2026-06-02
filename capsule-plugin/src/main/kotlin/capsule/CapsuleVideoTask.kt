@@ -179,6 +179,9 @@ open class CapsuleVideoTask : DefaultTask() {
     @get:Internal
     internal var manimSlideReplacer: ManimSlideReplacer? = null
 
+    @get:Internal
+    internal var manimParallelRenderer: ManimParallelRenderer? = null
+
     init {
         outputDir.convention(
             project.layout.buildDirectory.dir("capsule")
@@ -260,6 +263,14 @@ open class CapsuleVideoTask : DefaultTask() {
         val replacer = CapsuleManager.resolveManimSlideReplacer()
         logger.lifecycle("Manim slide replacer: {} (available)", replacer.name())
         return replacer
+    }
+
+    private fun resolveManimParallelRenderer(): ManimParallelRenderer {
+        if (manimParallelRenderer != null) return manimParallelRenderer!!
+        val parallelism = if (capsuleExtension.manimParallelRender.get()) 4 else 1
+        val renderer = CapsuleManager.resolveManimParallelRenderer(parallelism)
+        logger.lifecycle("Manim parallel renderer: {} (parallelism={})", renderer.name(), parallelism)
+        return renderer
     }
 
     internal fun computeSlideDurations(parsed: CapsuleScript, audioDir: File): List<Double> {
@@ -359,51 +370,53 @@ open class CapsuleVideoTask : DefaultTask() {
             val videoOutputDir = outDir.resolve(parsed.deckName).resolve("video")
             videoOutputDir.mkdirs()
 
-            // Render Manim slides and mux with TTS audio
+            // Render Manim slides in parallel, then mux with TTS audio
             val manimSlides = parsed.slides.filter { it.type == SlideType.MANIM }
             val manimDurations = mutableMapOf<Int, Double>()
-            if (manimSlides.isNotEmpty()) {
+            val manimOutputDir = project.layout.buildDirectory.dir(manimConfig.outputDir).get().asFile.resolve(parsed.deckName).resolve("manim")
+            val renderedFiles: Map<Int, File> = if (manimSlides.isNotEmpty()) {
                 logger.lifecycle("  Manim slides detected: {} slides with Manim animations", manimSlides.size)
-                for (seg in manimSlides) {
+                manimOutputDir.mkdirs()
+
+                // Step 1: Render all Manim slides (parallel or sequential)
+                val parallelRenderer = resolveManimParallelRenderer()
+                val rendered = parallelRenderer.renderAll(manimSlides, manim, manimScriptsDir, manimOutputDir)
+                logger.lifecycle("  Manim render complete: {}/{} slides rendered", rendered.size, manimSlides.size)
+
+                // Step 2: Mux each rendered MP4 with TTS audio + probe duration (sequential, depends on render output)
+                for ((slideIdx, manimVideo) in rendered) {
+                    val seg = manimSlides.find { it.index == slideIdx } ?: continue
                     val sceneName = seg.manimScene ?: continue
-                    val scriptPath = manimScriptsDir.resolve("$sceneName.py")
-                    if (!scriptPath.exists()) {
-                        logger.warn("    Manim script not found: {} — skipping slide {}", scriptPath.absolutePath, seg.index)
-                        continue
+
+                    logger.lifecycle("    Manim → {} (scene: {})", manimVideo.name, sceneName)
+
+                    // Probe Manim video duration for slide timing
+                    val probedDur = manim.probeDuration(manimVideo)
+                    if (probedDur > 0.0) {
+                        manimDurations[seg.index] = probedDur
+                        logger.lifecycle("    Manim duration: {}s (scene: {})", String.format("%.1f", probedDur), sceneName)
                     }
-                    val manimOutputDir = project.layout.buildDirectory.dir(manimConfig.outputDir).get().asFile.resolve(parsed.deckName).resolve("manim")
-                    manimOutputDir.mkdirs()
+
+                    // Mux Manim MP4 with TTS audio for this slide
+                    val slideIdx = String.format("%02d", seg.index)
+                    val ttsFile = audioDir.resolve("slide-$slideIdx.mp3")
+                    val muxedFile = manimOutputDir.resolve("${sceneName}-muxed.mp4")
                     try {
-                        val manimVideo = manim.render(sceneName, scriptPath, manimOutputDir)
-                        logger.lifecycle("    Manim → {} (scene: {})", manimVideo.name, sceneName)
-
-                        // Probe Manim video duration for slide timing
-                        val probedDur = manim.probeDuration(manimVideo)
-                        if (probedDur > 0.0) {
-                            manimDurations[seg.index] = probedDur
-                            logger.lifecycle("    Manim duration: {}s (scene: {})", String.format("%.1f", probedDur), sceneName)
+                        val muxed = manimMixer.mix(manimVideo, ttsFile, muxedFile)
+                        logger.lifecycle("    Manim+TTS → {} ({} bytes)", muxed.name, muxed.length())
+                        // If muxed video exists, probe its duration (may differ from render-only duration)
+                        val muxedDur = manimMixer.probeDuration(muxed)
+                        if (muxedDur > 0.0) {
+                            manimDurations[seg.index] = muxedDur
+                            logger.lifecycle("    Muxed duration: {}s (scene: {})", String.format("%.1f", muxedDur), sceneName)
                         }
-
-                        // Mux Manim MP4 with TTS audio for this slide
-                        val slideIdx = String.format("%02d", seg.index)
-                        val ttsFile = audioDir.resolve("slide-$slideIdx.mp3")
-                        val muxedFile = manimOutputDir.resolve("${sceneName}-muxed.mp4")
-                        try {
-                            val muxed = manimMixer.mix(manimVideo, ttsFile, muxedFile)
-                            logger.lifecycle("    Manim+TTS → {} ({} bytes)", muxed.name, muxed.length())
-                            // If muxed video exists, probe its duration (may differ from render-only duration)
-                            val muxedDur = manimMixer.probeDuration(muxed)
-                            if (muxedDur > 0.0) {
-                                manimDurations[seg.index] = muxedDur
-                                logger.lifecycle("    Muxed duration: {}s (scene: {})", String.format("%.1f", muxedDur), sceneName)
-                            }
-                        } catch (e: MixerException) {
-                            logger.warn("    Manim mux failed for scene '{}': {} — using unmixed video", sceneName, e.message)
-                        }
-                    } catch (e: ManimException) {
-                        logger.warn("    Manim render failed for scene '{}': {}", sceneName, e.message)
+                    } catch (e: MixerException) {
+                        logger.warn("    Manim mux failed for scene '{}': {} — using unmixed video", sceneName, e.message)
                     }
                 }
+                rendered
+            } else {
+                emptyMap()
             }
 
             val slideDurations = computeSlideDurationsWithManim(parsed, audioDir, manimDurations)
@@ -414,12 +427,15 @@ open class CapsuleVideoTask : DefaultTask() {
                 // Find the 0-based index of this MANIM slide in the full slides list
                 val fullIdx = parsed.slides.indexOf(seg)
                 if (fullIdx >= 0) {
-                    val slideIdx = String.format("%02d", seg.index)
-                    val muxedFile = videoOutputDir.resolve("manim/${seg.manimScene}-muxed.mp4")
-                    val manimFile = videoOutputDir.resolve("manim/${seg.manimScene}.mp4")
-                    // Prefer muxed file (manim+TTS), fallback to render-only file
+                    val sceneName = seg.manimScene ?: return@mapIndexedNotNull null
+                    val muxedFile = manimOutputDir.resolve("${sceneName}-muxed.mp4")
+                    val manimFile = manimOutputDir.resolve("${sceneName}.mp4")
+                    // Prefer muxed file (manim+TTS), fallback to rendered file from parallelRenderer
+                    val renderFile = renderedFiles[seg.index]
+                    // Prefer muxed > renderFile > unmixed Manim render
                     val videoPath = when {
                         muxedFile.exists() -> muxedFile.absolutePath
+                        renderFile != null && renderFile.exists() -> renderFile.absolutePath
                         manimFile.exists() -> manimFile.absolutePath
                         else -> null
                     }

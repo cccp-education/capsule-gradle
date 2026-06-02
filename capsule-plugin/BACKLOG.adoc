@@ -1,16 +1,30 @@
 = BACKLOG — capsule-gradle (Détroit)
 
-== P0 — CRITIQUE
+Voir la code review complète : `.agents/sessions/028-code-review.adoc`
 
-_Aucun ticket P0 en attente._
+== 🔴 TOP PRIORITÉ — Code Review Session 028
+
+. **DRY: ffprobeDuration dupliqué ×3** — Extraire `ffprobeDuration()` dans un utilitaire partagé (`FFprobeUtils` ou `FFmpegProbe`). Présent dans CapsuleVideoTask, ManimEngineImpl, ManimVideoMixerImpl.
+. **DRY: extractTopLevelSections dupliqué ×2** — Factoriser le parsing HTML des sections dans un utilitaire partagé. Présent dans CapsuleVideoTask et ManimSlideReplacer.
+. **DRY: wavToMp3 dupliqué ×2** — Extraire la conversion WAV→MP3 dans un helper partagé. Présent dans PiperTtsEngine et EspeakTtsEngine.
 
 == P1
 
+. **println → logger** — Remplacer `println()` par `logger.lifecycle()` dans PlaywrightCaptureImpl (l.75)
+. **Resource leak Playwright** — Garantir `close()` dans un bloc finally pour éviter les fuites de processus Chromium
 . **Manim slide path replacement** — Remplacer le slide HTML Manim par la vidéo MP4 muxée dans le deck final
 . **Manim slide duration** — Utiliser ManimEngine.probeDuration() pour la durée du slide Manim dans computeSlideDurations
 . **Cucumber @integration Manim** — Scénario BDD end-to-end avec ManimEngine noop + validation output
 
 == P2
 
+. **Code mort: isPlaceholder()** — Supprimer la méthode inutilisée dans CapsuleVideoTask ou la réutiliser
+. **Parallélisme configurable** — Rendre le magic number `4` configurable via l'extension plutôt qu'en dur
 . **ManimEngine configurable** — Scripts Manim en dehors de `src/manim/`, paramètres qualité
 . **Manim parallel rendering** — Rendu Manim en parallèle pour les decks multi-animations
+
+== P3
+
+. **lateinit var → lazy delegation** — Remplacer les `lateinit var capsuleExtension` par une délégation lazy avec `project.extensions.getByType()`
+. **Fichier temporaire concat** — Garantir le cleanup du fichier `concat-{timestamp}.txt` dans un bloc try/finally
+. **ManimConfig.validate()** — Simplifier la logique de validation avec un `when` explicite

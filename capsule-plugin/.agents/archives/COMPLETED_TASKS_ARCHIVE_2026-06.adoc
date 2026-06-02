@@ -9,4 +9,5 @@
 | 2026-06-02 | 018-dev | ManimEngine.kt — Interface + ManimEngineImpl + NoOpManimEngine + ManimException | ✅ 6/6 tests TDD. Pattern TtsManager (interface→impl→noop→exception). ProcessBuilder manim -q{l|m|h}.
 | 2026-06-02 | 018-dev | captureSlideParallel + concatWebmFiles | ✅ 4-6 tests TDD. Pool 4 threads, captureFactory injectable, FFmpeg concat demuxer, cleanup safe.
 | 2026-06-02 | 018-dev | Split CapsuleManager.kt (957→195 lignes) → 8 fichiers | ✅ Convention 1 fichier = 1 top-level class. 0 régression, 73 tests PASS.
+| 2026-06-02 | 028-audit | Code review complète capsule-gradle | ✅ Score 8/10. BACKLOG mis à jour : 12 tickets (3 P0 DRY, 2 P1, 4 P2, 3 P3). Voir `.agents/sessions/028-code-review.adoc`
 |===

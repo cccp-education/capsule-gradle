@@ -97,5 +97,6 @@ class CapsulePlugin : Plugin<Project> {
         ext.manimQuality.set(config.manim.quality)
         ext.manimScriptsDir.set(config.manim.scriptsDir)
         ext.manimOutputDir.set(config.manim.outputDir)
+        ext.manimParallelRender.set(config.manim.parallelRender)
     }
 }

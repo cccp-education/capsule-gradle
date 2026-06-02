@@ -50,7 +50,8 @@ data class ManimConfig(
     val executablePath: String = "manim",
     val quality: String = "l",
     val scriptsDir: String = "src/manim",
-    val outputDir: String = "build/capsule/manim"
+    val outputDir: String = "build/capsule/manim",
+    val parallelRender: Boolean = false
 ) {
     companion object {
         /**
