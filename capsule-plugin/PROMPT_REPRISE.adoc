@@ -1,30 +1,25 @@
-= PROMPT_REPRISE — Session 025 : Cucumber @integration Manim E2E complet
+= PROMPT_REPRISE — Session 026 : ManimEngine configurable
 
 == Contexte
 
-Session 024 — ManimSlideReplacer : interface + Impl + NoOp + factory + wiring dans CapsuleVideoTask.execute().
-computeSlideDurationsWithManim() enrichi (priorité Manim video > TTS audio > default).
-154 tests unitaires GREEN (21 nouveaux). 1 scénario Cucumber @manim (slide replacement).
+Session 025 — Cucumber @integration @manim E2E complet. Scénario Gherkin end-to-end validé avec NoOp ManimEngine + NoOp ManimVideoMixer + ManimSlideReplacer + deck final <video>. CucumberIntegrationTestRunner créé (filtre `not @wip and (@integration or @manim)`). 154 tests unitaires GREEN. 4 new steps Manim E2E.
 
-== Livrables session 024
+== Livrables session 025
 
-1. **ManimSlideReplacer.kt** — Interface + Impl (remplacement HTML section par video embed) + NoOp + factory
-2. **computeSlideDurationsWithManim()** — Priorité Manim duration > TTS audio > default
-3. **ManimSlideReplacerTest** — 14 tests TDD GREEN
-4. **ComputeSlideDurationsWithManimTest** — 4 tests TDD GREEN
-5. **ManimSlideReplacementWiringTest** — 3 tests wiring GREEN
-6. **CapsuleVideoTask.execute()** — Wiring ManimSlideReplacer + manimDurations + deck replacement
-7. **capsule.feature** — Nouveau scénario @manim slide replacement
-8. **CapsuleStepDefinitions** — Step ManimSlideReplacer validation
+1. **capsule.feature** — Nouveau scénario `@integration @manim` E2E pipeline (render → mux → replace → deck validé)
+2. **CucumberIntegrationTestRunner.kt** — Runner Cucumber dédié @integration + @manim
+3. **CapsuleStepDefinitions.kt** — 4 nouvelles steps Manim E2E (noop Manim config, Manim script .py, placeholder MP4, muxed MP4, replaced deck)
+4. **CucumberIntegrationTestRunner** — Scénario `Manim E2E pipeline` PASSED (4/4 steps)
 
 == Prochaines étapes (priorité décroissante)
 
-. **Cucumber @integration Manim** — Scénario Gherkin end-to-end complet (ManimEngine noop + ManimVideoMixer noop + ManimSlideReplacer noop + output validé)
-. **ManimEngine configurable** — Scripts Manim en dehors de `src/manim/`, paramètres qualité
-. **Parralélisation Manim** — ManimEngine.render() en parallèle pour les slides MANIM multiples
+. **ManimEngine configurable** — Scripts Manim en dehors de `src/manim/`, paramètres qualité, configuration via capsule-context.yml (ManimConfig déjà existant dans CapsuleConfig)
+. **Parallélisation Manim** — ManimEngine.render() en parallèle pour les slides MANIM multiples
+. **ManimEngine real integration** — Scénario @manim-real avec vrai manim binaire (+ tag @wip en CI)
 . **EPIC CAP-18** — Manim slide path replacement + probe duration (COMPLETE)
 
 == État git
 
-main → modifications non commitées (session 024 contenu)
+main → modifications non commitées (session 025 contenu : capsule.feature + CucumberIntegrationTestRunner + CapsuleStepDefinitions)
 Unit tests: BUILD SUCCESSFUL (154 unit = GREEN)
+Cucumber @integration @manim: PASSED

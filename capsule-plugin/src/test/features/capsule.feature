@@ -100,6 +100,18 @@ Feature: Capsule video generation from a reveal.js deck
     When I run the task "generateCapsuleVideo" with NoOp capture
     Then the ManimSlideReplacer replaces the manim slide section with a video embed
 
+  @integration @manim
+  Scenario: Manim E2E pipeline — NoOp render, mux, and slide replacement produce valid output
+    Given a Gradle project with the capsule plugin configured for noop Manim
+    And a reveal.js deck "pipeline-deck.html" with 2 slides and data-capsule-slide attributes
+    And a capsule script "pipeline-course-script.txt" with 1 manim slide segments
+    And a Manim script "Scene1.py" in the manim scripts directory
+    When I run the task "generateCapsuleVideo" with NoOp capture
+    Then the ManimEngine produces a placeholder MP4 for the manim slide
+    And the ManimVideoMixer produces a muxed MP4 for the manim slide
+    And the ManimSlideReplacer replaces the manim slide section with a video embed
+    And the replaced deck is saved in the build output directory
+
   @config
   Scenario: Scaffold creates capsule-context yml with default configuration
     Given a Gradle project with the capsule plugin applied

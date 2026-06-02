@@ -1,0 +1,45 @@
+= Session 025 — Cucumber @integration @manim E2E complet
+
+== Date
+2026-06-02
+
+== Type
+dev
+
+== Sujet
+Cucumber @integration @manim E2E — Pipeline complet NoOp Manim render → mux → slide replacement
+
+== Livrables session 025
+
+. **capsule.feature** — Nouveau scénario `@integration @manim` E2E pipeline complet (render NoOp → mux NoOp → replace → deck final validé)
+. **CucumberIntegrationTestRunner.kt** — Runner Cucumber dédié aux scénarios @integration et @manim (filtre `not @wip and (@integration or @manim)`)
+. **CapsuleStepDefinitions.kt** — 4 nouvelles step definitions Manim E2E :
+   - `aGradleProjectWithTheCapsulePluginConfiguredForNoopManim` — initialise Gradle avec manimExecutablePath=noop, ttsEngine=noop, manimScriptsDir=src/manim
+   - `aManimScriptInTheManimScriptsDirectory` — crée un fichier .py Manim dans src/manim/
+   - `theManimEngineProducesAPlaceholderMP4ForTheManimSlide` — vérifie NoOp placeholder MP4
+   - `theManimVideoMixerProducesAMuxedMP4ForTheManimSlide` — vérifie NoOp muxed MP4 placeholder
+   - `theReplacedDeckIsSavedInTheBuildOutputDirectory` — vérifie deck remplacé avec <video> et data-capsule-slide
+
+== Résultats tests
+
+* 154 unit tests GREEN (0 échecs)
+* Cucumber @integration @manim E2E : PASSED (4/4 steps)
+* CucumberIntegrationTestRunner : scénario `Manim E2E pipeline` COMPLETE
+
+== Méthodologie
+
+Baby step DDD/TDD/BDD :
+
+. RED — Scénario Gherkin E2E écrit
+. RED — CucumberIntegrationTestRunner créé
+. RED — Step definitions ajoutées (compilation OK)
+. GREEN — compileTestKotlin OK, `test` OK (154 tests), `cucumberTest` OK
+
+== Décisions techniques
+
+* CucumberIntegrationTestRunner filtre `not @wip and (@integration or @manim)` — les scénarios @integration et @manim sont inclus
+* Les steps Manim E2E utilisent `Charsets.ISO_8859_1` pour lire les placeholders NoOp MP4 (fichiers texte avec marqueurs ASCII)
+* Le scénario E2E valide le pipeline complet : NoOpManimEngine → NoOpManimVideoMixer → ManimSlideReplacerImpl → deck final avec `<video>`
+
+== Score
+8/10 — Pipeline complet validé en BDD, mais le scénario @integration réel (ffmpeg/espeak) reste à ajouter en CI

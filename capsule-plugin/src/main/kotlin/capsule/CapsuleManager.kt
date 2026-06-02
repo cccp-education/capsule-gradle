@@ -102,6 +102,7 @@ class CapsuleManager(private val project: Project) {
          */
         @JvmStatic
         fun resolveManimVideoMixer(ffmpegPath: String = "ffmpeg"): ManimVideoMixer {
+            if (ffmpegPath == "noop") return NoOpManimVideoMixer()
             val mixer = ManimVideoMixerImpl(ffmpegPath)
             return if (mixer.isAvailable()) mixer else NoOpManimVideoMixer()
         }
