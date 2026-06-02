@@ -54,6 +54,7 @@ Feature: Capsule video generation from a reveal.js deck
     And the parsed output contains "originalVideo"
     And the parsed output is a valid JSON array
 
+  @integration
   Scenario: Audio constraint — real TTS must produce binary MP3 not text
     Given a Gradle project with the capsule plugin configured for espeak TTS
     And a reveal.js deck "audio-real-deck.html" with 1 slides and data-capsule-slide attributes
@@ -61,6 +62,7 @@ Feature: Capsule video generation from a reveal.js deck
     When I run the task "generateCapsule" with espeak TTS
     Then the generated MP3 files must be binary audio not text placeholder
 
+  @integration
   Scenario: Output constraint — capsule video must be written to build/capsules/ directory
     Given a Gradle project with the capsule plugin configured for noop TTS
     And a reveal.js deck "out-deck.html" with 1 slides and data-capsule-slide attributes
@@ -68,12 +70,28 @@ Feature: Capsule video generation from a reveal.js deck
     When I run the task "generateCapsuleVideo" with NoOp capture
     Then the video file "out.webm" exists in the build "capsules" directory
 
+  @integration
   Scenario: WebM validity constraint — generated video must have EBML header
     Given a Gradle project with the capsule plugin configured for noop TTS
     And a reveal.js deck "webm-deck.html" with 1 slides and data-capsule-slide attributes
     And a capsule script "webm-script.txt" with 1 slide segments
     When I run the task "generateCapsuleVideo" with NoOp capture
     Then the video file "webm.webm" has a valid WebM EBML header
+
+  @manim
+  Scenario: Manim slide type is detected in capsule script and triggers ManimEngine render
+    Given a reveal.js deck "manim-deck.html" with 1 slides and data-capsule-slide attributes
+    And a capsule script "manim-course-script.txt" with 1 manim slide segments
+    When I run the task "generateCapsuleVideo" with NoOp capture
+    Then the capsule script contains a slide with type MANIM
+    And the ManimEngine render is invoked for the manim slide
+
+  @manim
+  Scenario: Manim slide video is muxed with TTS audio via ManimVideoMixer
+    Given a reveal.js deck "mux-deck.html" with 2 slides and data-capsule-slide attributes
+    And a capsule script "mux-course-script.txt" with 1 manim slide segments
+    When I run the task "generateCapsuleVideo" with NoOp capture
+    Then the ManimEngine render produces a muxed MP4 with TTS audio for the manim slide
 
   @config
   Scenario: Scaffold creates capsule-context yml with default configuration

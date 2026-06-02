@@ -2,13 +2,15 @@
 
 == P0 — CRITIQUE
 
-. **CAP-13.3** — CapsuleConfigMerger : merge 4 sources (ENV < props < YAML < CLI). Pattern plantuml-gradle.
+_Aucun ticket P0 en attente._
 
 == P1
 
-. **CAP-13.4** — CapsuleExtension revisitée : `configPath: Property<String>` + wiring afterEvaluate
-. **CAP-13.5** — capsule-context.yml scaffold task
-. **CAP-13.6** — Plugin wiring afterEvaluate → ConfigMerger
-. **Cucumber Manim** — Scénario Gherkin pipeline [manim:SceneName] avec mock/skip conditionnel
-. **Intégration ManimEngine** — Quand SlideType.MANIM, appeler ManimEngine.render() au lieu de PlaywrightCapture
-. **CapsuleManager resolveManimEngine()** — Factory résolvant ManimEngine depuis CapsuleConfig
+. **Manim slide path replacement** — Remplacer le slide HTML Manim par la vidéo MP4 muxée dans le deck final
+. **Manim slide duration** — Utiliser ManimEngine.probeDuration() pour la durée du slide Manim dans computeSlideDurations
+. **Cucumber @integration Manim** — Scénario BDD end-to-end avec ManimEngine noop + validation output
+
+== P2
+
+. **ManimEngine configurable** — Scripts Manim en dehors de `src/manim/`, paramètres qualité
+. **Manim parallel rendering** — Rendu Manim en parallèle pour les decks multi-animations

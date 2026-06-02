@@ -6,6 +6,8 @@ _Date creation_ : 2026-05-14
 
 |===
 | # | Date | Type | Sujet | Score
+| 023 | 2026-06-02 | dev | ManimVideoMixer wiring + mux MP4+TTS (133 unit GREEN, 16 nouveaux : ManimVideoMixerTest 11 + ManimVideoMixerWiringTest 5 + 2 Cucumber @manim) | 8/10
+| 022 | 2026-06-02 | dev | Tag @integration Cucumber + ManimEngine wiring + resolveManimEngine factory (117 unit tests GREEN, ManimEngineWiringTest 3/3, CucumberManimEngineTest 4/4) | 8/10
 | 021 | 2026-06-02 | dev | Diagnostic Cucumber : 3 failures = environnementaux (espeak/ffmpeg/chromium absents), @config GREEN | 5/10
 | 020 | 2026-06-02 | dev | CapsuleConfigMerger + scaffoldCapsuleContext + afterEvaluate wiring (110 unit + 8 func + 9 cucumber GREEN, 3 @config FAILED) | 7/10
 | 019 | 2026-06-02 | dev | createSingleSlideHtml + parallelCaptureEnabled DSL + CapsuleConfig + CapsuleConfigLoader (78 unit + 8 func + 9 cucumber = 95 tests) | 8/10

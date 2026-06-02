@@ -1,0 +1,83 @@
+= Session 022 — Tag @integration Cucumber + ManimEngine wiring + resolveManimEngine factory
+
+_Date_ : 2026-06-02
+_Score_ : 8/10
+
+== Objectifs
+
+1. Taguer `@integration` sur les 3 scénarios Cucumber environnementaux (espeak/ffmpeg/chromium)
+2. Cucumber BDD Manim — scénario `[manim:SceneName]`
+3. Factory `CapsuleManager.resolveManimEngine()` 
+4. ManimEngine wiring dans `CapsuleVideoTask` quand `SlideType.MANIM`
+
+== Réalisations
+
+=== 1. Tag @integration sur 3 scénarios Cucumber ✅
+
+Les 3 scénarios environnementaux (Audio constraint, Output constraint, WebM validity)
+sont maintenant tagués `@integration` dans `capsule.feature`. Le `CucumberTestRunner`
+filtre déjà `not @integration` et `not @wip`.
+
+=== 2. Scénario Cucumber @manim ✅
+
+Ajouté dans `capsule.feature` :
+
+```gherkin
+@manim
+Scenario: Manim slide type is detected in capsule script and triggers ManimEngine render
+  Given a reveal.js deck "manim-deck.html" with 1 slides and data-capsule-slide attributes
+  And a capsule script "manim-course-script.txt" with 1 manim slide segments
+  When I run the task "generateCapsuleVideo" with NoOp capture
+  Then the capsule script contains a slide with type MANIM
+  And the ManimEngine render is invoked for the manim slide
+```
+
+Step definitions correspondantes dans `CapsuleStepDefinitions.kt`.
+
+=== 3. CapsuleManager.resolveManimEngine() ✅
+
+Nouvelle méthode factory dans `CapsuleManager.companion` :
+
+- Si `executablePath == "noop"` → `NoOpManimEngine`
+- Sinon → `ManimEngineImpl(executablePath, quality)` + fallback `NoOpManimEngine` si indisponible
+
+4 tests unitaires `CapsuleManagerResolveManimEngineTest`.
+
+=== 4. ManimEngine wiring dans CapsuleVideoTask ✅
+
+Ajouté dans `CapsuleVideoTask.execute()` :
+
+- Propriété `manimEngine: ManimEngine?` injectable
+- Méthode `resolveManimEngineInternal()` qui résout depuis `CapsuleExtension`
+- Boucle Manim avant Playwright : pour chaque `SlideType.MANIM`, appelle `manim.render(sceneName, scriptPath, outputDir)`
+- Logging des scénarios Manim détectés et du résultat
+
+=== 5. ManimEngineWiringTest ✅
+
+3 tests unitaires :
+- `MANIM slide triggers ManimEngine render instead of Playwright`
+- `MANIM slide video is produced by ManimEngine when NoOp captures`
+- `MANIM slide with NoOp engine produces placeholder MP4`
+
+== Métriques
+
+- **Tests unitaires** : 117 GREEN (7 nouveaux)
+- **Cucumber** : 10 réguliers + 3 @integration (exclus) + 1 @manim
+- **Fichiers modifiés** : 
+
+| Fichier | Changement |
+| `capsule.feature` | +@integration tags + @manim scenario |
+| `CapsuleStepDefinitions.kt` | +3 step definitions manim |
+| `CapsuleManager.kt` | +resolveManimEngine() factory |
+| `CapsuleVideoTask.kt` | +manimEngine property + resolveManimEngineInternal() + manim loop |
+| `CapsulePluginTest.kt` | +ManimEngineWiringTest (3 tests) + CapsuleManagerResolveManimEngineTest (4 tests) |
+
+== Leçons apprises
+
+1. Le pattern `resolveEngine()` (comme `resolveTtsEngine()`) fonctionne bien pour l'injection de dépendances testables
+2. Le dispatch Manim se fait AVANT Playwright — les slides Manim sont pré-rendues en MP4
+3. Les Cucumber @integration permettent de séparer tests environnementaux du run normal
+
+== Prochaine étape
+
+Session 023 : ManimEngine dispatch e2e — muxer audio TTS avec la vidéo Manim MP4

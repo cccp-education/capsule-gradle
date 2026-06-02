@@ -1,0 +1,51 @@
+= Session 023 — ManimEngine dispatch e2e + ManimVideoMixer (mux audio/vidéo)
+
+Date : 2026-06-02
+Type : dev
+Score : 8/10
+
+== Livrables
+
+1. **ManimVideoMixer interface + ManimVideoMixerImpl + NoOpManimVideoMixer** — Nouveau fichier `ManimVideoMixer.kt`
+   - `ManimVideoMixer.mix(videoFile, audioFile, outputFile)` : mux MP4 Manim + MP3 TTS → MP4 final via ffmpeg
+   - `ManimVideoMixerImpl` : implémentation réelle avec ffmpeg ( `-c:v copy -c:a aac -map 0:v:0 -map 1:a:0 -shortest` )
+   - `NoOpManimVideoMixer` : placeholder pour tests (écrit `MANIM MIXER PLACEHOLDER`)
+   - `MixerException` : exception domaine
+2. **CapsuleManager.resolveManimVideoMixer(ffmpegPath)** — Factory alignée sur `resolveManimEngine()`
+3. **CapsuleVideoTask.resolveManimVideoMixerInternal()** — Injection du mixer via propriété interne
+4. **CapsuleVideoTask.execute()** — Wiring du mux après render Manim : quand ManimEngine.render() produit un MP4, ManimVideoMixer.mix() est appelé avec le MP4 et le TTS MP3 du slide correspondant
+5. **ManimVideoMixerTest** — 11 tests unitaires (NoOp, Impl unavailable, probeDuration, factory)
+6. **ManimVideoMixerWiringTest** — 5 tests unitaires (MANIM+TTS mux, mixed slides, no audio, factory)
+7. **CapsuleVideoTask.manimVideoMixer** — Nouveau champ interne injectable pour tests
+8. **Cucumber @manim** — 2e scénario ajouté : "Manim slide video is muxed with TTS audio via ManimVideoMixer"
+9. **Step definition** — `theManimEngineRenderProducesAMuxedMP4WithTTSAudio()` ajoutée
+
+== Tests
+
+- 133 tests unitaires GREEN (0 failures, 0 errors)
+- 11 ManimVideoMixerTest (nouveaux)
+- 5 ManimVideoMixerWiringTest (nouveaux)
+- 2 Cucumber @manim
+- 2 functional tests échouent = environnementaux (espeak/chromium absents, déjà identifiés session 021)
+
+== Architecture
+
+Flux Manim e2e complet :
+----
+Manim slide détecté → ManimEngine.render() → {sceneName}.mp4
+                                      ↓
+                            ManimVideoMixer.mix(mp4, slide-{idx}.mp3, {sceneName}-muxed.mp4)
+                                      ↓
+                            {sceneName}-muxed.mp4 (vidéo Manim + audio TTS synchronisé)
+----
+
+== Prochaines étapes (session 024)
+
+. **Manim slide path replacement** — Remplacer le slide HTML Manim dans le deck final par la vidéo MP4 muxée
+. **Manim slide duration** — Utiliser ManimEngine.probeDuration() pour la durée du slide Manim dans computeSlideDurations
+. **Cucumber @integration Manim** — Scénario e2e avec ManimEngine noop + validation MP4 présent
+. **ManimEngine configurable** — Scripts Manim en dehors de `src/manim/`, paramètres qualité
+
+== État git
+
+main → modifications non commitées (session 023 contenu — attendre permission)

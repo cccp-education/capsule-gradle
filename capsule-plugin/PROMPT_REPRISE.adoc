@@ -1,28 +1,32 @@
-= PROMPT_REPRISE — Session 022 : Tag @integration Cucumber + Manim Cucumber + ManimEngine wiring
+= PROMPT_REPRISE — Session 024 : Manim slide path replacement + ManimEngine probeDuration
 
 == Contexte
 
-Session 021 — Diagnostic : les 3 Cucumber FAILURES sont les tests environnementaux
-(espeak/ffmpeg/chromium absents), PAS les 3 scénarios @config. Les @config sont GREEN.
+Session 023 — ManimVideoMixer : interface + Impl + NoOp + factory + wiring dans CapsuleVideoTask.execute().
+Après ManimEngine.render(), le MP4 est muxé avec l'audio TTS du slide via ManimVideoMixer.mix().
+133 tests unitaires GREEN (16 nouveaux). 2 Cucumber @manim.
 
-== Diagnostic session 021
+== Livrables session 023
 
-Les 3 scénarios Cucumber qui échouent sont :
-1. "Audio constraint — real TTS must produce binary MP3 not text" → espeak absent
-2. "Output constraint — capsule video must be written to build/capsules/" → chromium absent
-3. "WebM validity constraint — generated video must have EBML header" → chromium absent
-
-Les 3 scénarios @config (scaffold, overwrite, YAML override) PASSÉS.
+1. **ManimVideoMixer.kt** — Interface + ManimVideoMixerImpl (ffmpeg mux) + NoOpManimVideoMixer + MixerException
+2. **CapsuleManager.resolveManimVideoMixer()** — Factory ffmpeg-path based
+3. **CapsuleVideoTask.resolveManimVideoMixerInternal()** — Injection via propriété interne
+4. **CapsuleVideoTask.execute()** — Wiring : ManimEngine.render() → ManimVideoMixer.mix(mp4, mp3, muxed.mp4)
+5. **ManimVideoMixerTest** — 11 tests (NoOp, Impl unavailable, probeDuration, factory)
+6. **ManimVideoMixerWiringTest** — 5 tests (MANIM+TTS, mixed slides, no audio, factory)
+7. **CapsuleVideoTask.manimVideoMixer** — Champ interne pour tests
+8. **Cucumber @manim** — 2e scénario : mux MP4+TTS validé
 
 == Prochaines étapes (priorité décroissante)
 
-. **Taguer les 3 scénarios environnementaux `@integration`** dans capsule.feature pour les exclure du run Cucumber normal (CucumberTestRunner filtre déjà `not @integration`).
-. **Cucumber BDD Manim** — Scénario Gherkin `[manim:SceneName]` avec mock/skip conditionnel.
-. **Intégration ManimEngine** — Quand `SlideType.MANIM`, appeler `ManimEngine.render()`.
-. **CapsuleManager resolveManimEngine()** — Factory résolvant ManimEngine depuis CapsuleConfig.
+. **Manim slide path replacement** — Remplacer le slide HTML Manim dans le deck final par la vidéo MP4 muxée (embed en data-uri ou remplacement dans le flux vidéo)
+. **Manim slide duration** — Utiliser ManimEngine.probeDuration() pour la durée du slide Manim au lieu du slideDurationSeconds par défaut
+. **Cucumber @integration Manim** — Scénario Gherkin end-to-end complet avec ManimEngine noop + ManimVideoMixer noop + validation output
+. **ManimEngine configurable** — Scripts Manim en dehors de `src/manim/`, paramètres qualité
 
 == État git
 
-main → modifications non commitées (session 019+020+021 contenu non commité — attendre permission)
-Unit tests: BUILD SUCCESSFUL (110 unit + 8 func = GREEN)
-Cucumber: 9/12 (3 env @integration à taguer, 3 @config GREEN)
+main → modifications non commitées (session 023 contenu — attendre permission)
+Unit tests: BUILD SUCCESSFUL (133 unit = GREEN)
+Cucumber: 12/12 (2 @manim GREEN)
+Functional: 8/10 (2 environnementaux espeak/chromium absents)

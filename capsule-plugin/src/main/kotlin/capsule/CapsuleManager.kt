@@ -95,6 +95,34 @@ class CapsuleManager(private val project: Project) {
     }
 
     companion object {
+        /**
+         * Resolves the appropriate ManimVideoMixer based on ffmpeg availability.
+         * - If ffmpeg is not available, returns NoOpManimVideoMixer
+         * - Otherwise, returns ManimVideoMixerImpl
+         */
+        @JvmStatic
+        fun resolveManimVideoMixer(ffmpegPath: String = "ffmpeg"): ManimVideoMixer {
+            val mixer = ManimVideoMixerImpl(ffmpegPath)
+            return if (mixer.isAvailable()) mixer else NoOpManimVideoMixer()
+        }
+
+        /**
+         * Resolves the appropriate ManimEngine based on configuration.
+         * - If executablePath is "noop", returns NoOpManimEngine
+         * - Otherwise, creates ManimEngineImpl and falls back to NoOpManimEngine if unavailable
+         */
+        @JvmStatic
+        fun resolveManimEngine(config: ManimConfig): ManimEngine {
+            if (config.executablePath == "noop") {
+                return NoOpManimEngine()
+            }
+            val engine = ManimEngineImpl(
+                executablePath = config.executablePath,
+                quality = config.quality
+            )
+            return if (engine.isAvailable()) engine else NoOpManimEngine()
+        }
+
         fun readScriptFiles(dir: File): List<File> {
             return dir.listFiles { f ->
                 f.name.endsWith("-script.txt") &&

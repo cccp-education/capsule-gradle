@@ -170,6 +170,12 @@ open class CapsuleVideoTask : DefaultTask() {
     @get:Internal
     internal var ttsEngine: TtsEngine? = null
 
+    @get:Internal
+    internal var manimEngine: ManimEngine? = null
+
+    @get:Internal
+    internal var manimVideoMixer: ManimVideoMixer? = null
+
     init {
         outputDir.convention(
             project.layout.buildDirectory.dir("capsule")
@@ -215,6 +221,36 @@ open class CapsuleVideoTask : DefaultTask() {
         }
     }
 
+    private fun resolveManimEngineInternal(): ManimEngine {
+        if (manimEngine != null) return manimEngine!!
+
+        val config = ManimConfig(
+            executablePath = capsuleExtension.manimExecutablePath.get(),
+            quality = capsuleExtension.manimQuality.get(),
+            scriptsDir = capsuleExtension.manimScriptsDir.get()
+        )
+        val engine = CapsuleManager.resolveManimEngine(config)
+        if (engine.isAvailable()) {
+            logger.lifecycle("Manim engine: {} (available)", engine.name())
+        } else {
+            logger.warn("Manim engine not available, using noop fallback")
+        }
+        return engine
+    }
+
+    private fun resolveManimVideoMixerInternal(): ManimVideoMixer {
+        if (manimVideoMixer != null) return manimVideoMixer!!
+
+        val ffmpegPath = capsuleExtension.ffmpegExecutablePath.get()
+        val mixer = CapsuleManager.resolveManimVideoMixer(ffmpegPath)
+        if (mixer.isAvailable()) {
+            logger.lifecycle("Manim video mixer: {} (available)", mixer.name())
+        } else {
+            logger.warn("Manim video mixer not available, using noop fallback")
+        }
+        return mixer
+    }
+
     private fun computeSlideDurations(parsed: CapsuleScript, audioDir: File): List<Double> {
         val defaultDur = capsuleExtension.slideDurationSeconds.get()
         return parsed.slides.map { seg ->
@@ -253,6 +289,9 @@ open class CapsuleVideoTask : DefaultTask() {
         outDir.mkdirs()
 
         val engine = resolveTtsEngine()
+        val manim = resolveManimEngineInternal()
+        val manimMixer = resolveManimVideoMixerInternal()
+        val manimScriptsDir = project.file(capsuleExtension.manimScriptsDir.get())
 
         for (script in scripts) {
             val parsed = CapsuleManager.parseScript(script)
@@ -282,6 +321,39 @@ open class CapsuleVideoTask : DefaultTask() {
             val modifiedDeck = injectAudio(deckFile, parsed, audioDir)
             val videoOutputDir = outDir.resolve(parsed.deckName).resolve("video")
             videoOutputDir.mkdirs()
+
+            // Render Manim slides and mux with TTS audio
+            val manimSlides = parsed.slides.filter { it.type == SlideType.MANIM }
+            if (manimSlides.isNotEmpty()) {
+                logger.lifecycle("  Manim slides detected: {} slides with Manim animations", manimSlides.size)
+                for (seg in manimSlides) {
+                    val sceneName = seg.manimScene ?: continue
+                    val scriptPath = manimScriptsDir.resolve("$sceneName.py")
+                    if (!scriptPath.exists()) {
+                        logger.warn("    Manim script not found: {} — skipping slide {}", scriptPath.absolutePath, seg.index)
+                        continue
+                    }
+                    val manimOutputDir = videoOutputDir.resolve("manim")
+                    manimOutputDir.mkdirs()
+                    try {
+                        val manimVideo = manim.render(sceneName, scriptPath, manimOutputDir)
+                        logger.lifecycle("    Manim → {} (scene: {})", manimVideo.name, sceneName)
+
+                        // Mux Manim MP4 with TTS audio for this slide
+                        val slideIdx = String.format("%02d", seg.index)
+                        val ttsFile = audioDir.resolve("slide-$slideIdx.mp3")
+                        val muxedFile = manimOutputDir.resolve("${sceneName}-muxed.mp4")
+                        try {
+                            val muxed = manimMixer.mix(manimVideo, ttsFile, muxedFile)
+                            logger.lifecycle("    Manim+TTS → {} ({} bytes)", muxed.name, muxed.length())
+                        } catch (e: MixerException) {
+                            logger.warn("    Manim mux failed for scene '{}': {} — using unmixed video", sceneName, e.message)
+                        }
+                    } catch (e: ManimException) {
+                        logger.warn("    Manim render failed for scene '{}': {}", sceneName, e.message)
+                    }
+                }
+            }
 
             val slideDurations = computeSlideDurations(parsed, audioDir)
 
