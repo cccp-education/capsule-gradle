@@ -512,6 +512,60 @@ class CapsuleDistribTaskTest {
     }
 }
 
+class CapsuleParseScriptTest {
+
+    @Test
+    fun `parseScript extracts slide type and manim scene from title markers`() {
+        val scriptFile = File.createTempFile("capsule-test", ".txt")
+        scriptFile.deleteOnExit()
+        scriptFile.writeText("""
+=== CAPSULE SCRIPT : cours ===
+--- SLIDE 1 : Intro ---
+Bienvenue dans la formation.
+--- SLIDE 2 : Anim [manim:MoveSquare] ---
+Voici l'animation.
+--- SLIDE 3 : Fin [html] ---
+Conclusion.
+        """.trimIndent())
+
+        val parsed = CapsuleManager.parseScript(scriptFile)
+        assertEquals("cours", parsed.deckName)
+        assertEquals(3, parsed.slides.size)
+
+        val slide1 = parsed.slides[0]
+        assertEquals(1, slide1.index)
+        assertEquals("Intro", slide1.title)
+        assertEquals(SlideType.HTML, slide1.type)
+        assertEquals(null, slide1.manimScene)
+
+        val slide2 = parsed.slides[1]
+        assertEquals(2, slide2.index)
+        assertEquals("Anim", slide2.title)
+        assertEquals(SlideType.MANIM, slide2.type)
+        assertEquals("MoveSquare", slide2.manimScene)
+
+        val slide3 = parsed.slides[2]
+        assertEquals(3, slide3.index)
+        assertEquals("Fin", slide3.title)
+        assertEquals(SlideType.HTML, slide3.type)
+    }
+
+    @Test
+    fun `parseScript defaults to HTML type without markers`() {
+        val scriptFile = File.createTempFile("capsule-test", ".txt")
+        scriptFile.deleteOnExit()
+        scriptFile.writeText("""
+=== CAPSULE SCRIPT : simple ===
+--- SLIDE 1 : Slide simple ---
+Juste du texte.
+        """.trimIndent())
+
+        val parsed = CapsuleManager.parseScript(scriptFile)
+        assertEquals(SlideType.HTML, parsed.slides[0].type)
+        assertEquals(null, parsed.slides[0].manimScene)
+    }
+}
+
 class CapsuleCompositeContextTaskTest {
 
     @TempDir

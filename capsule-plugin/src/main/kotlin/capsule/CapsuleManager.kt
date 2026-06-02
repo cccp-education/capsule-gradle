@@ -115,6 +115,8 @@ class CapsuleManager(private val project: Project) {
             val slides = mutableListOf<SlideSegment>()
             var currentIndex = -1
             var currentTitle = ""
+            var currentType = SlideType.HTML
+            var currentManimScene: String? = null
             val noteLines = mutableListOf<String>()
 
             for (i in 1 until lines.size) {
@@ -126,7 +128,9 @@ class CapsuleManager(private val project: Project) {
                                 SlideSegment(
                                     index = currentIndex,
                                     title = currentTitle,
-                                    speakerNote = noteLines.joinToString("\n").trim()
+                                    speakerNote = noteLines.joinToString("\n").trim(),
+                                    type = currentType,
+                                    manimScene = currentManimScene
                                 )
                             )
                             noteLines.clear()
@@ -135,7 +139,18 @@ class CapsuleManager(private val project: Project) {
                         val colonIdx = parts.indexOf(":")
                         currentIndex = parts.substring(0, colonIdx).trim()
                             .toIntOrNull() ?: (slides.size + 1)
-                        currentTitle = parts.substring(colonIdx + 1).trim()
+                        val rawTitle = parts.substring(colonIdx + 1).trim()
+                        val manimMatch = Regex("""\[manim:(\w+)]""").find(rawTitle)
+                        currentType = when {
+                            manimMatch != null -> SlideType.MANIM
+                            rawTitle.contains("[html]") -> SlideType.HTML
+                            else -> SlideType.HTML
+                        }
+                        currentManimScene = manimMatch?.groupValues?.get(1)
+                        currentTitle = rawTitle
+                            .replace(Regex("""\[manim:\w+]"""), "")
+                            .replace("[html]", "")
+                            .trim()
                     }
                     line.isNotBlank() && currentIndex >= 0 -> noteLines.add(line)
                 }
@@ -146,12 +161,45 @@ class CapsuleManager(private val project: Project) {
                     SlideSegment(
                         index = currentIndex,
                         title = currentTitle,
-                        speakerNote = noteLines.joinToString("\n").trim()
+                        speakerNote = noteLines.joinToString("\n").trim(),
+                        type = currentType,
+                        manimScene = currentManimScene
                     )
                 )
             }
 
             return CapsuleScript(deckName, slides)
+        }
+
+        fun resolveScriptDir(project: Project, capsuleExt: CapsuleExtension): File {
+            val configured = capsuleExt.sliderScriptDir.get()
+            val candidate = project.layout.buildDirectory.dir(configured).get().asFile
+            if (candidate.exists() && candidate.listFiles()
+                    ?.any { it.name.endsWith("-script.txt") } == true
+            ) {
+                return candidate
+            }
+            val sliderOutput = project.rootProject.projectDir.parentFile
+                ?.resolve("slider-plugin")
+                ?.resolve("slider")
+                ?.resolve("build")
+                ?.resolve("capsule")
+            if (sliderOutput != null && sliderOutput.exists()) return sliderOutput
+            return candidate
+        }
+
+        fun resolveDeckDir(project: Project, capsuleExt: CapsuleExtension): File {
+            val configured = capsuleExt.deckSourceDir.get()
+            val candidate = project.layout.buildDirectory.dir(configured).get().asFile
+            if (candidate.exists()) return candidate
+            val sliderOutput = project.rootProject.projectDir.parentFile
+                ?.resolve("slider-plugin")
+                ?.resolve("slider")
+                ?.resolve("build")
+                ?.resolve("docs")
+                ?.resolve("asciidocRevealJs")
+            if (sliderOutput != null && sliderOutput.exists()) return sliderOutput
+            return candidate
         }
     }
 }
@@ -171,7 +219,7 @@ open class CapsuleScriptTask : DefaultTask() {
 
     @TaskAction
     fun execute() {
-        val scriptDir = resolveScriptDir()
+        val scriptDir = CapsuleManager.resolveScriptDir(project, capsuleExtension)
         val scripts = CapsuleManager.readScriptFiles(scriptDir)
 
         if (scripts.isEmpty()) {
@@ -191,26 +239,6 @@ open class CapsuleScriptTask : DefaultTask() {
                 )
             }
         }
-    }
-
-    private fun resolveScriptDir(): File {
-        val configured = capsuleExtension.sliderScriptDir.get()
-
-        val candidate = project.layout.buildDirectory.dir(configured).get().asFile
-        if (candidate.exists() && candidate.listFiles()
-                ?.any { it.name.endsWith("-script.txt") } == true
-        ) {
-            return candidate
-        }
-
-        val sliderOutput = project.rootProject.projectDir.parentFile
-            ?.resolve("slider-plugin")
-            ?.resolve("slider")
-            ?.resolve("build")
-            ?.resolve("capsule")
-        if (sliderOutput != null && sliderOutput.exists()) return sliderOutput
-
-        return candidate
     }
 }
 
@@ -250,9 +278,11 @@ open class CapsuleBuildTask : DefaultTask() {
                 }
             }
             "espeak" -> {
-                val engine = EspeakTtsEngine()
+                val voice = capsuleExtension.espeakVoice.get()
+                val speed = capsuleExtension.espeakSpeed.get()
+                val engine = EspeakTtsEngine(voice = voice, speed = speed)
                 if (engine.isAvailable()) {
-                    logger.lifecycle("TTS engine: espeak")
+                    logger.lifecycle("TTS engine: espeak (voice={}, speed={})", voice, speed)
                     engine
                 } else {
                     logger.warn("espeak not available, falling back to noop placeholder")
@@ -272,7 +302,7 @@ open class CapsuleBuildTask : DefaultTask() {
 
     @TaskAction
     fun execute() {
-        val scriptDir = resolveScriptDir()
+        val scriptDir = CapsuleManager.resolveScriptDir(project, capsuleExtension)
         val scripts = CapsuleManager.readScriptFiles(scriptDir)
 
         if (scripts.isEmpty()) {
@@ -317,26 +347,6 @@ open class CapsuleBuildTask : DefaultTask() {
             totalSynthesized, totalFailed, engine.name()
         )
     }
-
-    private fun resolveScriptDir(): File {
-        val configured = capsuleExtension.sliderScriptDir.get()
-
-        val candidate = project.layout.buildDirectory.dir(configured).get().asFile
-        if (candidate.exists() && candidate.listFiles()
-                ?.any { it.name.endsWith("-script.txt") } == true
-        ) {
-            return candidate
-        }
-
-        val sliderOutput = project.rootProject.projectDir.parentFile
-            ?.resolve("slider-plugin")
-            ?.resolve("slider")
-            ?.resolve("build")
-            ?.resolve("capsule")
-        if (sliderOutput != null && sliderOutput.exists()) return sliderOutput
-
-        return candidate
-    }
 }
 
 @DisableCachingByDefault(because = "Filesystem-bound: injects audio into HTML deck and captures video via Playwright")
@@ -347,6 +357,42 @@ open class CapsuleVideoTask : DefaultTask() {
 
     @get:Internal
     lateinit var capsuleExtension: CapsuleExtension
+
+    companion object {
+        private const val AUDIO_INJECT_SCRIPT = """
+<!-- CAPSULE-GRADLE: Autoplay audio injection -->
+<script>
+(function() {
+  var currentAudio = null;
+  var sections = document.querySelectorAll('.reveal .slides section[data-audio]');
+  var audios = [];
+  sections.forEach(function(sec) {
+    var src = sec.getAttribute('data-audio');
+    if (src) {
+      var audio = new Audio(src.replace('file://', ''));
+      audio.id = 'audio-' + audios.length;
+      document.body.appendChild(audio);
+      audios.push(audio);
+    }
+  });
+  function playSlideAudio(idx) {
+    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+    currentAudio = audios[idx];
+    if (currentAudio) {
+      currentAudio.currentTime = 0;
+      currentAudio.play().catch(function(e) { console.warn('Audio play failed:', e); });
+    }
+  }
+  if (typeof Reveal !== 'undefined') {
+    Reveal.on('slidechanged', function(event) {
+      playSlideAudio(event.indexh);
+    });
+    if (audios.length > 0) playSlideAudio(0);
+  }
+})();
+</script>
+"""
+    }
 
     @get:Internal
     internal var playwrightCapture: PlaywrightCapture? = null
@@ -390,7 +436,9 @@ open class CapsuleVideoTask : DefaultTask() {
                 if (engine.isAvailable()) engine else NoOpTtsEngine()
             }
             "espeak" -> {
-                val engine = EspeakTtsEngine()
+                val voice = capsuleExtension.espeakVoice.get()
+                val speed = capsuleExtension.espeakSpeed.get()
+                val engine = EspeakTtsEngine(voice = voice, speed = speed)
                 if (engine.isAvailable()) engine else NoOpTtsEngine()
             }
             else -> NoOpTtsEngine()
@@ -411,8 +459,8 @@ open class CapsuleVideoTask : DefaultTask() {
 
     @TaskAction
     fun execute() {
-        val deckDir = resolveDeckDir()
-        val scriptDir = resolveScriptDir()
+        val deckDir = CapsuleManager.resolveDeckDir(project, capsuleExtension)
+        val scriptDir = CapsuleManager.resolveScriptDir(project, capsuleExtension)
 
         val deckFiles = deckDir.listFiles { f -> f.name.endsWith("-deck.html") }?.toList()
             ?: emptyList()
@@ -537,43 +585,9 @@ open class CapsuleVideoTask : DefaultTask() {
             return injectAudioSequentialFallback(deckFile, script, audioDir, injectedDir)
         }
 
-        val audioScriptInject = """
-<!-- CAPSULE-GRADLE: Autoplay audio injection -->
-<script>
-(function() {
-  var currentAudio = null;
-  var sections = document.querySelectorAll('.reveal .slides section[data-audio]');
-  var audios = [];
-  sections.forEach(function(sec) {
-    var src = sec.getAttribute('data-audio');
-    if (src) {
-      var audio = new Audio(src.replace('file://', ''));
-      audio.id = 'audio-' + audios.length;
-      document.body.appendChild(audio);
-      audios.push(audio);
-    }
-  });
-  function playSlideAudio(idx) {
-    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
-    currentAudio = audios[idx];
-    if (currentAudio) {
-      currentAudio.currentTime = 0;
-      currentAudio.play().catch(function(e) { console.warn('Audio play failed:', e); });
-    }
-  }
-  if (typeof Reveal !== 'undefined') {
-    Reveal.on('slidechanged', function(event) {
-      playSlideAudio(event.indexh);
-    });
-    if (audios.length > 0) playSlideAudio(0);
-  }
-})();
-</script>
-"""
-
         val injected = injectedHtml.replace(
             "</body>",
-            "$audioScriptInject</body>"
+            "$AUDIO_INJECT_SCRIPT</body>"
         )
 
         val outFile = injectedDir.resolve(deckFile.name)
@@ -615,79 +629,19 @@ open class CapsuleVideoTask : DefaultTask() {
             append(originalHtml.substring(lastEnd))
         }
 
-        val audioScriptInject = """
-<!-- CAPSULE-GRADLE: Autoplay audio injection (sequential fallback) -->
-<script>
-(function() {
-  var currentAudio = null;
-  var sections = document.querySelectorAll('.reveal .slides section[data-audio]');
-  var audios = [];
-  sections.forEach(function(sec) {
-    var src = sec.getAttribute('data-audio');
-    if (src) {
-      var audio = new Audio(src.replace('file://', ''));
-      audio.id = 'audio-' + audios.length;
-      document.body.appendChild(audio);
-      audios.push(audio);
-    }
-  });
-  function playSlideAudio(idx) {
-    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
-    currentAudio = audios[idx];
-    if (currentAudio) {
-      currentAudio.currentTime = 0;
-      currentAudio.play().catch(function(e) { console.warn('Audio play failed:', e); });
-    }
-  }
-  if (typeof Reveal !== 'undefined') {
-    Reveal.on('slidechanged', function(event) {
-      playSlideAudio(event.indexh);
-    });
-    if (audios.length > 0) playSlideAudio(0);
-  }
-})();
-</script>
-"""
+        val sequentialScript = AUDIO_INJECT_SCRIPT.replace(
+            "<!-- CAPSULE-GRADLE: Autoplay audio injection -->",
+            "<!-- CAPSULE-GRADLE: Autoplay audio injection (sequential fallback) -->"
+        )
 
         val injected = injectedHtml.replace(
             "</body>",
-            "$audioScriptInject</body>"
+            "$sequentialScript</body>"
         )
 
         val outFile = injectedDir.resolve(deckFile.name)
         outFile.writeText(injected)
         return outFile
-    }
-
-    private fun resolveDeckDir(): File {
-        val configured = capsuleExtension.deckSourceDir.get()
-        val candidate = project.layout.buildDirectory.dir(configured).get().asFile
-        if (candidate.exists()) return candidate
-
-        val sliderOutput = project.rootProject.projectDir.parentFile
-            ?.resolve("slider-plugin")
-            ?.resolve("slider")
-            ?.resolve("build")
-            ?.resolve("docs")
-            ?.resolve("asciidocRevealJs")
-        if (sliderOutput != null && sliderOutput.exists()) return sliderOutput
-
-        return candidate
-    }
-
-    private fun resolveScriptDir(): File {
-        val configured = capsuleExtension.sliderScriptDir.get()
-        val candidate = project.layout.buildDirectory.dir(configured).get().asFile
-        if (candidate.exists()) return candidate
-
-        val sliderOutput = project.rootProject.projectDir.parentFile
-            ?.resolve("slider-plugin")
-            ?.resolve("slider")
-            ?.resolve("build")
-            ?.resolve("capsule")
-        if (sliderOutput != null && sliderOutput.exists()) return sliderOutput
-
-        return candidate
     }
 
     private fun mixAudioWithVideo(videoFile: File, audioDir: File, slides: List<SlideSegment>, slideDurationSeconds: Double) {
