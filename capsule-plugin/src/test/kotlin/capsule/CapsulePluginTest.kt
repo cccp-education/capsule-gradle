@@ -132,6 +132,54 @@ class TtsEngineTest {
         assertEquals(120_000.0, ext.playwrightTimeout.get())
         assertEquals("", ext.chromiumExecutablePath.get())
         assertEquals("docs/asciidocRevealJs", ext.deckSourceDir.get())
+        assertEquals("fr", ext.espeakVoice.get())
+        assertEquals(150, ext.espeakSpeed.get())
+        assertEquals("manim", ext.manimExecutablePath.get())
+        assertEquals("l", ext.manimQuality.get())
+        assertEquals("src/manim", ext.manimScriptsDir.get())
+    }
+}
+
+class SlideSegmentModelTest {
+
+    @Test
+    fun `SlideType enum has HTML and MANIM values`() {
+        assertEquals(2, SlideType.entries.size)
+        assertEquals(SlideType.HTML, SlideType.valueOf("HTML"))
+        assertEquals(SlideType.MANIM, SlideType.valueOf("MANIM"))
+    }
+
+    @Test
+    fun `SlideSegment defaults type to HTML and manimScene to null`() {
+        val segment = SlideSegment(index = 1, title = "Test", speakerNote = "Note")
+        assertEquals(SlideType.HTML, segment.type)
+        assertEquals(null, segment.manimScene)
+    }
+
+    @Test
+    fun `SlideSegment can specify type MANIM with manimScene`() {
+        val segment = SlideSegment(
+            index = 1,
+            title = "Animation",
+            speakerNote = "Voici une animation mathématique.",
+            type = SlideType.MANIM,
+            manimScene = "Scene1"
+        )
+        assertEquals(SlideType.MANIM, segment.type)
+        assertEquals("Scene1", segment.manimScene)
+    }
+
+    @Test
+    fun `CapsuleScript holds SlideSegments with mixed types`() {
+        val slides = listOf(
+            SlideSegment(1, "Intro", "Bienvenue.", type = SlideType.HTML),
+            SlideSegment(2, "Anim", "Regardez.", type = SlideType.MANIM, manimScene = "MoveSquare")
+        )
+        val script = CapsuleScript(deckName = "cours", slides = slides)
+        assertEquals(2, script.slides.size)
+        assertEquals(SlideType.HTML, script.slides[0].type)
+        assertEquals(SlideType.MANIM, script.slides[1].type)
+        assertEquals("MoveSquare", script.slides[1].manimScene)
     }
 }
 
