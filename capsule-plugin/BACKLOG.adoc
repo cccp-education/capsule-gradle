@@ -1,9 +1,14 @@
-= BACKLOG — capsule-gradle (Brooklyn Tech)
+= BACKLOG — capsule-gradle (Détroit)
 
 == P0 — CRITIQUE
 
-. *PROMPT_REPRISE MANQUANT* — INDEX.adoc liste session 011 terminée mais aucun PROMPT_REPRISE n'existe. Impossible de savoir ce qui a été livré, ce qui reste à faire. Créer PROMPT_REPRISE session 012 avec l'état réel du projet.
+. **CAP-13.3** — CapsuleConfigMerger : merge 4 sources (ENV < props < YAML < CLI). Pattern plantuml-gradle.
 
 == P1
 
-. Mettre à jour le portefeuille cross-boroughs dans tous les INDEX.adoc
+. **CAP-13.4** — CapsuleExtension revisitée : `configPath: Property<String>` + wiring afterEvaluate
+. **CAP-13.5** — capsule-context.yml scaffold task
+. **CAP-13.6** — Plugin wiring afterEvaluate → ConfigMerger
+. **Cucumber Manim** — Scénario Gherkin pipeline [manim:SceneName] avec mock/skip conditionnel
+. **Intégration ManimEngine** — Quand SlideType.MANIM, appeler ManimEngine.render() au lieu de PlaywrightCapture
+. **CapsuleManager resolveManimEngine()** — Factory résolvant ManimEngine depuis CapsuleConfig

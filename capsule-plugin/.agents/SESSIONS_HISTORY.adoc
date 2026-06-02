@@ -6,6 +6,7 @@ _Date creation_ : 2026-05-14
 
 |===
 | # | Date | Type | Sujet | Score
+| 019 | 2026-06-02 | dev | createSingleSlideHtml + parallelCaptureEnabled DSL + CapsuleConfig + CapsuleConfigLoader (78 unit + 8 func + 9 cucumber = 95 tests) | 8/10
 | 018 | 2026-06-02 | dev | ManimEngine.kt (interface+impl+NoOp, 6 tests TDD) + captureSlideParallel + concatWebmFiles (4-6 tests TDD) + split CapsuleManager.kt 957→195 lignes (8 fichiers). Full check GREEN : 56 unit + 8 func + 9 cucumber = 73 tests. | 9/10
 | 017 | 2026-06-02 | dev | Intégration sélective fork lion92 (5/5+2) : Parallélisme TTS + ScreenshotCapture + Jackson + Output build/ + Plugin ID fix (37 unit + 8 func + 9 cucumber PASS) | 9/10
 | 016 | 2026-06-02 | dev | Intégration sélective fork lion92 2/5 : CapsuleModels (SlideType, espeak, manim config) + DRY (companion resolveScriptDir/DeckDir, AUDIO_INJECT_SCRIPT, parseScript [manim:Scene]). 6 unit tests TDD. | 7/10

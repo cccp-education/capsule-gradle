@@ -1,44 +1,54 @@
-= PROMPT_REPRISE — Session 019 : createSingleSlideHtml + Cucumber Manim + Branchement DSL parallelCapture
+= PROMPT_REPRISE — Session 020 : CapsuleConfigMerger + Wiring DSL Config Multi-Source + Cucumber Manim
 
 == Contexte
 
-Session 018 — 3/3 livrés. Full check GREEN (56 unit + 8 functional + 9 cucumber = 73 tests).
-Méthodologie : baby step TDD, Unit → Functional → Cucumber.
+Session 019 — 5/9 EPICs livrés. Full check GREEN (78 unit + 8 func + 9 cucumber = 95 tests).
+Méthodologie : baby step DDD/TDD/BDD, Unit → Functional → Cucumber.
 
-== Livrés session 018
+== Livrés session 019
 
 | Livrable | Tests |
-| ManimEngine.kt (interface+impl+NoOp) | 6 unit TDD |
-| captureSlideParallel() + concatWebmFiles() | 4-6 unit TDD |
-| Split CapsuleManager.kt (957→195 lignes, 8 fichiers) | 0 régression |
+| `createSingleSlideHtml()` — extraction slide standalone | 7 unit TDD |
+| `parallelCaptureEnabled` DSL property | 2 unit TDD |
+| Branchement séquentiel/parallèle dans `execute()` | 2 unit TDD |
+| `captureSlideParallel` utilise `createSingleSlideHtml` | 0 régression |
+| `CapsuleConfig` data class (5 sections) | 6 unit TDD |
+| `CapsuleConfigLoader` YAML + `${VAR}` resolution | 6 unit TDD |
+| `jackson-dataformat-yaml` dependency | — |
+
+== Audit cross-borough pattern multi-source (21 boroughs)
+
+Référence canonique : **plantuml-gradle** (ConfigLoader + ConfigMerger + 4 sources).
+Deuxième ref : **codebase-gradle** (`gradleProperty().orElse(environmentVariable()).orElse(default)`).
+
+Pattern 4 sources : `ENV vars < gradle.properties < YAML file < CLI -P params`
 
 == Prochaines étapes (priorité décroissante)
 
-. **createSingleSlideHtml()** — Injection JS pour isoler une slide du deck reveal.js. Source : fork lion92 commit `e845db4`. Fragile (dépend du DOM). Évaluer si ScreenshotCaptureImpl + parallel capture rend cette approche obsolète.
-. **Amélioration Cucumber** — [manim:SceneName] avec mock ou skip conditionnel. Ajouter scénario Gherkin pour pipeline manim complet.
-. **Branchement DSL** — `capsuleExtension.parallelCaptureEnabled` pour basculer entre capture séquentielle et captureSlideParallel().
-. **Intégration ManimEngine dans CapsuleVideoTask** — Quand SlideType.MANIM, appeler ManimEngine.render() au lieu de PlaywrightCapture. Résoudre le MP4→WebM.
-. **CapsuleManager.kt résolution Manim** — resolveManimEngine() dans CapsuleManager ou CapsuleVideoTask.
+. **CapsuleConfigMerger** — Merge 4 sources avec precedence. Suivre plantuml-gradle `ConfigMerger` : `loadFromGradleProperties(projectDir)` + `loadFromEnvironment()` + merge par section. TDD baby step.
+. **CapsuleExtension revisitée** — Ajouter `configPath: Property<String>` (point d'entrée YAML). Garder les 18+ `Property<>` existantes pour DSL Kotlin, mais les résoudre via ConfigMerger après `afterEvaluate`.
+. **Wiring Plugin** — `CapsulePlugin.apply()` charge YAML → ConfigMerger → pousse les valeurs résolues dans `CapsuleExtension` via `afterEvaluate { }`. CLI `-P` via `project.findProperty("capsule.*")`.
+. **capsule-context.yml scaffold** — Tâche Gradle `scaffoldCapsuleContext` qui crée le YAML par défaut avec commentaires.
+. **Cucumber BDD Manim** — Scénario Gherkin pipeline manim `[manim:SceneName]` avec mock/skip conditionnel.
+. **Intégration ManimEngine** — Quand `SlideType.MANIM`, appeler `ManimEngine.render()` au lieu de PlaywrightCapture. Résoudre MP4→WebM.
+. **CapsuleManager resolveManimEngine()** — Factory résolvant ManimEngine depuis CapsuleConfig.
 
-== Source files (session 018)
+== Source files (session 019)
 
 | Fichier | Lignes | Rôle |
-| CapsuleManager.kt | 195 | Orchestrateur + companion (parseScript, resolve*) |
-| CapsuleVideoTask.kt | 423 | generateCapsuleVideo + captureSlideParallel + concatWebmFiles |
-| CapsuleBuildTask.kt | 130 | generateCapsule (TTS parallèle) |
-| CapsuleDistribTask.kt | 123 | deployCapsule (crop 9:16) |
-| CapsuleScriptTask.kt | 46 | generateCapsuleScript |
-| CapsuleCompositeContextTask.kt | 93 | collectCapsuleContext (JSON N3) |
-| CapsuleParseContextTask.kt | 57 | transformCapsuleContext |
-| ManimEngine.kt | 102 | interface + impl + NoOp + exception |
-| CapsuleModels.kt | 85 | CapsuleExtension DSL + data classes |
+| CapsuleConfig.kt | 57 | Data class immutable 5 sections (NOUVEAU) |
+| CapsuleConfigLoader.kt | 62 | YAML + `${VAR}` env resolution (NOUVEAU) |
+| CapsuleVideoTask.kt | 510 | execute() + captureSlideParallel + createSingleSlideHtml + concatWebmFiles |
+| CapsuleManager.kt | 195 | Orchestrateur + companion |
+| CapsuleModels.kt | 87 | CapsuleExtension DSL + data classes + parallelCaptureEnabled |
+| ManimEngine.kt | 102 | interface + impl + NoOp |
 | PlaywrightManager.kt | 205 | PlaywrightCapture + ScreenshotCapture |
 | TtsManager.kt | 165 | TtsEngine + Piper + Espeak + NoOp |
 
 == État git
 
-main → à pousser (session 018 contenu commité)
-Full check : BUILD SUCCESSFUL (73 tests)
+main → non poussé (session 019 contenu non commité — attendre permission)
+Full check : BUILD SUCCESSFUL (78 unit + 8 func + 9 cucumber = 95 tests)
 
 == Remote fork lion92
 

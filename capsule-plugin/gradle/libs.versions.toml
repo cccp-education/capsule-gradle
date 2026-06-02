@@ -22,6 +22,7 @@ cucumber-picocontainer = { module = "io.cucumber:cucumber-picocontainer", versio
 junit-platform-suite = { module = "org.junit.platform:junit-platform-suite", version.ref = "junit-platform" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 koog-agents = { module = "ai.koog:koog-agents", version.ref = "koog" }
 
 [plugins]

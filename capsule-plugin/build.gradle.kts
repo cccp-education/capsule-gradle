@@ -27,6 +27,7 @@ dependencies {
     implementation(libs.playwright)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.module.kotlin)
+    implementation(libs.jackson.dataformat.yaml)
     implementation(libs.koog.agents)
 
     testImplementation(kotlin("test-junit5"))

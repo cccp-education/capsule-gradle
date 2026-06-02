@@ -1,13 +1,13 @@
 = INDEX — Capsule Gradle
 :toc:
 
-_Regles absolues_ : voir `AGENT.adoc`
+_Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly)
 
-_Derniere mise a jour_ : 2026-06-02 (Session 018 — ManimEngine + Parallel Capture + Split CapsuleManager)
-_Session terminee_ : 018 — ManimEngine.kt + captureSlideParallel + concatWebmFiles + split 8 fichiers (Full check GREEN : 56 unit + 8 func + 9 cucumber = 73 tests)
-_Prochaine session_ : 019 — createSingleSlideHtml + Cucumber Manim + Branchement DSL parallelCapture
+_Derniere mise a jour_ : 2026-06-02 (Session 019 — createSingleSlideHtml + Config Multi-Source Phase 1)
+_Session terminee_ : 019 — createSingleSlideHtml + parallelCaptureEnabled DSL + CapsuleConfig + CapsuleConfigLoader (78 unit + 8 func + 9 cucumber = 95 tests)
+_Prochaine session_ : 020 — CapsuleConfigMerger + Wiring DSL Config Multi-Source + Cucumber Manim
 
 '''
 == REGLES ABSOLUES (resume)
@@ -35,29 +35,46 @@ _Prochaine session_ : 019 — createSingleSlideHtml + Cucumber Manim + Brancheme
 |===
 
 '''
+== EPIC CAP-13 — Config Multi-Source (4 sources : ENV < props < YAML < CLI)
+
+[cols="1,3,2", options="header"]
+|===
+| Phase | Livrable | Statut
+| CAP-13.1 | CapsuleConfig.kt — data class immutable 5 sections | ✅ TERMINE (session 019)
+| CAP-13.2 | CapsuleConfigLoader.kt — YAML + `${VAR}` env resolution | ✅ TERMINE (session 019)
+| CAP-13.3 | CapsuleConfigMerger.kt — merge 4 sources | 🔲 TODO (session 020)
+| CAP-13.4 | CapsuleExtension revisitée — configPath + wiring | 🔲 TODO (session 020)
+| CAP-13.5 | capsule-context.yml scaffold task | 🔲 TODO (session 020)
+| CAP-13.6 | Plugin wiring afterEvaluate → ConfigMerger | 🔲 TODO (session 020)
+|===
+
+_Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources documentées)._
+
+'''
 == Sessions
 
 |===
 | # | Date | Type | Sujet | Score
-| 018 | 2026-06-02 | dev | ManimEngine.kt (interface+impl+NoOp) + captureSlideParallel + concatWebmFiles + split CapsuleManager.kt 957→195 lignes (56 unit + 8 func + 9 cucumber = 73 PASS) | 9/10
-| 017 | 2026-06-02 | dev | Intégration sélective fork lion92 (5/5+2) : Parallélisme TTS + ScreenshotCapture + Jackson + Output build/ + Plugin ID fix (37 unit + 8 func + 9 cucumber PASS) | 9/10
-| 016 | 2026-06-02 | dev | Intégration sélective fork lion92 (2/5) : CapsuleModels SlideType + DRY companion + parseScript [manim] | 7/10
-| 015 | 2026-06-02 | audit | Revert merge fork lion92 + Cleanup (retour 0d69a94, branche supprimée) | 8/10
-| 014 | 2026-06-01 | audit | Audit fork lion92 (parallélisme TTS, ScreenshotCapture, Manim, DRY refacto) | 10/10
-| 013 | 2026-06-01 | rename | Renommage borough "Brooklyn Tech" → "Détroit" (24 fichiers live, gouv + docs + code Kotlin) | 10/10
-| 012 | 2026-05-19 | doc | EPIC K-5 — INDEX.adoc synchronise taxonomie 4 verbes. EPIC K fermé. | ✅
-| 011 | 2026-05-19 | migration | EPIC K-1 — Renommage taxonomie (7 tâches : generateCapsuleScript, generateCapsule, generateCapsuleVideo, deployCapsule, collectCapsuleContext, transformCapsuleContext, collectCapsuleRetrieve) | 10/10
-| 010 | 2026-05-18 | migration | CCCP — namespace rename capsule (8 fichiers + build) | 10/10
-| 009 | 2026-05-17 | feat+fix | CAP-9 Pipeline E2E + TTS espeak + Audio mix FFmpeg + Timing dynamique (31 unit + 10 functional PASS, WebM 322s) | 10/10
-| 008 | 2026-05-17 | audit | Diagnostic pipeline (4 bugs : reveal.js paths, example-deck, format string, audio injection) | 8/10
-| 007 | 2026-05-16 | dev | CapsuleParseContextTask (Jackson JSON) + collectCapsuleRetrieve N3 + CapsuleDistrib isValidWebM fix + Jackson runner-gradle (42/42 PASS) | 10/10
-| 006 | 2026-05-16 | dev | CAP-6 N3 (capsuleCompositeContext, export JSON engine) + CAP-7 capsuleDistrib (FFmpeg crop 9:16, 36/36 PASS) | 10/10
-| 005 | 2026-05-16 | dev | CAP-4 CapsuleVideo orchestration + CAP-5 Cucumber BDD (5 scenarios Gherkin, 28/28 PASS) | 10/10
-| 004 | 2026-05-15 | dev | CAP-3 — Playwright Java capture (PlaywrightCapture interface/Impl/NoOp, 19/19 PASS) | 10/10
-| 003 | 2026-05-15 | dev | CAP-2 — Intégration TTS Piper (TtsEngine interface, PiperTtsEngine CLI, NoOpTtsEngine) | 10/10
-| 002 | 2026-05-15 | dev | CAP-1 — Plugin Gradle capsule (compileOnly slider, 2 tâches, CapsuleExtension DSL, 5/5 PASS) | 10/10
-| 001 | 2026-05-15 | build | CAP-0.3 — Initialisation build Gradle (root + capsule-plugin, wrapper 9.5.0, 2/2 PASS) | 10/10
-| 000 | 2026-05-14 | bootstrap | Gouvernance agent + cadrage architecture CAP-0 | ✅ TERMINE
+| 019 | 2026-06-02 | dev | createSingleSlideHtml + parallelCaptureEnabled DSL + CapsuleConfig + CapsuleConfigLoader (78 unit + 8 func + 9 cucumber = 95 tests) | 8/10
+| 018 | 2026-06-02 | dev | ManimEngine.kt + captureSlideParallel + split CapsuleManager (56 unit + 8 func + 9 cucumber = 73 tests) | 9/10
+| 017 | 2026-06-02 | dev | Intégration sélective fork lion92 (5/5+2) | 9/10
+| 016 | 2026-06-02 | dev | Intégration sélective fork lion92 (2/5) | 7/10
+| 015 | 2026-06-02 | audit | Revert merge fork lion92 + Cleanup | 8/10
+| 014 | 2026-06-01 | audit | Audit fork lion92 | 10/10
+| 013 | 2026-06-01 | rename | Renommage borough "Brooklyn Tech" → "Détroit" | 10/10
+| 012 | 2026-05-19 | doc | EPIC K-5 | ✅
+| 011 | 2026-05-19 | migration | EPIC K-1 — Renommage taxonomie | 10/10
+| 010 | 2026-05-18 | migration | CCCP — namespace rename | 10/10
+| 009 | 2026-05-17 | feat+fix | CAP-9 Pipeline E2E + TTS espeak | 10/10
+| 008 | 2026-05-17 | audit | Diagnostic pipeline | 8/10
+| 007 | 2026-05-16 | dev | CapsuleParseContextTask + Jackson | 10/10
+| 006 | 2026-05-16 | dev | CAP-6 N3 + CAP-7 capsuleDistrib | 10/10
+| 005 | 2026-05-16 | dev | CAP-4 CapsuleVideo + CAP-5 Cucumber BDD | 10/10
+| 004 | 2026-05-15 | dev | CAP-3 Playwright Java capture | 10/10
+| 003 | 2026-05-15 | dev | CAP-2 TTS Piper | 10/10
+| 002 | 2026-05-15 | dev | CAP-1 Plugin Gradle capsule | 10/10
+| 001 | 2026-05-15 | build | CAP-0.3 Initialisation build | ✅
+| 000 | 2026-05-14 | bootstrap | Gouvernance + cadrage architecture | ✅
 |===
 
 '''
@@ -65,34 +82,23 @@ _Prochaine session_ : 019 — createSingleSlideHtml + Cucumber Manim + Brancheme
 
 |===
 | EPIC | Description | Statut | Priorite
-| K-1 | Renommage taxonomie (4 verbes generate/collect/transform/deploy) — 7 tâches | ✅ TERMINE (session 011) | P0
-| CAP-0 | Bootstrap gouvernance agent capsule (.agents/, AGENT.adoc, doc/) | ✅ TERMINE (sessions 000+001) | P0
-| CAP-1 | Plugin Gradle `capsule` — structure Kotlin, compileOnly slider, taches de base | ✅ TERMINE (session 002) | P0
-| CAP-2 | TTS integration — Piper ou API externe, generation MP3 par slide | ✅ TERMINE (session 003) | P1
-| CAP-3 | Playwright Java capture — pilotage reveal.js + API JVM native + injectAudio HTML | ✅ TERMINE (session 004) | P1
-| CAP-4 | CapsuleVideo task — orchestration TTS + Playwright → livrable video unique | ✅ TERMINE (session 005) | P1
-| CAP-5 | Tests — Cucumber BDD + fonctionnels + unitaires (GradleTestKit) | ✅ TERMINE (session 005) | P2
-| CAP-6 | Integrations N3 — export composite-context pour runner-gradle | ✅ TERMINE (session 006) | P3
-...
-| CAP-8 | CapsuleParseContext — parse JSON Jackson + collectCapsuleRetrieve runner-gradle contract | ✅ TERMINE (session 007) | P3
-| CAP-9 | Fix Pipeline E2E — 4 bugs + TTS espeak + auto-apply slider + Playwright timeout | ✅ TERMINE (session 009) | P0
-| CAP-10 | ManimEngine — Manim Python → MP4 via ProcessBuilder + NoOp + probeDuration | ✅ TERMINE (session 018, 6 tests) | P1
-| CAP-11 | Parallel capture — captureSlideParallel (cap 4) + concatWebmFiles (FFmpeg concat demuxer) | ✅ TERMINE (session 018, 4-6 tests) | P1
-| CAP-12 | Split CapsuleManager — convention 1 fichier = 1 top-level class | ✅ TERMINE (session 018) | P2
-|===
-
-'''
-== EPIC CAP-0 — Detail
-
-_Vision_ : Un plugin Gradle autonome qui transforme un deck
-reveal.js produit par slider-gradle en capsule video WebM
-avec TTS synchronise, sans post-production.
-
-|===
-| Tache | Description | Statut
-| CAP-0.1 | Creer la structure de gouvernance (.agents/, AGENT.adoc) | ✅ TERMINE
-| CAP-0.2 | Rediger le cadrage architecture (doc/CAPSULE_ARCHITECTURE.adoc) | ✅ TERMINE
-| CAP-0.3 | Initialiser le projet Gradle (settings.gradle.kts, build.gradle.kts) | ✅ TERMINE (session 001)
+| CAP-13 | Config Multi-Source (4 sources) | 🟡 EN COURS (2/6 livrés) | P0
+| K-1 | Renommage taxonomie (4 verbes) | ✅ TERMINE | P0
+| CAP-0 | Bootstrap gouvernance agent | ✅ TERMINE | P0
+| CAP-1 | Plugin Gradle capsule | ✅ TERMINE | P0
+| CAP-2 | TTS integration | ✅ TERMINE | P1
+| CAP-3 | Playwright Java capture | ✅ TERMINE | P1
+| CAP-4 | CapsuleVideo task | ✅ TERMINE | P1
+| CAP-5 | Tests Cucumber BDD | ✅ TERMINE | P2
+| CAP-6 | Integrations N3 | ✅ TERMINE | P3
+| CAP-7 | capsuleDistrib | ✅ TERMINE | P3
+| CAP-8 | CapsuleParseContext | ✅ TERMINE | P3
+| CAP-9 | Fix Pipeline E2E | ✅ TERMINE | P0
+| CAP-10 | ManimEngine | ✅ TERMINE | P1
+| CAP-11 | Parallel capture | ✅ TERMINE | P1
+| CAP-12 | Split CapsuleManager | ✅ TERMINE | P2
+| CAP-14 | createSingleSlideHtml | ✅ TERMINE (session 019) | P1
+| CAP-15 | parallelCaptureEnabled DSL | ✅ TERMINE (session 019) | P1
 |===
 
 '''
@@ -110,5 +116,3 @@ avec TTS synchronise, sans post-production.
 | `.agents/archives/` | Archives taches terminees | LAZY
 | `doc/CAPSULE_ARCHITECTURE.adoc` | Cadrage architecture pipeline capsule | LAZY
 |===
-
-Voir aussi : `TAXONOMIE_WORKSPACE.adoc` (racine workspace) pour l'ontologie complete.

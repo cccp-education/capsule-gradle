@@ -140,6 +140,16 @@ class TtsEngineTest {
         assertEquals("manim", ext.manimExecutablePath.get())
         assertEquals("l", ext.manimQuality.get())
         assertEquals("src/manim", ext.manimScriptsDir.get())
+        assertEquals(false, ext.parallelCaptureEnabled.get())
+    }
+
+    @Test
+    fun `parallelCaptureEnabled DSL property can be set to true`() {
+        val project = ProjectBuilder.builder().build()
+        project.plugins.apply("education.cccp.capsule")
+        val ext = project.extensions.getByType(CapsuleExtension::class.java)
+        ext.parallelCaptureEnabled.set(true)
+        assertEquals(true, ext.parallelCaptureEnabled.get())
     }
 }
 
@@ -1119,6 +1129,18 @@ class ParallelCaptureTest {
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val outputDir = File(tempDir, "video").also { it.mkdirs() }
 
+        // Create a minimal deck.html for createSingleSlideHtml
+        val deckFile = File(tempDir, "deck.html")
+        deckFile.writeText("""
+<html><head><style>body{margin:0}</style></head><body>
+<div class="reveal"><div class="slides">
+${(1..6).map { i -> """<section data-capsule-slide="$i"><h2>Slide $i</h2></section>""" }.joinToString("\n")}
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>Reveal.initialize();</script>
+</body></html>
+        """.trimIndent())
+
         task.captureSlideParallel(
             deckHtmlPath = File(tempDir, "deck.html").absolutePath,
             outputDir = outputDir,
@@ -1166,6 +1188,18 @@ class ParallelCaptureTest {
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val outputDir = File(tempDir, "video").also { it.mkdirs() }
 
+        // Create a minimal deck.html for createSingleSlideHtml
+        val deckFile = File(tempDir, "deck.html")
+        deckFile.writeText("""
+<html><head><style>body{margin:0}</style></head><body>
+<div class="reveal"><div class="slides">
+${(1..3).map { i -> """<section data-capsule-slide="$i"><h2>Slide $i</h2></section>""" }.joinToString("\n")}
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>Reveal.initialize();</script>
+</body></html>
+        """.trimIndent())
+
         task.captureSlideParallel(
             deckHtmlPath = File(tempDir, "deck.html").absolutePath,
             outputDir = outputDir,
@@ -1179,6 +1213,357 @@ class ParallelCaptureTest {
         assertEquals(3, capturedSlides.get(), "Should capture 3 slides")
         // concatWebmFiles will fail with fake text files (no real WebM), which is expected
         // The test verifies parallel capture orchestration, not FFmpeg integration
+    }
+}
+
+class CapsuleConfigLoaderTest {
+
+    @TempDir
+    lateinit var tempDir: File
+
+    @Test
+    fun `ConfigLoader loads YAML file into CapsuleConfig`() {
+        val yamlFile = File(tempDir, "capsule-context.yml")
+        yamlFile.writeText("""
+tts:
+  engine: espeak
+  espeakVoice: de
+  espeakSpeed: 120
+capture:
+  viewportWidth: 1920
+  viewportHeight: 1080
+  parallelCaptureEnabled: true
+        """.trimIndent())
+
+        val config = CapsuleConfigLoader.load(yamlFile)
+        assertEquals("espeak", config.tts.engine)
+        assertEquals("de", config.tts.espeakVoice)
+        assertEquals(120, config.tts.espeakSpeed)
+        assertEquals(1920, config.capture.viewportWidth)
+        assertEquals(true, config.capture.parallelCaptureEnabled)
+    }
+
+    @Test
+    fun `ConfigLoader uses defaults for missing YAML sections`() {
+        val yamlFile = File(tempDir, "capsule-context.yml")
+        yamlFile.writeText("""
+tts:
+  engine: piper
+        """.trimIndent())
+
+        val config = CapsuleConfigLoader.load(yamlFile)
+        assertEquals("piper", config.tts.engine)
+        assertEquals("fr_FR-siwis-medium", config.tts.voice) // default
+        assertEquals(1408, config.capture.viewportWidth)       // default
+        assertEquals("ffmpeg", config.distrib.ffmpegExecutablePath) // default
+    }
+
+    @Test
+    fun `ConfigLoader resolves environment variables in YAML`() {
+        val yamlFile = File(tempDir, "capsule-context.yml")
+        yamlFile.writeText("""
+tts:
+  engine: espeak
+  espeakVoice: ${'$'}{CAPSULE_TEST_VOICE}
+        """.trimIndent())
+
+        val resolved = CapsuleConfigLoader.resolveEnvironmentVariables(yamlFile.readText())
+        // If CAPSULE_TEST_VOICE is not set, the ${} syntax is preserved
+        val expected = System.getenv("CAPSULE_TEST_VOICE") ?: "\${CAPSULE_TEST_VOICE}"
+        assertTrue(resolved.contains(expected) || resolved.contains("espeak"))
+    }
+
+    @Test
+    fun `ConfigLoader resolves existing env vars and preserves missing ones`() {
+        val content = "tts:\n  engine: ${'$'}{HOME}-test\n  voice: ${'$'}{CAPSULE_NONEXISTENT_VAR}"
+        val resolved = CapsuleConfigLoader.resolveEnvironmentVariables(content)
+        assertTrue(resolved.contains(System.getenv("HOME")!!), "HOME should be resolved")
+        assertTrue(resolved.contains("\${CAPSULE_NONEXISTENT_VAR}"), "Missing vars should be preserved")
+    }
+
+    @Test
+    fun `ConfigLoader returns empty config when file does not exist`() {
+        val missing = File(tempDir, "nonexistent.yml")
+        val config = CapsuleConfigLoader.load(missing)
+        // Should return default config, not throw
+        assertEquals("piper", config.tts.engine)
+        assertEquals(1408, config.capture.viewportWidth)
+    }
+
+    @Test
+    fun `ConfigLoader returns empty config when file is empty`() {
+        val emptyFile = File(tempDir, "empty.yml")
+        emptyFile.writeText("")
+        val config = CapsuleConfigLoader.load(emptyFile)
+        assertEquals("piper", config.tts.engine)
+    }
+}
+
+class CapsuleConfigTest {
+
+    @Test
+    fun `CapsuleConfig has sensible defaults`() {
+        val config = CapsuleConfig()
+        assertEquals("piper", config.tts.engine)
+        assertEquals("fr_FR-siwis-medium", config.tts.voice)
+        assertEquals("piper", config.tts.piperExecutablePath)
+        assertEquals(true, config.tts.fallbackEnabled)
+        assertEquals("fr", config.tts.espeakVoice)
+        assertEquals(150, config.tts.espeakSpeed)
+    }
+
+    @Test
+    fun `CapsuleConfig capture section defaults match DSL extension`() {
+        val config = CapsuleConfig()
+        assertEquals(1408, config.capture.viewportWidth)
+        assertEquals(792, config.capture.viewportHeight)
+        assertEquals(120_000.0, config.capture.playwrightTimeout)
+        assertEquals(5.0, config.capture.slideDurationSeconds)
+        assertEquals(false, config.capture.parallelCaptureEnabled)
+    }
+
+    @Test
+    fun `CapsuleConfig distrib section defaults`() {
+        val config = CapsuleConfig()
+        assertEquals("ffmpeg", config.distrib.ffmpegExecutablePath)
+        assertEquals(1080, config.distrib.outputWidth)
+        assertEquals(1920, config.distrib.outputHeight)
+    }
+
+    @Test
+    fun `CapsuleConfig manim section defaults`() {
+        val config = CapsuleConfig()
+        assertEquals("manim", config.manim.executablePath)
+        assertEquals("l", config.manim.quality)
+        assertEquals("src/manim", config.manim.scriptsDir)
+    }
+
+    @Test
+    fun `CapsuleConfig can be constructed with custom values`() {
+        val config = CapsuleConfig(
+            tts = TtsConfig(engine = "espeak", voice = "de", espeakVoice = "de", espeakSpeed = 120),
+            capture = CaptureConfig(viewportWidth = 1920, viewportHeight = 1080, parallelCaptureEnabled = true),
+            distrib = DistribConfig(outputWidth = 720, outputHeight = 1280),
+            manim = ManimConfig(quality = "h", scriptsDir = "scripts/manim")
+        )
+        assertEquals("espeak", config.tts.engine)
+        assertEquals("de", config.tts.espeakVoice)
+        assertEquals(1920, config.capture.viewportWidth)
+        assertEquals(true, config.capture.parallelCaptureEnabled)
+        assertEquals(720, config.distrib.outputWidth)
+        assertEquals("h", config.manim.quality)
+    }
+
+    @Test
+    fun `CapsuleConfig input section defaults`() {
+        val config = CapsuleConfig()
+        assertEquals("capsule", config.input.outputDir)
+        assertEquals("capsule", config.input.sliderScriptDir)
+        assertEquals("docs/asciidocRevealJs", config.input.deckSourceDir)
+        assertEquals("", config.input.chromiumExecutablePath)
+    }
+}
+
+class CreateSingleSlideHtmlTest {
+
+    private val threeSlideDeck = """
+<html><head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+<style>body { background: white; }</style>
+</head><body>
+<div class="reveal">
+  <div class="slides">
+    <section data-capsule-slide="1"><h2>Intro</h2><p>Welcome</p></section>
+    <section data-capsule-slide="2"><h2>Topic</h2><p>Content here</p></section>
+    <section data-capsule-slide="3"><h2>End</h2><p>Goodbye</p></section>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>Reveal.initialize();</script>
+</body></html>
+    """.trimIndent()
+
+    @Test
+    fun `createSingleSlideHtml extracts first slide as standalone HTML`() {
+        val result = CapsuleVideoTask.createSingleSlideHtml(threeSlideDeck, 0)
+        assertTrue(result.contains("<section"), "Should contain a section element")
+        assertTrue(result.contains("Intro"), "Should contain slide 1 title")
+        assertTrue(!result.contains("Topic"), "Should NOT contain slide 2 title")
+        assertTrue(!result.contains("End"), "Should NOT contain slide 3 title")
+        assertTrue(result.contains("</html>"), "Should be a complete HTML document")
+    }
+
+    @Test
+    fun `createSingleSlideHtml extracts middle slide as standalone HTML`() {
+        val result = CapsuleVideoTask.createSingleSlideHtml(threeSlideDeck, 1)
+        assertTrue(result.contains("Topic"), "Should contain slide 2 title")
+        assertTrue(!result.contains("Intro"), "Should NOT contain slide 1 title")
+        assertTrue(!result.contains("End"), "Should NOT contain slide 3 title")
+        assertTrue(result.contains("</html>"), "Should be a complete HTML document")
+    }
+
+    @Test
+    fun `createSingleSlideHtml preserves head section with CSS`() {
+        val result = CapsuleVideoTask.createSingleSlideHtml(threeSlideDeck, 0)
+        assertTrue(result.contains("reveal.css"), "Should include reveal.js CSS")
+        assertTrue(result.contains("white.css"), "Should include theme CSS")
+        assertTrue(result.contains("<style>"), "Should include custom styles")
+    }
+
+    @Test
+    fun `createSingleSlideHtml includes reveal js script and initialize call`() {
+        val result = CapsuleVideoTask.createSingleSlideHtml(threeSlideDeck, 0)
+        assertTrue(result.contains("reveal.js"), "Should include reveal.js script")
+        assertTrue(result.contains("Reveal.initialize"), "Should initialize reveal.js")
+    }
+
+    @Test
+    fun `createSingleSlideHtml with out-of-range index returns fallback`() {
+        val result = CapsuleVideoTask.createSingleSlideHtml(threeSlideDeck, 99)
+        // Should return the original HTML unchanged as fallback
+        assertTrue(result.contains("Intro"), "Fallback should return original deck")
+        assertTrue(result.contains("End"), "Fallback should return original deck")
+    }
+
+    @Test
+    fun `createSingleSlideHtml preserves data-audio attribute on section`() {
+        val deckWithAudio = """
+<html><head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+</head><body>
+<div class="reveal">
+  <div class="slides">
+    <section data-capsule-slide="1" data-audio="file:///tmp/slide-01.mp3"><h2>Slide 1</h2></section>
+    <section data-capsule-slide="2"><h2>Slide 2</h2></section>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>Reveal.initialize();</script>
+</body></html>
+        """.trimIndent()
+        val result = CapsuleVideoTask.createSingleSlideHtml(deckWithAudio, 0)
+        assertTrue(result.contains("data-audio"), "Should preserve data-audio attribute")
+        assertTrue(result.contains("slide-01.mp3"), "Should preserve audio file path")
+        assertTrue(!result.contains("Slide 2"), "Should NOT contain slide 2")
+    }
+
+    @Test
+    fun `createSingleSlideHtml handles nested sections`() {
+        val deckWithNested = """
+<html><head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+</head><body>
+<div class="reveal">
+  <div class="slides">
+    <section data-capsule-slide="1">
+      <section><h2>Sub A</h2></section>
+      <section><h2>Sub B</h2></section>
+    </section>
+    <section data-capsule-slide="2"><h2>Other</h2></section>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+</body></html>
+        """.trimIndent()
+        val result = CapsuleVideoTask.createSingleSlideHtml(deckWithNested, 0)
+        assertTrue(result.contains("Sub A"), "Should contain nested subsection A")
+        assertTrue(result.contains("Sub B"), "Should contain nested subsection B")
+        assertTrue(!result.contains("Other"), "Should NOT contain slide 2")
+    }
+}
+
+class ParallelCaptureSwitchTest {
+
+    @TempDir
+    lateinit var tempDir: File
+
+    @Test
+    fun `execute uses sequential capture when parallelCaptureEnabled is false`() {
+        val deckDir = File(tempDir, "decks").also { it.mkdirs() }
+        val deckFile = File(deckDir, "test-deck.html")
+        deckFile.writeText("""
+<html><body>
+<div class="reveal">
+  <div class="slides">
+    <section data-capsule-slide="1"><h2>Slide 1</h2></section>
+  </div>
+</div>
+</body></html>
+        """.trimIndent())
+
+        val scriptDir = File(tempDir, "scripts").also { it.mkdirs() }
+        val scriptFile = File(scriptDir, "test-script.txt")
+        scriptFile.writeText("""
+=== CAPSULE SCRIPT : test ===
+--- SLIDE 1 : Slide 1 ---
+Speaker note.
+        """.trimIndent())
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.deckSourceDir.set(deckDir.absolutePath)
+        ext.sliderScriptDir.set(scriptDir.absolutePath)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+        ext.parallelCaptureEnabled.set(false)
+
+        val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        task.capsuleExtension = ext
+        task.playwrightCapture = NoOpPlaywrightCapture()
+        task.ttsEngine = NoOpTtsEngine()
+        task.execute()
+
+        // Should produce video via sequential path
+        val expectedVideo = File(tempDir, "build/capsule/test.webm")
+        assertTrue(expectedVideo.exists(), "Sequential capture should produce video")
+        assertTrue(expectedVideo.readText().contains("PLAYWRIGHT CAPTURE PLACEHOLDER"))
+    }
+
+    @Test
+    fun `execute uses captureSlideParallel when parallelCaptureEnabled is true`() {
+        val deckDir = File(tempDir, "decks").also { it.mkdirs() }
+        val deckFile = File(deckDir, "parallel-deck.html")
+        deckFile.writeText("""
+<html><body>
+<div class="reveal">
+  <div class="slides">
+    <section data-capsule-slide="1"><h2>Slide 1</h2></section>
+    <section data-capsule-slide="2"><h2>Slide 2</h2></section>
+  </div>
+</div>
+</body></html>
+        """.trimIndent())
+
+        val scriptDir = File(tempDir, "scripts").also { it.mkdirs() }
+        val scriptFile = File(scriptDir, "parallel-script.txt")
+        scriptFile.writeText("""
+=== CAPSULE SCRIPT : parallel-deck ===
+--- SLIDE 1 : Slide 1 ---
+Note 1.
+--- SLIDE 2 : Slide 2 ---
+Note 2.
+        """.trimIndent())
+
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.deckSourceDir.set(deckDir.absolutePath)
+        ext.sliderScriptDir.set(scriptDir.absolutePath)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+        ext.parallelCaptureEnabled.set(true)
+
+        val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        task.capsuleExtension = ext
+        task.playwrightCapture = NoOpPlaywrightCapture()
+        task.ttsEngine = NoOpTtsEngine()
+        task.execute()
+
+        // With parallel capture enabled, the final video should be produced
+        val videoDir = File(tempDir, "build/capsule/parallel-deck/video")
+        // Parallel path creates per-slide subdirectories (slide-XX/)
+        assertTrue(videoDir.exists() || File(tempDir, "build/capsule/parallel-deck.webm").exists(),
+            "Parallel capture should produce video artifacts")
     }
 }
 

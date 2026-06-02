@@ -1,0 +1,52 @@
+= Session 019 — createSingleSlideHtml + Config Multi-Source (Phase 1)
+
+_Date_ : 2026-06-02
+_Score_ : 8/10
+
+== Livrés
+
+| Livrable | Tests | Fichier |
+| `createSingleSlideHtml()` — extraction slide standalone HTML | 7 unit TDD | `CapsuleVideoTask.kt` companion |
+| `parallelCaptureEnabled` DSL property | 2 unit TDD | `CapsuleModels.kt` |
+| Branchement séquentiel/parallèle dans `execute()` | 2 unit TDD | `CapsuleVideoTask.kt` |
+| `captureSlideParallel` utilise `createSingleSlideHtml` | 0 régression | `CapsuleVideoTask.kt` |
+| `CapsuleConfig` — data class immutable (5 sections) | 6 unit TDD | `CapsuleConfig.kt` (NOUVEAU) |
+| `CapsuleConfigLoader` — YAML + `${VAR}` resolution | 6 unit TDD | `CapsuleConfigLoader.kt` (NOUVEAU) |
+| `jackson-dataformat-yaml` dependency | — | `build.gradle.kts` + `libs.versions.toml` |
+
+== Totals tests
+
+78 unit + 8 functional + 9 cucumber = 95 tests (était 73)
+
+== Méthodologie
+
+Baby step TDD : RED → GREEN → REFACTOR à chaque EPIC.
+Pattern DDD : `CapsuleConfig` (modèle) séparé de `CapsuleExtension` (DSL Gradle).
+
+== Décisions architecture
+
+. `createSingleSlideHtml()` parsing DOM par depth-tracking (pas de regexp fragile)
+. Résolution 4 sources alignée sur plantuml-gradle : `ENV < gradle.properties < YAML < CLI`
+. `CapsuleConfig` = 5 sections (input, tts, capture, distrib, manim)
+. `CapsuleConfigLoader` = YAML + `${VAR}` env var, même pattern que `ConfigLoader` plantuml
+
+== Non livrés (reporté session 020)
+
+. `CapsuleConfigMerger` — merge 4 sources avec precedence
+. `CapsuleExtension` revisitée — `configPath` property + wiring CLI `-P`
+. `capsule-context.yml` scaffold par défaut
+. Wiring Plugin/Manager vers ConfigMerger
+. Cucumber BDD Manim pipeline
+. Intégration ManimEngine dans CapsuleVideoTask (quand SlideType.MANIM)
+
+== Audit cross-borough pattern multi-source
+
+21 boroughs scannés. Résultat :
+
+| Tier | Boroughs | Pattern |
+| T1 (full 4 sources) | HTOWN (plantuml), Queens (codebase) | ConfigLoader + ConfigMerger + ENV + props + YAML + CLI |
+| T2 (partial) | South Central, Bushwick, Chiraq, MIAMI | YAML + 1-2 sources, pas de merger |
+| T3 (DSL only) | Détroit (capsule), Watts, Grand Central, Bronx | Extension convention defaults |
+| T4 (stub/zero) | 14 boroughs | Pas de code |
+
+Référence canonique : **plantuml-gradle** (`ConfigLoader` + `ConfigMerger` + 4 sources documentées).

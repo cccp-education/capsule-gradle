@@ -75,6 +75,93 @@ open class CapsuleVideoTask : DefaultTask() {
             }
             return success
         }
+
+        /**
+         * Extracts a single slide from a reveal.js deck HTML and produces a standalone HTML document
+         * that can be rendered independently by Playwright/ScreenshotCapture.
+         *
+         * @param deckHtml The full deck HTML source
+         * @param slideIndex 0-based index of the section within `.slides` container
+         * @return Standalone HTML with only the requested slide, preserving head, styles, and scripts
+         */
+        @JvmStatic
+        fun createSingleSlideHtml(deckHtml: String, slideIndex: Int): String {
+            val headMatch = Regex("""(?s)(<head>.*?</head>)""").find(deckHtml)
+            val headSection = headMatch?.value ?: ""
+
+            val slidesDivRegex = Regex("""(?s)<div class="slides">\s*(.*?)\s*</div>""", RegexOption.DOT_MATCHES_ALL)
+            val slidesDivMatch = slidesDivRegex.find(deckHtml)
+            if (slidesDivMatch == null) {
+                return deckHtml
+            }
+            val slidesContent = slidesDivMatch.groupValues[1]
+
+            // Extract top-level <section> elements (may contain nested <section> for vertical stacks)
+            val topLevelSections = extractTopLevelSections(slidesContent)
+
+            if (slideIndex < 0 || slideIndex >= topLevelSections.size) {
+                return deckHtml
+            }
+
+            val targetSection = topLevelSections[slideIndex]
+
+            return buildString {
+                appendLine("<!DOCTYPE html>")
+                appendLine("<html>")
+                appendLine(headSection)
+                appendLine("<body>")
+                appendLine("""<div class="reveal">""")
+                appendLine("""  <div class="slides">""")
+                appendLine("    $targetSection")
+                appendLine("  </div>")
+                appendLine("</div>")
+                appendLine("""<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>""")
+                appendLine("<script>Reveal.initialize();</script>")
+                appendLine("</body>")
+                appendLine("</html>")
+            }.trimIndent()
+        }
+
+        /**
+         * Extracts top-level <section> elements from the slides container content,
+         * handling nested sections (vertical stacks) by tracking depth.
+         */
+        private fun extractTopLevelSections(slidesContent: String): List<String> {
+            val sections = mutableListOf<String>()
+            val sectionOpenRegex = Regex("""<section\b[^>]*>""")
+            val sectionCloseRegex = Regex("""</section>""")
+
+            var depth = 0
+            var currentStart = -1
+            var pos = 0
+
+            while (pos < slidesContent.length) {
+                val openMatch = sectionOpenRegex.find(slidesContent, pos)
+                val closeMatch = sectionCloseRegex.find(slidesContent, pos)
+
+                val nextOpen = openMatch?.range?.first ?: Int.MAX_VALUE
+                val nextClose = closeMatch?.range?.first ?: Int.MAX_VALUE
+
+                if (nextOpen < nextClose && openMatch != null) {
+                    if (depth == 0) {
+                        currentStart = openMatch.range.first
+                    }
+                    depth++
+                    pos = openMatch.range.last + 1
+                } else if (closeMatch != null) {
+                    depth--
+                    if (depth == 0 && currentStart >= 0) {
+                        sections.add(slidesContent.substring(currentStart, closeMatch.range.last + 1))
+                        currentStart = -1
+                    }
+                    pos = closeMatch.range.last + 1
+                } else {
+                    break
+                }
+            }
+
+            return sections
+        }
     }
 
     @get:Internal
@@ -197,30 +284,54 @@ open class CapsuleVideoTask : DefaultTask() {
             videoOutputDir.mkdirs()
 
             val slideDurations = computeSlideDurations(parsed, audioDir)
-            val deckCapture = resolvePlaywrightCapture(slideDurations)
-            try {
-                deckCapture.capture(
+
+            if (capsuleExtension.parallelCaptureEnabled.get()) {
+                // Parallel path: createSingleSlideHtml per slide + captureSlideParallel
+                logger.lifecycle("  Parallel capture enabled for '{}' ({} slides)", parsed.deckName, parsed.slides.size)
+                captureSlideParallel(
                     deckHtmlPath = modifiedDeck.absolutePath,
                     outputDir = videoOutputDir,
                     viewportWidth = capsuleExtension.viewportWidth.get(),
                     viewportHeight = capsuleExtension.viewportHeight.get(),
-                    slideDurations = slideDurations
+                    parsed = parsed,
+                    audioDir = audioDir
                 )
-                deckCapture.close()
-
-                val generatedVideo = videoOutputDir.listFiles { f -> f.name.endsWith(".webm") }
-                    ?.firstOrNull()
-                if (generatedVideo != null) {
+                val concatVideo = videoOutputDir.resolve("${parsed.deckName}.webm")
+                if (concatVideo.exists()) {
                     val finalVideo = outDir.resolve("${parsed.deckName}.webm")
-                    generatedVideo.copyTo(finalVideo, overwrite = true)
+                    concatVideo.copyTo(finalVideo, overwrite = true)
                     mixAudioWithVideo(finalVideo, audioDir, parsed.slides, capsuleExtension.slideDurationSeconds.get())
-                    logger.lifecycle("CAPSULE → {}", finalVideo.absolutePath)
+                    logger.lifecycle("CAPSULE (parallel) → {}", finalVideo.absolutePath)
                 } else {
-                    logger.warn("No video generated by Playwright capture for '{}'", parsed.deckName)
+                    logger.warn("Parallel capture produced no video for '{}'", parsed.deckName)
                 }
-            } catch (e: CapturingException) {
-                logger.error("Playwright capture failed for '{}': {}", parsed.deckName, e.message)
-                throw e
+            } else {
+                // Sequential path (default): capture entire deck at once
+                val deckCapture = resolvePlaywrightCapture(slideDurations)
+                try {
+                    deckCapture.capture(
+                        deckHtmlPath = modifiedDeck.absolutePath,
+                        outputDir = videoOutputDir,
+                        viewportWidth = capsuleExtension.viewportWidth.get(),
+                        viewportHeight = capsuleExtension.viewportHeight.get(),
+                        slideDurations = slideDurations
+                    )
+                    deckCapture.close()
+
+                    val generatedVideo = videoOutputDir.listFiles { f -> f.name.endsWith(".webm") }
+                        ?.firstOrNull()
+                    if (generatedVideo != null) {
+                        val finalVideo = outDir.resolve("${parsed.deckName}.webm")
+                        generatedVideo.copyTo(finalVideo, overwrite = true)
+                        mixAudioWithVideo(finalVideo, audioDir, parsed.slides, capsuleExtension.slideDurationSeconds.get())
+                        logger.lifecycle("CAPSULE → {}", finalVideo.absolutePath)
+                    } else {
+                        logger.warn("No video generated by Playwright capture for '{}'", parsed.deckName)
+                    }
+                } catch (e: CapturingException) {
+                    logger.error("Playwright capture failed for '{}': {}", parsed.deckName, e.message)
+                    throw e
+                }
             }
         }
     }
@@ -238,12 +349,21 @@ open class CapsuleVideoTask : DefaultTask() {
         val futures = mutableListOf<Future<File?>>()
         val slideDurations = computeSlideDurations(parsed, audioDir)
 
+        // Read the deck HTML once for createSingleSlideHtml extraction
+        val deckHtml = File(deckHtmlPath).readText()
+
         for ((idx, seg) in parsed.slides.withIndex()) {
             val slideDir = outputDir.resolve("slide-${String.format("%02d", seg.index)}")
             futures.add(executor.submit<File?> {
                 val capture = captureFactory?.invoke() ?: resolvePlaywrightCapture(listOf(slideDurations[idx]))
                 try {
-                    capture.capture(deckHtmlPath, slideDir, viewportWidth, viewportHeight, listOf(slideDurations[idx]))
+                    // Create a standalone HTML for this specific slide
+                    val singleSlideHtml = createSingleSlideHtml(deckHtml, idx)
+                    val singleSlideFile = slideDir.resolve("slide.html")
+                    slideDir.mkdirs()
+                    singleSlideFile.writeText(singleSlideHtml)
+
+                    capture.capture(singleSlideFile.absolutePath, slideDir, viewportWidth, viewportHeight, listOf(slideDurations[idx]))
                     val source = slideDir.resolve("slide.webm")
                     if (source.exists()) {
                         val target = outputDir.resolve("slide-${String.format("%02d", seg.index)}.webm")
