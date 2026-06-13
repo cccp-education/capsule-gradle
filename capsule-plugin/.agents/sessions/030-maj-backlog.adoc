@@ -1,0 +1,10 @@
+= Rapport — Session 030 — Mise à jour BACKLOG
+:session: 030
+:date: 2026-06-13
+:type: maintenance
+
+== Modifications
+- BACKLOG.adoc mis à jour
+- Publication Maven Central 0.0.1 documentée
+- Priorités P0→P3 recalées
+- 217 tests PASS (195 unit + 22 Cucumber)

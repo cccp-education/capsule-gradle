@@ -1,30 +1,47 @@
 = BACKLOG — capsule-gradle (Détroit)
+:toc:
+:last_update: 2026-06-13 (Session 029 — Publication Maven Central)
 
-Voir la code review complète : `.agents/sessions/028-code-review.adoc`
+'''
+== 📦 Publication Maven Central ✅
 
-== 🔴 TOP PRIORITÉ — Code Review Session 028
+`education.cccp:capsule-plugin:0.0.1` publié via nmcp (Session 029).
+195 unit + 22 Cucumber = 217 tests PASS.
 
-. **DRY: ffprobeDuration dupliqué ×3** — Extraire `ffprobeDuration()` dans un utilitaire partagé (`FFprobeUtils` ou `FFmpegProbe`). Présent dans CapsuleVideoTask, ManimEngineImpl, ManimVideoMixerImpl.
-. **DRY: extractTopLevelSections dupliqué ×2** — Factoriser le parsing HTML des sections dans un utilitaire partagé. Présent dans CapsuleVideoTask et ManimSlideReplacer.
-. **DRY: wavToMp3 dupliqué ×2** — Extraire la conversion WAV→MP3 dans un helper partagé. Présent dans PiperTtsEngine et EspeakTtsEngine.
+'''
 
-== P1
+== 🔴 P0 — Code Review Session 028
 
-. **println → logger** — Remplacer `println()` par `logger.lifecycle()` dans PlaywrightCaptureImpl (l.75)
-. **Resource leak Playwright** — Garantir `close()` dans un bloc finally pour éviter les fuites de processus Chromium
-. **Manim slide path replacement** — Remplacer le slide HTML Manim par la vidéo MP4 muxée dans le deck final
-. **Manim slide duration** — Utiliser ManimEngine.probeDuration() pour la durée du slide Manim dans computeSlideDurations
-. **Cucumber @integration Manim** — Scénario BDD end-to-end avec ManimEngine noop + validation output
+. **DRY: wavToMp3 dupliqué ×2** — Identifier dans PiperTtsEngine et EspeakTtsEngine. Extraire dans `AudioUtil`.
+. **DRY: ffprobeDuration dupliqué ×3** — CapsuleVideoTask, ManimEngineImpl, ManimVideoMixerImpl. MediaProbeUtil existe déjà, l'utiliser.
+. **DRY: extractTopLevelSections dupliqué ×2** — CapsuleVideoTask + ManimSlideReplacer.
+. **Resource leak Playwright** — `capture.close()` pas dans try/finally (branche séquentielle).
+. **Magic number `4`** — `Executors.newFixedThreadPool(4)` non configurable.
 
-== P2
+== 🟠 P1
 
-. **Code mort: isPlaceholder()** — Supprimer la méthode inutilisée dans CapsuleVideoTask ou la réutiliser
-. **Parallélisme configurable** — Rendre le magic number `4` configurable via l'extension plutôt qu'en dur
-. **ManimEngine configurable** — Scripts Manim en dehors de `src/manim/`, paramètres qualité
-. **Manim parallel rendering** — Rendu Manim en parallèle pour les decks multi-animations
+. **println → logger** — Remplacer `println()` dans PlaywrightCaptureImpl (l.75), CapsuleManager.parseScript (l.177-218).
+. **Manim slide path replacement** — Remplacer slide HTML Manim par MP4 muxée.
+. **Manim slide duration** — Utiliser `ManimEngine.probeDuration()`.
+. **Cucumber @integration Manim** — Scénario BDD end-to-end ManimEngine noop.
 
-== P3
+== 🟡 P2
 
-. **lateinit var → lazy delegation** — Remplacer les `lateinit var capsuleExtension` par une délégation lazy avec `project.extensions.getByType()`
-. **Fichier temporaire concat** — Garantir le cleanup du fichier `concat-{timestamp}.txt` dans un bloc try/finally
-. **ManimConfig.validate()** — Simplifier la logique de validation avec un `when` explicite
+. **Code mort: isPlaceholder()** — Supprimer ou réutiliser.
+. **Parallélisme configurable** — Remplacer magic number `4` par property DSL.
+. **ManimEngine configurable** — Scripts Manim en dehors de `src/manim/`.
+. **Manim parallel rendering** — Déjà implémenté (ManimParallelRenderer), valider.
+
+== 🟢 P3
+
+. **lateinit var → lazy delegation** — Remplacer `lateinit var capsuleExtension`.
+. **Fichier temporaire concat** — Garantir cleanup dans try/finally.
+. **ManimConfig.validate()** — Simplifier avec `when` explicite.
+
+'''
+
+== Prochain EPIC
+
+1. **P0 DRY wavToMp3** — Extraire `AudioUtil`. ~1 pt. < 30 min.
+2. **P0 ffprobeDuration** — Unifier sur `MediaProbeUtil`. ~1 pt. < 30 min.
+3. **P0 Resource leak** — try/finally capture.close(). ~0.5 pt. < 10 min.
