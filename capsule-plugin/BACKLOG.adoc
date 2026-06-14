@@ -21,16 +21,11 @@
 == 🟠 P1
 
 . **println → logger** — Remplacer `println()` dans PlaywrightCaptureImpl (l.75), CapsuleManager.parseScript (l.177-218).
-. **Manim slide path replacement** — Remplacer slide HTML Manim par MP4 muxée.
-. **Manim slide duration** — Utiliser `ManimEngine.probeDuration()`.
-. **Cucumber @integration Manim** — Scénario BDD end-to-end ManimEngine noop.
 
 == 🟡 P2
 
 . **Code mort: isPlaceholder()** — Supprimer ou réutiliser.
 . **Parallélisme configurable** — Remplacer magic number `4` par property DSL.
-. **ManimEngine configurable** — Scripts Manim en dehors de `src/manim/`.
-. **Manim parallel rendering** — Déjà implémenté (ManimParallelRenderer), valider.
 
 == 🟢 P3
 
@@ -40,8 +35,10 @@
 
 '''
 
-== Prochain EPIC
+== Prochain EPIC — Session 031
 
 1. **P0 DRY wavToMp3** — Extraire `AudioUtil`. ~1 pt. < 30 min.
-2. **P0 ffprobeDuration** — Unifier sur `MediaProbeUtil`. ~1 pt. < 30 min.
-3. **P0 Resource leak** — try/finally capture.close(). ~0.5 pt. < 10 min.
+2. **P0 DRY ffprobeDuration** — Unifier sur `MediaProbeUtil`. ~1 pt. < 30 min.
+3. **P0 DRY extractTopLevelSections** — Extraire utilitaire partagé. ~1 pt. < 30 min.
+4. **P0 Resource leak Playwright** — try/finally capture.close(). ~0.5 pt. < 10 min.
+5. **P0 Magic number 4** — Remplacer par property DSL. ~0.5 pt. < 10 min.
