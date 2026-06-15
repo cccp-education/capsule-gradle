@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-06-15 (Session 032 — P1 println→logger + P2 isPlaceholder + P3 lateinit/lazy/concat-cleanup/validate-simplify)
+:last_update: 2026-06-16 (Session 034 — Bug-fix close() + Kover + décision CAP-22)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -48,9 +48,18 @@
 `NoOpPlaywrightCapture` produit WebM binaire valide avec header EBML.
 
 '''
+== 🔴 Bug-fix close() avant check vidéo ✅ TERMINE (Session 034)
+
+`PlaywrightCaptureImpl.close()` déplacé avant `listFiles { *.webm }` dans `CapsuleVideoTask.kt`.
+6 failures Cucumber → 0. 31/44 PASSED, 13 skipped.
+
+== 🟠 Kover coverage ✅ TERMINE (Session 034)
+
+Rapport HTML généré. Global: 83.3% line, 51.8% branch, 78.1% instr.
+Gaps critiques: PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%.
+
+'''
 == BACKLOG ACTIF
 
-. 🔴 **Vérifier Cucumber WebM** — rebuild propre `./gradlew :clean :jar :cucumberTest`
-. 🟠 **Kover coverage** — générer 1er rapport `./gradlew :koverHtmlReport`
-. 🟡 **CAP-22 TTS multi-langue** — Piper/espeak voices EN/ES/DE (20-30 tests)
-. 🟡 **CAP-23 Sous-titres** — SRT/VTT depuis speaker notes
+. 🟡 **CAP-22 TTS multi-langue** — Piper/espeak voices EN/ES/DE (20-30 tests TDD). Couvre PiperTtsEngine (31%→80%+ branch).
+. 🟡 **CAP-23 Sous-titres** — SRT/VTT depuis speaker notes (après CAP-22)

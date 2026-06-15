@@ -5,9 +5,9 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
-_Derniere mise a jour_ : 2026-06-15
-_Session terminee_ : 033 — Bug-fix DSL>merge + NoOp WebM EBML + CI Template
-_Prochaine session_ : 034 — Vérifier Cucumber WebM + Kover + décision EPIC
+_Derniere mise a jour_ : 2026-06-16
+_Session terminee_ : 034 — Bug-fix close() avant check vidéo + Kover + décision CAP-22
+_Prochaine session_ : 035 — CAP-22 TTS multi-langue (Piper/espeak voices EN/ES/DE)
 
 '''
 == REGLES ABSOLUES (resume)

@@ -1,26 +1,26 @@
-= PROMPT_REPRISE — Session 034 : Vérifier Cucumber WebM + Kover + décision EPIC
+= PROMPT_REPRISE — Session 035 : CAP-22 TTS multi-langue (Piper/espeak voices EN/ES/DE)
 
 == Contexte
 
-Session 033 — 3 bugs corrigés + CI template créé. pushConfigIntoExtension respecte DSL > merge,
-NoOpPlaywrightCapture produit WebM EBML valide, CI `.github/workflows/test.yml` aligné quizz-benchmark.
+Session 034 — Bug-fix PlaywrightCaptureImpl.close() avant check vidéo (6 failures → 0).
+Kover: 83.3% line, 51.8% branch, 78.1% instr.
+Gap critique: PiperTtsEngine 31% branch, ManimEngineImpl 25% branch.
 
-== Livrables session 033
+== Livrables session 034
 
-1. **CI Template** — `.github/workflows/test.yml` (JDK 24, `./gradlew check`, `working-directory: capsule-plugin`)
-2. **Bug-fix DSL > merge** — `CapsuleConventions` snapshot + `pushConfigIntoExtension` guard convention.
-   `CapsuleModels.kt` + `CapsulePlugin.kt` + `CapsulePluginTest.kt` modifiés.
-3. **Bug-fix NoOp WebM** — `MINIMAL_WEBM` ByteArray EBML header. `PlaywrightManager.kt` + `CapsulePluginTest.kt` modifiés.
+1. **Bug-fix close()** — `CapsuleVideoTask.kt` l.450-475. `close()` dans finally avant check `listFiles { *.webm }`.
+2. **Kover** — Rapport HTML généré. 31/44 Cucumber PASSED, 0 failures.
+3. **Décision EPIC** — CAP-22 TTS multi-langue prioritaire (PiperTtsEngine gap 31% branch).
 
 == État git
 
-Modifications non commitées (session 033)
-Unit tests: 211 PASS, 0 failures
-Cucumber: 2/3 @integration PASS (Audio constraint + Output constraint), WebM en attente rebuild propre
+Modifications non commitées (session 034)
+Cucumber: 31 PASSED, 13 skipped, 0 failures
+Kover: 83.3% line, 51.8% branch, 78.1% instr
 Compile: BUILD SUCCESSFUL
 
 == Prochaines étapes
 
-. Vérifier Cucumber WebM avec `./gradlew :clean :jar :cucumberTest` (rebuild propre)
-. Générer rapport Kover (`./gradlew :koverHtmlReport`) pour identifier gaps de couverture
-. Décider prochain EPIC: CAP-22 TTS multi-langue ou CAP-23 sous-titres selon gaps Kover
+. CAP-22 TTS multi-langue — Piper/espeak voices EN/ES/DE (20-30 tests TDD)
+. Couvrir PiperTtsEngine + EspeakTtsEngine via tests unitaires + Cucumber @tts
+. Objectif Kover: branch 51.8% → 60%+, PiperTtsEngine 31% → 80%+
