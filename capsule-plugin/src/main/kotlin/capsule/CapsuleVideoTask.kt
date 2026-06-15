@@ -97,7 +97,7 @@ open class CapsuleVideoTask : DefaultTask() {
             val slidesContent = slidesDivMatch.groupValues[1]
 
             // Extract top-level <section> elements (may contain nested <section> for vertical stacks)
-            val topLevelSections = extractTopLevelSections(slidesContent)
+            val topLevelSections = HtmlSectionParser.extractTopLevelSections(slidesContent)
 
             if (slideIndex < 0 || slideIndex >= topLevelSections.size) {
                 return deckHtml
@@ -122,46 +122,6 @@ open class CapsuleVideoTask : DefaultTask() {
             }.trimIndent()
         }
 
-        /**
-         * Extracts top-level <section> elements from the slides container content,
-         * handling nested sections (vertical stacks) by tracking depth.
-         */
-        private fun extractTopLevelSections(slidesContent: String): List<String> {
-            val sections = mutableListOf<String>()
-            val sectionOpenRegex = Regex("""<section\b[^>]*>""")
-            val sectionCloseRegex = Regex("""</section>""")
-
-            var depth = 0
-            var currentStart = -1
-            var pos = 0
-
-            while (pos < slidesContent.length) {
-                val openMatch = sectionOpenRegex.find(slidesContent, pos)
-                val closeMatch = sectionCloseRegex.find(slidesContent, pos)
-
-                val nextOpen = openMatch?.range?.first ?: Int.MAX_VALUE
-                val nextClose = closeMatch?.range?.first ?: Int.MAX_VALUE
-
-                if (nextOpen < nextClose && openMatch != null) {
-                    if (depth == 0) {
-                        currentStart = openMatch.range.first
-                    }
-                    depth++
-                    pos = openMatch.range.last + 1
-                } else if (closeMatch != null) {
-                    depth--
-                    if (depth == 0 && currentStart >= 0) {
-                        sections.add(slidesContent.substring(currentStart, closeMatch.range.last + 1))
-                        currentStart = -1
-                    }
-                    pos = closeMatch.range.last + 1
-                } else {
-                    break
-                }
-            }
-
-            return sections
-        }
     }
 
     @get:Internal
@@ -267,7 +227,7 @@ open class CapsuleVideoTask : DefaultTask() {
 
     private fun resolveManimParallelRenderer(): ManimParallelRenderer {
         if (manimParallelRenderer != null) return manimParallelRenderer!!
-        val parallelism = if (capsuleExtension.manimParallelRender.get()) 4 else 1
+        val parallelism = if (capsuleExtension.manimParallelRender.get()) capsuleExtension.manimParallelRenderThreads.get() else 1
         val renderer = CapsuleManager.resolveManimParallelRenderer(parallelism)
         logger.lifecycle("Manim parallel renderer: {} (parallelism={})", renderer.name(), parallelism)
         return renderer
@@ -297,7 +257,7 @@ open class CapsuleVideoTask : DefaultTask() {
                 val idx = String.format("%02d", seg.index)
                 val mp3 = audioDir.resolve("slide-$idx.mp3")
                 if (mp3.exists()) {
-                    val realDur = ffprobeDuration(mp3)
+                    val realDur = MediaProbeUtil.probeDuration(mp3)
                     if (realDur > 0.0) realDur else defaultDur
                 } else defaultDur
             }
@@ -491,7 +451,6 @@ open class CapsuleVideoTask : DefaultTask() {
                         viewportHeight = capsuleExtension.viewportHeight.get(),
                         slideDurations = slideDurations
                     )
-                    deckCapture.close()
 
                     val generatedVideo = videoOutputDir.listFiles { f -> f.name.endsWith(".webm") }
                         ?.firstOrNull()
@@ -506,6 +465,8 @@ open class CapsuleVideoTask : DefaultTask() {
                 } catch (e: CapturingException) {
                     logger.error("Playwright capture failed for '{}': {}", parsed.deckName, e.message)
                     throw e
+                } finally {
+                    deckCapture.close()
                 }
             }
         }
@@ -520,7 +481,7 @@ open class CapsuleVideoTask : DefaultTask() {
         audioDir: File,
         captureFactory: (() -> PlaywrightCapture)? = null
     ) {
-        val executor = Executors.newFixedThreadPool(4)
+        val executor = Executors.newFixedThreadPool(capsuleExtension.parallelCaptureThreads.get())
         val futures = mutableListOf<Future<File?>>()
         val slideDurations = computeSlideDurations(parsed, audioDir)
 
@@ -692,9 +653,9 @@ open class CapsuleVideoTask : DefaultTask() {
                 tmpFile.renameTo(videoFile)
                 val totalSlides = mp3Files.size
                 val audioDur = mp3Files.sumOf { f ->
-                    ffprobeDuration(f)
+                    MediaProbeUtil.probeDuration(f)
                 }
-                logger.lifecycle("  Audio mix: {} slides concatenated (audio={}s, video={}s)", totalSlides, String.format("%.1f", audioDur), String.format("%.1f", ffprobeDuration(videoFile)))
+                logger.lifecycle("  Audio mix: {} slides concatenated (audio={}s, video={}s)", totalSlides, String.format("%.1f", audioDur), String.format("%.1f", MediaProbeUtil.probeDuration(videoFile)))
             } else {
                 logger.warn("  Audio mix failed (ffmpeg exit code {}), video remains silent", exitCode)
                 tmpFile.delete()
@@ -703,16 +664,5 @@ open class CapsuleVideoTask : DefaultTask() {
             logger.warn("  Audio mix error: {} — video remains silent", e.message)
             tmpFile.delete()
         }
-    }
-
-    private fun ffprobeDuration(file: File): Double {
-        return try {
-            val proc = ProcessBuilder("ffprobe", "-v", "quiet", "-show_entries", "format=duration", "-of", "csv=p=0", file.absolutePath)
-                .redirectErrorStream(true)
-                .start()
-            val out = proc.inputStream.bufferedReader().readText().trim()
-            proc.waitFor()
-            out.toDoubleOrNull() ?: 0.0
-        } catch (_: Exception) { 0.0 }
     }
 }

@@ -62,21 +62,7 @@ class ManimEngineImpl(
         return mp4File
     }
 
-    override fun probeDuration(videoFile: File): Double {
-        return try {
-            val proc = ProcessBuilder(
-                "ffprobe", "-v", "quiet",
-                "-show_entries", "format=duration",
-                "-of", "csv=p=0",
-                videoFile.absolutePath
-            ).redirectErrorStream(true).start()
-            val out = proc.inputStream.bufferedReader().readText().trim()
-            proc.waitFor()
-            out.toDoubleOrNull() ?: 0.0
-        } catch (e: Exception) {
-            0.0
-        }
-    }
+    override fun probeDuration(videoFile: File): Double = MediaProbeUtil.probeDuration(videoFile)
 }
 
 class NoOpManimEngine : ManimEngine {

@@ -6,6 +6,9 @@ _Date creation_ : 2026-05-14
 
 |===
 | # | Date | Type | Sujet | Score
+| 031 | 2026-06-15 | refactor | P0 DRY (AudioConversionUtil + HtmlSectionParser + MediaProbeUtil) + resource leak finally + magic number DSL (parallelCaptureThreads + parallelRenderThreads) | 9/10
+| 030 | 2026-06-13 | maintenance | Mise à jour BACKLOG (publication + priorités P0→P3) | 8/10
+| 029 | 2026-06-13 | publish | Publication Maven Central 0.0.1 — nmcp, 195 unit + 22 Cucumber = 217 PASS | 9/10
 | 028 | 2026-06-02 | dev | CAP-20 Manim Parallel Render — ManimParallelRenderer interface + NoOp (sequential) + Impl (thread pool Callable) + factory resolveManimParallelRenderer + CapsuleVideoTask refactor renderAll→mux + Config DSL parallelRender (ManimConfig + CapsuleExtension + CapsuleConfigMerger 4 sources + CapsuleScaffoldTask) + 8 config tests + 3 ManimConfigTest + Cucumber @manim @parallel. 195 unit GREEN. | 9/10
 | 027 | 2026-06-02 | dev | Cucumber @config @manim — 5 scénarios BDD (quality YAML override, CLI -P override, defaults, outputDir YAML, scaffold manim fields) + 8 step defs + CapsulePlugin lifecycle log manim config + CapsuleScaffoldTask outputDir field. 173 unit GREEN, 5/5 Cucumber PASSED | 9/10
 | 026 | 2026-06-02 | dev | CAP-19 ManimEngine configurable — ManimConfig enrichment (outputDir, VALID_QUALITIES, validate) + ManimEngineImpl(config) + CapsuleExtension manimOutputDir + CapsuleConfigMerger 4 sources outputDir + CapsuleVideoTask ManimConfig résolu + 19 nouveaux tests (13+3+3) → 173 unit tests GREEN | 9/10

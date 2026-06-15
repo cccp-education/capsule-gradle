@@ -1,0 +1,42 @@
+= Session 031 — P0 DRY + Resource Leak + Magic Number
+:date: 2026-06-15
+:type: refactor
+:score: 9/10
+
+== Objectif
+
+Traiter les 5 items P0 du BACKLOG issus de la code review session 028.
+
+== Livrables
+
+1. **AudioConversionUtil.kt** — Objet partagé `wavToMp3()` + `isAvailable()`. PiperTtsEngine et EspeakTtsEngine déléguent. 6 tests unitaires existants (AudioConversionUtilTest) PASS.
+2. **HtmlSectionParser.kt** — Objet partagé `extractTopLevelSections()`. CapsuleVideoTask et ManimSlideReplacer déléguent. Regex corrigé (`<section\b(?![^>]*/>)[^>]*>`) pour ignorer self-closing tags. 6 tests unitaires existants (HtmlSectionParserTest) PASS.
+3. **MediaProbeUtil.probeDuration** — ManimEngineImpl et ManimVideoMixerImpl déléguent à `MediaProbeUtil.probeDuration()`. CapsuleVideoTask.ffprobeDuration() supprimée. Tests MediaProbeUtilTest PASS.
+4. **Resource leak** — CapsuleVideoTask branche séquentielle : `deckCapture.close()` déplacé dans `finally`.
+5. **Magic number 4** — `CaptureConfig.parallelCaptureThreads` + `ManimConfig.parallelRenderThreads`. Propagé dans CapsuleExtension, CapsulePlugin, CapsuleConfigMerger (4 sources), CapsuleScaffoldTask, CapsuleVideoTask.
+
+== Fichiers modifiés
+
+- `src/main/kotlin/capsule/AudioConversionUtil.kt` — NOUVEAU
+- `src/main/kotlin/capsule/HtmlSectionParser.kt` — NOUVEAU
+- `src/main/kotlin/capsule/TtsManager.kt` — PiperTtsEngine/EspeakTtsEngine déléguent à AudioConversionUtil
+- `src/main/kotlin/capsule/CapsuleVideoTask.kt` — HtmlSectionParser + MediaProbeUtil + finally close() + parallelCaptureThreads
+- `src/main/kotlin/capsule/ManimSlideReplacer.kt` — HtmlSectionParser, regex supprimés
+- `src/main/kotlin/capsule/ManimEngine.kt` — MediaProbeUtil.probeDuration
+- `src/main/kotlin/capsule/ManimVideoMixer.kt` — MediaProbeUtil.probeDuration
+- `src/main/kotlin/capsule/CapsuleConfig.kt` — CaptureConfig.parallelCaptureThreads + ManimConfig.parallelRenderThreads
+- `src/main/kotlin/capsule/CapsuleConfigMerger.kt` — 4 sources merge pour les 2 nouveaux champs
+- `src/main/kotlin/capsule/CapsuleModels.kt` — CapsuleExtension.parallelCaptureThreads + manimParallelRenderThreads
+- `src/main/kotlin/capsule/CapsulePlugin.kt` — pushConfigIntoExtension pour les 2 nouveaux champs
+- `src/main/kotlin/capsule/CapsuleScaffoldTask.kt` — scaffold YAML mis à jour
+- `PROMPT_REPRISE.adoc` — MàJ
+- `.agents/INDEX.adoc` — MàJ
+- `BACKLOG.adoc` — MàJ
+
+== Tests
+
+Full suite: BUILD SUCCESSFUL. 195+ unit + 22 Cucumber = 217+ PASS.
+
+== Prochaine session
+
+032 — P1 println→logger + P2 isPlaceholder + P3 lateinit→lazy/concat-cleanup/validate-simplify

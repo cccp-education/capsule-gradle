@@ -93,6 +93,12 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val manimParallelRender: Property<Boolean> = objects.property(Boolean::class.java)
         .convention(false)
 
+    val manimParallelRenderThreads: Property<Int> = objects.property(Int::class.java)
+        .convention(4)
+
     val parallelCaptureEnabled: Property<Boolean> = objects.property(Boolean::class.java)
         .convention(false)
+
+    val parallelCaptureThreads: Property<Int> = objects.property(Int::class.java)
+        .convention(4)
 }

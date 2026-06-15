@@ -55,29 +55,8 @@ class PiperTtsEngine(
             throw TtsException("Piper exited with code $exitCode: $errorOutput")
         }
 
-        wavToMp3(wavFile, outputFile)
+        AudioConversionUtil.wavToMp3(wavFile, outputFile)
         wavFile.delete()
-    }
-
-    private fun wavToMp3(wavFile: File, mp3File: File) {
-        try {
-            val proc = ProcessBuilder(
-                "ffmpeg", "-y",
-                "-i", wavFile.absolutePath,
-                "-codec:a", "libmp3lame",
-                "-qscale:a", "2",
-                mp3File.absolutePath
-            ).redirectErrorStream(true).start()
-
-            val exitCode = proc.waitFor()
-            if (exitCode != 0) {
-                // ffmpeg not available — just rename wav
-                wavFile.copyTo(mp3File, overwrite = true)
-            }
-        } catch (e: Exception) {
-            // ffmpeg not available — just rename wav
-            wavFile.copyTo(mp3File, overwrite = true)
-        }
     }
 }
 
@@ -140,26 +119,7 @@ class EspeakTtsEngine(
             throw TtsException("espeak exited with code $exitCode: $stderr")
         }
 
-        wavToMp3(wavFile, outputFile)
+        AudioConversionUtil.wavToMp3(wavFile, outputFile)
         wavFile.delete()
-    }
-
-    private fun wavToMp3(wavFile: File, mp3File: File) {
-        try {
-            val proc = ProcessBuilder(
-                "ffmpeg", "-y",
-                "-i", wavFile.absolutePath,
-                "-codec:a", "libmp3lame",
-                "-qscale:a", "2",
-                mp3File.absolutePath
-            ).redirectErrorStream(true).start()
-
-            val exitCode = proc.waitFor()
-            if (exitCode != 0) {
-                wavFile.copyTo(mp3File, overwrite = true)
-            }
-        } catch (e: Exception) {
-            wavFile.copyTo(mp3File, overwrite = true)
-        }
     }
 }

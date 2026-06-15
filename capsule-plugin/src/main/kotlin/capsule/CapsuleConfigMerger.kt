@@ -98,7 +98,8 @@ object CapsuleConfigMerger {
                 viewportHeight = env["CAPSULE_CAPTURE_VIEWPORT_HEIGHT"]?.toIntOrNull() ?: 792,
                 playwrightTimeout = env["CAPSULE_CAPTURE_PLAYWRIGHT_TIMEOUT"]?.toDoubleOrNull() ?: 120_000.0,
                 slideDurationSeconds = env["CAPSULE_CAPTURE_SLIDE_DURATION_SECONDS"]?.toDoubleOrNull() ?: 5.0,
-                parallelCaptureEnabled = env["CAPSULE_CAPTURE_PARALLEL_CAPTURE_ENABLED"]?.toBoolean() ?: false
+                parallelCaptureEnabled = env["CAPSULE_CAPTURE_PARALLEL_CAPTURE_ENABLED"]?.toBoolean() ?: false,
+                parallelCaptureThreads = env["CAPSULE_CAPTURE_PARALLEL_CAPTURE_THREADS"]?.toIntOrNull() ?: 4
             ),
             distrib = DistribConfig(
                 ffmpegExecutablePath = env["CAPSULE_DISTRIB_FFMPEG_EXECUTABLE_PATH"] ?: "ffmpeg",
@@ -110,7 +111,8 @@ object CapsuleConfigMerger {
                 quality = env["CAPSULE_MANIM_QUALITY"] ?: "l",
                 scriptsDir = env["CAPSULE_MANIM_SCRIPTS_DIR"] ?: "src/manim",
                 outputDir = env["CAPSULE_MANIM_OUTPUT_DIR"] ?: "build/capsule/manim",
-                parallelRender = env["CAPSULE_MANIM_PARALLEL_RENDER"]?.toBoolean() ?: false
+                parallelRender = env["CAPSULE_MANIM_PARALLEL_RENDER"]?.toBoolean() ?: false,
+                parallelRenderThreads = env["CAPSULE_MANIM_PARALLEL_RENDER_THREADS"]?.toIntOrNull() ?: 4
             )
         )
     }
@@ -136,7 +138,8 @@ object CapsuleConfigMerger {
                 viewportHeight = props["capsule.capture.viewportHeight"]?.toIntOrNull() ?: 792,
                 playwrightTimeout = props["capsule.capture.playwrightTimeout"]?.toDoubleOrNull() ?: 120_000.0,
                 slideDurationSeconds = props["capsule.capture.slideDurationSeconds"]?.toDoubleOrNull() ?: 5.0,
-                parallelCaptureEnabled = props["capsule.capture.parallelCaptureEnabled"]?.toBoolean() ?: false
+                parallelCaptureEnabled = props["capsule.capture.parallelCaptureEnabled"]?.toBoolean() ?: false,
+                parallelCaptureThreads = props["capsule.capture.parallelCaptureThreads"]?.toIntOrNull() ?: 4
             ),
             distrib = DistribConfig(
                 ffmpegExecutablePath = props["capsule.distrib.ffmpegExecutablePath"] ?: "ffmpeg",
@@ -148,7 +151,8 @@ object CapsuleConfigMerger {
                 quality = props["capsule.manim.quality"] ?: "l",
                 scriptsDir = props["capsule.manim.scriptsDir"] ?: "src/manim",
                 outputDir = props["capsule.manim.outputDir"] ?: "build/capsule/manim",
-                parallelRender = props["capsule.manim.parallelRender"]?.toBoolean() ?: false
+                parallelRender = props["capsule.manim.parallelRender"]?.toBoolean() ?: false,
+                parallelRenderThreads = props["capsule.manim.parallelRenderThreads"]?.toIntOrNull() ?: 4
             )
         )
     }
@@ -190,7 +194,8 @@ object CapsuleConfigMerger {
             viewportHeight = cli["capture.viewportHeight"] as? Int ?: yaml.viewportHeight,
             playwrightTimeout = cli["capture.playwrightTimeout"] as? Double ?: yaml.playwrightTimeout,
             slideDurationSeconds = cli["capture.slideDurationSeconds"] as? Double ?: yaml.slideDurationSeconds,
-            parallelCaptureEnabled = cli["capture.parallelCaptureEnabled"]?.toString()?.toBoolean() ?: yaml.parallelCaptureEnabled
+            parallelCaptureEnabled = cli["capture.parallelCaptureEnabled"]?.toString()?.toBoolean() ?: yaml.parallelCaptureEnabled,
+            parallelCaptureThreads = cli["capture.parallelCaptureThreads"] as? Int ?: yaml.parallelCaptureThreads
         )
     }
 
@@ -208,7 +213,8 @@ object CapsuleConfigMerger {
             quality = cli["manim.quality"]?.toString() ?: yaml.quality.ifNotBlankOrElse(props.quality),
             scriptsDir = cli["manim.scriptsDir"]?.toString() ?: yaml.scriptsDir.ifNotBlankOrElse(props.scriptsDir),
             outputDir = cli["manim.outputDir"]?.toString() ?: yaml.outputDir.ifNotBlankOrElse(props.outputDir),
-            parallelRender = cli["manim.parallelRender"]?.toString()?.toBoolean() ?: yaml.parallelRender
+            parallelRender = cli["manim.parallelRender"]?.toString()?.toBoolean() ?: yaml.parallelRender,
+            parallelRenderThreads = cli["manim.parallelRenderThreads"] as? Int ?: yaml.parallelRenderThreads
         )
     }
 
@@ -245,7 +251,8 @@ object CapsuleConfigMerger {
             viewportHeight = cli["capture.viewportHeight"] as? Int ?: props.viewportHeight,
             playwrightTimeout = cli["capture.playwrightTimeout"] as? Double ?: props.playwrightTimeout,
             slideDurationSeconds = cli["capture.slideDurationSeconds"] as? Double ?: props.slideDurationSeconds,
-            parallelCaptureEnabled = cli["capture.parallelCaptureEnabled"]?.toString()?.toBoolean() ?: props.parallelCaptureEnabled
+            parallelCaptureEnabled = cli["capture.parallelCaptureEnabled"]?.toString()?.toBoolean() ?: props.parallelCaptureEnabled,
+            parallelCaptureThreads = cli["capture.parallelCaptureThreads"] as? Int ?: props.parallelCaptureThreads
         )
     }
 
@@ -263,7 +270,8 @@ object CapsuleConfigMerger {
             quality = cli["manim.quality"]?.toString() ?: props.quality.ifNotBlankOrElse(env.quality),
             scriptsDir = cli["manim.scriptsDir"]?.toString() ?: props.scriptsDir.ifNotBlankOrElse(env.scriptsDir),
             outputDir = cli["manim.outputDir"]?.toString() ?: props.outputDir.ifNotBlankOrElse(env.outputDir),
-            parallelRender = cli["manim.parallelRender"]?.toString()?.toBoolean() ?: props.parallelRender
+            parallelRender = cli["manim.parallelRender"]?.toString()?.toBoolean() ?: props.parallelRender,
+            parallelRenderThreads = cli["manim.parallelRenderThreads"] as? Int ?: props.parallelRenderThreads
         )
     }
 }

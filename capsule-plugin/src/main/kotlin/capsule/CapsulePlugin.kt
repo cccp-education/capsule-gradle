@@ -86,6 +86,7 @@ class CapsulePlugin : Plugin<Project> {
         ext.playwrightTimeout.set(config.capture.playwrightTimeout)
         ext.slideDurationSeconds.set(config.capture.slideDurationSeconds)
         ext.parallelCaptureEnabled.set(config.capture.parallelCaptureEnabled)
+        ext.parallelCaptureThreads.set(config.capture.parallelCaptureThreads)
 
         // Distrib section
         ext.ffmpegExecutablePath.set(config.distrib.ffmpegExecutablePath)
@@ -98,5 +99,6 @@ class CapsulePlugin : Plugin<Project> {
         ext.manimScriptsDir.set(config.manim.scriptsDir)
         ext.manimOutputDir.set(config.manim.outputDir)
         ext.manimParallelRender.set(config.manim.parallelRender)
+        ext.manimParallelRenderThreads.set(config.manim.parallelRenderThreads)
     }
 }

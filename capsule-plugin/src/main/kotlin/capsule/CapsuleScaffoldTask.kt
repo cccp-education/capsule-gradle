@@ -61,6 +61,7 @@ capture:
   # playwrightTimeout: 120000.0
   # slideDurationSeconds: 5.0
   # parallelCaptureEnabled: false
+  # parallelCaptureThreads: 4
 
 distrib:
   # ffmpegExecutablePath: ffmpeg
@@ -73,6 +74,7 @@ manim:
   # scriptsDir: src/manim
   # outputDir: build/capsule/manim
   # parallelRender: false
+  # parallelRenderThreads: 4
 """.trimIndent()
     }
 }

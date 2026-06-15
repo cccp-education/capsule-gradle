@@ -37,7 +37,8 @@ data class CaptureConfig(
     val viewportHeight: Int = 792,
     val playwrightTimeout: Double = 120_000.0,
     val slideDurationSeconds: Double = 5.0,
-    val parallelCaptureEnabled: Boolean = false
+    val parallelCaptureEnabled: Boolean = false,
+    val parallelCaptureThreads: Int = 4
 )
 
 data class DistribConfig(
@@ -51,7 +52,8 @@ data class ManimConfig(
     val quality: String = "l",
     val scriptsDir: String = "src/manim",
     val outputDir: String = "build/capsule/manim",
-    val parallelRender: Boolean = false
+    val parallelRender: Boolean = false,
+    val parallelRenderThreads: Int = 4
 ) {
     companion object {
         /**

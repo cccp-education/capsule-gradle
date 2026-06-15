@@ -1,25 +1,27 @@
-= PROMPT_REPRISE — Session 029 : ManimEngine Real Integration
+= PROMPT_REPRISE — Session 031 : P0 DRY + Resource Leak + Magic Number
 
 == Contexte
 
-Session 028 — Manim Parallel Render (CAP-20) terminé. 195 unit tests GREEN. ManimParallelRenderer interface + NoOp + Impl (thread pool) + factory + CapsuleVideoTask wiring refactor (renderAll parallèle → mux séquentiel). Config DSL parallelRender propagé dans 4 sources (ENV < props < YAML < CLI) + scaffold. 22 scénarios Cucumber.
+Session 031 — 5 P0 items du BACKLOG traités. 3 DRY violations résolues (wavToMp3, ffprobeDuration, extractTopLevelSections), resource leak Playwright fixé (close() dans finally), magic number 4 rendu configurable via DSL.
 
-== Livrables session 028
+== Livrables session 031
 
-1. **ManimParallelRenderer.kt** — Interface + NoOpManimParallelRenderer + ManimParallelRendererImpl (Callable + thread pool, parallelism configurable)
-2. **14 unit tests** ManimParallelRendererTest (NoOp, Impl, factory, edge cases)
-3. **CapsuleVideoTask refactor** — renderAll() parallèle + mux séquentiel + slide replacement via renderedFiles map
-4. **Config DSL parallelRender** — ManimConfig.parallelRender + CapsuleExtension.manimParallelRender + 4 sources merger + scaffold + 8 tests
-5. **Scenario Cucumber @manim @parallel** — 2 step definitions
-
-== Prochaines étapes (priorité décroissante)
-
-. **ManimEngine real integration** — Scénario @manim-real avec vrai binaire manim
-. **EPIC CAP-18** — Manim slide path replacement + probe duration (COMPLETE)
-. **EPIC CAP-21** — Parallel capture for HTML slides (reuse ManimParallelRenderer pattern?)
+1. **AudioConversionUtil.kt** — Objet partagé wavToMp3 + isAvailable. PiperTtsEngine et EspeakTtsEngine déléguent.
+2. **HtmlSectionParser.kt** — Objet partagé extractTopLevelSections. CapsuleVideoTask et ManimSlideReplacer déléguent. Regex corrigé pour ignorer self-closing tags.
+3. **MediaProbeUtil.probeDuration** — ManimEngineImpl et ManimVideoMixerImpl déléguent à MediaProbeUtil. CapsuleVideoTask.ffprobeDuration() supprimée.
+4. **Resource leak** — CapsuleVideoTask branche séquentielle : deckCapture.close() déplacé dans finally.
+5. **Magic number 4** — CaptureConfig.parallelCaptureThreads + ManimConfig.parallelRenderThreads. Propagé dans CapsuleExtension, CapsulePlugin, CapsuleConfigMerger (4 sources), CapsuleScaffoldTask, CapsuleVideoTask.
 
 == État git
 
-Modifications non commitées (session 028 : ManimParallelRenderer + parallelRender config + 22 tests)
-Unit tests: 195 GREEN
-Cucumber: 22 scénarios (5 @config @manim + 3 @manim + 1 @parallel + 13 autres)
+Modifications non commitées (session 031 : 5 P0 items)
+Unit tests: 195+ GREEN
+Cucumber: 22 scénarios
+
+== Prochaines étapes (priorité décroissante)
+
+. **P1 println → logger** — PlaywrightCaptureImpl l.75, CapsuleManager.parseScript l.177-218
+. **P2 Code mort isPlaceholder()** — Supprimer ou réutiliser
+. **P3 lateinit var → lazy delegation**
+. **P3 Fichier temporaire concat cleanup try/finally**
+. **P3 ManimConfig.validate() → when explicite**

@@ -5,9 +5,9 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
-_Derniere mise a jour_ : 2026-06-14
-_Session terminee_ : 030 — Mise a jour BACKLOG (publication + priorites)
-_Prochaine session_ : 031 — P0 DRY (wavToMp3, ffprobeDuration, extractTopLevelSections) + resource leak
+_Derniere mise a jour_ : 2026-06-15
+_Session terminee_ : 031 — P0 DRY (wavToMp3, ffprobeDuration, extractTopLevelSections) + resource leak + magic number
+_Prochaine session_ : 032 — P1 println→logger + P2 isPlaceholder + P3 lateinit→lazy/concat-cleanup/validate-simplify
 
 '''
 == REGLES ABSOLUES (resume)
@@ -56,6 +56,7 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 
 |===
 | # | Date | Type | Sujet | Score
+| 031 | 2026-06-15 | refactor | P0 DRY (AudioConversionUtil + HtmlSectionParser + MediaProbeUtil) + resource leak finally + magic number DSL | 9/10
 | 030 | 2026-06-13 | maintenance | Mise à jour BACKLOG (publication + priorités P0→P3) | 8/10
 | 029 | 2026-06-13 | publish | Publication Maven Central 0.0.1 — nmcp, 195 unit + 22 Cucumber = 217 PASS | 9/10
 | 028 | 2026-06-02 | dev | CAP-20 Manim Parallel Render — ManimParallelRenderer + NoOp + Impl + factory + CapsuleVideoTask refactor + parallelRender DSL 4 sources + 22 tests (195 unit GREEN) | 9/10
@@ -94,13 +95,13 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 
 |===
 | EPIC | Description | Statut | Priorite
-| DRY-1 | ffprobeDuration dupliqué ×3 → utilitaire partagé | 🔴 TOP PRIORITE | P0
-| DRY-2 | extractTopLevelSections dupliqué ×2 → utilitaire partagé | 🔴 TOP PRIORITE | P0
-| DRY-3 | wavToMp3 dupliqué ×2 → helper partagé | 🔴 TOP PRIORITE | P0
+| DRY-1 | ffprobeDuration dupliqué ×3 → utilitaire partagé | ✅ TERMINE (session 031) | P0
+| DRY-2 | extractTopLevelSections dupliqué ×2 → utilitaire partagé | ✅ TERMINE (session 031) | P0
+| DRY-3 | wavToMp3 dupliqué ×2 → helper partagé | ✅ TERMINE (session 031) | P0
 | println→logger | PlaywrightCaptureImpl l.75 | 🟡 A FAIRE | P1
-| resource-leak | Playwright close() pas dans finally | 🟡 A FAIRE | P1
+| resource-leak | Playwright close() pas dans finally | ✅ TERMINE (session 031) | P1
 | isPlaceholder | Code mort à supprimer ou réutiliser | A FAIRE | P2
-| parallelism | Magic number 4 configurable | A FAIRE | P2
+| parallelism | Magic number 4 configurable | ✅ TERMINE (session 031) | P2
 | lateinit→lazy | Sécuriser les extensions de tâches | A FAIRE | P3
 | concat-cleanup | try/finally sur fichier temporaire | A FAIRE | P3
 | validate-simplify | ManimConfig.validate() → when explicite | A FAIRE | P3

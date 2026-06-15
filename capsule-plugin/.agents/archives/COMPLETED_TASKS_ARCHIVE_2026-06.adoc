@@ -13,4 +13,9 @@
 | 2026-06-02 | 028-dev | CAP-20 Manim Parallel Render — ManimParallelRenderer interface + NoOp + Impl + factory | ✅ 14/14 tests TDD. Callable + Executors.newFixedThreadPool, parallelism configurable, factory resolveManimParallelRenderer.
 | 2026-06-02 | 028-dev | CapsuleVideoTask refactor — renderAll parallèle → mux séquentiel | ✅ Remplacement boucle séquentielle par manimParallelRenderer.renderAll(). renderedFiles map pour slide replacement.
 | 2026-06-02 | 028-dev | Config DSL parallelRender — ManimConfig + CapsuleExtension + CapsuleConfigMerger (4 sources) | ✅ 8 tests (3 ManimConfigTest + 5 CapsuleConfigMergerTest). ENV < props < YAML < CLI. Scaffold mis à jour.
+| 2026-06-15 | 031-refactor | DRY-1 wavToMp3 → AudioConversionUtil | ✅ AudioConversionUtil.kt créé. PiperTtsEngine + EspeakTtsEngine déléguent. 6 tests PASS.
+| 2026-06-15 | 031-refactor | DRY-2 ffprobeDuration → MediaProbeUtil | ✅ ManimEngineImpl + ManimVideoMixerImpl + CapsuleVideoTask déléguent. CapsuleVideoTask.ffprobeDuration() supprimée.
+| 2026-06-15 | 031-refactor | DRY-3 extractTopLevelSections → HtmlSectionParser | ✅ HtmlSectionParser.kt créé. CapsuleVideoTask + ManimSlideReplacer déléguent. Regex corrigé self-closing tags. 6 tests PASS.
+| 2026-06-15 | 031-refactor | Resource leak Playwright close() → finally | ✅ CapsuleVideoTask branche séquentielle : deckCapture.close() dans finally.
+| 2026-06-15 | 031-refactor | Magic number 4 → DSL configurable | ✅ CaptureConfig.parallelCaptureThreads + ManimConfig.parallelRenderThreads. Propagé 4 sources + Extension + Plugin + Scaffold + CapsuleVideoTask.
 |===

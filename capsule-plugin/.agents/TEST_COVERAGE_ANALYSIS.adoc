@@ -1,31 +1,34 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
-:date: 2026-06-02
-:session: 028 Manim Parallel Render
+:date: 2026-06-15
+:session: 031 P0 DRY + Resource Leak + Magic Number
 
-== Couverture — 2 juin 2026 (après session 028)
+== Couverture — 15 juin 2026 (après session 031)
 
 |===
 | Classe | Type | Tests | Couverture
-| CapsulePlugin.kt | main | 7 unitaires | Enregistrement extension + 5 taches + collectCliParams + pushConfigIntoExtension (inc. parallelRender)
-| CapsuleModels.kt | main | 5 unitaires | CapsuleExtension 15 propriétés + SlideType enum + SlideSegment defaults + manimScene + manimParallelRender
+| AudioConversionUtil.kt | main | 6 unitaires | wavToMp3 fallback ffmpeg absent, fallback exit code, parent dirs, integration ffmpeg, isAvailable true/false
+| HtmlSectionParser.kt | main | 6 unitaires | Flat sections, nested sections, empty, single, self-closing skip, attributes
+| MediaProbeUtil.kt | main | 4 unitaires | probeDuration, ffprobePath, isFfprobeAvailable, unavailable
+| CapsulePlugin.kt | main | 7 unitaires | Enregistrement extension + 5 taches + collectCliParams + pushConfigIntoExtension (inc. parallelRender + parallelCaptureThreads + parallelRenderThreads)
+| CapsuleModels.kt | main | 5 unitaires | CapsuleExtension 17 propriétés + SlideType enum + SlideSegment defaults + manimScene + manimParallelRender + parallelCaptureThreads + manimParallelRenderThreads
 | CapsuleManager.kt | main | 4 unitaires | parseScript + resolveManimEngine + resolveManimVideoMixer + resolveManimSlideReplacer + resolveManimParallelRenderer
 | CapsuleScriptTask.kt | main | 0 | (loggé uniquement)
 | CapsuleBuildTask.kt | main | 3 unitaires | Parallélisme (Executors+AtomicInteger+Future), failures+fallback, empty scripts
-| CapsuleVideoTask.kt | main | 19 unitaires | empty deck/script warn, e2e NoOp + injectAudio + sequential fallback + multi-deck + parallel capture + concatWebmFiles + createSingleSlideHtml + computeSlideDurationsWithManim + captureSlideParallel cap 4 + manimSlideReplacer wiring + manimParallelRenderer wiring
+| CapsuleVideoTask.kt | main | 19 unitaires | empty deck/script warn, e2e NoOp + injectAudio + sequential fallback + multi-deck + parallel capture + concatWebmFiles + createSingleSlideHtml + computeSlideDurationsWithManim + captureSlideParallel cap configurable + manimSlideReplacer wiring + manimParallelRenderer wiring + resource leak finally
 | CapsuleDistribTask.kt | main | 3 unitaires | no videos warn, ffmpeg unavailable copy, multiple videos
 | CapsuleCompositeContextTask.kt | main | 4 unitaires | json context file, multiple decks, distribVideo, valid parseable JSON
 | CapsuleParseContextTask.kt | main | 3 unitaires | parse JSON, empty entries, missing file graceful
-| ManimEngine.kt | main | 9 unitaires | NoOpManimEngine (3) + ManimEngineImpl (6 : unavailable, ManimException, name, config quality, default, noop path)
-| ManimVideoMixer.kt | main | 11 unitaires | NoOpManimVideoMixer (4) + ManimVideoMixerImpl (4) + resolveManimVideoMixer factory (2) + MixerException
-| ManimSlideReplacer.kt | main | 14 unitaires | NoOpManimSlideReplacer (2) + ManimSlideReplacerImpl (10 : replace at index, first, last, video attrs, preserve structure, out of bounds, negative, single slide, nested sections, sequential, data-capsule-slide) + factory
-| ManimParallelRenderer.kt | main | 14 unitaires | NoOpManimParallelRenderer (5 : sequential, empty, available/name, skip null manimScene, skip missing script) + ManimParallelRendererImpl (6 : available, name, render 3 slides NoOp, empty, skip null manimScene, ManimException gracefully, default parallelism=4) + factory (2 : parallelism 1 → NoOp, parallelism > 1 → Impl)
-| TtsManager.kt | main | 5 unitaires | NoOpTtsEngine, PiperTtsEngine, EspeakTtsEngine, TtsException
+| ManimEngine.kt | main | 9 unitaires | NoOpManimEngine (3) + ManimEngineImpl (6 : unavailable, ManimException, name, config quality, default, noop path) — probeDuration délégué à MediaProbeUtil
+| ManimVideoMixer.kt | main | 11 unitaires | NoOpManimVideoMixer (4) + ManimVideoMixerImpl (4) + resolveManimVideoMixer factory (2) + MixerException — probeDuration délégué à MediaProbeUtil
+| ManimSlideReplacer.kt | main | 14 unitaires | NoOpManimSlideReplacer (2) + ManimSlideReplacerImpl (10 : replace at index, first, last, video attrs, preserve structure, out of bounds, negative, single slide, nested sections, sequential, data-capsule-slide) + factory — extractTopLevelSections délégué à HtmlSectionParser
+| ManimParallelRenderer.kt | main | 14 unitaires | NoOpManimParallelRenderer (5) + ManimParallelRendererImpl (6) + factory (2)
+| TtsManager.kt | main | 5 unitaires | NoOpTtsEngine, PiperTtsEngine, EspeakTtsEngine, TtsException — wavToMp3 délégué à AudioConversionUtil
 | PlaywrightManager.kt | main | 6 unitaires | NoOpPlaywrightCapture (3) + ScreenshotCaptureImpl (3)
 | CapsuleConfigLoader | main | 5 unitaires | YAML loading, defaults, env vars, missing file, empty file
-| CapsuleConfig | main | 5 unitaires | Defaults, capture section, distrib section, manim section, custom values
-| CapsuleConfigMerger | main | 29 unitaires | 4 precedence levels, partial overrides, edge cases, manim outputDir, manim parallelRender (5 tests)
-| CapsuleScaffoldTask | main | 6 unitaires | Creates YAML, all sections, commented defaults, no overwrite, custom path, resolution order, manim section fields
-| ManimConfig | main | 16 unitaires | Defaults, VALID_QUALITIES, validate (7 tests), copy, presets, parallelRender (3)
+| CapsuleConfig | main | 5 unitaires | Defaults, capture section (inc. parallelCaptureThreads), distrib section, manim section (inc. parallelRenderThreads), custom values
+| CapsuleConfigMerger | main | 29 unitaires | 4 precedence levels, partial overrides, edge cases, manim outputDir, manim parallelRender + parallelRenderThreads, capture parallelCaptureThreads
+| CapsuleScaffoldTask | main | 6 unitaires | Creates YAML, all sections, commented defaults, no overwrite, custom path, resolution order, manim section fields + parallelCaptureThreads + parallelRenderThreads
+| ManimConfig | main | 16 unitaires | Defaults, VALID_QUALITIES, validate (7 tests), copy, presets, parallelRender + parallelRenderThreads
 | ComputeSlideDurationsWithManim | main | 4 unitaires | Manim duration priority, fallback 0.0, mixed slides, empty map defaults
 | ManimSlideReplacementWiring | main | 3 unitaires | Replacer wiring, NoOp replacer, factory resolves impl
 | ManimEngineWiring | main | 3 unitaires | Engine wiring, NoOp engine, factory resolves
