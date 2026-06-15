@@ -217,6 +217,8 @@ class SlideSegmentModelTest {
 
 class PlaywrightCaptureTest {
 
+    private val webmSignature = byteArrayOf(0x1a.toByte(), 0x45.toByte(), 0xdf.toByte(), 0xa3.toByte())
+
     @Test
     fun `noop capture creates placeholder webm file`() {
         val capture = NoOpPlaywrightCapture()
@@ -232,10 +234,10 @@ class PlaywrightCaptureTest {
 
         val placeholder = tmpDir.resolve("capsule.webm")
         assertTrue(placeholder.exists())
-        val content = placeholder.readText()
-        assertTrue(content.contains("PLAYWRIGHT CAPTURE PLACEHOLDER"))
-        assertTrue(content.contains("/fake/deck.html"))
-        assertTrue(content.contains("Slides: 3"))
+        assertTrue(placeholder.length() > 0, "WebM must not be empty")
+        val header = ByteArray(4)
+        placeholder.inputStream().use { it.read(header) }
+        assertTrue(header.contentEquals(webmSignature), "WebM must have EBML header")
     }
 
     @Test
@@ -395,6 +397,8 @@ Celui-ci aussi.
 
 class CapsuleVideoTaskTest {
 
+    private val webmSignature = byteArrayOf(0x1a.toByte(), 0x45.toByte(), 0xdf.toByte(), 0xa3.toByte())
+
     @TempDir
     lateinit var tempDir: File
 
@@ -470,7 +474,10 @@ Voici le contenu principal.
 
         val expectedVideo = File(tempDir, "build/capsule/mon-cours.webm")
         assertTrue(expectedVideo.exists(), "Expected video at ${expectedVideo.absolutePath}")
-        assertTrue(expectedVideo.readText().contains("PLAYWRIGHT CAPTURE PLACEHOLDER"))
+        assertTrue(expectedVideo.length() > 0, "WebM must not be empty")
+        val header = ByteArray(4)
+        expectedVideo.inputStream().use { it.read(header) }
+        assertTrue(header.contentEquals(webmSignature), "WebM must have EBML header")
 
         val injectedDeck = File(tempDir, "build/capsule/injected/mon-cours-deck.html")
         assertTrue(injectedDeck.exists(), "Expected injected deck at ${injectedDeck.absolutePath}")
@@ -570,8 +577,8 @@ Deck B.
         val videoB = File(capDir, "cours-b.webm")
         assertTrue(videoA.exists(), "Expected video for cours-a")
         assertTrue(videoB.exists(), "Expected video for cours-b")
-        assertTrue(videoA.readText().contains("PLAYWRIGHT CAPTURE PLACEHOLDER"))
-        assertTrue(videoB.readText().contains("PLAYWRIGHT CAPTURE PLACEHOLDER"))
+        assertTrue(videoA.length() > 0, "WebM must not be empty")
+        assertTrue(videoB.length() > 0, "WebM must not be empty")
     }
 
     @Test
@@ -1494,6 +1501,8 @@ class CreateSingleSlideHtmlTest {
 
 class ParallelCaptureSwitchTest {
 
+    private val webmSignature = byteArrayOf(0x1a.toByte(), 0x45.toByte(), 0xdf.toByte(), 0xa3.toByte())
+
     @TempDir
     lateinit var tempDir: File
 
@@ -1536,7 +1545,10 @@ Speaker note.
         // Should produce video via sequential path
         val expectedVideo = File(tempDir, "build/capsule/test.webm")
         assertTrue(expectedVideo.exists(), "Sequential capture should produce video")
-        assertTrue(expectedVideo.readText().contains("PLAYWRIGHT CAPTURE PLACEHOLDER"))
+        assertTrue(expectedVideo.length() > 0, "WebM must not be empty")
+        val header = ByteArray(4)
+        expectedVideo.inputStream().use { it.read(header) }
+        assertTrue(header.contentEquals(webmSignature), "WebM must have EBML header")
     }
 
     @Test

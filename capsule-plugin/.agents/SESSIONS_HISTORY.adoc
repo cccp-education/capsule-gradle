@@ -6,6 +6,7 @@ _Date creation_ : 2026-05-14
 
 |===
 | # | Date | Type | Sujet | Score
+| 033 | 2026-06-15 | bugfix+ci | Bug-fix DSL>merge (CapsuleConventions snapshot + pushConfigIntoExtension guard) + NoOp WebM EBML header (MINIMAL_WEBM ByteArray) + CI Template .github/workflows/test.yml. 211 unit PASS. | 8/10
 | 032 | 2026-06-15 | refactor | P1 println→logger (PlaywrightCaptureImpl + CapsuleConfigLoader) + P2 isPlaceholder dead code + P3 lateinit→lazy (6 tâches) + concat-cleanup try/finally + validate-simplify when explicite. 211 unit PASS. | 9/10
 | 031 | 2026-06-15 | refactor | P0 DRY (AudioConversionUtil + HtmlSectionParser + MediaProbeUtil) + resource leak finally + magic number DSL (parallelCaptureThreads + parallelRenderThreads) | 9/10
 | 030 | 2026-06-13 | maintenance | Mise à jour BACKLOG (publication + priorités P0→P3) | 8/10

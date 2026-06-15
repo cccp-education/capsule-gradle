@@ -23,4 +23,7 @@
 | 2026-06-15 | 032-refactor | P3 lateinit var → lazy delegation (6 tâches) | ✅ Pattern `internal var` + backing field `_capsuleExtension` + lazy getter. CapsuleManager nettoyé (suppression field + 6 injections).
 | 2026-06-15 | 032-refactor | P3 concat-cleanup try/finally | ✅ `concatWebmFiles` finally + `mixAudioWithVideo` finally unifié.
 | 2026-06-15 | 032-refactor | P3 validate-simplify when explicite | ✅ `ManimConfig.validate()` : `if/else if` → `when { quality == "noop" -> {}; ... }`.
+| 2026-06-15 | 033-ci | CI Template `.github/workflows/test.yml` | ✅ JDK 24 Temurin, `./gradlew check`, `working-directory: capsule-plugin`, trigger push/PR main/master.
+| 2026-06-15 | 033-bugfix | pushConfigIntoExtension DSL > merge | ✅ `CapsuleConventions` snapshot + guard convention. DSL `outputDir = "capsules"` respecté. 3 scénarios @integration corrigés.
+| 2026-06-15 | 033-bugfix | NoOpPlaywrightCapture WebM EBML header | ✅ `MINIMAL_WEBM` ByteArray hex string → chunked(2). Placeholder texte remplacé par WebM binaire valide.
 |===

@@ -1,27 +1,26 @@
-= PROMPT_REPRISE — Session 033 : Backlog vide — maintenance ou nouveau EPIC
+= PROMPT_REPRISE — Session 034 : Vérifier Cucumber WebM + Kover + décision EPIC
 
 == Contexte
 
-Session 032 — 5 items P1→P3 du BACKLOG traités. Tous les println remplacés par logger Gradle, code mort isPlaceholder() supprimé, lateinit var → lazy delegation (6 tâches), concat cleanup try/finally, ManimConfig.validate() simplifié avec when.
+Session 033 — 3 bugs corrigés + CI template créé. pushConfigIntoExtension respecte DSL > merge,
+NoOpPlaywrightCapture produit WebM EBML valide, CI `.github/workflows/test.yml` aligné quizz-benchmark.
 
-== Livrables session 032
+== Livrables session 033
 
-1. **PlaywrightManager.kt** — `println` → `logger.lifecycle` (format SLF4J `{}`). Import Logging.
-2. **CapsuleConfigLoader.kt** — `println` → `logger.warn`. Import Logging.
-3. **CapsuleVideoTask.kt** — `isPlaceholder()` supprimé (code mort). `concatWebmFiles` finally. `mixAudioWithVideo` finally unifié.
-4. **6 tâches** — `lateinit var capsuleExtension` → `internal var` + backing field `_capsuleExtension` + lazy getter. CapsuleManager nettoyé.
-5. **CapsuleConfig.kt** — `validate()` : `if/else if` → `when` explicite.
+1. **CI Template** — `.github/workflows/test.yml` (JDK 24, `./gradlew check`, `working-directory: capsule-plugin`)
+2. **Bug-fix DSL > merge** — `CapsuleConventions` snapshot + `pushConfigIntoExtension` guard convention.
+   `CapsuleModels.kt` + `CapsulePlugin.kt` + `CapsulePluginTest.kt` modifiés.
+3. **Bug-fix NoOp WebM** — `MINIMAL_WEBM` ByteArray EBML header. `PlaywrightManager.kt` + `CapsulePluginTest.kt` modifiés.
 
 == État git
 
-Modifications non commitées (session 032 : 5 items P1→P3)
+Modifications non commitées (session 033)
 Unit tests: 211 PASS, 0 failures
-Cucumber: 22 scénarios
+Cucumber: 2/3 @integration PASS (Audio constraint + Output constraint), WebM en attente rebuild propre
 Compile: BUILD SUCCESSFUL
 
 == Prochaines étapes
 
-BACKLOG vide. Options :
-. Nouvel EPIC — fonctionnalité métier (ex: CAP-22 TTS multi-langue, CAP-23 sous-titres)
-. Maintenance — audit Cucumber, Kover coverage gap, CI template
-. Publication — mise à jour mineure 0.0.2 avec correctifs P1→P3
+. Vérifier Cucumber WebM avec `./gradlew :clean :jar :cucumberTest` (rebuild propre)
+. Générer rapport Kover (`./gradlew :koverHtmlReport`) pour identifier gaps de couverture
+. Décider prochain EPIC: CAP-22 TTS multi-langue ou CAP-23 sous-titres selon gaps Kover

@@ -101,4 +101,60 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
 
     val parallelCaptureThreads: Property<Int> = objects.property(Int::class.java)
         .convention(4)
+
+    internal val conventions: CapsuleConventions = CapsuleConventions(
+        outputDir = "capsule",
+        sliderScriptDir = "capsule",
+        deckSourceDir = "docs/asciidocRevealJs",
+        chromiumExecutablePath = "",
+        ttsEngine = "piper",
+        ttsVoice = "fr_FR-siwis-medium",
+        piperExecutablePath = "piper",
+        ttsFallbackEnabled = true,
+        espeakVoice = "fr",
+        espeakSpeed = 150,
+        viewportWidth = 1408,
+        viewportHeight = 792,
+        playwrightTimeout = 120_000.0,
+        slideDurationSeconds = 5.0,
+        parallelCaptureEnabled = false,
+        parallelCaptureThreads = 4,
+        ffmpegExecutablePath = "ffmpeg",
+        distribOutputWidth = 1080,
+        distribOutputHeight = 1920,
+        manimExecutablePath = "manim",
+        manimQuality = "l",
+        manimScriptsDir = "src/manim",
+        manimOutputDir = "build/capsule/manim",
+        manimParallelRender = false,
+        manimParallelRenderThreads = 4
+    )
 }
+
+data class CapsuleConventions(
+    val outputDir: String,
+    val sliderScriptDir: String,
+    val deckSourceDir: String,
+    val chromiumExecutablePath: String,
+    val ttsEngine: String,
+    val ttsVoice: String,
+    val piperExecutablePath: String,
+    val ttsFallbackEnabled: Boolean,
+    val espeakVoice: String,
+    val espeakSpeed: Int,
+    val viewportWidth: Int,
+    val viewportHeight: Int,
+    val playwrightTimeout: Double,
+    val slideDurationSeconds: Double,
+    val parallelCaptureEnabled: Boolean,
+    val parallelCaptureThreads: Int,
+    val ffmpegExecutablePath: String,
+    val distribOutputWidth: Int,
+    val distribOutputHeight: Int,
+    val manimExecutablePath: String,
+    val manimQuality: String,
+    val manimScriptsDir: String,
+    val manimOutputDir: String,
+    val manimParallelRender: Boolean,
+    val manimParallelRenderThreads: Int
+)

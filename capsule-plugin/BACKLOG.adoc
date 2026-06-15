@@ -35,9 +35,22 @@
 . ✅ **ManimConfig.validate()** — Simplifié avec `when` explicite.
 
 '''
-== BACKLOG VIDE
+== 🟢 CI Template ✅ TERMINE (Session 033)
 
-Tous les items P0→P3 sont terminés. Prochaines options :
-. Nouvel EPIC fonctionnel (CAP-22 TTS multi-langue, CAP-23 sous-titres, etc.)
-. Maintenance (audit Cucumber, Kover coverage gap, CI template)
-. Publication mise à jour mineure 0.0.2 avec correctifs P1→P3
+`.github/workflows/test.yml` créé — JDK 24, `./gradlew check`, trigger push/PR.
+
+== 🟢 Bug-fix DSL > merge ✅ TERMINE (Session 033)
+
+`pushConfigIntoExtension` respecte DSL explicite via `CapsuleConventions` snapshot.
+
+== 🟢 Bug-fix NoOp WebM EBML ✅ TERMINE (Session 033)
+
+`NoOpPlaywrightCapture` produit WebM binaire valide avec header EBML.
+
+'''
+== BACKLOG ACTIF
+
+. 🔴 **Vérifier Cucumber WebM** — rebuild propre `./gradlew :clean :jar :cucumberTest`
+. 🟠 **Kover coverage** — générer 1er rapport `./gradlew :koverHtmlReport`
+. 🟡 **CAP-22 TTS multi-langue** — Piper/espeak voices EN/ES/DE (20-30 tests)
+. 🟡 **CAP-23 Sous-titres** — SRT/VTT depuis speaker notes

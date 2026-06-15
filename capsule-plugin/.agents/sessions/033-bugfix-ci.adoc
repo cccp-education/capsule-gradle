@@ -1,0 +1,51 @@
+= Session 033 — Bug-fix DSL > merge + NoOp WebM EBML + CI Template
+:date: 2026-06-15
+:type: bugfix + ci
+:score: 8/10
+
+== Résumé
+
+3 bugs découverts et corrigés + CI template créé.
+
+== Livrables
+
+=== 033.1 — CI Template `.github/workflows/test.yml`
+- Créé à la racine `capsule-gradle/.github/workflows/test.yml`
+- Pattern aligné sur quizz-benchmark-gradle (JDK 24 Temurin, `./gradlew check`, `working-directory: capsule-plugin`)
+- Trigger: push/PR sur main/master, timeout 15 min
+
+=== 033.2a — Bug-fix: pushConfigIntoExtension DSL > merge
+- **Root cause**: `CapsulePlugin.pushConfigIntoExtension()` écrasait inconditionnellement
+  les propriétés DSL par les valeurs du merge (YAML/props/ENV). Le DSL `outputDir = "capsules"`
+  était systématiquement remplacé par `"capsule"` (convention).
+- **Fix**: `CapsuleConventions` data class snapshotée à la création de l'extension.
+  `pushConfigIntoExtension` ne set que si la valeur actuelle == convention (pas de DSL explicite).
+- **Impact**: 3 scénarios Cucumber `@integration` (Audio constraint, Output constraint, WebM validity)
+  qui utilisaient `outputDir = "capsules"` dans le DSL sont maintenant respectés.
+- **Fichiers modifiés**:
+  - `CapsuleModels.kt` — ajout `CapsuleConventions` data class + `conventions` field
+  - `CapsulePlugin.kt` — `pushConfigIntoExtension` avec guard convention
+  - `CapsulePluginTest.kt` — 2 tests `pushConfigIntoExtension` adaptés
+
+=== 033.2b — Bug-fix: NoOpPlaywrightCapture WebM EBML header
+- **Root cause**: `NoOpPlaywrightCapture` écrivait un placeholder texte, pas un WebM binaire valide.
+  Le scénario Cucumber "WebM validity constraint" vérifiait le header EBML (0x1A 0x45 0xDF 0xA3)
+  et échouait car le fichier était du texte.
+- **Fix**: `MINIMAL_WEBM` ByteArray avec header EBML + Segment + Info valide (hex string → chunked(2)).
+  Le fichier produit est un WebM minimal valide (0 durée, 0 frame).
+- **Fichiers modifiés**:
+  - `PlaywrightManager.kt` — `NoOpPlaywrightCapture.capture()` → `writeBytes(MINIMAL_WEBM)`
+  - `CapsulePluginTest.kt` — 4 tests adaptés (vérification header EBML au lieu de placeholder texte)
+
+== État final
+
+- Unit tests: 211 PASS, 0 failures
+- Cucumber: 22 scénarios (2/3 @integration PASS confirmés, WebM en attente de rebuild propre)
+- Compile: BUILD SUCCESSFUL
+- CI: `.github/workflows/test.yml` créé
+
+== Prochaine session (034)
+
+- Vérifier Cucumber WebM avec rebuild propre (clean + jar + cucumberTest)
+- Générer rapport Kover pour identifier gaps de couverture
+- Décider prochain EPIC: CAP-22 TTS multi-langue ou CAP-23 sous-titres

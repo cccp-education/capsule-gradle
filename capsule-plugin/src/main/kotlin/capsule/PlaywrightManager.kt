@@ -114,16 +114,15 @@ class NoOpPlaywrightCapture : PlaywrightCapture {
         slideDurations: List<Double>
     ) {
         outputDir.mkdirs()
-        val placeholder = listOf(
-            "# PLAYWRIGHT CAPTURE PLACEHOLDER (noop engine)",
-            "# Deck: $deckHtmlPath",
-            "# Slides: ${slideDurations.size}",
-            "# Viewport: ${viewportWidth}x$viewportHeight"
-        ).joinToString("\n")
-        outputDir.resolve("capsule.webm").writeText(placeholder)
+        outputDir.resolve("capsule.webm").writeBytes(MINIMAL_WEBM)
     }
 
     override fun close() {}
+
+    companion object {
+        private val MINIMAL_WEBM: ByteArray = "1a45dfa301000000000000001f4286810142f7810142f2810442f381084282847765626d42878104428581021853806701000000000000001e1549a96601000000000000000d2ad7b1830f4240448984000000000000000000"
+            .chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+    }
 }
 
 class CapturingException(message: String) : RuntimeException(message)

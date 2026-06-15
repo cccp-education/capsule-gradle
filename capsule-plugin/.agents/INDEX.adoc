@@ -6,8 +6,8 @@ _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
 _Derniere mise a jour_ : 2026-06-15
-_Session terminee_ : 032 — P1 println→logger + P2 isPlaceholder + P3 lateinit→lazy/concat-cleanup/validate-simplify
-_Prochaine session_ : 033 — Backlog vide (nouvel EPIC ou maintenance)
+_Session terminee_ : 033 — Bug-fix DSL>merge + NoOp WebM EBML + CI Template
+_Prochaine session_ : 034 — Vérifier Cucumber WebM + Kover + décision EPIC
 
 '''
 == REGLES ABSOLUES (resume)
