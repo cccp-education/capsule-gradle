@@ -5,8 +5,6 @@ import java.io.File
 
 class CapsuleManager(private val project: Project) {
 
-    private val capsuleExt = project.extensions.getByType(CapsuleExtension::class.java)
-
     fun registerTasks() {
         project.registerGenerateCapsuleScriptTask()
         project.registerGenerateCapsuleTask()
@@ -21,7 +19,6 @@ class CapsuleManager(private val project: Project) {
         tasks.register("generateCapsuleScript", CapsuleScriptTask::class.java) { task ->
             task.group = "generate"
             task.description = "Reads *-script.txt produced by slider-gradle and validates the capsule script"
-            task.capsuleExtension = this@CapsuleManager.capsuleExt
         }
     }
 
@@ -30,7 +27,6 @@ class CapsuleManager(private val project: Project) {
             task.group = "generate"
             task.description = "Generates TTS audio files from capsule scripts (Piper placeholder)"
             task.dependsOn("generateCapsuleScript")
-            task.capsuleExtension = this@CapsuleManager.capsuleExt
         }
     }
 
@@ -39,7 +35,6 @@ class CapsuleManager(private val project: Project) {
             task.group = "generate"
             task.description = "Injects TTS audio into deck HTML then captures video via Playwright Java"
             task.dependsOn("generateCapsule")
-            task.capsuleExtension = this@CapsuleManager.capsuleExt
         }
     }
 
@@ -48,7 +43,6 @@ class CapsuleManager(private val project: Project) {
             task.group = "deploy"
             task.description = "Recadre les capsules en format vertical 9:16 (TikTok/Shorts) via FFmpeg"
             task.dependsOn("generateCapsuleVideo")
-            task.capsuleExtension = this@CapsuleManager.capsuleExt
         }
     }
 
@@ -57,7 +51,6 @@ class CapsuleManager(private val project: Project) {
             task.group = "collect"
             task.description = "Exporte le contexte des capsules (chemins videos + metadonnees) en JSON compatible engine N3"
             task.dependsOn("deployCapsule")
-            task.capsuleExtension = this@CapsuleManager.capsuleExt
         }
     }
 
@@ -90,7 +83,6 @@ class CapsuleManager(private val project: Project) {
         tasks.register("scaffoldCapsuleContext", CapsuleScaffoldTask::class.java) { task ->
             task.group = "generate"
             task.description = "Scaffolds a default capsule-context.yml configuration file with comments"
-            task.capsuleExtension = this@CapsuleManager.capsuleExt
         }
     }
 

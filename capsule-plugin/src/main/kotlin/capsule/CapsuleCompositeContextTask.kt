@@ -16,7 +16,11 @@ open class CapsuleCompositeContextTask : DefaultTask() {
     val outputFile: RegularFileProperty = project.objects.fileProperty()
 
     @get:Internal
-    lateinit var capsuleExtension: CapsuleExtension
+    internal var capsuleExtension: CapsuleExtension
+        get() = _capsuleExtension ?: project.extensions.getByType(CapsuleExtension::class.java).also { _capsuleExtension = it }
+        set(value) { _capsuleExtension = value }
+
+    private var _capsuleExtension: CapsuleExtension? = null
 
     init {
         outputFile.convention(

@@ -1,27 +1,27 @@
-= PROMPT_REPRISE — Session 031 : P0 DRY + Resource Leak + Magic Number
+= PROMPT_REPRISE — Session 033 : Backlog vide — maintenance ou nouveau EPIC
 
 == Contexte
 
-Session 031 — 5 P0 items du BACKLOG traités. 3 DRY violations résolues (wavToMp3, ffprobeDuration, extractTopLevelSections), resource leak Playwright fixé (close() dans finally), magic number 4 rendu configurable via DSL.
+Session 032 — 5 items P1→P3 du BACKLOG traités. Tous les println remplacés par logger Gradle, code mort isPlaceholder() supprimé, lateinit var → lazy delegation (6 tâches), concat cleanup try/finally, ManimConfig.validate() simplifié avec when.
 
-== Livrables session 031
+== Livrables session 032
 
-1. **AudioConversionUtil.kt** — Objet partagé wavToMp3 + isAvailable. PiperTtsEngine et EspeakTtsEngine déléguent.
-2. **HtmlSectionParser.kt** — Objet partagé extractTopLevelSections. CapsuleVideoTask et ManimSlideReplacer déléguent. Regex corrigé pour ignorer self-closing tags.
-3. **MediaProbeUtil.probeDuration** — ManimEngineImpl et ManimVideoMixerImpl déléguent à MediaProbeUtil. CapsuleVideoTask.ffprobeDuration() supprimée.
-4. **Resource leak** — CapsuleVideoTask branche séquentielle : deckCapture.close() déplacé dans finally.
-5. **Magic number 4** — CaptureConfig.parallelCaptureThreads + ManimConfig.parallelRenderThreads. Propagé dans CapsuleExtension, CapsulePlugin, CapsuleConfigMerger (4 sources), CapsuleScaffoldTask, CapsuleVideoTask.
+1. **PlaywrightManager.kt** — `println` → `logger.lifecycle` (format SLF4J `{}`). Import Logging.
+2. **CapsuleConfigLoader.kt** — `println` → `logger.warn`. Import Logging.
+3. **CapsuleVideoTask.kt** — `isPlaceholder()` supprimé (code mort). `concatWebmFiles` finally. `mixAudioWithVideo` finally unifié.
+4. **6 tâches** — `lateinit var capsuleExtension` → `internal var` + backing field `_capsuleExtension` + lazy getter. CapsuleManager nettoyé.
+5. **CapsuleConfig.kt** — `validate()` : `if/else if` → `when` explicite.
 
 == État git
 
-Modifications non commitées (session 031 : 5 P0 items)
-Unit tests: 195+ GREEN
+Modifications non commitées (session 032 : 5 items P1→P3)
+Unit tests: 211 PASS, 0 failures
 Cucumber: 22 scénarios
+Compile: BUILD SUCCESSFUL
 
-== Prochaines étapes (priorité décroissante)
+== Prochaines étapes
 
-. **P1 println → logger** — PlaywrightCaptureImpl l.75, CapsuleManager.parseScript l.177-218
-. **P2 Code mort isPlaceholder()** — Supprimer ou réutiliser
-. **P3 lateinit var → lazy delegation**
-. **P3 Fichier temporaire concat cleanup try/finally**
-. **P3 ManimConfig.validate() → when explicite**
+BACKLOG vide. Options :
+. Nouvel EPIC — fonctionnalité métier (ex: CAP-22 TTS multi-langue, CAP-23 sous-titres)
+. Maintenance — audit Cucumber, Kover coverage gap, CI template
+. Publication — mise à jour mineure 0.0.2 avec correctifs P1→P3

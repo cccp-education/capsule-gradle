@@ -17,7 +17,11 @@ import java.io.File
 open class CapsuleScaffoldTask : DefaultTask() {
 
     @get:Internal
-    lateinit var capsuleExtension: CapsuleExtension
+    internal var capsuleExtension: CapsuleExtension
+        get() = _capsuleExtension ?: project.extensions.getByType(CapsuleExtension::class.java).also { _capsuleExtension = it }
+        set(value) { _capsuleExtension = value }
+
+    private var _capsuleExtension: CapsuleExtension? = null
 
     @TaskAction
     fun execute() {

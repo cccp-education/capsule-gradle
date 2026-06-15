@@ -1,0 +1,39 @@
+= Session 032 — P1 println→logger + P2 isPlaceholder + P3 lateinit/lazy/concat-cleanup/validate-simplify
+:date: 2026-06-15
+:type: refactor
+:score: 9/10
+
+== Contexte
+
+Session 032 — 5 items P1→P3 du BACKLOG traités. Tous les items restants post-session 031.
+
+== Livrables
+
+1. **P1 println → logger** — PlaywrightCaptureImpl l.75 (`println` → `logger.lifecycle` avec format SLF4J `{}`). CapsuleConfigLoader l.37 (`println` → `logger.warn`). Import `org.gradle.api.logging.Logging` ajouté dans les 2 fichiers.
+
+2. **P2 isPlaceholder()** — Méthode privée supprimée de CapsuleVideoTask. Zéro call site, code mort confirmé.
+
+3. **P3 lateinit var → lazy delegation** — 6 tâches (CapsuleVideoTask, CapsuleBuildTask, CapsuleScriptTask, CapsuleDistribTask, CapsuleCompositeContextTask, CapsuleScaffoldTask). Pattern : `internal var` avec backing field `_capsuleExtension` nullable + getter lazy (project.extensions.getByType) + setter pour injection test. CapsuleManager nettoyé (suppression `capsuleExt` field + 6 lignes `task.capsuleExtension =`).
+
+4. **P3 concat-cleanup** — `concatWebmFiles` : `concatList.delete()` déplacé dans `finally`. `mixAudioWithVideo` : `tmpFile.delete()` unifié dans `finally` (suppression des 2 delete redondants dans else/catch).
+
+5. **P3 validate-simplify** — `ManimConfig.validate()` : `if/else if` remplacé par `when { quality == "noop" -> {}; quality.isBlank() -> ...; quality !in VALID_QUALITIES -> ... }`.
+
+== État git
+
+Modifications non commitées (session 032 : 5 items P1→P3)
+Unit tests: 211 PASS, 0 failures
+Compile: BUILD SUCCESSFUL
+
+== Fichiers modifiés
+
+- `PlaywrightManager.kt` — logger + println→lifecycle
+- `CapsuleConfigLoader.kt` — logger + println→warn
+- `CapsuleVideoTask.kt` — isPlaceholder supprimé, lateinit→lazy, concat finally, mixAudio finally
+- `CapsuleBuildTask.kt` — lateinit→lazy
+- `CapsuleScriptTask.kt` — lateinit→lazy
+- `CapsuleDistribTask.kt` — lateinit→lazy
+- `CapsuleCompositeContextTask.kt` — lateinit→lazy
+- `CapsuleScaffoldTask.kt` — lateinit→lazy
+- `CapsuleManager.kt` — suppression capsuleExt field + 6 injections
+- `CapsuleConfig.kt` — validate() when explicite

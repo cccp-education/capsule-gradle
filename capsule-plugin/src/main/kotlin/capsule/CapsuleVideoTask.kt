@@ -18,7 +18,11 @@ open class CapsuleVideoTask : DefaultTask() {
     val outputDir: DirectoryProperty = project.objects.directoryProperty()
 
     @get:Internal
-    lateinit var capsuleExtension: CapsuleExtension
+    internal var capsuleExtension: CapsuleExtension
+        get() = _capsuleExtension ?: project.extensions.getByType(CapsuleExtension::class.java).also { _capsuleExtension = it }
+        set(value) { _capsuleExtension = value }
+
+    private var _capsuleExtension: CapsuleExtension? = null
 
     companion object {
         private const val AUDIO_INJECT_SCRIPT = """
@@ -68,8 +72,9 @@ open class CapsuleVideoTask : DefaultTask() {
                 exitCode == 0 && outputFile.exists()
             } catch (e: Exception) {
                 false
+            } finally {
+                concatList.delete()
             }
-            concatList.delete()
             if (success) {
                 webmFiles.forEach { it.delete() }
             }
@@ -574,10 +579,6 @@ open class CapsuleVideoTask : DefaultTask() {
         return outFile
     }
 
-    private fun isPlaceholder(file: File): Boolean {
-        return file.length() < 500 && file.readText().startsWith("# TTS PLACEHOLDER")
-    }
-
     private fun injectAudioSequentialFallback(
         deckFile: File,
         script: CapsuleScript,
@@ -658,11 +659,11 @@ open class CapsuleVideoTask : DefaultTask() {
                 logger.lifecycle("  Audio mix: {} slides concatenated (audio={}s, video={}s)", totalSlides, String.format("%.1f", audioDur), String.format("%.1f", MediaProbeUtil.probeDuration(videoFile)))
             } else {
                 logger.warn("  Audio mix failed (ffmpeg exit code {}), video remains silent", exitCode)
-                tmpFile.delete()
             }
         } catch (e: Exception) {
             logger.warn("  Audio mix error: {} — video remains silent", e.message)
-            tmpFile.delete()
+        } finally {
+            if (tmpFile.exists()) tmpFile.delete()
         }
     }
 }

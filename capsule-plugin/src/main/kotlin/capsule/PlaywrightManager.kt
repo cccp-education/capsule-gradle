@@ -5,6 +5,7 @@ import com.microsoft.playwright.BrowserContext
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Playwright
+import org.gradle.api.logging.Logging
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -22,6 +23,8 @@ class PlaywrightCaptureImpl(
     private val endMargin: Double = 2000.0,
     private val defaultSlideDuration: Double = 5.0
 ) : PlaywrightCapture {
+
+    private val logger = Logging.getLogger(PlaywrightCaptureImpl::class.java)
 
     private var playwright: Playwright? = null
     private var browser: Browser? = null
@@ -72,7 +75,7 @@ class PlaywrightCaptureImpl(
         val audioIds = page!!.evaluate("Array.from(document.querySelectorAll('audio')).map(a => a.id)") as? List<*> ?: listOf<Any>()
         val hasAudioElements = audioIds.isNotEmpty()
 
-        println("  Playwright: hasAudio=${hasAudioElements} audioCount=${audioIds.size} slides=$slideCount")
+        logger.lifecycle("  Playwright: hasAudio={} audioCount={} slides={}", hasAudioElements, audioIds.size, slideCount)
 
         for (i in 0 until slideCount) {
             val slideMs = (slideDurations[i] * 1000).toLong()

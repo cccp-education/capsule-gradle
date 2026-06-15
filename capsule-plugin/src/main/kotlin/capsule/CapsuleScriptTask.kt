@@ -14,7 +14,11 @@ open class CapsuleScriptTask : DefaultTask() {
     val outputDir: DirectoryProperty = project.objects.directoryProperty()
 
     @get:Internal
-    lateinit var capsuleExtension: CapsuleExtension
+    internal var capsuleExtension: CapsuleExtension
+        get() = _capsuleExtension ?: project.extensions.getByType(CapsuleExtension::class.java).also { _capsuleExtension = it }
+        set(value) { _capsuleExtension = value }
+
+    private var _capsuleExtension: CapsuleExtension? = null
 
     init {
         outputDir.convention(project.layout.buildDirectory.dir("capsule"))

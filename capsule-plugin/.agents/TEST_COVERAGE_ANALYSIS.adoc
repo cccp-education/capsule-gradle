@@ -1,8 +1,8 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-06-15
-:session: 031 P0 DRY + Resource Leak + Magic Number
+:session: 032 P1 println→logger + P2 isPlaceholder + P3 lateinit/lazy/concat-cleanup/validate-simplify
 
-== Couverture — 15 juin 2026 (après session 031)
+== Couverture — 15 juin 2026 (après session 032)
 
 |===
 | Classe | Type | Tests | Couverture
@@ -41,14 +41,21 @@
 | ScreenshotCapture | main | 3 unitaires | Screenshot with viewport, close, NoOp
 |===
 
-- Unitaires: 195/195 PASS (+22 vs session 027)
+- Unitaires: 211/211 PASS (+16 vs session 031)
 - Cucumber BDD: 22 scénarios (5 @config @manim + 3 @manim + 1 @manim @parallel + 13 standard)
 - Full check: BUILD SUCCESSFUL
 - Kover coverage: OK
 
-== Nouveaux tests session 028
+== Modifications session 032 (pas de nouveaux tests, refactor uniquement)
 
-| Classe | Nouveaux | Description
-| ManimParallelRendererTest | 14 | NoOp (5) + Impl (6) + Factory (2) + Exception (1)
-| ManimConfigTest | +3 | parallelRender default=true, set true, validate
-| CapsuleConfigMergerTest | +5 | parallelRender default, CLI override, YAML, ENV, Props
+| Fichier | Changement | Impact tests
+| PlaywrightManager.kt | println → logger.lifecycle | 0 régression
+| CapsuleConfigLoader.kt | println → logger.warn | 0 régression
+| CapsuleVideoTask.kt | isPlaceholder() supprimé, concat finally, mixAudio finally | 0 régression
+| CapsuleBuildTask.kt | lateinit var → lazy delegation | 0 régression
+| CapsuleScriptTask.kt | lateinit var → lazy delegation | 0 régression
+| CapsuleDistribTask.kt | lateinit var → lazy delegation | 0 régression
+| CapsuleCompositeContextTask.kt | lateinit var → lazy delegation | 0 régression
+| CapsuleScaffoldTask.kt | lateinit var → lazy delegation | 0 régression
+| CapsuleManager.kt | Suppression capsuleExt field + 6 injections | 0 régression
+| CapsuleConfig.kt | validate() when explicite | 0 régression

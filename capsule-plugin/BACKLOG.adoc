@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-06-15 (Session 031 — P0 DRY + Resource Leak + Magic Number)
+:last_update: 2026-06-15 (Session 032 — P1 println→logger + P2 isPlaceholder + P3 lateinit/lazy/concat-cleanup/validate-simplify)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -18,27 +18,26 @@
 . ✅ **Magic number `4`** — `CaptureConfig.parallelCaptureThreads` + `ManimConfig.parallelRenderThreads` DSL 4 sources.
 
 '''
-== 🟠 P1
+== 🟠 P1 ✅ TERMINE (Session 032)
 
-. **println → logger** — Remplacer `println()` dans PlaywrightCaptureImpl (l.75), CapsuleManager.parseScript (l.177-218).
-
-'''
-== 🟡 P2
-
-. **Code mort: isPlaceholder()** — Supprimer ou réutiliser.
+. ✅ **println → logger** — PlaywrightCaptureImpl l.75 (`logger.lifecycle`) + CapsuleConfigLoader l.37 (`logger.warn`).
 
 '''
-== 🟢 P3
+== 🟡 P2 ✅ TERMINE (Session 032)
 
-. **lateinit var → lazy delegation** — Remplacer `lateinit var capsuleExtension`.
-. **Fichier temporaire concat** — Garantir cleanup dans try/finally.
-. **ManimConfig.validate()** — Simplifier avec `when` explicite.
+. ✅ **Code mort: isPlaceholder()** — Supprimé de CapsuleVideoTask. Zéro call site.
 
 '''
-== Prochain EPIC — Session 032
+== 🟢 P3 ✅ TERMINE (Session 032)
 
-1. **P1 println → logger** — PlaywrightCaptureImpl l.75 + CapsuleManager.parseScript. ~1 pt.
-2. **P2 isPlaceholder()** — Supprimer ou réutiliser. ~0.5 pt.
-3. **P3 lateinit → lazy** — Sécuriser extensions de tâches. ~1 pt.
-4. **P3 concat-cleanup** — try/finally fichier temporaire. ~0.5 pt.
-5. **P3 validate-simplify** — ManimConfig.validate() → when explicite. ~0.5 pt.
+. ✅ **lateinit var → lazy delegation** — 6 tâches : `internal var` + backing field `_capsuleExtension` + lazy getter. CapsuleManager nettoyé.
+. ✅ **Fichier temporaire concat** — `concatWebmFiles` finally + `mixAudioWithVideo` finally unifié.
+. ✅ **ManimConfig.validate()** — Simplifié avec `when` explicite.
+
+'''
+== BACKLOG VIDE
+
+Tous les items P0→P3 sont terminés. Prochaines options :
+. Nouvel EPIC fonctionnel (CAP-22 TTS multi-langue, CAP-23 sous-titres, etc.)
+. Maintenance (audit Cucumber, Kover coverage gap, CI template)
+. Publication mise à jour mineure 0.0.2 avec correctifs P1→P3

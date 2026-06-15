@@ -3,6 +3,7 @@ package capsule
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import org.gradle.api.logging.Logging
 import java.io.File
 import java.util.regex.Pattern
 
@@ -13,6 +14,8 @@ import java.util.regex.Pattern
  * Pattern aligné sur plantuml-gradle ConfigLoader.
  */
 object CapsuleConfigLoader {
+
+    private val logger = Logging.getLogger(CapsuleConfigLoader::class.java)
 
     private val ENV_VAR_PATTERN = Pattern.compile("\\$\\{([^}]+)\\}")
     private val MAPPER: ObjectMapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
@@ -34,7 +37,7 @@ object CapsuleConfigLoader {
         return try {
             MAPPER.readValue(resolvedYaml, CapsuleConfig::class.java)
         } catch (e: Exception) {
-            println("[capsule] WARNING: Failed to parse YAML ${configFile.absolutePath}: ${e.message}")
+            logger.warn("[capsule] Failed to parse YAML {}: {}", configFile.absolutePath, e.message)
             CapsuleConfig()
         }
     }

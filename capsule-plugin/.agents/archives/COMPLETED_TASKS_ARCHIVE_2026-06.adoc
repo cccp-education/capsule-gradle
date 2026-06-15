@@ -18,4 +18,9 @@
 | 2026-06-15 | 031-refactor | DRY-3 extractTopLevelSections → HtmlSectionParser | ✅ HtmlSectionParser.kt créé. CapsuleVideoTask + ManimSlideReplacer déléguent. Regex corrigé self-closing tags. 6 tests PASS.
 | 2026-06-15 | 031-refactor | Resource leak Playwright close() → finally | ✅ CapsuleVideoTask branche séquentielle : deckCapture.close() dans finally.
 | 2026-06-15 | 031-refactor | Magic number 4 → DSL configurable | ✅ CaptureConfig.parallelCaptureThreads + ManimConfig.parallelRenderThreads. Propagé 4 sources + Extension + Plugin + Scaffold + CapsuleVideoTask.
+| 2026-06-15 | 032-refactor | P1 println→logger — PlaywrightCaptureImpl + CapsuleConfigLoader | ✅ `println` → `logger.lifecycle`/`logger.warn` avec format SLF4J `{}`. Import Logging ajouté.
+| 2026-06-15 | 032-refactor | P2 isPlaceholder() dead code | ✅ Méthode privée supprimée de CapsuleVideoTask. Zéro call site.
+| 2026-06-15 | 032-refactor | P3 lateinit var → lazy delegation (6 tâches) | ✅ Pattern `internal var` + backing field `_capsuleExtension` + lazy getter. CapsuleManager nettoyé (suppression field + 6 injections).
+| 2026-06-15 | 032-refactor | P3 concat-cleanup try/finally | ✅ `concatWebmFiles` finally + `mixAudioWithVideo` finally unifié.
+| 2026-06-15 | 032-refactor | P3 validate-simplify when explicite | ✅ `ManimConfig.validate()` : `if/else if` → `when { quality == "noop" -> {}; ... }`.
 |===

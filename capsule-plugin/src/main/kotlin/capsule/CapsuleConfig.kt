@@ -79,17 +79,13 @@ data class ManimConfig(
         if (executablePath.isBlank() && executablePath != "noop") {
             errors.add("executablePath must not be blank (use 'noop' for testing)")
         }
-        if (quality.isNotBlank() && quality != "noop" && quality !in VALID_QUALITIES) {
-            errors.add("quality '$quality' is not a valid Manim quality flag. Valid: ${VALID_QUALITIES.joinToString(", ")}")
+        when {
+            quality == "noop" -> {} // valid, no error
+            quality.isBlank() -> errors.add("quality must not be blank")
+            quality !in VALID_QUALITIES -> errors.add("quality '$quality' is not a valid Manim quality flag. Valid: ${VALID_QUALITIES.joinToString(", ")}")
         }
         if (scriptsDir.isBlank()) {
             errors.add("scriptsDir must not be blank")
-        }
-        // "noop" is a special quality for NoOpManimEngine — skip quality validation
-        if (quality == "noop") {
-            // noop is valid, no error
-        } else if (quality.isBlank()) {
-            errors.add("quality must not be blank")
         }
         return errors
     }
