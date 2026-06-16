@@ -1,26 +1,23 @@
-= PROMPT_REPRISE — Session 038 : CAP-25 Pipeline E2E avec burn-in (intégration complète)
+= PROMPT_REPRISE — Session 039 : CAP-26 Style burn-in configurable (font size, couleur, position)
 
 == Contexte
 
-Session 037 — CAP-24 Burn-in sous-titres terminé.
-SubtitleBurnInService interface + SubtitleBurnInServiceImpl (FFmpeg subtitles filter) + NoOpSubtitleBurnInService.
-DSL subtitleBurnIn dans 4 sources (Extension/Config/Conventions/Merger/Scaffold/Plugin).
-Wiring CapsuleVideoTask: resolveSubtitleBurnInService + burnInSubtitlesIfEnabled (post-mixAudioWithVideo, séquentiel + parallèle).
-10 tests unitaires SubtitleBurnInServiceTest PASS.
-3 Cucumber @subtitles @burnin scénarios (config disabled default, config enabled DSL, service invocation).
+Session 038 — CAP-25 Pipeline E2E avec burn-in terminé.
+1 scénario Cucumber @subtitles @burnin @integration ajouté (deck → TTS → capture → mix → burn-in → WebM final).
+2 step defs : Given real ffmpeg config + Then burn-in completed successfully.
+Compile OK, unit tests PASS. cucumberTest hang pré-existant non résolu.
 
 == État git
 
-9 fichiers modifiés, 2 fichiers nouveaux. Aucun commit.
+2 fichiers modifiés (capsule.feature + CapsuleStepDefinitions.kt). Aucun commit.
 Compile: BUILD SUCCESSFUL.
 Unit tests: BUILD SUCCESSFUL.
-Cucumber: cucumberTest task hang (pré-existant, non lié à CAP-24).
+Cucumber: cucumberTest task hang (pré-existant).
 Secrets: 0 trouvé.
 
 == Prochaines étapes
 
-. CAP-25 Pipeline E2E avec burn-in — Test d'intégration complet du pipeline capsule avec burn-in activé
-. Vérifier que le WebM final contient bien les sous-titres incrustés (vérification visuelle ou binaire)
-. Cucumber @subtitles @burnin @integration scenario complet (deck → TTS → capture → mix → burn-in → WebM final)
-. Option: support VTT burn-in (FFmpeg subtitles filter accepte aussi VTT)
-. Option: style configurable (font size, couleur, position) via DSL
+. CAP-26 Style burn-in configurable — DSL subtitleBurnInStyle (fontSize, fontColor, outlineColor, position)
+. Passer les paramètres de style dans la commande FFmpeg `force_style='FontSize=XX,PrimaryColour=&H...'`
+. Cucumber @subtitles @burnin @style scenarios
+. Option: CAP-27 VTT burn-in (FFmpeg subtitles filter accepte aussi VTT)

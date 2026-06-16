@@ -6,8 +6,8 @@ _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
 _Derniere mise a jour_ : 2026-06-16
-_Session terminee_ : 037 — CAP-24 Burn-in sous-titres dans le WebM final
-_Prochaine session_ : 038 — CAP-25 Pipeline E2E avec burn-in (intégration complète)
+_Session terminee_ : 038 — CAP-25 Pipeline E2E avec burn-in (intégration complète)
+_Prochaine session_ : 039 — CAP-26 Style burn-in configurable (font size, couleur, position) ou CAP-27 VTT burn-in
 
 '''
 == REGLES ABSOLUES (resume)
@@ -56,6 +56,7 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 
 |===
 | # | Date | Type | Sujet | Score
+| 038 | 2026-06-16 | dev | CAP-25 Pipeline E2E burn-in — Cucumber @subtitles @burnin @integration (deck → TTS → capture → mix → burn-in → WebM final), 1 scénario + 2 step defs (Given real ffmpeg, Then burn-in completed), compile OK, unit tests PASS | 9/10
 | 037 | 2026-06-16 | dev | CAP-24 Burn-in sous-titres — SubtitleBurnInService interface + Impl (FFmpeg subtitles filter) + NoOp, DSL subtitleBurnIn 4 sources, wiring CapsuleVideoTask post-mixAudioWithVideo, 10 tests unitaires, 3 Cucumber @subtitles @burnin | 9/10
 | 036 | 2026-06-16 | dev | CAP-23 Sous-titres SRT/VTT — SubtitleFormat enum + SubtitleEntry + SubtitleGenerator, SrtGenerator + VttGenerator + SubtitleTimingCalculator, DSL subtitleEnabled/subtitleFormat 4 sources, wiring CapsuleVideoTask, 6 Cucumber @subtitles, 43/43 PASSED | 9/10
 | 035 | 2026-06-16 | dev | CAP-22 TTS multi-langue — Language enum + VoiceMapping (FR/EN/ES/DE), PiperTtsEngine + EspeakTtsEngine language-aware, 6 Cucumber @tts, 37/37 PASSED | 9/10
@@ -137,6 +138,7 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 | CAP-22 | TTS multi-langue — Language enum + VoiceMapping (FR/EN/ES/DE), PiperTtsEngine + EspeakTtsEngine language-aware, 6 Cucumber @tts | ✅ TERMINE (session 035) | P1
 | CAP-23 | Sous-titres SRT/VTT — SubtitleFormat enum + SubtitleEntry + SubtitleGenerator, SrtGenerator + VttGenerator + SubtitleTimingCalculator, DSL subtitleEnabled/subtitleFormat 4 sources, wiring CapsuleVideoTask, 6 Cucumber @subtitles | ✅ TERMINE (session 036) | P1
 | CAP-24 | Burn-in sous-titres — SubtitleBurnInService interface + Impl (FFmpeg subtitles filter) + NoOp, DSL subtitleBurnIn 4 sources, wiring CapsuleVideoTask post-mixAudioWithVideo, 10 tests unitaires, 3 Cucumber @subtitles @burnin | ✅ TERMINE (session 037) | P1
+| CAP-25 | Pipeline E2E avec burn-in — Cucumber @subtitles @burnin @integration (deck → TTS → capture → mix → burn-in → WebM final), 1 scénario + 2 step defs | ✅ TERMINE (session 038) | P1
 |===
 
 '''

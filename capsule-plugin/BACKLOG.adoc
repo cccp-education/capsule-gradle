@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-06-16 (Session 037 — CAP-24 Burn-in sous-titres)
+:last_update: 2026-06-16 (Session 038 — CAP-25 Pipeline E2E burn-in)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -64,4 +64,4 @@ Gaps critiques: PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 2
 . ✅ **CAP-22 TTS multi-langue** — Language enum + VoiceMapping (FR/EN/ES/DE), PiperTtsEngine + EspeakTtsEngine language-aware, 6 Cucumber @tts, 37/37 PASSED. Kover: 83.3% line, 51.7% branch.
 . ✅ **CAP-23 Sous-titres** — SRT/VTT depuis speaker notes. SubtitleFormat enum + SubtitleEntry + SubtitleGenerator, SrtGenerator + VttGenerator + SubtitleTimingCalculator, DSL subtitleEnabled/subtitleFormat 4 sources, wiring CapsuleVideoTask, 6 Cucumber @subtitles, 43/43 PASSED.
 . ✅ **CAP-24 Burn-in sous-titres** — Incrustation SRT/VTT dans le WebM final via FFmpeg subtitles filter. SubtitleBurnInService interface + Impl + NoOp, DSL subtitleBurnIn 4 sources, wiring CapsuleVideoTask post-mixAudioWithVideo, 10 tests unitaires, 3 Cucumber @subtitles @burnin.
-. 🟡 **CAP-25 Pipeline E2E avec burn-in** — Test d'intégration complet du pipeline capsule avec burn-in activé (deck → TTS → capture → mix → burn-in → WebM final). Cucumber @subtitles @burnin @integration.
+. ✅ **CAP-25 Pipeline E2E avec burn-in** — Test d'intégration complet du pipeline capsule avec burn-in activé (deck → TTS → capture → mix → burn-in → WebM final). Cucumber @subtitles @burnin @integration. 1 scénario + 2 step defs. Compile OK, unit tests PASS.

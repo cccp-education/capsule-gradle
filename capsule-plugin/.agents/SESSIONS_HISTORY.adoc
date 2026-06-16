@@ -6,6 +6,7 @@ _Date creation_ : 2026-05-14
 
 |===
 | # | Date | Type | Sujet | Score
+| 038 | 2026-06-16 | dev | CAP-25 Pipeline E2E burn-in — Cucumber @subtitles @burnin @integration (deck → TTS → capture → mix → burn-in → WebM final), 1 scénario + 2 step defs (Given real ffmpeg, Then burn-in completed), compile OK, unit tests PASS | 9/10
 | 037 | 2026-06-16 | dev | CAP-24 Burn-in sous-titres — SubtitleBurnInService interface + Impl (FFmpeg subtitles filter) + NoOp, DSL subtitleBurnIn 4 sources, wiring CapsuleVideoTask post-mixAudioWithVideo, 10 tests unitaires, 3 Cucumber @subtitles @burnin | 9/10
 | 036 | 2026-06-16 | dev | CAP-23 Sous-titres SRT/VTT — SubtitleFormat enum + SubtitleEntry + SubtitleGenerator, SrtGenerator + VttGenerator + SubtitleTimingCalculator, DSL subtitleEnabled/subtitleFormat 4 sources, wiring CapsuleVideoTask, 6 Cucumber @subtitles, 43/43 PASSED | 9/10
 | 035 | 2026-06-16 | dev | CAP-22 TTS multi-langue — Language enum + VoiceMapping (FR/EN/ES/DE), PiperTtsEngine + EspeakTtsEngine language-aware, 6 Cucumber @tts, 37/37 PASSED, Kover 83.3% line | 9/10

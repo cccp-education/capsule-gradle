@@ -275,3 +275,15 @@ Feature: Capsule video generation from a reveal.js deck
     And a capsule script "burnin-script.txt" with 2 slide segments
     When I run the task "generateCapsuleVideo" with NoOp capture
     Then the subtitle burn-in service is invoked for the final video
+
+  @subtitles @burnin @integration
+  Scenario: Burn-in E2E pipeline — full pipeline with real ffmpeg subtitle burn-in produces valid WebM
+    Given a Gradle project with the capsule plugin configured for SRT subtitles with burn-in and real ffmpeg
+    And a reveal.js deck "burnin-e2e-deck.html" with 2 slides and data-capsule-slide attributes
+    And a capsule script "burnin-e2e-script.txt" with 2 slide segments
+    When I run the task "generateCapsuleVideo" with NoOp capture
+    Then the subtitle burn-in service is invoked for the final video
+    And a subtitle file "burnin-e2e.srt" is generated in the capsule output directory
+    And a video file "burnin-e2e.webm" is generated
+    And the video file "burnin-e2e.webm" has a valid WebM EBML header
+    And the burn-in operation completed successfully on the final video

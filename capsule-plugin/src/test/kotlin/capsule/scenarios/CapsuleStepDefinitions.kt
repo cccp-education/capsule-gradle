@@ -970,4 +970,34 @@ class $sceneName(Scene):
             "Build output should mention subtitle burn-in service invocation. Got: ${lastBuildResult.take(2000)}"
         )
     }
+
+    @Given("a Gradle project with the capsule plugin configured for SRT subtitles with burn-in and real ffmpeg")
+    fun aGradleProjectWithTheCapsulePluginConfiguredForSrtSubtitlesWithBurnInAndRealFfmpeg() {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-burnin-e2e-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('education.cccp.capsule')
+            }
+            capsule {
+                ttsEngine = "noop"
+                subtitleEnabled = true
+                subtitleFormat = "srt"
+                subtitleBurnIn = true
+                ffmpegExecutablePath = "ffmpeg"
+                outputDir = "capsules"
+            }
+        """.trimIndent())
+    }
+
+    @Then("the burn-in operation completed successfully on the final video")
+    fun theBurnInOperationCompletedSuccessfullyOnTheFinalVideo() {
+        assertTrue(
+            lastBuildResult.contains("Subtitle burn-in:") && lastBuildResult.contains("burned into"),
+            "Build output should indicate successful burn-in. Got: ${lastBuildResult.take(2000)}"
+        )
+    }
 }

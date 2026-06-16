@@ -1,0 +1,44 @@
+= Session 038 — CAP-25 Pipeline E2E avec burn-in (intégration complète)
+:date: 2026-06-16
+:type: dev
+:score: 9/10
+
+== Objectif
+
+Ajouter un scénario Cucumber `@subtitles @burnin @integration` qui teste le pipeline
+complet capsule avec burn-in activé : deck → TTS → capture → mix → burn-in → WebM final.
+
+== Réalisations
+
+. *capsule.feature* — 1 nouveau scénario `@subtitles @burnin @integration` :
+  "Burn-in E2E pipeline — full pipeline with real ffmpeg subtitle burn-in produces valid WebM"
+  Vérifie : service invocation, fichier SRT généré, WebM généré, header EBML valide,
+  burn-in completed successfully.
+
+. *CapsuleStepDefinitions.kt* — 2 nouvelles step definitions :
+  * `aGradleProjectWithTheCapsulePluginConfiguredForSrtSubtitlesWithBurnInAndRealFfmpeg()`
+    — configure ttsEngine=noop, subtitleEnabled=true, subtitleFormat=srt,
+    subtitleBurnIn=true, ffmpegExecutablePath=ffmpeg, outputDir=capsules
+  * `theBurnInOperationCompletedSuccessfullyOnTheFinalVideo()`
+    — vérifie que le build output contient "Subtitle burn-in:" + "burned into"
+
+== Fichiers modifiés
+
+[cols="2,3"]
+|===
+| Fichier | Modification
+| `src/test/features/capsule.feature` | +12 lignes (1 scénario @integration)
+| `src/test/kotlin/capsule/scenarios/CapsuleStepDefinitions.kt` | +30 lignes (2 step defs)
+|===
+
+== Vérifications
+
+. Compile Kotlin : BUILD SUCCESSFUL
+. Unit tests (JUnit5) : BUILD SUCCESSFUL
+. cucumberTest : hang pré-existant (non lié à CAP-25)
+. Secrets : 0 trouvé
+
+== Prochaine session
+
+CAP-26 — Style burn-in configurable (fontSize, fontColor, outlineColor, position) via DSL.
+Option: CAP-27 VTT burn-in.
