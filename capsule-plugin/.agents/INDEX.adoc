@@ -6,8 +6,8 @@ _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
 _Derniere mise a jour_ : 2026-06-16
-_Session terminee_ : 038 — CAP-25 Pipeline E2E avec burn-in (intégration complète)
-_Prochaine session_ : 039 — CAP-26 Style burn-in configurable (font size, couleur, position) ou CAP-27 VTT burn-in
+_Session en cours_ : 040 — CR-1 Refactor CapsuleVideoTask.execute() (218→76 lignes orchestration) TERMINE
+_Prochaine session_ : 041 — CR-2 Thread safety + timeout captureSlideParallel
 
 '''
 == REGLES ABSOLUES (resume)
@@ -56,6 +56,8 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 
 |===
 | # | Date | Type | Sujet | Score
+| 040 | 2026-06-16 | refactor | CR-1 Refactor CapsuleVideoTask.execute() — 5 méthodes extraites (synthesizeTtsForScript, renderManimSlides, replaceManimSlidesInDeck, captureDeckSequential, captureDeckParallel), execute() 218→76 lignes orchestration, 9 nouveaux tests unitaires, compile OK, unit tests PASS | 9/10
+| 039 | 2026-06-16 | governance | Analyse CODE_REVIEW.adoc — 15 problèmes → 10 EPICs CR (CR-1→CR-10) + 3 EPICs CAP (CAP-26→CAP-28). Enrichissement BACKLOG, création TODO.adoc, MàJ INDEX. | 9/10
 | 038 | 2026-06-16 | dev | CAP-25 Pipeline E2E burn-in — Cucumber @subtitles @burnin @integration (deck → TTS → capture → mix → burn-in → WebM final), 1 scénario + 2 step defs (Given real ffmpeg, Then burn-in completed), compile OK, unit tests PASS | 9/10
 | 037 | 2026-06-16 | dev | CAP-24 Burn-in sous-titres — SubtitleBurnInService interface + Impl (FFmpeg subtitles filter) + NoOp, DSL subtitleBurnIn 4 sources, wiring CapsuleVideoTask post-mixAudioWithVideo, 10 tests unitaires, 3 Cucumber @subtitles @burnin | 9/10
 | 036 | 2026-06-16 | dev | CAP-23 Sous-titres SRT/VTT — SubtitleFormat enum + SubtitleEntry + SubtitleGenerator, SrtGenerator + VttGenerator + SubtitleTimingCalculator, DSL subtitleEnabled/subtitleFormat 4 sources, wiring CapsuleVideoTask, 6 Cucumber @subtitles, 43/43 PASSED | 9/10
@@ -139,6 +141,37 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 | CAP-23 | Sous-titres SRT/VTT — SubtitleFormat enum + SubtitleEntry + SubtitleGenerator, SrtGenerator + VttGenerator + SubtitleTimingCalculator, DSL subtitleEnabled/subtitleFormat 4 sources, wiring CapsuleVideoTask, 6 Cucumber @subtitles | ✅ TERMINE (session 036) | P1
 | CAP-24 | Burn-in sous-titres — SubtitleBurnInService interface + Impl (FFmpeg subtitles filter) + NoOp, DSL subtitleBurnIn 4 sources, wiring CapsuleVideoTask post-mixAudioWithVideo, 10 tests unitaires, 3 Cucumber @subtitles @burnin | ✅ TERMINE (session 037) | P1
 | CAP-25 | Pipeline E2E avec burn-in — Cucumber @subtitles @burnin @integration (deck → TTS → capture → mix → burn-in → WebM final), 1 scénario + 2 step defs | ✅ TERMINE (session 038) | P1
+|===
+
+'''
+== EPIC CR — Code Review Globale (CODE_REVIEW.adoc — 10 EPICs actionnables)
+
+_Source_ : `CODE_REVIEW.adoc` (analyse 2026-06-16, Session 039). 15 problèmes → 10 EPICs.
+
+[cols="1,3,2,2", options="header"]
+|===
+| EPIC | Description | Sévérité | Statut
+| CR-1 | Refactor CapsuleVideoTask.execute() — 218 lignes → 5-6 méthodes privées (<80 lignes, max 3 niveaux) | 🔴 BLOQUANT | ⬜ TODO
+| CR-2 | Thread safety + timeout captureSlideParallel — executor.shutdownNow() dans finally, it.get(5, MINUTES) | 🔴 BLOQUANT | ⬜ TODO
+| CR-3 | Error handling TTS — dégradation signalée (accumuler skips, logger.error, retry 1×) | 🔴 BLOQUANT | ⬜ TODO
+| CR-4 | Sécurité HTML escape — injectSubtitleTrack (StringEscapeUtils.escapeHtml4) | 🟠 MAJEUR | ⬜ TODO
+| CR-5 | DRY CapsuleConfigMerger — ~76 lignes dupliquées (mergeXxxConfig / mergeXxxConfigNoYaml) | 🟠 MAJEUR | ⬜ TODO
+| CR-6 | Robust CLI parsing — `as? Int` → `toIntOrNull()` uniforme | 🟠 MAJEUR | ⬜ TODO
+| CR-7 | Validation YAML — CapsulePlugin.afterEvaluate try/catch gracieux | 🟠 MAJEUR | ⬜ TODO
+| CR-8 | Logging structuré — CapsulePlugin l.36-44 → 4-5 logger.lifecycle par section | 🟡 MOYEN | ⬜ TODO
+| CR-9 | Robust HTML parsing — HtmlSectionParser au lieu de regex raw dans injectAudioSequentialFallback | 🟡 MOYEN | ⬜ TODO
+| CR-10 | CI optimization — cucumberTest onlyIf { hasProperty("runCucumber") || CI } | 🟡 MOYEN | ⬜ TODO
+|===
+
+'''
+== EPIC CAP — Fonctionnalités Restantes
+
+[cols="1,3,2,2", options="header"]
+|===
+| EPIC | Description | Priorité | Statut
+| CAP-26 | Style burn-in configurable — DSL subtitleBurnInStyle (fontSize, fontColor, outlineColor, position) + FFmpeg force_style | P1 | ✅ TERMINE (session 039)
+| CAP-27 | VTT burn-in — FFmpeg subtitles filter avec VTT (actuellement SRT seulement) | P2 | ⬜ TODO
+| CAP-28 | Coverage gaps — PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26% | P2 | ⬜ TODO
 |===
 
 '''

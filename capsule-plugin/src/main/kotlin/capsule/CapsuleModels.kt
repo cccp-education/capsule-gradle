@@ -114,6 +114,18 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val subtitleBurnIn: Property<Boolean> = objects.property(Boolean::class.java)
         .convention(false)
 
+    val subtitleBurnInFontSize: Property<Int> = objects.property(Int::class.java)
+        .convention(24)
+
+    val subtitleBurnInFontColor: Property<String> = objects.property(String::class.java)
+        .convention("&H00FFFFFF")
+
+    val subtitleBurnInOutlineColor: Property<String> = objects.property(String::class.java)
+        .convention("&H00000000")
+
+    val subtitleBurnInPosition: Property<String> = objects.property(String::class.java)
+        .convention("bottom")
+
     internal val conventions: CapsuleConventions = CapsuleConventions(
         outputDir = "capsule",
         sliderScriptDir = "capsule",
@@ -135,6 +147,10 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         subtitleEnabled = false,
         subtitleFormat = "srt",
         subtitleBurnIn = false,
+        subtitleBurnInFontSize = 24,
+        subtitleBurnInFontColor = "&H00FFFFFF",
+        subtitleBurnInOutlineColor = "&H00000000",
+        subtitleBurnInPosition = "bottom",
         ffmpegExecutablePath = "ffmpeg",
         distribOutputWidth = 1080,
         distribOutputHeight = 1920,
@@ -168,6 +184,10 @@ data class CapsuleConventions(
     val subtitleEnabled: Boolean,
     val subtitleFormat: String,
     val subtitleBurnIn: Boolean,
+    val subtitleBurnInFontSize: Int,
+    val subtitleBurnInFontColor: String,
+    val subtitleBurnInOutlineColor: String,
+    val subtitleBurnInPosition: String,
     val ffmpegExecutablePath: String,
     val distribOutputWidth: Int,
     val distribOutputHeight: Int,

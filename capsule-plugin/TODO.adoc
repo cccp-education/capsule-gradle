@@ -1,0 +1,46 @@
+= TODO — capsule-gradle (Détroit)
+:last_update: 2026-06-16 (Session 039 — CAP-26 terminé)
+
+'''
+== ✅ CAP-26 Style burn-in configurable — TERMINE
+
+. [x] **DSL `subtitleBurnInStyle`** — data class `SubtitleBurnInStyle(fontSize, fontColor, outlineColor, position)` + validation + `toForceStyle()`
+. [x] **CapsuleExtension** — 4 nouvelles Property (subtitleBurnInFontSize, subtitleBurnInFontColor, subtitleBurnInOutlineColor, subtitleBurnInPosition)
+. [x] **CapsuleConfig** — 4 nouveaux champs dans `CaptureConfig`
+. [x] **CapsuleConfigMerger** — merge 4 sources (ENV, props, YAML, CLI) pour les 4 champs style
+. [x] **CapsuleScaffoldTask** — scaffold style dans `capsule-context.yml`
+. [x] **SubtitleBurnInServiceImpl** — paramètre `style: SubtitleBurnInStyle`, `toForceStyle()` dans commande FFmpeg
+. [x] **CapsuleVideoTask** — `resolveSubtitleBurnInService()` construit le style depuis l'extension
+. [x] **Tests unitaires** — `SubtitleBurnInStyleTest` (16 tests : defaults, validation, toForceStyle, alignments)
+. [x] **Cucumber** — 2 scénarios @subtitles @burnin @style (defaults + custom style)
+. [x] **Compile + unit tests PASS**
+
+'''
+== ✅ CR-1 Refactor CapsuleVideoTask.execute() — TERMINE (session 040)
+
+. [x] Extraire `synthesizeTtsForScript()` (14 lignes) + 3 tests unitaires
+. [x] Extraire `renderManimSlides()` (40 lignes) + 2 tests unitaires
+. [x] Extraire `replaceManimSlidesInDeck()` (45 lignes) + 2 tests unitaires
+. [x] Extraire `captureDeckSequential()` (30 lignes) + 1 test unitaire
+. [x] Extraire `captureDeckParallel()` (20 lignes) + 1 test unitaire
+. [x] execute() → orchestration pure (76 lignes, vs 218 avant)
+. [x] Compile + unit tests PASS
+
+'''
+== 🟠 Prochaine session — CR-2 Thread safety + timeout captureSlideParallel
+
+'''
+== Backlog priorisé (ordre d'attaque)
+
+. 🔴 CR-1 — Refactor CapsuleVideoTask.execute() (218→30 lignes orchestration)
+. 🔴 CR-2 — Thread safety + timeout captureSlideParallel
+. 🔴 CR-3 — Error handling TTS — dégradation signalée + retry
+. 🟠 CR-4 — Sécurité HTML escape injectSubtitleTrack
+. 🟠 CR-5 — DRY CapsuleConfigMerger (~76 lignes dupliquées)
+. 🟠 CR-6 — Robust CLI parsing (`as? Int` → `toIntOrNull()`)
+. 🟠 CR-7 — Validation YAML avec try/catch gracieux
+. 🟡 CR-8 — Logging structuré CapsulePlugin
+. 🟡 CR-9 — Robust HTML parsing (HtmlSectionParser au lieu de regex raw)
+. 🟡 CR-10 — CI optimization cucumberTest onlyIf
+. 🟢 CAP-27 — VTT burn-in
+. 🟢 CAP-28 — Coverage gaps (PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%)

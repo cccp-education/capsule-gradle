@@ -70,6 +70,10 @@ capture:
   # subtitleEnabled: false
   # subtitleFormat: srt
   # subtitleBurnIn: false
+  # subtitleBurnInFontSize: 24
+  # subtitleBurnInFontColor: "&H00FFFFFF"
+  # subtitleBurnInOutlineColor: "&H00000000"
+  # subtitleBurnInPosition: bottom
 
 distrib:
   # ffmpegExecutablePath: ffmpeg

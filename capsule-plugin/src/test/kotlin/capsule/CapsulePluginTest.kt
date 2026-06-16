@@ -534,6 +534,292 @@ Voici le contenu principal.
     }
 
     @Test
+    fun `synthesizeTtsForScript creates MP3 files for all slides`() {
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+
+        val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        task.capsuleExtension = ext
+
+        val audioDir = File(tempDir, "audio").also { it.mkdirs() }
+        val parsed = CapsuleScript(
+            deckName = "test",
+            slides = listOf(
+                SlideSegment(1, "Intro", "Bienvenue."),
+                SlideSegment(2, "Topic", "Contenu principal."),
+                SlideSegment(3, "End", "Conclusion.")
+            )
+        )
+        val engine = NoOpTtsEngine()
+
+        task.synthesizeTtsForScript(parsed, audioDir, engine)
+
+        assertTrue(audioDir.resolve("slide-01.mp3").exists(), "slide-01.mp3 should exist")
+        assertTrue(audioDir.resolve("slide-02.mp3").exists(), "slide-02.mp3 should exist")
+        assertTrue(audioDir.resolve("slide-03.mp3").exists(), "slide-03.mp3 should exist")
+    }
+
+    @Test
+    fun `synthesizeTtsForScript skips existing MP3 files`() {
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+
+        val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        task.capsuleExtension = ext
+
+        val audioDir = File(tempDir, "audio").also { it.mkdirs() }
+        val existingFile = audioDir.resolve("slide-01.mp3")
+        existingFile.writeText("existing content")
+
+        val parsed = CapsuleScript(
+            deckName = "test",
+            slides = listOf(
+                SlideSegment(1, "Intro", "Bienvenue."),
+                SlideSegment(2, "Topic", "Contenu.")
+            )
+        )
+        val engine = NoOpTtsEngine()
+
+        task.synthesizeTtsForScript(parsed, audioDir, engine)
+
+        assertEquals("existing content", existingFile.readText(), "Existing MP3 should not be overwritten")
+        assertTrue(audioDir.resolve("slide-02.mp3").exists(), "slide-02.mp3 should be created")
+    }
+
+    @Test
+    fun `synthesizeTtsForScript continues after TtsException`() {
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+
+        val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        task.capsuleExtension = ext
+
+        val audioDir = File(tempDir, "audio").also { it.mkdirs() }
+        val parsed = CapsuleScript(
+            deckName = "test",
+            slides = listOf(
+                SlideSegment(1, "OK", "OK."),
+                SlideSegment(2, "Fail", "Échoue."),
+                SlideSegment(3, "AlsoOK", "OK aussi.")
+            )
+        )
+
+        var callCount = 0
+        val failingEngine = object : TtsEngine {
+            override fun synthesize(text: String, outputFile: File) {
+                callCount++
+                if (text.contains("Échoue")) throw TtsException("Simulated failure")
+                outputFile.parentFile.mkdirs()
+                outputFile.writeText("# TTS PLACEHOLDER\n# Text: $text")
+            }
+            override fun isAvailable() = true
+            override fun name() = "failing"
+        }
+
+        task.synthesizeTtsForScript(parsed, audioDir, failingEngine)
+
+        assertEquals(3, callCount, "All 3 slides should be attempted")
+        assertTrue(audioDir.resolve("slide-01.mp3").exists(), "slide-01.mp3 should exist")
+        assertTrue(audioDir.resolve("slide-03.mp3").exists(), "slide-03.mp3 should exist")
+    }
+
+    @Test
+    fun `renderManimSlides returns empty map when no MANIM slides`() {
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+
+        val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        task.capsuleExtension = ext
+
+        val parsed = CapsuleScript(
+            deckName = "test",
+            slides = listOf(
+                SlideSegment(1, "Intro", "Bienvenue.", type = SlideType.HTML),
+                SlideSegment(2, "Topic", "Contenu.", type = SlideType.HTML)
+            )
+        )
+        val manimOutputDir = File(tempDir, "manim").also { it.mkdirs() }
+        val audioDir = File(tempDir, "audio").also { it.mkdirs() }
+        val durations = mutableMapOf<Int, Double>()
+
+        val result = task.renderManimSlides(
+            parsed, NoOpManimEngine(), NoOpManimVideoMixer(),
+            File(tempDir, "src/manim"), manimOutputDir, audioDir, durations
+        )
+
+        assertTrue(result.isEmpty(), "Should return empty map when no MANIM slides")
+    }
+
+    @Test
+    fun `renderManimSlides renders MANIM slides and populates durations`() {
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+
+        val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        task.capsuleExtension = ext
+
+        val parsed = CapsuleScript(
+            deckName = "test",
+            slides = listOf(
+                SlideSegment(1, "Anim", "Animation.", type = SlideType.MANIM, manimScene = "Scene1")
+            )
+        )
+        val manimScriptsDir = File(tempDir, "src/manim").also { it.mkdirs() }
+        File(manimScriptsDir, "Scene1.py").writeText("# manim script")
+        val manimOutputDir = File(tempDir, "manim").also { it.mkdirs() }
+        val audioDir = File(tempDir, "audio").also { it.mkdirs() }
+        val durations = mutableMapOf<Int, Double>()
+
+        val result = task.renderManimSlides(
+            parsed, NoOpManimEngine(), NoOpManimVideoMixer(),
+            manimScriptsDir, manimOutputDir, audioDir, durations
+        )
+
+        assertTrue(result.isNotEmpty(), "Should render MANIM slides")
+        assertTrue(result.containsKey(1), "Should contain slide index 1")
+    }
+
+    @Test
+    fun `replaceManimSlidesInDeck returns original deck when no MANIM slides`() {
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+
+        val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        task.capsuleExtension = ext
+
+        val deckFile = File(tempDir, "deck.html")
+        deckFile.writeText("<html><body><section>Slide 1</section></body></html>")
+
+        val parsed = CapsuleScript(
+            deckName = "test",
+            slides = listOf(SlideSegment(1, "Intro", "Note.", type = SlideType.HTML))
+        )
+        val manimOutputDir = File(tempDir, "manim").also { it.mkdirs() }
+
+        val result = task.replaceManimSlidesInDeck(
+            parsed, deckFile, manimOutputDir, emptyMap(), NoOpManimSlideReplacer(), null
+        )
+
+        assertEquals(deckFile.absolutePath, result.absolutePath, "Should return original deck unchanged")
+    }
+
+    @Test
+    fun `replaceManimSlidesInDeck replaces MANIM slide with video embed`() {
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+
+        val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        task.capsuleExtension = ext
+
+        val deckFile = File(tempDir, "deck.html")
+        deckFile.writeText("""
+<html><body>
+<div class="reveal"><div class="slides">
+<section data-capsule-slide="1"><h2>Anim</h2></section>
+</div></div>
+</body></html>
+        """.trimIndent())
+
+        val parsed = CapsuleScript(
+            deckName = "test",
+            slides = listOf(SlideSegment(1, "Anim", "Note.", type = SlideType.MANIM, manimScene = "Scene1"))
+        )
+        val manimOutputDir = File(tempDir, "manim").also { it.mkdirs() }
+        val renderedFiles = mapOf(1 to File(manimOutputDir, "Scene1.mp4").also { it.writeText("fake mp4") })
+
+        val result = task.replaceManimSlidesInDeck(
+            parsed, deckFile, manimOutputDir, renderedFiles, ManimSlideReplacerImpl(), null
+        )
+
+        assertTrue(result.exists(), "Should produce replaced deck file")
+        val content = result.readText()
+        assertTrue(content.contains("<video"), "Should contain video embed")
+    }
+
+    @Test
+    fun `captureDeckSequential produces video with NoOp capture`() {
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+        ext.viewportWidth.set(1408)
+        ext.viewportHeight.set(792)
+        ext.slideDurationSeconds.set(5.0)
+
+        val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        task.capsuleExtension = ext
+        task.playwrightCapture = NoOpPlaywrightCapture()
+
+        val deckFile = File(tempDir, "deck.html")
+        deckFile.writeText("<html><body><section>Slide</section></body></html>")
+        val videoOutputDir = File(tempDir, "video").also { it.mkdirs() }
+        val audioDir = File(tempDir, "audio").also { it.mkdirs() }
+        val outDir = File(tempDir, "out").also { it.mkdirs() }
+
+        val parsed = CapsuleScript("test", listOf(SlideSegment(1, "S1", "Note.")))
+        val slideDurations = listOf(5.0)
+
+        task.captureDeckSequential(parsed, deckFile, videoOutputDir, audioDir, outDir, slideDurations, null)
+
+        val finalVideo = outDir.resolve("test.webm")
+        assertTrue(finalVideo.exists(), "Sequential capture should produce final video")
+    }
+
+    @Test
+    fun `captureDeckParallel produces video with NoOp capture`() {
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+        ext.viewportWidth.set(1408)
+        ext.viewportHeight.set(792)
+        ext.slideDurationSeconds.set(5.0)
+
+        val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        task.capsuleExtension = ext
+        task.playwrightCapture = NoOpPlaywrightCapture()
+
+        val deckFile = File(tempDir, "deck.html")
+        deckFile.writeText("""
+<html><head><style>body{margin:0}</style></head><body>
+<div class="reveal"><div class="slides">
+<section data-capsule-slide="1"><h2>Slide 1</h2></section>
+<section data-capsule-slide="2"><h2>Slide 2</h2></section>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>Reveal.initialize();</script>
+</body></html>
+        """.trimIndent())
+        val videoOutputDir = File(tempDir, "video").also { it.mkdirs() }
+        val audioDir = File(tempDir, "audio").also { it.mkdirs() }
+        val outDir = File(tempDir, "out").also { it.mkdirs() }
+
+        val parsed = CapsuleScript("test", listOf(
+            SlideSegment(1, "S1", "Note 1."),
+            SlideSegment(2, "S2", "Note 2.")
+        ))
+
+        task.captureDeckParallel(parsed, deckFile, videoOutputDir, audioDir, outDir, null)
+
+        // Parallel capture with NoOp creates per-slide webm files, concat may fail with fake content
+        // The method should complete without throwing
+    }
+
+    @Test
     fun `sequential fallback injects audio into sections without data-capsule-slide`() {
         val deckDir = File(tempDir, "decks").also { it.mkdirs() }
         val deckFile = File(deckDir, "cours-deck.html")

@@ -287,3 +287,20 @@ Feature: Capsule video generation from a reveal.js deck
     And a video file "burnin-e2e.webm" is generated
     And the video file "burnin-e2e.webm" has a valid WebM EBML header
     And the burn-in operation completed successfully on the final video
+
+  @subtitles @burnin @style @config
+  Scenario: Subtitle burn-in style defaults are resolved correctly
+    Given a Gradle project with the capsule plugin applied
+    When I run the task "generateCapsuleScript"
+    Then the resolved subtitle burn-in is "false"
+
+  @subtitles @burnin @style
+  Scenario: Subtitle burn-in with custom style is applied to the final video
+    Given a Gradle project with the capsule plugin configured for SRT subtitles with burn-in and custom style
+    And a reveal.js deck "style-deck.html" with 2 slides and data-capsule-slide attributes
+    And a capsule script "style-script.txt" with 2 slide segments
+    When I run the task "generateCapsuleVideo" with NoOp capture
+    Then the subtitle burn-in service is invoked for the final video
+    And the resolved subtitle burn-in style has fontSize 36
+    And the resolved subtitle burn-in style has fontColor "&H000000FF"
+    And the resolved subtitle burn-in style has position "top"

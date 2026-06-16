@@ -103,7 +103,11 @@ object CapsuleConfigMerger {
                 parallelCaptureThreads = env["CAPSULE_CAPTURE_PARALLEL_CAPTURE_THREADS"]?.toIntOrNull() ?: 4,
                 subtitleEnabled = env["CAPSULE_CAPTURE_SUBTITLE_ENABLED"]?.toBoolean() ?: false,
                 subtitleFormat = env["CAPSULE_CAPTURE_SUBTITLE_FORMAT"] ?: "srt",
-                subtitleBurnIn = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN"]?.toBoolean() ?: false
+                subtitleBurnIn = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN"]?.toBoolean() ?: false,
+                subtitleBurnInFontSize = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_FONT_SIZE"]?.toIntOrNull() ?: 24,
+                subtitleBurnInFontColor = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_FONT_COLOR"] ?: "&H00FFFFFF",
+                subtitleBurnInOutlineColor = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_OUTLINE_COLOR"] ?: "&H00000000",
+                subtitleBurnInPosition = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_POSITION"] ?: "bottom"
             ),
             distrib = DistribConfig(
                 ffmpegExecutablePath = env["CAPSULE_DISTRIB_FFMPEG_EXECUTABLE_PATH"] ?: "ffmpeg",
@@ -147,7 +151,11 @@ object CapsuleConfigMerger {
                 parallelCaptureThreads = props["capsule.capture.parallelCaptureThreads"]?.toIntOrNull() ?: 4,
                 subtitleEnabled = props["capsule.capture.subtitleEnabled"]?.toBoolean() ?: false,
                 subtitleFormat = props["capsule.capture.subtitleFormat"] ?: "srt",
-                subtitleBurnIn = props["capsule.capture.subtitleBurnIn"]?.toBoolean() ?: false
+                subtitleBurnIn = props["capsule.capture.subtitleBurnIn"]?.toBoolean() ?: false,
+                subtitleBurnInFontSize = props["capsule.capture.subtitleBurnInFontSize"]?.toIntOrNull() ?: 24,
+                subtitleBurnInFontColor = props["capsule.capture.subtitleBurnInFontColor"] ?: "&H00FFFFFF",
+                subtitleBurnInOutlineColor = props["capsule.capture.subtitleBurnInOutlineColor"] ?: "&H00000000",
+                subtitleBurnInPosition = props["capsule.capture.subtitleBurnInPosition"] ?: "bottom"
             ),
             distrib = DistribConfig(
                 ffmpegExecutablePath = props["capsule.distrib.ffmpegExecutablePath"] ?: "ffmpeg",
@@ -207,7 +215,11 @@ object CapsuleConfigMerger {
             parallelCaptureThreads = cli["capture.parallelCaptureThreads"] as? Int ?: yaml.parallelCaptureThreads,
             subtitleEnabled = cli["capture.subtitleEnabled"]?.toString()?.toBoolean() ?: yaml.subtitleEnabled,
             subtitleFormat = cli["capture.subtitleFormat"]?.toString() ?: yaml.subtitleFormat.ifNotBlankOrElse(props.subtitleFormat),
-            subtitleBurnIn = cli["capture.subtitleBurnIn"]?.toString()?.toBoolean() ?: yaml.subtitleBurnIn
+            subtitleBurnIn = cli["capture.subtitleBurnIn"]?.toString()?.toBoolean() ?: yaml.subtitleBurnIn,
+            subtitleBurnInFontSize = cli["capture.subtitleBurnInFontSize"] as? Int ?: yaml.subtitleBurnInFontSize,
+            subtitleBurnInFontColor = cli["capture.subtitleBurnInFontColor"]?.toString() ?: yaml.subtitleBurnInFontColor.ifNotBlankOrElse(props.subtitleBurnInFontColor),
+            subtitleBurnInOutlineColor = cli["capture.subtitleBurnInOutlineColor"]?.toString() ?: yaml.subtitleBurnInOutlineColor.ifNotBlankOrElse(props.subtitleBurnInOutlineColor),
+            subtitleBurnInPosition = cli["capture.subtitleBurnInPosition"]?.toString() ?: yaml.subtitleBurnInPosition.ifNotBlankOrElse(props.subtitleBurnInPosition)
         )
     }
 
@@ -268,7 +280,11 @@ object CapsuleConfigMerger {
             parallelCaptureThreads = cli["capture.parallelCaptureThreads"] as? Int ?: props.parallelCaptureThreads,
             subtitleEnabled = cli["capture.subtitleEnabled"]?.toString()?.toBoolean() ?: props.subtitleEnabled,
             subtitleFormat = cli["capture.subtitleFormat"]?.toString() ?: props.subtitleFormat.ifNotBlankOrElse(env.subtitleFormat),
-            subtitleBurnIn = cli["capture.subtitleBurnIn"]?.toString()?.toBoolean() ?: props.subtitleBurnIn
+            subtitleBurnIn = cli["capture.subtitleBurnIn"]?.toString()?.toBoolean() ?: props.subtitleBurnIn,
+            subtitleBurnInFontSize = cli["capture.subtitleBurnInFontSize"] as? Int ?: props.subtitleBurnInFontSize,
+            subtitleBurnInFontColor = cli["capture.subtitleBurnInFontColor"]?.toString() ?: props.subtitleBurnInFontColor.ifNotBlankOrElse(env.subtitleBurnInFontColor),
+            subtitleBurnInOutlineColor = cli["capture.subtitleBurnInOutlineColor"]?.toString() ?: props.subtitleBurnInOutlineColor.ifNotBlankOrElse(env.subtitleBurnInOutlineColor),
+            subtitleBurnInPosition = cli["capture.subtitleBurnInPosition"]?.toString() ?: props.subtitleBurnInPosition.ifNotBlankOrElse(env.subtitleBurnInPosition)
         )
     }
 

@@ -32,7 +32,8 @@ interface SubtitleBurnInService {
 }
 
 class SubtitleBurnInServiceImpl(
-    private val ffmpegPath: String = "ffmpeg"
+    private val ffmpegPath: String = "ffmpeg",
+    private val style: SubtitleBurnInStyle = SubtitleBurnInStyle()
 ) : SubtitleBurnInService {
 
     private val logger = Logging.getLogger(SubtitleBurnInServiceImpl::class.java)
@@ -65,7 +66,7 @@ class SubtitleBurnInServiceImpl(
         val cmd = mutableListOf(
             ffmpegPath, "-y",
             "-i", videoFile.absolutePath,
-            "-vf", "subtitles=${subtitleFile.absolutePath}:force_style='FontSize=24,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,Outline=1,Shadow=1'",
+            "-vf", "subtitles=${subtitleFile.absolutePath}:force_style='${style.toForceStyle()}'",
             "-c:a", "copy",
             outputFile.absolutePath
         )

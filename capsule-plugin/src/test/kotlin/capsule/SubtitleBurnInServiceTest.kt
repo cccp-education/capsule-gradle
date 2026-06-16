@@ -136,20 +136,29 @@ class SubtitleBurnInServiceTest {
 
     @Test
     fun `resolveSubtitleBurnInService returns NoOp when ffmpeg is noop`() {
-        val service = CapsuleManager.resolveSubtitleBurnInService("noop")
+        val service = CapsuleManager.resolveSubtitleBurnInService("noop", SubtitleBurnInStyle())
         assertTrue(service is NoOpSubtitleBurnInService, "Should return NoOp when ffmpegPath is 'noop'")
     }
 
     @Test
     fun `resolveSubtitleBurnInService returns NoOp when ffmpeg not found`() {
-        val service = CapsuleManager.resolveSubtitleBurnInService("/nonexistent/path/ffmpeg")
+        val service = CapsuleManager.resolveSubtitleBurnInService("/nonexistent/path/ffmpeg", SubtitleBurnInStyle())
         assertTrue(service is NoOpSubtitleBurnInService, "Should return NoOp when ffmpeg not found")
     }
 
     @Test
     fun `resolveSubtitleBurnInService does not throw with default ffmpeg`() {
-        val service = CapsuleManager.resolveSubtitleBurnInService("ffmpeg")
+        val service = CapsuleManager.resolveSubtitleBurnInService("ffmpeg", SubtitleBurnInStyle())
         assertNotNull(service)
         assertTrue(service.isAvailable() || service is NoOpSubtitleBurnInService)
+    }
+
+    @Test
+    fun `resolveSubtitleBurnInService passes style to impl when ffmpeg available`() {
+        val customStyle = SubtitleBurnInStyle(fontSize = 36, fontColor = "&H000000FF", position = "top")
+        val service = CapsuleManager.resolveSubtitleBurnInService("ffmpeg", customStyle)
+        if (service is SubtitleBurnInServiceImpl) {
+            assertEquals("ffmpeg-burnin", service.name())
+        }
     }
 }

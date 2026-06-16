@@ -6,6 +6,8 @@ _Date creation_ : 2026-05-14
 
 |===
 | # | Date | Type | Sujet | Score
+| 040 | 2026-06-16 | refactor | CR-1 Refactor CapsuleVideoTask.execute() — 5 méthodes extraites (synthesizeTtsForScript, renderManimSlides, replaceManimSlidesInDeck, captureDeckSequential, captureDeckParallel), execute() 218→76 lignes orchestration, 9 nouveaux tests unitaires, compile OK, unit tests PASS | 9/10
+| 039 | 2026-06-16 | governance+dev | Analyse CODE_REVIEW.adoc — 15 problèmes → 10 EPICs CR (CR-1→CR-10) + 3 EPICs CAP (CAP-26→CAP-28). Enrichissement BACKLOG, création TODO.adoc, MàJ INDEX. CAP-26 Style burn-in configurable TERMINE — SubtitleBurnInStyle data class + 4 champs DSL/Config/Merger/Scaffold + FFmpeg force_style. 16 tests unitaires + 2 Cucumber @subtitles @burnin @style. Compile OK, unit tests PASS. | 9/10
 | 038 | 2026-06-16 | dev | CAP-25 Pipeline E2E burn-in — Cucumber @subtitles @burnin @integration (deck → TTS → capture → mix → burn-in → WebM final), 1 scénario + 2 step defs (Given real ffmpeg, Then burn-in completed), compile OK, unit tests PASS | 9/10
 | 037 | 2026-06-16 | dev | CAP-24 Burn-in sous-titres — SubtitleBurnInService interface + Impl (FFmpeg subtitles filter) + NoOp, DSL subtitleBurnIn 4 sources, wiring CapsuleVideoTask post-mixAudioWithVideo, 10 tests unitaires, 3 Cucumber @subtitles @burnin | 9/10
 | 036 | 2026-06-16 | dev | CAP-23 Sous-titres SRT/VTT — SubtitleFormat enum + SubtitleEntry + SubtitleGenerator, SrtGenerator + VttGenerator + SubtitleTimingCalculator, DSL subtitleEnabled/subtitleFormat 4 sources, wiring CapsuleVideoTask, 6 Cucumber @subtitles, 43/43 PASSED | 9/10

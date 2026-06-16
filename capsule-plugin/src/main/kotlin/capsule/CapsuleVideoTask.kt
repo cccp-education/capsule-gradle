@@ -279,6 +279,186 @@ open class CapsuleVideoTask : DefaultTask() {
         }
     }
 
+    internal fun synthesizeTtsForScript(parsed: CapsuleScript, audioDir: File, engine: TtsEngine) {
+        for (seg in parsed.slides) {
+            val idx = String.format("%02d", seg.index)
+            val ttsFile = audioDir.resolve("slide-$idx.mp3")
+            if (!ttsFile.exists()) {
+                try {
+                    engine.synthesize(seg.speakerNote, ttsFile)
+                    logger.lifecycle("  TTS → {} ({} chars)", ttsFile.name, seg.speakerNote.length)
+                } catch (e: TtsException) {
+                    logger.warn("  TTS SKIP slide {}: {}", seg.index, e.message)
+                }
+            }
+        }
+    }
+
+    internal fun renderManimSlides(
+        parsed: CapsuleScript,
+        manim: ManimEngine,
+        manimMixer: ManimVideoMixer,
+        manimScriptsDir: File,
+        manimOutputDir: File,
+        audioDir: File,
+        manimDurations: MutableMap<Int, Double>
+    ): Map<Int, File> {
+        val manimSlides = parsed.slides.filter { it.type == SlideType.MANIM }
+        if (manimSlides.isEmpty()) return emptyMap()
+
+        logger.lifecycle("  Manim slides detected: {} slides with Manim animations", manimSlides.size)
+        manimOutputDir.mkdirs()
+
+        val parallelRenderer = resolveManimParallelRenderer()
+        val rendered = parallelRenderer.renderAll(manimSlides, manim, manimScriptsDir, manimOutputDir)
+        logger.lifecycle("  Manim render complete: {}/{} slides rendered", rendered.size, manimSlides.size)
+
+        for ((slideIdx, manimVideo) in rendered) {
+            val seg = manimSlides.find { it.index == slideIdx } ?: continue
+            val sceneName = seg.manimScene ?: continue
+
+            logger.lifecycle("    Manim → {} (scene: {})", manimVideo.name, sceneName)
+
+            val probedDur = manim.probeDuration(manimVideo)
+            if (probedDur > 0.0) {
+                manimDurations[seg.index] = probedDur
+                logger.lifecycle("    Manim duration: {}s (scene: {})", String.format("%.1f", probedDur), sceneName)
+            }
+
+            val slideIdxStr = String.format("%02d", seg.index)
+            val ttsFile = audioDir.resolve("slide-$slideIdxStr.mp3")
+            val muxedFile = manimOutputDir.resolve("${sceneName}-muxed.mp4")
+            try {
+                val muxed = manimMixer.mix(manimVideo, ttsFile, muxedFile)
+                logger.lifecycle("    Manim+TTS → {} ({} bytes)", muxed.name, muxed.length())
+                val muxedDur = manimMixer.probeDuration(muxed)
+                if (muxedDur > 0.0) {
+                    manimDurations[seg.index] = muxedDur
+                    logger.lifecycle("    Muxed duration: {}s (scene: {})", String.format("%.1f", muxedDur), sceneName)
+                }
+            } catch (e: MixerException) {
+                logger.warn("    Manim mux failed for scene '{}': {} — using unmixed video", sceneName, e.message)
+            }
+        }
+        return rendered
+    }
+
+    internal fun replaceManimSlidesInDeck(
+        parsed: CapsuleScript,
+        modifiedDeck: File,
+        manimOutputDir: File,
+        renderedFiles: Map<Int, File>,
+        manimReplacer: ManimSlideReplacer,
+        subtitleFile: File?
+    ): File {
+        val manimSlides = parsed.slides.filter { it.type == SlideType.MANIM }
+        var finalDeckHtml = modifiedDeck.readText()
+
+        val manimSlideIndices = manimSlides.mapIndexedNotNull { _, seg ->
+            val fullIdx = parsed.slides.indexOf(seg)
+            if (fullIdx >= 0) {
+                val sceneName = seg.manimScene ?: return@mapIndexedNotNull null
+                val muxedFile = manimOutputDir.resolve("${sceneName}-muxed.mp4")
+                val manimFile = manimOutputDir.resolve("${sceneName}.mp4")
+                val renderFile = renderedFiles[seg.index]
+                val videoPath = when {
+                    muxedFile.exists() -> muxedFile.absolutePath
+                    renderFile != null && renderFile.exists() -> renderFile.absolutePath
+                    manimFile.exists() -> manimFile.absolutePath
+                    else -> null
+                }
+                if (videoPath != null) {
+                    logger.lifecycle("    Manim slide replacement: slide {} → {}", seg.index, videoPath)
+                    fullIdx to videoPath
+                } else null
+            } else null
+        }
+
+        for ((slideIdx, videoPath) in manimSlideIndices) {
+            finalDeckHtml = manimReplacer.replaceSlideAt(finalDeckHtml, slideIdx, videoPath)
+        }
+
+        if (subtitleFile != null) {
+            finalDeckHtml = injectSubtitleTrack(finalDeckHtml, subtitleFile)
+            modifiedDeck.writeText(finalDeckHtml)
+        }
+
+        return if (manimSlideIndices.isNotEmpty() || subtitleFile != null) {
+            val replacedDeck = project.layout.buildDirectory.dir("capsule/replaced").get().asFile
+            replacedDeck.mkdirs()
+            val outFile = replacedDeck.resolve(modifiedDeck.name)
+            outFile.writeText(finalDeckHtml)
+            outFile
+        } else modifiedDeck
+    }
+
+    internal fun captureDeckSequential(
+        parsed: CapsuleScript,
+        finalDeckFile: File,
+        videoOutputDir: File,
+        audioDir: File,
+        outDir: File,
+        slideDurations: List<Double>,
+        subtitleFile: File?
+    ) {
+        val deckCapture = resolvePlaywrightCapture(slideDurations)
+        try {
+            deckCapture.capture(
+                deckHtmlPath = finalDeckFile.absolutePath,
+                outputDir = videoOutputDir,
+                viewportWidth = capsuleExtension.viewportWidth.get(),
+                viewportHeight = capsuleExtension.viewportHeight.get(),
+                slideDurations = slideDurations
+            )
+        } catch (e: CapturingException) {
+            logger.error("Playwright capture failed for '{}': {}", parsed.deckName, e.message)
+            throw e
+        } finally {
+            deckCapture.close()
+        }
+
+        val generatedVideo = videoOutputDir.listFiles { f -> f.name.endsWith(".webm") }
+            ?.firstOrNull()
+        if (generatedVideo != null) {
+            val finalVideo = outDir.resolve("${parsed.deckName}.webm")
+            generatedVideo.copyTo(finalVideo, overwrite = true)
+            mixAudioWithVideo(finalVideo, audioDir, parsed.slides, capsuleExtension.slideDurationSeconds.get())
+            burnInSubtitlesIfEnabled(finalVideo, subtitleFile)
+            logger.lifecycle("CAPSULE → {}", finalVideo.absolutePath)
+        } else {
+            logger.warn("No video generated by Playwright capture for '{}'", parsed.deckName)
+        }
+    }
+
+    internal fun captureDeckParallel(
+        parsed: CapsuleScript,
+        finalDeckFile: File,
+        videoOutputDir: File,
+        audioDir: File,
+        outDir: File,
+        subtitleFile: File?
+    ) {
+        logger.lifecycle("  Parallel capture enabled for '{}' ({} slides)", parsed.deckName, parsed.slides.size)
+        captureSlideParallel(
+            deckHtmlPath = finalDeckFile.absolutePath,
+            outputDir = videoOutputDir,
+            viewportWidth = capsuleExtension.viewportWidth.get(),
+            viewportHeight = capsuleExtension.viewportHeight.get(),
+            parsed = parsed,
+            audioDir = audioDir
+        )
+        val concatVideo = videoOutputDir.resolve("${parsed.deckName}.webm")
+        if (concatVideo.exists()) {
+            val finalVideo = outDir.resolve("${parsed.deckName}.webm")
+            concatVideo.copyTo(finalVideo, overwrite = true)
+            mixAudioWithVideo(finalVideo, audioDir, parsed.slides, capsuleExtension.slideDurationSeconds.get())
+            burnInSubtitlesIfEnabled(finalVideo, subtitleFile)
+            logger.lifecycle("CAPSULE (parallel) → {}", finalVideo.absolutePath)
+        } else {
+            logger.warn("Parallel capture produced no video for '{}'", parsed.deckName)
+        }
+    }
+
     @TaskAction
     fun execute() {
         val deckDir = CapsuleManager.resolveDeckDir(project, capsuleExtension)
@@ -321,18 +501,7 @@ open class CapsuleVideoTask : DefaultTask() {
             val audioDir = outDir.resolve(parsed.deckName)
             audioDir.mkdirs()
 
-            for (seg in parsed.slides) {
-                val idx = String.format("%02d", seg.index)
-                val ttsFile = audioDir.resolve("slide-$idx.mp3")
-                if (!ttsFile.exists()) {
-                    try {
-                        engine.synthesize(seg.speakerNote, ttsFile)
-                        logger.lifecycle("  TTS → {} ({} chars)", ttsFile.name, seg.speakerNote.length)
-                    } catch (e: TtsException) {
-                        logger.warn("  TTS SKIP slide {}: {}", seg.index, e.message)
-                    }
-                }
-            }
+            synthesizeTtsForScript(parsed, audioDir, engine)
 
             val deckFile = deckFiles.find { it.nameWithoutExtension.startsWith(parsed.deckName) }
                 ?: deckFiles.firstOrNull()
@@ -345,54 +514,9 @@ open class CapsuleVideoTask : DefaultTask() {
             val videoOutputDir = outDir.resolve(parsed.deckName).resolve("video")
             videoOutputDir.mkdirs()
 
-            // Render Manim slides in parallel, then mux with TTS audio
-            val manimSlides = parsed.slides.filter { it.type == SlideType.MANIM }
             val manimDurations = mutableMapOf<Int, Double>()
             val manimOutputDir = project.layout.buildDirectory.dir(manimConfig.outputDir).get().asFile.resolve(parsed.deckName).resolve("manim")
-            val renderedFiles: Map<Int, File> = if (manimSlides.isNotEmpty()) {
-                logger.lifecycle("  Manim slides detected: {} slides with Manim animations", manimSlides.size)
-                manimOutputDir.mkdirs()
-
-                // Step 1: Render all Manim slides (parallel or sequential)
-                val parallelRenderer = resolveManimParallelRenderer()
-                val rendered = parallelRenderer.renderAll(manimSlides, manim, manimScriptsDir, manimOutputDir)
-                logger.lifecycle("  Manim render complete: {}/{} slides rendered", rendered.size, manimSlides.size)
-
-                // Step 2: Mux each rendered MP4 with TTS audio + probe duration (sequential, depends on render output)
-                for ((slideIdx, manimVideo) in rendered) {
-                    val seg = manimSlides.find { it.index == slideIdx } ?: continue
-                    val sceneName = seg.manimScene ?: continue
-
-                    logger.lifecycle("    Manim → {} (scene: {})", manimVideo.name, sceneName)
-
-                    // Probe Manim video duration for slide timing
-                    val probedDur = manim.probeDuration(manimVideo)
-                    if (probedDur > 0.0) {
-                        manimDurations[seg.index] = probedDur
-                        logger.lifecycle("    Manim duration: {}s (scene: {})", String.format("%.1f", probedDur), sceneName)
-                    }
-
-                    // Mux Manim MP4 with TTS audio for this slide
-                    val slideIdx = String.format("%02d", seg.index)
-                    val ttsFile = audioDir.resolve("slide-$slideIdx.mp3")
-                    val muxedFile = manimOutputDir.resolve("${sceneName}-muxed.mp4")
-                    try {
-                        val muxed = manimMixer.mix(manimVideo, ttsFile, muxedFile)
-                        logger.lifecycle("    Manim+TTS → {} ({} bytes)", muxed.name, muxed.length())
-                        // If muxed video exists, probe its duration (may differ from render-only duration)
-                        val muxedDur = manimMixer.probeDuration(muxed)
-                        if (muxedDur > 0.0) {
-                            manimDurations[seg.index] = muxedDur
-                            logger.lifecycle("    Muxed duration: {}s (scene: {})", String.format("%.1f", muxedDur), sceneName)
-                        }
-                    } catch (e: MixerException) {
-                        logger.warn("    Manim mux failed for scene '{}': {} — using unmixed video", sceneName, e.message)
-                    }
-                }
-                rendered
-            } else {
-                emptyMap()
-            }
+            val renderedFiles = renderManimSlides(parsed, manim, manimMixer, manimScriptsDir, manimOutputDir, audioDir, manimDurations)
 
             val slideDurations = computeSlideDurationsWithManim(parsed, audioDir, manimDurations)
 
@@ -401,102 +525,14 @@ open class CapsuleVideoTask : DefaultTask() {
                 generateSubtitles(parsed, slideDurations, outDir)
             } else null
 
-            // Replace Manim slide HTML sections with video embeds in the deck
-            var finalDeckHtml = modifiedDeck.readText()
-            val manimSlideIndices = manimSlides.mapIndexedNotNull { listIdx, seg ->
-                // Find the 0-based index of this MANIM slide in the full slides list
-                val fullIdx = parsed.slides.indexOf(seg)
-                if (fullIdx >= 0) {
-                    val sceneName = seg.manimScene ?: return@mapIndexedNotNull null
-                    val muxedFile = manimOutputDir.resolve("${sceneName}-muxed.mp4")
-                    val manimFile = manimOutputDir.resolve("${sceneName}.mp4")
-                    // Prefer muxed file (manim+TTS), fallback to rendered file from parallelRenderer
-                    val renderFile = renderedFiles[seg.index]
-                    // Prefer muxed > renderFile > unmixed Manim render
-                    val videoPath = when {
-                        muxedFile.exists() -> muxedFile.absolutePath
-                        renderFile != null && renderFile.exists() -> renderFile.absolutePath
-                        manimFile.exists() -> manimFile.absolutePath
-                        else -> null
-                    }
-                    if (videoPath != null) {
-                        logger.lifecycle("    Manim slide replacement: slide {} → {}", seg.index, videoPath)
-                        fullIdx to videoPath
-                    } else null
-                } else null
-            }
-
-            for ((slideIdx, videoPath) in manimSlideIndices) {
-                finalDeckHtml = manimReplacer.replaceSlideAt(finalDeckHtml, slideIdx, videoPath)
-            }
-
-            // Inject subtitle track element if subtitles were generated
-            if (subtitleFile != null) {
-                finalDeckHtml = injectSubtitleTrack(finalDeckHtml, subtitleFile)
-                // Also update the injected deck file so Cucumber tests can verify
-                modifiedDeck.writeText(finalDeckHtml)
-            }
-
-            val finalDeckFile = modifiedDeck.let { mf ->
-                if (manimSlideIndices.isNotEmpty() || subtitleFile != null) {
-                    val replacedDeck = project.layout.buildDirectory.dir("capsule/replaced").get().asFile
-                    replacedDeck.mkdirs()
-                    val outFile = replacedDeck.resolve(modifiedDeck.name)
-                    outFile.writeText(finalDeckHtml)
-                    outFile
-                } else mf
-            }
+            val finalDeckFile = replaceManimSlidesInDeck(
+                parsed, modifiedDeck, manimOutputDir, renderedFiles, manimReplacer, subtitleFile
+            )
 
             if (capsuleExtension.parallelCaptureEnabled.get()) {
-                // Parallel path: createSingleSlideHtml per slide + captureSlideParallel
-                logger.lifecycle("  Parallel capture enabled for '{}' ({} slides)", parsed.deckName, parsed.slides.size)
-                captureSlideParallel(
-                    deckHtmlPath = finalDeckFile.absolutePath,
-                    outputDir = videoOutputDir,
-                    viewportWidth = capsuleExtension.viewportWidth.get(),
-                    viewportHeight = capsuleExtension.viewportHeight.get(),
-                    parsed = parsed,
-                    audioDir = audioDir
-                )
-                val concatVideo = videoOutputDir.resolve("${parsed.deckName}.webm")
-                if (concatVideo.exists()) {
-                    val finalVideo = outDir.resolve("${parsed.deckName}.webm")
-                    concatVideo.copyTo(finalVideo, overwrite = true)
-                    mixAudioWithVideo(finalVideo, audioDir, parsed.slides, capsuleExtension.slideDurationSeconds.get())
-                    burnInSubtitlesIfEnabled(finalVideo, subtitleFile)
-                    logger.lifecycle("CAPSULE (parallel) → {}", finalVideo.absolutePath)
-                } else {
-                    logger.warn("Parallel capture produced no video for '{}'", parsed.deckName)
-                }
+                captureDeckParallel(parsed, finalDeckFile, videoOutputDir, audioDir, outDir, subtitleFile)
             } else {
-                // Sequential path (default): capture entire deck at once
-                val deckCapture = resolvePlaywrightCapture(slideDurations)
-                try {
-                    deckCapture.capture(
-                        deckHtmlPath = finalDeckFile.absolutePath,
-                        outputDir = videoOutputDir,
-                        viewportWidth = capsuleExtension.viewportWidth.get(),
-                        viewportHeight = capsuleExtension.viewportHeight.get(),
-                        slideDurations = slideDurations
-                    )
-                } catch (e: CapturingException) {
-                    logger.error("Playwright capture failed for '{}': {}", parsed.deckName, e.message)
-                    throw e
-                } finally {
-                    deckCapture.close()
-                }
-
-                val generatedVideo = videoOutputDir.listFiles { f -> f.name.endsWith(".webm") }
-                    ?.firstOrNull()
-                if (generatedVideo != null) {
-                    val finalVideo = outDir.resolve("${parsed.deckName}.webm")
-                    generatedVideo.copyTo(finalVideo, overwrite = true)
-                    mixAudioWithVideo(finalVideo, audioDir, parsed.slides, capsuleExtension.slideDurationSeconds.get())
-                    burnInSubtitlesIfEnabled(finalVideo, subtitleFile)
-                    logger.lifecycle("CAPSULE → {}", finalVideo.absolutePath)
-                } else {
-                    logger.warn("No video generated by Playwright capture for '{}'", parsed.deckName)
-                }
+                captureDeckSequential(parsed, finalDeckFile, videoOutputDir, audioDir, outDir, slideDurations, subtitleFile)
             }
         }
     }
@@ -523,9 +559,15 @@ open class CapsuleVideoTask : DefaultTask() {
     private fun resolveSubtitleBurnInService(): SubtitleBurnInService {
         if (subtitleBurnInService != null) return subtitleBurnInService!!
         val ffmpegPath = capsuleExtension.ffmpegExecutablePath.get()
-        val service = CapsuleManager.resolveSubtitleBurnInService(ffmpegPath)
+        val style = SubtitleBurnInStyle(
+            fontSize = capsuleExtension.subtitleBurnInFontSize.get(),
+            fontColor = capsuleExtension.subtitleBurnInFontColor.get(),
+            outlineColor = capsuleExtension.subtitleBurnInOutlineColor.get(),
+            position = capsuleExtension.subtitleBurnInPosition.get()
+        )
+        val service = CapsuleManager.resolveSubtitleBurnInService(ffmpegPath, style)
         if (service.isAvailable()) {
-            logger.lifecycle("Subtitle burn-in service: {} (available)", service.name())
+            logger.lifecycle("Subtitle burn-in service: {} (available, style: fontSize={}, color={}, position={})", service.name(), style.fontSize, style.fontColor, style.position)
         } else {
             logger.warn("Subtitle burn-in service not available, using noop fallback")
         }

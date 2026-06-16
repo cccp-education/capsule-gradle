@@ -1,0 +1,41 @@
+= Session 040 — CR-1 Refactor CapsuleVideoTask.execute() (218→76 lignes orchestration)
+:date: 2026-06-16
+:type: refactor
+:score: 9/10
+
+== Objectif
+
+Décomposer `CapsuleVideoTask.execute()` de 218 lignes monolithiques en 5 méthodes
+privées + orchestration pure. Cible : <80 lignes par méthode, max 3 niveaux d'imbrication.
+
+== Méthode
+
+Baby step DDD/TDD/BDD : extraction méthode → test unitaire → compile → vérification
+pipeline intact.
+
+== Livrables
+
+. *synthesizeTtsForScript()* — 14 lignes, synthèse TTS par slide avec skip existant + catch TtsException
+. *renderManimSlides()* — 40 lignes, render parallèle Manim + mux TTS + probe durations
+. *replaceManimSlidesInDeck()* — 45 lignes, remplacement HTML→video embed + subtitle track injection
+. *captureDeckSequential()* — 30 lignes, capture Playwright séquentielle + mix audio + burn-in
+. *captureDeckParallel()* — 20 lignes, capture parallèle + concat + mix audio + burn-in
+. *execute()* — 76 lignes d'orchestration pure (vs 218 avant)
+
+== Tests
+
+- 3 tests `synthesizeTtsForScript` (création MP3, skip existant, continue après TtsException)
+- 2 tests `renderManimSlides` (empty map sans MANIM, render + populate durations)
+- 2 tests `replaceManimSlidesInDeck` (deck inchangé sans MANIM, video embed avec MANIM)
+- 2 tests `captureDeckSequential` + `captureDeckParallel` (NoOp capture)
+- Tous les tests unitaires existants PASS (aucune régression)
+- Compile OK
+
+== Fichiers modifiés
+
+- `src/main/kotlin/capsule/CapsuleVideoTask.kt` — 5 méthodes extraites + execute() refactoré
+- `src/test/kotlin/capsule/CapsulePluginTest.kt` — 9 nouveaux tests unitaires
+
+== Prochaine session
+
+CR-2 Thread safety + timeout captureSlideParallel.

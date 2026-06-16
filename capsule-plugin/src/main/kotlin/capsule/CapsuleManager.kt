@@ -142,9 +142,9 @@ class CapsuleManager(private val project: Project) {
          * - Otherwise, returns SubtitleBurnInServiceImpl if ffmpeg is available
          */
         @JvmStatic
-        fun resolveSubtitleBurnInService(ffmpegPath: String = "ffmpeg"): SubtitleBurnInService {
+        fun resolveSubtitleBurnInService(ffmpegPath: String = "ffmpeg", style: SubtitleBurnInStyle = SubtitleBurnInStyle()): SubtitleBurnInService {
             if (ffmpegPath == "noop") return NoOpSubtitleBurnInService()
-            val service = SubtitleBurnInServiceImpl(ffmpegPath)
+            val service = SubtitleBurnInServiceImpl(ffmpegPath, style)
             return if (service.isAvailable()) service else NoOpSubtitleBurnInService()
         }
 

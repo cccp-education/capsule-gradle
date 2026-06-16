@@ -42,7 +42,11 @@ data class CaptureConfig(
     val parallelCaptureThreads: Int = 4,
     val subtitleEnabled: Boolean = false,
     val subtitleFormat: String = "srt",
-    val subtitleBurnIn: Boolean = false
+    val subtitleBurnIn: Boolean = false,
+    val subtitleBurnInFontSize: Int = 24,
+    val subtitleBurnInFontColor: String = "&H00FFFFFF",
+    val subtitleBurnInOutlineColor: String = "&H00000000",
+    val subtitleBurnInPosition: String = "bottom"
 )
 
 data class DistribConfig(

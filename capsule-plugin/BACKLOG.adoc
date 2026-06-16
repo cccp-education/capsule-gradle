@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-06-16 (Session 038 — CAP-25 Pipeline E2E burn-in)
+:last_update: 2026-06-16 (Session 039 — Analyse CODE_REVIEW.adoc + enrichissement gouvernance)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -59,9 +59,123 @@ Rapport HTML généré. Global: 83.3% line, 51.8% branch, 78.1% instr.
 Gaps critiques: PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%.
 
 '''
-== BACKLOG ACTIF
+== BACKLOG ACTIF — EPICs Terminés
 
 . ✅ **CAP-22 TTS multi-langue** — Language enum + VoiceMapping (FR/EN/ES/DE), PiperTtsEngine + EspeakTtsEngine language-aware, 6 Cucumber @tts, 37/37 PASSED. Kover: 83.3% line, 51.7% branch.
 . ✅ **CAP-23 Sous-titres** — SRT/VTT depuis speaker notes. SubtitleFormat enum + SubtitleEntry + SubtitleGenerator, SrtGenerator + VttGenerator + SubtitleTimingCalculator, DSL subtitleEnabled/subtitleFormat 4 sources, wiring CapsuleVideoTask, 6 Cucumber @subtitles, 43/43 PASSED.
 . ✅ **CAP-24 Burn-in sous-titres** — Incrustation SRT/VTT dans le WebM final via FFmpeg subtitles filter. SubtitleBurnInService interface + Impl + NoOp, DSL subtitleBurnIn 4 sources, wiring CapsuleVideoTask post-mixAudioWithVideo, 10 tests unitaires, 3 Cucumber @subtitles @burnin.
 . ✅ **CAP-25 Pipeline E2E avec burn-in** — Test d'intégration complet du pipeline capsule avec burn-in activé (deck → TTS → capture → mix → burn-in → WebM final). Cucumber @subtitles @burnin @integration. 1 scénario + 2 step defs. Compile OK, unit tests PASS.
+
+'''
+== 🔴 EPIC CR — Code Review Globale (CODE_REVIEW.adoc — 15 problèmes → 10 EPICs actionnables)
+
+_Source_ : `CODE_REVIEW.adoc` (analyse 2026-06-16). 15 problèmes identifiés, 10 EPICs extraits.
+_Vérification_ : ligne 747 tronquée = faux positif (code complet). 14 problèmes réels restants.
+
+[cols="1,3,2,2", options="header"]
+|===
+| EPIC | Description | Sévérité | Statut
+
+| CR-1
+| **Refactor CapsuleVideoTask.execute()** — 218 lignes, 6 niveaux d'imbrication, 15+ appels externes.
+Décomposer en 5-6 méthodes privées : `synthesizeTtsForScript()`, `renderManimSlides()`, `replaceManimSlidesInDeck()`, `captureDeckSequential()`, `captureDeckParallel()`.
+_Cible_ : <80 lignes par méthode, max 3 niveaux d'imbrication.
+| 🔴 BLOQUANT
+| ✅ TERMINE (session 040)
+
+| CR-2
+| **Thread safety + timeout captureSlideParallel** — `executor.shutdown()` hors finally (jamais atteint si exception).
+`futures.mapNotNull { it.get() }` bloque à l'infini si une task échoue.
+_Fix_ : `try { it.get(5, TimeUnit.MINUTES) } finally { executor.shutdownNow() }`.
+_Tests_ : Cucumber @parallel @timeout (simuler task bloquante).
+| 🔴 BLOQUANT
+| ⬜ TODO
+
+| CR-3
+| **Error handling TTS — dégradation signalée** — `catch (TtsException)` → `logger.warn` + continue sans fichier audio.
+Résultat : vidéo silencieuse pour ce slide, aucune indication critique à l'utilisateur.
+_Fix_ : accumuler les slides skipped dans une liste, logger.error en fin de script si >0 skips.
+Option : retry 1× avant skip.
+_Tests_ : Cucumber @tts @error (TtsEngine mocké qui throw).
+| 🔴 BLOQUANT
+| ⬜ TODO
+
+| CR-4
+| **Sécurité HTML escape — injectSubtitleTrack** — `ttsLanguage.get()` injecté sans échappement dans `<track srclang="...">`.
+Scénario XSS si `language = fr"><script>alert('XSS')</script>`.
+_Fix_ : `org.apache.commons.text.StringEscapeUtils.escapeHtml4()` ou encoder manuellement `& " < >`.
+_Tests_ : unitaire avec payload XSS, vérifier que le HTML produit est safe.
+| 🟠 MAJEUR
+| ⬜ TODO
+
+| CR-5
+| **DRY CapsuleConfigMerger — ~76 lignes dupliquées** — 5 paires mergeXxxConfig / mergeXxxConfigNoYaml quasi-identiques.
+_Fix_ : stratégie générique `mergeConfig<T>(cli, yaml, props, env, key)` + builder par section.
+Ou : une seule méthode avec `yaml: T?` nullable → quand yaml==null, fallback props>env.
+_Tests_ : unitaires existants + vérifier que les 2 chemins (yamlLoaded=true/false) sont couverts.
+| 🟠 MAJEUR
+| ⬜ TODO
+
+| CR-6
+| **Robust CLI parsing — `as? Int` fragile** — `cli["tts.espeakSpeed"] as? Int` échoue si la valeur CLI est String "150".
+_Fix_ : `cli["key"]?.toString()?.toIntOrNull()` pour Int/Double, `?.toString()?.toBoolean()` pour Boolean.
+Uniformiser sur tout le ConfigMerger.
+_Tests_ : unitaires avec CLI String "150" → doit donner Int 150.
+| 🟠 MAJEUR
+| ⬜ TODO
+
+| CR-7
+| **Validation YAML — CapsulePlugin.afterEvaluate** — `CapsuleConfigLoader.load(configFile)` sans try/catch.
+Si YAML malformé (syntax error), exception non catchée → task échoue sans message clair.
+_Fix_ : `try { CapsuleConfigLoader.load(configFile) } catch (e: Exception) { logger.error(...); CapsuleConfig.default() }`.
+_Tests_ : Cucumber @config @yaml_error (YAML invalide → fallback gracieux).
+| 🟠 MAJEUR
+| ⬜ TODO
+
+| CR-8
+| **Logging structuré — CapsulePlugin l.36-44** — 1 ligne monolithic avec 13 placeholders `{}`.
+Impossible à parser visuellement.
+_Fix_ : 4-5 `logger.lifecycle` séparés par section (TTS, Capture, Subtitles, Manim).
+| 🟡 MOYEN
+| ⬜ TODO
+
+| CR-9
+| **Robust HTML parsing — Regex slideRegex** — `Regex("""<section\b[^>]*>""")` sur HTML potentiellement malformé.
+_Fix_ : utiliser `HtmlSectionParser` déjà existant au lieu de regex raw dans `injectAudioSequentialFallback`.
+Ou : parser HTML léger (Jsoup? déjà en dépendance transitive?).
+| 🟡 MOYEN
+| ⬜ TODO
+
+| CR-10
+| **CI optimization — cucumberTest upToDateWhen { false }** — Toujours re-run, ~15 min (Playwright + FFmpeg).
+_Fix_ : `onlyIf { project.hasProperty("runCucumber") || System.getenv("CI") == "true" }`.
+| 🟡 MOYEN
+| ⬜ TODO
+|===
+
+'''
+== 🟢 EPIC CAP — Fonctionnalités Restantes
+
+[cols="1,3,2,2", options="header"]
+|===
+| EPIC | Description | Priorité | Statut
+
+| CAP-26
+| **Style burn-in configurable** — DSL `subtitleBurnInStyle` (fontSize, fontColor, outlineColor, position).
+Passer `force_style='FontSize=XX,PrimaryColour=&H...'` dans la commande FFmpeg subtitles filter.
+Cucumber @subtitles @burnin @style.
+| P1
+| ✅ TERMINE (session 039)
+
+| CAP-27
+| **VTT burn-in** — FFmpeg subtitles filter accepte aussi VTT (actuellement SRT seulement).
+Vérifier compatibilité, ajouter Cucumber @subtitles @burnin @vtt.
+| P2
+| ⬜ TODO
+
+| CAP-28
+| **Coverage gaps** — PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%.
+Ajouter tests unitaires + Cucumber pour les branches non couvertes.
+| P2
+| ⬜ TODO
+|===

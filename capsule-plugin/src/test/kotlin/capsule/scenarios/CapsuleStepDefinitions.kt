@@ -1000,4 +1000,54 @@ class $sceneName(Scene):
             "Build output should indicate successful burn-in. Got: ${lastBuildResult.take(2000)}"
         )
     }
+
+    // ─── Subtitle burn-in style steps ──────────────────────────────
+
+    @Given("a Gradle project with the capsule plugin configured for SRT subtitles with burn-in and custom style")
+    fun aGradleProjectWithTheCapsulePluginConfiguredForSrtSubtitlesWithBurnInAndCustomStyle() {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-burnin-style-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('education.cccp.capsule')
+            }
+            capsule {
+                ttsEngine = "noop"
+                subtitleEnabled = true
+                subtitleFormat = "srt"
+                subtitleBurnIn = true
+                subtitleBurnInFontSize = 36
+                subtitleBurnInFontColor = "&H000000FF"
+                subtitleBurnInOutlineColor = "&H00FF0000"
+                subtitleBurnInPosition = "top"
+            }
+        """.trimIndent())
+    }
+
+    @Then("the resolved subtitle burn-in style has fontSize {int}")
+    fun theResolvedSubtitleBurnInStyleHasFontSize(expected: Int) {
+        assertTrue(
+            lastBuildResult.contains("fontSize=$expected"),
+            "Build output should mention fontSize=$expected. Got: ${lastBuildResult.take(2000)}"
+        )
+    }
+
+    @Then("the resolved subtitle burn-in style has fontColor {string}")
+    fun theResolvedSubtitleBurnInStyleHasFontColor(expected: String) {
+        assertTrue(
+            lastBuildResult.contains("color=$expected"),
+            "Build output should mention color=$expected. Got: ${lastBuildResult.take(2000)}"
+        )
+    }
+
+    @Then("the resolved subtitle burn-in style has position {string}")
+    fun theResolvedSubtitleBurnInStyleHasPosition(expected: String) {
+        assertTrue(
+            lastBuildResult.contains("position=$expected"),
+            "Build output should mention position=$expected. Got: ${lastBuildResult.take(2000)}"
+        )
+    }
 }

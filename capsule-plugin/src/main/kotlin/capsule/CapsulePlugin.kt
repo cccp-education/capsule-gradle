@@ -94,6 +94,10 @@ class CapsulePlugin : Plugin<Project> {
         if (ext.subtitleEnabled.get() == conventions.subtitleEnabled) ext.subtitleEnabled.set(config.capture.subtitleEnabled)
         if (ext.subtitleFormat.get() == conventions.subtitleFormat) ext.subtitleFormat.set(config.capture.subtitleFormat)
         if (ext.subtitleBurnIn.get() == conventions.subtitleBurnIn) ext.subtitleBurnIn.set(config.capture.subtitleBurnIn)
+        if (ext.subtitleBurnInFontSize.get() == conventions.subtitleBurnInFontSize) ext.subtitleBurnInFontSize.set(config.capture.subtitleBurnInFontSize)
+        if (ext.subtitleBurnInFontColor.get() == conventions.subtitleBurnInFontColor) ext.subtitleBurnInFontColor.set(config.capture.subtitleBurnInFontColor)
+        if (ext.subtitleBurnInOutlineColor.get() == conventions.subtitleBurnInOutlineColor) ext.subtitleBurnInOutlineColor.set(config.capture.subtitleBurnInOutlineColor)
+        if (ext.subtitleBurnInPosition.get() == conventions.subtitleBurnInPosition) ext.subtitleBurnInPosition.set(config.capture.subtitleBurnInPosition)
 
         // Distrib section
         if (ext.ffmpegExecutablePath.get() == conventions.ffmpegExecutablePath) ext.ffmpegExecutablePath.set(config.distrib.ffmpegExecutablePath)

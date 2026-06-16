@@ -1,23 +1,39 @@
-= PROMPT_REPRISE — Session 039 : CAP-26 Style burn-in configurable (font size, couleur, position)
+= PROMPT_REPRISE — Session 041 : CR-2 Thread safety + timeout captureSlideParallel
 
 == Contexte
 
-Session 038 — CAP-25 Pipeline E2E avec burn-in terminé.
-1 scénario Cucumber @subtitles @burnin @integration ajouté (deck → TTS → capture → mix → burn-in → WebM final).
-2 step defs : Given real ffmpeg config + Then burn-in completed successfully.
-Compile OK, unit tests PASS. cucumberTest hang pré-existant non résolu.
+Session 040 — CR-1 Refactor CapsuleVideoTask.execute() TERMINE.
+5 méthodes extraites : synthesizeTtsForScript(), renderManimSlides(), replaceManimSlidesInDeck(),
+captureDeckSequential(), captureDeckParallel().
+execute() → 76 lignes d'orchestration pure (vs 218 avant).
+9 nouveaux tests unitaires. Tous les tests unitaires PASS. Compile OK.
 
 == État git
 
-2 fichiers modifiés (capsule.feature + CapsuleStepDefinitions.kt). Aucun commit.
+Fichiers modifiés : CapsuleVideoTask.kt, CapsulePluginTest.kt.
+Fichiers créés : .agents/sessions/040-cr1-refactor-execute.adoc.
+Aucun commit.
 Compile: BUILD SUCCESSFUL.
 Unit tests: BUILD SUCCESSFUL.
-Cucumber: cucumberTest task hang (pré-existant).
-Secrets: 0 trouvé.
 
 == Prochaines étapes
 
-. CAP-26 Style burn-in configurable — DSL subtitleBurnInStyle (fontSize, fontColor, outlineColor, position)
-. Passer les paramètres de style dans la commande FFmpeg `force_style='FontSize=XX,PrimaryColour=&H...'`
-. Cucumber @subtitles @burnin @style scenarios
-. Option: CAP-27 VTT burn-in (FFmpeg subtitles filter accepte aussi VTT)
+. CR-2 Thread safety + timeout captureSlideParallel
+. executor.shutdown() → executor.shutdownNow() dans finally
+. futures.mapNotNull { it.get() } → it.get(5, TimeUnit.MINUTES) avec try/catch
+. Tests unitaires : simuler task bloquante → timeout
+. Cucumber @parallel @timeout
+
+== Backlog priorisé
+
+. 🔴 CR-2 — Thread safety + timeout captureSlideParallel
+. 🔴 CR-3 — Error handling TTS — dégradation signalée + retry
+. 🟠 CR-4 — Sécurité HTML escape injectSubtitleTrack
+. 🟠 CR-5 — DRY CapsuleConfigMerger (~76 lignes dupliquées)
+. 🟠 CR-6 — Robust CLI parsing (`as? Int` → `toIntOrNull()`)
+. 🟠 CR-7 — Validation YAML avec try/catch gracieux
+. 🟡 CR-8 — Logging structuré CapsulePlugin
+. 🟡 CR-9 — Robust HTML parsing (HtmlSectionParser au lieu de regex raw)
+. 🟡 CR-10 — CI optimization cucumberTest onlyIf
+. 🟢 CAP-27 — VTT burn-in
+. 🟢 CAP-28 — Coverage gaps (PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%)

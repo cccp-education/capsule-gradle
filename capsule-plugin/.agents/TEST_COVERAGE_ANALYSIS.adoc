@@ -1,6 +1,19 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
-:date: 2026-06-15
-:session: 032 P1 println→logger + P2 isPlaceholder + P3 lateinit/lazy/concat-cleanup/validate-simplify
+:date: 2026-06-16
+:session: 040 CR-1 Refactor CapsuleVideoTask.execute() (218→76 lignes orchestration)
+
+== Couverture — 16 juin 2026 (après session 040)
+
+.Modifications session 040 — 9 nouveaux tests unitaires
+|===
+| Fichier | Changement | Tests ajoutés
+| CapsuleVideoTask.kt | 5 méthodes extraites (synthesizeTtsForScript, renderManimSlides, replaceManimSlidesInDeck, captureDeckSequential, captureDeckParallel) | 0 régression
+| CapsulePluginTest.kt | 9 nouveaux tests | synthesizeTtsForScript (3), renderManimSlides (2), replaceManimSlidesInDeck (2), captureDeckSequential (1), captureDeckParallel (1)
+|===
+
+- Unitaires: tous PASS (aucune régression)
+- Compile: BUILD SUCCESSFUL
+- Secrets: 0 trouvé
 
 == Couverture — 15 juin 2026 (après session 032)
 
