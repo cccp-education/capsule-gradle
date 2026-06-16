@@ -67,6 +67,8 @@ capture:
   # slideDurationSeconds: 5.0
   # parallelCaptureEnabled: false
   # parallelCaptureThreads: 4
+  # subtitleEnabled: false
+  # subtitleFormat: srt
 
 distrib:
   # ffmpegExecutablePath: ffmpeg

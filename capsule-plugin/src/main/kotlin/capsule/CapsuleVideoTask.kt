@@ -147,6 +147,9 @@ open class CapsuleVideoTask : DefaultTask() {
     @get:Internal
     internal var manimParallelRenderer: ManimParallelRenderer? = null
 
+    @get:Internal
+    internal var subtitleGenerator: SubtitleGenerator? = null
+
     init {
         outputDir.convention(
             project.layout.buildDirectory.dir("capsule")
@@ -390,6 +393,11 @@ open class CapsuleVideoTask : DefaultTask() {
 
             val slideDurations = computeSlideDurationsWithManim(parsed, audioDir, manimDurations)
 
+            // Generate subtitles if enabled
+            val subtitleFile: File? = if (capsuleExtension.subtitleEnabled.get()) {
+                generateSubtitles(parsed, slideDurations, outDir)
+            } else null
+
             // Replace Manim slide HTML sections with video embeds in the deck
             var finalDeckHtml = modifiedDeck.readText()
             val manimSlideIndices = manimSlides.mapIndexedNotNull { listIdx, seg ->
@@ -419,8 +427,15 @@ open class CapsuleVideoTask : DefaultTask() {
                 finalDeckHtml = manimReplacer.replaceSlideAt(finalDeckHtml, slideIdx, videoPath)
             }
 
+            // Inject subtitle track element if subtitles were generated
+            if (subtitleFile != null) {
+                finalDeckHtml = injectSubtitleTrack(finalDeckHtml, subtitleFile)
+                // Also update the injected deck file so Cucumber tests can verify
+                modifiedDeck.writeText(finalDeckHtml)
+            }
+
             val finalDeckFile = modifiedDeck.let { mf ->
-                if (manimSlideIndices.isNotEmpty()) {
+                if (manimSlideIndices.isNotEmpty() || subtitleFile != null) {
                     val replacedDeck = project.layout.buildDirectory.dir("capsule/replaced").get().asFile
                     replacedDeck.mkdirs()
                     val outFile = replacedDeck.resolve(modifiedDeck.name)
@@ -479,6 +494,34 @@ open class CapsuleVideoTask : DefaultTask() {
                 }
             }
         }
+    }
+
+    internal fun generateSubtitles(parsed: CapsuleScript, slideDurations: List<Double>, outDir: File): File? {
+        val format = SubtitleFormat.fromString(capsuleExtension.subtitleFormat.get())
+        val generator = resolveSubtitleGenerator(format)
+        val entries = SubtitleTimingCalculator.calculate(parsed.slides, slideDurations)
+        val content = generator.generate(entries)
+        val subtitleFile = outDir.resolve("${parsed.deckName}${format.fileExtension}")
+        subtitleFile.writeText(content)
+        logger.lifecycle("  Subtitles → {} ({} cues, {} format)", subtitleFile.name, entries.size, format.name.lowercase())
+        return subtitleFile
+    }
+
+    private fun resolveSubtitleGenerator(format: SubtitleFormat): SubtitleGenerator {
+        if (subtitleGenerator != null) return subtitleGenerator!!
+        return when (format) {
+            SubtitleFormat.VTT -> VttGenerator()
+            SubtitleFormat.SRT -> SrtGenerator()
+        }
+    }
+
+    internal fun injectSubtitleTrack(deckHtml: String, subtitleFile: File): String {
+        val format = SubtitleFormat.fromString(capsuleExtension.subtitleFormat.get())
+        val trackElement = """<track kind="captions" src="${subtitleFile.name}" srclang="${capsuleExtension.ttsLanguage.get()}" label="${format.name} captions" default>"""
+        return deckHtml.replace(
+            "</body>",
+            "$trackElement\n$AUDIO_INJECT_SCRIPT</body>"
+        )
     }
 
     internal fun captureSlideParallel(

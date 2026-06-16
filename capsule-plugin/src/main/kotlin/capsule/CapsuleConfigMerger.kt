@@ -100,7 +100,9 @@ object CapsuleConfigMerger {
                 playwrightTimeout = env["CAPSULE_CAPTURE_PLAYWRIGHT_TIMEOUT"]?.toDoubleOrNull() ?: 120_000.0,
                 slideDurationSeconds = env["CAPSULE_CAPTURE_SLIDE_DURATION_SECONDS"]?.toDoubleOrNull() ?: 5.0,
                 parallelCaptureEnabled = env["CAPSULE_CAPTURE_PARALLEL_CAPTURE_ENABLED"]?.toBoolean() ?: false,
-                parallelCaptureThreads = env["CAPSULE_CAPTURE_PARALLEL_CAPTURE_THREADS"]?.toIntOrNull() ?: 4
+                parallelCaptureThreads = env["CAPSULE_CAPTURE_PARALLEL_CAPTURE_THREADS"]?.toIntOrNull() ?: 4,
+                subtitleEnabled = env["CAPSULE_CAPTURE_SUBTITLE_ENABLED"]?.toBoolean() ?: false,
+                subtitleFormat = env["CAPSULE_CAPTURE_SUBTITLE_FORMAT"] ?: "srt"
             ),
             distrib = DistribConfig(
                 ffmpegExecutablePath = env["CAPSULE_DISTRIB_FFMPEG_EXECUTABLE_PATH"] ?: "ffmpeg",
@@ -141,7 +143,9 @@ object CapsuleConfigMerger {
                 playwrightTimeout = props["capsule.capture.playwrightTimeout"]?.toDoubleOrNull() ?: 120_000.0,
                 slideDurationSeconds = props["capsule.capture.slideDurationSeconds"]?.toDoubleOrNull() ?: 5.0,
                 parallelCaptureEnabled = props["capsule.capture.parallelCaptureEnabled"]?.toBoolean() ?: false,
-                parallelCaptureThreads = props["capsule.capture.parallelCaptureThreads"]?.toIntOrNull() ?: 4
+                parallelCaptureThreads = props["capsule.capture.parallelCaptureThreads"]?.toIntOrNull() ?: 4,
+                subtitleEnabled = props["capsule.capture.subtitleEnabled"]?.toBoolean() ?: false,
+                subtitleFormat = props["capsule.capture.subtitleFormat"] ?: "srt"
             ),
             distrib = DistribConfig(
                 ffmpegExecutablePath = props["capsule.distrib.ffmpegExecutablePath"] ?: "ffmpeg",
@@ -198,7 +202,9 @@ object CapsuleConfigMerger {
             playwrightTimeout = cli["capture.playwrightTimeout"] as? Double ?: yaml.playwrightTimeout,
             slideDurationSeconds = cli["capture.slideDurationSeconds"] as? Double ?: yaml.slideDurationSeconds,
             parallelCaptureEnabled = cli["capture.parallelCaptureEnabled"]?.toString()?.toBoolean() ?: yaml.parallelCaptureEnabled,
-            parallelCaptureThreads = cli["capture.parallelCaptureThreads"] as? Int ?: yaml.parallelCaptureThreads
+            parallelCaptureThreads = cli["capture.parallelCaptureThreads"] as? Int ?: yaml.parallelCaptureThreads,
+            subtitleEnabled = cli["capture.subtitleEnabled"]?.toString()?.toBoolean() ?: yaml.subtitleEnabled,
+            subtitleFormat = cli["capture.subtitleFormat"]?.toString() ?: yaml.subtitleFormat.ifNotBlankOrElse(props.subtitleFormat)
         )
     }
 
@@ -256,7 +262,9 @@ object CapsuleConfigMerger {
             playwrightTimeout = cli["capture.playwrightTimeout"] as? Double ?: props.playwrightTimeout,
             slideDurationSeconds = cli["capture.slideDurationSeconds"] as? Double ?: props.slideDurationSeconds,
             parallelCaptureEnabled = cli["capture.parallelCaptureEnabled"]?.toString()?.toBoolean() ?: props.parallelCaptureEnabled,
-            parallelCaptureThreads = cli["capture.parallelCaptureThreads"] as? Int ?: props.parallelCaptureThreads
+            parallelCaptureThreads = cli["capture.parallelCaptureThreads"] as? Int ?: props.parallelCaptureThreads,
+            subtitleEnabled = cli["capture.subtitleEnabled"]?.toString()?.toBoolean() ?: props.subtitleEnabled,
+            subtitleFormat = cli["capture.subtitleFormat"]?.toString() ?: props.subtitleFormat.ifNotBlankOrElse(env.subtitleFormat)
         )
     }
 

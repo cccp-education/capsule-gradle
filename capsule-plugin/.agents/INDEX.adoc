@@ -6,8 +6,8 @@ _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
 _Derniere mise a jour_ : 2026-06-16
-_Session terminee_ : 035 — CAP-22 TTS multi-langue (Piper/espeak voices EN/ES/DE)
-_Prochaine session_ : 036 — CAP-23 Sous-titres SRT/VTT depuis speaker notes
+_Session terminee_ : 036 — CAP-23 Sous-titres SRT/VTT depuis speaker notes
+_Prochaine session_ : 037 — CAP-24 Burn-in sous-titres dans le WebM final
 
 '''
 == REGLES ABSOLUES (resume)
@@ -56,6 +56,7 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 
 |===
 | # | Date | Type | Sujet | Score
+| 036 | 2026-06-16 | dev | CAP-23 Sous-titres SRT/VTT — SubtitleFormat enum + SubtitleEntry + SubtitleGenerator, SrtGenerator + VttGenerator + SubtitleTimingCalculator, DSL subtitleEnabled/subtitleFormat 4 sources, wiring CapsuleVideoTask, 6 Cucumber @subtitles, 43/43 PASSED | 9/10
 | 035 | 2026-06-16 | dev | CAP-22 TTS multi-langue — Language enum + VoiceMapping (FR/EN/ES/DE), PiperTtsEngine + EspeakTtsEngine language-aware, 6 Cucumber @tts, 37/37 PASSED | 9/10
 | 034 | 2026-06-16 | diagnostic+bugfix | Bug-fix PlaywrightCaptureImpl.close() avant check vidéo (6 failures Cucumber → 0). Kover: 83.3% line, 51.8% branch. Décision CAP-22 TTS multi-langue. 31/44 Cucumber PASSED. | 9/10
 | 033 | 2026-06-15 | bugfix+ci | Bug-fix DSL>merge (CapsuleConventions snapshot + pushConfigIntoExtension guard) + NoOp WebM EBML header (MINIMAL_WEBM ByteArray) + CI Template .github/workflows/test.yml. 211 unit PASS. | 8/10
@@ -133,6 +134,7 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 | CAP-14 | createSingleSlideHtml | ✅ TERMINE (session 019) | P1
 | CAP-15 | parallelCaptureEnabled DSL | ✅ TERMINE (session 019) | P1
 | CAP-22 | TTS multi-langue — Language enum + VoiceMapping (FR/EN/ES/DE), PiperTtsEngine + EspeakTtsEngine language-aware, 6 Cucumber @tts | ✅ TERMINE (session 035) | P1
+| CAP-23 | Sous-titres SRT/VTT — SubtitleFormat enum + SubtitleEntry + SubtitleGenerator, SrtGenerator + VttGenerator + SubtitleTimingCalculator, DSL subtitleEnabled/subtitleFormat 4 sources, wiring CapsuleVideoTask, 6 Cucumber @subtitles | ✅ TERMINE (session 036) | P1
 |===
 
 '''

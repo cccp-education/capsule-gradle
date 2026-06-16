@@ -39,7 +39,9 @@ data class CaptureConfig(
     val playwrightTimeout: Double = 120_000.0,
     val slideDurationSeconds: Double = 5.0,
     val parallelCaptureEnabled: Boolean = false,
-    val parallelCaptureThreads: Int = 4
+    val parallelCaptureThreads: Int = 4,
+    val subtitleEnabled: Boolean = false,
+    val subtitleFormat: String = "srt"
 )
 
 data class DistribConfig(

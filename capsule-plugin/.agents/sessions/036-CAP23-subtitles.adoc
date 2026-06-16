@@ -1,0 +1,64 @@
+= Session 036 — CAP-23 Sous-titres SRT/VTT depuis speaker notes
+:date: 2026-06-16
+:score: 9/10
+:type: dev
+
+== Résumé
+
+CAP-23 implémenté en TDD/BDD baby-step. Génération de sous-titres SRT/VTT
+depuis les speaker notes des scripts capsule, avec injection `<track>` dans
+le deck HTML.
+
+== Livrables
+
+1. **SubtitleModels.kt** — `SubtitleFormat` enum (SRT/VTT) + `SubtitleEntry` data class + `SubtitleGenerator` interface
+2. **SrtGenerator.kt** — Format SubRip (index + `HH:MM:SS,mmm --> HH:MM:SS,mmm` + texte)
+3. **VttGenerator.kt** — Format WebVTT (header `WEBVTT` + `HH:MM:SS.mmm --> HH:MM:SS.mmm` + texte)
+4. **SubtitleTimingCalculator.kt** — Calcule les timestamps depuis les durées audio (cumulatif)
+5. **DSL 4 sources** — `subtitleEnabled` (Boolean, default false) + `subtitleFormat` (String, default "srt") dans CapsuleExtension, CapsuleConfig, CapsuleConfigMerger, CapsulePlugin, CapsuleScaffoldTask
+6. **Wiring CapsuleVideoTask** — `generateSubtitles()` + `injectSubtitleTrack()` + `resolveSubtitleGenerator()`
+7. **Cucumber @subtitles** — 6 scénarios BDD (config disabled/enabled/SRT/VTT, génération fichier, injection track)
+
+== Tests
+
+- 10 tests unitaires SubtitleModelsTest
+- 9 tests unitaires SrtGeneratorTest
+- 10 tests unitaires VttGeneratorTest
+- 9 tests unitaires SubtitleTimingCalculatorTest
+- 6 scénarios Cucumber @subtitles (CucumberTestRunner)
+- 43 Cucumber PASSED, 0 FAILED (total 60 scénarios, 17 SKIPPED = @integration/@manim dans IntegrationRunner)
+- Tous les tests unitaires existants PASS (aucune régression)
+
+== Fichiers modifiés
+
+- `src/main/kotlin/capsule/CapsuleConfig.kt` — +2 champs CaptureConfig
+- `src/main/kotlin/capsule/CapsuleConfigMerger.kt` — merge subtitleEnabled/subtitleFormat
+- `src/main/kotlin/capsule/CapsuleModels.kt` — +2 properties Extension + Conventions
+- `src/main/kotlin/capsule/CapsulePlugin.kt` — pushConfig + log subtitle
+- `src/main/kotlin/capsule/CapsuleScaffoldTask.kt` — YAML template subtitle
+- `src/main/kotlin/capsule/CapsuleVideoTask.kt` — generateSubtitles + injectSubtitleTrack + wiring
+- `src/test/features/capsule.feature` — +6 scénarios @subtitles
+- `src/test/kotlin/capsule/scenarios/CapsuleStepDefinitions.kt` — +7 step defs
+
+== Fichiers créés
+
+- `src/main/kotlin/capsule/SubtitleModels.kt`
+- `src/main/kotlin/capsule/SrtGenerator.kt`
+- `src/main/kotlin/capsule/VttGenerator.kt`
+- `src/main/kotlin/capsule/SubtitleTimingCalculator.kt`
+- `src/test/kotlin/capsule/SubtitleModelsTest.kt`
+- `src/test/kotlin/capsule/SrtGeneratorTest.kt`
+- `src/test/kotlin/capsule/VttGeneratorTest.kt`
+- `src/test/kotlin/capsule/SubtitleTimingCalculatorTest.kt`
+
+== État git
+
+8 fichiers modifiés, 8 fichiers nouveaux. Aucun commit.
+Compile: BUILD SUCCESSFUL.
+Cucumber: 43 PASSED, 0 FAILED, 17 SKIPPED.
+Secrets: 0 trouvé.
+
+== Prochaine session
+
+CAP-24 — Injection sous-titres dans le WebM final (burn-in via FFmpeg subtitles filter)
+ou CAP-25 — Pipeline E2E avec vrai TTS + Playwright.

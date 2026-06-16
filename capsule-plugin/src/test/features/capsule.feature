@@ -208,3 +208,50 @@ Feature: Capsule video generation from a reveal.js deck
     When I run the task "generateCapsuleScript"
     Then the resolved TTS engine is "espeak"
     And the resolved TTS language is "de"
+
+  @subtitles @config
+  Scenario: Subtitle generation is disabled by default
+    Given a Gradle project with the capsule plugin applied
+    When I run the task "generateCapsuleScript"
+    Then the resolved subtitle enabled is "false"
+    And the resolved subtitle format is "srt"
+
+  @subtitles @config
+  Scenario: Subtitle generation can be enabled via DSL with SRT format
+    Given a Gradle project with the capsule plugin configured for SRT subtitles
+    When I run the task "generateCapsuleScript"
+    Then the resolved subtitle enabled is "true"
+    And the resolved subtitle format is "srt"
+
+  @subtitles @config
+  Scenario: Subtitle generation can be enabled via DSL with VTT format
+    Given a Gradle project with the capsule plugin configured for VTT subtitles
+    When I run the task "generateCapsuleScript"
+    Then the resolved subtitle enabled is "true"
+    And the resolved subtitle format is "vtt"
+
+  @subtitles
+  Scenario: SRT subtitle file is generated alongside the video
+    Given a Gradle project with the capsule plugin configured for SRT subtitles
+    And a reveal.js deck "sub-deck.html" with 2 slides and data-capsule-slide attributes
+    And a capsule script "sub-script.txt" with 2 slide segments
+    When I run the task "generateCapsuleVideo" with NoOp capture
+    Then a subtitle file "sub.srt" is generated in the capsule output directory
+    And the subtitle file contains valid SRT format with 2 cues
+
+  @subtitles
+  Scenario: VTT subtitle file is generated alongside the video
+    Given a Gradle project with the capsule plugin configured for VTT subtitles
+    And a reveal.js deck "vtt-deck.html" with 2 slides and data-capsule-slide attributes
+    And a capsule script "vtt-script.txt" with 2 slide segments
+    When I run the task "generateCapsuleVideo" with NoOp capture
+    Then a subtitle file "vtt.vtt" is generated in the capsule output directory
+    And the subtitle file contains valid VTT format with WEBVTT header
+
+  @subtitles
+  Scenario: Subtitle track element is injected into deck HTML
+    Given a Gradle project with the capsule plugin configured for SRT subtitles
+    And a reveal.js deck "track-deck.html" with 2 slides and data-capsule-slide attributes
+    And a capsule script "track-script.txt" with 2 slide segments
+    When I run the task "generateCapsuleVideo" with NoOp capture
+    Then the injected deck HTML contains a track element for subtitles

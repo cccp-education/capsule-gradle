@@ -105,6 +105,12 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val parallelCaptureThreads: Property<Int> = objects.property(Int::class.java)
         .convention(4)
 
+    val subtitleEnabled: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
+    val subtitleFormat: Property<String> = objects.property(String::class.java)
+        .convention("srt")
+
     internal val conventions: CapsuleConventions = CapsuleConventions(
         outputDir = "capsule",
         sliderScriptDir = "capsule",
@@ -123,6 +129,8 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         slideDurationSeconds = 5.0,
         parallelCaptureEnabled = false,
         parallelCaptureThreads = 4,
+        subtitleEnabled = false,
+        subtitleFormat = "srt",
         ffmpegExecutablePath = "ffmpeg",
         distribOutputWidth = 1080,
         distribOutputHeight = 1920,
@@ -153,6 +161,8 @@ data class CapsuleConventions(
     val slideDurationSeconds: Double,
     val parallelCaptureEnabled: Boolean,
     val parallelCaptureThreads: Int,
+    val subtitleEnabled: Boolean,
+    val subtitleFormat: String,
     val ffmpegExecutablePath: String,
     val distribOutputWidth: Int,
     val distribOutputHeight: Int,

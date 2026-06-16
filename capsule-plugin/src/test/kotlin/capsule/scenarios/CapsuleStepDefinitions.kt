@@ -840,4 +840,96 @@ class $sceneName(Scene):
             "Resolved TTS language should be '$expectedLanguage'. Build output: ${lastBuildResult.take(2000)}"
         )
     }
+
+    // ─── Subtitle steps ────────────────────────────────────────────
+
+    @Given("a Gradle project with the capsule plugin configured for SRT subtitles")
+    fun aGradleProjectWithTheCapsulePluginConfiguredForSrtSubtitles() {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-sub-srt-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('education.cccp.capsule')
+            }
+            capsule {
+                ttsEngine = "noop"
+                subtitleEnabled = true
+                subtitleFormat = "srt"
+            }
+        """.trimIndent())
+    }
+
+    @Given("a Gradle project with the capsule plugin configured for VTT subtitles")
+    fun aGradleProjectWithTheCapsulePluginConfiguredForVttSubtitles() {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-sub-vtt-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('education.cccp.capsule')
+            }
+            capsule {
+                ttsEngine = "noop"
+                subtitleEnabled = true
+                subtitleFormat = "vtt"
+            }
+        """.trimIndent())
+    }
+
+    @Then("the resolved subtitle enabled is {string}")
+    fun theResolvedSubtitleEnabledIs(expected: String) {
+        assertTrue(
+            lastBuildResult.contains("subtitle=$expected") || lastBuildResult.contains("SUCCESS"),
+            "Resolved subtitle enabled should be '$expected'. Build output: ${lastBuildResult.take(2000)}"
+        )
+    }
+
+    @Then("the resolved subtitle format is {string}")
+    fun theResolvedSubtitleFormatIs(expected: String) {
+        assertTrue(
+            lastBuildResult.contains("subtitleFormat=$expected") || lastBuildResult.contains("SUCCESS"),
+            "Resolved subtitle format should be '$expected'. Build output: ${lastBuildResult.take(2000)}"
+        )
+    }
+
+    @Then("a subtitle file {string} is generated in the capsule output directory")
+    fun aSubtitleFileIsGeneratedInTheCapsuleOutputDirectory(fileName: String) {
+        val subtitleFile = projectDir.resolve("build/capsule/$fileName")
+        assertTrue(subtitleFile.exists(), "Subtitle file $fileName should exist in build/capsule/. Expected: ${subtitleFile.absolutePath}")
+    }
+
+    @Then("the subtitle file contains valid SRT format with {int} cues")
+    fun theSubtitleFileContainsValidSrtFormatWithCues(expectedCues: Int) {
+        val subtitleFile = projectDir.resolve("build/capsule").listFiles { f -> f.name.endsWith(".srt") }?.firstOrNull()
+        assertNotNull(subtitleFile, "Should have an SRT subtitle file")
+        val content = subtitleFile.readText()
+        assertTrue(content.contains("-->"), "SRT should contain timestamp arrows '-->'")
+        val cueCount = content.lines().count { it.trim().matches(Regex("""^\d+$""")) }
+        assertTrue(cueCount >= expectedCues, "SRT should have at least $expectedCues cues, got $cueCount")
+    }
+
+    @Then("the subtitle file contains valid VTT format with WEBVTT header")
+    fun theSubtitleFileContainsValidVttFormatWithWebvttHeader() {
+        val subtitleFile = projectDir.resolve("build/capsule").listFiles { f -> f.name.endsWith(".vtt") }?.firstOrNull()
+        assertNotNull(subtitleFile, "Should have a VTT subtitle file")
+        val content = subtitleFile.readText()
+        assertTrue(content.trimStart().startsWith("WEBVTT"), "VTT should start with WEBVTT header. Got: ${content.take(100)}")
+        assertTrue(content.contains("-->"), "VTT should contain timestamp arrows '-->'")
+    }
+
+    @Then("the injected deck HTML contains a track element for subtitles")
+    fun theInjectedDeckHtmlContainsATrackElementForSubtitles() {
+        val injectedDir = projectDir.resolve("build/capsule/injected")
+        val injectedFiles = injectedDir.listFiles { f -> f.name.endsWith("-deck.html") }
+        assertNotNull(injectedFiles, "Should have injected deck files")
+        assertTrue(injectedFiles.isNotEmpty(), "Should have injected deck files")
+        val content = injectedFiles.first().readText()
+        assertTrue(content.contains("<track"), "Should contain <track> element for subtitles")
+        assertTrue(content.contains("kind=\"captions\""), "Track should have kind=\"captions\"")
+    }
 }

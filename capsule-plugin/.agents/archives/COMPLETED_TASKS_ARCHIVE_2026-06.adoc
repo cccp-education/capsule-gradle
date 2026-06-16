@@ -26,4 +26,11 @@
 | 2026-06-15 | 033-ci | CI Template `.github/workflows/test.yml` | ✅ JDK 24 Temurin, `./gradlew check`, `working-directory: capsule-plugin`, trigger push/PR main/master.
 | 2026-06-15 | 033-bugfix | pushConfigIntoExtension DSL > merge | ✅ `CapsuleConventions` snapshot + guard convention. DSL `outputDir = "capsules"` respecté. 3 scénarios @integration corrigés.
 | 2026-06-15 | 033-bugfix | NoOpPlaywrightCapture WebM EBML header | ✅ `MINIMAL_WEBM` ByteArray hex string → chunked(2). Placeholder texte remplacé par WebM binaire valide.
+| 2026-06-16 | 036-dev | CAP-23 Sous-titres SRT/VTT — SubtitleFormat enum + SubtitleEntry + SubtitleGenerator | ✅ 10 tests TDD. SubtitleFormat.fromString(), fileExtension, SubtitleEntry validation startTime<=endTime.
+| 2026-06-16 | 036-dev | CAP-23 SrtGenerator — Format SubRip | ✅ 9 tests TDD. Index + HH:MM:SS,mmm --> HH:MM:SS,mmm + texte multiligne.
+| 2026-06-16 | 036-dev | CAP-23 VttGenerator — Format WebVTT | ✅ 10 tests TDD. WEBVTT header + HH:MM:SS.mmm --> HH:MM:SS.mmm + texte.
+| 2026-06-16 | 036-dev | CAP-23 SubtitleTimingCalculator — Timestamps cumulatifs | ✅ 9 tests TDD. Durées audio → startTime/endTime cumulatifs, mismatched sizes géré.
+| 2026-06-16 | 036-dev | CAP-23 DSL subtitleEnabled/subtitleFormat 4 sources | ✅ CapsuleExtension + CapsuleConfig + CapsuleConfigMerger + CapsulePlugin + CapsuleScaffoldTask.
+| 2026-06-16 | 036-dev | CAP-23 Wiring CapsuleVideoTask — generateSubtitles + injectSubtitleTrack | ✅ resolveSubtitleGenerator, génération fichier SRT/VTT, injection <track> dans deck HTML.
+| 2026-06-16 | 036-dev | CAP-23 Cucumber @subtitles — 6 scénarios BDD | ✅ Config disabled/enabled/SRT/VTT, génération fichier, injection track. 43/43 PASSED.
 |===
