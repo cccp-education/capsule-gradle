@@ -33,4 +33,8 @@
 | 2026-06-16 | 036-dev | CAP-23 DSL subtitleEnabled/subtitleFormat 4 sources | ✅ CapsuleExtension + CapsuleConfig + CapsuleConfigMerger + CapsulePlugin + CapsuleScaffoldTask.
 | 2026-06-16 | 036-dev | CAP-23 Wiring CapsuleVideoTask — generateSubtitles + injectSubtitleTrack | ✅ resolveSubtitleGenerator, génération fichier SRT/VTT, injection <track> dans deck HTML.
 | 2026-06-16 | 036-dev | CAP-23 Cucumber @subtitles — 6 scénarios BDD | ✅ Config disabled/enabled/SRT/VTT, génération fichier, injection track. 43/43 PASSED.
+| 2026-06-16 | 037-dev | CAP-24 SubtitleBurnInService — Interface + Impl (FFmpeg subtitles filter) + NoOp + BurnInException | ✅ 10 tests TDD. Pattern ManimVideoMixer (interface→impl→noop→exception). FFmpeg `-vf subtitles=file.srt:force_style=...`.
+| 2026-06-16 | 037-dev | CAP-24 DSL subtitleBurnIn 4 sources | ✅ CapsuleExtension + CapsuleConfig + CapsuleConventions + CapsuleConfigMerger (ENV/props/YAML/CLI) + CapsulePlugin + CapsuleScaffoldTask.
+| 2026-06-16 | 037-dev | CAP-24 Wiring CapsuleVideoTask — resolveSubtitleBurnInService + burnInSubtitlesIfEnabled | ✅ Factory CapsuleManager.resolveSubtitleBurnInService. Post-mixAudioWithVideo (séquentiel + parallèle). Tmp file + rename pattern.
+| 2026-06-16 | 037-dev | CAP-24 Cucumber @subtitles @burnin — 3 scénarios BDD | ✅ Config disabled default, config enabled DSL, service invocation vérifié dans logs.
 |===

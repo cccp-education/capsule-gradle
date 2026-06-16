@@ -136,6 +136,18 @@ class CapsuleManager(private val project: Project) {
             }
         }
 
+        /**
+         * Resolves the appropriate SubtitleBurnInService based on ffmpeg availability.
+         * - If ffmpegPath is "noop", returns NoOpSubtitleBurnInService
+         * - Otherwise, returns SubtitleBurnInServiceImpl if ffmpeg is available
+         */
+        @JvmStatic
+        fun resolveSubtitleBurnInService(ffmpegPath: String = "ffmpeg"): SubtitleBurnInService {
+            if (ffmpegPath == "noop") return NoOpSubtitleBurnInService()
+            val service = SubtitleBurnInServiceImpl(ffmpegPath)
+            return if (service.isAvailable()) service else NoOpSubtitleBurnInService()
+        }
+
         fun readScriptFiles(dir: File): List<File> {
             return dir.listFiles { f ->
                 f.name.endsWith("-script.txt") &&

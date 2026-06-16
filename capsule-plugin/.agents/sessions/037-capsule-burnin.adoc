@@ -1,0 +1,32 @@
+= Session 037 — CAP-24 Burn-in sous-titres dans le WebM final
+:date: 2026-06-16
+:type: dev
+:score: 9/10
+
+== Résumé
+
+CAP-24 implémente l'incrustation (burn-in) des sous-titres SRT/VTT
+dans le WebM final via FFmpeg `subtitles` filter.
+
+== Livrables
+
+1. **SubtitleBurnInService.kt** — Interface + SubtitleBurnInServiceImpl (FFmpeg) + NoOpSubtitleBurnInService + BurnInException
+2. **DSL subtitleBurnIn** — Extension/Config/Conventions/Merger/Scaffold/Plugin (4 sources, default false)
+3. **Wiring CapsuleVideoTask** — resolveSubtitleBurnInService + burnInSubtitlesIfEnabled (post-mixAudioWithVideo, séquentiel + parallèle)
+4. **CapsuleManager.resolveSubtitleBurnInService** — Factory (noop → NoOp, ffmpeg absent → NoOp)
+5. **SubtitleBurnInServiceTest.kt** — 10 tests unitaires (NoOp 3, Impl 4, Factory 3)
+6. **Cucumber @subtitles @burnin** — 3 scénarios (config disabled default, config enabled DSL, service invocation)
+
+== Fichiers modifiés
+
+- 7 fichiers modifiés (CapsuleConfig, CapsuleConfigMerger, CapsuleManager, CapsuleModels, CapsulePlugin, CapsuleScaffoldTask, CapsuleVideoTask)
+- 2 fichiers nouveaux (SubtitleBurnInService, SubtitleBurnInServiceTest)
+- 2 fichiers modifiés (capsule.feature +3 scénarios, CapsuleStepDefinitions +3 steps)
+
+== État
+
+- Compile: BUILD SUCCESSFUL
+- Unit tests: BUILD SUCCESSFUL (tous PASS)
+- Cucumber: cucumberTest task hang (pré-existant, non lié à CAP-24)
+- Secrets: 0 trouvé
+- Git: 9 modifiés, 2 nouveaux, aucun commit

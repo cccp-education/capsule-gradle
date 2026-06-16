@@ -34,11 +34,11 @@ class CapsulePlugin : Plugin<Project> {
             pushConfigIntoExtension(mergedConfig, capsuleExt)
 
             project.logger.lifecycle(
-                "Capsule config resolved: engine={}, voice={}, language={}, vw={}x{}, parallel={}, subtitle={}/{} manim=[path={}, quality={}, scriptsDir={}, outputDir={}]",
+                "Capsule config resolved: engine={}, voice={}, language={}, vw={}x{}, parallel={}, subtitle={}/{}/burnIn={} manim=[path={}, quality={}, scriptsDir={}, outputDir={}]",
                 mergedConfig.tts.engine, mergedConfig.tts.voice, mergedConfig.tts.language,
                 mergedConfig.capture.viewportWidth, mergedConfig.capture.viewportHeight,
                 mergedConfig.capture.parallelCaptureEnabled,
-                mergedConfig.capture.subtitleEnabled, mergedConfig.capture.subtitleFormat,
+                mergedConfig.capture.subtitleEnabled, mergedConfig.capture.subtitleFormat, mergedConfig.capture.subtitleBurnIn,
                 mergedConfig.manim.executablePath, mergedConfig.manim.quality,
                 mergedConfig.manim.scriptsDir, mergedConfig.manim.outputDir
             )
@@ -93,6 +93,7 @@ class CapsulePlugin : Plugin<Project> {
         if (ext.parallelCaptureThreads.get() == conventions.parallelCaptureThreads) ext.parallelCaptureThreads.set(config.capture.parallelCaptureThreads)
         if (ext.subtitleEnabled.get() == conventions.subtitleEnabled) ext.subtitleEnabled.set(config.capture.subtitleEnabled)
         if (ext.subtitleFormat.get() == conventions.subtitleFormat) ext.subtitleFormat.set(config.capture.subtitleFormat)
+        if (ext.subtitleBurnIn.get() == conventions.subtitleBurnIn) ext.subtitleBurnIn.set(config.capture.subtitleBurnIn)
 
         // Distrib section
         if (ext.ffmpegExecutablePath.get() == conventions.ffmpegExecutablePath) ext.ffmpegExecutablePath.set(config.distrib.ffmpegExecutablePath)

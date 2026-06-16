@@ -41,7 +41,8 @@ data class CaptureConfig(
     val parallelCaptureEnabled: Boolean = false,
     val parallelCaptureThreads: Int = 4,
     val subtitleEnabled: Boolean = false,
-    val subtitleFormat: String = "srt"
+    val subtitleFormat: String = "srt",
+    val subtitleBurnIn: Boolean = false
 )
 
 data class DistribConfig(

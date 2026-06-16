@@ -102,7 +102,8 @@ object CapsuleConfigMerger {
                 parallelCaptureEnabled = env["CAPSULE_CAPTURE_PARALLEL_CAPTURE_ENABLED"]?.toBoolean() ?: false,
                 parallelCaptureThreads = env["CAPSULE_CAPTURE_PARALLEL_CAPTURE_THREADS"]?.toIntOrNull() ?: 4,
                 subtitleEnabled = env["CAPSULE_CAPTURE_SUBTITLE_ENABLED"]?.toBoolean() ?: false,
-                subtitleFormat = env["CAPSULE_CAPTURE_SUBTITLE_FORMAT"] ?: "srt"
+                subtitleFormat = env["CAPSULE_CAPTURE_SUBTITLE_FORMAT"] ?: "srt",
+                subtitleBurnIn = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN"]?.toBoolean() ?: false
             ),
             distrib = DistribConfig(
                 ffmpegExecutablePath = env["CAPSULE_DISTRIB_FFMPEG_EXECUTABLE_PATH"] ?: "ffmpeg",
@@ -145,7 +146,8 @@ object CapsuleConfigMerger {
                 parallelCaptureEnabled = props["capsule.capture.parallelCaptureEnabled"]?.toBoolean() ?: false,
                 parallelCaptureThreads = props["capsule.capture.parallelCaptureThreads"]?.toIntOrNull() ?: 4,
                 subtitleEnabled = props["capsule.capture.subtitleEnabled"]?.toBoolean() ?: false,
-                subtitleFormat = props["capsule.capture.subtitleFormat"] ?: "srt"
+                subtitleFormat = props["capsule.capture.subtitleFormat"] ?: "srt",
+                subtitleBurnIn = props["capsule.capture.subtitleBurnIn"]?.toBoolean() ?: false
             ),
             distrib = DistribConfig(
                 ffmpegExecutablePath = props["capsule.distrib.ffmpegExecutablePath"] ?: "ffmpeg",
@@ -204,7 +206,8 @@ object CapsuleConfigMerger {
             parallelCaptureEnabled = cli["capture.parallelCaptureEnabled"]?.toString()?.toBoolean() ?: yaml.parallelCaptureEnabled,
             parallelCaptureThreads = cli["capture.parallelCaptureThreads"] as? Int ?: yaml.parallelCaptureThreads,
             subtitleEnabled = cli["capture.subtitleEnabled"]?.toString()?.toBoolean() ?: yaml.subtitleEnabled,
-            subtitleFormat = cli["capture.subtitleFormat"]?.toString() ?: yaml.subtitleFormat.ifNotBlankOrElse(props.subtitleFormat)
+            subtitleFormat = cli["capture.subtitleFormat"]?.toString() ?: yaml.subtitleFormat.ifNotBlankOrElse(props.subtitleFormat),
+            subtitleBurnIn = cli["capture.subtitleBurnIn"]?.toString()?.toBoolean() ?: yaml.subtitleBurnIn
         )
     }
 
@@ -264,7 +267,8 @@ object CapsuleConfigMerger {
             parallelCaptureEnabled = cli["capture.parallelCaptureEnabled"]?.toString()?.toBoolean() ?: props.parallelCaptureEnabled,
             parallelCaptureThreads = cli["capture.parallelCaptureThreads"] as? Int ?: props.parallelCaptureThreads,
             subtitleEnabled = cli["capture.subtitleEnabled"]?.toString()?.toBoolean() ?: props.subtitleEnabled,
-            subtitleFormat = cli["capture.subtitleFormat"]?.toString() ?: props.subtitleFormat.ifNotBlankOrElse(env.subtitleFormat)
+            subtitleFormat = cli["capture.subtitleFormat"]?.toString() ?: props.subtitleFormat.ifNotBlankOrElse(env.subtitleFormat),
+            subtitleBurnIn = cli["capture.subtitleBurnIn"]?.toString()?.toBoolean() ?: props.subtitleBurnIn
         )
     }
 

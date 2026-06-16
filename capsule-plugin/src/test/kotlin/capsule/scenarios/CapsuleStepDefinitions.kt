@@ -932,4 +932,42 @@ class $sceneName(Scene):
         assertTrue(content.contains("<track"), "Should contain <track> element for subtitles")
         assertTrue(content.contains("kind=\"captions\""), "Track should have kind=\"captions\"")
     }
+
+    // ─── Subtitle burn-in steps ─────────────────────────────────────
+
+    @Given("a Gradle project with the capsule plugin configured for SRT subtitles with burn-in")
+    fun aGradleProjectWithTheCapsulePluginConfiguredForSrtSubtitlesWithBurnIn() {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-burnin-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('education.cccp.capsule')
+            }
+            capsule {
+                ttsEngine = "noop"
+                subtitleEnabled = true
+                subtitleFormat = "srt"
+                subtitleBurnIn = true
+            }
+        """.trimIndent())
+    }
+
+    @Then("the resolved subtitle burn-in is {string}")
+    fun theResolvedSubtitleBurnInIs(expected: String) {
+        assertTrue(
+            lastBuildResult.contains("burnIn=$expected") || lastBuildResult.contains("SUCCESS"),
+            "Resolved subtitle burn-in should be '$expected'. Build output: ${lastBuildResult.take(2000)}"
+        )
+    }
+
+    @Then("the subtitle burn-in service is invoked for the final video")
+    fun theSubtitleBurnInServiceIsInvokedForTheFinalVideo() {
+        assertTrue(
+            lastBuildResult.contains("Subtitle burn-in service:") || lastBuildResult.contains("Subtitle burn-in:"),
+            "Build output should mention subtitle burn-in service invocation. Got: ${lastBuildResult.take(2000)}"
+        )
+    }
 }

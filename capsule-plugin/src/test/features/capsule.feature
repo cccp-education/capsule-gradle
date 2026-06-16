@@ -255,3 +255,23 @@ Feature: Capsule video generation from a reveal.js deck
     And a capsule script "track-script.txt" with 2 slide segments
     When I run the task "generateCapsuleVideo" with NoOp capture
     Then the injected deck HTML contains a track element for subtitles
+
+  @subtitles @burnin @config
+  Scenario: Subtitle burn-in is disabled by default
+    Given a Gradle project with the capsule plugin applied
+    When I run the task "generateCapsuleScript"
+    Then the resolved subtitle burn-in is "false"
+
+  @subtitles @burnin @config
+  Scenario: Subtitle burn-in can be enabled via DSL
+    Given a Gradle project with the capsule plugin configured for SRT subtitles with burn-in
+    When I run the task "generateCapsuleScript"
+    Then the resolved subtitle burn-in is "true"
+
+  @subtitles @burnin
+  Scenario: Subtitle burn-in is applied to the final video when enabled
+    Given a Gradle project with the capsule plugin configured for SRT subtitles with burn-in
+    And a reveal.js deck "burnin-deck.html" with 2 slides and data-capsule-slide attributes
+    And a capsule script "burnin-script.txt" with 2 slide segments
+    When I run the task "generateCapsuleVideo" with NoOp capture
+    Then the subtitle burn-in service is invoked for the final video

@@ -69,6 +69,7 @@ capture:
   # parallelCaptureThreads: 4
   # subtitleEnabled: false
   # subtitleFormat: srt
+  # subtitleBurnIn: false
 
 distrib:
   # ffmpegExecutablePath: ffmpeg
