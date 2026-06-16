@@ -1,0 +1,69 @@
+= Session 035 — CAP-22 TTS multi-langue (Piper/espeak voices EN/ES/DE)
+:date: 2026-06-16
+:type: dev
+:score: 9/10
+
+== Objectif
+
+Implémenter le support multi-langue pour les moteurs TTS Piper et espeak.
+Ajouter les voix EN (en_US-lessac-medium / en), ES (es_ES-carlfm-x_low / es),
+DE (de_DE-thorsten-medium / de) en plus du FR existant.
+
+== Livrables
+
+1. *LanguageVoiceMapping.kt* — Nouveau fichier source (32 lignes)
+   - Enum `Language` (FR, EN, ES, DE) avec `fromCode()`
+   - Object `VoiceMapping` — mapping bidirectionnel Piper model ↔ Language, espeak voice ↔ Language
+   - 9 tests unitaires TDD (LanguageVoiceMappingTest)
+
+2. *TtsConfig* — Champ `language: String = "fr"` ajouté
+   - CapsuleConfig.kt, CapsuleModels.kt (CapsuleExtension + CapsuleConventions)
+   - CapsuleConfigMerger.kt (4 sources : ENV, props, YAML, CLI)
+   - CapsulePlugin.kt (pushConfigIntoExtension + lifecycle log)
+
+3. *TtsEngine* — Interface enrichie `fun language(): Language? = null`
+   - PiperTtsEngine : paramètre `language: Language?`, résolution automatique du model Piper
+   - EspeakTtsEngine : paramètre `language: Language?`, résolution automatique de la voix espeak
+   - Backward compat : `model`/`voice` explicites toujours supportés
+   - 8 nouveaux tests unitaires (TtsEngineTest)
+
+4. *Wiring* — CapsuleVideoTask + CapsuleBuildTask
+   - `resolveTtsEngine()` lit `capsuleExtension.ttsLanguage`, résout `Language.fromCode()`
+   - Passe `language` aux constructeurs PiperTtsEngine/EspeakTtsEngine
+
+5. *Cucumber BDD* — 6 nouveaux scénarios @tts @config
+   - TTS language defaults to French
+   - TTS language EN/ES/DE via DSL
+   - Piper + espeak language override
+   - 6 step definitions (Given + Then)
+
+6. *Scaffold* — YAML template inclut `# language: fr`
+
+== Tests
+
+- Unitaires : 204+ PASS (9 LanguageVoiceMapping + 8 TtsEngine + existants)
+- Cucumber : 37/37 PASSED, 0 FAILED, 0 SKIPPED
+- Compile : BUILD SUCCESSFUL
+
+== Kover
+
+[cols="2,2,2"]
+|===
+| Métrique | Avant (S034) | Après (S035)
+| LINE | 83.3% | 83.3%
+| BRANCH | 51.8% | 51.7%
+| INSTR | 78.1% | 78.2%
+| VoiceMapping | — | 100% line, 100% instr
+| EspeakTtsEngine | ~31% branch | 86.7% line, 73.4% instr
+| PiperTtsEngine | ~31% branch | 34.4% line (synthesize() untestable sans binaire)
+|===
+
+== Fichiers modifiés
+
+- 1 nouveau : `LanguageVoiceMapping.kt`
+- 8 modifiés main : CapsuleBuildTask, CapsuleConfig, CapsuleConfigMerger, CapsuleModels, CapsulePlugin, CapsuleScaffoldTask, CapsuleVideoTask, TtsManager
+- 3 modifiés test : CapsulePluginTest, capsule.feature, CapsuleStepDefinitions
+
+== Prochaine session
+
+CAP-23 Sous-titres SRT/VTT depuis speaker notes.

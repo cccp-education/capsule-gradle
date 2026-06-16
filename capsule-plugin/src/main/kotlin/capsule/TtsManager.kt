@@ -6,12 +6,16 @@ interface TtsEngine {
     fun synthesize(text: String, outputFile: File)
     fun isAvailable(): Boolean
     fun name(): String
+    fun language(): Language? = null
 }
 
 class PiperTtsEngine(
     private val executablePath: String = "piper",
-    private val model: String = "fr_FR-siwis-medium"
+    private val model: String = "fr_FR-siwis-medium",
+    private val language: Language? = null
 ) : TtsEngine {
+
+    private val resolvedModel: String = language?.let { VoiceMapping.piperModel(it) } ?: model
 
     override fun isAvailable(): Boolean {
         return try {
@@ -27,6 +31,8 @@ class PiperTtsEngine(
 
     override fun name(): String = "piper"
 
+    override fun language(): Language? = language ?: VoiceMapping.resolveLanguage(resolvedModel)
+
     override fun synthesize(text: String, outputFile: File) {
         if (!isAvailable()) {
             throw TtsException("Piper executable not found at: $executablePath")
@@ -36,7 +42,7 @@ class PiperTtsEngine(
 
         val args = listOf(
             executablePath,
-            "--model", model,
+            "--model", resolvedModel,
             "--output_file", wavFile.absolutePath
         )
 
@@ -79,8 +85,11 @@ class TtsException(message: String) : RuntimeException(message)
 class EspeakTtsEngine(
     private val executablePath: String = "espeak",
     private val voice: String = "fr",
-    private val speed: Int = 150
+    private val speed: Int = 150,
+    private val language: Language? = null
 ) : TtsEngine {
+
+    private val resolvedVoice: String = language?.let { VoiceMapping.espeakVoice(it) } ?: voice
 
     override fun isAvailable(): Boolean {
         return try {
@@ -96,6 +105,8 @@ class EspeakTtsEngine(
 
     override fun name(): String = "espeak"
 
+    override fun language(): Language? = language ?: VoiceMapping.resolveLanguageFromEspeak(resolvedVoice)
+
     override fun synthesize(text: String, outputFile: File) {
         if (!isAvailable()) {
             throw TtsException("espeak executable not found at: $executablePath")
@@ -107,7 +118,7 @@ class EspeakTtsEngine(
 
         val proc = ProcessBuilder(
             executablePath,
-            "-v", voice,
+            "-v", resolvedVoice,
             "-s", speed.toString(),
             "-w", wavFile.absolutePath,
             text

@@ -58,6 +58,7 @@ tts:
   # fallbackEnabled: true
   # espeakVoice: fr
   # espeakSpeed: 150
+  # language: fr
 
 capture:
   # viewportWidth: 1408

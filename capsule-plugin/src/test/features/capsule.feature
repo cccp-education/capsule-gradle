@@ -129,7 +129,7 @@ Feature: Capsule video generation from a reveal.js deck
   Scenario: YAML configuration overrides gradle.properties defaults
     Given a Gradle project with the capsule plugin applied and a capsule-context.yml setting espeak TTS
     When I run the task "generateCapsuleScript"
-    Then the resolved TTS engine is espeak
+    Then the resolved TTS engine is "espeak"
 
   @config @manim
   Scenario: Manim YAML configuration overrides manim defaults for quality and scriptsDir
@@ -170,3 +170,41 @@ Feature: Capsule video generation from a reveal.js deck
     When I run the task "generateCapsuleVideo" with NoOp capture
     Then the ManimEngine renders all manim slides for the deck
     And each manim slide produces a rendered video file in the output directory
+
+  @tts @config
+  Scenario: TTS language configuration defaults to French
+    Given a Gradle project with the capsule plugin applied
+    When I run the task "generateCapsuleScript"
+    Then the resolved TTS language is "fr"
+
+  @tts @config
+  Scenario: TTS language can be set to English via DSL
+    Given a Gradle project with the capsule plugin configured for English TTS
+    When I run the task "generateCapsuleScript"
+    Then the resolved TTS language is "en"
+
+  @tts @config
+  Scenario: TTS language can be set to Spanish via DSL
+    Given a Gradle project with the capsule plugin configured for Spanish TTS
+    When I run the task "generateCapsuleScript"
+    Then the resolved TTS language is "es"
+
+  @tts @config
+  Scenario: TTS language can be set to German via DSL
+    Given a Gradle project with the capsule plugin configured for German TTS
+    When I run the task "generateCapsuleScript"
+    Then the resolved TTS language is "de"
+
+  @tts @config
+  Scenario: TTS language overrides voice mapping for Piper engine
+    Given a Gradle project with the capsule plugin configured for English Piper TTS
+    When I run the task "generateCapsuleScript"
+    Then the resolved TTS engine is "piper"
+    And the resolved TTS language is "en"
+
+  @tts @config
+  Scenario: TTS language overrides voice mapping for espeak engine
+    Given a Gradle project with the capsule plugin configured for German espeak TTS
+    When I run the task "generateCapsuleScript"
+    Then the resolved TTS engine is "espeak"
+    And the resolved TTS language is "de"

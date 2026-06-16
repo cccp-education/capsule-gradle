@@ -174,18 +174,22 @@ open class CapsuleVideoTask : DefaultTask() {
     private fun resolveTtsEngine(): TtsEngine {
         if (ttsEngine != null) return ttsEngine!!
 
+        val langCode = capsuleExtension.ttsLanguage.get()
+        val resolvedLanguage = Language.fromCode(langCode)
+
         return when (capsuleExtension.ttsEngine.get().lowercase()) {
             "piper" -> {
                 val engine = PiperTtsEngine(
                     capsuleExtension.piperExecutablePath.get(),
-                    capsuleExtension.ttsVoice.get()
+                    capsuleExtension.ttsVoice.get(),
+                    language = resolvedLanguage
                 )
                 if (engine.isAvailable()) engine else NoOpTtsEngine()
             }
             "espeak" -> {
                 val voice = capsuleExtension.espeakVoice.get()
                 val speed = capsuleExtension.espeakSpeed.get()
-                val engine = EspeakTtsEngine(voice = voice, speed = speed)
+                val engine = EspeakTtsEngine(voice = voice, speed = speed, language = resolvedLanguage)
                 if (engine.isAvailable()) engine else NoOpTtsEngine()
             }
             else -> NoOpTtsEngine()

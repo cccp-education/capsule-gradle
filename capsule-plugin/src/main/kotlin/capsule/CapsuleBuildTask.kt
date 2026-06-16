@@ -35,11 +35,14 @@ open class CapsuleBuildTask : DefaultTask() {
         if (ttsEngine != null) return ttsEngine!!
 
         val configuredEngine = capsuleExtension.ttsEngine.get()
+        val langCode = capsuleExtension.ttsLanguage.get()
+        val resolvedLanguage = Language.fromCode(langCode)
+
         return when (configuredEngine.lowercase()) {
             "piper" -> {
                 val piperPath = capsuleExtension.piperExecutablePath.get()
                 val voice = capsuleExtension.ttsVoice.get()
-                val engine = PiperTtsEngine(piperPath, voice)
+                val engine = PiperTtsEngine(piperPath, voice, language = resolvedLanguage)
                 if (engine.isAvailable()) {
                     logger.lifecycle("TTS engine: piper → {}", piperPath)
                     engine
@@ -53,7 +56,7 @@ open class CapsuleBuildTask : DefaultTask() {
             "espeak" -> {
                 val voice = capsuleExtension.espeakVoice.get()
                 val speed = capsuleExtension.espeakSpeed.get()
-                val engine = EspeakTtsEngine(voice = voice, speed = speed)
+                val engine = EspeakTtsEngine(voice = voice, speed = speed, language = resolvedLanguage)
                 if (engine.isAvailable()) {
                     logger.lifecycle("TTS engine: espeak (voice={}, speed={})", voice, speed)
                     engine

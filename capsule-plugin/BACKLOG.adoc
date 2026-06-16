@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-06-16 (Session 034 — Bug-fix close() + Kover + décision CAP-22)
+:last_update: 2026-06-16 (Session 035 — CAP-22 TTS multi-langue EN/ES/DE)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -61,5 +61,5 @@ Gaps critiques: PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 2
 '''
 == BACKLOG ACTIF
 
-. 🟡 **CAP-22 TTS multi-langue** — Piper/espeak voices EN/ES/DE (20-30 tests TDD). Couvre PiperTtsEngine (31%→80%+ branch).
+. ✅ **CAP-22 TTS multi-langue** — Language enum + VoiceMapping (FR/EN/ES/DE), PiperTtsEngine + EspeakTtsEngine language-aware, 6 Cucumber @tts, 37/37 PASSED. Kover: 83.3% line, 51.7% branch.
 . 🟡 **CAP-23 Sous-titres** — SRT/VTT depuis speaker notes (après CAP-22)

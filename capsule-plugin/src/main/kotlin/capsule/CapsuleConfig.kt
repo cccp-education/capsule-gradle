@@ -29,7 +29,8 @@ data class TtsConfig(
     val piperExecutablePath: String = "piper",
     val fallbackEnabled: Boolean = true,
     val espeakVoice: String = "fr",
-    val espeakSpeed: Int = 150
+    val espeakSpeed: Int = 150,
+    val language: String = "fr"
 )
 
 data class CaptureConfig(

@@ -78,6 +78,9 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val espeakSpeed: Property<Int> = objects.property(Int::class.java)
         .convention(150)
 
+    val ttsLanguage: Property<String> = objects.property(String::class.java)
+        .convention("fr")
+
     val manimExecutablePath: Property<String> = objects.property(String::class.java)
         .convention("manim")
 
@@ -113,6 +116,7 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         ttsFallbackEnabled = true,
         espeakVoice = "fr",
         espeakSpeed = 150,
+        ttsLanguage = "fr",
         viewportWidth = 1408,
         viewportHeight = 792,
         playwrightTimeout = 120_000.0,
@@ -142,6 +146,7 @@ data class CapsuleConventions(
     val ttsFallbackEnabled: Boolean,
     val espeakVoice: String,
     val espeakSpeed: Int,
+    val ttsLanguage: String,
     val viewportWidth: Int,
     val viewportHeight: Int,
     val playwrightTimeout: Double,

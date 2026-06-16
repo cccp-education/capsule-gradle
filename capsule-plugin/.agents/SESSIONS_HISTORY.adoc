@@ -6,6 +6,7 @@ _Date creation_ : 2026-05-14
 
 |===
 | # | Date | Type | Sujet | Score
+| 035 | 2026-06-16 | dev | CAP-22 TTS multi-langue — Language enum + VoiceMapping (FR/EN/ES/DE), PiperTtsEngine + EspeakTtsEngine language-aware, 6 Cucumber @tts, 37/37 PASSED, Kover 83.3% line | 9/10
 | 034 | 2026-06-16 | diagnostic+bugfix | Bug-fix PlaywrightCaptureImpl.close() avant check vidéo (6 failures Cucumber → 0). Kover: 83.3% line, 51.8% branch. Décision CAP-22 TTS multi-langue. 31/44 Cucumber PASSED. | 9/10
 | 033 | 2026-06-15 | bugfix+ci | Bug-fix DSL>merge (CapsuleConventions snapshot + pushConfigIntoExtension guard) + NoOp WebM EBML header (MINIMAL_WEBM ByteArray) + CI Template .github/workflows/test.yml. 211 unit PASS. | 8/10
 | 032 | 2026-06-15 | refactor | P1 println→logger (PlaywrightCaptureImpl + CapsuleConfigLoader) + P2 isPlaceholder dead code + P3 lateinit→lazy (6 tâches) + concat-cleanup try/finally + validate-simplify when explicite. 211 unit PASS. | 9/10

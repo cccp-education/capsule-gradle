@@ -6,8 +6,8 @@ _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
 _Derniere mise a jour_ : 2026-06-16
-_Session terminee_ : 034 — Bug-fix close() avant check vidéo + Kover + décision CAP-22
-_Prochaine session_ : 035 — CAP-22 TTS multi-langue (Piper/espeak voices EN/ES/DE)
+_Session terminee_ : 035 — CAP-22 TTS multi-langue (Piper/espeak voices EN/ES/DE)
+_Prochaine session_ : 036 — CAP-23 Sous-titres SRT/VTT depuis speaker notes
 
 '''
 == REGLES ABSOLUES (resume)
@@ -56,6 +56,9 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 
 |===
 | # | Date | Type | Sujet | Score
+| 035 | 2026-06-16 | dev | CAP-22 TTS multi-langue — Language enum + VoiceMapping (FR/EN/ES/DE), PiperTtsEngine + EspeakTtsEngine language-aware, 6 Cucumber @tts, 37/37 PASSED | 9/10
+| 034 | 2026-06-16 | diagnostic+bugfix | Bug-fix PlaywrightCaptureImpl.close() avant check vidéo (6 failures Cucumber → 0). Kover: 83.3% line, 51.8% branch. Décision CAP-22 TTS multi-langue. 31/44 Cucumber PASSED. | 9/10
+| 033 | 2026-06-15 | bugfix+ci | Bug-fix DSL>merge (CapsuleConventions snapshot + pushConfigIntoExtension guard) + NoOp WebM EBML header (MINIMAL_WEBM ByteArray) + CI Template .github/workflows/test.yml. 211 unit PASS. | 8/10
 | 032 | 2026-06-15 | refactor | P1 println→logger + P2 isPlaceholder + P3 lateinit→lazy/concat-cleanup/validate-simplify | 9/10
 | 031 | 2026-06-15 | refactor | P0 DRY (AudioConversionUtil + HtmlSectionParser + MediaProbeUtil) + resource leak finally + magic number DSL | 9/10
 | 030 | 2026-06-13 | maintenance | Mise à jour BACKLOG (publication + priorités P0→P3) | 8/10
@@ -129,6 +132,7 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 | CAP-12 | Split CapsuleManager | ✅ TERMINE | P2
 | CAP-14 | createSingleSlideHtml | ✅ TERMINE (session 019) | P1
 | CAP-15 | parallelCaptureEnabled DSL | ✅ TERMINE (session 019) | P1
+| CAP-22 | TTS multi-langue — Language enum + VoiceMapping (FR/EN/ES/DE), PiperTtsEngine + EspeakTtsEngine language-aware, 6 Cucumber @tts | ✅ TERMINE (session 035) | P1
 |===
 
 '''

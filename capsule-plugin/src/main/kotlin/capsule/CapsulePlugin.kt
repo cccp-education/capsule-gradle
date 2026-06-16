@@ -34,8 +34,8 @@ class CapsulePlugin : Plugin<Project> {
             pushConfigIntoExtension(mergedConfig, capsuleExt)
 
             project.logger.lifecycle(
-                "Capsule config resolved: engine={}, voice={}, vw={}x{}, parallel={}, manim=[path={}, quality={}, scriptsDir={}, outputDir={}]",
-                mergedConfig.tts.engine, mergedConfig.tts.voice,
+                "Capsule config resolved: engine={}, voice={}, language={}, vw={}x{}, parallel={}, manim=[path={}, quality={}, scriptsDir={}, outputDir={}]",
+                mergedConfig.tts.engine, mergedConfig.tts.voice, mergedConfig.tts.language,
                 mergedConfig.capture.viewportWidth, mergedConfig.capture.viewportHeight,
                 mergedConfig.capture.parallelCaptureEnabled,
                 mergedConfig.manim.executablePath, mergedConfig.manim.quality,
@@ -81,6 +81,7 @@ class CapsulePlugin : Plugin<Project> {
         if (ext.ttsFallbackEnabled.get() == conventions.ttsFallbackEnabled) ext.ttsFallbackEnabled.set(config.tts.fallbackEnabled)
         if (ext.espeakVoice.get() == conventions.espeakVoice) ext.espeakVoice.set(config.tts.espeakVoice)
         if (ext.espeakSpeed.get() == conventions.espeakSpeed) ext.espeakSpeed.set(config.tts.espeakSpeed)
+        if (ext.ttsLanguage.get() == conventions.ttsLanguage) ext.ttsLanguage.set(config.tts.language)
 
         // Capture section
         if (ext.viewportWidth.get() == conventions.viewportWidth) ext.viewportWidth.set(config.capture.viewportWidth)

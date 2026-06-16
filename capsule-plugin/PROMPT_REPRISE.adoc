@@ -1,26 +1,33 @@
-= PROMPT_REPRISE — Session 035 : CAP-22 TTS multi-langue (Piper/espeak voices EN/ES/DE)
+= PROMPT_REPRISE — Session 036 : CAP-23 Sous-titres SRT/VTT depuis speaker notes
 
 == Contexte
 
-Session 034 — Bug-fix PlaywrightCaptureImpl.close() avant check vidéo (6 failures → 0).
-Kover: 83.3% line, 51.8% branch, 78.1% instr.
-Gap critique: PiperTtsEngine 31% branch, ManimEngineImpl 25% branch.
+Session 035 — CAP-22 TTS multi-langue terminé.
+Language enum + VoiceMapping (FR/EN/ES/DE), PiperTtsEngine + EspeakTtsEngine language-aware.
+6 Cucumber @tts PASSED. 37/37 Cucumber PASSED, 0 failures.
+Kover: 83.3% line, 51.7% branch, 78.2% instr.
+VoiceMapping 100% line/instr. EspeakTtsEngine 86.7% line.
 
-== Livrables session 034
+== Livrables session 035
 
-1. **Bug-fix close()** — `CapsuleVideoTask.kt` l.450-475. `close()` dans finally avant check `listFiles { *.webm }`.
-2. **Kover** — Rapport HTML généré. 31/44 Cucumber PASSED, 0 failures.
-3. **Décision EPIC** — CAP-22 TTS multi-langue prioritaire (PiperTtsEngine gap 31% branch).
+1. **LanguageVoiceMapping.kt** — Enum Language + VoiceMapping (9 tests TDD)
+2. **TtsConfig.language** — Champ `language: String = "fr"` dans 4 sources (ENV/props/YAML/CLI)
+3. **TtsEngine.language()** — PiperTtsEngine + EspeakTtsEngine acceptent `language: Language?`
+4. **Wiring** — CapsuleVideoTask + CapsuleBuildTask résolvent `ttsLanguage` → `Language.fromCode()`
+5. **Cucumber @tts** — 6 scénarios multi-langue (FR default, EN/ES/DE DSL, Piper+espeak override)
+6. **Scaffold** — YAML template `# language: fr`
 
 == État git
 
-Modifications non commitées (session 034)
-Cucumber: 31 PASSED, 13 skipped, 0 failures
-Kover: 83.3% line, 51.8% branch, 78.1% instr
+12 fichiers modifiés non commités (session 035)
 Compile: BUILD SUCCESSFUL
+Cucumber: 37 PASSED, 0 FAILED, 0 SKIPPED
+Kover: 83.3% line, 51.7% branch, 78.2% instr
 
 == Prochaines étapes
 
-. CAP-22 TTS multi-langue — Piper/espeak voices EN/ES/DE (20-30 tests TDD)
-. Couvrir PiperTtsEngine + EspeakTtsEngine via tests unitaires + Cucumber @tts
-. Objectif Kover: branch 51.8% → 60%+, PiperTtsEngine 31% → 80%+
+. CAP-23 Sous-titres — Génération SRT/VTT depuis speaker notes (20-30 tests TDD)
+. Extraction timestamps depuis TTS audio (MediaProbeUtil.probeDuration)
+. Format SRT (SubRip) + VTT (WebVTT) — 2 formats de sortie
+. Injection dans le deck HTML (track element)
+. Cucumber @subtitles scenarios

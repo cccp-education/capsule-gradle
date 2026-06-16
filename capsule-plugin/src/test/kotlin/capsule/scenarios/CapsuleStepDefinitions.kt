@@ -350,13 +350,13 @@ tts:
         """.trimIndent())
     }
 
-    @Then("the resolved TTS engine is espeak")
-    fun theResolvedTtsEngineIsEspeak() {
-        assertTrue(lastBuildResult.contains("SUCCESS") || lastBuildResult.contains("espeak"),
-            "YAML config should resolve tts engine to espeak. Output: $lastBuildResult")
+    @Then("the resolved TTS engine is {string}")
+    fun theResolvedTtsEngineIsString(expectedEngine: String) {
+        assertTrue(
+            lastBuildResult.contains("engine=$expectedEngine") || lastBuildResult.contains("SUCCESS"),
+            "Resolved TTS engine should be '$expectedEngine'. Build output: ${lastBuildResult.take(2000)}"
+        )
     }
-
-    // ─── Config @manim steps ─────────────────────────────────────
 
     @Given("a Gradle project with the capsule plugin applied and a capsule-context.yml setting manim quality to {string} and scriptsDir to {string}")
     fun aGradleProjectWithCapsuleContextYmlManimQualityAndScriptsDir(quality: String, scriptsDir: String) {
@@ -738,6 +738,106 @@ class $sceneName(Scene):
         assertTrue(
             lastBuildResult.contains("SUCCESS"),
             "Build should succeed when rendering manim slides. Output: ${lastBuildResult.take(500)}"
+        )
+    }
+
+    // ─── TTS multi-language steps ─────────────────────────────────
+
+    @Given("a Gradle project with the capsule plugin configured for English TTS")
+    fun aGradleProjectWithTheCapsulePluginConfiguredForEnglishTts() {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-tts-en-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('education.cccp.capsule')
+            }
+            capsule {
+                ttsEngine = "noop"
+                ttsLanguage = "en"
+            }
+        """.trimIndent())
+    }
+
+    @Given("a Gradle project with the capsule plugin configured for Spanish TTS")
+    fun aGradleProjectWithTheCapsulePluginConfiguredForSpanishTts() {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-tts-es-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('education.cccp.capsule')
+            }
+            capsule {
+                ttsEngine = "noop"
+                ttsLanguage = "es"
+            }
+        """.trimIndent())
+    }
+
+    @Given("a Gradle project with the capsule plugin configured for German TTS")
+    fun aGradleProjectWithTheCapsulePluginConfiguredForGermanTts() {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-tts-de-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('education.cccp.capsule')
+            }
+            capsule {
+                ttsEngine = "noop"
+                ttsLanguage = "de"
+            }
+        """.trimIndent())
+    }
+
+    @Given("a Gradle project with the capsule plugin configured for English Piper TTS")
+    fun aGradleProjectWithTheCapsulePluginConfiguredForEnglishPiperTts() {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-piper-en-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('education.cccp.capsule')
+            }
+            capsule {
+                ttsEngine = "piper"
+                ttsLanguage = "en"
+            }
+        """.trimIndent())
+    }
+
+    @Given("a Gradle project with the capsule plugin configured for German espeak TTS")
+    fun aGradleProjectWithTheCapsulePluginConfiguredForGermanEspeakTts() {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-espeak-de-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('education.cccp.capsule')
+            }
+            capsule {
+                ttsEngine = "espeak"
+                ttsLanguage = "de"
+            }
+        """.trimIndent())
+    }
+
+    @Then("the resolved TTS language is {string}")
+    fun theResolvedTtsLanguageIs(expectedLanguage: String) {
+        assertTrue(
+            lastBuildResult.contains("language=$expectedLanguage") || lastBuildResult.contains("SUCCESS"),
+            "Resolved TTS language should be '$expectedLanguage'. Build output: ${lastBuildResult.take(2000)}"
         )
     }
 }
