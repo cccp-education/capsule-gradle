@@ -1,5 +1,16 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-06-16 (Session 039 — CAP-26 terminé)
+:last_update: 2026-06-24 (Session 041 — README i18n terminé)
+
+'''
+== ✅ README i18n — TERMINE (session 041)
+
+. [x] 20 fichiers README créés (10 langues × consumer + plugin)
+. [x] `README.consommateurs/` — guide utilisateur (10 langues)
+. [x] `README.plugin/` — guide développeur/contributeur (10 langues)
+. [x] Badges shields.io (Maven Central 0.0.1-SNAPSHOT, Plugin Portal, CI, License)
+. [x] Marqueurs : 195 unit + 22 Cucumber PASS, version 0.0.1-SNAPSHOT (non publié)
+. [x] Switcher i18n 10 langues (EN/FR/ES/PT/RU/AR/UR/ZH/HI/BN)
+. [x] AR/UR RTL (Right-To-Left)
 
 '''
 == ✅ CAP-26 Style burn-in configurable — TERMINE

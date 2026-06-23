@@ -1,20 +1,18 @@
-= PROMPT_REPRISE — Session 041 : CR-2 Thread safety + timeout captureSlideParallel
+= PROMPT_REPRISE — Session 042 : CR-2 Thread safety + timeout captureSlideParallel
 
 == Contexte
 
-Session 040 — CR-1 Refactor CapsuleVideoTask.execute() TERMINE.
-5 méthodes extraites : synthesizeTtsForScript(), renderManimSlides(), replaceManimSlidesInDeck(),
-captureDeckSequential(), captureDeckParallel().
-execute() → 76 lignes d'orchestration pure (vs 218 avant).
-9 nouveaux tests unitaires. Tous les tests unitaires PASS. Compile OK.
+Session 041 — README i18n TERMINE.
+20 fichiers README créés (10 langues × consumer + plugin) dans
+`README.consommateurs/` et `README.plugin/` à la racine `capsule-gradle/`.
+Badges shields.io, marqueurs 0.0.1-SNAPSHOT (non publié),
+195 unit + 22 Cucumber PASS, switcher i18n, AR/UR RTL.
 
 == État git
 
-Fichiers modifiés : CapsuleVideoTask.kt, CapsulePluginTest.kt.
-Fichiers créés : .agents/sessions/040-cr1-refactor-execute.adoc.
+Fichiers créés : 20 README + `.agents/sessions/041-readme-i18n.adoc`.
+Fichiers modifiés : INDEX.adoc, SESSIONS_HISTORY.adoc, PROMPT_REPRISE.adoc.
 Aucun commit.
-Compile: BUILD SUCCESSFUL.
-Unit tests: BUILD SUCCESSFUL.
 
 == Prochaines étapes
 

@@ -1,0 +1,106 @@
+= Session 041 — README i18n (10 langues × consumer + plugin)
+:date: 2026-06-24
+:type: documentation
+:score: 8/10
+
+== Objectif
+
+Générer la documentation README multilingue pour `capsule-gradle` : un guide
+consommateur (`README.consommateurs/`) et un guide plugin/contributeur
+(`README.plugin/`), chacun décliné en 10 langues.
+
+== Méthode
+
+Master source en anglais (`README.md`) marqué `<!-- master source — other
+languages are translations of this file -->`, puis traductions par langue avec
+switcher i18n en en-tête. Badges shields.io alignés sur l'état réel du borough.
+
+== Livrables
+
+. `README.consommateurs/` — 10 fichiers README (guide utilisateur)
+  * `README.md` (EN, master), `README.fr.md`, `README.es.md`, `README.pt.md`,
+    `README.ru.md`, `README.ar.md`, `README.ur.md`, `README.zh.md`,
+    `README.hi.md`, `README.bn.md`
+. `README.plugin/` — 10 fichiers README (guide développeur/contributeur)
+  * Même déclinaison linguistique
+. *20 fichiers README au total* (10 langues × 2 guides)
+
+== Contenu documenté
+
+=== Guide consommateur
+
+. Badges : Maven Central (`0.0.1-SNAPSHOT`, orange = non publié), Plugin Portal,
+  CI, License (Apache 2.0)
+. Marqueurs version : `0.0.1-SNAPSHOT` (non publié), Group `education.cccp`,
+  Plugin ID `education.cccp.capsule`
+. Tests : `195 unit + 22 Cucumber PASS`
+. Pipeline : AsciiDoc → slider-gradle → reveal.js deck + capsule script →
+  capsule-gradle (TTS Piper/espeak → audio injection → Playwright capture →
+  WebM) → Manim (optionnel) → FFmpeg distrib 9:16
+. Quick Start : apply plugin, tâches (`generateCapsuleScript`,
+  `generateCapsule`, `generateCapsuleVideo`, `deployCapsule`,
+  `collectCapsuleContext`), configuration DSL
+. Appartenance écosystème CCCP Education (`groupId: education.cccp`)
+
+=== Guide plugin (internals)
+
+. Toolchain : Java 24 · Kotlin 2.3.20 · Gradle 9.5
+. Module layout : `capsule-plugin/` + arborescence `src/main/kotlin/capsule/`
+  (CapsulePlugin, CapsuleManager, CapsuleModels, CapsuleConfig + Loader +
+  Merger, tâches Gradle, TtsManager, PlaywrightManager, ManimEngine +
+  SlideReplacer + VideoMixer + ParallelRenderer, SubtitleModels + Generators +
+  BurnInService)
+. Badges : Maven Central, Plugin Portal, CI, Coverage (Kover), License
+. Build/Test/Coverage commands
+
+== Switcher i18n
+
+En-tête de chaque fichier :
+```
+🌐 Languages: **EN** | [Français](README.fr.md) | [Español](README.es.md) |
+[Português](README.pt.md) | [Русский](README.ru.md) | [العربية](README.ar.md) |
+[اردو](README.ur.md) | [中文](README.zh.md) | [हिन्दी](README.hi.md) |
+[বাংলা](README.bn.md)
+```
+
+== RTL (Right-To-Left)
+
+`README.ar.md` (arabe) et `README.ur.md` (ourdou) — langues RTL. Contenu
+adapté à la lecture droite→gauche.
+
+== État publication
+
+*Version* : `0.0.1-SNAPSHOT` — *NON PUBLIÉ* sur Maven Central.
+Badge Maven Central orange (statut SNAPSHOT).
+La publication 0.0.1 (Session 029) reste l'artefact de référence publié.
+
+== Fichiers créés
+
+. `foundry/public/capsule-gradle/README.consommateurs/README.md`
+. `foundry/public/capsule-gradle/README.consommateurs/README.fr.md`
+. `foundry/public/capsule-gradle/README.consommateurs/README.es.md`
+. `foundry/public/capsule-gradle/README.consommateurs/README.pt.md`
+. `foundry/public/capsule-gradle/README.consommateurs/README.ru.md`
+. `foundry/public/capsule-gradle/README.consommateurs/README.ar.md`
+. `foundry/public/capsule-gradle/README.consommateurs/README.ur.md`
+. `foundry/public/capsule-gradle/README.consommateurs/README.zh.md`
+. `foundry/public/capsule-gradle/README.consommateurs/README.hi.md`
+. `foundry/public/capsule-gradle/README.consommateurs/README.bn.md`
+. `foundry/public/capsule-gradle/README.plugin/README.md`
+. `foundry/public/capsule-gradle/README.plugin/README.fr.md`
+. `foundry/public/capsule-gradle/README.plugin/README.es.md`
+. `foundry/public/capsule-gradle/README.plugin/README.pt.md`
+. `foundry/public/capsule-gradle/README.plugin/README.ru.md`
+. `foundry/public/capsule-gradle/README.plugin/README.ar.md`
+. `foundry/public/capsule-gradle/README.plugin/README.ur.md`
+. `foundry/public/capsule-gradle/README.plugin/README.zh.md`
+. `foundry/public/capsule-gradle/README.plugin/README.hi.md`
+. `foundry/public/capsule-gradle/README.plugin/README.bn.md`
+
+== Aucun commit
+
+Aucun commit effectué (Règle 1 AGENT.adoc). Fichiers prêts pour revue.
+
+== Prochaine session
+
+CR-2 Thread safety + timeout captureSlideParallel (backlog priorité P0).

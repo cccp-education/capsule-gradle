@@ -1,12 +1,20 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-06-16 (Session 039 — Analyse CODE_REVIEW.adoc + enrichissement gouvernance)
+:last_update: 2026-06-24 (Session 041 — README i18n 10 langues)
 
 '''
 == 📦 Publication Maven Central ✅
 
 `education.cccp:capsule-plugin:0.0.1` publié via nmcp (Session 029).
 195 unit + 22 Cucumber = 217 tests PASS.
+
+'''
+== 📚 README i18n ✅ TERMINE (Session 041)
+
+20 fichiers README créés (10 langues × consumer + plugin) dans
+`README.consommateurs/` et `README.plugin/` à la racine `capsule-gradle/`.
+Master source EN, switcher i18n, badges shields.io (Maven Central 0.0.1-SNAPSHOT
+orange, Plugin Portal, CI, License), AR/UR RTL.
 
 '''
 == 🔴 P0 — Code Review Session 028 ✅ TERMINE (Session 031)
