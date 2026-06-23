@@ -22,6 +22,29 @@ speaker deja presentes dans l'AsciiDoc source.
 === 6. ZERO secret/token/api key en dur dans le code source
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source, il le lit
 
+== Loi de l'Économie d'Encre — Non-Répétition des Opérations Coûteuses
+
+*PRINCIPE* : Une opération coûteuse (TTS Piper/API, capture vidéo Playwright, inférence cloud) qui a déjà produit un résultat *valide et persistant* NE DOIT PAS être ré-exécutée sur la même entrée. Le résultat existant est la vérité ; le re-calcul est un gaspillage de crédits API/temps de build. Le TTS et la capture vidéo sont des services metered (API TTS) ou coûteux en CPU/temps (Playwright). Régénérer un MP3 déjà synthétisé, recapturer une vidéo dont le MP4 est valide : chacun de ces gestes consomme des ressources sans produire de nouvelle connaissance. L'économie d'encre est la condition de viabilité économique du pipeline agentique MVP0.
+
+*RÈGLE* :
+. Avant toute opération coûteuse, **vérifier l'existence d'un artefact résultat** (MP3 par slide, MP4/WebM final, script TTS généré, cache disque).
+. Si l'artefact existe et couvre l'entrée demandée → **réutiliser sans ré-invoquer**.
+. Seul le **delta** (slides modifiées, notes speaker éditées, audio manquant) doit être calculé — jamais l'ensemble.
+. Ne **jamais écraser** un résultat validé par un re-calcul identique. L'écrasement est un symptôme de non-idempotence économique.
+. L'invalidation est **explicite et ciblée** (slide éditée, note speaker modifiée), jamais globale par défaut.
+
+*ANTI-PATTERNS SPÉCIFIQUES CAPSULE* :
+. *Re-TTS systématique* : re-synthétiser les MP3 de toutes les slides parce qu'une seule note speaker a été corrigée.
+. *Re-capture vidéo inconditionnelle* : relancer Playwright sur tout le deck parce qu'une slide a été ajoutée.
+. *Cache-busting silencieux* : un `writeText()` qui écrase le script TTS ou le MP4 final avant même d'avoir vérifié l'existant.
+
+*PROTECTION* :
+. Lecture avant écriture : vérifier l'existence du MP3 par slide (hash du texte speaker) avant de appeler le TTS ; ne re-synthétiser que les slides dont le hash diffère.
+. Delta capture : ne capturer que les slides dont l'audio ou le rendu HTML a changé depuis la dernière capture.
+. `DisableCachingByDefault` ne dispense pas de l'idempotence applicative — Gradle ne sait pas ce qu'est un "MP3 déjà valide", seul le domaine le sait.
+
+*RÉFÉRENCE* : Source canonique — `bakery-gradle/bakery-plugin/AGENT.adoc` section "Non-Répétition des Opérations Coûteuses — Loi de l'Économie d'Encre" (Session 153). Portée transverse : 10 boroughs LLM metered. Potentiel 50-80% d'économie LLM sur le pipeline MVP0 complet.
+
 == Taches Principales
 
   ./gradlew generateCapsuleScript   → extraire les scripts TTS par deck
