@@ -6,6 +6,7 @@ _Date creation_ : 2026-05-14
 
 |===
 | # | Date | Type | Sujet | Score
+| 067 | 2026-06-24 | refactor README | Architecture README Plugin + Consommateur — déplacement README.plugin → capsule-plugin/, README.consommateurs → racine, liens i18n recréés (10 langues) | 8/10
 | 041 | 2026-06-24 | documentation | README i18n — 20 fichiers README (10 langues × consumer + plugin) dans `README.consommateurs/` et `README.plugin/`. Badges shields.io (Maven Central 0.0.1-SNAPSHOT orange, Plugin Portal, CI, License). Marqueurs : 195 unit + 22 Cucumber PASS. Switcher i18n 10 langues. AR/UR RTL. Non publié. | 8/10
 | 040 | 2026-06-16 | refactor | CR-1 Refactor CapsuleVideoTask.execute() — 5 méthodes extraites (synthesizeTtsForScript, renderManimSlides, replaceManimSlidesInDeck, captureDeckSequential, captureDeckParallel), execute() 218→76 lignes orchestration, 9 nouveaux tests unitaires, compile OK, unit tests PASS | 9/10
 | 039 | 2026-06-16 | governance+dev | Analyse CODE_REVIEW.adoc — 15 problèmes → 10 EPICs CR (CR-1→CR-10) + 3 EPICs CAP (CAP-26→CAP-28). Enrichissement BACKLOG, création TODO.adoc, MàJ INDEX. CAP-26 Style burn-in configurable TERMINE — SubtitleBurnInStyle data class + 4 champs DSL/Config/Merger/Scaffold + FFmpeg force_style. 16 tests unitaires + 2 Cucumber @subtitles @burnin @style. Compile OK, unit tests PASS. | 9/10

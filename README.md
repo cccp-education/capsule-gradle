@@ -12,7 +12,7 @@
 - **Build**: `./gradlew build` · **Tests**: `./gradlew check` (195 unit + 22 Cucumber PASS)
 - **Coverage**: Kover XML + HTML reports wired into `check`
 
-🌐 Languages: **EN** | [Français](README.fr.md)
+🌐 Languages: **EN** | [中文](README.consommateurs/README.zh.md) | [हिन्दी](README.consommateurs/README.hi.md) | [Español](README.consommateurs/README.es.md) | [Français](README.consommateurs/README.fr.md) | [العربية](README.consommateurs/README.ar.md) | [বাংলা](README.consommateurs/README.bn.md) | [Português](README.consommateurs/README.pt.md) | [Русский](README.consommateurs/README.ru.md) | [اردو](README.consommateurs/README.ur.md)
 
 ---
 

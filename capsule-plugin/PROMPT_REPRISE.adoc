@@ -1,18 +1,12 @@
-= PROMPT_REPRISE — Session 042 : CR-2 Thread safety + timeout captureSlideParallel
+= PROMPT_REPRISE — Capsule — Session 068
+:session: 068
+:date: 2026-06-24
 
-== Contexte
+== Session 067 terminée — Architecture README Plugin + Consommateur
 
-Session 041 — README i18n TERMINE.
-20 fichiers README créés (10 langues × consumer + plugin) dans
-`README.consommateurs/` et `README.plugin/` à la racine `capsule-gradle/`.
-Badges shields.io, marqueurs 0.0.1-SNAPSHOT (non publié),
-195 unit + 22 Cucumber PASS, switcher i18n, AR/UR RTL.
-
-== État git
-
-Fichiers créés : 20 README + `.agents/sessions/041-readme-i18n.adoc`.
-Fichiers modifiés : INDEX.adoc, SESSIONS_HISTORY.adoc, PROMPT_REPRISE.adoc.
-Aucun commit.
+Déplacement README.plugin → capsule-plugin/README.plugin/ (README.md master
+remonté à racine plugin). Déplacement README.consommateurs → racine borough.
+Liens i18n recréés (10 langues).
 
 == Prochaines étapes
 

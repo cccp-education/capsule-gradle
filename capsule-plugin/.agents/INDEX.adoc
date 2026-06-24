@@ -6,8 +6,8 @@ _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
 _Derniere mise a jour_ : 2026-06-24
-_Session en cours_ : 041 — README i18n (10 langues × consumer + plugin) TERMINE
-_Prochaine session_ : 042 — CR-2 Thread safety + timeout captureSlideParallel
+_Session en cours_ : 067 — Architecture README Plugin + Consommateur TERMINE (déplacement README.plugin → capsule-plugin/, README.consommateurs → racine, liens i18n recréés)
+_Prochaine session_ : 068 — CR-2 Thread safety + timeout captureSlideParallel
 
 '''
 == REGLES ABSOLUES (resume)
