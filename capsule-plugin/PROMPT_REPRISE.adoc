@@ -1,12 +1,13 @@
-= PROMPT_REPRISE — Capsule — Session 068
-:session: 068
-:date: 2026-06-24
+= PROMPT_REPRISE — Capsule — Session 069
+:session: 069
+:date: 2026-06-29
 
-== Session 067 terminée — Architecture README Plugin + Consommateur
+== Session 068 terminée — CNV-6 Migration conventions plugins ✅
 
-Déplacement README.plugin → capsule-plugin/README.plugin/ (README.md master
-remonté à racine plugin). Déplacement README.consommateurs → racine borough.
-Liens i18n recréés (10 langues).
+S068 a régularisé la migration du `build.gradle.kts` vers les 4 conventions plugins
+(gradle-plugin + publishing + functional-test + cucumber 0.0.1). ~70 lignes supprimées.
+`compileKotlin` ✅. Migration déjà faite côté code (conventions S005 dogfood legacy)
+mais non committée — régularisée.
 
 == Prochaines étapes
 
@@ -29,3 +30,8 @@ Liens i18n recréés (10 langues).
 . 🟡 CR-10 — CI optimization cucumberTest onlyIf
 . 🟢 CAP-27 — VTT burn-in
 . 🟢 CAP-28 — Coverage gaps (PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%)
+
+== Contexte technique
+- Build migré vers conventions plugins (education.cccp.build.* 0.0.1)
+- Version : 0.0.1-SNAPSHOT (non publié)
+- 195 unit + 22 Cucumber PASS

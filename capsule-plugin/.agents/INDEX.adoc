@@ -5,9 +5,9 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
-_Derniere mise a jour_ : 2026-06-24
-_Session en cours_ : 067 — Architecture README Plugin + Consommateur TERMINE (déplacement README.plugin → capsule-plugin/, README.consommateurs → racine, liens i18n recréés)
-_Prochaine session_ : 068 — CR-2 Thread safety + timeout captureSlideParallel
+_Derniere mise a jour_ : 2026-06-29
+_Session en cours_ : 068 — CNV-6 Migration conventions plugins TERMINE (4 plugins 0.0.1, ~70 lignes supprimées, compileKotlin ✅)
+_Prochaine session_ : 069 — CR-2 Thread safety + timeout captureSlideParallel
 
 '''
 == REGLES ABSOLUES (resume)
@@ -56,6 +56,8 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 
 |===
 | # | Date | Type | Sujet | Score
+| 068 | 2026-06-29 | migration | **CNV-6 Migration conventions plugins** — `build.gradle.kts` migré vers 4 conventions plugins (gradle-plugin + publishing + functional-test + cucumber 0.0.1). ~70 lignes supprimées. `compileKotlin` ✅. Régularisation migration déjà faite (conventions S005 dogfood legacy) mais non committée. | 9/10
+| 067 | 2026-06-24 | refactor README | Architecture README Plugin + Consommateur — déplacement README.plugin → capsule-plugin/, README.consommateurs → racine, liens i18n recréés (10 langues) | 8/10
 | 041 | 2026-06-24 | documentation | README i18n — 20 fichiers README (10 langues × consumer + plugin) dans `README.consommateurs/` et `README.plugin/`. Badges shields.io (Maven Central 0.0.1-SNAPSHOT orange, Plugin Portal, CI, License). Marqueurs : 195 unit + 22 Cucumber PASS. Switcher i18n 10 langues. AR/UR RTL. Non publié. | 8/10
 | 040 | 2026-06-16 | refactor | CR-1 Refactor CapsuleVideoTask.execute() — 5 méthodes extraites (synthesizeTtsForScript, renderManimSlides, replaceManimSlidesInDeck, captureDeckSequential, captureDeckParallel), execute() 218→76 lignes orchestration, 9 nouveaux tests unitaires, compile OK, unit tests PASS | 9/10
 | 039 | 2026-06-16 | governance | Analyse CODE_REVIEW.adoc — 15 problèmes → 10 EPICs CR (CR-1→CR-10) + 3 EPICs CAP (CAP-26→CAP-28). Enrichissement BACKLOG, création TODO.adoc, MàJ INDEX. | 9/10

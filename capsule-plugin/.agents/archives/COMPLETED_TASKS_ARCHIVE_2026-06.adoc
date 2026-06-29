@@ -1,6 +1,11 @@
 = COMPLETED_TASKS_ARCHIVE — Juin 2026
 :toc: left
 
+== Session 068 — 2026-06-29 — CNV-6 Migration conventions plugins
+
+**Tâche** : Migration `build.gradle.kts` vers 4 conventions plugins (gradle-plugin + publishing + functional-test + cucumber 0.0.1).
+**Résultat** : ✅ `compileKotlin` SUCCESS. ~70 lignes supprimées. Régularisation migration déjà faite (conventions S005 dogfood legacy) mais non committée.
+
 |===
 | Date | Session | Tâche | Résultat
 | 2026-06-02 | 015-audit | Revert merge fork lion92 + Cleanup | ✅ Retour main à 0d69a94 via reset hard + force push. Branche audit/lion92-fork restaurée (reflog) + repoussée origin.

@@ -1,0 +1,52 @@
+= Session 068 — 2026-06-29
+Type:: migration
+Code:: CNV-6
+Titre:: Migration capsule-gradle vers conventions plugins (4 plugins)
+Score:: 9/10
+
+== Contexte
+
+Migration du `build.gradle.kts` de capsule-gradle vers les 4 convention plugins
+publiés en session 008 conventions (Maven Central + Plugin Portal). Capsule était
+le profil "legacy" du dogfood CNV-5 (conventions session 005) mais la migration
+n'avait jamais été committée ni clôturée côté capsule.
+
+== Travail effectue
+
+1. `build.gradle.kts` plugins block : `signing`, `maven-publish`, `java-gradle-plugin`, `kotlin.jvm` → `id("education.cccp.build.gradle-plugin") version "0.0.1"` + `publishing` + `functional-test` + `cucumber`
+2. Suppression `kotlin.jvmToolchain(JavaVersion.VERSION_24.ordinal)` (convention)
+3. Suppression `functionalTest` source set + task + check.dependsOn (convention functional-test)
+4. Suppression `cucumberTest` task + sourceSets.test resources + check.dependsOn (convention cucumber)
+5. Suppression `tasks.named<Test>("test")` excludeTags/filter (convention cucumber gère les exclusions)
+6. Ajout `afterEvaluate` pour `functionalTestImplementation extendsFrom testImplementation` (spécifique capsule)
+7. Conservation `kover`, `gradlePlugin` (registration capsule plugin), `java-library`
+
+== Lignes supprimées
+
+- ~70 lignes supprimées (functionalTest 15 + cucumberTest 25 + test config 10 + toolchain/signing 20)
+- build.gradle.kts considérablement réduit
+
+== Conservé (spécifique capsule)
+
+- `kover` config + reports
+- `gradlePlugin` registration (capsule plugin ID)
+- `java-library` plugin
+- `afterEvaluate` functionalTest extendsFrom (pattern legacy capsule)
+
+== Validation
+
+- `compileKotlin` ✅ BUILD SUCCESSFUL 37s
+
+== Fichiers modifies
+
+- `capsule-plugin/build.gradle.kts` : migration vers 4 conventions plugins
+
+== Note
+
+Cette migration était déjà faite côté code (conventions session 005 dogfood legacy)
+mais n'avait jamais été committée ni clôturée côté capsule. Cette session régularise
+l'état du repo.
+
+== Prochaine session (069)
+
+CR-2 Thread safety + timeout captureSlideParallel (backlog priorité 🔴).

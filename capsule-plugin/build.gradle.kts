@@ -1,23 +1,20 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-import java.time.Duration
-
 plugins {
-    signing
-    `java-library`
-    `maven-publish`
-    `java-gradle-plugin`
-    alias(libs.plugins.kotlin.jvm)
+    id("education.cccp.build.gradle-plugin") version "0.0.1"
+    id("education.cccp.build.publishing") version "0.0.1"
+    id("education.cccp.build.functional-test") version "0.0.1"
+    id("education.cccp.build.cucumber") version "0.0.1"
     alias(libs.plugins.kover)
 }
 
 group = "education.cccp"
 version = libs.plugins.capsule.get().version
-kotlin.jvmToolchain(JavaVersion.VERSION_24.ordinal)
 
 repositories {
     mavenLocal()
-    mavenCentral()
-    gradlePluginPortal()
+}
+
+cucumberConventions {
+    featuresDir = "src/test/features"
 }
 
 dependencies {
@@ -37,74 +34,17 @@ dependencies {
     testImplementation(libs.bundles.cucumber)
 }
 
+afterEvaluate {
+    configurations.getByName("functionalTestImplementation").extendsFrom(
+        configurations.getByName("testImplementation")
+    )
+}
+
 gradlePlugin {
     val capsule by plugins.creating {
         id = "education.cccp.capsule"
         implementationClass = "capsule.CapsulePlugin"
     }
-}
-
-val functionalTest: SourceSet by sourceSets.creating {
-    java.srcDirs("src/functionalTest/kotlin")
-    resources.srcDirs("src/functionalTest/resources")
-}
-
-configurations["functionalTestImplementation"].extendsFrom(configurations["testImplementation"])
-configurations["functionalTestRuntimeOnly"].extendsFrom(configurations["testRuntimeOnly"])
-
-val functionalTestTask by tasks.registering(Test::class) {
-    description = "Runs functional tests."
-    group = "verification"
-    testClassesDirs = functionalTest.output.classesDirs
-    classpath = functionalTest.runtimeClasspath
-    useJUnitPlatform()
-}
-
-gradlePlugin.testSourceSets.add(functionalTest)
-
-tasks.named<Task>("check") {
-    dependsOn(functionalTestTask)
-}
-
-tasks.named<Test>("test") {
-    useJUnitPlatform {
-        excludeTags("integration")
-    }
-    filter {
-        excludeTestsMatching("capsule.scenarios.**")
-    }
-}
-
-sourceSets.test {
-    resources.srcDir("src/test/features")
-}
-
-val cucumberTest by tasks.registering(Test::class) {
-    description = "Runs Cucumber BDD tests"
-    group = "verification"
-    testClassesDirs = sourceSets.test.get().output.classesDirs
-    classpath = configurations.testRuntimeClasspath.get() +
-            sourceSets.test.get().output +
-            sourceSets.main.get().output +
-            files(tasks.jar.get().archiveFile)
-    dependsOn(tasks.classes)
-    useJUnitPlatform {
-        excludeEngines("junit-jupiter")
-    }
-    systemProperty("cucumber.junit-platform.naming-strategy", "long")
-    maxHeapSize = "1g"
-    maxParallelForks = 1
-    forkEvery = 1
-    testLogging {
-        events("passed", "skipped", "failed")
-        showStandardStreams = true
-        exceptionFormat = FULL
-    }
-    outputs.upToDateWhen { false }
-}
-
-tasks.check {
-    dependsOn(cucumberTest)
 }
 
 kover {
