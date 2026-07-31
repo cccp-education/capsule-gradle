@@ -186,4 +186,9 @@ Vérifier compatibilité, ajouter Cucumber @subtitles @burnin @vtt.
 Ajouter tests unitaires + Cucumber pour les branches non couvertes.
 | P2
 | ⬜ TODO
+
+| CAP-29
+| **Pipeline Traduction Vidéo Multi-Langue** — TTS 7 langues manquantes (zh/hi/ar/bn/pt/ru/ur) + orchestrateur `generateCapsuleVideoAllLanguages` + câblage translateDeck→capsule + tests E2E 10 langues. 6 US, ~20 pts. Source : Session 097.
+| P0
+| 🔲 CADRE (Session 097)
 |===
