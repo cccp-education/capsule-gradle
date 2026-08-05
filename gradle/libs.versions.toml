@@ -1,11 +1,11 @@
 [versions]
 capsule = "0.0.1-SNAPSHOT"
-slider = "0.0.6"
+slider = "0.0.14"
 
 [libraries]
 
 [plugins]
-slider = { id = "com.cheroliv.slider", version.ref = "slider" }
+slider = { id = "education.cccp.slider", version.ref = "slider" }
 capsule = { id = "com.cheroliv.capsule", version.ref = "capsule" }
 
 [bundles]
