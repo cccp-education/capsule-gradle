@@ -1,0 +1,33 @@
+= COMPLETED_TASKS_ARCHIVE — Août 2026
+:date: 2026-08-06
+
+== Session 070 — Sync slider 0.0.15 → 0.0.16 ✅
+
+Synchronisation consommateur capsule-gradle suite à la publication slider
+0.0.16 (session 066 slider-gradle) + BOM 0.0.17 (session 019 workspace-bom).
+Bump catalogue `capsule-plugin/gradle/libs.versions.toml` `slider = "0.0.15"`
+→ `"0.0.16"`. `./gradlew compileKotlin` VERT avec slider 0.0.16 (mavenLocal).
+Zéro code production modifié. Session pure sync consommateur (cross-borough).
+
+Tâches terminées :
+. Bump `capsule-plugin/gradle/libs.versions.toml` slider 0.0.15 → 0.0.16
+. `./gradlew :slider:publishToMavenLocal` côté slider-gradine (sync mavenLocal)
+. `./gradlew compileKotlin` capsule-plugin VERT avec slider 0.0.16
+. Mise à jour INDEX + SESSIONS_HISTORY + création archive août
+
+1 fichier build bumpé — commit + push cette session (accord pilote donné).
+
+Rapport : `.agents/sessions/070-sync-slider-0.0.16.adoc`.
+
+== Session 069 — EPIC CAP-MODEL TERMINÉ ✅
+
+Unification modèle `capsule.feed` ↔ `capsule.CapsuleScript` (7/7 US :
+cadrage + 6 exécution). `SlideType` enum migré vers `capsule.feed`,
+`SlideSegment` étendu (type+manimScene), `CapsuleScriptReader` remplace
+`CapsuleManager.parseScript` (64 lignes supprimées), 6 consommateurs migrés,
+`capsule.CapsuleModels` purgé (SlideSegment/CapsuleScript/SlideType supprimés,
+reste CapsuleExtension/CapsuleConventions). 361 unit tests VERT (+124).
+Cucumber boundary `consolidated_capsule_model.feature` (5 scénarios). Zéro
+doublon modèle.
+
+Rapport : `.agents/sessions/069-cap-model-unification.adoc`.

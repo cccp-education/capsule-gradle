@@ -1,0 +1,37 @@
+= PROMPT_REPRISE — Capsule Gradle (Détroit)
+
+_Session terminee_ : 070 — Sync slider 0.0.15 → 0.0.16 (cross-borough)
+_Prochaine session_ : 071 — Backlog capsule restant
+
+== Mission session 070 (TERMINÉE)
+
+. Synchronisation consommateur capsule-gradle suite à la publication
+  slider 0.0.16 (session 066 slider-gradle) + BOM 0.017 (session 019
+  workspace-bom).
+. Bump `capsule-plugin/gradle/libs.versions.toml` `slider = "0.0.15"` →
+  `"0.0.16"`.
+. `./gradlew compileKotlin` VERT avec slider 0.0.16 (mavenLocal).
+. Zéro code production modifié. Session pure sync consommateur.
+. 1 fichier build bumpé — commit + push (accord pilote).
+
+== Contexte reprise session 071
+
+- EPIC CAP-MODEL TERMINÉ (S-069, 7/7 US, 361 unit tests VERT +124).
+- Sync slider 0.0.16 + BOM 0.0.17 faites (S-070 cross-borough).
+- Backlog capsule restant :
+  - CR-2 (thread safety) — à planifier.
+  - CR-3 (TTS error handling) — à planifier.
+  - CAP-29 (pipeline traduction vidéo multi-langue) — à planifier.
+- Version capsule : 0.0.1-SNAPSHOT (non publié Central).
+- Capsule consomme slider 0.0.16 (compileOnly + runtime apply).
+- Domaine `capsule.feed` unifié (EPIC CAP-MODEL S-069).
+- Baseline : `main` propre (après commit + push S-070).
+- Règle 1 — AUCUN commit sans permission.
+
+== Rappels
+
+* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
+* 361 unit tests VERT (S-069 baseline)
+* Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
+* English only : code, Gherkin, commentaires
+* Domaines DDD capsule : `capsule.feed` unifié (post-CAP-MODEL)

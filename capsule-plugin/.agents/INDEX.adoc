@@ -5,9 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
-_Derniere mise a jour_ : 2026-08-05
-_Session en cours_ : 069 — **EPIC CAP-MODEL TERMINÉ** (unification modèle capsule.feed ↔ capsule.CapsuleScript). 7/7 US (cadrage + 6 exécution). `SlideType` enum migré vers `capsule.feed`, `SlideSegment` étendu (type+manimScene), `CapsuleScriptReader` remplace `CapsuleManager.parseScript` (64 lignes supprimées), 6 consommateurs migrés, `capsule.CapsuleModels` purgé (SlideSegment/CapsuleScript/SlideType supprimés, reste CapsuleExtension/CapsuleConventions). 361 unit tests VERT (+124). Cucumber boundary `consolidated_capsule_model.feature` (5 scénarios). Zéro doublon modèle.
-_Prochaine session_ : 070 — Publication slider 0.0.15 (post-SLD-11) + BOM 0.0.15 + sync capsule (ATTENTE permission pilote). Puis backlog capsule : CR-2 (thread safety), CR-3 (TTS error handling), CAP-29 (pipeline traduction vidéo multi-langue).
+_Derniere mise a jour_ : 2026-08-06
+_Session terminee_ : 070 — Sync slider 0.0.15 → 0.0.16 (cross-borough, suite slider 0.0.16 S-066 + BOM 0.0.17 S-019). Bump catalogue `capsule-plugin/gradle/libs.versions.toml` `slider = "0.0.15"` → `"0.0.16"`. `./gradlew compileKotlin` VERT avec slider 0.0.16 (mavenLocal). Zéro code production modifié. Session pure sync consommateur.
+_Prochaine session_ : 071 — Backlog capsule restant : CR-2 (thread safety), CR-3 (TTS error handling), CAP-29 (pipeline traduction vidéo multi-langue).
+_Session en cours_ : —
 
 '''
 == REGLES ABSOLUES (resume)
@@ -56,7 +57,8 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 
 |===
 | # | Date | Type | Sujet | Score
-| 069 | 2026-08-05 | governance | **Cadrage EPIC CAP-MODEL** — unification modèle `capsule.feed` ↔ `capsule.CapsuleScript`. Audit post-SLD-11 : doublon divergent `capsule.feed.SlideSegment` (3 champs) vs `capsule.SlideSegment` (5 champs type+manimScene). `CapsuleManager.parseScript` (64 lignes) round-trip write→parse lossy. 6 US ~16 pts. Baby-step DDD/TDD/BDD. | 8/10
+| 070 | 2026-08-06 | ops+cross-borough | **Sync slider 0.0.15 → 0.0.16** (cross-borough, suite slider 0.0.16 S-066 + BOM 0.0.17 S-019). Bump catalogue `capsule-plugin/gradle/libs.versions.toml` `slider = "0.0.15"` → `"0.0.16"`. `./gradlew compileKotlin` VERT avec slider 0.0.16 (mavenLocal). Zéro code production modifié. Session pure sync consommateur. | 9/10
+| 069 | 2026-08-05 | feat+ddd+tdd+bdd | **EPIC CAP-MODEL TERMINÉ** — unification modèle `capsule.feed` ↔ `capsule.CapsuleScript` (7/7 US : cadrage + 6 exécution). `SlideType` enum migré vers `capsule.feed`, `SlideSegment` étendu (type+manimScene), `CapsuleScriptReader` remplace `CapsuleManager.parseScript` (64 lignes supprimées), 6 consommateurs migrés, `capsule.CapsuleModels` purgé (SlideSegment/CapsuleScript/SlideType supprimés, reste CapsuleExtension/CapsuleConventions). 361 unit tests VERT (+124). Cucumber boundary `consolidated_capsule_model.feature` (5 scénarios). Zéro doublon modèle. | 9/10
 | 068 | 2026-06-29 | migration | **CNV-6 Migration conventions plugins** — `build.gradle.kts` migré vers 4 conventions plugins (gradle-plugin + publishing + functional-test + cucumber 0.0.1). ~70 lignes supprimées. `compileKotlin` ✅. Régularisation migration déjà faite (conventions S005 dogfood legacy) mais non committée. | 9/10
 | 067 | 2026-06-24 | refactor README | Architecture README Plugin + Consommateur — déplacement README.plugin → capsule-plugin/, README.consommateurs → racine, liens i18n recréés (10 langues) | 8/10
 | 041 | 2026-06-24 | documentation | README i18n — 20 fichiers README (10 langues × consumer + plugin) dans `README.consommateurs/` et `README.plugin/`. Badges shields.io (Maven Central 0.0.1-SNAPSHOT orange, Plugin Portal, CI, License). Marqueurs : 195 unit + 22 Cucumber PASS. Switcher i18n 10 langues. AR/UR RTL. Non publié. | 8/10

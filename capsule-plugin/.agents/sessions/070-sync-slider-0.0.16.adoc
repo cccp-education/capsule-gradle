@@ -1,0 +1,70 @@
+= Session 070 — Capsule — Sync slider 0.0.15 → 0.0.16
+:session: 070
+:date: 2026-08-06
+:borough: Détroit (capsule-gradle)
+:epic: PUB (sync consommateur)
+
+== Objectif
+
+Synchronisation consommateur capsule-gradle suite à la publication slider
+0.0.16 (session 066 slider-gradle). Mise à jour catalogue
+`capsule-plugin/gradle/libs.versions.toml` `slider = "0.0.15"` → `"0.0.16"`.
+Validation compileKotlin VERT avec slider 0.0.16 (mavenLocal).
+
+Session coordonnée (cross-borough) — slider 0.0.16 publié S-066, BOM 0.0.17
+publié S-019 (constraint slider 0.0.16). Capsule consomme slider en
+`compileOnly` (runtime apply dans CapsulePlugin).
+
+== Exécution
+
+. Bump `capsule-plugin/gradle/libs.versions.toml` `slider = "0.0.15"` →
+  `"0.0.16"`.
+. `./gradlew :slider:publishToMavenLocal` côté slider-gradle (sync
+  mavenLocal pour capsule).
+. `./gradlew compileKotlin` côté capsule-plugin — VERT avec slider 0.0.16
+  (mavenLocal). Zéro code production modifié côté capsule.
+
+== Tests
+
+* Aucun test modifié cette session (pure sync consommateur).
+* `./gradlew compileKotlin` VERT (validation compilation).
+
+== Fichiers Modifiés
+
+[cols="2,3,1"]
+|===
+| Fichier | Rôle | Delta
+
+| `capsule-plugin/gradle/libs.versions.toml`
+| Bump consumer `slider` `0.0.15` → `0.0.16`
+| 1 ligne
+|===
+
+*Total* : 1 fichier build bumpé. Zéro code de production modifié. Zéro
+test modifié.
+
+== Décisions
+
+* **Sync compileOnly + runtime apply** — capsule consomme slider en
+  `compileOnly` dans build.gradle.kts, mais `CapsulePlugin` auto-apply
+  slider au runtime (catch `UnknownPluginException` si absent — SLD-CR3-2
+  S-044). Bump catalogue suffit.
+* **Pas de publication capsule** — capsule est en 0.0.1-SNAPSHOT (non
+  publié Central). Pas de bump version capsule.
+
+== Prochaine session
+
+* EPIC CAP-MODEL TERMINÉ (S-069, 7/7 US).
+* Backlog capsule restant : CR-2 (thread safety), CR-3 (TTS error
+  handling), CAP-29 (pipeline traduction vidéo multi-langue).
+* Publication slider 0.0.16 + BOM 0.0.17 faites (S-066 slider, S-019 BOM).
+
+== Rappels
+
+* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
+* Version capsule : 0.0.1-SNAPSHOT (non publié Central)
+* Capsule consomme slider 0.0.16 (compileOnly + runtime apply)
+* Domaine `capsule.feed` unifié (EPIC CAP-MODEL S-069)
+* 361 unit tests VERT (S-069 baseline)
+* Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR
+* English only : code, Gherkin, commentaires

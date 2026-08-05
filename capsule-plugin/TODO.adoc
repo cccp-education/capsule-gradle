@@ -1,5 +1,30 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-06-24 (Session 041 — README i18n terminé)
+:last_update: 2026-08-06 (Session 070 — Sync slider 0.0.16 terminé)
+
+'''
+== ✅ EPIC CAP-MODEL — TERMINE (session 069)
+
+. [x] Unification modèle `capsule.feed` ↔ `capsule.CapsuleScript` (7/7 US)
+. [x] `SlideType` enum migré vers `capsule.feed`
+. [x] `SlideSegment` étendu (type+manimScene)
+. [x] `CapsuleScriptReader` remplace `CapsuleManager.parseScript` (-64 lignes)
+. [x] 6 consommateurs migrés
+. [x] `capsule.CapsuleModels` purgé
+. [x] 361 unit tests VERT (+124)
+. [x] Cucumber boundary `consolidated_capsule_model.feature` (5 scénarios)
+
+'''
+== ✅ Sync slider 0.0.16 — TERMINE (session 070)
+
+. [x] Bump catalogue `slider = "0.0.16"` (was 0.0.15)
+. [x] `./gradlew compileKotlin` VERT avec slider 0.0.16 (mavenLocal)
+
+'''
+== 🟡 Backlog restant — À planifier
+
+. [ ] **CR-2** (thread safety) — à cadrer
+. [ ] **CR-3** (TTS error handling) — à cadrer
+. [ ] **CAP-29** (pipeline traduction vidéo multi-langue) — à cadrer
 
 '''
 == ✅ README i18n — TERMINE (session 041)
