@@ -164,4 +164,39 @@ class CapsuleScriptWriterTest {
 
         assertThat(script.segments[0].index).isEqualTo(7)
     }
+
+    @Test
+    fun `write should emit manim marker when slide type is MANIM`() {
+        val script = CapsuleScript(
+            deckName = "deck",
+            segments = listOf(
+                SlideSegment(
+                    index = 1,
+                    title = "Animation",
+                    speakerNote = "Watch.",
+                    type = SlideType.MANIM,
+                    manimScene = "MoveSquare",
+                ),
+            ),
+        )
+
+        val out = CapsuleScriptWriter.write(script)
+
+        assertThat(out).contains("--- SLIDE 1 : Animation [manim:MoveSquare] ---")
+    }
+
+    @Test
+    fun `write should not emit manim marker when slide type is HTML`() {
+        val script = CapsuleScript(
+            deckName = "deck",
+            segments = listOf(
+                SlideSegment(index = 1, title = "Intro", speakerNote = "Note.", type = SlideType.HTML),
+            ),
+        )
+
+        val out = CapsuleScriptWriter.write(script)
+
+        assertThat(out).contains("--- SLIDE 1 : Intro ---")
+        assertThat(out).doesNotContain("[manim:")
+    }
 }

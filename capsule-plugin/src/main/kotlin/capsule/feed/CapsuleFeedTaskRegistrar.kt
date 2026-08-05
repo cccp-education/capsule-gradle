@@ -11,7 +11,7 @@ import org.gradle.work.DisableCachingByDefault
  * This task replaces the slider-side `generateCapsule` task previously owned
  * by `slider.capsule.CapsuleTaskRegistrar`. Slider now stops at producing the
  * HTML Reveal.js deck; capsule parses the AsciiDoc source directly and emits
- * the `*-script.txt` contract historically consumed by `CapsuleManager.parseScript`.
+ * the `*-script.txt` contract consumed by [CapsuleScriptReader] (video pipeline).
  *
  * Behavioural contract preserved bit-for-bit from the slider-side original:
  * - task name `extractSpeakerNotes`, group `capsule`

@@ -1,5 +1,9 @@
 package capsule
 
+import capsule.feed.CapsuleScript
+import capsule.feed.CapsuleScriptReader
+import capsule.feed.SlideSegment
+import capsule.feed.SlideType
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.io.TempDir
@@ -221,48 +225,6 @@ class TtsEngineTest {
     }
 }
 
-class SlideSegmentModelTest {
-
-    @Test
-    fun `SlideType enum has HTML and MANIM values`() {
-        assertEquals(2, SlideType.entries.size)
-        assertEquals(SlideType.HTML, SlideType.valueOf("HTML"))
-        assertEquals(SlideType.MANIM, SlideType.valueOf("MANIM"))
-    }
-
-    @Test
-    fun `SlideSegment defaults type to HTML and manimScene to null`() {
-        val segment = SlideSegment(index = 1, title = "Test", speakerNote = "Note")
-        assertEquals(SlideType.HTML, segment.type)
-        assertEquals(null, segment.manimScene)
-    }
-
-    @Test
-    fun `SlideSegment can specify type MANIM with manimScene`() {
-        val segment = SlideSegment(
-            index = 1,
-            title = "Animation",
-            speakerNote = "Voici une animation mathématique.",
-            type = SlideType.MANIM,
-            manimScene = "Scene1"
-        )
-        assertEquals(SlideType.MANIM, segment.type)
-        assertEquals("Scene1", segment.manimScene)
-    }
-
-    @Test
-    fun `CapsuleScript holds SlideSegments with mixed types`() {
-        val slides = listOf(
-            SlideSegment(1, "Intro", "Bienvenue.", type = SlideType.HTML),
-            SlideSegment(2, "Anim", "Regardez.", type = SlideType.MANIM, manimScene = "MoveSquare")
-        )
-        val script = CapsuleScript(deckName = "cours", slides = slides)
-        assertEquals(2, script.slides.size)
-        assertEquals(SlideType.HTML, script.slides[0].type)
-        assertEquals(SlideType.MANIM, script.slides[1].type)
-        assertEquals("MoveSquare", script.slides[1].manimScene)
-    }
-}
 
 class PlaywrightCaptureTest {
 
@@ -546,7 +508,7 @@ Voici le contenu principal.
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val parsed = CapsuleScript(
             deckName = "test",
-            slides = listOf(
+            segments = listOf(
                 SlideSegment(1, "Intro", "Bienvenue."),
                 SlideSegment(2, "Topic", "Contenu principal."),
                 SlideSegment(3, "End", "Conclusion.")
@@ -577,7 +539,7 @@ Voici le contenu principal.
 
         val parsed = CapsuleScript(
             deckName = "test",
-            slides = listOf(
+            segments = listOf(
                 SlideSegment(1, "Intro", "Bienvenue."),
                 SlideSegment(2, "Topic", "Contenu.")
             )
@@ -603,7 +565,7 @@ Voici le contenu principal.
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val parsed = CapsuleScript(
             deckName = "test",
-            slides = listOf(
+            segments = listOf(
                 SlideSegment(1, "OK", "OK."),
                 SlideSegment(2, "Fail", "Échoue."),
                 SlideSegment(3, "AlsoOK", "OK aussi.")
@@ -641,7 +603,7 @@ Voici le contenu principal.
 
         val parsed = CapsuleScript(
             deckName = "test",
-            slides = listOf(
+            segments = listOf(
                 SlideSegment(1, "Intro", "Bienvenue.", type = SlideType.HTML),
                 SlideSegment(2, "Topic", "Contenu.", type = SlideType.HTML)
             )
@@ -670,7 +632,7 @@ Voici le contenu principal.
 
         val parsed = CapsuleScript(
             deckName = "test",
-            slides = listOf(
+            segments = listOf(
                 SlideSegment(1, "Anim", "Animation.", type = SlideType.MANIM, manimScene = "Scene1")
             )
         )
@@ -704,7 +666,7 @@ Voici le contenu principal.
 
         val parsed = CapsuleScript(
             deckName = "test",
-            slides = listOf(SlideSegment(1, "Intro", "Note.", type = SlideType.HTML))
+            segments = listOf(SlideSegment(1, "Intro", "Note.", type = SlideType.HTML))
         )
         val manimOutputDir = File(tempDir, "manim").also { it.mkdirs() }
 
@@ -736,7 +698,7 @@ Voici le contenu principal.
 
         val parsed = CapsuleScript(
             deckName = "test",
-            slides = listOf(SlideSegment(1, "Anim", "Note.", type = SlideType.MANIM, manimScene = "Scene1"))
+            segments = listOf(SlideSegment(1, "Anim", "Note.", type = SlideType.MANIM, manimScene = "Scene1"))
         )
         val manimOutputDir = File(tempDir, "manim").also { it.mkdirs() }
         val renderedFiles = mapOf(1 to File(manimOutputDir, "Scene1.mp4").also { it.writeText("fake mp4") })
@@ -1017,60 +979,6 @@ class CapsuleDistribTaskTest {
         assertTrue(distribB.exists())
         assertEquals("video a", distribA.readText())
         assertEquals("video b", distribB.readText())
-    }
-}
-
-class CapsuleParseScriptTest {
-
-    @Test
-    fun `parseScript extracts slide type and manim scene from title markers`() {
-        val scriptFile = File.createTempFile("capsule-test", ".txt")
-        scriptFile.deleteOnExit()
-        scriptFile.writeText("""
-=== CAPSULE SCRIPT : cours ===
---- SLIDE 1 : Intro ---
-Bienvenue dans la formation.
---- SLIDE 2 : Anim [manim:MoveSquare] ---
-Voici l'animation.
---- SLIDE 3 : Fin [html] ---
-Conclusion.
-        """.trimIndent())
-
-        val parsed = CapsuleManager.parseScript(scriptFile)
-        assertEquals("cours", parsed.deckName)
-        assertEquals(3, parsed.slides.size)
-
-        val slide1 = parsed.slides[0]
-        assertEquals(1, slide1.index)
-        assertEquals("Intro", slide1.title)
-        assertEquals(SlideType.HTML, slide1.type)
-        assertEquals(null, slide1.manimScene)
-
-        val slide2 = parsed.slides[1]
-        assertEquals(2, slide2.index)
-        assertEquals("Anim", slide2.title)
-        assertEquals(SlideType.MANIM, slide2.type)
-        assertEquals("MoveSquare", slide2.manimScene)
-
-        val slide3 = parsed.slides[2]
-        assertEquals(3, slide3.index)
-        assertEquals("Fin", slide3.title)
-        assertEquals(SlideType.HTML, slide3.type)
-    }
-
-    @Test
-    fun `parseScript defaults to HTML type without markers`() {
-        val scriptFile = File.createTempFile("capsule-test", ".txt")
-        scriptFile.deleteOnExit()
-        scriptFile.writeText("""
-=== CAPSULE SCRIPT : simple ===
---- SLIDE 1 : Slide simple ---
-Juste du texte.
-        """.trimIndent())
-
-        val parsed = CapsuleManager.parseScript(scriptFile)
-        assertEquals(SlideType.HTML, parsed.slides[0].type)
-        assertEquals(null, parsed.slides[0].manimScene)
     }
 }
 
@@ -1485,7 +1393,7 @@ class ParallelCaptureTest {
 
         val script = CapsuleScript(
             deckName = "parallel-test",
-            slides = (1..6).map { SlideSegment(it, "Slide $it", "Note $it") }
+            segments = (1..6).map { SlideSegment(it, "Slide $it", "Note $it") }
         )
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val outputDir = File(tempDir, "video").also { it.mkdirs() }
@@ -1544,7 +1452,7 @@ ${(1..6).map { i -> """<section data-capsule-slide="$i"><h2>Slide $i</h2></secti
 
         val script = CapsuleScript(
             deckName = "one-per-slide",
-            slides = (1..3).map { SlideSegment(it, "Slide $it", "Note $it") }
+            segments = (1..3).map { SlideSegment(it, "Slide $it", "Note $it") }
         )
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val outputDir = File(tempDir, "video").also { it.mkdirs() }

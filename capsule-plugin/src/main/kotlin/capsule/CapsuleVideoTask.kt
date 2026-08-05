@@ -1,5 +1,9 @@
 package capsule
 
+import capsule.feed.CapsuleScript
+import capsule.feed.CapsuleScriptReader
+import capsule.feed.SlideSegment
+import capsule.feed.SlideType
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.Internal
@@ -262,7 +266,7 @@ open class CapsuleVideoTask : DefaultTask() {
      */
     internal fun computeSlideDurationsWithManim(parsed: CapsuleScript, audioDir: File, manimDurations: Map<Int, Double>): List<Double> {
         val defaultDur = capsuleExtension.slideDurationSeconds.get()
-        return parsed.slides.map { seg ->
+        return parsed.segments.map { seg ->
             // Priority 1: MANIM slide with probed video duration
             val manimDur = manimDurations[seg.index]
             if (seg.type == SlideType.MANIM && manimDur != null && manimDur > 0.0) {
@@ -280,7 +284,7 @@ open class CapsuleVideoTask : DefaultTask() {
     }
 
     internal fun synthesizeTtsForScript(parsed: CapsuleScript, audioDir: File, engine: TtsEngine) {
-        for (seg in parsed.slides) {
+        for (seg in parsed.segments) {
             val idx = String.format("%02d", seg.index)
             val ttsFile = audioDir.resolve("slide-$idx.mp3")
             if (!ttsFile.exists()) {
@@ -303,7 +307,7 @@ open class CapsuleVideoTask : DefaultTask() {
         audioDir: File,
         manimDurations: MutableMap<Int, Double>
     ): Map<Int, File> {
-        val manimSlides = parsed.slides.filter { it.type == SlideType.MANIM }
+        val manimSlides = parsed.segments.filter { it.type == SlideType.MANIM }
         if (manimSlides.isEmpty()) return emptyMap()
 
         logger.lifecycle("  Manim slides detected: {} slides with Manim animations", manimSlides.size)
@@ -351,11 +355,11 @@ open class CapsuleVideoTask : DefaultTask() {
         manimReplacer: ManimSlideReplacer,
         subtitleFile: File?
     ): File {
-        val manimSlides = parsed.slides.filter { it.type == SlideType.MANIM }
+        val manimSlides = parsed.segments.filter { it.type == SlideType.MANIM }
         var finalDeckHtml = modifiedDeck.readText()
 
         val manimSlideIndices = manimSlides.mapIndexedNotNull { _, seg ->
-            val fullIdx = parsed.slides.indexOf(seg)
+            val fullIdx = parsed.segments.indexOf(seg)
             if (fullIdx >= 0) {
                 val sceneName = seg.manimScene ?: return@mapIndexedNotNull null
                 val muxedFile = manimOutputDir.resolve("${sceneName}-muxed.mp4")
@@ -422,7 +426,7 @@ open class CapsuleVideoTask : DefaultTask() {
         if (generatedVideo != null) {
             val finalVideo = outDir.resolve("${parsed.deckName}.webm")
             generatedVideo.copyTo(finalVideo, overwrite = true)
-            mixAudioWithVideo(finalVideo, audioDir, parsed.slides, capsuleExtension.slideDurationSeconds.get())
+            mixAudioWithVideo(finalVideo, audioDir, parsed.segments, capsuleExtension.slideDurationSeconds.get())
             burnInSubtitlesIfEnabled(finalVideo, subtitleFile)
             logger.lifecycle("CAPSULE → {}", finalVideo.absolutePath)
         } else {
@@ -438,7 +442,7 @@ open class CapsuleVideoTask : DefaultTask() {
         outDir: File,
         subtitleFile: File?
     ) {
-        logger.lifecycle("  Parallel capture enabled for '{}' ({} slides)", parsed.deckName, parsed.slides.size)
+        logger.lifecycle("  Parallel capture enabled for '{}' ({} slides)", parsed.deckName, parsed.segments.size)
         captureSlideParallel(
             deckHtmlPath = finalDeckFile.absolutePath,
             outputDir = videoOutputDir,
@@ -451,7 +455,7 @@ open class CapsuleVideoTask : DefaultTask() {
         if (concatVideo.exists()) {
             val finalVideo = outDir.resolve("${parsed.deckName}.webm")
             concatVideo.copyTo(finalVideo, overwrite = true)
-            mixAudioWithVideo(finalVideo, audioDir, parsed.slides, capsuleExtension.slideDurationSeconds.get())
+            mixAudioWithVideo(finalVideo, audioDir, parsed.segments, capsuleExtension.slideDurationSeconds.get())
             burnInSubtitlesIfEnabled(finalVideo, subtitleFile)
             logger.lifecycle("CAPSULE (parallel) → {}", finalVideo.absolutePath)
         } else {
@@ -497,7 +501,7 @@ open class CapsuleVideoTask : DefaultTask() {
         val manimScriptsDir = project.file(manimConfig.scriptsDir)
 
         for (script in scripts) {
-            val parsed = CapsuleManager.parseScript(script)
+            val parsed = CapsuleScriptReader.read(script)
             val audioDir = outDir.resolve(parsed.deckName)
             audioDir.mkdirs()
 
@@ -540,7 +544,7 @@ open class CapsuleVideoTask : DefaultTask() {
     internal fun generateSubtitles(parsed: CapsuleScript, slideDurations: List<Double>, outDir: File): File? {
         val format = SubtitleFormat.fromString(capsuleExtension.subtitleFormat.get())
         val generator = resolveSubtitleGenerator(format)
-        val entries = SubtitleTimingCalculator.calculate(parsed.slides, slideDurations)
+        val entries = SubtitleTimingCalculator.calculate(parsed.segments, slideDurations)
         val content = generator.generate(entries)
         val subtitleFile = outDir.resolve("${parsed.deckName}${format.fileExtension}")
         subtitleFile.writeText(content)
@@ -623,7 +627,7 @@ open class CapsuleVideoTask : DefaultTask() {
         // Read the deck HTML once for createSingleSlideHtml extraction
         val deckHtml = File(deckHtmlPath).readText()
 
-        for ((idx, seg) in parsed.slides.withIndex()) {
+        for ((idx, seg) in parsed.segments.withIndex()) {
             val slideDir = outputDir.resolve("slide-${String.format("%02d", seg.index)}")
             futures.add(executor.submit<File?> {
                 val capture = captureFactory?.invoke() ?: resolvePlaywrightCapture(listOf(slideDurations[idx]))
@@ -661,7 +665,7 @@ open class CapsuleVideoTask : DefaultTask() {
         val injectedDir = project.layout.buildDirectory.dir("capsule/injected").get().asFile
         injectedDir.mkdirs()
 
-        val hasAudio = script.slides.any { seg ->
+        val hasAudio = script.segments.any { seg ->
             val idx = String.format("%02d", seg.index)
             val audioFile = audioDir.resolve("slide-$idx.mp3")
             audioFile.exists()
@@ -678,7 +682,7 @@ open class CapsuleVideoTask : DefaultTask() {
         val injectedHtml = originalHtml.lines().map { line ->
             if (line.contains("<section") && !line.contains("</section>")) {
                 var mutableLine = line
-                for (seg in script.slides) {
+                for (seg in script.segments) {
                     if (line.contains("data-capsule-slide=\"${seg.index}\"") || line.contains("data-capsule-slide='${seg.index}'")) {
                         val idx = String.format("%02d", seg.index)
                         val audioPath = audioDir.resolve("slide-$idx.mp3").absolutePath
@@ -726,8 +730,8 @@ open class CapsuleVideoTask : DefaultTask() {
             for (match in sections) {
                 append(originalHtml.substring(lastEnd, match.range.first))
                 var tag = match.value
-                if (slideIdx < script.slides.size) {
-                    val seg = script.slides[slideIdx]
+                if (slideIdx < script.segments.size) {
+                    val seg = script.segments[slideIdx]
                     val idx = String.format("%02d", seg.index)
                     val audioPath = audioDir.resolve("slide-$idx.mp3").absolutePath
                     tag = tag.replace("<section", "<section data-audio=\"file://$audioPath\"")

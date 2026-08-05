@@ -1,5 +1,7 @@
 package capsule
 
+import capsule.feed.SlideSegment
+
 object SubtitleTimingCalculator {
 
     fun calculate(slides: List<SlideSegment>, durations: List<Double>): List<SubtitleEntry> {

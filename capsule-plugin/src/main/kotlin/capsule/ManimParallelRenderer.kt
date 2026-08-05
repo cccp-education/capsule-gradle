@@ -1,5 +1,6 @@
 package capsule
 
+import capsule.feed.SlideSegment
 import org.gradle.api.logging.Logging
 import java.io.File
 import java.util.concurrent.Callable

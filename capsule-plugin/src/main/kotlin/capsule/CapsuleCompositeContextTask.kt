@@ -1,6 +1,7 @@
 package capsule
 
 import org.gradle.api.DefaultTask
+import capsule.feed.CapsuleScriptReader
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
@@ -43,13 +44,13 @@ open class CapsuleCompositeContextTask : DefaultTask() {
         val capsuleEntries = mutableListOf<Map<String, Any>>()
 
         for (script in scripts) {
-            val parsed = CapsuleManager.parseScript(script)
+            val parsed = CapsuleScriptReader.read(script)
             val deckName = parsed.deckName
 
             val originalVideo = capDir.resolve("$deckName.webm")
             val distribVideo = distDir.resolve("$deckName.webm")
 
-            val slideInfos = parsed.slides.map { seg ->
+            val slideInfos = parsed.segments.map { seg ->
                 mapOf(
                     "index" to seg.index,
                     "title" to seg.title,
@@ -60,7 +61,7 @@ open class CapsuleCompositeContextTask : DefaultTask() {
             capsuleEntries.add(mapOf<String, Any>(
                 "source" to "capsule",
                 "deckName" to deckName,
-                "slideCount" to parsed.slides.size,
+                "slideCount" to parsed.segments.size,
                 "originalVideo" to originalVideo.absolutePath,
                 "distribVideo" to (if (distribVideo.exists()) distribVideo.absolutePath else ""),
                 "viewport" to mapOf(

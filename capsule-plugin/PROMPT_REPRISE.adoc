@@ -1,23 +1,40 @@
-= PROMPT_REPRISE — Capsule — Session 069
-:session: 069
-:date: 2026-06-29
+= PROMPT_REPRISE — Capsule — Session 070
+:session: 070
+:date: 2026-08-05
 
-== Session 068 terminée — CNV-6 Migration conventions plugins ✅
+== Session 069 terminée — EPIC CAP-MODEL TERMINÉ ✅
 
-S068 a régularisé la migration du `build.gradle.kts` vers les 4 conventions plugins
-(gradle-plugin + publishing + functional-test + cucumber 0.0.1). ~70 lignes supprimées.
-`compileKotlin` ✅. Migration déjà faite côté code (conventions S005 dogfood legacy)
-mais non committée — régularisée.
+EPIC CAP-MODEL (unification modèle `capsule.feed` ↔ `capsule.CapsuleScript`) TERMINÉ —
+7/7 US (cadrage + 6 exécution). Baby-step DDD/TDD/BDD (RED → GREEN → REFACTOR).
 
-== Prochaines étapes
+Résultat :
+* `SlideType` enum migré vers `capsule.feed` (un seul enum).
+* `capsule.feed.SlideSegment` étendu : `type: SlideType = HTML` + `manimScene: String? = null`.
+* `CapsuleScriptReader` (object pur, `capsule.feed`) remplace `CapsuleManager.parseScript`
+  (64 lignes supprimées). Round-trip write→read idempotent.
+* `CapsuleScriptWriter` étendu : `decorateTitle()` émet `[manim:SceneName]` pour MANIM.
+* 6 consommateurs migrés (CapsuleVideoTask, ManimParallelRenderer, SubtitleTimingCalculator,
+  CapsuleBuildTask, CapsuleScriptTask, CapsuleCompositeContextTask).
+* `capsule.CapsuleModels.kt` purgé : SlideSegment/CapsuleScript/SlideType supprimés
+  (reste CapsuleExtension/CapsuleConventions).
+* 4 fichiers test migrés, 2 classes test doublon supprimées (SlideSegmentModelTest,
+  CapsuleParseScriptTest).
+* Cucumber boundary `consolidated_capsule_model.feature` (5 scénarios BDD).
 
-. CR-2 Thread safety + timeout captureSlideParallel
-. executor.shutdown() → executor.shutdownNow() dans finally
-. futures.mapNotNull { it.get() } → it.get(5, TimeUnit.MINUTES) avec try/catch
-. Tests unitaires : simuler task bloquante → timeout
-. Cucumber @parallel @timeout
+Métriques : 361 unit tests VERT (+124), 0 FAIL, 0 SKIP. Cucumber : 1 failure préexistant
+burnin ffmpeg (hors périmètre CAP-MODEL). Zéro doublon modèle. Zéro secret.
 
-== Backlog priorisé
+Rapport : `capsule-plugin/.agents/sessions/069-cap-model-unification.adoc`.
+
+== Prochaine session — 070
+
+**Publication slider 0.0.15** (post-SLD-11 expulsion) + BOM 0.0.15 + sync capsule.
+ATTENTE permission pilote (règle absolue 2 : INTERDICTION PUBLISH sans permission).
+Le commit `cb4c11f` (SLD-11, expulsion slider.capsule, -113 tests, 4 prod supprimés)
+n'est pas encore publié — dernière publication 0.0.14 (commit `0c6c9cf`).
+Capsule reste 0.0.1-SNAPSHOT (non publié Maven Central).
+
+== Backlog priorisé (post-publication)
 
 . 🔴 CR-2 — Thread safety + timeout captureSlideParallel
 . 🔴 CR-3 — Error handling TTS — dégradation signalée + retry
@@ -30,8 +47,19 @@ mais non committée — régularisée.
 . 🟡 CR-10 — CI optimization cucumberTest onlyIf
 . 🟢 CAP-27 — VTT burn-in
 . 🟢 CAP-28 — Coverage gaps (PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%)
+. 🟡 CAP-29 — Pipeline Traduction Vidéo Multi-Langue (cadré S-097, 6 US ~20 pts)
 
 == Contexte technique
-- Build migré vers conventions plugins (education.cccp.build.* 0.0.1)
-- Version : 0.0.1-SNAPSHOT (non publié)
-- 195 unit + 22 Cucumber PASS
+- Build migré vers conventions plugins (education.cccp.build.* 0.0.2)
+- Version capsule : 0.0.1-SNAPSHOT (non publié)
+- Version slider publiée : 0.0.14 (bump 0.0.15 en attente)
+- BOM workspace-bom : Central 0.0.14
+- 361 unit tests VERT (capsule) + 895 unit (slider, post-SLD-11)
+- Domaine `capsule.feed` unifié (5 fichiers prod : AsciidocSpeakerNoteParser,
+  CapsuleFeedModels, CapsuleFeedTaskDomain, CapsuleFeedTaskRegistrar + CapsuleScriptReader)
+- Baby-step TDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
+- English only: code, Gherkin, comments — no French
+- Package Cucumber steps : `capsule.scenarios`
+- `./gradlew test` VERT (0 FAIL, 0 SKIP)
+- `./gradlew cucumberTest` : 1 failure préexistant burnin ffmpeg (non lié)
+- EPICs clos capsule : CAP-0→25 + CAP-MODEL + K-1 + DRY-1→3 + CR-1 (refactor execute)

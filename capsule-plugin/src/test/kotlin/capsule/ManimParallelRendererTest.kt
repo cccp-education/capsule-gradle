@@ -1,5 +1,7 @@
 package capsule
 
+import capsule.feed.SlideSegment
+import capsule.feed.SlideType
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -4,21 +4,6 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import javax.inject.Inject
 
-enum class SlideType { HTML, MANIM }
-
-data class SlideSegment(
-    val index: Int,
-    val title: String,
-    val speakerNote: String,
-    val type: SlideType = SlideType.HTML,
-    val manimScene: String? = null
-)
-
-data class CapsuleScript(
-    val deckName: String,
-    val slides: List<SlideSegment>
-)
-
 open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     /** Path to the capsule-context.yml configuration file. Defaults to "capsule-context.yml" in the project root. */
     val configPath: Property<String> = objects.property(String::class.java)

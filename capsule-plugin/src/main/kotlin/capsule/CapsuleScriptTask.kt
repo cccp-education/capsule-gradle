@@ -1,6 +1,7 @@
 package capsule
 
 import org.gradle.api.DefaultTask
+import capsule.feed.CapsuleScriptReader
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
@@ -36,11 +37,11 @@ open class CapsuleScriptTask : DefaultTask() {
         }
 
         for (script in scripts) {
-            val parsed = CapsuleManager.parseScript(script)
+            val parsed = CapsuleScriptReader.read(script)
             logger.lifecycle(
-                "Capsule script '{}' → {} slides", parsed.deckName, parsed.slides.size
+                "Capsule script '{}' → {} slides", parsed.deckName, parsed.segments.size
             )
-            for (seg in parsed.slides) {
+            for (seg in parsed.segments) {
                 logger.lifecycle(
                     "  [{}] {} ({} chars)", seg.index, seg.title, seg.speakerNote.length
                 )

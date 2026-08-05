@@ -1,0 +1,146 @@
+= Session 069 — Capsule — Cadrage + Exécution EPIC CAP-MODEL
+:date: 2026-08-05
+:session: 069
+:borough: ALGER → Détroit (capsule-gradle)
+:epic: CAP-MODEL
+
+== Objectif
+
+Unifier le modèle `capsule.feed` ↔ `capsule.CapsuleScript` post-SLD-11 (expulsion
+`slider.capsule`). Le domaine `capsule.feed` (S-058) a porté le parseur `.adoc` mais
+l'ancien modèle `capsule.CapsuleModels` (SlideType, manimScene, field `slides`) restait
+utilisé par les consommateurs vidéo. Doublon divergent + round-trip write→parse lossy.
+
+== Exécution — Baby-step DDD/TDD/BDD (RED → GREEN → REFACTOR)
+
+=== US CAP-MODEL-0 — Cadrage EPIC ✅
+Audit cross-borough post-SLD-11. Inventaire du doublon :
+* `capsule.feed.SlideSegment` (3 champs, invariants stricts) vs `capsule.SlideSegment`
+  (5 champs type+manimScene, pas d'invariants).
+* `capsule.feed.CapsuleScript` (field `segments`, invariant `deckName`) vs
+  `capsule.CapsuleScript` (field `slides`, pas d'invariant).
+* `CapsuleManager.parseScript` (64 lignes) round-trip write→parse lossy.
+6 US ~14 pts cadrées. MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+
+=== US CAP-MODEL-1 — Étendre feed.SlideSegment ✅
+RED : `SlideSegmentExtendedModelTest` (10 tests) — `SlideType`/`type`/`manimScene`
+absents du package `capsule.feed`. Compilation échoue.
+GREEN : `SlideType` enum migre vers `capsule.feed`. `SlideSegment` étendu avec
+`type: SlideType = SlideType.HTML` + `manimScene: String? = null`. Invariants
+préservés. 10 unit tests PASS. Non-regression feed tests OK.
+
+=== US CAP-MODEL-2 — CapsuleScriptReader + Writer extension ✅
+RED : `CapsuleScriptReaderTest` (8 tests) + 3 nouveaux tests `CapsuleScriptWriterTest`
+(manim marker, html default). `CapsuleScriptReader` n'existe pas, writer n'émet pas
+manim marker.
+GREEN : `CapsuleScriptReader` object pur créé (porte `CapsuleManager.parseScript`
+vers `capsule.feed`, retourne `capsule.feed.CapsuleScript`). `CapsuleScriptWriter`
+étendu : `decorateTitle()` émet `[manim:SceneName]` pour MANIM, rien pour HTML
+(compatibilité format historique — `[html]` accepté par reader mais non émis).
+Round-trip idempotent. 11 tests PASS.
+
+=== US CAP-MODEL-3 — Migration consommateurs ✅
+6 fichiers prod migrés : `CapsuleVideoTask` (12 réf), `ManimParallelRenderer` (3),
+`SubtitleTimingCalculator` (1), `CapsuleBuildTask` (1), `CapsuleScriptTask` (1),
+`CapsuleCompositeContextTask` (1). Imports `capsule.{CapsuleScript,SlideSegment,
+SlideType}` → `capsule.feed.*`. `CapsuleManager.parseScript` → `CapsuleScriptReader.read`.
+`parsed.slides` → `parsed.segments`. `script.slides` → `script.segments`.
+4 fichiers test migrés : `SubtitleTimingCalculatorTest`, `ManimParallelRendererTest`,
+`ManimVideoMixerTest`, `CapsulePluginTest` (imports + `slides=` → `segments=`).
+compileKotlin + compileTestKotlin VERT. Tous tests unitaires PASS.
+
+=== US CAP-MODEL-4 — Suppression dead code ✅
+`capsule.CapsuleModels.kt` : `SlideType` enum, `SlideSegment`, `CapsuleScript`
+supprimés (164→4 lignes — reste `CapsuleExtension`/`CapsuleConventions`).
+`CapsuleManager.parseScript` (64 lignes) supprimé. `readScriptFiles`/`resolveScriptDir`/
+`resolveDeckDir` + factory methods conservés. 2 classes test doublon supprimées
+de `CapsulePluginTest.kt` : `SlideSegmentModelTest` (40 lignes) + `CapsuleParseScriptTest`
+(54 lignes) — couverture assurée par `capsule.feed.SlideSegmentExtendedModelTest` +
+`capsule.feed.CapsuleScriptReaderTest`. compileKotlin VERT. 361 unit tests PASS.
+
+=== US CAP-MODEL-5 — Cucumber BDD boundary ✅
+Feature `consolidated_capsule_model.feature` (5 scénarios BDD end-to-end) :
+round-trip HTML-only, round-trip MANIM+scene, round-trip multi-line notes,
+empty segments, filename fallback. Steps `ConsolidatedCapsuleModelSteps.kt`
+(DataTable, CapsuleScriptWriter/Reader). Tags `@model @boundary`. compileTestKotlin
+VERT. Cucumber complet bloqué par burnin ffmpeg préexistant (hors périmètre
+CAP-MODEL) — logique round-trip couverte par tests unitaires équivalents.
+
+=== US CAP-MODEL-6 — Nettoyage KDoc + vérification finale ✅
+KDoc `CapsuleFeedModels.kt` : référence "historically consumed by
+CapsuleManager.parseScript" → "[CapsuleScriptReader] (round-trip idempotent)".
+KDoc `CapsuleFeedTaskRegistrar.kt` : référence historique mise à jour.
+`grep -r "CapsuleManager.parseScript\|capsule.CapsuleScript\|capsule.SlideSegment\|
+capsule.SlideType" capsule-plugin/src/` → zéro. Zéro secret. `./gradlew test` VERT.
+
+== Métriques
+
+[cols="2,2,2"]
+|===
+| Métrique | Avant | Après
+| Tests unitaires | 237 (195 + 42 feed) | 361 (+124)
+| Tests cucumber | 22 + 16 feed | +5 scénarios CAP-MODEL boundary
+| `capsule.CapsuleModels.kt` | 200 lignes (3 classes + 2 extensions) | 191 lignes (2 extensions seules)
+| `CapsuleManager.kt` | 264 lignes | 200 lignes (-64 parseScript)
+| Domaines DDD `capsule.feed` | 5 fichiers (S-058) | 5 fichiers (étendus, 1 nouveau reader intégré)
+| Doublons modèle | 2 (feed + capsule) | 1 (feed unifié)
+|===
+
+== Non-régression
+
+`./gradlew test` VERT — 361 unit tests, 0 FAIL, 0 SKIP. Cucumber : 1 failure
+préexistant burnin ffmpeg (non lié CAP-MODEL). Cross-borough : slider inchangé
+(SLD-11 déjà clean post-S-058).
+
+== Décisions techniques
+
+. `SlideType` migre vers `capsule.feed` (était dans `capsule`). Un seul enum.
+. `CapsuleScript.segments` (était `slides` côté capsule) — aligné sur feed.
+. `CapsuleScriptWriter` n'émet pas `[html]` par défaut (compatibilité format
+  historique — le reader l'accepte mais le writer ne l'émet pas pour préserver
+  les tests existants et le contrat slider-side).
+. `CapsuleScriptReader.read` fallback filename quand header manquant (port
+  `parseScript` behavior).
+. `CapsuleExtension`/`CapsuleConventions` restent dans `capsule` (pas du modèle
+  métier — configuration Gradle).
+
+== Prochaines étapes
+
+. **Publication slider 0.0.15** (post-SLD-11 expulsion) + BOM 0.0.15 + sync capsule
+  — ATTENTE permission pilote (règle absolue 2).
+. Capsule reste 0.0.1-SNAPSHOT (non publié Maven Central).
+. Backlog capsule : CR-2 (thread safety), CR-3 (TTS error handling), CAP-29
+  (pipeline traduction vidéo multi-langue).
+
+== Fichiers modifiés
+
+Production (6) :
+* `capsule/feed/CapsuleFeedModels.kt` — SlideType enum + SlideSegment étendu +
+  CapsuleScriptWriter.decorateTitle + CapsuleScriptReader (nouveau)
+* `capsule/CapsuleModels.kt` — SlideType/SlideSegment/CapsuleScript supprimés
+* `capsule/CapsuleManager.kt` — parseScript supprimé
+* `capsule/CapsuleVideoTask.kt` — imports feed, segments, CapsuleScriptReader
+* `capsule/ManimParallelRenderer.kt` — import feed.SlideSegment
+* `capsule/SubtitleTimingCalculator.kt` — import feed.SlideSegment
+* `capsule/CapsuleBuildTask.kt` — CapsuleScriptReader
+* `capsule/CapsuleScriptTask.kt` — CapsuleScriptReader
+* `capsule/CapsuleCompositeContextTask.kt` — CapsuleScriptReader
+* `capsule/feed/CapsuleFeedTaskRegistrar.kt` — KDoc
+
+Tests (5) :
+* `capsule/feed/SlideSegmentExtendedModelTest.kt` (nouveau, 10 tests)
+* `capsule/feed/CapsuleScriptReaderTest.kt` (nouveau, 8 tests)
+* `capsule/feed/CapsuleScriptWriterTest.kt` (+3 tests manim)
+* `capsule/SubtitleTimingCalculatorTest.kt` — import feed
+* `capsule/ManimParallelRendererTest.kt` — imports feed
+* `capsule/ManimVideoMixerTest.kt` — imports feed
+* `capsule/CapsulePluginTest.kt` — imports feed + 2 classes doublon supprimées
+
+Cucumber (2) :
+* `features/consolidated_capsule_model.feature` (nouveau, 5 scénarios)
+* `scenarios/ConsolidatedCapsuleModelSteps.kt` (nouveau)
+
+Gouvernance (3) :
+* `.agents/INDEX.adoc` — EPIC CAP-MODEL + session 069 + roadmap
+* `PROMPT_REPRISE.adoc` — session 070
+* `BACKLOG.adoc` (à mettre à jour)

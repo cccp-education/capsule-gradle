@@ -1,6 +1,7 @@
 package capsule
 
 import org.gradle.api.DefaultTask
+import capsule.feed.CapsuleScriptReader
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
@@ -101,11 +102,11 @@ open class CapsuleBuildTask : DefaultTask() {
         val futures = mutableListOf<Future<*>>()
 
         for (script in scripts) {
-            val parsed = CapsuleManager.parseScript(script)
+            val parsed = CapsuleScriptReader.read(script)
             val deckOutputDir = outDir.resolve(parsed.deckName)
             deckOutputDir.mkdirs()
 
-            for (seg in parsed.slides) {
+            for (seg in parsed.segments) {
                 val idx = String.format("%02d", seg.index)
                 val ttsFile = deckOutputDir.resolve("slide-$idx.mp3")
 

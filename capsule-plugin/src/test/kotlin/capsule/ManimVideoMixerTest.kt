@@ -1,5 +1,8 @@
 package capsule
 
+import capsule.feed.CapsuleScript
+import capsule.feed.SlideSegment
+import capsule.feed.SlideType
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
