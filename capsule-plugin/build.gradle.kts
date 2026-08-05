@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.koog.agents)
 
     testImplementation(kotlin("test-junit5"))
+    testImplementation("org.assertj:assertj-core:3.27.7")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.slf4j:slf4j-api:2.0.17")
     testRuntimeOnly("ch.qos.logback:logback-classic:1.5.26")

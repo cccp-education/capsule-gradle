@@ -1,0 +1,72 @@
+= Capsule Feed Demo (English)
+cheroliv <cheroliv@mail.com>
+:revealjs_theme: sky
+:revealjs_transition: slide
+:revealjs_slideNumber: c/t
+:revealjs_width: 1408
+:revealjs_height: 792
+:source-highlighter: rouge
+
+[.slide,data-transition="zoom"]
+== Introduction
+
+[%step]
+* Slider to capsule pipeline demonstration
+* Capsule script generation from speaker notes
+* Plain-text contract consumed by capsule-gradle
+
+[NOTE.speaker]
+--
+Welcome to this capsule feed pipeline demonstration.
+We will see how slider-gradle extracts speaker notes from an AsciiDoc deck
+to produce a script consumed by capsule-gradle.
+--
+
+[.slide,data-transition="slide"]
+== The capsule-gradle contract
+
+[%step]
+* Plain-text delimited format
+* Header: `=== CAPSULE SCRIPT : name ===`
+* One segment per slide: `--- SLIDE n : title ---`
+* Body: speaker note as-is
+
+[NOTE.speaker]
+--
+The contract between slider and capsule is intentionally simple:
+a text file with a header and one segment per slide.
+Each segment contains the speaker note that becomes the TTS narration.
+--
+
+[.slide,data-transition="slide"]
+== Round-trip validation
+
+[%step]
+* Parser extracts segments from AsciiDoc
+* Writer serializes to plain-text contract
+* Capsule-gradle re-parses the same format
+* Zero loss: what slider writes, capsule reads
+
+[NOTE.speaker]
+--
+The round-trip is validated: the parser extracts segments from the AsciiDoc
+source, the writer serializes them back to the plain-text contract,
+and capsule-gradle re-parses the exact same format with zero data loss.
+--
+
+[.slide,data-transition="slide"]
+== Conclusion
+
+[%step]
+* Capsule feed = speaker notes extraction
+* No JSON, no screenshots in the contract
+* Screenshots are taken live by capsule-gradle
+* Slider produces the script, capsule consumes it
+
+[NOTE.speaker]
+--
+To conclude: the capsule feed is simply the speaker notes extraction.
+No JSON, no screenshots in the contract — screenshots are taken live
+by capsule-gradle during video generation. Slider produces the script,
+capsule consumes it. Clean producer-consumer boundary.
+--

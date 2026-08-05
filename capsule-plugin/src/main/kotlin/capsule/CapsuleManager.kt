@@ -6,6 +6,7 @@ import java.io.File
 class CapsuleManager(private val project: Project) {
 
     fun registerTasks() {
+        project.registerExtractSpeakerNotesTask()
         project.registerGenerateCapsuleScriptTask()
         project.registerGenerateCapsuleTask()
         project.registerGenerateCapsuleVideoTask()
@@ -15,10 +16,16 @@ class CapsuleManager(private val project: Project) {
         project.registerScaffoldCapsuleContextTask()
     }
 
+    private fun Project.registerExtractSpeakerNotesTask() {
+        capsule.feed.CapsuleFeedTaskRegistrar.register(this)
+        capsule.feed.CapsuleFeedTaskRegistrar.registerTranslateAndExtractSpeakerNotes(this)
+    }
+
     private fun Project.registerGenerateCapsuleScriptTask() {
         tasks.register("generateCapsuleScript", CapsuleScriptTask::class.java) { task ->
             task.group = "generate"
-            task.description = "Reads *-script.txt produced by slider-gradle and validates the capsule script"
+            task.description = "Reads *-script.txt produced by extractSpeakerNotes and validates the capsule script"
+            task.dependsOn(capsule.feed.CapsuleFeedTaskNames.EXTRACT_SPEAKER_NOTES)
         }
     }
 

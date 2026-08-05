@@ -192,3 +192,93 @@ Ajouter tests unitaires + Cucumber pour les branches non couvertes.
 | P0
 | 🔲 CADRE (Session 097)
 |===
+
+'''
+== 🔴 EPIC CAP-CR3 — Revue CR-GLOBALE-003 : Création de Contenu Solide
+
+_Source_ : `GLOBAL_CODE_REVIEW.adoc` (workspace root) — session CR-GLOBALE-003 (2026-08-04).
+_Focus_ : solidité de la chaîne vidéo — empêcher le « faux positif » (exit 0 + livrable illisible).
+
+[cols="1,3,2,2", options="header"]
+|===
+| EPIC | Description | Priorité | Statut
+
+| CAP-CR3-1
+| **CI `full` avec vrais binaires + probe de durée** — Nouveau job CI installant Playwright + ffmpeg + manim.
+Re-rend un deck démo, probe la durée du WebM final (`MediaProbeUtil.probeDuration`) et compare à la somme des durées audio TTS.
+Si |durée vidéo - somme audio| > tolérance → FAIL.
+C'est LE contrat de solidité vidéo : `check` vert ≠ vidéo exploitable sans ça.
+| 🔴 P0
+| ⬜ TODO
+
+| CAP-CR3-2
+| **Mode strict anti-NoOp** — `noop` engine path → *erreur* (pas fallback) quand un flag `strict`/`failOnMissingTool` est activé.
+`NoOpPlaywrightCapture`/`NoOpManimEngine`/`NoOpTtsEngine` ne doivent jamais être valables en prod.
+Fix : `capsule.strictMode` DSL (defaut false) ; si true, `resolve*` lève au lieu de logger.warn.
+| 🔴 P0
+| ⬜ TODO
+
+| CAP-CR3-3
+| **Décision capture : `ScreenshotCaptureImpl` vs `PlaywrightCaptureImpl`** — Le premier (PNG→ffmpeg, annoncé « faster »)
+n'est jamais câblé dans `CapsuleVideoTask`. Soit le brancher comme alternative configurable, soit l'expulser.
+Réduit le double chemin de capture et le coût de maintenance.
+| 🟠 P1
+| ⬜ TODO
+
+| CAP-CR3-4
+| **Convention Gradle explicite pour resolveScriptDir/resolveDeckDir** — `CapsuleManager.kt:234-254` navigue en dur
+vers `rootProject.projectDir.parentFile/slider-plugin/...`. Remplacer par une convention Gradle configurable
++ validation (échec clair si introuvable), au lieu de magie de chemin cross-borough.
+| 🟡 P2
+| ⬜ TODO
+|===
+
+'''
+== 🟢 EPIC SLD-11 (cross-borough slider) — Expulsion slider.capsule → capsule (TERMINÉ)
+
+_Source_ : slider-gradle Session 058 (cross-borough). Le domaine `slider.capsule`
+a été expulsé de slider-gradle vers capsule-gradle (domaine `capsule.feed`).
+Boundary realignment : slider produit HTML Reveal.js uniquement, capsule parse
+`.adoc` directement.
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Priorité | Statut
+
+| SLD-11.1
+| Domaine `capsule.feed` — AsciidocSpeakerNoteParser + CapsuleFeedModels (SlideSegment/CapsuleScript invariants stricts + CapsuleScriptWriter) + CapsuleFeedTaskDomain. 27 unit tests portés.
+| P0
+| ✅ TERMINÉ (S-058)
+
+| SLD-11.2
+| Tâche `extractSpeakerNotes` (remplace slider `generateCapsule`) — CapsuleFeedTaskRegistrar + ExtractSpeakerNotesTask. 13 unit + 4 functional.
+| P0
+| ✅ TERMINÉ (S-058)
+
+| SLD-11.3
+| Cucumber `capsule_speaker_notes.feature` (13 scénarios, port `9_capsule_feed.feature`) + CapsuleSpeakerNotesSteps.
+| P0
+| ✅ TERMINÉ (S-058)
+
+| SLD-11.4
+| Pipeline `translateAndExtractSpeakerNotes` (remplace `translateAndGenerateCapsule`) — tâche composite. 2 unit + 2 functional + 3 cucumber.
+| P0
+| ✅ TERMINÉ (S-058)
+
+| SLD-11.5
+| Expulsion côté slider — suppression 4 prod + 8 test + 3 features + 3 steps + 2 functionalTest, câblage + i18n nettoyés. (coté slider-gradle)
+| P0
+| ✅ TERMINÉ (S-058)
+
+| SLD-11.6
+| `generateCapsuleScript` dépend de `extractSpeakerNotes`. 2 functional + 1 cucumber. `parseScript` conservé (rétrocompatibilité).
+| P0
+| ✅ TERMINÉ (S-058)
+
+| SLD-11.6b
+| _Suivi_ : Unification modèle `capsule.feed.CapsuleScript` ↔ `capsule.CapsuleScript` + suppression `CapsuleManager.parseScript` (refactoring futur).
+| P2
+| ⬜ TODO
+|===
+
+_Total_ : 6 US TERMINÉ, 1 US TODO (suivi). +42 unit +8 functional +16 cucumber = 66 nouveaux tests, 0 FAIL.

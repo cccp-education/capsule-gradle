@@ -1,0 +1,73 @@
+= Capsule Feed Demo
+cheroliv <cheroliv@mail.com>
+:revealjs_theme: sky
+:revealjs_transition: slide
+:revealjs_slideNumber: c/t
+:revealjs_width: 1408
+:revealjs_height: 792
+:source-highlighter: rouge
+:revealjs_direction: rtl
+
+[.slide,data-transition="zoom"]
+== مقدمة
+
+[%step]
+* عرض لخط الأنابيب من slider إلى capsule
+* توليد نص capsule من ملاحظات المتحدث
+* عقد نصي عادي يستهلكه capsule-gradle
+
+[NOTE.speaker]
+--
+مرحبا بكم في هذا العرض التوضيحي لخط أنابيب capsule feed.
+سنرى كيف يستخرج slider-gradle ملاحظات المتحدث من عرض AsciiDoc
+لإنتاج نص يستهلكه capsule-gradle.
+--
+
+[.slide,data-transition="slide"]
+== عقد capsule-gradle
+
+[%step]
+* تنسيق نصي عادي محدد
+* رأس: `=== CAPSULE SCRIPT : name ===`
+* مقطع واحد لكل شريحة: `--- SLIDE n : title ---`
+* الجسم: ملاحظة المتحدث كما هي
+
+[NOTE.speaker]
+--
+العقد بين slider و capsule بسيط عن قصد:
+ملف نصي مع رأس ومقطع واحد لكل شريحة.
+يحتوي كل مقطع على ملاحظة المتحدث التي تصبح السرد الصوتي.
+--
+
+[.slide,data-transition="slide"]
+== التحقق من الذهاب والعودة
+
+[%step]
+* المحلل يستخرج المقاطع من AsciiDoc
+* الكاتب يسلسل إلى العقد النصي العادي
+* capsule-gradle يعيد تحليل نفس التنسيق
+* صفر فقدان: ما يكتبه slider يقرأه capsule
+
+[NOTE.speaker]
+--
+تم التحقق من الذهاب والعودة: يستخرج المحلل المقاطع من مصدر AsciiDoc
+يسلسلها الكاتب مرة أخرى إلى العقد النصي العادي
+ويعيد capsule-gradle تحليل نفس التنسيق بالضبط دون أي فقدان للبيانات.
+--
+
+[.slide,data-transition="slide"]
+== الخاتمة
+
+[%step]
+* capsule feed = استخراج ملاحظات المتحدث
+* لا JSON ولا لقطات شاشة في العقد
+* لقطات الشاشة تؤخذ مباشرة بواسطة capsule-gradle
+* slider ينتج النص و capsule يستهلكه
+
+[NOTE.speaker]
+--
+للختام: capsule feed هو ببساطة استخراج ملاحظات المتحدث.
+لا JSON ولا لقطات شاشة في العقد — لقطات الشاشة تؤخذ مباشرة
+بواسطة capsule-gradle أثناء توليد الفيديو. slider ينتج النص
+و capsule يستهلكه. حدود واضح بين المنتج والمستهلك.
+--

@@ -1,0 +1,72 @@
+= Capsule Feed Demo (Francais)
+cheroliv <cheroliv@mail.com>
+:revealjs_theme: sky
+:revealjs_transition: slide
+:revealjs_slideNumber: c/t
+:revealjs_width: 1408
+:revealjs_height: 792
+:source-highlighter: rouge
+
+[.slide,data-transition="zoom"]
+== Introduction
+
+[%step]
+* Demonstration du pipeline slider -> capsule
+* Generation d'un script capsule depuis les notes orateur
+* Contrat plain-text consomme par capsule-gradle
+
+[NOTE.speaker]
+--
+Bienvenue dans cette demonstration du pipeline capsule feed.
+Nous allons voir comment slider-gradle extrait les notes orateur
+depuis un deck AsciiDoc pour produire un script consomme par capsule-gradle.
+--
+
+[.slide,data-transition="slide"]
+== Le contrat capsule-gradle
+
+[%step]
+* Format plain-text delimite
+* En-tete: `=== CAPSULE SCRIPT : nom ===`
+* Un segment par slide: `--- SLIDE n : titre ---`
+* Corps: note orateur telle quelle
+
+[NOTE.speaker]
+--
+Le contrat entre slider et capsule est volontairement simple :
+un fichier texte avec un en-tete et un segment par slide.
+Chaque segment contient la note orateur qui deviendra la narration TTS.
+--
+
+[.slide,data-transition="slide"]
+== Validation round-trip
+
+[%step]
+* Le parser extrait les segments depuis l AsciiDoc
+* Le writer serialize vers le contrat plain-text
+* Capsule-gradle re-parse le meme format
+* Zero perte : ce que slider ecrit, capsule lit
+
+[NOTE.speaker]
+--
+Le round-trip est valide : le parser extrait les segments depuis la source
+AsciiDoc, le writer les serialise vers le contrat plain-text,
+et capsule-gradle re-parse le meme format sans aucune perte de donnees.
+--
+
+[.slide,data-transition="slide"]
+== Conclusion
+
+[%step]
+* Capsule feed = extraction des notes orateur
+* Pas de JSON, pas de screenshots dans le contrat
+* Les screenshots sont pris en live par capsule-gradle
+* Slider produit le script, capsule le consomme
+
+[NOTE.speaker]
+--
+Pour conclure : le capsule feed est simplement l extraction des notes orateur.
+Pas de JSON, pas de screenshots dans le contrat — les screenshots sont pris
+en live par capsule-gradle pendant la generation video. Slider produit le
+script, capsule le consomme. Boundary producteur-consommateur propre.
+--

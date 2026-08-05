@@ -2,14 +2,18 @@ package capsule
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.UnknownPluginException
 import java.io.File
 
 class CapsulePlugin : Plugin<Project> {
     override fun apply(project: Project) {
         try {
             project.plugins.apply("education.cccp.slider")
-        } catch (_: Exception) {
-            project.logger.debug("slider-gradle not on classpath, skipping auto-apply")
+        } catch (e: UnknownPluginException) {
+            project.logger.info(
+                "slider-gradle not on classpath, skipping auto-apply. " +
+                    "Add education.cccp.slider to buildscript dependencies if you need reveal.js deck generation."
+            )
         }
 
         val capsuleExt = project.extensions.create("capsule", CapsuleExtension::class.java)

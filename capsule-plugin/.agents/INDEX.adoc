@@ -5,9 +5,9 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
-_Derniere mise a jour_ : 2026-06-29
-_Session en cours_ : 068 — CNV-6 Migration conventions plugins TERMINE (4 plugins 0.0.1, ~70 lignes supprimées, compileKotlin ✅)
-_Prochaine session_ : 069 — CR-2 Thread safety + timeout captureSlideParallel
+_Derniere mise a jour_ : 2026-08-05
+_Session en cours_ : 068 — CNV-6 Migration conventions plugins TERMINE (4 plugins 0.0.1, ~70 lignes supprimées, compileKotlin ✅). SLD-11 (cross-borough slider) : domaine `capsule.feed` créé (AsciidocSpeakerNoteParser + CapsuleFeedModels + CapsuleScriptWriter + CapsuleFeedTaskDomain + CapsuleFeedTaskRegistrar), tâche `extractSpeakerNotes` remplace slider `generateCapsule`, `generateCapsuleScript` dépend de `extractSpeakerNotes`, +42 unit +8 functional +16 cucumber = 66 nouveaux tests 0 FAIL.
+_Prochaine session_ : 069 — CR-2 Thread safety + timeout captureSlideParallel. SLD-11 suivi : unification modèle `capsule.feed` ↔ `capsule.CapsuleScript` + suppression `CapsuleManager.parseScript`.
 
 '''
 == REGLES ABSOLUES (resume)
@@ -176,6 +176,29 @@ _Source_ : `CODE_REVIEW.adoc` (analyse 2026-06-16, Session 039). 15 problèmes �
 | CAP-27 | VTT burn-in — FFmpeg subtitles filter avec VTT (actuellement SRT seulement) | P2 | ⬜ TODO
 | CAP-28 | Coverage gaps — PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26% | P2 | ⬜ TODO
 |===
+
+'''
+== EPIC CAP-29 — Pipeline Traduction Vidéo Multi-Langue
+
+_Source_ : Session 097 — Audit CTO MVP SaaS. Le pipeline slider `translateDeck`
+(10 langues, 425 tests PASS) et le pipeline capsule `generateCapsuleVideo`
+(217 tests PASS) sont fonctionnels mais non câblés. CAP-29 crée le pont :
+un deck source → 10 vidéos localisées en une tâche Gradle.
+
+_Dépendances_ : CR-2, CR-3 (capsule), SLD-7 (slider).
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Priorité
+| CAP-29.0 | Cadrage EPIC — vision, domaine `capsule.multilang`, découpage US | 1 | P0
+| CAP-29.1 | TTS voices 7 langues manquantes (zh/hi/ar/bn/pt/ru/ur) — configuration Piper + VoiceMapping | 3 | P0
+| CAP-29.2 | Orchestrateur `generateCapsuleVideoAllLanguages` — itère sur les decks traduits, appelle generateCapsuleVideo par langue | 5 | P0
+| CAP-29.3 | Câblage `translateDeck` → `generateCapsule` → `generateCapsuleVideo` — dependsOn chaîné | 3 | P0
+| CAP-29.4 | Tests E2E 10 langues — Cucumber BDD pipeline complet (translateDeck → capsule × 10) | 5 | P1
+| CAP-29.5 | Documentation + dogfooding — 3 decks demo × 10 langues = 30 vidéos | 3 | P1
+|===
+
+_Total_ : 6 US, ~20 pts.
 
 '''
 == Fichiers Associes

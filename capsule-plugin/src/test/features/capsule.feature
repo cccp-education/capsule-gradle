@@ -304,3 +304,9 @@ Feature: Capsule video generation from a reveal.js deck
     And the resolved subtitle burn-in style has fontSize 36
     And the resolved subtitle burn-in style has fontColor "&H000000FF"
     And the resolved subtitle burn-in style has position "top"
+
+  @feed
+  Scenario: generateCapsuleScript depends on extractSpeakerNotes (SLD-11.6)
+    Given a Gradle project with the capsule plugin applied
+    When I run the task "generateCapsuleScript"
+    Then the task completes without error
