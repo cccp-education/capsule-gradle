@@ -1,0 +1,119 @@
+= Session 071 — Capsule — CR-2 + Fix Cucumber Consolidated + CR-3/4/6/7
+:session: 071
+:date: 2026-08-06
+:epic: CR-2, CR-3, CR-4, CR-6, CR-7
+:score: 9/10
+
+== Objectif initial
+
+EPIC 🔴 CR-2 — Thread safety + timeout `captureSlideParallel` (P0 bloquant).
+Fix des 5 échecs cucumber préexistants `consolidated_capsule_model.feature` (CAP-MODEL S-069).
+Implémentation de la suite des EPICs non traités (CR-3, CR-4, CR-6, CR-7).
+
+== Réalisations
+
+=== CR-2 — Thread safety + timeout `captureSlideParallel` ✅
+
+`CapsuleVideoTask.captureSlideParallel` (l.647-690) :
+- `Future.get(5, TimeUnit.MINUTES)` avec timeout configurable (DSL `captureTimeoutMinutes`, 4 sources ENV < props < YAML < CLI, défaut 5).
+- `executor.shutdownNow()` dans `finally` (atteint même si exception).
+- `TimeoutException` propagée → `logger.error` + `shutdownNow()`.
+- Slides échouées accumulées dans `failedSlides: MutableList<Int>`, `logger.error` en fin de méthode si >0.
+
+Tests :
+- Unit : `CaptureSlideParallelTest` (4 tests — timeout, shutdownNow, interruption, failedSlides).
+- Unit : `CapsuleConfigMergerTest` (4 sources captureTimeoutMinutes).
+- Functional : `CaptureTimeoutFunctionalTest` (3/3 VERT — DSL=2 bat défaut, CLI=3, défaut=5).
+- Cucumber : `parallel_capture_timeout.feature` (2/2 VERT — scénarios `@parallel @timeout`).
+
+=== Fix Cucumber Consolidated (5 scénarios) ✅
+
+Cause racine des 5 échecs `consolidated_capsule_model.feature` (préexistant depuis CAP-MODEL S-069, jamais GREEN car cucumber hangait) :
+
+1. **`DuplicateStepDefinitionException`** : steps `the segment {int} should have title` et `should have speakerNote` définis en double dans `CapsuleSpeakerNotesSteps` ET `ConsolidatedCapsuleModelSteps` → glue de la classe consolidated ne chargeait pas → `UndefinedStepException` sur tous ses steps.
+   - Fix : renommés en `the read segment ... should have title/speakerNote` dans `ConsolidatedCapsuleModelSteps` (sémantique distincte — lit `readScript` round-trip, pas `script`).
+
+2. **Steps `{string}` non matchés** : feature écrivait `type HTML`/`type MANIM`/`manimScene null` sans guillemets, mais le pattern `{string}` exige des guillemets.
+   - Fix : valeurs quotées dans le feature (`type "HTML"`, `type "MANIM"`, `manimScene "null"`).
+
+3. **Bug `File.createTempFile`** : suffixe aléatoire → deck name `mydeck-script14686510855708924264` au lieu de `mydeck-script`.
+   - Fix : création du fichier au nom exact dans un dossier temporaire (`File(dir, fileName)`).
+
+Résultat : 64 cucumber tests, 0 FAIL (5 SKIP préexistants).
+
+=== CR-3 — Error handling TTS ✅
+
+`CapsuleVideoTask.synthesizeTtsForScript` (l.295-326) :
+- Catch `TtsException` → retry 1× avant skip.
+- Slides échouées accumulées dans `failedSlides: MutableList<Int>`.
+- `logger.error` final si >0 skips : `"TTS: {} slide(s) failed synthesis after retry: {}"`.
+- Retourne `List<Int>` (indices slides échouées).
+
+Tests : `TtsErrorHandlingTest` (4 unit tests — failed indices, retry count, retry success, all success).
+Note : Cucumber BDD non réalisable via GradleRunner (TtsEngine mocké non injectable en build séparé) — couverture unitaire suffisante.
+
+=== CR-4 — Sécurité HTML escape `injectSubtitleTrack` ✅
+
+Vulnérabilité XSS : `ttsLanguage` injecté sans échappement dans `srclang="..."`.
+- Nouvel object `HtmlEscape` (échappe `& < > " '`).
+- `injectSubtitleTrack` échappe `ttsLanguage`, `subtitleFile.name`, `format.name`.
+
+Tests : `HtmlEscapeTest` (6 unit) + `CapsuleVideoTaskTest.injectSubtitleTrack escapes XSS payload` (1 unit).
+
+=== CR-6 — Robust CLI parsing ✅
+
+`CapsuleConfigMerger` : `as? Int` / `as? Double` échouait si valeur CLI était String "150".
+- Helpers `cliInt`/`cliDouble`/`cliBoolean` : `(it as? T) ?: it.toString().toXxxOrNull()`.
+- 11 occurrences `as? Int`/`as? Double` remplacées par les helpers.
+
+Tests : `CapsuleConfigMergerTest` (3 unit — String "1920" → Int, String "7.5" → Double, String "true" → Boolean).
+
+=== CR-7 — Validation YAML ✅ (déjà implémenté + test)
+
+`CapsuleConfigLoader.load` avait déjà un try/catch gracieux (l.37-42) : YAML malformé → `logger.warn` + `CapsuleConfig()` default.
+- Test de couverture ajouté : `ConfigLoader falls back to defaults on malformed YAML`.
+
+== Métriques
+
+- Unit tests : 361 → **384** (+23) — 0 FAIL, 0 SKIP.
+- Cucumber tests : 64 — 0 FAIL, 5 SKIP (préexistants).
+- Functional tests : 3/3 VERT (CaptureTimeoutFunctionalTest).
+- Fichiers prod modifiés : 6 (CapsuleVideoTask, CapsuleConfigMerger, CapsuleConfig, CapsuleModels, CapsulePlugin, CapsuleScaffoldTask).
+- Nouveaux fichiers prod : 1 (HtmlEscape.kt).
+- Nouveaux fichiers test : 5 (CaptureSlideParallelTest, CaptureTimeoutFunctionalTest, HtmlEscapeTest, TtsErrorHandlingTest, parallel_capture_timeout.feature, ParallelCaptureTimeoutSteps.kt).
+
+== EPICs statut post-session
+
+[cols="1,3,1"]
+|===
+| EPIC | Description | Statut
+| CR-1 | Refactor execute() | ✅ S-040
+| CR-2 | Thread safety + timeout | ✅ S-071
+| CR-3 | Error handling TTS | ✅ S-071
+| CR-4 | HTML escape XSS | ✅ S-071
+| CR-5 | DRY ConfigMerger | ⬜ TODO (refactor conséquent, session dédiée)
+| CR-6 | Robust CLI parsing | ✅ S-071
+| CR-7 | Validation YAML | ✅ S-071 (déjà implémenté + test)
+| CR-8 | Logging structuré | ⬜ TODO
+| CR-9 | Robust HTML parsing | ⬜ TODO
+| CR-10 | CI optimization | ⬜ TODO
+|===
+
+== Prochaine session
+
+Priorités restantes :
+. 🟠 CR-5 — DRY CapsuleConfigMerger (~76 lignes dupliquées, 5 paires mergeXxxConfig/NoYaml).
+. 🟡 CR-8 — Logging structuré CapsulePlugin.
+. 🟡 CR-9 — Robust HTML parsing (HtmlSectionParser).
+. 🟡 CR-10 — CI optimization cucumberTest onlyIf.
+. 🟢 CAP-27 — VTT burn-in.
+. 🟢 CAP-28 — Coverage gaps.
+. 🟢 CAP-29 — Pipeline Traduction Vidéo Multi-Langue (dépend CR-2 ✅, CR-3 ✅).
+
+== Notes
+
+- Aucun commit effectué sans permission (règle 1).
+- `./gradlew test` VERT (384 unit, 0 FAIL).
+- `./gradlew cucumberTest` VERT (64 tests, 0 FAIL, 5 SKIP préexistants).
+- Zéro secret/token ajouté (règle 6).
+- English only : code, Gherkin, comments — français réservé aux `.adoc`.

@@ -101,6 +101,7 @@ object CapsuleConfigMerger {
                 slideDurationSeconds = env["CAPSULE_CAPTURE_SLIDE_DURATION_SECONDS"]?.toDoubleOrNull() ?: 5.0,
                 parallelCaptureEnabled = env["CAPSULE_CAPTURE_PARALLEL_CAPTURE_ENABLED"]?.toBoolean() ?: false,
                 parallelCaptureThreads = env["CAPSULE_CAPTURE_PARALLEL_CAPTURE_THREADS"]?.toIntOrNull() ?: 4,
+                captureTimeoutMinutes = env["CAPSULE_CAPTURE_TIMEOUT_MINUTES"]?.toIntOrNull() ?: 5,
                 subtitleEnabled = env["CAPSULE_CAPTURE_SUBTITLE_ENABLED"]?.toBoolean() ?: false,
                 subtitleFormat = env["CAPSULE_CAPTURE_SUBTITLE_FORMAT"] ?: "srt",
                 subtitleBurnIn = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN"]?.toBoolean() ?: false,
@@ -149,6 +150,7 @@ object CapsuleConfigMerger {
                 slideDurationSeconds = props["capsule.capture.slideDurationSeconds"]?.toDoubleOrNull() ?: 5.0,
                 parallelCaptureEnabled = props["capsule.capture.parallelCaptureEnabled"]?.toBoolean() ?: false,
                 parallelCaptureThreads = props["capsule.capture.parallelCaptureThreads"]?.toIntOrNull() ?: 4,
+                captureTimeoutMinutes = props["capsule.capture.captureTimeoutMinutes"]?.toIntOrNull() ?: 5,
                 subtitleEnabled = props["capsule.capture.subtitleEnabled"]?.toBoolean() ?: false,
                 subtitleFormat = props["capsule.capture.subtitleFormat"] ?: "srt",
                 subtitleBurnIn = props["capsule.capture.subtitleBurnIn"]?.toBoolean() ?: false,
@@ -200,23 +202,24 @@ object CapsuleConfigMerger {
             piperExecutablePath = cli["tts.piperExecutablePath"]?.toString() ?: yaml.piperExecutablePath.ifNotBlankOrElse(props.piperExecutablePath),
             fallbackEnabled = cli["tts.fallbackEnabled"]?.toString()?.toBoolean() ?: yaml.fallbackEnabled,
             espeakVoice = cli["tts.espeakVoice"]?.toString() ?: yaml.espeakVoice.ifNotBlankOrElse(props.espeakVoice),
-            espeakSpeed = cli["tts.espeakSpeed"] as? Int ?: yaml.espeakSpeed,
+            espeakSpeed = cli.cliInt("tts.espeakSpeed") ?: yaml.espeakSpeed,
             language = cli["tts.language"]?.toString() ?: yaml.language.ifNotBlankOrElse(props.language)
         )
     }
 
     private fun mergeCaptureConfig(env: CaptureConfig, props: CaptureConfig, yaml: CaptureConfig, cli: Map<String, Any?>): CaptureConfig {
         return CaptureConfig(
-            viewportWidth = cli["capture.viewportWidth"] as? Int ?: yaml.viewportWidth,
-            viewportHeight = cli["capture.viewportHeight"] as? Int ?: yaml.viewportHeight,
-            playwrightTimeout = cli["capture.playwrightTimeout"] as? Double ?: yaml.playwrightTimeout,
-            slideDurationSeconds = cli["capture.slideDurationSeconds"] as? Double ?: yaml.slideDurationSeconds,
+            viewportWidth = cli.cliInt("capture.viewportWidth") ?: yaml.viewportWidth,
+            viewportHeight = cli.cliInt("capture.viewportHeight") ?: yaml.viewportHeight,
+            playwrightTimeout = cli.cliDouble("capture.playwrightTimeout") ?: yaml.playwrightTimeout,
+            slideDurationSeconds = cli.cliDouble("capture.slideDurationSeconds") ?: yaml.slideDurationSeconds,
             parallelCaptureEnabled = cli["capture.parallelCaptureEnabled"]?.toString()?.toBoolean() ?: yaml.parallelCaptureEnabled,
-            parallelCaptureThreads = cli["capture.parallelCaptureThreads"] as? Int ?: yaml.parallelCaptureThreads,
+            parallelCaptureThreads = cli.cliInt("capture.parallelCaptureThreads") ?: yaml.parallelCaptureThreads,
+            captureTimeoutMinutes = cli["capture.captureTimeoutMinutes"]?.toString()?.toIntOrNull() ?: yaml.captureTimeoutMinutes,
             subtitleEnabled = cli["capture.subtitleEnabled"]?.toString()?.toBoolean() ?: yaml.subtitleEnabled,
             subtitleFormat = cli["capture.subtitleFormat"]?.toString() ?: yaml.subtitleFormat.ifNotBlankOrElse(props.subtitleFormat),
             subtitleBurnIn = cli["capture.subtitleBurnIn"]?.toString()?.toBoolean() ?: yaml.subtitleBurnIn,
-            subtitleBurnInFontSize = cli["capture.subtitleBurnInFontSize"] as? Int ?: yaml.subtitleBurnInFontSize,
+            subtitleBurnInFontSize = cli.cliInt("capture.subtitleBurnInFontSize") ?: yaml.subtitleBurnInFontSize,
             subtitleBurnInFontColor = cli["capture.subtitleBurnInFontColor"]?.toString() ?: yaml.subtitleBurnInFontColor.ifNotBlankOrElse(props.subtitleBurnInFontColor),
             subtitleBurnInOutlineColor = cli["capture.subtitleBurnInOutlineColor"]?.toString() ?: yaml.subtitleBurnInOutlineColor.ifNotBlankOrElse(props.subtitleBurnInOutlineColor),
             subtitleBurnInPosition = cli["capture.subtitleBurnInPosition"]?.toString() ?: yaml.subtitleBurnInPosition.ifNotBlankOrElse(props.subtitleBurnInPosition)
@@ -226,8 +229,8 @@ object CapsuleConfigMerger {
     private fun mergeDistribConfig(env: DistribConfig, props: DistribConfig, yaml: DistribConfig, cli: Map<String, Any?>): DistribConfig {
         return DistribConfig(
             ffmpegExecutablePath = cli["distrib.ffmpegExecutablePath"]?.toString() ?: yaml.ffmpegExecutablePath.ifNotBlankOrElse(props.ffmpegExecutablePath),
-            outputWidth = cli["distrib.outputWidth"] as? Int ?: yaml.outputWidth,
-            outputHeight = cli["distrib.outputHeight"] as? Int ?: yaml.outputHeight
+            outputWidth = cli.cliInt("distrib.outputWidth") ?: yaml.outputWidth,
+            outputHeight = cli.cliInt("distrib.outputHeight") ?: yaml.outputHeight
         )
     }
 
@@ -238,7 +241,7 @@ object CapsuleConfigMerger {
             scriptsDir = cli["manim.scriptsDir"]?.toString() ?: yaml.scriptsDir.ifNotBlankOrElse(props.scriptsDir),
             outputDir = cli["manim.outputDir"]?.toString() ?: yaml.outputDir.ifNotBlankOrElse(props.outputDir),
             parallelRender = cli["manim.parallelRender"]?.toString()?.toBoolean() ?: yaml.parallelRender,
-            parallelRenderThreads = cli["manim.parallelRenderThreads"] as? Int ?: yaml.parallelRenderThreads
+            parallelRenderThreads = cli.cliInt("manim.parallelRenderThreads") ?: yaml.parallelRenderThreads
         )
     }
 
@@ -265,23 +268,24 @@ object CapsuleConfigMerger {
             piperExecutablePath = cli["tts.piperExecutablePath"]?.toString() ?: props.piperExecutablePath.ifNotBlankOrElse(env.piperExecutablePath),
             fallbackEnabled = cli["tts.fallbackEnabled"]?.toString()?.toBoolean() ?: props.fallbackEnabled,
             espeakVoice = cli["tts.espeakVoice"]?.toString() ?: props.espeakVoice.ifNotBlankOrElse(env.espeakVoice),
-            espeakSpeed = cli["tts.espeakSpeed"] as? Int ?: props.espeakSpeed,
+            espeakSpeed = cli.cliInt("tts.espeakSpeed") ?: props.espeakSpeed,
             language = cli["tts.language"]?.toString() ?: props.language.ifNotBlankOrElse(env.language)
         )
     }
 
     private fun mergeCaptureConfigNoYaml(env: CaptureConfig, props: CaptureConfig, cli: Map<String, Any?>): CaptureConfig {
         return CaptureConfig(
-            viewportWidth = cli["capture.viewportWidth"] as? Int ?: props.viewportWidth,
-            viewportHeight = cli["capture.viewportHeight"] as? Int ?: props.viewportHeight,
-            playwrightTimeout = cli["capture.playwrightTimeout"] as? Double ?: props.playwrightTimeout,
-            slideDurationSeconds = cli["capture.slideDurationSeconds"] as? Double ?: props.slideDurationSeconds,
+            viewportWidth = cli.cliInt("capture.viewportWidth") ?: props.viewportWidth,
+            viewportHeight = cli.cliInt("capture.viewportHeight") ?: props.viewportHeight,
+            playwrightTimeout = cli.cliDouble("capture.playwrightTimeout") ?: props.playwrightTimeout,
+            slideDurationSeconds = cli.cliDouble("capture.slideDurationSeconds") ?: props.slideDurationSeconds,
             parallelCaptureEnabled = cli["capture.parallelCaptureEnabled"]?.toString()?.toBoolean() ?: props.parallelCaptureEnabled,
-            parallelCaptureThreads = cli["capture.parallelCaptureThreads"] as? Int ?: props.parallelCaptureThreads,
+            parallelCaptureThreads = cli.cliInt("capture.parallelCaptureThreads") ?: props.parallelCaptureThreads,
+            captureTimeoutMinutes = cli["capture.captureTimeoutMinutes"]?.toString()?.toIntOrNull() ?: props.captureTimeoutMinutes,
             subtitleEnabled = cli["capture.subtitleEnabled"]?.toString()?.toBoolean() ?: props.subtitleEnabled,
             subtitleFormat = cli["capture.subtitleFormat"]?.toString() ?: props.subtitleFormat.ifNotBlankOrElse(env.subtitleFormat),
             subtitleBurnIn = cli["capture.subtitleBurnIn"]?.toString()?.toBoolean() ?: props.subtitleBurnIn,
-            subtitleBurnInFontSize = cli["capture.subtitleBurnInFontSize"] as? Int ?: props.subtitleBurnInFontSize,
+            subtitleBurnInFontSize = cli.cliInt("capture.subtitleBurnInFontSize") ?: props.subtitleBurnInFontSize,
             subtitleBurnInFontColor = cli["capture.subtitleBurnInFontColor"]?.toString() ?: props.subtitleBurnInFontColor.ifNotBlankOrElse(env.subtitleBurnInFontColor),
             subtitleBurnInOutlineColor = cli["capture.subtitleBurnInOutlineColor"]?.toString() ?: props.subtitleBurnInOutlineColor.ifNotBlankOrElse(env.subtitleBurnInOutlineColor),
             subtitleBurnInPosition = cli["capture.subtitleBurnInPosition"]?.toString() ?: props.subtitleBurnInPosition.ifNotBlankOrElse(env.subtitleBurnInPosition)
@@ -291,8 +295,8 @@ object CapsuleConfigMerger {
     private fun mergeDistribConfigNoYaml(env: DistribConfig, props: DistribConfig, cli: Map<String, Any?>): DistribConfig {
         return DistribConfig(
             ffmpegExecutablePath = cli["distrib.ffmpegExecutablePath"]?.toString() ?: props.ffmpegExecutablePath.ifNotBlankOrElse(env.ffmpegExecutablePath),
-            outputWidth = cli["distrib.outputWidth"] as? Int ?: props.outputWidth,
-            outputHeight = cli["distrib.outputHeight"] as? Int ?: props.outputHeight
+            outputWidth = cli.cliInt("distrib.outputWidth") ?: props.outputWidth,
+            outputHeight = cli.cliInt("distrib.outputHeight") ?: props.outputHeight
         )
     }
 
@@ -303,7 +307,16 @@ object CapsuleConfigMerger {
             scriptsDir = cli["manim.scriptsDir"]?.toString() ?: props.scriptsDir.ifNotBlankOrElse(env.scriptsDir),
             outputDir = cli["manim.outputDir"]?.toString() ?: props.outputDir.ifNotBlankOrElse(env.outputDir),
             parallelRender = cli["manim.parallelRender"]?.toString()?.toBoolean() ?: props.parallelRender,
-            parallelRenderThreads = cli["manim.parallelRenderThreads"] as? Int ?: props.parallelRenderThreads
+            parallelRenderThreads = cli.cliInt("manim.parallelRenderThreads") ?: props.parallelRenderThreads
         )
     }
+
+    private fun Map<String, Any?>.cliInt(key: String): Int? =
+        this[key]?.let { (it as? Int) ?: it.toString().toIntOrNull() }
+
+    private fun Map<String, Any?>.cliDouble(key: String): Double? =
+        this[key]?.let { (it as? Double) ?: it.toString().toDoubleOrNull() }
+
+    private fun Map<String, Any?>.cliBoolean(key: String): Boolean? =
+        this[key]?.let { (it as? Boolean) ?: it.toString().toBooleanStrictOrNull() }
 }

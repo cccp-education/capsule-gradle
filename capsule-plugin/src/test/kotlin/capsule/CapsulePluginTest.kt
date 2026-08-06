@@ -586,9 +586,30 @@ Voici le contenu principal.
 
         task.synthesizeTtsForScript(parsed, audioDir, failingEngine)
 
-        assertEquals(3, callCount, "All 3 slides should be attempted")
+        assertEquals(4, callCount, "All 3 slides should be attempted, failing slide retried once")
         assertTrue(audioDir.resolve("slide-01.mp3").exists(), "slide-01.mp3 should exist")
         assertTrue(audioDir.resolve("slide-03.mp3").exists(), "slide-03.mp3 should exist")
+    }
+
+    @Test
+    fun `injectSubtitleTrack escapes XSS payload in language attribute`() {
+        val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        val ext = CapsuleExtension(project.objects)
+        ext.ttsEngine.set("noop")
+        ext.outputDir.set("capsule")
+        ext.ttsLanguage.set("fr\"><script>alert('XSS')</script>")
+        ext.subtitleEnabled.set(true)
+        ext.subtitleFormat.set("srt")
+
+        val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
+        task.capsuleExtension = ext
+
+        val subtitleFile = File(tempDir, "deck.srt").also { it.writeText("1\n00:00:01 --> 00:00:02\nHello") }
+        val deckHtml = "<html><body></body></html>"
+        val result = task.injectSubtitleTrack(deckHtml, subtitleFile)
+
+        assertTrue(!result.contains("srclang=\"fr\"><script>"), "XSS payload must be escaped in srclang: $result")
+        assertTrue(result.contains("srclang=\"fr&quot;&gt;&lt;script&gt;"), "Language must be HTML-escaped: $result")
     }
 
     @Test
@@ -1540,6 +1561,20 @@ tts:
         // If CAPSULE_TEST_VOICE is not set, the ${} syntax is preserved
         val expected = System.getenv("CAPSULE_TEST_VOICE") ?: "\${CAPSULE_TEST_VOICE}"
         assertTrue(resolved.contains(expected) || resolved.contains("espeak"))
+    }
+
+    @Test
+    fun `ConfigLoader falls back to defaults on malformed YAML`() {
+        val yamlFile = File(tempDir, "malformed.yml")
+        yamlFile.writeText("""
+{{{invalid yaml: : :
+  : : : [[[
+        """.trimIndent())
+
+        val config = CapsuleConfigLoader.load(yamlFile)
+
+        assertEquals("piper", config.tts.engine, "Malformed YAML should fall back to default engine")
+        assertEquals(1408, config.capture.viewportWidth, "Malformed YAML should fall back to default viewport")
     }
 
     @Test

@@ -444,4 +444,78 @@ class CapsuleConfigMergerTest {
 
         assertEquals(true, config.manim.parallelRender, "Props should set manim.parallelRender to true")
     }
+
+    // ─── Capture timeout (CR-2.3) merge tests ─────────────────────
+
+    @Test
+    fun `loadFromGradleProperties reads captureTimeoutMinutes`() {
+        val projectDir = File(tempDir, "timeout-props").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.capture.captureTimeoutMinutes=2
+        """.trimIndent())
+
+        val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
+
+        assertEquals(2, config.capture.captureTimeoutMinutes, "Props should set capture.captureTimeoutMinutes to 2")
+    }
+
+    @Test
+    fun `merge handles captureTimeoutMinutes via CLI`() {
+        val projectDir = File(tempDir, "timeout-cli").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(capture = CaptureConfig(captureTimeoutMinutes = 5))
+        val cliParams = mapOf("capture.captureTimeoutMinutes" to 3)
+
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, cliParams)
+
+        assertEquals(3, merged.capture.captureTimeoutMinutes, "CLI should override YAML for capture.captureTimeoutMinutes")
+    }
+
+    @Test
+    fun `merge handles captureTimeoutMinutes via YAML`() {
+        val projectDir = File(tempDir, "timeout-yaml").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(capture = CaptureConfig(captureTimeoutMinutes = 10))
+
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+
+        assertEquals(10, merged.capture.captureTimeoutMinutes, "YAML capture.captureTimeoutMinutes should be preserved")
+    }
+
+    @Test
+    fun `loadFromEnvironment resolves captureTimeoutMinutes with default 5`() {
+        val config = CapsuleConfigMerger.loadFromEnvironment()
+        assertEquals(5, config.capture.captureTimeoutMinutes, "Default capture.captureTimeoutMinutes from ENV should be 5")
+    }
+
+    @Test
+    fun `merge CLI string integer param is parsed as Int`() {
+        val projectDir = File(tempDir, "merge-cli-str-int").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig()
+        val cliParams = mapOf("capture.viewportWidth" to "1920")
+
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, cliParams)
+
+        assertEquals(1920, merged.capture.viewportWidth, "CLI String \"1920\" must be parsed as Int 1920")
+    }
+
+    @Test
+    fun `merge CLI string double param is parsed as Double`() {
+        val projectDir = File(tempDir, "merge-cli-str-double").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig()
+        val cliParams = mapOf("capture.slideDurationSeconds" to "7.5")
+
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, cliParams)
+
+        assertEquals(7.5, merged.capture.slideDurationSeconds, "CLI String \"7.5\" must be parsed as Double 7.5")
+    }
+
+    @Test
+    fun `merge CLI string boolean param is parsed as Boolean`() {
+        val projectDir = File(tempDir, "merge-cli-str-bool").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig()
+        val cliParams = mapOf("capture.parallelCaptureEnabled" to "true")
+
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, cliParams)
+
+        assertEquals(true, merged.capture.parallelCaptureEnabled, "CLI String \"true\" must be parsed as Boolean true")
+    }
 }

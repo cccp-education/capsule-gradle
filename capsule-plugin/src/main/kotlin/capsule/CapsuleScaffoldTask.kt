@@ -67,6 +67,7 @@ capture:
   # slideDurationSeconds: 5.0
   # parallelCaptureEnabled: false
   # parallelCaptureThreads: 4
+  # captureTimeoutMinutes: 5
   # subtitleEnabled: false
   # subtitleFormat: srt
   # subtitleBurnIn: false

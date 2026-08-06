@@ -95,6 +95,7 @@ class CapsulePlugin : Plugin<Project> {
         if (ext.slideDurationSeconds.get() == conventions.slideDurationSeconds) ext.slideDurationSeconds.set(config.capture.slideDurationSeconds)
         if (ext.parallelCaptureEnabled.get() == conventions.parallelCaptureEnabled) ext.parallelCaptureEnabled.set(config.capture.parallelCaptureEnabled)
         if (ext.parallelCaptureThreads.get() == conventions.parallelCaptureThreads) ext.parallelCaptureThreads.set(config.capture.parallelCaptureThreads)
+        if (ext.captureTimeoutMinutes.get() == conventions.captureTimeoutMinutes) ext.captureTimeoutMinutes.set(config.capture.captureTimeoutMinutes)
         if (ext.subtitleEnabled.get() == conventions.subtitleEnabled) ext.subtitleEnabled.set(config.capture.subtitleEnabled)
         if (ext.subtitleFormat.get() == conventions.subtitleFormat) ext.subtitleFormat.set(config.capture.subtitleFormat)
         if (ext.subtitleBurnIn.get() == conventions.subtitleBurnIn) ext.subtitleBurnIn.set(config.capture.subtitleBurnIn)

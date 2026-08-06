@@ -6,8 +6,8 @@ _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
 _Derniere mise a jour_ : 2026-08-06
-_Session terminee_ : 070 — Sync slider 0.0.15 → 0.0.16 (cross-borough, suite slider 0.0.16 S-066 + BOM 0.0.17 S-019). Bump catalogue `capsule-plugin/gradle/libs.versions.toml` `slider = "0.0.15"` → `"0.0.16"`. `./gradlew compileKotlin` VERT avec slider 0.0.16 (mavenLocal). Zéro code production modifié. Session pure sync consommateur.
-_Prochaine session_ : 071 — Backlog capsule restant : CR-2 (thread safety), CR-3 (TTS error handling), CAP-29 (pipeline traduction vidéo multi-langue).
+_Session terminee_ : 071 — CR-2 (thread safety + timeout captureSlideParallel) + Fix cucumber consolidated (DuplicateStepDefinitionException + feature quotes + temp file) + CR-3 (error handling TTS retry+accumulation) + CR-4 (HTML escape XSS) + CR-6 (robust CLI parsing) + CR-7 (validation YAML, déjà implémenté + test). 384 unit tests VERT (+23), 64 cucumber 0 FAIL, 3 functional VERT.
+_Prochaine session_ : 072 — Backlog capsule restant : CR-5 (DRY ConfigMerger), CR-8 (logging structuré), CR-9 (robust HTML parsing), CAP-29 (pipeline traduction vidéo multi-langue, débloqué).
 _Session en cours_ : —
 
 '''
@@ -57,6 +57,7 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 
 |===
 | # | Date | Type | Sujet | Score
+| 071 | 2026-08-06 | feat+tdd+bdd+fix | **CR-2 + Fix Cucumber + CR-3/4/6/7** — Thread safety + timeout `captureSlideParallel` (unit 4 + functional 3 + cucumber 2). Fix 5 échecs cucumber consolidated (DuplicateStepDefinitionException doublons title/speakerNote + feature quotes + temp file exact name). CR-3 error handling TTS (retry 1× + accumulation + logger.error). CR-4 HTML escape XSS `injectSubtitleTrack` (HtmlEscape object). CR-6 robust CLI parsing (cliInt/cliDouble/cliBoolean helpers). CR-7 validation YAML (déjà implémenté + test). 384 unit VERT (+23), 64 cucumber 0 FAIL. | 9/10
 | 070 | 2026-08-06 | ops+cross-borough | **Sync slider 0.0.15 → 0.0.16** (cross-borough, suite slider 0.0.16 S-066 + BOM 0.0.17 S-019). Bump catalogue `capsule-plugin/gradle/libs.versions.toml` `slider = "0.0.15"` → `"0.0.16"`. `./gradlew compileKotlin` VERT avec slider 0.0.16 (mavenLocal). Zéro code production modifié. Session pure sync consommateur. | 9/10
 | 069 | 2026-08-05 | feat+ddd+tdd+bdd | **EPIC CAP-MODEL TERMINÉ** — unification modèle `capsule.feed` ↔ `capsule.CapsuleScript` (7/7 US : cadrage + 6 exécution). `SlideType` enum migré vers `capsule.feed`, `SlideSegment` étendu (type+manimScene), `CapsuleScriptReader` remplace `CapsuleManager.parseScript` (64 lignes supprimées), 6 consommateurs migrés, `capsule.CapsuleModels` purgé (SlideSegment/CapsuleScript/SlideType supprimés, reste CapsuleExtension/CapsuleConventions). 361 unit tests VERT (+124). Cucumber boundary `consolidated_capsule_model.feature` (5 scénarios). Zéro doublon modèle. | 9/10
 | 068 | 2026-06-29 | migration | **CNV-6 Migration conventions plugins** — `build.gradle.kts` migré vers 4 conventions plugins (gradle-plugin + publishing + functional-test + cucumber 0.0.1). ~70 lignes supprimées. `compileKotlin` ✅. Régularisation migration déjà faite (conventions S005 dogfood legacy) mais non committée. | 9/10
@@ -158,13 +159,13 @@ _Source_ : `CODE_REVIEW.adoc` (analyse 2026-06-16, Session 039). 15 problèmes �
 [cols="1,3,2,2", options="header"]
 |===
 | EPIC | Description | Sévérité | Statut
-| CR-1 | Refactor CapsuleVideoTask.execute() — 218 lignes → 5-6 méthodes privées (<80 lignes, max 3 niveaux) | 🔴 BLOQUANT | ⬜ TODO
-| CR-2 | Thread safety + timeout captureSlideParallel — executor.shutdownNow() dans finally, it.get(5, MINUTES) | 🔴 BLOQUANT | ⬜ TODO
-| CR-3 | Error handling TTS — dégradation signalée (accumuler skips, logger.error, retry 1×) | 🔴 BLOQUANT | ⬜ TODO
-| CR-4 | Sécurité HTML escape — injectSubtitleTrack (StringEscapeUtils.escapeHtml4) | 🟠 MAJEUR | ⬜ TODO
+| CR-1 | Refactor CapsuleVideoTask.execute() — 218 lignes → 5-6 méthodes privées (<80 lignes, max 3 niveaux) | 🔴 BLOQUANT | ✅ TERMINE (session 040)
+| CR-2 | Thread safety + timeout captureSlideParallel — executor.shutdownNow() dans finally, it.get(5, MINUTES) | 🔴 BLOQUANT | ✅ TERMINE (session 071)
+| CR-3 | Error handling TTS — dégradation signalée (accumuler skips, logger.error, retry 1×) | 🔴 BLOQUANT | ✅ TERMINE (session 071)
+| CR-4 | Sécurité HTML escape — injectSubtitleTrack (StringEscapeUtils.escapeHtml4) | 🟠 MAJEUR | ✅ TERMINE (session 071)
 | CR-5 | DRY CapsuleConfigMerger — ~76 lignes dupliquées (mergeXxxConfig / mergeXxxConfigNoYaml) | 🟠 MAJEUR | ⬜ TODO
-| CR-6 | Robust CLI parsing — `as? Int` → `toIntOrNull()` uniforme | 🟠 MAJEUR | ⬜ TODO
-| CR-7 | Validation YAML — CapsulePlugin.afterEvaluate try/catch gracieux | 🟠 MAJEUR | ⬜ TODO
+| CR-6 | Robust CLI parsing — `as? Int` → `toIntOrNull()` uniforme | 🟠 MAJEUR | ✅ TERMINE (session 071)
+| CR-7 | Validation YAML — CapsulePlugin.afterEvaluate try/catch gracieux | 🟠 MAJEUR | ✅ TERMINE (session 071, déjà implémenté + test)
 | CR-8 | Logging structuré — CapsulePlugin l.36-44 → 4-5 logger.lifecycle par section | 🟡 MOYEN | ⬜ TODO
 | CR-9 | Robust HTML parsing — HtmlSectionParser au lieu de regex raw dans injectAudioSequentialFallback | 🟡 MOYEN | ⬜ TODO
 | CR-10 | CI optimization — cucumberTest onlyIf { hasProperty("runCucumber") || CI } | 🟡 MOYEN | ⬜ TODO

@@ -97,7 +97,7 @@ _Cible_ : <80 lignes par méthode, max 3 niveaux d'imbrication.
 _Fix_ : `try { it.get(5, TimeUnit.MINUTES) } finally { executor.shutdownNow() }`.
 _Tests_ : Cucumber @parallel @timeout (simuler task bloquante).
 | 🔴 BLOQUANT
-| ⬜ TODO
+| ✅ TERMINE (session 071)
 
 | CR-3
 | **Error handling TTS — dégradation signalée** — `catch (TtsException)` → `logger.warn` + continue sans fichier audio.
@@ -106,7 +106,7 @@ _Fix_ : accumuler les slides skipped dans une liste, logger.error en fin de scri
 Option : retry 1× avant skip.
 _Tests_ : Cucumber @tts @error (TtsEngine mocké qui throw).
 | 🔴 BLOQUANT
-| ⬜ TODO
+| ✅ TERMINE (session 071)
 
 | CR-4
 | **Sécurité HTML escape — injectSubtitleTrack** — `ttsLanguage.get()` injecté sans échappement dans `<track srclang="...">`.
@@ -114,7 +114,7 @@ Scénario XSS si `language = fr"><script>alert('XSS')</script>`.
 _Fix_ : `org.apache.commons.text.StringEscapeUtils.escapeHtml4()` ou encoder manuellement `& " < >`.
 _Tests_ : unitaire avec payload XSS, vérifier que le HTML produit est safe.
 | 🟠 MAJEUR
-| ⬜ TODO
+| ✅ TERMINE (session 071)
 
 | CR-5
 | **DRY CapsuleConfigMerger — ~76 lignes dupliquées** — 5 paires mergeXxxConfig / mergeXxxConfigNoYaml quasi-identiques.
@@ -130,7 +130,7 @@ _Fix_ : `cli["key"]?.toString()?.toIntOrNull()` pour Int/Double, `?.toString()?.
 Uniformiser sur tout le ConfigMerger.
 _Tests_ : unitaires avec CLI String "150" → doit donner Int 150.
 | 🟠 MAJEUR
-| ⬜ TODO
+| ✅ TERMINE (session 071)
 
 | CR-7
 | **Validation YAML — CapsulePlugin.afterEvaluate** — `CapsuleConfigLoader.load(configFile)` sans try/catch.
@@ -138,7 +138,7 @@ Si YAML malformé (syntax error), exception non catchée → task échoue sans m
 _Fix_ : `try { CapsuleConfigLoader.load(configFile) } catch (e: Exception) { logger.error(...); CapsuleConfig.default() }`.
 _Tests_ : Cucumber @config @yaml_error (YAML invalide → fallback gracieux).
 | 🟠 MAJEUR
-| ⬜ TODO
+| ✅ TERMINE (session 071, déjà implémenté + test couverture)
 
 | CR-8
 | **Logging structuré — CapsulePlugin l.36-44** — 1 ligne monolithic avec 13 placeholders `{}`.
@@ -278,7 +278,7 @@ Boundary realignment : slider produit HTML Reveal.js uniquement, capsule parse
 | SLD-11.6b
 | _Suivi_ : Unification modèle `capsule.feed.CapsuleScript` ↔ `capsule.CapsuleScript` + suppression `CapsuleManager.parseScript` (refactoring futur).
 | P2
-| ⬜ TODO
+| ✅ CADUQUE (terminé par CAP-MODEL S-069 — `CapsuleManager.parseScript` supprimé, modèle unifié sous `capsule.feed`)
 |===
 
 _Total_ : 6 US TERMINÉ, 1 US TODO (suivi). +42 unit +8 functional +16 cucumber = 66 nouveaux tests, 0 FAIL.

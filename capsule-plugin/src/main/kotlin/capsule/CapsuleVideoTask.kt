@@ -13,6 +13,8 @@ import org.gradle.work.DisableCachingByDefault
 import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicInteger
 
 @DisableCachingByDefault(because = "Filesystem-bound: injects audio into HTML deck and captures video via Playwright")
@@ -29,6 +31,13 @@ open class CapsuleVideoTask : DefaultTask() {
     private var _capsuleExtension: CapsuleExtension? = null
 
     companion object {
+        /**
+         * Default per-slide capture timeout (5 minutes). A capture that exceeds
+         * this bound aborts the parallel run and shuts the executor down.
+         * Configurable via the [CapsuleExtension.parallelCaptureTimeout] DSL (CR-2.3).
+         */
+        const val DEFAULT_CAPTURE_TIMEOUT_MILLIS: Long = 5 * 60 * 1000L
+
         private const val AUDIO_INJECT_SCRIPT = """
 <!-- CAPSULE-GRADLE: Autoplay audio injection -->
 <script>
@@ -283,7 +292,8 @@ open class CapsuleVideoTask : DefaultTask() {
         }
     }
 
-    internal fun synthesizeTtsForScript(parsed: CapsuleScript, audioDir: File, engine: TtsEngine) {
+    internal fun synthesizeTtsForScript(parsed: CapsuleScript, audioDir: File, engine: TtsEngine): List<Int> {
+        val failedSlides = mutableListOf<Int>()
         for (seg in parsed.segments) {
             val idx = String.format("%02d", seg.index)
             val ttsFile = audioDir.resolve("slide-$idx.mp3")
@@ -292,10 +302,25 @@ open class CapsuleVideoTask : DefaultTask() {
                     engine.synthesize(seg.speakerNote, ttsFile)
                     logger.lifecycle("  TTS → {} ({} chars)", ttsFile.name, seg.speakerNote.length)
                 } catch (e: TtsException) {
-                    logger.warn("  TTS SKIP slide {}: {}", seg.index, e.message)
+                    logger.warn("  TTS retry slide {}: {}", seg.index, e.message)
+                    try {
+                        engine.synthesize(seg.speakerNote, ttsFile)
+                        logger.lifecycle("  TTS → {} (retry, {} chars)", ttsFile.name, seg.speakerNote.length)
+                    } catch (e2: TtsException) {
+                        failedSlides.add(seg.index)
+                        logger.error("  TTS SKIP slide {} after retry: {}", seg.index, e2.message)
+                    }
                 }
             }
         }
+        if (failedSlides.isNotEmpty()) {
+            logger.error(
+                "  TTS: {} slide(s) failed synthesis after retry: {}",
+                failedSlides.size,
+                failedSlides.joinToString(", ")
+            )
+        }
+        return failedSlides
     }
 
     internal fun renderManimSlides(
@@ -449,7 +474,8 @@ open class CapsuleVideoTask : DefaultTask() {
             viewportWidth = capsuleExtension.viewportWidth.get(),
             viewportHeight = capsuleExtension.viewportHeight.get(),
             parsed = parsed,
-            audioDir = audioDir
+            audioDir = audioDir,
+            captureTimeoutMillis = capsuleExtension.captureTimeoutMinutes.get().toLong() * 60_000L
         )
         val concatVideo = videoOutputDir.resolve("${parsed.deckName}.webm")
         if (concatVideo.exists()) {
@@ -580,7 +606,10 @@ open class CapsuleVideoTask : DefaultTask() {
 
     internal fun injectSubtitleTrack(deckHtml: String, subtitleFile: File): String {
         val format = SubtitleFormat.fromString(capsuleExtension.subtitleFormat.get())
-        val trackElement = """<track kind="captions" src="${subtitleFile.name}" srclang="${capsuleExtension.ttsLanguage.get()}" label="${format.name} captions" default>"""
+        val lang = HtmlEscape.escape(capsuleExtension.ttsLanguage.get())
+        val src = HtmlEscape.escape(subtitleFile.name)
+        val label = HtmlEscape.escape(format.name)
+        val trackElement = """<track kind="captions" src="$src" srclang="$lang" label="$label captions" default>"""
         return deckHtml.replace(
             "</body>",
             "$trackElement\n$AUDIO_INJECT_SCRIPT</body>"
@@ -618,10 +647,12 @@ open class CapsuleVideoTask : DefaultTask() {
         viewportHeight: Int,
         parsed: CapsuleScript,
         audioDir: File,
-        captureFactory: (() -> PlaywrightCapture)? = null
-    ) {
+        captureFactory: (() -> PlaywrightCapture)? = null,
+        captureTimeoutMillis: Long = DEFAULT_CAPTURE_TIMEOUT_MILLIS
+    ): Int {
         val executor = Executors.newFixedThreadPool(capsuleExtension.parallelCaptureThreads.get())
         val futures = mutableListOf<Future<File?>>()
+        val failedSlides = mutableListOf<Int>()
         val slideDurations = computeSlideDurations(parsed, audioDir)
 
         // Read the deck HTML once for createSingleSlideHtml extraction
@@ -645,19 +676,46 @@ open class CapsuleVideoTask : DefaultTask() {
                         source.copyTo(target, overwrite = true)
                         target
                     } else null
+                } catch (e: Exception) {
+                    // Degraded mode: a failing slide is reported, never fatal for the whole deck.
+                    logger.warn("  Slide {} capture failed: {}", seg.index, e.message)
+                    synchronized(failedSlides) { failedSlides.add(seg.index) }
+                    null
                 } finally {
                     capture.close()
                 }
             })
         }
 
-        val webmFiles = futures.mapNotNull { it.get() }
-        executor.shutdown()
+        val webmFiles = try {
+            futures.mapNotNull { future ->
+                try {
+                    future.get(captureTimeoutMillis, TimeUnit.MILLISECONDS)
+                } catch (e: TimeoutException) {
+                    logger.error(
+                        "Parallel capture timed out after {} ms — aborting. Shutting down executor.",
+                        captureTimeoutMillis
+                    )
+                    throw e
+                }
+            }
+        } finally {
+            executor.shutdownNow()
+        }
+
+        if (failedSlides.isNotEmpty()) {
+            logger.error(
+                "{} slide(s) failed to capture: {} — resulting video may be incomplete",
+                failedSlides.size, failedSlides.sorted().joinToString(", ")
+            )
+        }
 
         if (webmFiles.isNotEmpty()) {
             val finalVideo = outputDir.resolve("${parsed.deckName}.webm")
             concatWebmFiles(webmFiles, finalVideo)
         }
+
+        return failedSlides.size
     }
 
     private fun injectAudio(deckFile: File, script: CapsuleScript, audioDir: File): File {

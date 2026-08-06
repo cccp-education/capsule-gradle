@@ -40,6 +40,7 @@ data class CaptureConfig(
     val slideDurationSeconds: Double = 5.0,
     val parallelCaptureEnabled: Boolean = false,
     val parallelCaptureThreads: Int = 4,
+    val captureTimeoutMinutes: Int = 5,
     val subtitleEnabled: Boolean = false,
     val subtitleFormat: String = "srt",
     val subtitleBurnIn: Boolean = false,

@@ -43,7 +43,8 @@ class ConsolidatedCapsuleModelSteps {
 
     @Given("a raw script file {string} with content")
     fun aRawScriptFileWithContent(fileName: String, content: String) {
-        val temp = File.createTempFile(fileName.substringBeforeLast('.'), ".txt")
+        val dir = File.createTempFile("raw", ".dir").apply { delete(); mkdirs() }
+        val temp = File(dir, fileName)
         temp.writeText(content.trimIndent())
         rawFile = temp
     }
@@ -73,14 +74,14 @@ class ConsolidatedCapsuleModelSteps {
         Assertions.assertEquals(count, readScript?.segments?.size)
     }
 
-    @And("the segment {int} should have title {string}")
-    fun theSegmentShouldHaveTitle(index: Int, title: String) {
+    @And("the read segment {int} should have title {string}")
+    fun theReadSegmentShouldHaveTitle(index: Int, title: String) {
         val seg = findSegment(index)
         Assertions.assertEquals(title, seg.title)
     }
 
-    @And("the segment {int} should have speakerNote {string}")
-    fun theSegmentShouldHaveSpeakerNote(index: Int, note: String) {
+    @And("the read segment {int} should have speakerNote {string}")
+    fun theReadSegmentShouldHaveSpeakerNote(index: Int, note: String) {
         val seg = findSegment(index)
         Assertions.assertEquals(note, seg.speakerNote)
     }

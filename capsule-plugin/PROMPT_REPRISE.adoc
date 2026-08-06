@@ -1,65 +1,59 @@
-= PROMPT_REPRISE — Capsule — Session 070
-:session: 070
-:date: 2026-08-05
+= PROMPT_REPRISE — Capsule — Session 072
+:session: 072
+:date: 2026-08-07
 
-== Session 069 terminée — EPIC CAP-MODEL TERMINÉ ✅
+== Session 071 terminée — CR-2 + Fix Cucumber + CR-3/4/6/7
 
-EPIC CAP-MODEL (unification modèle `capsule.feed` ↔ `capsule.CapsuleScript`) TERMINÉ —
-7/7 US (cadrage + 6 exécution). Baby-step DDD/TDD/BDD (RED → GREEN → REFACTOR).
+5 EPICs traités en une session :
+- **CR-2** ✅ Thread safety + timeout `captureSlideParallel` (unit 4 + functional 3 + cucumber 2).
+- **Fix cucumber consolidated** ✅ DuplicateStepDefinitionException (doublons title/speakerNote renommés `the read segment`) + feature quotes + temp file exact name. 64 cucumber 0 FAIL.
+- **CR-3** ✅ Error handling TTS — retry 1× + accumulation `failedSlides` + `logger.error` final. 4 unit tests.
+- **CR-4** ✅ HTML escape XSS `injectSubtitleTrack` — `HtmlEscape` object + échappement srclang/src/label. 7 unit tests.
+- **CR-6** ✅ Robust CLI parsing — helpers `cliInt`/`cliDouble`/`cliBoolean` tolèrent String. 3 unit tests.
+- **CR-7** ✅ Validation YAML — déjà implémenté (try/catch l.37-42), test couverture ajouté.
 
-Résultat :
-* `SlideType` enum migré vers `capsule.feed` (un seul enum).
-* `capsule.feed.SlideSegment` étendu : `type: SlideType = HTML` + `manimScene: String? = null`.
-* `CapsuleScriptReader` (object pur, `capsule.feed`) remplace `CapsuleManager.parseScript`
-  (64 lignes supprimées). Round-trip write→read idempotent.
-* `CapsuleScriptWriter` étendu : `decorateTitle()` émet `[manim:SceneName]` pour MANIM.
-* 6 consommateurs migrés (CapsuleVideoTask, ManimParallelRenderer, SubtitleTimingCalculator,
-  CapsuleBuildTask, CapsuleScriptTask, CapsuleCompositeContextTask).
-* `capsule.CapsuleModels.kt` purgé : SlideSegment/CapsuleScript/SlideType supprimés
-  (reste CapsuleExtension/CapsuleConventions).
-* 4 fichiers test migrés, 2 classes test doublon supprimées (SlideSegmentModelTest,
-  CapsuleParseScriptTest).
-* Cucumber boundary `consolidated_capsule_model.feature` (5 scénarios BDD).
+Métriques : 384 unit tests VERT (+23), 64 cucumber 0 FAIL, 3 functional VERT.
 
-Métriques : 361 unit tests VERT (+124), 0 FAIL, 0 SKIP. Cucumber : 1 failure préexistant
-burnin ffmpeg (hors périmètre CAP-MODEL). Zéro doublon modèle. Zéro secret.
+Rapport : `.agents/sessions/071-cr2-fix-cucumber-cr3-4-6-7.adoc`.
 
-Rapport : `capsule-plugin/.agents/sessions/069-cap-model-unification.adoc`.
+== Prochaine session — 072
 
-== Prochaine session — 070
+Backlog capsule restant (par priorité) :
 
-**Publication slider 0.0.15** (post-SLD-11 expulsion) + BOM 0.0.15 + sync capsule.
-ATTENTE permission pilote (règle absolue 2 : INTERDICTION PUBLISH sans permission).
-Le commit `cb4c11f` (SLD-11, expulsion slider.capsule, -113 tests, 4 prod supprimés)
-n'est pas encore publié — dernière publication 0.0.14 (commit `0c6c9cf`).
-Capsule reste 0.0.1-SNAPSHOT (non publié Maven Central).
+. 🟠 **CR-5** — DRY CapsuleConfigMerger (~76 lignes dupliquées, 5 paires `mergeXxxConfig`/`mergeXxxConfigNoYaml`).
+  _Fix_ : stratégie générique `mergeConfig<T>(cli, yaml, props, env, key)` + builder par section, ou méthode unique avec `yaml: T?` nullable.
+  _Tests_ : unitaires existants (30+) + vérifier 2 chemins (yamlLoaded=true/false).
+  _Risque_ : refactor conséquent, session dédiée recommandée.
 
-== Backlog priorisé (post-publication)
+. 🟡 **CR-8** — Logging structuré CapsulePlugin l.36-44 (1 ligne monolithic 13 placeholders → 4-5 `logger.lifecycle` par section).
 
-. 🔴 CR-2 — Thread safety + timeout captureSlideParallel
-. 🔴 CR-3 — Error handling TTS — dégradation signalée + retry
-. 🟠 CR-4 — Sécurité HTML escape injectSubtitleTrack
-. 🟠 CR-5 — DRY CapsuleConfigMerger (~76 lignes dupliquées)
-. 🟠 CR-6 — Robust CLI parsing (`as? Int` → `toIntOrNull()`)
-. 🟠 CR-7 — Validation YAML avec try/catch gracieux
-. 🟡 CR-8 — Logging structuré CapsulePlugin
-. 🟡 CR-9 — Robust HTML parsing (HtmlSectionParser au lieu de regex raw)
-. 🟡 CR-10 — CI optimization cucumberTest onlyIf
-. 🟢 CAP-27 — VTT burn-in
-. 🟢 CAP-28 — Coverage gaps (PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%)
-. 🟡 CAP-29 — Pipeline Traduction Vidéo Multi-Langue (cadré S-097, 6 US ~20 pts)
+. 🟡 **CR-9** — Robust HTML parsing (HtmlSectionParser au lieu de regex raw dans `injectAudioSequentialFallback`).
+
+. 🟡 **CR-10** — CI optimization cucumberTest `onlyIf { hasProperty("runCucumber") || CI }`.
+
+. 🟢 **CAP-27** — VTT burn-in (FFmpeg subtitles filter avec VTT, actuellement SRT seulement).
+
+. 🟢 **CAP-28** — Coverage gaps (PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%).
+
+. 🟢 **CAP-29** — Pipeline Traduction Vidéo Multi-Langue (cadré S-097, 6 US ~20 pts, dépend CR-2 ✅ + CR-3 ✅ → débloqué).
+
+== À corriger à la clôture (dettes techniques gouvernance)
+
+* BACKLOG.adoc : marquer CR-2, CR-3, CR-4, CR-6, CR-7 comme `✅ TERMINÉ (S-071)`.
+* INDEX.adoc : ajouter session 071 dans la table + mettre à jour roadmap EPICs CR.
+* SLD-11.6b dans BACKLOG.adoc : marquer `✅ CADUQUE` (déjà fait par CAP-MODEL S-069).
 
 == Contexte technique
+
 - Build migré vers conventions plugins (education.cccp.build.* 0.0.2)
-- Version capsule : 0.0.1-SNAPSHOT (non publié)
-- Version slider publiée : 0.0.14 (bump 0.0.15 en attente)
-- BOM workspace-bom : Central 0.0.14
-- 361 unit tests VERT (capsule) + 895 unit (slider, post-SLD-11)
-- Domaine `capsule.feed` unifié (5 fichiers prod : AsciidocSpeakerNoteParser,
-  CapsuleFeedModels, CapsuleFeedTaskDomain, CapsuleFeedTaskRegistrar + CapsuleScriptReader)
+- Version capsule : 0.0.1-SNAPSHOT (non publié Maven Central)
+- Version slider : 0.0.16 (mavenLocal, attente publication Central)
+- BOM workspace-bom : Central 0.0.16, mavenLocal 0.0.17
+- 384 unit tests VERT (capsule) + 895 unit (slider, post-SLD-11)
+- Domaines DDD capsule : `capsule.feed`, `capsule.capture`, `capsule.tts`, `capsule.subtitles`, `capsule.manim`, `capsule.config`, `capsule.plugin`
 - Baby-step TDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
-- English only: code, Gherkin, comments — no French
-- Package Cucumber steps : `capsule.scenarios`
+- English only : code, Gherkin, comments — no French
 - `./gradlew test` VERT (0 FAIL, 0 SKIP)
-- `./gradlew cucumberTest` : 1 failure préexistant burnin ffmpeg (non lié)
-- EPICs clos capsule : CAP-0→25 + CAP-MODEL + K-1 + DRY-1→3 + CR-1 (refactor execute)
+- `./gradlew cucumberTest` VERT (64 tests, 0 FAIL, 5 SKIP préexistants)
+- EPICs clos capsule : CAP-0→25 + CAP-MODEL + K-1 + DRY-1→3 + CR-1 + CR-2 + CR-3 + CR-4 + CR-6 + CR-7
+- Loi de l'Économie d'Encre (AGENT.adoc) : vérifier artefact résultat avant opération coûteuse

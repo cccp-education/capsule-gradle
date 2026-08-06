@@ -90,6 +90,9 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val parallelCaptureThreads: Property<Int> = objects.property(Int::class.java)
         .convention(4)
 
+    val captureTimeoutMinutes: Property<Int> = objects.property(Int::class.java)
+        .convention(5)
+
     val subtitleEnabled: Property<Boolean> = objects.property(Boolean::class.java)
         .convention(false)
 
@@ -129,6 +132,7 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         slideDurationSeconds = 5.0,
         parallelCaptureEnabled = false,
         parallelCaptureThreads = 4,
+        captureTimeoutMinutes = 5,
         subtitleEnabled = false,
         subtitleFormat = "srt",
         subtitleBurnIn = false,
@@ -166,6 +170,7 @@ data class CapsuleConventions(
     val slideDurationSeconds: Double,
     val parallelCaptureEnabled: Boolean,
     val parallelCaptureThreads: Int,
+    val captureTimeoutMinutes: Int,
     val subtitleEnabled: Boolean,
     val subtitleFormat: String,
     val subtitleBurnIn: Boolean,
