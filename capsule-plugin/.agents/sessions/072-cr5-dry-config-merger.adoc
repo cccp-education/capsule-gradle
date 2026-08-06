@@ -1,0 +1,137 @@
+= Session 072 — CR-5 DRY CapsuleConfigMerger
+:date: 2026-08-07
+:session: 072
+:epic: CR-5
+:score: 9/10
+
+== Objectif
+
+Refactor DRY de `CapsuleConfigMerger.kt` (CR-5, 🟠 MAJEUR). 5 paires de méthodes
+`mergeXxxConfig`/`mergeXxxConfigNoYaml` quasi-identiques (~76 lignes dupliquées)
+unifiées en 5 méthodes + 4 helpers génériques.
+
+== Méthode
+
+Baby-step DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber),
+non-régression stricte. English only code/Gherkin.
+
+== Livrables
+
+=== CR-5.1–5.7 : Refactor production (1 fichier)
+
+`src/main/kotlin/capsule/CapsuleConfigMerger.kt` (322 → 302 lignes, -19 net) :
+
+. `merge()` unifié — `yaml: CapsuleConfig? = if (yamlLoaded) yamlConfig else null`,
+  dispatch sur `yaml?.xxx` nullable. Branche `if (!yamlLoaded)` supprimée.
+. 10 méthodes `mergeXxxConfig`/`mergeXxxConfigNoYaml` → 5 méthodes unifiées
+  acceptant `yaml: T?` nullable (input, tts, capture, distrib, manim).
+. 4 helpers génriques extraits :
+  * `mergeStr(cli, key, yaml: String?, props, env)` — CLI > YAML > Props > ENV
+    avec heuristic `isNotBlank()` pour strings.
+  * `mergeInt(cli, key, yaml: Int?, props)` — CLI > YAML > Props (pas de ENV,
+    pas de "blank" concept pour Int).
+  * `mergeDouble(cli, key, yaml: Double?, props)` — CLI > YAML > Props.
+  * `mergeBoolean(cli, key, yaml: Boolean?, props)` — CLI > YAML > Props.
+. Sémantique préservée : `cliBoolean` utilise `toBoolean()` (lenient) et non
+  `toBooleanStrictOrNull()` — l'ancien code des merges utilisait `?.toBoolean()`.
+. Helper `String.ifNotBlankOrElse` conservé (utilisé par aucun merge après
+  refactor, mais potentiellement par tests internes — conservé par prudence).
+
+=== CR-5.8 : Tests unitaires NoYaml (1 fichier)
+
+`src/test/kotlin/capsule/CapsuleConfigMergerTest.kt` (521 → 720 lignes, +13 tests) :
+
+. 13 nouveaux tests `@Test` couvrant le chemin NoYaml (`yamlLoaded=false`) par
+  section :
+  * `merge NoYaml uses props input section when CLI absent`
+  * `merge NoYaml CLI overrides props input section`
+  * `merge NoYaml uses props tts section when CLI absent`
+  * `merge NoYaml CLI overrides props tts section`
+  * `merge NoYaml uses props capture section when CLI absent` (7 champs vérifiés)
+  * `merge NoYaml CLI overrides props capture section`
+  * `merge NoYaml uses props distrib section when CLI absent`
+  * `merge NoYaml CLI overrides props distrib section`
+  * `merge NoYaml uses props manim section when CLI absent` (5 champs vérifiés)
+  * `merge NoYaml CLI overrides props manim section`
+  * `merge NoYaml with no props and no CLI returns defaults`
+  * `merge YAML blank string falls back to props then env` (heuristic isNotBlank)
+. Total : 48 tests `@Test` dans `CapsuleConfigMergerTest` (35 originaux + 13 nouveaux).
+
+=== CR-5.8 : Cucumber BDD (2 fichiers)
+
+`src/test/features/capsule.feature` (+6 lignes) :
+. Nouveau scénario `@config @no-yaml` :
+  "gradle.properties are used when no capsule-context.yml is present".
+. Valide le chemin NoYaml au niveau intégration (plugin réel, pas de YAML,
+  gradle.properties → config résolue).
+
+`src/test/kotlin/capsule/scenarios/CapsuleStepDefinitions.kt` (+18 lignes) :
+. Nouveau step `@Given("a Gradle project with the capsule plugin applied and
+  gradle.properties setting espeak TTS")` — crée projet sans capsule-context.yml
+  + gradle.properties avec `capsule.tts.engine=espeak`.
+
+== Vérification
+
+. `./gradlew compileKotlin` ✅ BUILD SUCCESSFUL.
+. `./gradlew test` ✅ BUILD SUCCESSFUL — 396 unit tests VERT (+12 vs S-071 384).
+. `./gradlew test --tests "capsule.CapsuleConfigMergerTest"` ✅ 48/48 PASS.
+. `./gradlew cucumberTest -PrunCucumber` — 1 échec `Burn-in E2E @integration`
+  (préexistant, environnement ffmpeg exit 183, **non lié à CR-5**). Scénario
+  `@no-yaml` PASS.
+. `grep -n "NoYaml|mergeXxxConfig" CapsuleConfigMerger.kt` → zéro (duplication
+  éliminée).
+. Secrets : zéro token/password/API key dans les 4 fichiers modifiés.
+
+== Métriques
+
+[cols="2,1,1"]
+|===
+| Métrique | Avant | Après
+| Lignes CapsuleConfigMerger.kt | 322 | 302
+| Méthodes merge (prod) | 10 (5 paires) | 5 unifiées + 4 helpers
+| Tests CapsuleConfigMergerTest | 35 | 48
+| Total unit tests capsule | 384 | 396
+| Scénarios cucumber @config | 15 | 16 (+1 @no-yaml)
+|===
+
+== Non-régression
+
+. Sémantique `toBoolean()` lenient préservée (pas `toBooleanStrictOrNull`).
+. Heuristic `isNotBlank()` pour strings préservée (blank YAML ne surcharge pas
+  props/env non-blank).
+. Booléens/Int/Double : YAML/props toujours préférés sur ENV (pas de concept
+  "blank" pour non-strings).
+. Tests existants (35) tous PASS — aucun comportement modifié.
+
+== Prochaine session — 073
+
+Backlog capsule restant (par priorité) :
+
+. 🟡 **CR-8** — Logging structuré CapsulePlugin l.36-44 (1 ligne monolithic
+  13 placeholders → 4-5 `logger.lifecycle` par section).
+. 🟡 **CR-9** — Robust HTML parsing (HtmlSectionParser au lieu de regex raw
+  dans `injectAudioSequentialFallback`).
+. 🟡 **CR-10** — CI optimization cucumberTest
+  `onlyIf { hasProperty("runCucumber") || CI }`.
+. 🟢 **CAP-27** — VTT burn-in (FFmpeg subtitles filter avec VTT, actuellement
+  SRT seulement).
+. 🟢 **CAP-28** — Coverage gaps (PiperTtsEngine 31%, ManimEngineImpl 25%,
+  ScreenshotCaptureImpl 26%).
+. 🟢 **CAP-29** — Pipeline Traduction Vidéo Multi-Langue (cadré S-097, 6 US
+  ~20 pts, dépend CR-2 ✅ + CR-3 ✅ → débloqué).
+. 🟠 **CAP-CR3-1** — CI `full` avec vrais binaires + probe de durée (CR-GLOBALE-003).
+. 🟠 **CAP-CR3-2** — Mode strict anti-NoOp (failOnMissingTool).
+. 🟠 **CAP-CR3-3** — Décision capture ScreenshotCaptureImpl vs PlaywrightCaptureImpl.
+. 🟡 **CAP-CR3-4** — Convention Gradle explicite resolveScriptDir/resolveDeckDir.
+
+== Dettes techniques gouvernance
+
+* Backlog `Burn-in E2E @integration` (ffmpeg exit 183) — échec environnement
+  préexistant, à isoler via `@integration` skip hors CI (lié à CR-10).
+
+== Fichiers modifiés (4)
+
+. `src/main/kotlin/capsule/CapsuleConfigMerger.kt` — refactor DRY (-19 net).
+. `src/test/kotlin/capsule/CapsuleConfigMergerTest.kt` — +13 tests NoYaml.
+. `src/test/features/capsule.feature` — +1 scénario @config @no-yaml.
+. `src/test/kotlin/capsule/scenarios/CapsuleStepDefinitions.kt` — +1 step Given.

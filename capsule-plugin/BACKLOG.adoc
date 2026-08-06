@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-06-24 (Session 041 — README i18n 10 langues)
+:last_update: 2026-08-07 (Session 072 — CR-5 DRY ConfigMerger)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -122,7 +122,7 @@ _Fix_ : stratégie générique `mergeConfig<T>(cli, yaml, props, env, key)` + bu
 Ou : une seule méthode avec `yaml: T?` nullable → quand yaml==null, fallback props>env.
 _Tests_ : unitaires existants + vérifier que les 2 chemins (yamlLoaded=true/false) sont couverts.
 | 🟠 MAJEUR
-| ⬜ TODO
+| ✅ TERMINE (session 072)
 
 | CR-6
 | **Robust CLI parsing — `as? Int` fragile** — `cli["tts.espeakSpeed"] as? Int` échoue si la valeur CLI est String "150".

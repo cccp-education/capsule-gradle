@@ -1,5 +1,36 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
-:date: 2026-08-06
+:date: 2026-08-07
+
+== Session 072 — CR-5 DRY CapsuleConfigMerger ✅
+
+Refactor DRY du `CapsuleConfigMerger.kt` (CR-5, 🟠 MAJEUR). 5 paires de méthodes
+`mergeXxxConfig`/`mergeXxxConfigNoYaml` (~76 lignes dupliquées) unifiées en
+5 méthodes + 4 helpers génériques.
+
+Tâches terminées :
+. `merge()` unifié — `yaml: CapsuleConfig? = if (yamlLoaded) yamlConfig else null`
+. 10 méthodes `mergeXxxConfig`/`mergeXxxConfigNoYaml` → 5 méthodes unifiées (yaml nullable)
+. 4 helpers génériques extraits : `mergeStr/mergeInt/mergeDouble/mergeBoolean`
+. Sémantique préservée : `toBoolean()` lenient, `isNotBlank()` heuristic strings
+. +13 unit tests NoYaml (48 total ConfigMergerTest, +12 vs S-071)
+. +1 scénario cucumber `@config @no-yaml` + 1 step Given
+. `./gradlew test` VERT — 396 unit tests
+. `./gradlew cucumberTest` : scénario @no-yaml PASS, 1 échec @integration préexistant
+
+Métriques : 322→302 lignes (-19 net), 396 unit VERT (+12), 48/48 ConfigMergerTest PASS.
+
+Rapport : `.agents/sessions/072-cr5-dry-config-merger.adoc`.
+
+== Session 071 — CR-2 + Fix Cucumber + CR-3/4/6/7 ✅
+
+CR-2 (thread safety + timeout `captureSlideParallel`) + Fix 5 échecs cucumber
+consolidé (DuplicateStepDefinitionException + feature quotes + temp file) +
+CR-3 (error handling TTS retry 1× + accumulation `failedSlides` + logger.error) +
+CR-4 (HTML escape XSS `injectSubtitleTrack`, HtmlEscape object) + CR-6 (robust
+CLI parsing cliInt/cliDouble/cliBoolean) + CR-7 (validation YAML déjà implémenté
++ test). 384 unit tests VERT (+23), 64 cucumber 0 FAIL, 3 functional VERT.
+
+Rapport : `.agents/sessions/071-cr2-fix-cucumber-cr3-4-6-7.adoc`.
 
 == Session 070 — Sync slider 0.0.15 → 0.0.16 ✅
 

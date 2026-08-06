@@ -25,23 +25,14 @@ object CapsuleConfigMerger {
         val propertiesConfig = loadFromGradleProperties(projectDir)
         val envConfig = loadFromEnvironment()
 
-        if (!yamlLoaded) {
-            // No YAML file was found — fallback to props > ENV, with CLI on top
-            return CapsuleConfig(
-                input = mergeInputConfigNoYaml(envConfig.input, propertiesConfig.input, cliParams),
-                tts = mergeTtsConfigNoYaml(envConfig.tts, propertiesConfig.tts, cliParams),
-                capture = mergeCaptureConfigNoYaml(envConfig.capture, propertiesConfig.capture, cliParams),
-                distrib = mergeDistribConfigNoYaml(envConfig.distrib, propertiesConfig.distrib, cliParams),
-                manim = mergeManimConfigNoYaml(envConfig.manim, propertiesConfig.manim, cliParams)
-            )
-        }
+        val yaml: CapsuleConfig? = if (yamlLoaded) yamlConfig else null
 
         return CapsuleConfig(
-            input = mergeInputConfig(envConfig.input, propertiesConfig.input, yamlConfig.input, cliParams),
-            tts = mergeTtsConfig(envConfig.tts, propertiesConfig.tts, yamlConfig.tts, cliParams),
-            capture = mergeCaptureConfig(envConfig.capture, propertiesConfig.capture, yamlConfig.capture, cliParams),
-            distrib = mergeDistribConfig(envConfig.distrib, propertiesConfig.distrib, yamlConfig.distrib, cliParams),
-            manim = mergeManimConfig(envConfig.manim, propertiesConfig.manim, yamlConfig.manim, cliParams)
+            input = mergeInputConfig(envConfig.input, propertiesConfig.input, yaml?.input, cliParams),
+            tts = mergeTtsConfig(envConfig.tts, propertiesConfig.tts, yaml?.tts, cliParams),
+            capture = mergeCaptureConfig(envConfig.capture, propertiesConfig.capture, yaml?.capture, cliParams),
+            distrib = mergeDistribConfig(envConfig.distrib, propertiesConfig.distrib, yaml?.distrib, cliParams),
+            manim = mergeManimConfig(envConfig.manim, propertiesConfig.manim, yaml?.manim, cliParams)
         )
     }
 
@@ -176,140 +167,130 @@ object CapsuleConfigMerger {
     }
 
     // ─── Section merge methods ──────────────────────────────────
-
-    // ─── Section merge methods ──────────────────────────────────
     //
     // Merge logic: CLI > YAML > Props > ENV
     // YAML always wins over props. Props always wins over ENV.
     // Empty-string fields use isNotBlank() as "explicitly set" heuristic.
     // Boolean/Int/Double fields: YAML/YAML-provided value always preferred over props.
+    // When yaml == null (no YAML file found), props > ENV fallback applies.
     //
 
-    private fun mergeInputConfig(env: InputConfig, props: InputConfig, yaml: InputConfig, cli: Map<String, Any?>): InputConfig {
+    private fun mergeInputConfig(env: InputConfig, props: InputConfig, yaml: InputConfig?, cli: Map<String, Any?>): InputConfig {
         return InputConfig(
-            outputDir = cli["input.outputDir"]?.toString() ?: yaml.outputDir.ifNotBlankOrElse(props.outputDir),
-            sliderScriptDir = cli["input.sliderScriptDir"]?.toString() ?: yaml.sliderScriptDir.ifNotBlankOrElse(props.sliderScriptDir),
-            deckSourceDir = cli["input.deckSourceDir"]?.toString() ?: yaml.deckSourceDir.ifNotBlankOrElse(props.deckSourceDir),
-            chromiumExecutablePath = cli["input.chromiumExecutablePath"]?.toString()
-                ?: yaml.chromiumExecutablePath.ifNotBlankOrElse(props.chromiumExecutablePath.ifNotBlankOrElse(env.chromiumExecutablePath))
+            outputDir = mergeStr(cli, "input.outputDir", yaml?.outputDir, props.outputDir, env.outputDir),
+            sliderScriptDir = mergeStr(cli, "input.sliderScriptDir", yaml?.sliderScriptDir, props.sliderScriptDir, env.sliderScriptDir),
+            deckSourceDir = mergeStr(cli, "input.deckSourceDir", yaml?.deckSourceDir, props.deckSourceDir, env.deckSourceDir),
+            chromiumExecutablePath = mergeStr(cli, "input.chromiumExecutablePath", yaml?.chromiumExecutablePath, props.chromiumExecutablePath, env.chromiumExecutablePath)
         )
     }
 
-    private fun mergeTtsConfig(env: TtsConfig, props: TtsConfig, yaml: TtsConfig, cli: Map<String, Any?>): TtsConfig {
+    private fun mergeTtsConfig(env: TtsConfig, props: TtsConfig, yaml: TtsConfig?, cli: Map<String, Any?>): TtsConfig {
         return TtsConfig(
-            engine = cli["tts.engine"]?.toString() ?: yaml.engine.ifNotBlankOrElse(props.engine),
-            voice = cli["tts.voice"]?.toString() ?: yaml.voice.ifNotBlankOrElse(props.voice),
-            piperExecutablePath = cli["tts.piperExecutablePath"]?.toString() ?: yaml.piperExecutablePath.ifNotBlankOrElse(props.piperExecutablePath),
-            fallbackEnabled = cli["tts.fallbackEnabled"]?.toString()?.toBoolean() ?: yaml.fallbackEnabled,
-            espeakVoice = cli["tts.espeakVoice"]?.toString() ?: yaml.espeakVoice.ifNotBlankOrElse(props.espeakVoice),
-            espeakSpeed = cli.cliInt("tts.espeakSpeed") ?: yaml.espeakSpeed,
-            language = cli["tts.language"]?.toString() ?: yaml.language.ifNotBlankOrElse(props.language)
+            engine = mergeStr(cli, "tts.engine", yaml?.engine, props.engine, env.engine),
+            voice = mergeStr(cli, "tts.voice", yaml?.voice, props.voice, env.voice),
+            piperExecutablePath = mergeStr(cli, "tts.piperExecutablePath", yaml?.piperExecutablePath, props.piperExecutablePath, env.piperExecutablePath),
+            fallbackEnabled = mergeBoolean(cli, "tts.fallbackEnabled", yaml?.fallbackEnabled, props.fallbackEnabled),
+            espeakVoice = mergeStr(cli, "tts.espeakVoice", yaml?.espeakVoice, props.espeakVoice, env.espeakVoice),
+            espeakSpeed = mergeInt(cli, "tts.espeakSpeed", yaml?.espeakSpeed, props.espeakSpeed),
+            language = mergeStr(cli, "tts.language", yaml?.language, props.language, env.language)
         )
     }
 
-    private fun mergeCaptureConfig(env: CaptureConfig, props: CaptureConfig, yaml: CaptureConfig, cli: Map<String, Any?>): CaptureConfig {
+    private fun mergeCaptureConfig(env: CaptureConfig, props: CaptureConfig, yaml: CaptureConfig?, cli: Map<String, Any?>): CaptureConfig {
         return CaptureConfig(
-            viewportWidth = cli.cliInt("capture.viewportWidth") ?: yaml.viewportWidth,
-            viewportHeight = cli.cliInt("capture.viewportHeight") ?: yaml.viewportHeight,
-            playwrightTimeout = cli.cliDouble("capture.playwrightTimeout") ?: yaml.playwrightTimeout,
-            slideDurationSeconds = cli.cliDouble("capture.slideDurationSeconds") ?: yaml.slideDurationSeconds,
-            parallelCaptureEnabled = cli["capture.parallelCaptureEnabled"]?.toString()?.toBoolean() ?: yaml.parallelCaptureEnabled,
-            parallelCaptureThreads = cli.cliInt("capture.parallelCaptureThreads") ?: yaml.parallelCaptureThreads,
-            captureTimeoutMinutes = cli["capture.captureTimeoutMinutes"]?.toString()?.toIntOrNull() ?: yaml.captureTimeoutMinutes,
-            subtitleEnabled = cli["capture.subtitleEnabled"]?.toString()?.toBoolean() ?: yaml.subtitleEnabled,
-            subtitleFormat = cli["capture.subtitleFormat"]?.toString() ?: yaml.subtitleFormat.ifNotBlankOrElse(props.subtitleFormat),
-            subtitleBurnIn = cli["capture.subtitleBurnIn"]?.toString()?.toBoolean() ?: yaml.subtitleBurnIn,
-            subtitleBurnInFontSize = cli.cliInt("capture.subtitleBurnInFontSize") ?: yaml.subtitleBurnInFontSize,
-            subtitleBurnInFontColor = cli["capture.subtitleBurnInFontColor"]?.toString() ?: yaml.subtitleBurnInFontColor.ifNotBlankOrElse(props.subtitleBurnInFontColor),
-            subtitleBurnInOutlineColor = cli["capture.subtitleBurnInOutlineColor"]?.toString() ?: yaml.subtitleBurnInOutlineColor.ifNotBlankOrElse(props.subtitleBurnInOutlineColor),
-            subtitleBurnInPosition = cli["capture.subtitleBurnInPosition"]?.toString() ?: yaml.subtitleBurnInPosition.ifNotBlankOrElse(props.subtitleBurnInPosition)
+            viewportWidth = mergeInt(cli, "capture.viewportWidth", yaml?.viewportWidth, props.viewportWidth),
+            viewportHeight = mergeInt(cli, "capture.viewportHeight", yaml?.viewportHeight, props.viewportHeight),
+            playwrightTimeout = mergeDouble(cli, "capture.playwrightTimeout", yaml?.playwrightTimeout, props.playwrightTimeout),
+            slideDurationSeconds = mergeDouble(cli, "capture.slideDurationSeconds", yaml?.slideDurationSeconds, props.slideDurationSeconds),
+            parallelCaptureEnabled = mergeBoolean(cli, "capture.parallelCaptureEnabled", yaml?.parallelCaptureEnabled, props.parallelCaptureEnabled),
+            parallelCaptureThreads = mergeInt(cli, "capture.parallelCaptureThreads", yaml?.parallelCaptureThreads, props.parallelCaptureThreads),
+            captureTimeoutMinutes = mergeInt(cli, "capture.captureTimeoutMinutes", yaml?.captureTimeoutMinutes, props.captureTimeoutMinutes),
+            subtitleEnabled = mergeBoolean(cli, "capture.subtitleEnabled", yaml?.subtitleEnabled, props.subtitleEnabled),
+            subtitleFormat = mergeStr(cli, "capture.subtitleFormat", yaml?.subtitleFormat, props.subtitleFormat, env.subtitleFormat),
+            subtitleBurnIn = mergeBoolean(cli, "capture.subtitleBurnIn", yaml?.subtitleBurnIn, props.subtitleBurnIn),
+            subtitleBurnInFontSize = mergeInt(cli, "capture.subtitleBurnInFontSize", yaml?.subtitleBurnInFontSize, props.subtitleBurnInFontSize),
+            subtitleBurnInFontColor = mergeStr(cli, "capture.subtitleBurnInFontColor", yaml?.subtitleBurnInFontColor, props.subtitleBurnInFontColor, env.subtitleBurnInFontColor),
+            subtitleBurnInOutlineColor = mergeStr(cli, "capture.subtitleBurnInOutlineColor", yaml?.subtitleBurnInOutlineColor, props.subtitleBurnInOutlineColor, env.subtitleBurnInOutlineColor),
+            subtitleBurnInPosition = mergeStr(cli, "capture.subtitleBurnInPosition", yaml?.subtitleBurnInPosition, props.subtitleBurnInPosition, env.subtitleBurnInPosition)
         )
     }
 
-    private fun mergeDistribConfig(env: DistribConfig, props: DistribConfig, yaml: DistribConfig, cli: Map<String, Any?>): DistribConfig {
+    private fun mergeDistribConfig(env: DistribConfig, props: DistribConfig, yaml: DistribConfig?, cli: Map<String, Any?>): DistribConfig {
         return DistribConfig(
-            ffmpegExecutablePath = cli["distrib.ffmpegExecutablePath"]?.toString() ?: yaml.ffmpegExecutablePath.ifNotBlankOrElse(props.ffmpegExecutablePath),
-            outputWidth = cli.cliInt("distrib.outputWidth") ?: yaml.outputWidth,
-            outputHeight = cli.cliInt("distrib.outputHeight") ?: yaml.outputHeight
+            ffmpegExecutablePath = mergeStr(cli, "distrib.ffmpegExecutablePath", yaml?.ffmpegExecutablePath, props.ffmpegExecutablePath, env.ffmpegExecutablePath),
+            outputWidth = mergeInt(cli, "distrib.outputWidth", yaml?.outputWidth, props.outputWidth),
+            outputHeight = mergeInt(cli, "distrib.outputHeight", yaml?.outputHeight, props.outputHeight)
         )
     }
 
-    private fun mergeManimConfig(env: ManimConfig, props: ManimConfig, yaml: ManimConfig, cli: Map<String, Any?>): ManimConfig {
+    private fun mergeManimConfig(env: ManimConfig, props: ManimConfig, yaml: ManimConfig?, cli: Map<String, Any?>): ManimConfig {
         return ManimConfig(
-            executablePath = cli["manim.executablePath"]?.toString() ?: yaml.executablePath.ifNotBlankOrElse(props.executablePath),
-            quality = cli["manim.quality"]?.toString() ?: yaml.quality.ifNotBlankOrElse(props.quality),
-            scriptsDir = cli["manim.scriptsDir"]?.toString() ?: yaml.scriptsDir.ifNotBlankOrElse(props.scriptsDir),
-            outputDir = cli["manim.outputDir"]?.toString() ?: yaml.outputDir.ifNotBlankOrElse(props.outputDir),
-            parallelRender = cli["manim.parallelRender"]?.toString()?.toBoolean() ?: yaml.parallelRender,
-            parallelRenderThreads = cli.cliInt("manim.parallelRenderThreads") ?: yaml.parallelRenderThreads
+            executablePath = mergeStr(cli, "manim.executablePath", yaml?.executablePath, props.executablePath, env.executablePath),
+            quality = mergeStr(cli, "manim.quality", yaml?.quality, props.quality, env.quality),
+            scriptsDir = mergeStr(cli, "manim.scriptsDir", yaml?.scriptsDir, props.scriptsDir, env.scriptsDir),
+            outputDir = mergeStr(cli, "manim.outputDir", yaml?.outputDir, props.outputDir, env.outputDir),
+            parallelRender = mergeBoolean(cli, "manim.parallelRender", yaml?.parallelRender, props.parallelRender),
+            parallelRenderThreads = mergeInt(cli, "manim.parallelRenderThreads", yaml?.parallelRenderThreads, props.parallelRenderThreads)
         )
+    }
+
+    // ─── Generic merge helpers (CLI > YAML > Props > ENV) ────────
+    //
+    // String fields: isNotBlank() is the "explicitly set" heuristic — an
+    // explicit blank never overrides a non-blank lower-priority source.
+    // Boolean/Int/Double fields: the YAML/props value is always preferred
+    // over ENV (no "blank" concept for non-strings).
+
+    private fun mergeStr(
+        cli: Map<String, Any?>,
+        key: String,
+        yaml: String?,
+        props: String,
+        env: String
+    ): String {
+        val cliValue = cli[key]?.toString()
+        if (!cliValue.isNullOrBlank()) return cliValue
+        if (!yaml.isNullOrBlank()) return yaml
+        if (props.isNotBlank()) return props
+        return env
+    }
+
+    private fun mergeInt(
+        cli: Map<String, Any?>,
+        key: String,
+        yaml: Int?,
+        props: Int
+    ): Int {
+        cli.cliInt(key)?.let { return it }
+        yaml?.let { return it }
+        return props
+    }
+
+    private fun mergeDouble(
+        cli: Map<String, Any?>,
+        key: String,
+        yaml: Double?,
+        props: Double
+    ): Double {
+        cli.cliDouble(key)?.let { return it }
+        yaml?.let { return it }
+        return props
+    }
+
+    private fun mergeBoolean(
+        cli: Map<String, Any?>,
+        key: String,
+        yaml: Boolean?,
+        props: Boolean
+    ): Boolean {
+        cli.cliBoolean(key)?.let { return it }
+        yaml?.let { return it }
+        return props
     }
 
     /** Helper: if this string is not blank, return it; otherwise return [fallback]. */
     private fun String.ifNotBlankOrElse(fallback: String): String =
         if (this.isNotBlank()) this else fallback
-
-    // ─── No-YAML merge methods (CLI > Props > ENV) ───────────────
-
-    private fun mergeInputConfigNoYaml(env: InputConfig, props: InputConfig, cli: Map<String, Any?>): InputConfig {
-        return InputConfig(
-            outputDir = cli["input.outputDir"]?.toString() ?: props.outputDir.ifNotBlankOrElse(env.outputDir),
-            sliderScriptDir = cli["input.sliderScriptDir"]?.toString() ?: props.sliderScriptDir.ifNotBlankOrElse(env.sliderScriptDir),
-            deckSourceDir = cli["input.deckSourceDir"]?.toString() ?: props.deckSourceDir.ifNotBlankOrElse(env.deckSourceDir),
-            chromiumExecutablePath = cli["input.chromiumExecutablePath"]?.toString()
-                ?: props.chromiumExecutablePath.ifNotBlankOrElse(env.chromiumExecutablePath)
-        )
-    }
-
-    private fun mergeTtsConfigNoYaml(env: TtsConfig, props: TtsConfig, cli: Map<String, Any?>): TtsConfig {
-        return TtsConfig(
-            engine = cli["tts.engine"]?.toString() ?: props.engine.ifNotBlankOrElse(env.engine),
-            voice = cli["tts.voice"]?.toString() ?: props.voice.ifNotBlankOrElse(env.voice),
-            piperExecutablePath = cli["tts.piperExecutablePath"]?.toString() ?: props.piperExecutablePath.ifNotBlankOrElse(env.piperExecutablePath),
-            fallbackEnabled = cli["tts.fallbackEnabled"]?.toString()?.toBoolean() ?: props.fallbackEnabled,
-            espeakVoice = cli["tts.espeakVoice"]?.toString() ?: props.espeakVoice.ifNotBlankOrElse(env.espeakVoice),
-            espeakSpeed = cli.cliInt("tts.espeakSpeed") ?: props.espeakSpeed,
-            language = cli["tts.language"]?.toString() ?: props.language.ifNotBlankOrElse(env.language)
-        )
-    }
-
-    private fun mergeCaptureConfigNoYaml(env: CaptureConfig, props: CaptureConfig, cli: Map<String, Any?>): CaptureConfig {
-        return CaptureConfig(
-            viewportWidth = cli.cliInt("capture.viewportWidth") ?: props.viewportWidth,
-            viewportHeight = cli.cliInt("capture.viewportHeight") ?: props.viewportHeight,
-            playwrightTimeout = cli.cliDouble("capture.playwrightTimeout") ?: props.playwrightTimeout,
-            slideDurationSeconds = cli.cliDouble("capture.slideDurationSeconds") ?: props.slideDurationSeconds,
-            parallelCaptureEnabled = cli["capture.parallelCaptureEnabled"]?.toString()?.toBoolean() ?: props.parallelCaptureEnabled,
-            parallelCaptureThreads = cli.cliInt("capture.parallelCaptureThreads") ?: props.parallelCaptureThreads,
-            captureTimeoutMinutes = cli["capture.captureTimeoutMinutes"]?.toString()?.toIntOrNull() ?: props.captureTimeoutMinutes,
-            subtitleEnabled = cli["capture.subtitleEnabled"]?.toString()?.toBoolean() ?: props.subtitleEnabled,
-            subtitleFormat = cli["capture.subtitleFormat"]?.toString() ?: props.subtitleFormat.ifNotBlankOrElse(env.subtitleFormat),
-            subtitleBurnIn = cli["capture.subtitleBurnIn"]?.toString()?.toBoolean() ?: props.subtitleBurnIn,
-            subtitleBurnInFontSize = cli.cliInt("capture.subtitleBurnInFontSize") ?: props.subtitleBurnInFontSize,
-            subtitleBurnInFontColor = cli["capture.subtitleBurnInFontColor"]?.toString() ?: props.subtitleBurnInFontColor.ifNotBlankOrElse(env.subtitleBurnInFontColor),
-            subtitleBurnInOutlineColor = cli["capture.subtitleBurnInOutlineColor"]?.toString() ?: props.subtitleBurnInOutlineColor.ifNotBlankOrElse(env.subtitleBurnInOutlineColor),
-            subtitleBurnInPosition = cli["capture.subtitleBurnInPosition"]?.toString() ?: props.subtitleBurnInPosition.ifNotBlankOrElse(env.subtitleBurnInPosition)
-        )
-    }
-
-    private fun mergeDistribConfigNoYaml(env: DistribConfig, props: DistribConfig, cli: Map<String, Any?>): DistribConfig {
-        return DistribConfig(
-            ffmpegExecutablePath = cli["distrib.ffmpegExecutablePath"]?.toString() ?: props.ffmpegExecutablePath.ifNotBlankOrElse(env.ffmpegExecutablePath),
-            outputWidth = cli.cliInt("distrib.outputWidth") ?: props.outputWidth,
-            outputHeight = cli.cliInt("distrib.outputHeight") ?: props.outputHeight
-        )
-    }
-
-    private fun mergeManimConfigNoYaml(env: ManimConfig, props: ManimConfig, cli: Map<String, Any?>): ManimConfig {
-        return ManimConfig(
-            executablePath = cli["manim.executablePath"]?.toString() ?: props.executablePath.ifNotBlankOrElse(env.executablePath),
-            quality = cli["manim.quality"]?.toString() ?: props.quality.ifNotBlankOrElse(env.quality),
-            scriptsDir = cli["manim.scriptsDir"]?.toString() ?: props.scriptsDir.ifNotBlankOrElse(env.scriptsDir),
-            outputDir = cli["manim.outputDir"]?.toString() ?: props.outputDir.ifNotBlankOrElse(env.outputDir),
-            parallelRender = cli["manim.parallelRender"]?.toString()?.toBoolean() ?: props.parallelRender,
-            parallelRenderThreads = cli.cliInt("manim.parallelRenderThreads") ?: props.parallelRenderThreads
-        )
-    }
 
     private fun Map<String, Any?>.cliInt(key: String): Int? =
         this[key]?.let { (it as? Int) ?: it.toString().toIntOrNull() }
@@ -318,5 +299,5 @@ object CapsuleConfigMerger {
         this[key]?.let { (it as? Double) ?: it.toString().toDoubleOrNull() }
 
     private fun Map<String, Any?>.cliBoolean(key: String): Boolean? =
-        this[key]?.let { (it as? Boolean) ?: it.toString().toBooleanStrictOrNull() }
+        this[key]?.let { (it as? Boolean) ?: it.toString().toBoolean() }
 }

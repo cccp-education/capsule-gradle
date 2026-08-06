@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-08-06 (Session 070 — Sync slider 0.0.16 terminé)
+:last_update: 2026-08-07 (Session 072 — CR-5 DRY ConfigMerger terminé)
 
 '''
 == ✅ EPIC CAP-MODEL — TERMINE (session 069)
@@ -20,11 +20,33 @@
 . [x] `./gradlew compileKotlin` VERT avec slider 0.0.16 (mavenLocal)
 
 '''
+== ✅ CR-2 Thread safety + CR-3 TTS error handling + CR-4 XSS + CR-6 CLI + CR-7 YAML — TERMINE (session 071)
+
+. [x] CR-2 — Thread safety + timeout `captureSlideParallel` (executor.shutdownNow finally, it.get(5, MIN))
+. [x] CR-3 — Error handling TTS (retry 1× + accumulation `failedSlides` + logger.error)
+. [x] CR-4 — HTML escape XSS `injectSubtitleTrack` (HtmlEscape object)
+. [x] CR-6 — Robust CLI parsing (cliInt/cliDouble/cliBoolean helpers)
+. [x] CR-7 — Validation YAML (déjà implémenté + test couverture)
+. [x] Fix cucumber consolidated (DuplicateStepDefinitionException + feature quotes + temp file)
+
+'''
+== ✅ CR-5 DRY CapsuleConfigMerger — TERMINE (session 072)
+
+. [x] `merge()` unifié — `yaml: T?` nullable dispatch
+. [x] 10 méthodes `mergeXxxConfig`/`mergeXxxConfigNoYaml` → 5 unifiées
+. [x] 4 helpers génériques `mergeStr/mergeInt/mergeDouble/mergeBoolean`
+. [x] Sémantique préservée (`toBoolean()` lenient, `isNotBlank()` heuristic)
+. [x] +13 unit tests NoYaml (48 total ConfigMergerTest)
+. [x] +1 scénario cucumber `@config @no-yaml` + 1 step Given
+. [x] 322→302 lignes (-19 net), 396 unit VERT (+12)
+
+'''
 == 🟡 Backlog restant — À planifier
 
-. [ ] **CR-2** (thread safety) — à cadrer
-. [ ] **CR-3** (TTS error handling) — à cadrer
-. [ ] **CAP-29** (pipeline traduction vidéo multi-langue) — à cadrer
+. [ ] **CR-8** (logging structuré) — à coder
+. [ ] **CR-9** (robust HTML parsing) — à coder
+. [ ] **CR-10** (CI optimization cucumberTest onlyIf) — à coder
+. [ ] **CAP-29** (pipeline traduction vidéo multi-langue) — à cadrer (débloqué)
 
 '''
 == ✅ README i18n — TERMINE (session 041)
@@ -63,20 +85,20 @@
 . [x] Compile + unit tests PASS
 
 '''
-== 🟠 Prochaine session — CR-2 Thread safety + timeout captureSlideParallel
+== 🟡 Prochaine session — CR-8 Logging structuré CapsulePlugin
 
 '''
 == Backlog priorisé (ordre d'attaque)
 
-. 🔴 CR-1 — Refactor CapsuleVideoTask.execute() (218→30 lignes orchestration)
-. 🔴 CR-2 — Thread safety + timeout captureSlideParallel
-. 🔴 CR-3 — Error handling TTS — dégradation signalée + retry
-. 🟠 CR-4 — Sécurité HTML escape injectSubtitleTrack
-. 🟠 CR-5 — DRY CapsuleConfigMerger (~76 lignes dupliquées)
-. 🟠 CR-6 — Robust CLI parsing (`as? Int` → `toIntOrNull()`)
-. 🟠 CR-7 — Validation YAML avec try/catch gracieux
-. 🟡 CR-8 — Logging structuré CapsulePlugin
-. 🟡 CR-9 — Robust HTML parsing (HtmlSectionParser au lieu de regex raw)
-. 🟡 CR-10 — CI optimization cucumberTest onlyIf
-. 🟢 CAP-27 — VTT burn-in
-. 🟢 CAP-28 — Coverage gaps (PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%)
+. [x] 🔴 CR-1 — Refactor CapsuleVideoTask.execute() (218→76 lignes orchestration) ✅ S-040
+. [x] 🔴 CR-2 — Thread safety + timeout captureSlideParallel ✅ S-071
+. [x] 🔴 CR-3 — Error handling TTS — dégradation signalée + retry ✅ S-071
+. [x] 🟠 CR-4 — Sécurité HTML escape injectSubtitleTrack ✅ S-071
+. [x] 🟠 CR-5 — DRY CapsuleConfigMerger (~76 lignes dupliquées) ✅ S-072
+. [x] 🟠 CR-6 — Robust CLI parsing (`as? Int` → `toIntOrNull()`) ✅ S-071
+. [x] 🟠 CR-7 — Validation YAML avec try/catch gracieux ✅ S-071
+. [ ] 🟡 CR-8 — Logging structuré CapsulePlugin
+. [ ] 🟡 CR-9 — Robust HTML parsing (HtmlSectionParser au lieu de regex raw)
+. [ ] 🟡 CR-10 — CI optimization cucumberTest onlyIf
+. [ ] 🟢 CAP-27 — VTT burn-in
+. [ ] 🟢 CAP-28 — Coverage gaps (PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%)

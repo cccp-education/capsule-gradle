@@ -131,6 +131,12 @@ Feature: Capsule video generation from a reveal.js deck
     When I run the task "generateCapsuleScript"
     Then the resolved TTS engine is "espeak"
 
+  @config @no-yaml
+  Scenario: gradle.properties are used when no capsule-context.yml is present
+    Given a Gradle project with the capsule plugin applied and gradle.properties setting espeak TTS
+    When I run the task "generateCapsuleScript"
+    Then the resolved TTS engine is "espeak"
+
   @config @manim
   Scenario: Manim YAML configuration overrides manim defaults for quality and scriptsDir
     Given a Gradle project with the capsule plugin applied and a capsule-context.yml setting manim quality to "h" and scriptsDir to "custom/manim"

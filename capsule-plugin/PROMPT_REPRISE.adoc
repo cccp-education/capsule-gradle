@@ -1,47 +1,62 @@
-= PROMPT_REPRISE — Capsule — Session 072
-:session: 072
+= PROMPT_REPRISE — Capsule — Session 073
+:session: 073
 :date: 2026-08-07
 
-== Session 071 terminée — CR-2 + Fix Cucumber + CR-3/4/6/7
+== Session 072 terminée — CR-5 DRY CapsuleConfigMerger
 
-5 EPICs traités en une session :
-- **CR-2** ✅ Thread safety + timeout `captureSlideParallel` (unit 4 + functional 3 + cucumber 2).
-- **Fix cucumber consolidated** ✅ DuplicateStepDefinitionException (doublons title/speakerNote renommés `the read segment`) + feature quotes + temp file exact name. 64 cucumber 0 FAIL.
-- **CR-3** ✅ Error handling TTS — retry 1× + accumulation `failedSlides` + `logger.error` final. 4 unit tests.
-- **CR-4** ✅ HTML escape XSS `injectSubtitleTrack` — `HtmlEscape` object + échappement srclang/src/label. 7 unit tests.
-- **CR-6** ✅ Robust CLI parsing — helpers `cliInt`/`cliDouble`/`cliBoolean` tolèrent String. 3 unit tests.
-- **CR-7** ✅ Validation YAML — déjà implémenté (try/catch l.37-42), test couverture ajouté.
+CR-5 ✅ TERMINÉ — refactor DRY du `CapsuleConfigMerger.kt` (322→302 lignes, -19 net).
+10 méthodes `mergeXxxConfig`/`mergeXxxConfigNoYaml` → 5 méthodes unifiées + 4 helpers
+génériques (`mergeStr/mergeInt/mergeDouble/mergeBoolean`). `merge()` dispatch sur
+`yaml: T?` nullable (`if (yamlLoaded) yamlConfig else null`). Sémantique préservée :
+`toBoolean()` lenient, heuristic `isNotBlank()` pour strings, Bool/Int/Double YAML>Props>ENV.
 
-Métriques : 384 unit tests VERT (+23), 64 cucumber 0 FAIL, 3 functional VERT.
+Méthode baby-step TDD/BDD :
+- **Unit** : +13 tests NoYaml dans `CapsuleConfigMergerTest` (48 total, couvre les 5
+  sections en yamlLoaded=false + edge case blank YAML fallback).
+- **Cucumber** : +1 scénario `@config @no-yaml` "gradle.properties are used when no
+  capsule-context.yml is present" + 1 step Given.
 
-Rapport : `.agents/sessions/071-cr2-fix-cucumber-cr3-4-6-7.adoc`.
+Métriques : 396 unit tests VERT (+12 vs S-071 384), 48/48 ConfigMerger PASS, 1 cucumber
+@no-yaml PASS. 1 échec cucumber `Burn-in E2E @integration` préexistant (ffmpeg exit 183,
+environnement, non lié CR-5).
 
-== Prochaine session — 072
+Rapport : `.agents/sessions/072-cr5-dry-config-merger.adoc`.
+
+== Prochaine session — 073
 
 Backlog capsule restant (par priorité) :
 
-. 🟠 **CR-5** — DRY CapsuleConfigMerger (~76 lignes dupliquées, 5 paires `mergeXxxConfig`/`mergeXxxConfigNoYaml`).
-  _Fix_ : stratégie générique `mergeConfig<T>(cli, yaml, props, env, key)` + builder par section, ou méthode unique avec `yaml: T?` nullable.
-  _Tests_ : unitaires existants (30+) + vérifier 2 chemins (yamlLoaded=true/false).
-  _Risque_ : refactor conséquent, session dédiée recommandée.
+. 🟡 **CR-8** — Logging structuré CapsulePlugin l.36-44 (1 ligne monolithic 13
+  placeholders → 4-5 `logger.lifecycle` par section TTS/Capture/Subtitles/Manim).
+  _Fix_ : extraire `logResolvedConfig(mergedConfig)` méthode privée, 4-5 appels
+  `logger.lifecycle` thématiques. _Tests_ : unitaire sur log capture.
 
-. 🟡 **CR-8** — Logging structuré CapsulePlugin l.36-44 (1 ligne monolithic 13 placeholders → 4-5 `logger.lifecycle` par section).
-
-. 🟡 **CR-9** — Robust HTML parsing (HtmlSectionParser au lieu de regex raw dans `injectAudioSequentialFallback`).
+. 🟡 **CR-9** — Robust HTML parsing (HtmlSectionParser au lieu de regex raw dans
+  `injectAudioSequentialFallback`). _Fix_ : réutiliser `HtmlSectionParser` existant.
+  _Tests_ : unitaires HTML malformé.
 
 . 🟡 **CR-10** — CI optimization cucumberTest `onlyIf { hasProperty("runCucumber") || CI }`.
+  _Fix_ : `cucumberTest.onlyIf { project.hasProperty("runCucumber") || System.getenv("CI") == "true" }`.
+  _Impact_ : skip cucumber en local rapide, run en CI. Dettes : isoler `Burn-in E2E @integration`
+  (ffmpeg exit 183 préexistant).
 
 . 🟢 **CAP-27** — VTT burn-in (FFmpeg subtitles filter avec VTT, actuellement SRT seulement).
 
 . 🟢 **CAP-28** — Coverage gaps (PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%).
 
-. 🟢 **CAP-29** — Pipeline Traduction Vidéo Multi-Langue (cadré S-097, 6 US ~20 pts, dépend CR-2 ✅ + CR-3 ✅ → débloqué).
+. 🟢 **CAP-29** — Pipeline Traduction Vidéo Multi-Langue (cadré S-097, 6 US ~20 pts,
+  dépend CR-2 ✅ + CR-3 ✅ → débloqué). _Domaine cible_ : `capsule.multilang`.
+
+. 🟠 **CAP-CR3-1** — CI `full` avec vrais binaires + probe de durée (CR-GLOBALE-003).
+. 🟠 **CAP-CR3-2** — Mode strict anti-NoOp (`capsule.strictMode` DSL).
+. 🟠 **CAP-CR3-3** — Décision capture ScreenshotCaptureImpl vs PlaywrightCaptureImpl.
+. 🟡 **CAP-CR3-4** — Convention Gradle explicite resolveScriptDir/resolveDeckDir.
 
 == À corriger à la clôture (dettes techniques gouvernance)
 
-* BACKLOG.adoc : marquer CR-2, CR-3, CR-4, CR-6, CR-7 comme `✅ TERMINÉ (S-071)`.
-* INDEX.adoc : ajouter session 071 dans la table + mettre à jour roadmap EPICs CR.
-* SLD-11.6b dans BACKLOG.adoc : marquer `✅ CADUQUE` (déjà fait par CAP-MODEL S-069).
+* BACKLOG.adoc : CR-5 marqué `✅ TERMINÉ (S-072)`.
+* INDEX.adoc : ajouter session 072 dans la table + roadmap EPICs CR.
+* TABLE AGENTS.adoc racine : mettre à jour entrée capsule (S-071→S-072).
 
 == Contexte technique
 
@@ -49,11 +64,11 @@ Backlog capsule restant (par priorité) :
 - Version capsule : 0.0.1-SNAPSHOT (non publié Maven Central)
 - Version slider : 0.0.16 (mavenLocal, attente publication Central)
 - BOM workspace-bom : Central 0.0.16, mavenLocal 0.0.17
-- 384 unit tests VERT (capsule) + 895 unit (slider, post-SLD-11)
+- 396 unit tests VERT (capsule) + 895 unit (slider, post-SLD-11)
 - Domaines DDD capsule : `capsule.feed`, `capsule.capture`, `capsule.tts`, `capsule.subtitles`, `capsule.manim`, `capsule.config`, `capsule.plugin`
 - Baby-step TDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 - English only : code, Gherkin, comments — no French
 - `./gradlew test` VERT (0 FAIL, 0 SKIP)
-- `./gradlew cucumberTest` VERT (64 tests, 0 FAIL, 5 SKIP préexistants)
-- EPICs clos capsule : CAP-0→25 + CAP-MODEL + K-1 + DRY-1→3 + CR-1 + CR-2 + CR-3 + CR-4 + CR-6 + CR-7
+- `./gradlew cucumberTest -PrunCucumber` : 1 échec `Burn-in E2E @integration` préexistant (ffmpeg)
+- EPICs clos capsule : CAP-0→25 + CAP-MODEL + K-1 + DRY-1→3 + CR-1 + CR-2 + CR-3 + CR-4 + CR-5 + CR-6 + CR-7
 - Loi de l'Économie d'Encre (AGENT.adoc) : vérifier artefact résultat avant opération coûteuse

@@ -5,9 +5,9 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
-_Derniere mise a jour_ : 2026-08-06
-_Session terminee_ : 071 — CR-2 (thread safety + timeout captureSlideParallel) + Fix cucumber consolidated (DuplicateStepDefinitionException + feature quotes + temp file) + CR-3 (error handling TTS retry+accumulation) + CR-4 (HTML escape XSS) + CR-6 (robust CLI parsing) + CR-7 (validation YAML, déjà implémenté + test). 384 unit tests VERT (+23), 64 cucumber 0 FAIL, 3 functional VERT.
-_Prochaine session_ : 072 — Backlog capsule restant : CR-5 (DRY ConfigMerger), CR-8 (logging structuré), CR-9 (robust HTML parsing), CAP-29 (pipeline traduction vidéo multi-langue, débloqué).
+_Derniere mise a jour_ : 2026-08-07
+_Session terminee_ : 072 — CR-5 DRY CapsuleConfigMerger (322→302 lignes, -19 net). 10 méthodes mergeXxxConfig/mergeXxxConfigNoYaml → 5 méthodes unifiées + 4 helpers génériques (mergeStr/mergeInt/mergeDouble/mergeBoolean). merge() dispatch sur yaml: T? nullable. Sémantique préservée (toBoolean lenient, isNotBlank heuristic). +13 unit tests NoYaml (48 total ConfigMergerTest), +1 scénario cucumber @config @no-yaml. 396 unit tests VERT (+12).
+_Prochaine session_ : 073 — Backlog capsule restant : CR-8 (logging structuré), CR-9 (robust HTML parsing), CR-10 (CI optimization), CAP-29 (pipeline traduction vidéo multi-langue, débloqué).
 _Session en cours_ : —
 
 '''
@@ -57,6 +57,7 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 
 |===
 | # | Date | Type | Sujet | Score
+| 072 | 2026-08-07 | refactor+tdd+bdd | **CR-5 DRY CapsuleConfigMerger** — 10 méthodes `mergeXxxConfig`/`mergeXxxConfigNoYaml` (~76 lignes dupliquées) → 5 méthodes unifiées + 4 helpers génériques (`mergeStr/mergeInt/mergeDouble/mergeBoolean`). `merge()` dispatch sur `yaml: T?` nullable. 322→302 lignes (-19 net). Sémantique préservée : `toBoolean()` lenient, heuristic `isNotBlank()` strings, Bool/Int/Double YAML>Props>ENV. +13 unit tests NoYaml (48 total), +1 scénario cucumber `@config @no-yaml`. 396 unit VERT (+12). | 9/10
 | 071 | 2026-08-06 | feat+tdd+bdd+fix | **CR-2 + Fix Cucumber + CR-3/4/6/7** — Thread safety + timeout `captureSlideParallel` (unit 4 + functional 3 + cucumber 2). Fix 5 échecs cucumber consolidated (DuplicateStepDefinitionException doublons title/speakerNote + feature quotes + temp file exact name). CR-3 error handling TTS (retry 1× + accumulation + logger.error). CR-4 HTML escape XSS `injectSubtitleTrack` (HtmlEscape object). CR-6 robust CLI parsing (cliInt/cliDouble/cliBoolean helpers). CR-7 validation YAML (déjà implémenté + test). 384 unit VERT (+23), 64 cucumber 0 FAIL. | 9/10
 | 070 | 2026-08-06 | ops+cross-borough | **Sync slider 0.0.15 → 0.0.16** (cross-borough, suite slider 0.0.16 S-066 + BOM 0.0.17 S-019). Bump catalogue `capsule-plugin/gradle/libs.versions.toml` `slider = "0.0.15"` → `"0.0.16"`. `./gradlew compileKotlin` VERT avec slider 0.0.16 (mavenLocal). Zéro code production modifié. Session pure sync consommateur. | 9/10
 | 069 | 2026-08-05 | feat+ddd+tdd+bdd | **EPIC CAP-MODEL TERMINÉ** — unification modèle `capsule.feed` ↔ `capsule.CapsuleScript` (7/7 US : cadrage + 6 exécution). `SlideType` enum migré vers `capsule.feed`, `SlideSegment` étendu (type+manimScene), `CapsuleScriptReader` remplace `CapsuleManager.parseScript` (64 lignes supprimées), 6 consommateurs migrés, `capsule.CapsuleModels` purgé (SlideSegment/CapsuleScript/SlideType supprimés, reste CapsuleExtension/CapsuleConventions). 361 unit tests VERT (+124). Cucumber boundary `consolidated_capsule_model.feature` (5 scénarios). Zéro doublon modèle. | 9/10
@@ -163,7 +164,7 @@ _Source_ : `CODE_REVIEW.adoc` (analyse 2026-06-16, Session 039). 15 problèmes �
 | CR-2 | Thread safety + timeout captureSlideParallel — executor.shutdownNow() dans finally, it.get(5, MINUTES) | 🔴 BLOQUANT | ✅ TERMINE (session 071)
 | CR-3 | Error handling TTS — dégradation signalée (accumuler skips, logger.error, retry 1×) | 🔴 BLOQUANT | ✅ TERMINE (session 071)
 | CR-4 | Sécurité HTML escape — injectSubtitleTrack (StringEscapeUtils.escapeHtml4) | 🟠 MAJEUR | ✅ TERMINE (session 071)
-| CR-5 | DRY CapsuleConfigMerger — ~76 lignes dupliquées (mergeXxxConfig / mergeXxxConfigNoYaml) | 🟠 MAJEUR | ⬜ TODO
+| CR-5 | DRY CapsuleConfigMerger — ~76 lignes dupliquées (mergeXxxConfig / mergeXxxConfigNoYaml) | 🟠 MAJEUR | ✅ TERMINE (session 072)
 | CR-6 | Robust CLI parsing — `as? Int` → `toIntOrNull()` uniforme | 🟠 MAJEUR | ✅ TERMINE (session 071)
 | CR-7 | Validation YAML — CapsulePlugin.afterEvaluate try/catch gracieux | 🟠 MAJEUR | ✅ TERMINE (session 071, déjà implémenté + test)
 | CR-8 | Logging structuré — CapsulePlugin l.36-44 → 4-5 logger.lifecycle par section | 🟡 MOYEN | ⬜ TODO

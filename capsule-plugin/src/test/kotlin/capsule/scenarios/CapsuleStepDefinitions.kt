@@ -350,6 +350,24 @@ tts:
         """.trimIndent())
     }
 
+    @Given("a Gradle project with the capsule plugin applied and gradle.properties setting espeak TTS")
+    fun aGradleProjectWithGradlePropertiesEspeak() {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-no-yaml-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('education.cccp.capsule')
+            }
+        """.trimIndent())
+        projectDir.resolve("gradle.properties").writeText("""
+capsule.tts.engine=espeak
+capsule.tts.espeakVoice=fr
+        """.trimIndent())
+    }
+
     @Then("the resolved TTS engine is {string}")
     fun theResolvedTtsEngineIsString(expectedEngine: String) {
         assertTrue(

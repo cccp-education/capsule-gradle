@@ -518,4 +518,204 @@ class CapsuleConfigMergerTest {
 
         assertEquals(true, merged.capture.parallelCaptureEnabled, "CLI String \"true\" must be parsed as Boolean true")
     }
+
+    // ─── No-YAML path coverage (CR-5) ────────────────────────────
+    //
+    // yamlLoaded=false means the YAML file was not found. The merger must
+    // fall back to props > ENV, with CLI on top. These tests pin that path
+    // for each of the 5 sections so the DRY refactor cannot silently
+    // regress the No-YAML branch.
+
+    @Test
+    fun `merge NoYaml uses props input section when CLI absent`() {
+        val projectDir = File(tempDir, "no-yaml-input").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.input.outputDir=props-output
+            capsule.input.deckSourceDir=props-decks
+        """.trimIndent())
+
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
+
+        assertEquals("props-output", merged.input.outputDir, "NoYaml: props input.outputDir should win over ENV default")
+        assertEquals("props-decks", merged.input.deckSourceDir, "NoYaml: props input.deckSourceDir should win over ENV default")
+        assertEquals("capsule", merged.input.sliderScriptDir, "NoYaml: input.sliderScriptDir should fall back to default")
+    }
+
+    @Test
+    fun `merge NoYaml CLI overrides props input section`() {
+        val projectDir = File(tempDir, "no-yaml-input-cli").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.input.outputDir=props-output
+        """.trimIndent())
+        val cliParams = mapOf("input.outputDir" to "cli-output")
+
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), cliParams, yamlLoaded = false)
+
+        assertEquals("cli-output", merged.input.outputDir, "NoYaml: CLI should override props input.outputDir")
+    }
+
+    @Test
+    fun `merge NoYaml uses props tts section when CLI absent`() {
+        val projectDir = File(tempDir, "no-yaml-tts").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.tts.engine=espeak
+            capsule.tts.espeakVoice=de
+            capsule.tts.espeakSpeed=180
+        """.trimIndent())
+
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
+
+        assertEquals("espeak", merged.tts.engine, "NoYaml: props tts.engine should win")
+        assertEquals("de", merged.tts.espeakVoice, "NoYaml: props tts.espeakVoice should win")
+        assertEquals(180, merged.tts.espeakSpeed, "NoYaml: props tts.espeakSpeed should win")
+    }
+
+    @Test
+    fun `merge NoYaml CLI overrides props tts section`() {
+        val projectDir = File(tempDir, "no-yaml-tts-cli").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.tts.engine=espeak
+        """.trimIndent())
+        val cliParams = mapOf("tts.engine" to "piper", "tts.espeakSpeed" to 200)
+
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), cliParams, yamlLoaded = false)
+
+        assertEquals("piper", merged.tts.engine, "NoYaml: CLI should override props tts.engine")
+        assertEquals(200, merged.tts.espeakSpeed, "NoYaml: CLI should override default tts.espeakSpeed")
+    }
+
+    @Test
+    fun `merge NoYaml uses props capture section when CLI absent`() {
+        val projectDir = File(tempDir, "no-yaml-capture").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.capture.viewportWidth=1920
+            capsule.capture.viewportHeight=1080
+            capsule.capture.parallelCaptureEnabled=true
+            capsule.capture.captureTimeoutMinutes=3
+            capsule.capture.subtitleFormat=vtt
+            capsule.capture.subtitleBurnIn=true
+            capsule.capture.subtitleBurnInFontSize=32
+        """.trimIndent())
+
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
+
+        assertEquals(1920, merged.capture.viewportWidth, "NoYaml: props capture.viewportWidth should win")
+        assertEquals(1080, merged.capture.viewportHeight, "NoYaml: props capture.viewportHeight should win")
+        assertEquals(true, merged.capture.parallelCaptureEnabled, "NoYaml: props capture.parallelCaptureEnabled should win")
+        assertEquals(3, merged.capture.captureTimeoutMinutes, "NoYaml: props capture.captureTimeoutMinutes should win")
+        assertEquals("vtt", merged.capture.subtitleFormat, "NoYaml: props capture.subtitleFormat should win over ENV default")
+        assertEquals(true, merged.capture.subtitleBurnIn, "NoYaml: props capture.subtitleBurnIn should win")
+        assertEquals(32, merged.capture.subtitleBurnInFontSize, "NoYaml: props capture.subtitleBurnInFontSize should win")
+    }
+
+    @Test
+    fun `merge NoYaml CLI overrides props capture section`() {
+        val projectDir = File(tempDir, "no-yaml-capture-cli").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.capture.viewportWidth=1920
+        """.trimIndent())
+        val cliParams = mapOf(
+            "capture.viewportWidth" to 800,
+            "capture.parallelCaptureEnabled" to true,
+            "capture.subtitleFormat" to "vtt"
+        )
+
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), cliParams, yamlLoaded = false)
+
+        assertEquals(800, merged.capture.viewportWidth, "NoYaml: CLI should override props capture.viewportWidth")
+        assertEquals(true, merged.capture.parallelCaptureEnabled, "NoYaml: CLI should override default capture.parallelCaptureEnabled")
+        assertEquals("vtt", merged.capture.subtitleFormat, "NoYaml: CLI should override default capture.subtitleFormat")
+    }
+
+    @Test
+    fun `merge NoYaml uses props distrib section when CLI absent`() {
+        val projectDir = File(tempDir, "no-yaml-distrib").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.distrib.ffmpegExecutablePath=/usr/bin/ffmpeg
+            capsule.distrib.outputWidth=720
+            capsule.distrib.outputHeight=1280
+        """.trimIndent())
+
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
+
+        assertEquals("/usr/bin/ffmpeg", merged.distrib.ffmpegExecutablePath, "NoYaml: props distrib.ffmpegExecutablePath should win")
+        assertEquals(720, merged.distrib.outputWidth, "NoYaml: props distrib.outputWidth should win")
+        assertEquals(1280, merged.distrib.outputHeight, "NoYaml: props distrib.outputHeight should win")
+    }
+
+    @Test
+    fun `merge NoYaml CLI overrides props distrib section`() {
+        val projectDir = File(tempDir, "no-yaml-distrib-cli").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.distrib.outputWidth=720
+        """.trimIndent())
+        val cliParams = mapOf("distrib.outputWidth" to 1080, "distrib.outputHeight" to 1920)
+
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), cliParams, yamlLoaded = false)
+
+        assertEquals(1080, merged.distrib.outputWidth, "NoYaml: CLI should override props distrib.outputWidth")
+        assertEquals(1920, merged.distrib.outputHeight, "NoYaml: CLI should override default distrib.outputHeight")
+    }
+
+    @Test
+    fun `merge NoYaml uses props manim section when CLI absent`() {
+        val projectDir = File(tempDir, "no-yaml-manim").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.manim.executablePath=/opt/manim
+            capsule.manim.quality=h
+            capsule.manim.scriptsDir=custom/manim
+            capsule.manim.parallelRender=true
+            capsule.manim.parallelRenderThreads=8
+        """.trimIndent())
+
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
+
+        assertEquals("/opt/manim", merged.manim.executablePath, "NoYaml: props manim.executablePath should win")
+        assertEquals("h", merged.manim.quality, "NoYaml: props manim.quality should win")
+        assertEquals("custom/manim", merged.manim.scriptsDir, "NoYaml: props manim.scriptsDir should win")
+        assertEquals(true, merged.manim.parallelRender, "NoYaml: props manim.parallelRender should win")
+        assertEquals(8, merged.manim.parallelRenderThreads, "NoYaml: props manim.parallelRenderThreads should win")
+    }
+
+    @Test
+    fun `merge NoYaml CLI overrides props manim section`() {
+        val projectDir = File(tempDir, "no-yaml-manim-cli").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.manim.quality=h
+        """.trimIndent())
+        val cliParams = mapOf("manim.quality" to "k", "manim.parallelRender" to true)
+
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), cliParams, yamlLoaded = false)
+
+        assertEquals("k", merged.manim.quality, "NoYaml: CLI should override props manim.quality")
+        assertEquals(true, merged.manim.parallelRender, "NoYaml: CLI should override default manim.parallelRender")
+    }
+
+    @Test
+    fun `merge NoYaml with no props and no CLI returns defaults`() {
+        val projectDir = File(tempDir, "no-yaml-defaults").also { it.mkdirs() }
+
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
+
+        assertEquals("piper", merged.tts.engine, "NoYaml: default tts.engine should be piper")
+        assertEquals(1408, merged.capture.viewportWidth, "NoYaml: default capture.viewportWidth should be 1408")
+        assertEquals("ffmpeg", merged.distrib.ffmpegExecutablePath, "NoYaml: default distrib.ffmpegExecutablePath should be ffmpeg")
+        assertEquals("manim", merged.manim.executablePath, "NoYaml: default manim.executablePath should be manim")
+        assertEquals("capsule", merged.input.outputDir, "NoYaml: default input.outputDir should be capsule")
+    }
+
+    @Test
+    fun `merge YAML blank string falls back to props then env`() {
+        // YAML may explicitly set a blank string. The merger must NOT let a
+        // blank YAML override a non-blank props/env value (isNotBlank heuristic).
+        val projectDir = File(tempDir, "yaml-blank-fallback").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.tts.engine=espeak
+        """.trimIndent())
+        val yamlConfig = CapsuleConfig(tts = TtsConfig(engine = ""))
+
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+
+        assertEquals("espeak", merged.tts.engine, "Blank YAML string should fall back to props (isNotBlank heuristic)")
+    }
 }
