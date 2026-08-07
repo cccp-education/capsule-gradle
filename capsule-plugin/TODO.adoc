@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-08-07 (Session 072 — CR-5 DRY ConfigMerger terminé)
+:last_update: 2026-08-07 (Session 074 — CR-9 robust HTML parsing terminé)
 
 '''
 == ✅ EPIC CAP-MODEL — TERMINE (session 069)
@@ -41,12 +41,33 @@
 . [x] 322→302 lignes (-19 net), 396 unit VERT (+12)
 
 '''
+== ✅ CR-8 Logging structuré — TERMINE (session 073)
+
+. [x] `CapsuleConfigLogger` object pur extrait (domaine `capsule.config`)
+. [x] `formatConfigLog(config): List<String>` → 4 lignes structurées (TTS/Capture/Subtitles/Manim)
+. [x] Tokens préservés verbatim (engine=, quality=, subtitle=, subtitleFormat=, burnIn=, scriptsDir=)
+. [x] `CapsulePlugin.kt` câblage (l.40-48 monolithic → 3 lignes forEach)
+. [x] +9 unit tests `CapsuleConfigLoggerTest`
+. [x] +1 scénario cucumber `@config @logging` (5 steps) + 5 step defs
+. [x] 405 unit VERT (+9), 0 failures, 0 errors
+
+'''
+== 🟡 EPIC CAP-ARCH — Collaboration cross-borough (slider + codebase) — CADRÉ (session 073)
+
+. [ ] CAP-ARCH-0 — Cadrage EPIC (audit appels LLM dispersés, inventaire contrats N0)
+. [ ] CAP-ARCH-1 — Migration i18n vers `i18n-contracts` (`CapsuleI18nBridge`)
+. [ ] CAP-ARCH-2 — Délégation génération contenu → codebase (RAG + vibecoding)
+. [ ] CAP-ARCH-3 — Pipeline i18n aligné sur slider (`translateDeck` → capsule)
+. [ ] CAP-ARCH-4 — Suppression appels LLM dispersés (capsule = consommateur terminal)
+. [ ] CAP-ARCH-5 — Cucumber BDD boundary cross-borough (slider → capsule × 10 langues)
+
+'''
 == 🟡 Backlog restant — À planifier
 
-. [ ] **CR-8** (logging structuré) — à coder
 . [ ] **CR-9** (robust HTML parsing) — à coder
 . [ ] **CR-10** (CI optimization cucumberTest onlyIf) — à coder
 . [ ] **CAP-29** (pipeline traduction vidéo multi-langue) — à cadrer (débloqué)
+. [ ] **CAP-ARCH** (collaboration cross-borough slider+codebase) — à planifier après CAP-29 et CR-10
 
 '''
 == ✅ README i18n — TERMINE (session 041)
@@ -84,8 +105,20 @@
 . [x] execute() → orchestration pure (76 lignes, vs 218 avant)
 . [x] Compile + unit tests PASS
 
+== ✅ CR-9 Robust HTML parsing — TERMINE (session 074)
+
+. [x] `HtmlSectionParser.findTopLevelSectionOpenTags(html): List<MatchResult>` (38 lignes)
+. [x] Depth-tracking existant réutilisé (skip nested + self-closing)
+. [x] `injectAudioSequentialFallback` : 2 lignes regex raw supprimées → 1 ligne `HtmlSectionParser.findTopLevelSectionOpenTags`
+. [x] DRY — réutilise `HtmlSectionParser` (DRY-2 S-031)
+. [x] Bug fix : vertical stacks (sections imbriquées) n'étaient pas skippées → `data-audio` injecté sur sous-sections
+. [x] +8 unit tests `HtmlSectionParserTest.findTopLevelSectionOpenTags` (flat, nested, self-closing, attributes, empty, malformed, positions, multiline)
+. [x] +1 unit test `CapsuleVideoTaskTest.sequential fallback skips nested sections in vertical stack` (data-audio count = 2, pas 4)
+. [x] +1 scénario cucumber `@audio @sequential` + 2 step defs (Given nested, Then exactly N)
+. [x] 414 unit tests VERT (+9), 0 FAIL, 0 SKIP
+
 '''
-== 🟡 Prochaine session — CR-8 Logging structuré CapsulePlugin
+== 🟡 Prochaine session — CR-10 CI optimization cucumberTest onlyIf
 
 '''
 == Backlog priorisé (ordre d'attaque)
@@ -97,8 +130,10 @@
 . [x] 🟠 CR-5 — DRY CapsuleConfigMerger (~76 lignes dupliquées) ✅ S-072
 . [x] 🟠 CR-6 — Robust CLI parsing (`as? Int` → `toIntOrNull()`) ✅ S-071
 . [x] 🟠 CR-7 — Validation YAML avec try/catch gracieux ✅ S-071
-. [ ] 🟡 CR-8 — Logging structuré CapsulePlugin
-. [ ] 🟡 CR-9 — Robust HTML parsing (HtmlSectionParser au lieu de regex raw)
+. [x] 🟡 CR-8 — Logging structuré CapsulePlugin ✅ S-073
+. [x] 🟡 CR-9 — Robust HTML parsing (HtmlSectionParser au lieu de regex raw) ✅ S-074
 . [ ] 🟡 CR-10 — CI optimization cucumberTest onlyIf
 . [ ] 🟢 CAP-27 — VTT burn-in
 . [ ] 🟢 CAP-28 — Coverage gaps (PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%)
+. [ ] 🟢 CAP-29 — Pipeline Traduction Vidéo Multi-Langue (6 US ~20 pts, débloqué)
+. [ ] 🟠 CAP-ARCH — Collaboration cross-borough slider+codebase (6 US ~19 pts, cadré S-073)

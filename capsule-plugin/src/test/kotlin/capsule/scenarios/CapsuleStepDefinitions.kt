@@ -6,6 +6,7 @@ import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import org.gradle.testkit.runner.GradleRunner
 import java.io.File
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -67,6 +68,24 @@ $slides
 <div class="reveal">
   <div class="slides">
 $slides
+  </div>
+</div>
+</body></html>
+        """.trimIndent()
+        decksDir().resolve(deckName).writeText(deckHtml)
+    }
+
+    @Given("a reveal.js deck {string} with nested vertical stack sections")
+    fun aRevealJsDeckWithNestedVerticalStackSections(deckName: String) {
+        val deckHtml = """
+<html><body>
+<div class="reveal">
+  <div class="slides">
+    <section>
+      <section><h2>Sub A</h2></section>
+      <section><h2>Sub B</h2></section>
+    </section>
+    <section><h2>Slide 2</h2></section>
   </div>
 </div>
 </body></html>
@@ -154,6 +173,17 @@ $slides
         assertTrue(injectedFiles.isNotEmpty(), "Should have injected deck files")
         val content = injectedFiles.first().readText()
         assertTrue(content.contains("data-audio"), "Should contain data-audio attributes")
+    }
+
+    @Then("the injected deck HTML contains exactly {int} data-audio attributes")
+    fun theInjectedDeckHtmlContainsExactlyNDataAudioAttributes(expectedCount: Int) {
+        val injectedDir = projectDir.resolve("build/capsule/injected")
+        val injectedFiles = injectedDir.listFiles { f -> f.name.endsWith("-deck.html") }
+        assertNotNull(injectedFiles, "Should have injected deck files")
+        assertTrue(injectedFiles.isNotEmpty(), "Should have injected deck files")
+        val content = injectedFiles.first().readText()
+        val actualCount = Regex("""<section[^>]*data-audio=""").findAll(content).count()
+        assertEquals(expectedCount, actualCount, "Expected $expectedCount data-audio attributes but found $actualCount")
     }
 
     @Then("the injected deck HTML contains {string} attributes")
@@ -1066,6 +1096,50 @@ class $sceneName(Scene):
         assertTrue(
             lastBuildResult.contains("position=$expected"),
             "Build output should mention position=$expected. Got: ${lastBuildResult.take(2000)}"
+        )
+    }
+
+    // ─── CR-8 Structured config logging steps ─────────────────────
+
+    @Then("the build output contains 4 structured config log lines")
+    fun theBuildOutputContains4StructuredConfigLogLines() {
+        val count = listOf("Capsule TTS:", "Capsule Capture:", "Capsule Subtitles:", "Capsule Manim:")
+            .count { lastBuildResult.contains(it) }
+        assertEquals(
+            4, count,
+            "Build output should contain 4 structured config log lines (TTS, Capture, Subtitles, Manim). Got: ${lastBuildResult.take(2000)}"
+        )
+    }
+
+    @Then("the build output contains a TTS config log line with engine token")
+    fun theBuildOutputContainsATtsConfigLogLineWithEngineToken() {
+        assertTrue(
+            lastBuildResult.contains("Capsule TTS:") && lastBuildResult.contains("engine="),
+            "Build output should contain a TTS config log line with engine= token. Got: ${lastBuildResult.take(2000)}"
+        )
+    }
+
+    @Then("the build output contains a Capture config log line with vw token")
+    fun theBuildOutputContainsACaptureConfigLogLineWithVwToken() {
+        assertTrue(
+            lastBuildResult.contains("Capsule Capture:") && lastBuildResult.contains("vw="),
+            "Build output should contain a Capture config log line with vw= token. Got: ${lastBuildResult.take(2000)}"
+        )
+    }
+
+    @Then("the build output contains a Subtitle config log line with subtitle token")
+    fun theBuildOutputContainsASubtitleConfigLogLineWithSubtitleToken() {
+        assertTrue(
+            lastBuildResult.contains("Capsule Subtitles:") && lastBuildResult.contains("subtitle="),
+            "Build output should contain a Subtitle config log line with subtitle= token. Got: ${lastBuildResult.take(2000)}"
+        )
+    }
+
+    @Then("the build output contains a Manim config log line with quality token")
+    fun theBuildOutputContainsAManimConfigLogLineWithQualityToken() {
+        assertTrue(
+            lastBuildResult.contains("Capsule Manim:") && lastBuildResult.contains("quality="),
+            "Build output should contain a Manim config log line with quality= token. Got: ${lastBuildResult.take(2000)}"
         )
     }
 }

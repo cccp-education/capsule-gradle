@@ -1,6 +1,40 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-07
 
+== Session 074 — CR-9 Robust HTML parsing ✅
+
+Refactor robust HTML parsing (CR-9, 🟡 MOYEN). Regex raw `Regex("""<section\b[^>]*>""")`
+dans `injectAudioSequentialFallback` remplacée par `HtmlSectionParser.findTopLevelSectionOpenTags`.
+
+Tâches terminées :
+. `HtmlSectionParser.findTopLevelSectionOpenTags(html): List<MatchResult>` (38 lignes)
+  — depth-tracking existant réutilisé (skip nested + self-closing)
+. `injectAudioSequentialFallback` : 2 lignes regex raw supprimées → 1 ligne
+  `HtmlSectionParser.findTopLevelSectionOpenTags`
+. DRY — réutilise `HtmlSectionParser` (DRY-2 S-031)
+. Bug fix : vertical stacks (sections imbriquées) n'étaient pas skippées par la
+  regex raw → `data-audio` injecté sur sous-sections
+. +8 unit tests `HtmlSectionParserTest.findTopLevelSectionOpenTags` (flat, nested,
+  self-closing, attributes, empty, malformed, positions, multiline)
+. +1 unit test `CapsuleVideoTaskTest.sequential fallback skips nested sections in vertical stack`
+  (data-audio count = 2, pas 4)
+. +1 scénario cucumber `@audio @sequential` + 2 step defs (Given nested, Then exactly N)
+. `./gradlew test` VERT — 414 unit tests, 0 FAIL, 0 SKIP
+
+Métriques : +9 unit tests (414 total), regex raw supprimée, HtmlSectionParser réutilisé.
+
+Rapport : `.agents/sessions/074-cr9-robust-html-parsing.adoc`.
+
+== Session 073 — CR-8 Logging structuré + EPIC CAP-ARCH cadré ✅
+
+CR-8 (🟡 MOYEN) — `CapsulePlugin.kt:40-48` 1 ligne monolithic 13 placeholders →
+4 lignes `logger.lifecycle` par section (TTS/Capture/Subtitles/Manim).
+`CapsuleConfigLogger` object pur extrait (domaine `capsule.config`),
+`formatConfigLog(config): List<String>`. +9 unit tests + 1 scénario cucumber
+`@config @logging`. EPIC CAP-ARCH cadré au BACKLOG (6 US ~19 pts).
+
+Rapport : `.agents/sessions/073-cr8-logging-structure-cap-arch.adoc`.
+
 == Session 072 — CR-5 DRY CapsuleConfigMerger ✅
 
 Refactor DRY du `CapsuleConfigMerger.kt` (CR-5, 🟠 MAJEUR). 5 paires de méthodes
@@ -62,3 +96,26 @@ Cucumber boundary `consolidated_capsule_model.feature` (5 scénarios). Zéro
 doublon modèle.
 
 Rapport : `.agents/sessions/069-cap-model-unification.adoc`.
+
+== Session 073 — CR-8 Logging structuré ✅
+
+Refactor logging structuré `CapsulePlugin.kt:40-48` (CR-8, 🟡 MOYEN). 1 ligne
+monolithic avec 13 placeholders `{}` → 4 lignes `logger.lifecycle` par section
+(TTS, Capture, Subtitles, Manim).
+
+Tâches terminées :
+. `CapsuleConfigLogger` object pur extrait (domaine `capsule.config`, 23 lignes)
+. `formatConfigLog(config): List<String>` → 4 lignes structurées
+. `formatTtsLine` / `formatCaptureLine` / `formatSubtitleLine` / `formatManimLine`
+. Tokens préservés verbatim (engine=, quality=, subtitle=, subtitleFormat=, burnIn=, scriptsDir=)
+. `CapsulePlugin.kt` câblage (l.40-48 monolithic → 3 lignes forEach)
+. +9 unit tests `CapsuleConfigLoggerTest` (4 sections, tokens, defaults, non-blank)
+. +1 scénario cucumber `@config @logging` (5 steps) + 5 step defs
+. `./gradlew test` VERT — 405 unit tests (+9), 0 failures, 0 errors
+
+EPIC CAP-ARCH cadré au BACKLOG : collaboration cross-borough slider+codebase pour
+contenu et i18n (6 US ~19 pts, inspiration document/bakery/plantuml). ⬜ TODO.
+
+Métriques : 405 unit VERT (+9), 1 scénario cucumber ajouté.
+
+Rapport : `.agents/sessions/073-cr8-logging-structure-cap-arch.adoc`.

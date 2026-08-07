@@ -1,0 +1,122 @@
+= Session 074 — CR-9 Robust HTML Parsing
+:date: 2026-08-07
+:session: 074
+:epic: CR-9
+:method: baby-step TDD/BDD (unit → cucumber)
+:score: 9/10
+
+== Objectif
+
+CR-9 — Remplacer la regex raw `Regex("""<section\b[^>]*>""")` dans
+`injectAudioSequentialFallback` par `HtmlSectionParser` existant. La regex
+raw matchait *tous* les `<section>` y compris les sections imbriquées
+(vertical stacks), injectant `data-audio` sur des sous-sections.
+
+== Problème
+
+`CapsuleVideoTask.injectAudioSequentialFallback` (l.774-817) utilisait une
+regex raw pour trouver les tags `<section>` d'ouverture. Cette regex ne
+distinguait pas les sections top-level des sections imbriquées (reveal.js
+vertical stacks : `<section><section>Sub A</section><section>Sub B</section></section>`).
+Résultat : `data-audio` était injecté sur *toutes* les sections, pas seulement
+les top-level, désynchronisant l'audio de la vidéo.
+
+== Solution
+
+Nouvelle méthode `HtmlSectionParser.findTopLevelSectionOpenTags(html): List<MatchResult>`
+— réutilise le depth-tracking existant de `extractTopLevelSections` (skip
+nested + self-closing), mais retourne les `MatchResult` des tags d'ouverture
+avec leurs positions, au lieu des sections complètes. L'API est compatible
+avec le code existant qui itère sur `match.range.first`, `match.value`,
+`match.range.last`.
+
+== Méthode baby-step TDD/BDD
+
+=== RED — Tests unitaires HtmlSectionParserTest
+
++8 tests unitaires `findTopLevelSectionOpenTags` :
+. `returns flat section open tags` — 2 sections flat → 2 tags
+. `skips nested section open tags` — vertical stack → 2 tags top-level only
+. `skips self-closing tags` — `<section />` ignoré
+. `preserves attributes in open tag` — `data-capsule-slide`, `class`, `id`
+. `returns empty list for no sections`
+. `handles malformed HTML with unclosed section` — 2 tags malgré HTML incomplet
+. `positions allow substring extraction` — `range.first`/`range.last` valides
+. `handles multiline section open tags` — attributs sur plusieurs lignes
+
+=== GREEN — Implémentation
+
+`HtmlSectionParser.findTopLevelSectionOpenTags` (38 lignes) — même pattern
+depth-tracking que `extractTopLevelSections`, mais accumule les `MatchResult`
+des tags d'ouverture top-level au lieu des sections complètes.
+
+=== REFACTOR — injectAudioSequentialFallback
+
+`CapsuleVideoTask.kt:782-783` — 2 lignes regex raw supprimées :
+[source,kotlin]
+----
+val slideRegex = Regex("""<section\b[^>]*>""")
+val sections = slideRegex.findAll(originalHtml).toList()
+----
+Remplacées par :
+[source,kotlin]
+----
+val sections = HtmlSectionParser.findTopLevelSectionOpenTags(originalHtml)
+----
+1 ligne. DRY — réutilise `HtmlSectionParser` existant (DRY-2 session 031).
+
+=== Unit — CapsuleVideoTaskTest
+
++1 test `sequential fallback skips nested sections in vertical stack` —
+deck avec vertical stack (1 section top-level contenant 2 sous-sections +
+1 section top-level simple). `data-audio` count = 2 (pas 4). Avant le fix,
+la regex raw aurait matché 4 sections.
+
+=== Cucumber — @audio @sequential
+
++1 scénario `Sequential fallback skips nested sections in vertical stack` :
+- Given `a reveal.js deck "vertical-deck.html" with nested vertical stack sections`
+- And `a capsule script "vertical-script.txt" with 2 sequentially ordered slide segments`
+- When `I run the task "generateCapsuleVideo" with NoOp capture`
+- Then `the injected deck HTML contains exactly 2 data-audio attributes`
+
++2 step definitions :
+- `@Given("a reveal.js deck {string} with nested vertical stack sections")` —
+  deck HTML avec `<section>` imbriquées (vertical stack reveal.js)
+- `@Then("the injected deck HTML contains exactly {int} data-audio attributes")` —
+  compte les `<section[^>]*data-audio=` dans le HTML injecté
+
+== Résultat
+
+- **414 unit tests VERT** (+9 vs S-073 405), 0 FAIL, 0 SKIP
+- Regex raw supprimée de `injectAudioSequentialFallback`
+- `HtmlSectionParser` réutilisé (DRY-2)
+- HTML malformé géré (depth-tracking tolère unclosed tags)
+- Vertical stacks correctement skipnés (bug fix)
+
+== Fichiers modifiés
+
+|===
+| Fichier | Type | Changement
+
+| `src/main/kotlin/capsule/HtmlSectionParser.kt` | prod | +38 lignes `findTopLevelSectionOpenTags`
+| `src/main/kotlin/capsule/CapsuleVideoTask.kt` | prod | -2 lignes regex raw, +1 ligne `HtmlSectionParser.findTopLevelSectionOpenTags`
+| `src/test/kotlin/capsule/HtmlSectionParserTest.kt` | test | +8 tests unitaires
+| `src/test/kotlin/capsule/CapsulePluginTest.kt` | test | +1 test `sequential fallback skips nested sections in vertical stack`
+| `src/test/features/capsule.feature` | test | +1 scénario `@audio @sequential`
+| `src/test/kotlin/capsule/scenarios/CapsuleStepDefinitions.kt` | test | +2 step defs (Given nested, Then exactly N)
+|===
+
+== État EPIC CR
+
+CR-9 ✅ TERMINÉ (S-074). Reste CR-10 (CI optimization cucumberTest onlyIf).
+EPIC CR : 8/10 terminés (CR-1→CR-8 + CR-9, reste CR-10).
+
+== Prochaine session — 075
+
+Backlog restant par priorité :
+. CR-10 — CI optimization `cucumberTest.onlyIf { runCucumber || CI }`
+. CAP-29 — Pipeline Traduction Vidéo Multi-Langue (6 US ~20 pts, débloqué)
+. CAP-ARCH — Cross-borough slider+codebase (6 US ~19 pts, après CAP-29)
+. CAP-27 — VTT burn-in
+. CAP-28 — Coverage gaps

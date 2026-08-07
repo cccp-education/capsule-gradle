@@ -38,4 +38,46 @@ object HtmlSectionParser {
 
         return sections
     }
+
+    /**
+     * Finds the opening tags of top-level `<section>` elements, skipping nested
+     * sections (vertical stacks) and self-closing tags.
+     *
+     * Unlike [extractTopLevelSections] which returns full section content, this
+     * returns only the opening tag matches (with their ranges), enabling callers
+     * to inject attributes (e.g. `data-audio`) at the correct position without
+     * re-parsing HTML with fragile raw regexes (CR-9).
+     *
+     * @param html the HTML content to scan
+     * @return list of [MatchResult] for each top-level `<section ...>` open tag,
+     *         ordered by appearance
+     */
+    fun findTopLevelSectionOpenTags(html: String): List<MatchResult> {
+        val tags = mutableListOf<MatchResult>()
+        var depth = 0
+        var pos = 0
+
+        while (pos < html.length) {
+            val openMatch = sectionOpenRegex.find(html, pos)
+            val closeMatch = sectionCloseRegex.find(html, pos)
+
+            val nextOpen = openMatch?.range?.first ?: Int.MAX_VALUE
+            val nextClose = closeMatch?.range?.first ?: Int.MAX_VALUE
+
+            if (nextOpen < nextClose && openMatch != null) {
+                if (depth == 0) {
+                    tags.add(openMatch)
+                }
+                depth++
+                pos = openMatch.range.last + 1
+            } else if (closeMatch != null) {
+                depth--
+                pos = closeMatch.range.last + 1
+            } else {
+                break
+            }
+        }
+
+        return tags
+    }
 }

@@ -12,6 +12,8 @@ import kotlin.test.assertTrue
  */
 class HtmlSectionParserTest {
 
+    // ── findTopLevelSectionOpenTags (CR-9: robust HTML parsing) ──
+
     @Test
     fun `extractTopLevelSections extracts simple flat sections`() {
         val html = """
@@ -82,5 +84,111 @@ class HtmlSectionParserTest {
         assertEquals(2, sections.size)
         assertTrue(sections[0].contains("data-capsule-slide=\"1\""))
         assertTrue(sections[1].contains("id=\"two\""))
+    }
+
+    // ── findTopLevelSectionOpenTags (CR-9: robust HTML parsing) ──
+
+    @Test
+    fun `findTopLevelSectionOpenTags returns flat section open tags`() {
+        val html = """
+            <section><h2>Slide 1</h2></section>
+            <section><h2>Slide 2</h2></section>
+        """.trimIndent()
+
+        val tags = HtmlSectionParser.findTopLevelSectionOpenTags(html)
+        assertEquals(2, tags.size)
+        assertEquals("<section>", tags[0].value)
+        assertEquals("<section>", tags[1].value)
+    }
+
+    @Test
+    fun `findTopLevelSectionOpenTags skips nested section open tags`() {
+        val html = """
+            <section>
+                <section><h2>Sub A</h2></section>
+                <section><h2>Sub B</h2></section>
+            </section>
+            <section><h2>Slide 2</h2></section>
+        """.trimIndent()
+
+        val tags = HtmlSectionParser.findTopLevelSectionOpenTags(html)
+        assertEquals(2, tags.size)
+        assertTrue(tags[0].value.startsWith("<section"))
+        assertTrue(tags[1].value.startsWith("<section"))
+    }
+
+    @Test
+    fun `findTopLevelSectionOpenTags skips self-closing tags`() {
+        val html = """
+            <section />
+            <section><h2>Real</h2></section>
+        """.trimIndent()
+
+        val tags = HtmlSectionParser.findTopLevelSectionOpenTags(html)
+        assertEquals(1, tags.size)
+        assertTrue(tags[0].value.startsWith("<section>"))
+    }
+
+    @Test
+    fun `findTopLevelSectionOpenTags preserves attributes in open tag`() {
+        val html = """
+            <section data-capsule-slide="1" class="intro"><h2>One</h2></section>
+            <section id="two" data-background="red"><h2>Two</h2></section>
+        """.trimIndent()
+
+        val tags = HtmlSectionParser.findTopLevelSectionOpenTags(html)
+        assertEquals(2, tags.size)
+        assertTrue(tags[0].value.contains("data-capsule-slide=\"1\""))
+        assertTrue(tags[0].value.contains("class=\"intro\""))
+        assertTrue(tags[1].value.contains("id=\"two\""))
+    }
+
+    @Test
+    fun `findTopLevelSectionOpenTags returns empty list for no sections`() {
+        val html = "<div><h2>No sections here</h2></div>"
+        val tags = HtmlSectionParser.findTopLevelSectionOpenTags(html)
+        assertEquals(0, tags.size)
+    }
+
+    @Test
+    fun `findTopLevelSectionOpenTags handles malformed HTML with unclosed section`() {
+        val html = """
+            <section><h2>Slide 1</h2></section>
+            <section><h2>Slide 2</h2>
+        """.trimIndent()
+
+        val tags = HtmlSectionParser.findTopLevelSectionOpenTags(html)
+        assertEquals(2, tags.size)
+    }
+
+    @Test
+    fun `findTopLevelSectionOpenTags positions allow substring extraction`() {
+        val html = "<section><h2>Slide 1</h2></section><section><h2>Slide 2</h2></section>"
+
+        val tags = HtmlSectionParser.findTopLevelSectionOpenTags(html)
+        assertEquals(2, tags.size)
+
+        val beforeFirst = html.substring(0, tags[0].range.first)
+        assertEquals("", beforeFirst)
+
+        val betweenTags = html.substring(tags[0].range.last + 1, tags[1].range.first)
+        assertTrue(betweenTags.contains("</section>"))
+    }
+
+    @Test
+    fun `findTopLevelSectionOpenTags handles multiline section open tags`() {
+        val html = """
+            <section
+              data-capsule-slide="1"
+              class="intro">
+              <h2>One</h2>
+            </section>
+            <section><h2>Two</h2></section>
+        """.trimIndent()
+
+        val tags = HtmlSectionParser.findTopLevelSectionOpenTags(html)
+        assertEquals(2, tags.size)
+        assertTrue(tags[0].value.contains("data-capsule-slide=\"1\""))
+        assertTrue(tags[0].value.contains("class=\"intro\""))
     }
 }

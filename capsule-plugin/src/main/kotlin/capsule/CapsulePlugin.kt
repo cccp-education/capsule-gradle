@@ -37,15 +37,10 @@ class CapsulePlugin : Plugin<Project> {
             // Push resolved values into DSL Extension properties
             pushConfigIntoExtension(mergedConfig, capsuleExt)
 
-            project.logger.lifecycle(
-                "Capsule config resolved: engine={}, voice={}, language={}, vw={}x{}, parallel={}, subtitle={}/{}/burnIn={} manim=[path={}, quality={}, scriptsDir={}, outputDir={}]",
-                mergedConfig.tts.engine, mergedConfig.tts.voice, mergedConfig.tts.language,
-                mergedConfig.capture.viewportWidth, mergedConfig.capture.viewportHeight,
-                mergedConfig.capture.parallelCaptureEnabled,
-                mergedConfig.capture.subtitleEnabled, mergedConfig.capture.subtitleFormat, mergedConfig.capture.subtitleBurnIn,
-                mergedConfig.manim.executablePath, mergedConfig.manim.quality,
-                mergedConfig.manim.scriptsDir, mergedConfig.manim.outputDir
-            )
+            // CR-8 — Structured config logging (4 section lines instead of 1 monolithic)
+            CapsuleConfigLogger.formatConfigLog(mergedConfig).forEach { line ->
+                project.logger.lifecycle(line)
+            }
         }
     }
 

@@ -779,8 +779,7 @@ open class CapsuleVideoTask : DefaultTask() {
     ): File {
         val originalHtml = deckFile.readText()
 
-        val slideRegex = Regex("""<section\b[^>]*>""")
-        val sections = slideRegex.findAll(originalHtml).toList()
+        val sections = HtmlSectionParser.findTopLevelSectionOpenTags(originalHtml)
 
         val injectedHtml = buildString {
             var lastEnd = 0

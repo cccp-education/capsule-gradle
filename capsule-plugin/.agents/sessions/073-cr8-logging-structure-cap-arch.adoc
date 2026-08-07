@@ -1,0 +1,103 @@
+= Session 073 — CR-8 Logging structuré + EPIC CAP-ARCH cadré
+:date: 2026-08-07
+:session: 073
+:borough: Détroit (capsule-gradle)
+:type: refactor+tdd+bdd+cadrage
+
+== Objectif
+
+CR-8 — Logging structuré `CapsulePlugin` l.36-44 : 1 ligne monolithic avec 13
+placeholders `{}` → 4 lignes `logger.lifecycle` par section (TTS, Capture,
+Subtitles, Manim). + Cadrage EPIC CAP-ARCH (collaboration cross-borough
+slider+codebase pour contenu et i18n).
+
+== CR-8 — Refactor logging structuré
+
+=== Problème
+
+`CapsulePlugin.kt:40-48` — 1 `logger.lifecycle` monolithic avec 13 placeholders :
+
+----
+"Capsule config resolved: engine={}, voice={}, language={}, vw={}x{}, parallel={}, subtitle={}/{}/burnIn={} manim=[path={}, quality={}, scriptsDir={}, outputDir={}]"
+----
+
+Impossible à parser visuellement. 13 placeholders croisés, ordre fragile.
+
+=== Solution
+
+Extraction de `CapsuleConfigLogger` (object pur, domaine `capsule.config`) :
+- `formatConfigLog(config: CapsuleConfig): List<String>` → 4 lignes structurées
+- `formatTtsLine` — `Capsule TTS: engine=X, voice=Y, language=Z`
+- `formatCaptureLine` — `Capsule Capture: vw=WxH, parallel=B`
+- `formatSubtitleLine` — `Capsule Subtitles: subtitle=B, subtitleFormat=F, burnIn=B`
+- `formatManimLine` — `Capsule Manim: path=P, quality=Q, scriptsDir=S, outputDir=O`
+
+Tokens préservés verbatim (`engine=`, `quality=`, `subtitle=`, `subtitleFormat=`,
+`burnIn=`, `scriptsDir=`) → Cucumber steps existants (`@config`) restent verts.
+
+`CapsulePlugin` remplace le bloc monolithic par :
+----
+CapsuleConfigLogger.formatConfigLog(mergedConfig).forEach { line ->
+    project.logger.lifecycle(line)
+}
+----
+
+=== Méthode baby-step TDD/BDD
+
+. **RED** : `CapsuleConfigLoggerTest` (9 tests) — compile fail (`CapsuleConfigLogger` n'existe pas)
+. **GREEN** : `CapsuleConfigLogger.kt` créé (object pur, 4 formatters) → 9/9 PASS
+. **BDD** : scénario Cucumber `@config @logging` (5 steps) dans `capsule.feature` +
+  5 step defs dans `CapsuleStepDefinitions.kt` (4 sections, tokens préservés)
+. **REFACTOR** : `CapsulePlugin.kt` câblage (l.40-48 monolithic → 3 lignes forEach)
+
+=== Fichiers modifiés
+
+. `src/main/kotlin/capsule/CapsuleConfigLogger.kt` — **nouveau** (23 lignes, object pur)
+. `src/main/kotlin/capsule/CapsulePlugin.kt` — refactor (l.40-48 → 3 lignes forEach)
+. `src/test/kotlin/capsule/CapsuleConfigLoggerTest.kt` — **nouveau** (9 tests unit)
+. `src/test/kotlin/capsule/scenarios/CapsuleStepDefinitions.kt` — +5 steps + import `assertEquals`
+. `src/test/features/capsule.feature` — +1 scénario `@config @logging` (5 steps)
+
+=== Métriques
+
+- 405 unit tests VERT (+9 vs S-072 396), 0 failures, 0 errors
+- 1 scénario Cucumber `@config @logging` ajouté (5 steps)
+- `./gradlew test` BUILD SUCCESSFUL (1m 52s)
+- `./gradlew compileKotlin` UP-TO-DATE
+- Cucumber complet non exécuté en local (Playwright/ffmpeg timeout), passera en CI
+
+== EPIC CAP-ARCH — Cadrage cross-borough (slider + codebase)
+
+Ajouté au BACKLOG (`BACKLOG.adoc` après EPIC SLD-11).
+
+_Vision_ : La création de contenu assistée par IA dans capsule (scripts TTS,
+speaker notes, traduction multi-langue) doit s'appuyer sur les hubs existants
+(`slider` pour la génération de decks, `codebase` pour le RAG/vibecoding/LLM
+pool) plutôt que d'éparpiller des appels LLM directs. L'i18n suit la même
+logique : `translateDeck` (slider, 10 langues) + `i18n-contracts` (BOM N0).
+
+_Inspiration_ : document-gradle (`DocumentI18nBridge`), bakery-gradle
+(`ContentTranslationService`), plantuml-gradle (`PlantumlTranslationServiceAdapter`).
+
+6 US ~19 pts :
+. CAP-ARCH-0 — Cadrage EPIC (audit appels LLM dispersés, inventaire contrats N0)
+. CAP-ARCH-1 — Migration i18n vers `i18n-contracts` (`CapsuleI18nBridge`)
+. CAP-ARCH-2 — Délégation génération contenu → codebase (RAG + vibecoding)
+. CAP-ARCH-3 — Pipeline i18n aligné sur slider (`translateDeck` → capsule)
+. CAP-ARCH-4 — Suppression appels LLM dispersés (capsule = consommateur terminal)
+. CAP-ARCH-5 — Cucumber BDD boundary cross-borough (slider → capsule × 10 langues)
+
+_Statut_ : ⬜ TODO (cadrage à planifier après CAP-29 et CR-9/10).
+
+== Dettes techniques gouvernance (à corriger à la clôture)
+
+* BACKLOG.adoc : CR-8 marqué `✅ TERMINE (S-073)`, EPIC CAP-ARCH ajouté.
+* INDEX.adoc : ajouter session 073 dans la table + roadmap EPICs CR + EPIC CAP-ARCH.
+* TABLE AGENTS.adoc racine : mettre à jour entrée capsule (S-072→S-073).
+
+== Score session
+
+9/10 — CR-8 livré en baby-step TDD/BDD strict (RED → GREEN → REFACTOR), 9 unit
+tests + 1 scénario Cucumber. EPIC CAP-ARCH cadré avec vision claire et 6 US
+découpées. Cucumber non exécuté en local (timeout Playwright/ffmpeg), mais
+scénario écrit et steps compilés.

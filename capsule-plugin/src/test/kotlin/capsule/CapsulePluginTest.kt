@@ -847,6 +847,50 @@ Contenu slide 3.
     }
 
     @Test
+    fun `sequential fallback skips nested sections in vertical stack`() {
+        val deckDir = File(tempDir, "decks").also { it.mkdirs() }
+        val deckFile = File(deckDir, "vertical-deck.html")
+        deckFile.writeText("""
+<html><body>
+<div class="reveal">
+  <div class="slides">
+    <section>
+      <section><h2>Sub A</h2></section>
+      <section><h2>Sub B</h2></section>
+    </section>
+    <section><h2>Slide 2</h2></section>
+  </div>
+</div>
+</body></html>
+        """.trimIndent())
+
+        val scriptDir = File(tempDir, "scripts").also { it.mkdirs() }
+        val scriptFile = File(scriptDir, "vertical-script.txt")
+        scriptFile.writeText("""
+=== CAPSULE SCRIPT : vertical ===
+--- SLIDE 1 : Vertical Stack ---
+Top-level slide with nested subs.
+--- SLIDE 2 : Slide 2 ---
+Second top-level slide.
+        """.trimIndent())
+
+        val task = createTask(
+            deckDir,
+            scriptDir,
+            capture = NoOpPlaywrightCapture(),
+            engine = NoOpTtsEngine()
+        )
+        task.execute()
+
+        val injectedDeck = File(tempDir, "build/capsule/injected/vertical-deck.html")
+        assertTrue(injectedDeck.exists(), "Expected injected deck at ${injectedDeck.absolutePath}")
+        val injectedContent = injectedDeck.readText()
+
+        val dataAudioCount = Regex("""<section[^>]*data-audio=""").findAll(injectedContent).count()
+        assertEquals(2, dataAudioCount, "Should inject data-audio on 2 top-level sections only, not on nested subs. Got $dataAudioCount")
+    }
+
+    @Test
     fun `multi-deck build produces separate videos`() {
         val deckDir = File(tempDir, "decks").also { it.mkdirs() }
         val deck1 = File(deckDir, "cours-a-deck.html")

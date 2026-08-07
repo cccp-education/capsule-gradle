@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-07 (Session 072 — CR-5 DRY ConfigMerger)
+:last_update: 2026-08-07 (Session 074 — CR-9 robust HTML parsing)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -145,14 +145,14 @@ _Tests_ : Cucumber @config @yaml_error (YAML invalide → fallback gracieux).
 Impossible à parser visuellement.
 _Fix_ : 4-5 `logger.lifecycle` séparés par section (TTS, Capture, Subtitles, Manim).
 | 🟡 MOYEN
-| ⬜ TODO
+| ✅ TERMINE (session 073)
 
 | CR-9
 | **Robust HTML parsing — Regex slideRegex** — `Regex("""<section\b[^>]*>""")` sur HTML potentiellement malformé.
 _Fix_ : utiliser `HtmlSectionParser` déjà existant au lieu de regex raw dans `injectAudioSequentialFallback`.
 Ou : parser HTML léger (Jsoup? déjà en dépendance transitive?).
 | 🟡 MOYEN
-| ⬜ TODO
+| ✅ TERMINE (session 074)
 
 | CR-10
 | **CI optimization — cucumberTest upToDateWhen { false }** — Toujours re-run, ~15 min (Playwright + FFmpeg).
@@ -282,3 +282,93 @@ Boundary realignment : slider produit HTML Reveal.js uniquement, capsule parse
 |===
 
 _Total_ : 6 US TERMINÉ, 1 US TODO (suivi). +42 unit +8 functional +16 cucumber = 66 nouveaux tests, 0 FAIL.
+
+'''
+== 🟠 EPIC CAP-ARCH — Collaboration Cross-Borough (slider + codebase) pour Création de Contenu et i18n
+
+_Vision_ : La création de contenu assistée par IA dans capsule (scripts TTS,
+speaker notes, traduction multi-langue) doit s'appuyer sur les hubs existants
+(`slider` pour la génération de decks, `codebase` pour le RAG/vibecoding/LLM
+pool) plutôt que d'éparpiller des appels LLM directs dans capsule. L'i18n suit
+la même logique : le pipeline `translateDeck` de slider (10 langues, 425 tests)
+et les contrats `i18n-contracts` (workspace-bom N0) sont les briques partagées.
+Capsule est un consommateur terminal du DAG N2, pas un point d'émission LLM.
+
+_Inspiration_ : `document-gradle` (bridge `DocumentI18nBridge` → `i18n-contracts`),
+`bakery-gradle` (`ContentTranslationService` + dogfooding LLM réel multi-langue),
+`plantuml-gradle` (`PlantumlTranslationServiceAdapter` + `i18n-contracts` 0.0.2).
+Ces 3 boroughs ont déjà migré vers le pattern « hub codebase + contrats N0 »
+au lieu d'appels LLM dispersés.
+
+_Boundary cible_ :
+- Capsule ne porte PAS de logique LLM/RAG en direct (pas de `OllamaChatClient`,
+  pas de `ChatLanguageModel` inline, pas de prompt engineering dispersé).
+- Capsule consomme les decks traduits produits par `slider.translateDeck`
+  (10 langues) via le pipeline `translateAndExtractSpeakerNotes` (SLD-11.4).
+- Capsule délègue la génération de contenu (speaker notes enrichies, scripts
+  pédagogiques) au hub `codebase` (RAG pgvector + vibecoding-aware) via les
+  contrats `pipeline-contracts` / `agent-contracts` (workspace-bom N0).
+- L'i18n des artefacts capsule (logs, messages, rapports) passe par
+  `i18n-contracts` (`SupportedLanguage`, `LanguageCatalog`, `MessageBundle`).
+- Le TTS multi-langue (CAP-29) consomme les voices déjà configurées via
+  `LanguageVoiceMapping` (FR/EN/ES/DE) + 7 langues manquantes (zh/hi/ar/bn/pt/ru/ur),
+  alignées sur `LanguageCatalog.supportedCodes()` du BOM.
+
+_Dépendances_ : CAP-29 (pipeline multi-langue), SLD-11 (cross-borough slider),
+workspace-bom `i18n-contracts` 0.0.2 + `pipeline-contracts` 0.0.2.
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-ARCH-0
+| *Cadrage EPIC* — audit des appels LLM dispersés dans capsule (si existants),
+  inventaire des contrats N0 consommables (i18n, pipeline, agent), découpage US.
+  MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+| 1
+| ⬜ TODO
+
+| CAP-ARCH-1
+| *Migration i18n vers `i18n-contracts`* — créer `CapsuleI18nBridge` (pattern
+  document-gradle) consommant `SupportedLanguage` + `LanguageCatalog` du BOM.
+  Remplacer les hardcodés `Language` enum / `LanguageVoiceMapping` par les
+  contrats N0 partagés. Tests unitaires bridge + non-regression.
+| 3
+| ⬜ TODO
+
+| CAP-ARCH-2
+| *Délégation génération contenu → codebase* — capsule ne porte plus de prompt
+  engineering LLM. Les speaker notes enrichies / scripts pédagogiques sont
+  produits par le hub codebase (RAG + vibecoding) via `pipeline-contracts`.
+  Capsule consomme le résultat (`.txt` / `.adoc`) sans appel LLM direct.
+| 5
+| ⬜ TODO
+
+| CAP-ARCH-3
+| *Pipeline i18n aligné sur slider* — `translateAndExtractSpeakerNotes` (SLD-11.4)
+  consomme `slider.translateDeck` (10 langues) au lieu de traduire côté capsule.
+  Capsule parse le `.adoc` traduit directement (boundary SLD-11). Tests E2E
+  cross-borough (slider → capsule × 10 langues).
+| 5
+| ⬜ TODO
+
+| CAP-ARCH-4
+| *Suppression des appels LLM dispersés* — purger tout `OllamaChatClient` /
+  `ChatLanguageModel` inline de capsule (si présents). Capsule devient
+  consommateur terminal pur du DAG N2. Vérification : `grep -r "Ollama\|ChatModel\|ChatLanguageModel" capsule-plugin/src/main/` → zéro.
+| 2
+| ⬜ TODO
+
+| CAP-ARCH-5
+| *Cucumber BDD boundary cross-borough* — scénario end-to-end : deck source
+  → `slider.translateDeck` (10 langues) → `capsule.translateAndExtractSpeakerNotes`
+  → `capsule.generateCapsuleVideo` × 10. Tags `@i18n @cross-borough @architecture`.
+| 3
+| ⬜ TODO
+|===
+
+_Total_ : 6 US, ~19 pts. _Méthode_ : baby-step DDD/TDD/BDD, 3 niveaux tests/US
+(unit → functional → cucumber), English only code/Gherkin. _Pattern de référence_ :
+document-gradle (`DocumentI18nBridge`), bakery-gradle (`ContentTranslationService`),
+plantuml-gradle (`PlantumlTranslationServiceAdapter`). _Statut_ : ⬜ TODO (cadrage
+à planifier après CAP-29 et CR-10).

@@ -27,6 +27,13 @@ Feature: Capsule video generation from a reveal.js deck
     Then a video file "seq.webm" is generated
     And the injected deck HTML contains audio attributes for all slides
 
+  @audio @sequential
+  Scenario: Sequential fallback skips nested sections in vertical stack
+    Given a reveal.js deck "vertical-deck.html" with nested vertical stack sections
+    And a capsule script "vertical-script.txt" with 2 sequentially ordered slide segments
+    When I run the task "generateCapsuleVideo" with NoOp capture
+    Then the injected deck HTML contains exactly 2 data-audio attributes
+
   Scenario: Multi-deck build produces separate videos
     Given a reveal.js deck "deck-a-deck.html" with 1 slides and data-capsule-slide attributes
     And a reveal.js deck "deck-b-deck.html" with 1 slides and data-capsule-slide attributes
@@ -310,6 +317,16 @@ Feature: Capsule video generation from a reveal.js deck
     And the resolved subtitle burn-in style has fontSize 36
     And the resolved subtitle burn-in style has fontColor "&H000000FF"
     And the resolved subtitle burn-in style has position "top"
+
+  @config @logging
+  Scenario: Resolved config is logged as 4 structured section lines
+    Given a Gradle project with the capsule plugin applied
+    When I run the task "generateCapsuleScript"
+    Then the build output contains 4 structured config log lines
+    And the build output contains a TTS config log line with engine token
+    And the build output contains a Capture config log line with vw token
+    And the build output contains a Subtitle config log line with subtitle token
+    And the build output contains a Manim config log line with quality token
 
   @feed
   Scenario: generateCapsuleScript depends on extractSpeakerNotes (SLD-11.6)
