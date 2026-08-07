@@ -1,6 +1,30 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-08
 
+== Session 080 — CAP-29.4 Câblage translateAndGenerateCapsuleVideos ✅
+
+Tâche composite `translateAndGenerateCapsuleVideos` : câble le pipeline complet
+multi-langue (deck source → translateDeck 10 langues → extractSpeakerNotes 10
+scripts → generateCapsuleVideoAllLanguages 10 WebM). 460 unit VERT (inchangé)
++ 25 functional (+3) PASS.
+
+Tâches terminées :
+. `CapsuleFeedTaskDomain.kt` — +2 constantes `TRANSLATE_AND_GENERATE_CAPSULE_VIDEOS`
+  + `TRANSLATE_AND_GENERATE_VIDEOS_DESCRIPTION` (stable task identifiers)
+. `CapsuleFeedTaskRegistrar.kt` — +`registerTranslateAndGenerateCapsuleVideos` :
+  `tasks.register` + group `capsule` + description + dependsOn
+  (`TRANSLATE_AND_EXTRACT_SPEAKER_NOTES` + `generateCapsuleVideoAllLanguages`)
+. `CapsuleManager.kt` — câblage 3ème appel registrar dans
+  `registerExtractSpeakerNotesTask()`
+. Tests — 3 functional `TranslateAndGenerateCapsuleVideosFunctionalTest`
+  (RED→GREEN : registration groupe, description mentionne les 2 sous-tâches,
+  dependsOn chain via `--dry-run` avec stub `translateDeck` dans projet isolé)
+. Vérifications — `check` BUILD SUCCESSFUL (unit 460 + functional + kover,
+  cucumber SKIPPED — CR-10), zéro secret
+
+Prochaine session : CAP-29.5 Cucumber BDD E2E 10 langues
+(`multi_language_capsule.feature`).
+
 == Session 079 — CAP-29.3 GenerateCapsuleVideoAllLanguagesTask ✅
 
 Tâche `generateCapsuleVideoAllLanguages` : itère le `CapsuleVideoPlan` (S-078),

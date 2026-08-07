@@ -1,42 +1,38 @@
-= PROMPT_REPRISE — Capsule — Session 079
-:session: 079
+= PROMPT_REPRISE — Capsule — Session 081
+:session: 081
 :date: 2026-08-08
 
-== Session 078 terminée — CAP-29.2 CapsuleVideoPlan + CapsuleVideoPlanner
+== Session 080 terminée — CAP-29.4 Câblage translateAndGenerateCapsuleVideos
 
-CAP-29.2 ✅ TERMINÉ — Domaine `capsule.multilang` enrichi (7ème domaine DDD).
-`CapsuleVideoEntry` (data class immutable, 4 champs deckFile/scriptFile/language/
-outputVideo, invariants fail-fast : deck exists, script exists, language in
-LanguageCatalog) + `CapsuleVideoPlan` (data class immutable, invariant non-empty,
-accès size()/isEmpty()/languages()) + `CapsuleVideoPlanner` (object pur :
-`plan(deckDir, scriptDir, outputDir, targetLanguages)` → skips langues sans
-deck+script, fail-fast si plan vide). Nommage aligné slider :
-`<deckName>_<lang>-deck.html` + `<deckName>_<lang>-script.txt` →
-`<deckName>_<lang>.webm`. 454 unit tests VERT (+18 net). `check` BUILD SUCCESSFUL.
+Tâche composite purement déclarative `translateAndGenerateCapsuleVideos` :
+dependsOn `translateAndExtractSpeakerNotes` + `generateCapsuleVideoAllLanguages`.
+Pipeline complet : deck source → translateDeck (10 langues) → extractSpeakerNotes
+(10 scripts) → generateCapsuleVideoAllLanguages (10 WebM). 3 functional tests
+RED→GREEN (registration groupe capsule, description mentionne les 2 sous-tâches,
+dependsOn chain via `--dry-run` avec stub `translateDeck` dans projet isolé).
+460 unit VERT (inchangé) + 25 functional (+3). `check` BUILD SUCCESSFUL.
 
 Livrables production :
-- `capsule/multilang/CapsuleVideoPlan.kt` (entrée + plan)
-- `capsule/multilang/CapsuleVideoPlanner.kt` (object pur, plan builder)
+- `capsule/feed/CapsuleFeedTaskDomain.kt` — constantes
+  `TRANSLATE_AND_GENERATE_CAPSULE_VIDEOS` + description
+- `capsule/feed/CapsuleFeedTaskRegistrar.kt` — `registerTranslateAndGenerateCapsuleVideos`
+- `capsule/CapsuleManager.kt` — câblage 3ème appel registrar
 
 Livrables tests :
-- `capsule/multilang/CapsuleVideoPlanTest.kt` (10 unit)
-- `capsule/multilang/CapsuleVideoPlannerTest.kt` (8 unit)
+- `capsule/feed/TranslateAndGenerateCapsuleVideosFunctionalTest.kt` (3 functional)
 
-== Prochaine session — 079
+== Prochaine session — 081
 
-. 🟡 **CAP-29.3** — `GenerateCapsuleVideoAllLanguagesTask` — tâche Gradle qui
-  itère sur le `CapsuleVideoPlan`, appelle le pipeline TTS+capture par langue
-  avec `ttsLanguage` adapté. Réutilise `synthesizeTtsForScript` +
-  `captureDeckSequential`/`captureDeckParallel` existants (CR-1 refactor).
-  Output : `<deckName>_<lang>.webm` par langue. Économie d'encre (AGENT.adoc) :
-  skip langue si WebM existe et est valide (probe duration > 0).
-  Baby-step TDD : unit (plan iteration mocké) + functional (NoOp engines,
-  3 langues). ~4 pts.
-  _Fichiers impactés_ : `src/main/kotlin/capsule/multilang/` (nouvelle tâche),
-  `src/test/kotlin/capsule/multilang/` + `functionalTest/`.
+. 🟡 **CAP-29.5** — Cucumber BDD E2E 10 langues : `multi_language_capsule.feature`.
+  Scénarios BDD end-to-end : deck source → 10 decks traduits → 10 scripts → 10
+  WebM, `ttsLanguage` adapté par langue, output naming `<deckName>_<lang>.webm`,
+  RTL languages ar/ur générés. Tags `@multilang @i18n`. NoOp engines (pas de
+  vrais Piper/Playwright). ~6 scénarios + step defs. 4 pts.
+  _Fichiers impactés_ : `src/cucumberTest/resources/.../multi_language_capsule.feature`
+  (nouveau), `src/cucumberTest/kotlin/.../steps/` (nouveaux step defs).
+  ⚠️ Bug préexistant : `CucumberTestRunner` ne lance que `capsule.feature` (à
+  investiguer en début de session si CAP-29.5 est invisible).
 
-. **CAP-29.4** — Câblage `translateAndGenerateCapsuleVideos` (dependsOn chaîné).
-. **CAP-29.5** — Cucumber BDD E2E 10 langues (`multi_language_capsule.feature`).
 . **CAP-29.6** — Documentation + dogfooding (1 deck × 3 langues fr/en/ar).
 
 == Backlog restant (après CAP-29)
@@ -55,7 +51,8 @@ Livrables tests :
 - BOM workspace-bom 0.0.16 (Central) + i18n-contracts 0.0.2 (Central)
 - Version capsule : 0.0.1-SNAPSHOT (non publié Maven Central)
 - Version slider : 0.0.16 (mavenLocal)
-- 454 unit tests VERT (capsule) + 0 FAIL, 0 SKIP
+- 460 unit tests VERT (capsule) + 0 FAIL, 0 SKIP
+- 25 functional tests VERT
 - `./gradlew check` VERT (cucumberTest SKIPPED sans -PrunCucumber)
 - Domaines DDD capsule : `capsule.feed`, `capsule.capture`, `capsule.tts`,
   `capsule.subtitles`, `capsule.manim`, `capsule.config`, `capsule.plugin`,
@@ -63,7 +60,8 @@ Livrables tests :
 - Baby-step TDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 - English only : code, Gherkin, comments — no French
 - EPICs clos capsule : CAP-0→25 + CAP-MODEL + K-1 + DRY-1→3 + CR-1→CR-10
-- EPIC en cours : CAP-29 (CAP-29.0 ✅, CAP-29.1 ✅, CAP-29.2 ✅, 3→6 TODO)
+- EPIC en cours : CAP-29 (CAP-29.0 ✅, CAP-29.1 ✅, CAP-29.2 ✅, CAP-29.3 ✅,
+  CAP-29.4 ✅, 5→6 TODO)
 - Loi de l'Économie d'Encre (AGENT.adoc) : vérifier artefact résultat avant opération coûteuse
 - `i18n-contracts` 0.0.2 consommé : `LanguageCatalog` (10 langues),
   `SupportedLanguage` (code/name/nativeName/rtl/localeTag)

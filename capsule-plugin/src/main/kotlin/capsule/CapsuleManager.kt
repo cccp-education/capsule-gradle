@@ -20,6 +20,7 @@ class CapsuleManager(private val project: Project) {
     private fun Project.registerExtractSpeakerNotesTask() {
         capsule.feed.CapsuleFeedTaskRegistrar.register(this)
         capsule.feed.CapsuleFeedTaskRegistrar.registerTranslateAndExtractSpeakerNotes(this)
+        capsule.feed.CapsuleFeedTaskRegistrar.registerTranslateAndGenerateCapsuleVideos(this)
     }
 
     private fun Project.registerGenerateCapsuleScriptTask() {

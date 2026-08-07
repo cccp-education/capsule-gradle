@@ -63,6 +63,26 @@ object CapsuleFeedTaskRegistrar {
             task.dependsOn("translateDeck")
         }
     }
+
+    /**
+     * Registers the `translateAndGenerateCapsuleVideos` composite task on [project].
+     *
+     * This task wires the full multi-language video pipeline: it depends on
+     * `translateAndExtractSpeakerNotes` (slider `translateDeck` → capsule
+     * `extractSpeakerNotes`) and on `generateCapsuleVideoAllLanguages`, so a
+     * single Gradle invocation produces one localized capsule WebM per target
+     * language from a single source deck.
+     */
+    fun registerTranslateAndGenerateCapsuleVideos(project: Project) {
+        project.tasks.register(
+            CapsuleFeedTaskNames.TRANSLATE_AND_GENERATE_CAPSULE_VIDEOS,
+        ) { task ->
+            task.group = CapsuleFeedTaskNames.GROUP
+            task.description = CapsuleFeedTaskNames.TRANSLATE_AND_GENERATE_VIDEOS_DESCRIPTION
+            task.dependsOn(CapsuleFeedTaskNames.TRANSLATE_AND_EXTRACT_SPEAKER_NOTES)
+            task.dependsOn("generateCapsuleVideoAllLanguages")
+        }
+    }
 }
 
 /**

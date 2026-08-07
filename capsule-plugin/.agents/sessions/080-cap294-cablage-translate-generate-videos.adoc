@@ -1,0 +1,84 @@
+= Session 080 — CAP-29.4 Câblage translateAndGenerateCapsuleVideos
+:date: 2026-08-08
+:session: 080
+:epic: CAP-29
+:us: CAP-29.4
+:method: baby-step TDD (functional) + wiring Gradle
+
+== Objectif
+
+Implémenter CAP-29.4 : la tâche composite `translateAndGenerateCapsuleVideos`
+qui câble le pipeline complet multi-langue : deck source →
+`translateAndExtractSpeakerNotes` (slider `translateDeck` → capsule
+`extractSpeakerNotes`) → `generateCapsuleVideoAllLanguages` (10 WebM).
+Dépendances : `translateAndExtractSpeakerNotes` + `generateCapsuleVideoAllLanguages`.
+
+== Méthode
+
+Baby-step TDD strict : RED → GREEN, 1 niveau de test (functional — pas d'unit
+possible pour un câblage Gradle pur, pas de cucumber avant CAP-29.5). Non-régression
+stricte : la tâche est purement déclarative (dependsOn), aucune logique métier.
+
+== Décisions d'architecture
+
+. *Nom de tâche dans le domaine* — `CapsuleFeedTaskNames.TRANSLATE_AND_GENERATE_CAPSULE_VIDEOS`
+  + description `TRANSLATE_AND_GENERATE_VIDEOS_DESCRIPTION` ajoutés dans
+  `capsule.feed.CapsuleFeedTaskDomain` (stable task identifiers — pattern existant).
+. *Registration dans `CapsuleFeedTaskRegistrar`* — `registerTranslateAndGenerateCapsuleVideos(project)`
+  : `tasks.register(name)` + `group = "capsule"` + description + `dependsOn`
+  (`TRANSLATE_AND_EXTRACT_SPEAKER_NOTES` via constante + `"generateCapsuleVideoAllLanguages"`).
+  Tâche composite sans classe (pure orchestration Gradle).
+. *Câblage `CapsuleManager.registerExtractSpeakerNotesTask()`* — ajout du 3ème
+  appel registrar (à côté de `register` + `registerTranslateAndExtractSpeakerNotes`).
+  La tâche n'a pas de classe propre — Gradle l'expose en lifecycle task.
+
+== Livrables
+
+Production (3 fichiers modifiés) :
+. `src/main/kotlin/capsule/feed/CapsuleFeedTaskDomain.kt` — +2 constantes
+  (`TRANSLATE_AND_GENERATE_CAPSULE_VIDEOS`, `TRANSLATE_AND_GENERATE_VIDEOS_DESCRIPTION`).
+. `src/main/kotlin/capsule/feed/CapsuleFeedTaskRegistrar.kt` — +`registerTranslateAndGenerateCapsuleVideos`.
+. `src/main/kotlin/capsule/CapsuleManager.kt` — câblage 3ème appel registrar.
+
+Tests (1 fichier, 3 functional) :
+. `src/functionalTest/kotlin/capsule/feed/TranslateAndGenerateCapsuleVideosFunctionalTest.kt`
+  — RED→GREEN :
+  1. tâche enregistrée avec le groupe `capsule` (`tasks --all`)
+  2. description mentionne les 2 sous-tâches (`translateAndExtractSpeakerNotes` +
+     `generateCapsuleVideoAllLanguages`)
+  3. dependsOn chain vérifiée via `--dry-run` : le graphe expose `translateAndExtractSpeakerNotes`,
+     `generateCapsuleVideoAllLanguages`, `translateDeck` (stub `tasks.register('translateDeck')`
+     fourni dans le projet isolé — slider non appliqué) et `extractSpeakerNotes`.
+
+== Vérification
+
+[source,shell]
+----
+./gradlew functionalTest --tests "capsule.feed.TranslateAndGenerateCapsuleVideosFunctionalTest"  # 3 functional PASS
+./gradlew check                                # BUILD SUCCESSFUL (unit 460 + functional + kover, cucumber SKIPPED)
+rg "TOKEN|SECRET|PASSWORD|API_KEY|gho_|ghp_"   # zéro secret
+----
+
+== Delta tests
+
+- Avant : 460 unit + 22 functional (baseline S-079)
+- Après : 460 unit (inchangé) + 25 functional (+3) — `TranslateAndGenerateCapsuleVideosFunctionalTest`
+- Cucumber : SKIPPED (sans -PrunCucumber, CR-10)
+
+== Score
+
+9/10 — US CAP-29.4 livrée : tâche composite purement déclarative, baby-step TDD
+strict (RED : tâche absente → GREEN : registration), dependsOn chain vérifiée en
+functional (--dry-run avec stub translateDeck), zéro logique métier ajoutée, 460
+unit 0 FAIL + functional 0 FAIL. 1 pt de marge : pas de cucumber E2E (CAP-29.5)
+ni de dogfooding réel (CAP-29.6).
+
+== Prochaine session — 081
+
+. 🟡 **CAP-29.5** — Cucumber BDD E2E 10 langues (`multi_language_capsule.feature`) :
+  deck source → 10 decks traduits → 10 scripts → 10 WebM, ttsLanguage adapté,
+  naming `<deckName>_<lang>.webm`, RTL ar/ur. Tags `@multilang @i18n`.
+  NoOp engines. ~6 scénarios + step defs.
+. **CAP-29.6** — Documentation + dogfooding (1 deck × 3 langues fr/en/ar).
+. **CAP-29.4b (suivi)** — `translateAndGenerateCapsuleVideos` ne déclare pas
+  `translateDeck` en direct (dépendance transitive via translateAndExtractSpeakerNotes).
