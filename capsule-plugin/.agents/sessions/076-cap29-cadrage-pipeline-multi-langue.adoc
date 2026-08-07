@@ -1,0 +1,142 @@
+= Session 076 — Capsule — CAP-29.0 Cadrage EPIC pipeline multi-langue
+:date: 2026-08-07
+:method: cadrage (zéro code)
+:epic: CAP-29
+:status: ✅ TERMINÉ
+
+== Objectif
+
+CAP-29.0 — Cadrage formel EPIC CAP-29 (Pipeline Traduction Vidéo Multi-Langue).
+Session de vision et découpage baby-step. Zéro code modifié.
+
+== Contexte
+
+Le pipeline `slider.translateDeck` (10 langues, 425 tests PASS) et le pipeline
+`capsule.generateCapsuleVideo` (421 unit tests) sont fonctionnels mais non câblés
+en multi-langue. CAP-29 crée le pont : un deck source → 10 vidéos localisées en
+une tâche Gradle.
+
+== Audit code existant
+
+=== Capsule côté TTS
+
+. `Language` enum local (`LanguageVoiceMapping.kt`) — 4 entrées uniquement :
+   FR, EN, ES, DE. Méthode `fromCode(code): Language?`.
+. `VoiceMapping` object — 4 Piper models (`fr_FR-siwis-medium`, `en_US-lessac-medium`,
+   `es_ES-carlfm-x_low`, `de_DE-thorsten-medium`) + 4 espeak voices (`fr`, `en`, `es`, `de`).
+. `PiperTtsEngine` + `EspeakTtsEngine` (`TtsManager.kt`) — acceptent `language: Language?`,
+   résolvent model/voice via `VoiceMapping`.
+. `CapsuleVideoTask.resolveTtsEngine()` — lit `capsuleExtension.ttsLanguage.get()`,
+   résout `Language.fromCode(langCode)`, instancie PiperTtsEngine/EspeakTtsEngine.
+. `CapsuleBuildTask.resolveTtsEngine()` — même pattern (duplication, à unify en CAP-29.1).
+
+=== Capsule côté pipeline vidéo
+
+. `CapsuleVideoTask.execute()` — boucle sur `scripts` dans un seul `scriptDir`,
+   mono-langue. Pas de notion de langue dans le pipeline.
+. `generateCapsuleVideo` tâche — dépend de `generateCapsule` → `generateCapsuleScript`.
+. Output : `<deckName>.webm` (un seul, pas de suffixe langue).
+
+=== Capsule côté feed pipeline (SLD-11)
+
+. `translateAndExtractSpeakerNotes` (SLD-11.4) — tâche composite déjà câblée :
+   `dependsOn("translateDeck")` + `dependsOn("extractSpeakerNotes")`.
+. `extractSpeakerNotes` — parse `.adoc` → `*-script.txt` via `AsciidocSpeakerNoteParser`.
+. Le pipeline feed est donc déjà prêt à consommer les decks traduits.
+
+=== Slider côté traduction
+
+. `translateDeck` (`TranslateDeckTask.kt`) — consomme `LanguageCatalog.supportedCodes()`
+   (10 langues : en, zh, hi, es, fr, ar, bn, pt, ru, ur). Output : `<slug>_<lang>-deck.adoc`
+   + `<slug>_<lang>-deck-context.yml` par langue.
+. `DeckTranslator` — domaine pur, orchestre la traduction via `LanguageModelAdapter`.
+. `LanguageCatalog` (`i18n-contracts` N0) — 10 `SupportedLanguage` avec code, name,
+   nativeName, rtl flag, localeTag.
+
+== Décision d'architecture clé
+
+`Language` enum local (4 entrées FR/EN/ES/DE) → remplacé par consommation directe
+de `LanguageCatalog` (10 langues, contrats N0 du BOM `i18n-contracts` 0.0.2).
+
+*Raison* : Étendre l'enum local à 10 créerait une dette technique détruite
+immédiatement dans CAP-ARCH-1 (migration i18n vers `i18n-contracts`). Consommer
+`LanguageCatalog` directement évite ce détour.
+
+*Pattern de référence* :
+- `document-gradle` — `DocumentI18nBridge` consomme `SupportedLanguage` + `LanguageCatalog`
+- `plantuml-gradle` — `PlantumlTranslationServiceAdapter` + `i18n-contracts` 0.0.2
+
+*Impact* :
+- `Language` enum supprimé en CAP-29.1
+- `VoiceMapping` étendu à 10 langues (espeak codes ISO 639-1 natifs zh/hi/ar/bn/pt/ru/ur,
+  Piper models nommés `zh_CN-huayan-medium`, etc.)
+- `Language.fromCode()` → `LanguageCatalog.findByCode()` dans `CapsuleVideoTask`/`CapsuleBuildTask`
+- `TtsEngine.language(): Language?` → `TtsEngine.language(): SupportedLanguage?`
+
+== Domaine cible
+
+`capsule.multilang` — 7ème domaine DDD (après `capsule.feed`, `capsule.capture`,
+`capsule.tts`, `capsule.subtitles`, `capsule.manim`, `capsule.config`, `capsule.plugin`).
+
+== Boundary
+
+. Capsule consomme les decks traduits produits par `slider.translateDeck` (10 langues
+   via `LanguageCatalog`) via le pipeline `translateAndExtractSpeakerNotes` (SLD-11.4).
+. Le TTS synthétise un audio MP3 par langue (`ttsLanguage` adapté par langue).
+. La capture vidéo produit un WebM par langue (`<deckName>_<lang>.webm`).
+. Une tâche `generateCapsuleVideoAllLanguages` orchestre la boucle sur les langues.
+. `Language` enum supprimé, `VoiceMapping` consomme `LanguageCatalog.findByCode()`.
+. Économie d'encre (AGENT.adoc) : ne re-synthétiser que les langues dont le MP3 manque.
+
+== Découpage US (7 US, ~20 pts)
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-29.0 | Cadrage EPIC (cette session) | 1 | ✅ TERMINÉ (S-076)
+
+| CAP-29.1 | `MultiLanguageResolver` + extension `VoiceMapping` 10 langues.
+  Object pur consomme `LanguageCatalog.findByCode()`. `Language` enum supprimé.
+  Baby-step TDD unit ~15 tests. | 3 | ⬜ TODO
+
+| CAP-29.2 | `CapsuleVideoPlan` (data class immutable) + `CapsuleVideoPlanner`.
+  Liste de tâches par langue + invariants. Baby-step TDD unit ~12 tests. | 3 | ⬜ TODO
+
+| CAP-29.3 | `GenerateCapsuleVideoAllLanguagesTask` — itère sur le plan,
+  appelle TTS+capture par langue. Économie d'encre. Unit + functional. | 4 | ⬜ TODO
+
+| CAP-29.4 | Câblage `translateAndGenerateCapsuleVideos` — dependsOn chaîné.
+  Pipeline complet translateDeck → extractSpeakerNotes → videoAllLanguages. | 3 | ⬜ TODO
+
+| CAP-29.5 | Cucumber BDD E2E 10 langues — `multi_language_capsule.feature`.
+  Tags `@multilang @i18n`. NoOp engines. ~6 scénarios. | 4 | ⬜ TODO
+
+| CAP-29.6 | Documentation + dogfooding — README + 1 deck × 3 langues (fr/en/ar). | 2 | ⬜ TODO
+|===
+
+== Livrables gouvernance
+
+. `BACKLOG.adoc` — section EPIC CAP-29 réécrite (vision, boundary, 7 US détaillées)
+. `.agents/INDEX.adoc` — session 076 ajoutée, roadmap CAP-29, section EPIC CAP-29 complète
+. `PROMPT_REPRISE.adoc` — réécrit pour session 077 (CAP-29.1 next)
+. `AGENTS.adoc` racine — entrée Détroit S-072→S-076 + historique
+
+== Vérifications
+
+. `./gradlew compileKotlin` — ✅ VERT (zéro code modifié, build inchangé)
+. `grep -rn "TOKEN\|SECRET\|PASSWORD\|API_KEY\|gho_\|ghp_"` — ✅ zéro secret
+. Backlog synchronisation (`grep "🟡\|⏳\|À FAIRE"`) — ✅ marqueurs légitimes
+  (CAP-29 EN COURS, CAP-ARCH à planifier, sévérités MOYEN)
+
+== Prochaine session — 077
+
+CAP-29.1 — `MultiLanguageResolver` + extension `VoiceMapping` 10 langues.
+Domaine `capsule.multilang`. Baby-step TDD unit (~15 tests).
+Fichiers impactés : `LanguageVoiceMapping.kt`, `TtsManager.kt`, `CapsuleVideoTask.kt`,
+`CapsuleBuildTask.kt`, `CapsulePluginTest.kt`.
+
+== Score
+
+9/10 — Cadrage complet, décision d'architecture solide (LanguageCatalog > enum local),
+découpage baby-step clair. Zéro code = pas de risque de régression.

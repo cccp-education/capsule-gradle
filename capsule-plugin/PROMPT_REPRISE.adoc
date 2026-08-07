@@ -1,52 +1,50 @@
-= PROMPT_REPRISE — Capsule — Session 075
-:session: 075
+= PROMPT_REPRISE — Capsule — Session 076
+:session: 076
 :date: 2026-08-07
 
-== Session 074 terminée — CR-9 Robust HTML parsing
+== Session 076 terminée — CAP-29.0 Cadrage EPIC pipeline multi-langue
 
-CR-9 ✅ TERMINÉ — `HtmlSectionParser.findTopLevelSectionOpenTags` (38 lignes,
-domaine `capsule`). Nouvelle méthode réutilisant le depth-tracking existant
-(skip nested + self-closing), retourne les `MatchResult` des tags d'ouverture
-top-level avec positions. `injectAudioSequentialFallback` (`CapsuleVideoTask.kt`)
-: 2 lignes regex raw `Regex("""<section\b[^>]*>""")` supprimées → 1 ligne
-`HtmlSectionParser.findTopLevelSectionOpenTags`. DRY — réutilise `HtmlSectionParser`
-(DRY-2 S-031). Bug fix : vertical stacks (sections imbriquées) n'étaient pas
-skippées par la regex raw → `data-audio` injecté sur sous-sections.
+CAP-29.0 ✅ TERMINÉ — Cadrage formel EPIC CAP-29 (Pipeline Traduction Vidéo
+Multi-Langue). Zéro code modifié — session de vision et découpage baby-step.
 
-Méthode baby-step TDD/BDD :
-- **Unit** : +8 tests `HtmlSectionParserTest.findTopLevelSectionOpenTags`
-  (flat, nested, self-closing, attributes, empty, malformed, positions,
-  multiline). +1 test `CapsuleVideoTaskTest.sequential fallback skips nested
-  sections in vertical stack` (data-audio count = 2, pas 4). 414 unit VERT
-  (+9 vs S-073 405).
-- **Cucumber** : +1 scénario `@audio @sequential` (Sequential fallback skips
-  nested sections in vertical stack) + 2 step defs (Given nested vertical
-  stack sections, Then exactly {int} data-audio attributes).
+Audit code existant :
+- `Language` enum local : 4 entrées (FR/EN/ES/DE) dans `LanguageVoiceMapping.kt`
+- `VoiceMapping` : 4 Piper models + 4 espeak voices (FR/EN/ES/DE uniquement)
+- `generateCapsuleVideo` (`CapsuleVideoTask.kt`) : mono-langue, boucle sur scripts
+- `translateAndExtractSpeakerNotes` (SLD-11.4) : déjà câblé `translateDeck` + `extractSpeakerNotes`
+- `slider.translateDeck` : 10 langues via `LanguageCatalog.supportedCodes()` (i18n-contracts N0)
 
-Rapport : `.agents/sessions/074-cr9-robust-html-parsing.adoc`.
+Décision clé : consommer `LanguageCatalog` (10 langues, contrats N0 `i18n-contracts`)
+au lieu d'étendre l'enum local à 10. Évite la dette technique d'un enum détruit dans
+CAP-ARCH-1. Pattern : document-gradle (`DocumentI18nBridge`), plantuml-gradle
+(`PlantumlTranslationServiceAdapter`).
 
-== Prochaine session — 075
+Domaine cible : `capsule.multilang` (7ème domaine DDD).
+7 US (CAP-29.0→6), ~20 pts. Backlog/INDEX/PROMPT_REPRISE/AGENTS racine mis à jour.
 
-Backlog capsule restant (par priorité) :
+== Prochaine session — 077
 
-. 🟡 **CR-10** — CI optimization cucumberTest `onlyIf { hasProperty("runCucumber") || CI }`.
-  _Fix_ : `cucumberTest.onlyIf { project.hasProperty("runCucumber") || System.getenv("CI") == "true" }`.
-  _Impact_ : skip cucumber en local rapide, run en CI. Dettes : isoler `Burn-in E2E @integration`
-  (ffmpeg exit 183 préexistant).
+. 🟡 **CAP-29.1** — `MultiLanguageResolver` + extension `VoiceMapping` 10 langues.
+  Domaine `capsule.multilang`. Object pur consomme `LanguageCatalog.findByCode()`.
+  `Language` enum supprimé. Baby-step TDD unit (~15 tests).
+  _Fichiers impactés_ : `LanguageVoiceMapping.kt`, `TtsManager.kt`, `CapsuleVideoTask.kt`,
+  `CapsuleBuildTask.kt`, `CapsulePluginTest.kt` (tests Language/VoiceMapping).
 
-. 🟢 **CAP-29** — Pipeline Traduction Vidéo Multi-Langue (cadré S-097, 6 US ~20 pts,
-  dépend CR-2 ✅ + CR-3 ✅ → débloqué). _Domaine cible_ : `capsule.multilang`.
+. **CAP-29.2** — `CapsuleVideoPlan` (data class immutable + `CapsuleVideoPlanner`).
+. **CAP-29.3** — `GenerateCapsuleVideoAllLanguagesTask` (itération plan + TTS+capture par langue).
+. **CAP-29.4** — Câblage `translateAndGenerateCapsuleVideos` (dependsOn chaîné).
+. **CAP-29.5** — Cucumber BDD E2E 10 langues (`multi_language_capsule.feature`).
+. **CAP-29.6** — Documentation + dogfooding (1 deck × 3 langues fr/en/ar).
 
-. 🟠 **CAP-ARCH** — Collaboration cross-borough slider+codebase (content + i18n).
-  6 US ~19 pts (cadré S-073). _À planifier après CAP-29_.
+== Backlog restant (après CAP-29)
 
-. 🟢 **CAP-27** — VTT burn-in (FFmpeg subtitles filter avec VTT, actuellement SRT seulement).
-. 🟢 **CAP-28** — Coverage gaps (PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%).
-
-== À corriger à la clôture (dettes techniques gouvernance)
-
-* INDEX.adoc : ajouter session 074 dans la table + roadmap EPICs CR (CR-9 ✅).
-* TABLE AGENTS.adoc racine : mettre à jour entrée capsule (S-073→S-074).
+. 🟠 **CAP-ARCH** — Cross-borough slider+codebase (6 US ~19 pts, après CAP-29).
+. 🔴 **CAP-CR3-1** — CI full vrais binaires + probe durée WebM.
+. 🔴 **CAP-CR3-2** — Mode strict anti-NoOp (`capsule.strictMode` DSL).
+. 🟠 **CAP-CR3-3** — Décision capture `ScreenshotCaptureImpl` vs `PlaywrightCaptureImpl`.
+. 🟡 **CAP-CR3-4** — Convention Gradle `resolveScriptDir`/`resolveDeckDir`.
+. 🟢 **CAP-27** — VTT burn-in. **CAP-28** — Coverage gaps.
+. 🐛 **Bug** — `CucumberTestRunner` ne lance que `capsule.feature` (à investiguer).
 
 == Contexte technique
 
@@ -54,11 +52,12 @@ Backlog capsule restant (par priorité) :
 - Version capsule : 0.0.1-SNAPSHOT (non publié Maven Central)
 - Version slider : 0.0.16 (mavenLocal, attente publication Central)
 - BOM workspace-bom : Central 0.0.16, mavenLocal 0.0.17
-- 414 unit tests VERT (capsule) + 895 unit (slider, post-SLD-11)
-- Domaines DDD capsule : `capsule.feed`, `capsule.capture`, `capsule.tts`, `capsule.subtitles`, `capsule.manim`, `capsule.config`, `capsule.plugin`
+- 421 unit tests VERT (capsule) + 895 unit (slider, post-SLD-11)
+- Domaines DDD capsule : `capsule.feed`, `capsule.capture`, `capsule.tts`, `capsule.subtitles`, `capsule.manim`, `capsule.config`, `capsule.plugin`, `capsule.ci`
 - Baby-step TDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 - English only : code, Gherkin, comments — no French
 - `./gradlew test` VERT (0 FAIL, 0 SKIP)
 - `./gradlew cucumberTest -PrunCucumber` : bloque (scénarios @integration ffmpeg, préexistant)
-- EPICs clos capsule : CAP-0→25 + CAP-MODEL + K-1 + DRY-1→3 + CR-1→CR-9 + CR-2→CR-7
+- EPICs clos capsule : CAP-0→25 + CAP-MODEL + K-1 + DRY-1→3 + CR-1→CR-10
 - Loi de l'Économie d'Encre (AGENT.adoc) : vérifier artefact résultat avant opération coûteuse
+- `i18n-contracts` 0.0.2 disponible (LanguageCatalog 10 langues, SupportedLanguage, MessageBundle)

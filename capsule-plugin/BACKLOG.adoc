@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-07 (Session 075 — CR-10 CI optimization cucumberTest onlyIf)
+:last_update: 2026-08-07 (Session 076 — CAP-29.0 cadrage EPIC pipeline multi-langue)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -192,12 +192,117 @@ Vérifier compatibilité, ajouter Cucumber @subtitles @burnin @vtt.
 Ajouter tests unitaires + Cucumber pour les branches non couvertes.
 | P2
 | ⬜ TODO
-
-| CAP-29
-| **Pipeline Traduction Vidéo Multi-Langue** — TTS 7 langues manquantes (zh/hi/ar/bn/pt/ru/ur) + orchestrateur `generateCapsuleVideoAllLanguages` + câblage translateDeck→capsule + tests E2E 10 langues. 6 US, ~20 pts. Source : Session 097.
-| P0
-| 🔲 CADRE (Session 097)
 |===
+
+'''
+== 🔴 EPIC CAP-29 — Pipeline Traduction Vidéo Multi-Langue (Session 076 — Cadrage)
+
+_Vision_ : Un deck source → 10 vidéos localisées en une tâche Gradle. Le pipeline
+`slider.translateDeck` (10 langues, 425 tests PASS) produit les decks traduits. Le
+pipeline `capsule.generateCapsuleVideo` (421 unit tests) capture la vidéo + TTS par
+langue. CAP-29 crée le pont : un orchestrateur qui itère sur les langues cibles,
+résout la voice TTS par langue, et génère un WebM localisé par langue.
+
+_Domaine cible_ : `capsule.multilang` (nouveau domaine DDD, 7ème après `capsule.feed`,
+`capsule.capture`, `capsule.tts`, `capsule.subtitles`, `capsule.manim`, `capsule.config`).
+
+_Dépendances_ : CR-2 ✅ (thread safety), CR-3 ✅ (error handling TTS), SLD-11 ✅
+(cross-borough slider→capsule feed pipeline), `i18n-contracts` 0.0.2 (workspace-bom N0).
+
+_Décision d'architecture clé_ : `Language` enum local (4 entrées FR/EN/ES/DE) est
+remplacé par consommation directe de `LanguageCatalog` (10 langues, contrats N0 du BOM).
+Cela évite la dette technique d'étendre l'enum à 10 pour le détruire dans CAP-ARCH-1.
+Pattern de référence : `document-gradle` (`DocumentI18nBridge`), `plantuml-gradle`
+(`PlantumlTranslationServiceAdapter`). `VoiceMapping` étendu à 10 langues :
+espeak codes ISO 639-1 natifs + Piper models nommés (`zh_CN-huayan-medium`, etc.).
+
+_Boundary_ :
+- Capsule consomme les decks traduits produits par `slider.translateDeck` (10 langues
+  via `LanguageCatalog`) via le pipeline `translateAndExtractSpeakerNotes` (SLD-11.4).
+- Le TTS synthétise un audio MP3 par langue (`ttsLanguage` adapté par langue).
+- La capture vidéo produit un WebM par langue (`<deckName>_<lang>.webm`).
+- Une tâche `generateCapsuleVideoAllLanguages` orchestre la boucle sur les langues.
+- `Language` enum supprimé, `VoiceMapping` consomme `LanguageCatalog.findByCode()`.
+- Économie d'encre (AGENT.adoc) : ne re-synthétiser que les langues dont le MP3 manque.
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-29.0
+| *Cadrage EPIC* — vision, domaine `capsule.multilang`, boundary, découpage US.
+Audit code existant (`Language` enum 4 entrées, `VoiceMapping` 4 Piper+4 espeak,
+`generateCapsuleVideo` mono-langue, `translateAndExtractSpeakerNotes` SLD-11.4).
+Décision : consommer `LanguageCatalog` (10 langues) au lieu d'étendre l'enum local.
+MàJ INDEX/BACKLOG/PROMPT_REPRISE + table AGENTS.adoc racine.
+| 1
+| ✅ TERMINÉ (S-076)
+
+| CAP-29.1
+| *`MultiLanguageResolver` + extension `VoiceMapping` 10 langues* — domaine
+`capsule.multilang`. `MultiLanguageResolver` (object pur) consomme
+`LanguageCatalog.findByCode(code)` → résout Piper model + espeak voice par code.
+`VoiceMapping` étendu à 10 langues (espeak codes ISO natifs zh/hi/ar/bn/pt/ru/ur,
+Piper models nommés). `Language` enum supprimé, `Language.fromCode()` remplacé
+par `LanguageCatalog.findByCode()` dans `CapsuleVideoTask`/`CapsuleBuildTask`.
+Baby-step TDD : RED (tests `MultiLanguageResolverTest` — resolve 10 langues,
+unknown code → null, RTL flag préservé) → GREEN. `VoiceMappingTest` étendu.
+~15 unit
+| 3
+| ⬜ TODO
+
+| CAP-29.2
+| *`CapsuleVideoPlan` (domaine `capsule.multilang`)* — data class immutable :
+liste de `CapsuleVideoTask per language (deckFile: File, scriptFile: File,
+language: SupportedLanguage, outputVideo: File)` + invariants (deckFile exists,
+language in LanguageCatalog, non-empty plan). `CapsuleVideoPlanner` (object pur)
+construit le plan à partir des decks traduits (`<deckName>_<lang>-deck.html` +
+`<deckName>_<lang>-script.txt`). Baby-step TDD : RED → GREEN. ~12 unit
+| 3
+| ⬜ TODO
+
+| CAP-29.3
+| *`GenerateCapsuleVideoAllLanguagesTask`* — tâche Gradle qui itère sur le
+`CapsuleVideoPlan`, appelle le pipeline TTS+capture par langue avec `ttsLanguage`
+adapté. Réutilise `synthesizeTtsForScript` + `captureDeckSequential`/`captureDeckParallel`
+existants (CR-1 refactor). Output : `<deckName>_<lang>.webm` par langue.
+Économie d'encre : skip langue si WebM existe et est valide (probe duration > 0).
+Baby-step TDD : unit (plan iteration mocké) + functional (NoOp engines, 3 langues).
+| 4
+| ⬜ TODO
+
+| CAP-29.4
+| *Câblage `translateAndExtractSpeakerNotes` → `generateCapsuleVideoAllLanguages`*
+— tâche composite `translateAndGenerateCapsuleVideos` : dependsOn
+`translateAndExtractSpeakerNotes` + `generateCapsuleVideoAllLanguages`. Pipeline
+complet : deck source → translateDeck (10 langues) → extractSpeakerNotes (10 scripts)
+→ generateCapsuleVideoAllLanguages (10 WebM). Baby-step TDD : functional (NoOp,
+vérifie dependsOn chain). ~3 functional
+| 3
+| ⬜ TODO
+
+| CAP-29.5
+| *Cucumber BDD E2E 10 langues* — `multi_language_capsule.feature` : scénarios
+BDD end-to-end (deck source → 10 decks traduits → 10 scripts → 10 WebM, ttsLanguage
+adapté par langue, output naming `<deckName>_<lang>.webm`, RTL languages ar/ur
+générés). Tags `@multilang @i18n`. NoOp engines (pas de vrais Piper/Playwright).
+~6 scénarios + step defs.
+| 4
+| ⬜ TODO
+
+| CAP-29.6
+| *Documentation + dogfooding* — README master EN mis à jour avec domaine
+`capsule.multilang` + tâche `generateCapsuleVideoAllLanguages`. Dogfooding :
+1 deck demo × 3 langues (fr/en/ar dont 1 RTL) = 3 vidéos générées (NoOp ou réel
+selon disponibilité). MàJ INDEX/BACKLOG.
+| 2
+| ⬜ TODO
+|===
+
+_Total_ : 7 US (US-0 cadrage + US-1→6 exécution), ~20 pts. _Méthode_ : baby-step
+DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber), English only
+code/Gherkin. _Pattern de référence_ : SLD-5 (DeckTranslationPipeline one-to-many),
+CAP-MODEL (unification domaine). _Statut_ : 🟡 EN COURS (CAP-29.0 ✅, CAP-29.1→6 TODO).
 
 '''
 == 🔴 EPIC CAP-CR3 — Revue CR-GLOBALE-003 : Création de Contenu Solide

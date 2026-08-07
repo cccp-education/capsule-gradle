@@ -1,6 +1,27 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-07
 
+== Session 076 — CAP-29.0 Cadrage EPIC pipeline multi-langue ✅
+
+Cadrage formel EPIC CAP-29 (Pipeline Traduction Vidéo Multi-Langue). Zéro code
+modifié — session de vision et découpage baby-step.
+
+Tâches terminées :
+. Audit code existant — `Language` enum 4 entrées (FR/EN/ES/DE), `VoiceMapping`
+  4 Piper+4 espeak, `generateCapsuleVideo` mono-langue, `translateAndExtractSpeakerNotes`
+  SLD-11.4 déjà câblé, `slider.translateDeck` 10 langues via `LanguageCatalog`
+. Décision d'architecture — consommer `LanguageCatalog` (10 langues, contrats N0
+  `i18n-contracts`) au lieu d'étendre enum local. Évite dette technique détruite
+  dans CAP-ARCH-1. Pattern document-gradre (`DocumentI18nBridge`), plantuml-gradle
+  (`PlantumlTranslationServiceAdapter`)
+. Domaine cible — `capsule.multilang` (7ème domaine DDD)
+. Découpage US — 7 US (CAP-29.0 cadrage + CAP-29.1→6 exécution), ~20 pts
+. Gouvernance — BACKLOG/INDEX/PROMPT_REPRISE/AGENTS racine mis à jour
+. Vérifications — `compileKotlin` VERT, zéro secret, backlog synchronisé
+
+Prochaine session : CAP-29.1 `MultiLanguageResolver` + extension `VoiceMapping`
+10 langues, baby-step TDD unit.
+
 == Session 075 — CR-10 CI optimization cucumberTest onlyIf ✅
 
 CI optimization (CR-10, 🟡 MOYEN). `cucumberTest` skippé sauf demande explicite
