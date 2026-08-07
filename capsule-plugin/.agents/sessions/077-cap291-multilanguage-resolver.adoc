@@ -1,0 +1,83 @@
+= Session 077 — CAP-29.1 MultiLanguageResolver + VoiceMapping 10 langues
+:date: 2026-08-07
+:session: 077
+:epic: CAP-29
+:us: CAP-29.1
+:method: baby-step DDD/TDD/BDD (unit)
+
+== Objectif
+
+Implémenter CAP-29.1 : créer le domaine `capsule.multilang` avec
+`MultiLanguageResolver` (object pur consommant `LanguageCatalog` du BOM
+`i18n-contracts` 0.0.2), étendre `VoiceMapping` à 10 langues, supprimer
+l'enum `Language` local (4 entrées FR/EN/ES/DE) et migrer les consommateurs
+(`TtsManager`, `CapsuleVideoTask`, `CapsuleBuildTask`) vers
+`SupportedLanguage` (contrats N0).
+
+== Méthode
+
+Baby-step TDD strict : RED → GREEN → REFACTOR. US purement unit (~22 tests
+nouveaux). Aucune dépendance fonctionnelle/cucumber modifiée (US suivantes
+CAP-29.2→29.5).
+
+== Décisions d'architecture
+
+. *Consommer `LanguageCatalog` (10 langues) au lieu d'étendre l'enum local à 10* — évite la dette technique d'un enum détruit dans CAP-ARCH-1. Pattern : document-gradle (`DocumentI18nBridge`), plantuml-gradle (`PlantumlTranslationServiceAdapter`).
+. *Nouveau domaine DDD `capsule.multilang`* (7ème après `capsule.feed`, `capsule.capture`, `capsule.tts`, `capsule.subtitles`, `capsule.manim`, `capsule.config`). `VoiceMapping` migré de `capsule` vers `capsule.multilang`, keyé par code String (pas par enum).
+. *`MultiLanguageResolver`* : object pur, pont entre `LanguageCatalog` (N0) et `VoiceMapping` (Piper/espeak). `resolve(code): ResolvedLanguage?` (data class immutable : `SupportedLanguage` + `piperModel` + `espeakVoice`).
+. *`Language` enum supprimé* — `Language.fromCode()` remplacé par `MultiLanguageResolver.resolve()` dans `CapsuleVideoTask.kt:197` et `CapsuleBuildTask.kt:40`. `TtsEngine.language()` retourne `SupportedLanguage?` (was `Language?`).
+
+== Livrables
+
+Production (4 fichiers) :
+. `src/main/kotlin/capsule/multilang/VoiceMapping.kt` (nouveau, 62 lignes) — 11 Piper models + 11 espeak voices (fr/en/es/de/zh/hi/ar/bn/pt/ru/ur) + reverse maps.
+. `src/main/kotlin/capsule/multilang/MultiLanguageResolver.kt` (nouveau, 51 lignes) — `ResolvedLanguage` data class + `MultiLanguageResolver` object (`resolve`, `resolveByPiperModel`, `resolveByEspeakVoice`, `piperModel`, `espeakVoice`, `supportedCodes`).
+. `src/main/kotlin/capsule/TtsManager.kt` (modifié) — `TtsEngine.language(): SupportedLanguage?`, `PiperTtsEngine(language: SupportedLanguage?)`, `EspeakTtsEngine(language: SupportedLanguage?)`. Résolution via `MultiLanguageResolver`.
+. `src/main/kotlin/capsule/CapsuleVideoTask.kt` (modifié, l.197) — `Language.fromCode()` → `MultiLanguageResolver.resolve(langCode)?.language`.
+. `src/main/kotlin/capsule/CapsuleBuildTask.kt` (modifié, l.40) — idem.
+. `src/main/kotlin/capsule/LanguageVoiceMapping.kt` (supprimé) — ancien `Language` enum + `VoiceMapping` (40 lignes).
+
+Build (2 fichiers) :
+. `gradle/libs.versions.toml` — `workspace-bom = "0.0.16"` + `i18n-contracts = "0.0.2"` + library entry `i18n-contracts`.
+. `build.gradle.kts` — `implementation(platform("education.cccp:workspace-bom:0.0.16"))` + `implementation(libs.i18n.contracts)`.
+
+Tests (2 fichiers) :
+. `src/test/kotlin/capsule/multilang/MultiLanguageResolverTest.kt` (nouveau, 22 unit tests) — resolve 10 codes, unknown→null, RTL ar/ur préservé, piperModel/espeakVoice 11 codes, resolveByPiperModel/resolveByEspeakVoice, supportedCodes 10.
+. `src/test/kotlin/capsule/CapsulePluginTest.kt` (modifié) — 4 tests `PiperTtsEngine`/`EspeakTtsEngine` migrés (`Language.EN/DE/ES` → `LanguageCatalog.findByCode("en"/"de"/"es")`). `LanguageVoiceMappingTest` (9 tests supprimés) → 2 tests legacy adaptés (délèguent à `MultiLanguageResolver`).
+
+== Vérification
+
+[source,shell]
+----
+./gradlew compileKotlin        # VERT
+./gradlew test                 # 436 unit VERT (was 421, +15 net)
+./gradlew check                # BUILD SUCCESSFUL (53s, unit + functional + kover)
+rg "Language\.(fromCode|FR|EN|ES|DE)" src/main/  # zéro match runtime
+rg "TOKEN|SECRET|PASSWORD|API_KEY|gho_|ghp_"     # zéro secret
+----
+
+== Delta tests
+
+- Avant : 421 unit (baseline S-076)
+- Après : 436 unit (+15 net)
+  - +22 nouveaux `MultiLanguageResolverTest`
+  - +2 `LanguageVoiceMappingTest` adaptés (was 9, -7 anciens tests `Language`)
+  - 4 tests `PiperTtsEngine`/`EspeakTtsEngine` migrés (zéro net)
+
+== Score
+
+9/10 — US isolée, purement unit, baby-step TDD strict respecté, zéro
+régression fonctionnelle/cucumber, domaine DDD propre, dépendance N0 BOM
+introduite. Pattern document-gradle/plantuml-gradle respecté. 1 pt de
+marge : pas de test fonctionnel/cucumber (US suivantes CAP-29.2/29.5).
+
+== Prochaine session — 078
+
+. 🟡 **CAP-29.2** — `CapsuleVideoPlan` (data class immutable) +
+  `CapsuleVideoPlanner` (object pur). Domaine `capsule.multilang`. Baby-step
+  TDD unit (~12 tests). Construit le plan à partir des decks traduits
+  (`<deckName>_<lang>-deck.html` + `<deckName>_<lang>-script.txt`).
+. **CAP-29.3** — `GenerateCapsuleVideoAllLanguagesTask`.
+. **CAP-29.4** — Câblage `translateAndGenerateCapsuleVideos`.
+. **CAP-29.5** — Cucumber BDD E2E 10 langues.
+. **CAP-29.6** — Documentation + dogfooding.

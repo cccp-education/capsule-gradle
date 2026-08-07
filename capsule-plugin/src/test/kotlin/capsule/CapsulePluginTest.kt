@@ -4,6 +4,7 @@ import capsule.feed.CapsuleScript
 import capsule.feed.CapsuleScriptReader
 import capsule.feed.SlideSegment
 import capsule.feed.SlideType
+import contracts.i18n.LanguageCatalog
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.io.TempDir
@@ -119,14 +120,14 @@ class TtsEngineTest {
 
     @Test
     fun `piper engine with language EN resolves en_US-lessac-medium model`() {
-        val engine = PiperTtsEngine(executablePath = "/nonexistent/path/piper", language = Language.EN)
+        val engine = PiperTtsEngine(executablePath = "/nonexistent/path/piper", language = LanguageCatalog.findByCode("en"))
         assertEquals("piper", engine.name())
         assertEquals(false, engine.isAvailable())
     }
 
     @Test
     fun `piper engine with language DE resolves de_DE-thorsten-medium model`() {
-        val engine = PiperTtsEngine(executablePath = "/nonexistent/path/piper", language = Language.DE)
+        val engine = PiperTtsEngine(executablePath = "/nonexistent/path/piper", language = LanguageCatalog.findByCode("de"))
         assertEquals("piper", engine.name())
         assertEquals(false, engine.isAvailable())
     }
@@ -140,14 +141,14 @@ class TtsEngineTest {
 
     @Test
     fun `espeak engine with language EN resolves en voice`() {
-        val engine = EspeakTtsEngine(executablePath = "/nonexistent/path/espeak", language = Language.EN)
+        val engine = EspeakTtsEngine(executablePath = "/nonexistent/path/espeak", language = LanguageCatalog.findByCode("en"))
         assertEquals("espeak", engine.name())
         assertEquals(false, engine.isAvailable())
     }
 
     @Test
     fun `espeak engine with language ES resolves es voice`() {
-        val engine = EspeakTtsEngine(executablePath = "/nonexistent/path/espeak", language = Language.ES)
+        val engine = EspeakTtsEngine(executablePath = "/nonexistent/path/espeak", language = LanguageCatalog.findByCode("es"))
         assertEquals("espeak", engine.name())
         assertEquals(false, engine.isAvailable())
     }
@@ -2474,73 +2475,17 @@ Note.
 class LanguageVoiceMappingTest {
 
     @Test
-    fun `Language enum has FR EN ES DE values`() {
-        assertEquals(4, Language.entries.size)
-        assertEquals(Language.FR, Language.valueOf("FR"))
-        assertEquals(Language.EN, Language.valueOf("EN"))
-        assertEquals(Language.ES, Language.valueOf("ES"))
-        assertEquals(Language.DE, Language.valueOf("DE"))
+    fun `MultiLanguageResolver resolves all 10 LanguageCatalog codes`() {
+        listOf("en", "zh", "hi", "es", "fr", "ar", "bn", "pt", "ru", "ur").forEach { code ->
+            assertNotNull(capsule.multilang.MultiLanguageResolver.resolve(code), "Expected non-null resolution for code: $code")
+        }
     }
 
     @Test
-    fun `Language fromCode resolves valid codes case-insensitively`() {
-        assertEquals(Language.FR, Language.fromCode("fr"))
-        assertEquals(Language.FR, Language.fromCode("FR"))
-        assertEquals(Language.EN, Language.fromCode("en"))
-        assertEquals(Language.EN, Language.fromCode("EN"))
-        assertEquals(Language.ES, Language.fromCode("es"))
-        assertEquals(Language.DE, Language.fromCode("de"))
-    }
-
-    @Test
-    fun `Language fromCode returns null for unknown code`() {
-        assertEquals(null, Language.fromCode("jp"))
-        assertEquals(null, Language.fromCode(""))
-        assertEquals(null, Language.fromCode("unknown"))
-    }
-
-    @Test
-    fun `VoiceMapping piperModel returns correct model per language`() {
-        assertEquals("fr_FR-siwis-medium", VoiceMapping.piperModel(Language.FR))
-        assertEquals("en_US-lessac-medium", VoiceMapping.piperModel(Language.EN))
-        assertEquals("es_ES-carlfm-x_low", VoiceMapping.piperModel(Language.ES))
-        assertEquals("de_DE-thorsten-medium", VoiceMapping.piperModel(Language.DE))
-    }
-
-    @Test
-    fun `VoiceMapping espeakVoice returns correct voice per language`() {
-        assertEquals("fr", VoiceMapping.espeakVoice(Language.FR))
-        assertEquals("en", VoiceMapping.espeakVoice(Language.EN))
-        assertEquals("es", VoiceMapping.espeakVoice(Language.ES))
-        assertEquals("de", VoiceMapping.espeakVoice(Language.DE))
-    }
-
-    @Test
-    fun `VoiceMapping resolveLanguage returns FR for fr voice model`() {
-        assertEquals(Language.FR, VoiceMapping.resolveLanguage("fr_FR-siwis-medium"))
-        assertEquals(Language.EN, VoiceMapping.resolveLanguage("en_US-lessac-medium"))
-        assertEquals(Language.ES, VoiceMapping.resolveLanguage("es_ES-carlfm-x_low"))
-        assertEquals(Language.DE, VoiceMapping.resolveLanguage("de_DE-thorsten-medium"))
-    }
-
-    @Test
-    fun `VoiceMapping resolveLanguage returns null for unknown model`() {
-        assertEquals(null, VoiceMapping.resolveLanguage("unknown-model"))
-        assertEquals(null, VoiceMapping.resolveLanguage(""))
-    }
-
-    @Test
-    fun `VoiceMapping resolveLanguageFromEspeak returns correct language`() {
-        assertEquals(Language.FR, VoiceMapping.resolveLanguageFromEspeak("fr"))
-        assertEquals(Language.EN, VoiceMapping.resolveLanguageFromEspeak("en"))
-        assertEquals(Language.ES, VoiceMapping.resolveLanguageFromEspeak("es"))
-        assertEquals(Language.DE, VoiceMapping.resolveLanguageFromEspeak("de"))
-    }
-
-    @Test
-    fun `VoiceMapping resolveLanguageFromEspeak returns null for unknown voice`() {
-        assertEquals(null, VoiceMapping.resolveLanguageFromEspeak("jp"))
-        assertEquals(null, VoiceMapping.resolveLanguageFromEspeak(""))
+    fun `MultiLanguageResolver returns null for unknown code`() {
+        assertEquals(null, capsule.multilang.MultiLanguageResolver.resolve("jp"))
+        assertEquals(null, capsule.multilang.MultiLanguageResolver.resolve(""))
+        assertEquals(null, capsule.multilang.MultiLanguageResolver.resolve("unknown"))
     }
 }
 

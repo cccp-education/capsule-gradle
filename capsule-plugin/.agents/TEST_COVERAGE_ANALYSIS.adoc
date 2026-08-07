@@ -1,6 +1,26 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
-:date: 2026-06-16
-:session: 040 CR-1 Refactor CapsuleVideoTask.execute() (218→76 lignes orchestration)
+:date: 2026-08-07
+:session: 077 CAP-29.1 MultiLanguageResolver + VoiceMapping 10 langues
+
+== Couverture — 7 août 2026 (après session 077)
+
+.Modifications session 077 — 22 nouveaux tests + 2 adaptés (domaine `capsule.multilang`)
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/multilang/MultiLanguageResolver.kt` (nouveau) | Object pur `MultiLanguageResolver` (`resolve`, `resolveByPiperModel`, `resolveByEspeakVoice`, `piperModel`, `espeakVoice`, `supportedCodes`) + `ResolvedLanguage` data class | 22 unit `MultiLanguageResolverTest`
+| `capsule/multilang/VoiceMapping.kt` (nouveau) | 11 Piper models + 11 espeak voices (fr/en/es/de/zh/hi/ar/bn/pt/ru/ur) + reverse maps | couvert indirectement par `MultiLanguageResolverTest`
+| `capsule/TtsManager.kt` (modifié) | `TtsEngine.language(): SupportedLanguage?` (was `Language?`). `PiperTtsEngine`/`EspeakTtsEngine` prennent `SupportedLanguage?` | 4 tests existants migrés (zéro net)
+| `capsule/CapsuleVideoTask.kt` (l.197) | `Language.fromCode` → `MultiLanguageResolver.resolve` | 0 régression
+| `capsule/CapsuleBuildTask.kt` (l.40) | `Language.fromCode` → `MultiLanguageResolver.resolve` | 0 régression
+| `capsule/LanguageVoiceMapping.kt` (supprimé) | `Language` enum (4 entrées) + ancien `VoiceMapping` | -9 tests `LanguageVoiceMappingTest` → 2 tests adaptés (délèguent à `MultiLanguageResolver`)
+| `build.gradle.kts` + `libs.versions.toml` | BOM `workspace-bom:0.0.16` + `i18n-contracts:0.0.2` | 0 régression
+|===
+
+- Unitaires : 436 VERT (was 421, +15 net : +22 nouveaux, +2 adaptés, -9 supprimés)
+- 0 FAIL, 0 SKIP
+- `./gradlew check` BUILD SUCCESSFUL (53s)
+- Couverture `MultiLanguageResolver` : 22/22 tests (resolve 10 codes, unknown→null, RTL ar/ur, piperModel/espeakVoice 11 codes, resolveByPiperModel/resolveByEspeakVoice, supportedCodes 10)
+- Secrets : 0 trouvé
 
 == Couverture — 16 juin 2026 (après session 040)
 

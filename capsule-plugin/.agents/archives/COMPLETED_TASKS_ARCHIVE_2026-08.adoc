@@ -1,6 +1,36 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-07
 
+== Session 077 — CAP-29.1 MultiLanguageResolver + VoiceMapping 10 langues ✅
+
+Domaine `capsule.multilang` créé (7ème domaine DDD). `Language` enum supprimé
+(4 entrées FR/EN/ES/DE), remplacé par consommation directe de `LanguageCatalog`
+(BOM `i18n-contracts` 0.0.2). `VoiceMapping` étendu à 10 langues (fr/en/es/de/
+zh/hi/ar/bn/pt/ru/ur). 436 unit tests VERT (+15 net).
+
+Tâches terminées :
+. Pré-requis build — BOM `workspace-bom:0.0.16` + `i18n-contracts:0.0.2` ajoutés
+  au `libs.versions.toml` + `build.gradle.kts` (`implementation(platform(...))` +
+  `implementation(libs.i18n.contracts)`)
+. Domaine `capsule.multilang` créé — `VoiceMapping.kt` (62 lignes, 11 Piper +
+  11 espeak) + `MultiLanguageResolver.kt` (51 lignes, `ResolvedLanguage` data
+  class + resolver object)
+. `Language` enum supprimé — `LanguageVoiceMapping.kt` détruit (40 lignes)
+. Migration consommateurs — `TtsManager.kt` (`TtsEngine.language(): SupportedLanguage?`,
+  `PiperTtsEngine`/`EspeakTtsEngine` prennent `SupportedLanguage?`),
+  `CapsuleVideoTask.kt:197` + `CapsuleBuildTask.kt:40` (`Language.fromCode` →
+  `MultiLanguageResolver.resolve`)
+. Tests — 22 unit `MultiLanguageResolverTest` (resolve 10 codes, unknown→null,
+  RTL ar/ur, piperModel/espeakVoice 11 codes, resolveByPiperModel/EspeakVoice,
+  supportedCodes 10) + 2 tests `LanguageVoiceMappingTest` adaptés (délèguent
+  à `MultiLanguageResolver`) + 4 tests `PiperTtsEngine`/`EspeakTtsEngine` migrés
+  (`Language.EN/DE/ES` → `LanguageCatalog.findByCode`)
+. Vérifications — `compileKotlin` VERT, `test` 436 VERT (0 FAIL), `check`
+  BUILD SUCCESSFUL (53s), zéro secret, zéro référence `Language` résiduelle
+
+Prochaine session : CAP-29.2 `CapsuleVideoPlan` + `CapsuleVideoPlanner`,
+baby-step TDD unit.
+
 == Session 076 — CAP-29.0 Cadrage EPIC pipeline multi-langue ✅
 
 Cadrage formel EPIC CAP-29 (Pipeline Traduction Vidéo Multi-Langue). Zéro code

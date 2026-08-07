@@ -4,6 +4,7 @@ import capsule.feed.CapsuleScript
 import capsule.feed.CapsuleScriptReader
 import capsule.feed.SlideSegment
 import capsule.feed.SlideType
+import capsule.multilang.MultiLanguageResolver
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.Internal
@@ -194,7 +195,7 @@ open class CapsuleVideoTask : DefaultTask() {
         if (ttsEngine != null) return ttsEngine!!
 
         val langCode = capsuleExtension.ttsLanguage.get()
-        val resolvedLanguage = Language.fromCode(langCode)
+        val resolvedLanguage = MultiLanguageResolver.resolve(langCode)?.language
 
         return when (capsuleExtension.ttsEngine.get().lowercase()) {
             "piper" -> {

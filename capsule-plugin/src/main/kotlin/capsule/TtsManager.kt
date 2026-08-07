@@ -1,21 +1,24 @@
 package capsule
 
+import capsule.multilang.MultiLanguageResolver
+import contracts.i18n.SupportedLanguage
 import java.io.File
 
 interface TtsEngine {
     fun synthesize(text: String, outputFile: File)
     fun isAvailable(): Boolean
     fun name(): String
-    fun language(): Language? = null
+    fun language(): SupportedLanguage? = null
 }
 
 class PiperTtsEngine(
     private val executablePath: String = "piper",
     private val model: String = "fr_FR-siwis-medium",
-    private val language: Language? = null
+    private val language: SupportedLanguage? = null
 ) : TtsEngine {
 
-    private val resolvedModel: String = language?.let { VoiceMapping.piperModel(it) } ?: model
+    private val resolvedModel: String =
+        language?.let { MultiLanguageResolver.piperModel(it.code) } ?: model
 
     override fun isAvailable(): Boolean {
         return try {
@@ -31,7 +34,8 @@ class PiperTtsEngine(
 
     override fun name(): String = "piper"
 
-    override fun language(): Language? = language ?: VoiceMapping.resolveLanguage(resolvedModel)
+    override fun language(): SupportedLanguage? =
+        language ?: MultiLanguageResolver.resolveByPiperModel(resolvedModel)
 
     override fun synthesize(text: String, outputFile: File) {
         if (!isAvailable()) {
@@ -86,10 +90,11 @@ class EspeakTtsEngine(
     private val executablePath: String = "espeak",
     private val voice: String = "fr",
     private val speed: Int = 150,
-    private val language: Language? = null
+    private val language: SupportedLanguage? = null
 ) : TtsEngine {
 
-    private val resolvedVoice: String = language?.let { VoiceMapping.espeakVoice(it) } ?: voice
+    private val resolvedVoice: String =
+        language?.let { MultiLanguageResolver.espeakVoice(it.code) } ?: voice
 
     override fun isAvailable(): Boolean {
         return try {
@@ -105,7 +110,8 @@ class EspeakTtsEngine(
 
     override fun name(): String = "espeak"
 
-    override fun language(): Language? = language ?: VoiceMapping.resolveLanguageFromEspeak(resolvedVoice)
+    override fun language(): SupportedLanguage? =
+        language ?: MultiLanguageResolver.resolveByEspeakVoice(resolvedVoice)
 
     override fun synthesize(text: String, outputFile: File) {
         if (!isAvailable()) {

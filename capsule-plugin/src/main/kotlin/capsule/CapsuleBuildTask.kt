@@ -1,7 +1,8 @@
 package capsule
 
-import org.gradle.api.DefaultTask
 import capsule.feed.CapsuleScriptReader
+import capsule.multilang.MultiLanguageResolver
+import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
@@ -37,7 +38,7 @@ open class CapsuleBuildTask : DefaultTask() {
 
         val configuredEngine = capsuleExtension.ttsEngine.get()
         val langCode = capsuleExtension.ttsLanguage.get()
-        val resolvedLanguage = Language.fromCode(langCode)
+        val resolvedLanguage = MultiLanguageResolver.resolve(langCode)?.language
 
         return when (configuredEngine.lowercase()) {
             "piper" -> {

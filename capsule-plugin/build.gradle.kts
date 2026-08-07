@@ -36,6 +36,7 @@ afterEvaluate {
 }
 
 dependencies {
+    implementation(platform("education.cccp:workspace-bom:${libs.versions.workspace.bom.get()}"))
     implementation(kotlin("stdlib-jdk8"))
 
     compileOnly(libs.slider)
@@ -44,6 +45,9 @@ dependencies {
     implementation(libs.jackson.module.kotlin)
     implementation(libs.jackson.dataformat.yaml)
     implementation(libs.koog.agents)
+
+    // N0 contracts — i18n (LanguageCatalog 10 languages, cross-borough translation alliance)
+    implementation(libs.i18n.contracts)
 
     testImplementation(kotlin("test-junit5"))
     testImplementation("org.assertj:assertj-core:3.27.7")
