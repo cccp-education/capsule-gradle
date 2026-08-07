@@ -1,43 +1,43 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 079 — CAP-29.3 GenerateCapsuleVideoAllLanguagesTask
-_Prochaine session_ : 080 — CAP-29.4 wiring + pipeline multi-langue
+_Session terminee_ : 081 — CAP-29.5 Cucumber BDD E2E 10 langues
+_Prochaine session_ : 082 — CAP-29.6 Documentation + dogfooding + clôture EPIC CAP-29
 
-== Mission session 079 (TERMINÉE)
+== Mission session 081 (TERMINÉE)
 
-. CAP-29.3 — tâche `generateCapsuleVideoAllLanguages` : itère le `CapsuleVideoPlan`
-  (S-078) par langue, TTS+capture avec `ttsLanguage` adapté, `<deck>_<lang>.webm`.
-. Domaine pur `capsule.multilang.CapsuleVideoAllLanguagesRunner` (object,
-  callbacks `probeDuration`/`render` injectés — frontière domaine/adaptateur nette).
-  Économie d'encre : skip si WebM existe ET probe duration > 0.
-. Tâche `GenerateCapsuleVideoAllLanguagesTask : CapsuleVideoTask` — réutilise le
-  pipeline mono-langue (CR-1) ; résolution TTS par langue via `MultiLanguageResolver`.
-. Refactor base `CapsuleVideoTask` (zéro changement de comportement) :
-  `execute()` → `open`, `resolveTtsEngine()`/`injectAudio()` → `internal`.
-. `CapsuleManager` : enregistrement `generateCapsuleVideoAllLanguages` (groupe generate).
-. Baby-step TDD : 6 unit `CapsuleVideoAllLanguagesRunnerTest` (RED → GREEN).
-  _Correction RED_ : `LanguageCatalog` n'a PAS "de" (10 langues en/zh/hi/es/fr/ar/bn/pt/ru/ur).
-. 1 functional test : 3 langues fr/en/ar NoOp → 3 WebM + log `CAPSULE MULTILANG`.
-  _Re-run retiré_ : ffprobe ne parse pas le WebM minimal NoOp (skip non observable — couvert unit).
-. `./gradlew check` VERT — 460 unit (0 FAIL, +6 net) + functional PASS, cucumber SKIPPED.
+. CAP-29.5 — Cucumber BDD E2E 10 langues : `multi_language_capsule.feature`
+  (6 scénarios `@multilang @i18n`) + `MultiLanguageCapsuleSteps` (step defs).
+. Scénarios : plan 10 langues (LanguageCatalog), convention nommage
+  `<deckName>_<lang>.webm`, skip langue sans paire, fail-fast plan vide,
+  E2E GradleRunner NoOp 10 WebM + log `CAPSULE MULTILANG → n/n`,
+  E2E RTL ar/ur.
+. `./gradlew cucumberTest -PrunCucumber` : 6/6 multilang GREEN (0 FAIL).
+  Suite complète 154 tests, 1 FAIL préexistant `@integration` burn-in
+  (subtitle path `build/capsule/` vs `outputDir=capsules`) — hors périmètre.
+. `./gradlew check` BUILD SUCCESSFUL — 460 unit + 25 functional + kover VERT,
+  cucumber SKIPPED par défaut (CR-10).
 
-== Contexte reprise session 080
+== Contexte reprise session 082
 
 - EPIC CAP-29 : 29.0 cadrage ✅, 29.1 MultiLanguageResolver ✅, 29.2 Plan/Planner ✅,
-  29.3 génération multi-langue ✅ — reste 29.4, 29.5, 29.6 (~12 pts).
-- 460 unit tests VERT, functionalTest VERT, cucumberTest skippé par défaut (CR-10).
-- **CAP-29.4** — câbler `translateAndGenerateCapsuleVideos` (dependsOn
-  `translateAndExtractSpeakerNotes` + `generateCapsuleVideoAllLanguages`).
-- **CAP-29.5** — Cucumber BDD E2E multi-langue (`multi_language_capsule.feature`).
-- **CAP-29.6** — Documentation + dogfooding (1 deck × 3 langues fr/en/ar).
-- Modifications S-079 non committées (Règle 1 — demander permission de commit).
+  29.3 génération multi-langue ✅, 29.4 wiring composite ✅, 29.5 cucumber ✅ —
+  **reste 29.6 (~2 pts)** puis clôture EPIC (7/7 US).
+- 460 unit VERT + 25 functional VERT + 6 cucumber multilang GREEN.
+- **CAP-29.6** — README master EN (domaine `capsule.multilang` + tâches
+  `generateCapsuleVideoAllLanguages` / `translateAndGenerateCapsuleVideos`) +
+  dogfooding 1 deck demo × 3 langues fr/en/ar (dont 1 RTL). MàJ INDEX/BACKLOG.
+- **Clôture EPIC CAP-29** — statut final, paragraphe récapitulatif,
+  archivage, table AGENTS.adoc racine.
+- **Suivi préexistant** — burn-in E2E `@integration` cassé (path subtitle) —
+  à corriger hors CAP-29.
+- Modifications S-079→081 non committées (Règle 1 — demander permission de commit).
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider 0.0.16 (compileOnly).
 - Domaines DDD capsule : `capsule.feed` + `capsule.ci` + `capsule.multilang`.
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 460 unit tests VERT (S-079 baseline) — vérifier avant de coder
+* 460 unit tests VERT (S-080 baseline) — vérifier avant de coder
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * English only : code, Gherkin, commentaires
 * Économie d'encre = skip WebM existant + probe > 0 (ink economy)

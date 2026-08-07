@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-08-08 (Session 080 — CAP-29.4 câblage translateAndGenerateCapsuleVideos)
+:last_update: 2026-08-08 (Session 081 — CAP-29.5 Cucumber BDD E2E 10 langues)
 
 '''
 == ✅ EPIC CAP-MODEL — TERMINE (session 069)
@@ -97,6 +97,16 @@
 . [x] 460 unit VERT (inchangé) + 25 functional (+3), `check` BUILD SUCCESSFUL, zéro secret
 
 '''
+== ✅ CAP-29.5 Cucumber BDD E2E 10 langues — TERMINE (session 081)
+
+. [x] `multi_language_capsule.feature` — 6 scénarios `@multilang @i18n`
+. [x] `MultiLanguageCapsuleSteps` — step defs (plan pur `CapsuleVideoPlanner` + E2E GradleRunner NoOp)
+. [x] Plan 10 langues (LanguageCatalog), nommage `<deckName>_<lang>.webm`, skip langue sans paire, fail-fast plan vide
+. [x] E2E NoOp 10 WebM + log `CAPSULE MULTILANG → n/n languages rendered` + RTL ar/ur
+. [x] `cucumberTest -PrunCucumber` : 6/6 multilang GREEN (suite 154 tests, 1 FAIL préexistant burn-in @integration — hors périmètre)
+. [x] 460 unit VERT (inchangé) + 25 functional VERT + kover VERT, `check` BUILD SUCCESSFUL, zéro secret
+
+'''
 == 🟡 EPIC CAP-ARCH — Collaboration cross-borough (slider + codebase) — CADRÉ (session 073)
 
 . [ ] CAP-ARCH-0 — Cadrage EPIC (audit appels LLM dispersés, inventaire contrats N0)
@@ -111,7 +121,7 @@
 
 . [x] **CR-9** (robust HTML parsing) — à coder ✅ S-074
 . [x] **CR-10** (CI optimization cucumberTest onlyIf) — à coder ✅ S-075
-. [ ] **CAP-29** (pipeline traduction vidéo multi-langue) — EN COURS (CAP-29.0 ✅ S-076, CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, CAP-29.4 ✅ S-080, 5→6 TODO)
+. [ ] **CAP-29** (pipeline traduction vidéo multi-langue) — EN COURS (CAP-29.0 ✅ S-076, CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, CAP-29.4 ✅ S-080, CAP-29.5 ✅ S-081, 6→TODO)
 . [ ] **CAP-ARCH** (collaboration cross-borough slider+codebase) — à planifier après CAP-29
 
 '''
@@ -196,5 +206,5 @@
 . [ ] 🔴 CAP-CR3-2 — Mode strict anti-NoOp (`capsule.strictMode`)
 . [ ] 🟠 CAP-CR3-3 — Décision `ScreenshotCaptureImpl` vs `PlaywrightCaptureImpl`
 . [ ] 🟡 CAP-CR3-4 — Convention Gradle `resolveScriptDir/resolveDeckDir`
-. [ ] 🟢 CAP-29 — Pipeline Traduction Vidéo Multi-Langue (7 US ~20 pts, EN COURS : CAP-29.0 ✅ S-076, CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, CAP-29.4 ✅ S-080, 5→6 TODO)
+. [ ] 🟢 CAP-29 — Pipeline Traduction Vidéo Multi-Langue (7 US ~20 pts, EN COURS : CAP-29.0 ✅ S-076, CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, CAP-29.4 ✅ S-080, CAP-29.5 ✅ S-081, 6→TODO)
 . [ ] 🟠 CAP-ARCH — Collaboration cross-borough slider+codebase (6 US ~19 pts, cadré S-073)

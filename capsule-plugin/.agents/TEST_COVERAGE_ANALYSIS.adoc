@@ -1,6 +1,36 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-08-08
-:session: 079 CAP-29.3 GenerateCapsuleVideoAllLanguagesTask
+:session: 081 CAP-29.5 Cucumber BDD E2E 10 langues
+
+== Couverture — 8 août 2026 (après session 081)
+
+.Modifications session 081 — 6 scénarios cucumber `@multilang @i18n` (domaine `capsule.multilang`)
+|===
+| Fichier | Changement | Tests ajoutés
+| `src/test/features/multi_language_capsule.feature` (nouveau) | Feature Gherkin `@multilang @i18n` — 6 scénarios : plan 10 langues (LanguageCatalog), convention nommage `<deckName>_<lang>.webm`, skip langue sans paire deck+script, fail-fast plan vide, E2E GradleRunner NoOp → 10 WebM + log `CAPSULE MULTILANG → n/n languages rendered`, E2E RTL ar/ur | 6 scénarios cucumber
+| `src/test/kotlin/capsule/scenarios/MultiLanguageCapsuleSteps.kt` (nouveau) | Step defs — helpers plan pur `CapsuleVideoPlanner.plan()` (Given/When/Then) + 2 scénarios GradleRunner NoOp (ttsEngine=noop, captureEnabled=false, deck source + 10 scripts par langue dans répertoires conventions, assert WebM `build/capsules/*.webm`) | 6 scénarios couverts
+|===
+
+- Cucumber (`-PrunCucumber`) : 6/6 multilang GREEN (0 FAIL). Suite complète 154 tests, 1 FAIL préexistant `@integration` burn-in (subtitle path `build/capsule/` vs `outputDir=capsules`) — hors périmètre CAP-29.5, connu S-069/S-072
+- Unitaires : 460 VERT (inchangé, 0 FAIL) + 25 functional VERT (inchangé)
+- `./gradlew check` BUILD SUCCESSFUL (cucumber SKIPPED par défaut — CR-10)
+- Couverture `multi_language_capsule.feature` : 6/6 (plan 10 langues, naming, skip, fail-fast, E2E NoOp 10 WebM, RTL ar/ur)
+- Secrets : 0 trouvé
+
+== Couverture — 8 août 2026 (après session 080)
+
+.Modifications session 080 — 3 functional tests (câblage wiring)
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/feed/CapsuleFeedTaskDomain.kt` (modifié) | +2 constantes `TRANSLATE_AND_GENERATE_CAPSULE_VIDEOS` + `TRANSLATE_AND_GENERATE_VIDEOS_DESCRIPTION` | 0 (constantes testées via functional)
+| `capsule/feed/CapsuleFeedTaskRegistrar.kt` (modifié) | +`registerTranslateAndGenerateCapsuleVideos` (group capsule, 2 dependsOn) | 3 functional `TranslateAndGenerateCapsuleVideosFunctionalTest`
+| `capsule/CapsuleManager.kt` (modifié) | Câblage 3ème appel registrar dans `registerExtractSpeakerNotesTask()` | 0 régression
+|===
+
+- Unitaires : 460 VERT (inchangé) + 25 functional (+3, 0 FAIL)
+- `./gradlew check` BUILD SUCCESSFUL (cucumber SKIPPED — CR-10)
+- Couverture `translateAndGenerateCapsuleVideos` : 3/3 (registration groupe, description mentionne les 2 sous-tâches, dependsOn chain via `--dry-run` avec stub translateDeck)
+- Secrets : 0 trouvé
 
 == Couverture — 8 août 2026 (après session 079)
 

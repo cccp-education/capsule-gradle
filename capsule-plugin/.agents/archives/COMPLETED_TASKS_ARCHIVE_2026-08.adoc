@@ -1,6 +1,30 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-08
 
+== Session 081 — CAP-29.5 Cucumber BDD E2E 10 langues ✅
+
+Cucumber BDD E2E multi-langue (CAP-29.5). `multi_language_capsule.feature`
+(6 scénarios `@multilang @i18n`) + `MultiLanguageCapsuleSteps` (step defs).
+`cucumberTest -PrunCucumber` : 6/6 multilang GREEN. 460 unit VERT (inchangé)
++ 25 functional VERT + kover VERT.
+
+Tâches terminées :
+. `src/test/features/multi_language_capsule.feature` (nouveau) — 6 scénarios :
+  plan 10 langues (LanguageCatalog), nommage `<deckName>_<lang>.webm`,
+  skip langue sans paire deck+script, fail-fast plan vide, E2E GradleRunner NoOp
+  → 10 WebM + log `CAPSULE MULTILANG → n/n languages rendered`, E2E RTL ar/ur
+. `src/test/kotlin/capsule/scenarios/MultiLanguageCapsuleSteps.kt` (nouveau) —
+  helpers plan pur `CapsuleVideoPlanner.plan()` + 2 scénarios GradleRunner NoOp
+  (ttsEngine=noop, captureEnabled=false, deck source + 10 scripts par langue,
+  assert WebM `build/capsules/*.webm`)
+. Vérifications — `compileTestKotlin` VERT, `cucumberTest -PrunCucumber` 6/6
+  multilang GREEN (suite 154 tests, 1 FAIL préexistant `@integration` burn-in
+  subtitle path — hors périmètre, connu S-069/S-072), `check` BUILD SUCCESSFUL,
+  zéro secret
+
+Prochaine session : CAP-29.6 Documentation + dogfooding (1 deck × 3 langues
+fr/en/ar) + clôture EPIC CAP-29 (7/7 US).
+
 == Session 080 — CAP-29.4 Câblage translateAndGenerateCapsuleVideos ✅
 
 Tâche composite `translateAndGenerateCapsuleVideos` : câble le pipeline complet

@@ -1,0 +1,94 @@
+= Session 081 — CAP-29.5 Cucumber BDD E2E 10 langues
+:date: 2026-08-08
+:session: 081
+:epic: CAP-29
+:us: CAP-29.5
+:method: baby-step BDD (cucumber) — feature + step defs
+
+== Objectif
+
+Implémenter CAP-29.5 : le Cucumber BDD E2E multi-langue
+(`multi_language_capsule.feature`) — deck source → 10 decks traduits →
+10 scripts → 10 WebM, ttsLanguage adapté par langue, output naming
+`<deckName>_<lang>.webm`, RTL ar/ur générés. Tags `@multilang @i18n`.
+Engines NoOp (pas de vrais Piper/Playwright/ffmpeg).
+
+== Méthode
+
+Baby-step BDD strict : feature Gherkin → step defs → exécution cucumber
+(`-PrunCucumber` — CR-10). Non-régression stricte : `./gradlew check`
+(unit + functional + kover) VERT.
+
+== Décisions d'architecture
+
+. *Plan pur via `CapsuleVideoPlanner` dans les step defs* — les scénarios
+  non-Gradle utilisent l'object pur `capsule.multilang.CapsuleVideoPlanner.plan()`
+  directement (pas de GradleRunner) : vérification du plan 10 langues,
+  convention de nommage, skip des langues sans paire, fail-fast plan vide.
+. *E2E via GradleRunner NoOp* — les 2 scénarios GradleRunner appliquent le
+  plugin + `ttsEngine = "noop"` + `captureEnabled = false` + deck source +
+  scripts par langue, puis lancent `generateCapsuleVideoAllLanguages`.
+  Assertions sur le log `CAPSULE MULTILANG → n/n languages rendered` +
+  existence des WebM dans `build/capsules/`.
+. *Nom de step distinct* — `Given a Gradle project with the capsule plugin
+  applied and NoOp engines` (distinct du step existant sans NoOp → pas de
+  DuplicateStepDefinitionException).
+
+== Livrables
+
+Tests (2 fichiers créés) :
+. `src/test/features/multi_language_capsule.feature` — 6 scénarios `@multilang @i18n` :
+  1. le plan génère 10 langues (LanguageCatalog complet, `demo_<lang>.webm`)
+  2. la convention de nommage produit `<deckName>_<lang>.webm`
+  3. une langue sans paire deck+script est skipée du plan
+  4. le plan échoue si aucune langue n'a de paire (fail-fast)
+  5. E2E GradleRunner NoOp → 10 WebM + log `CAPSULE MULTILANG → 10/10`
+  6. E2E RTL ar/ur → WebM `demo_ar.webm` + `demo_ur.webm` générés
+. `src/test/kotlin/capsule/scenarios/MultiLanguageCapsuleSteps.kt` — step defs :
+  helpers `CapsuleVideoPlanner.plan()` purs (Given/When/Then) + 2 scénarios
+  GradleRunner (NoOp engines, écriture deck source + scripts par langue dans
+  les répertoires conventions, assertion log + fichiers `build/capsules/`).
+
+== Vérification
+
+[source,shell]
+----
+./gradlew compileTestKotlin                                  # VERT
+./gradlew cucumberTest -PrunCucumber                          # 6/6 multilang GREEN
+./gradlew check                                               # BUILD SUCCESSFUL (unit + functional + kover, cucumber SKIPPED)
+rg "TOKEN|SECRET|PASSWORD|API_KEY|gho_|ghp_"                  # zéro secret
+----
+
+_Run cucumber complet_ (`-PrunCucumber`, ~10 min) : 154 tests, **1 FAIL
+préexistant non lié** — scénario `@integration` "Burn-in E2E pipeline"
+(`capsule.feature`, S-038 CAP-25) : `burnin-e2e.srt` attendu dans
+`build/capsule/` alors que le `outputDir` configuré est `capsules`
+(`build/capsules/`). Échec environnemental connu depuis S-069 ("Cucumber
+bloqué par burnin ffmpeg préexistant") et S-072 (ffmpeg exit 183). Hors
+périmètre CAP-29.5 — les 6 scénarios multilang sont 0 FAIL.
+
+== Delta tests
+
+- Avant : 460 unit + 25 functional + cucumber SKIPPED (baseline S-080)
+- Après : 460 unit VERT (inchangé) + 25 functional VERT (inchangé)
+- Cucumber : **+6 scénarios `@multilang @i18n`** (154 tests run, 6/6 multilang 0 FAIL)
+- Kover : VERT (seuil inchangé)
+
+== Score
+
+9/10 — US CAP-29.5 livrée : 6 scénarios BDD E2E GREEN (plan pur 10 langues,
+nommage, skip, fail-fast + 2 GradleRunner NoOp dont RTL ar/ur), baby-step
+strict (feature → step defs → run), non-régression `check` VERT. 1 pt de
+marge : l'unique échec cucumber global est un `@integration` burn-in
+préexistant hors périmètre (non réparé — environnement, à traiter en dehors
+de CAP-29), et CAP-29.6 (dogfooding réel) reste.
+
+== Prochaine session — 082
+
+. 🟡 **CAP-29.6** — Documentation + dogfooding : README master EN avec domaine
+  `capsule.multilang` + tâches `generateCapsuleVideoAllLanguages` /
+  `translateAndGenerateCapsuleVideos` ; dogfooding 1 deck demo × 3 langues
+  (fr/en/ar dont 1 RTL) = 3 vidéos (NoOp ou réel selon dispo).
+. **EPIC CAP-29 CLÔTURE** — statut final, archivage, clôture EPIC (7/7 US).
+. **Suivi préexistant** — burn-in E2E `@integration` cassé (subtitle path
+  `build/capsule/` vs `outputDir=capsules`) — à corriger hors CAP-29.
