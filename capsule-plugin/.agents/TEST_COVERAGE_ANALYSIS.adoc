@@ -1,6 +1,25 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-08-08
-:session: 078 CAP-29.2 CapsuleVideoPlan + CapsuleVideoPlanner
+:session: 079 CAP-29.3 GenerateCapsuleVideoAllLanguagesTask
+
+== Couverture — 8 août 2026 (après session 079)
+
+.Modifications session 079 — 6 nouveaux tests unitaires + 1 functional (domaine `capsule.multilang`)
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/multilang/CapsuleVideoAllLanguagesRunner.kt` (nouveau) | Object pur `run(plan, probeDuration, render): List<CapsuleVideoEntry>` — itère le plan, invoque `render` pour chaque entrée sans WebM valide, retourne les entrées rendues dans l'ordre du plan. `shouldRender(entry, probeDuration)` : skip si WebM existe ET probe > 0 (ink economy), re-render si probe ≤ 0 (artefact invalide) | 6 unit `CapsuleVideoAllLanguagesRunnerTest`
+| `capsule/multilang/GenerateCapsuleVideoAllLanguagesTask.kt` (nouveau) | Tâche Gradle `: CapsuleVideoTask` — `@TaskAction override execute()`, résolution TTS par langue via `MultiLanguageResolver` (set `ttsLanguage`/`ttsVoice`/`espeakVoice`, reset `ttsEngine=null`), pipeline mono-langue réutilisé (CR-1), log `CAPSULE MULTILANG → x/y` | 1 functional `GenerateCapsuleVideoAllLanguagesFunctionalTest` (3 langues fr/en/ar NoOp → 3 WebM)
+| `capsule/CapsuleVideoTask.kt` (modifié) | `execute()` → `open`, `resolveTtsEngine()`/`injectAudio()` → `internal` — zéro changement de comportement | 0 régression
+| `capsule/CapsuleManager.kt` (modifié) | Enregistrement `generateCapsuleVideoAllLanguages` (groupe generate) | 0 régression
+|===
+
+- Unitaires : 460 VERT (was 454, +6 net : +6 `CapsuleVideoAllLanguagesRunnerTest`)
+- Functional : +1 PASS (`GenerateCapsuleVideoAllLanguagesFunctionalTest` — 3 langues NoOp → 3 WebM)
+- 0 FAIL, 0 SKIP (cucumber SKIPPED par défaut — CR-10)
+- `./gradlew check` BUILD SUCCESSFUL
+- Couverture `CapsuleVideoAllLanguagesRunner` : 6/6 (renders all 3 langues, skip WebM existant valide, re-render WebM invalide, plan mixte missing+invalid ordre préservé, shouldRender true/false)
+- Note : le skip ink-economy n'est pas observable en functional (ffprobe ne parse pas le WebM minimal NoOp — duration vide) → couvert de façon déterministe en unit via `probeDuration` injecté
+- Secrets : 0 trouvé
 
 == Couverture — 8 août 2026 (après session 078)
 

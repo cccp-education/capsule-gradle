@@ -1,0 +1,107 @@
+= Session 079 — CAP-29.3 GenerateCapsuleVideoAllLanguagesTask
+:date: 2026-08-08
+:session: 079
+:epic: CAP-29
+:us: CAP-29.3
+:method: baby-step DDD/TDD (unit) + functional
+
+== Objectif
+
+Implémenter CAP-29.3 : la tâche Gradle `generateCapsuleVideoAllLanguages` qui
+itère sur le `CapsuleVideoPlan` (produit par `CapsuleVideoPlanner` S-078),
+appelle le pipeline TTS+capture par langue avec `ttsLanguage` adapté, et
+génère `<deckName>_<lang>.webm` par langue. Économie d'encre : skip langue si
+le WebM existe et est valide (probe duration > 0).
+
+== Méthode
+
+Baby-step DDD/TDD strict : RED → GREEN → REFACTOR, 2 niveaux de tests
+(unit → functional). Zéro cucumber (US CAP-29.5). Non-régression stricte :
+le pipeline mono-langue `CapsuleVideoTask` reste inchangé fonctionnellement.
+
+== Décisions d'architecture
+
+. *Domaine pur `CapsuleVideoAllLanguagesRunner`* (object, `capsule.multilang`)
+  — orchestration itération + décision de skip = domaine testable sans Gradle.
+  `run(plan, probeDuration: (File) -> Double, render: (CapsuleVideoEntry) -> Unit): List<CapsuleVideoEntry>`
+  invoque `render` pour chaque entrée sans WebM valide, retourne les entrées
+  rendues dans l'ordre du plan. `shouldRender(entry, probeDuration)` : true si
+  le WebM n'existe pas OU probe ≤ 0 (artefact invalide re-rendu).
+  Le travail lourd (TTS+capture) est injecté en callback — la frontière
+  domaine/adaptateur Gradle reste nette.
+. *Tâche `GenerateCapsuleVideoAllLanguagesTask : CapsuleVideoTask`* (adaptateur
+  mince, `capsule.multilang`) — réutilise le pipeline mono-langue existant
+  (CR-1 refactor) : `synthesizeTtsForScript`, `captureDeckSequential`/
+  `captureDeckParallel`, `computeSlideDurations`, `generateSubtitles`, `injectAudio`.
+  Résout `deckDir`/`scriptDir` via `CapsuleManager.resolveDeckDir/resolveScriptDir`
+  (mêmes helpers que `CapsuleVideoTask.execute()`).
+. *Adaptation TTS par langue* — avant chaque entrée : `ttsLanguage.set(code)`,
+  `ttsVoice.set(resolved.piperModel)`, `espeakVoice.set(resolved.espeakVoice)`
+  via `MultiLanguageResolver.resolve(code)`, puis `ttsEngine = null` pour forcer
+  la re-résolution de l'engine (résolution cacheée par champ — reset nécessaire).
+  `renderEntry` skip les langues sans mapping voice et les scripts vides.
+. *Changements base `CapsuleVideoTask`* (zéro changement de comportement) :
+  `execute()` → `open` (permet le @TaskAction override du sous-type),
+  `resolveTtsEngine()` et `injectAudio()` → `internal` (réutilisables module).
+  Seul @TaskAction restant = l'override du sous-type (pas de doublon Gradle).
+. *targetLanguages* — défaut = `LanguageCatalog.supportedCodes()` (10 langues,
+  contrats N0) mappé via `findByCode`. Le planner skip naturellement les langues
+  sans paire deck+script → pas de DSL supplémentaire pour CAP-29.3.
+. *Nommage* — `captureDeckSequential` écrit `outDir/<deckName>_<lang>.webm`
+  (deckName du script traduit = `<deckName>_<lang>`) = `entry.outputVideo` du
+  plan → alignement exact entre le fichier produit et le skip ink-economy.
+
+== Livrables
+
+Production (4 fichiers) :
+. `src/main/kotlin/capsule/multilang/CapsuleVideoAllLanguagesRunner.kt` (nouveau)
+  — object pur : itération plan + skip ink-economy.
+. `src/main/kotlin/capsule/multilang/GenerateCapsuleVideoAllLanguagesTask.kt` (nouveau)
+  — tâche Gradle, adaptateur sur le pipeline mono-langue.
+. `src/main/kotlin/capsule/CapsuleVideoTask.kt` (modifié) — `open execute()`,
+  `internal resolveTtsEngine()`, `internal injectAudio()`.
+. `src/main/kotlin/capsule/CapsuleManager.kt` (modifié) — enregistrement
+  `generateCapsuleVideoAllLanguages` (groupe generate).
+
+Tests (2 fichiers) :
+. `src/test/kotlin/capsule/multilang/CapsuleVideoAllLanguagesRunnerTest.kt` (nouveau, 6 unit)
+  — 3 langues toutes rendues, skip WebM existant valide, re-render WebM invalide,
+  plan mixte (missing + invalid) ordre préservé, shouldRender true/false.
+  _Correction en cours de RED_ : `LanguageCatalog` ne contient PAS "de" (10 langues,
+  rétrocompat VoiceMapping seulement) → langues de test corrigées fr/en/ar/ru.
+. `src/functionalTest/kotlin/capsule/GenerateCapsuleVideoAllLanguagesFunctionalTest.kt`
+  (nouveau, 1 functional) — 3 langues fr/en/ar, engines NoOp → 3 WebM
+  `build/capsules/demo_<lang>.webm` + log `CAPSULE MULTILANG`.
+  _Re-run test retiré_ : ffprobe ne parse pas le WebM minimal NoOp (duration vide)
+  → skip ink-economy non observable en functional (couvert déterministe en unit).
+
+== Vérification
+
+[source,shell]
+----
+./gradlew test --tests "capsule.multilang.*"   # 32 unit VERT (22 multilang préexistants + 6 runner + 4 autres multilang)
+./gradlew check                                # BUILD SUCCESSFUL (unit + functional + kover, cucumber SKIPPED sans -PrunCucumber)
+rg "TOKEN|SECRET|PASSWORD|API_KEY|gho_|ghp_"   # zéro secret
+----
+
+== Delta tests
+
+- Avant : 454 unit (baseline S-078)
+- Après : 460 unit (+6 net) — `CapsuleVideoAllLanguagesRunnerTest` (6 unit)
+- Functional : +1 (`GenerateCapsuleVideoAllLanguagesFunctionalTest`) — 0 FAIL
+
+== Score
+
+9/10 — US CAP-29.3 livrée : domaine pur + adaptateur Gradle mince, baby-step
+TDD strict (RED : classe absente → GREEN), économie d'encre câblée et testée
+(unit déterministe), réutilisation du pipeline CR-1 sans duplication, 460 unit
+0 FAIL + functional 0 FAIL. 1 pt de marge : pas de cucumber ni de DSL
+targetLanguages configurable (CAP-29.4/29.5/29.6).
+
+== Prochaine session — 080
+
+. 🟡 **CAP-29.4** — Câblage `translateAndGenerateCapsuleVideos` (dependsOn
+  `translateAndExtractSpeakerNotes` + `generateCapsuleVideoAllLanguages`).
+  Functional (NoOp, vérifie dependsOn chain).
+. **CAP-29.5** — Cucumber BDD E2E 10 langues (`multi_language_capsule.feature`).
+. **CAP-29.6** — Documentation + dogfooding (1 deck × 3 langues fr/en/ar).

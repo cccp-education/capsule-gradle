@@ -1,6 +1,46 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-08
 
+== Session 079 — CAP-29.3 GenerateCapsuleVideoAllLanguagesTask ✅
+
+Tâche `generateCapsuleVideoAllLanguages` : itère le `CapsuleVideoPlan` (S-078),
+TTS+capture par langue avec `ttsLanguage` adapté, économie d'encre. Domaine
+`capsule.multilang`. 460 unit tests VERT (+6 net) + 1 functional PASS.
+
+Tâches terminées :
+. `CapsuleVideoAllLanguagesRunner.kt` (nouveau) — object pur `run(plan,
+  probeDuration, render): List<CapsuleVideoEntry>` (callback render injecté —
+  frontière domaine/adaptateur nette) + `shouldRender(entry, probeDuration)` :
+  skip si WebM existe ET probe > 0, re-render si probe ≤ 0 (artefact invalide)
+. `GenerateCapsuleVideoAllLanguagesTask.kt` (nouveau) — tâche Gradle
+  `: CapsuleVideoTask`, `@TaskAction override execute()` : build plan via
+  `CapsuleVideoPlanner`, itère via runner, réutilise `synthesizeTtsForScript` +
+  `captureDeckSequential/Parallel` + `injectAudio` + `computeSlideDurations`
+  (CR-1). TTS par langue via `MultiLanguageResolver` : set `ttsLanguage`/
+  `ttsVoice`/`espeakVoice`, reset `ttsEngine=null` (engine résolue par champ).
+  Log `CAPSULE MULTILANG → x/y languages rendered`
+. Refactor base `CapsuleVideoTask.kt` (zéro changement de comportement) —
+  `execute()` → `open` (permet override @TaskAction du sous-type),
+  `resolveTtsEngine()`/`injectAudio()` → `internal` (réutilisables module)
+. `CapsuleManager.kt` — enregistrement `generateCapsuleVideoAllLanguages`
+  (groupe generate)
+. Tests — 6 unit `CapsuleVideoAllLanguagesRunnerTest` (RED→GREEN : 3 langues
+  toutes rendues, skip WebM valide, re-render WebM invalide, plan mixte ordre
+  préservé, shouldRender true/false). _Correction RED_ : `LanguageCatalog` n'a
+  pas "de" (10 langues en/zh/hi/es/fr/ar/bn/pt/ru/ur) — langues corrigées
+  fr/en/ar/ru. 1 functional `GenerateCapsuleVideoAllLanguagesFunctionalTest` :
+  3 langues fr/en/ar NoOp → 3 WebM + log `CAPSULE MULTILANG`
+. Vérifications — `test` 460 VERT (0 FAIL), functionalTest PASS, `check`
+  BUILD SUCCESSFUL (cucumber SKIPPED — CR-10), zéro secret
+
+Note : le skip ink-economy n'est pas observable en functional (ffprobe ne parse
+pas le WebM minimal NoOp, duration vide) → couvert de façon déterministe en unit
+via `probeDuration` injecté.
+
+Prochaine session : CAP-29.4 câblage `translateAndGenerateCapsuleVideos`
+(dependsOn `translateAndExtractSpeakerNotes` + `generateCapsuleVideoAllLanguages`),
+functional (NoOp, vérifie dependsOn chain).
+
 == Session 078 — CAP-29.2 CapsuleVideoPlan + CapsuleVideoPlanner ✅
 
 Domaine `capsule.multilang` enrichi. `CapsuleVideoEntry` (data class immutable

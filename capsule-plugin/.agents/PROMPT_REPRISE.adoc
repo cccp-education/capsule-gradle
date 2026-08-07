@@ -1,46 +1,43 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 075 — CR-10 CI optimization cucumberTest onlyIf
-_Prochaine session_ : 076 — Backlog capsule restant
+_Session terminee_ : 079 — CAP-29.3 GenerateCapsuleVideoAllLanguagesTask
+_Prochaine session_ : 080 — CAP-29.4 wiring + pipeline multi-langue
 
-== Mission session 075 (TERMINÉE)
+== Mission session 079 (TERMINÉE)
 
-. CR-10 — `cucumberTest` est coûteux (Playwright + FFmpeg, ~15 min).
-. Skip sauf demande explicite (`-PrunCucumber` ou `CI=true`).
-. Domaine `capsule.ci.CucumberTestGuard` (data class pure, 4 méthodes).
-. 7 unit tests `CucumberTestGuardTest` (414 → 421 unit VERT).
-. BDD `cucumber_skip.feature` (4 scénarios `@ci`) + `CucumberSkipSteps`.
-. Câblage `onlyIf` dans `build.gradle.kts` (logique inlinée — script ne peut
-  pas importer le classpath `main` du projet).
-. `./gradlew check` VERT (cucumberTest SKIPPED sans flag).
-. Zéro code production modifié hors build script + nouveau domaine.
+. CAP-29.3 — tâche `generateCapsuleVideoAllLanguages` : itère le `CapsuleVideoPlan`
+  (S-078) par langue, TTS+capture avec `ttsLanguage` adapté, `<deck>_<lang>.webm`.
+. Domaine pur `capsule.multilang.CapsuleVideoAllLanguagesRunner` (object,
+  callbacks `probeDuration`/`render` injectés — frontière domaine/adaptateur nette).
+  Économie d'encre : skip si WebM existe ET probe duration > 0.
+. Tâche `GenerateCapsuleVideoAllLanguagesTask : CapsuleVideoTask` — réutilise le
+  pipeline mono-langue (CR-1) ; résolution TTS par langue via `MultiLanguageResolver`.
+. Refactor base `CapsuleVideoTask` (zéro changement de comportement) :
+  `execute()` → `open`, `resolveTtsEngine()`/`injectAudio()` → `internal`.
+. `CapsuleManager` : enregistrement `generateCapsuleVideoAllLanguages` (groupe generate).
+. Baby-step TDD : 6 unit `CapsuleVideoAllLanguagesRunnerTest` (RED → GREEN).
+  _Correction RED_ : `LanguageCatalog` n'a PAS "de" (10 langues en/zh/hi/es/fr/ar/bn/pt/ru/ur).
+. 1 functional test : 3 langues fr/en/ar NoOp → 3 WebM + log `CAPSULE MULTILANG`.
+  _Re-run retiré_ : ffprobe ne parse pas le WebM minimal NoOp (skip non observable — couvert unit).
+. `./gradlew check` VERT — 460 unit (0 FAIL, +6 net) + functional PASS, cucumber SKIPPED.
 
-== Contexte reprise session 076
+== Contexte reprise session 080
 
-- EPIC CR TERMINÉ (CR-1→CR-10, 10/10 EPICs).
-- 421 unit tests VERT (+7 vs S-074 414).
-- `./gradlew check` VERT — cucumberTest skippé par défaut (CR-10).
-- Bug préexistant découvert : `CucumberTestRunner` ne lance que `capsule.feature`,
-  pas les autres features (à investiguer).
-- Backlog capsule restant :
-  - CAP-CR3-1 (CI `full` vrais binaires + probe durée) — 🔴 P0
-  - CAP-CR3-2 (Mode strict anti-NoOp) — 🔴 P0
-  - CAP-CR3-3 (Décision ScreenshotCapture vs Playwright) — 🟠 P1
-  - CAP-CR3-4 (Convention Gradle resolveScriptDir/resolveDeckDir) — 🟡 P2
-  - CAP-27 (VTT burn-in) — P2
-  - CAP-28 (Coverage gaps) — P2
-  - CAP-29 (Pipeline traduction vidéo multi-langue, 6 US ~20 pts) — P0
-  - CAP-ARCH (cross-borough slider+codebase i18n, 6 US ~19 pts) — après CAP-29
-- Version capsule : 0.0.1-SNAPSHOT (non publié Central).
-- Capsule consomme slider 0.0.16 (compileOnly + runtime apply).
-- Domaine `capsule.ci` créé (CR-10).
-- Baseline : `main` avec modifications non committées (S-075).
-- Règle 1 — AUCUN commit sans permission.
+- EPIC CAP-29 : 29.0 cadrage ✅, 29.1 MultiLanguageResolver ✅, 29.2 Plan/Planner ✅,
+  29.3 génération multi-langue ✅ — reste 29.4, 29.5, 29.6 (~12 pts).
+- 460 unit tests VERT, functionalTest VERT, cucumberTest skippé par défaut (CR-10).
+- **CAP-29.4** — câbler `translateAndGenerateCapsuleVideos` (dependsOn
+  `translateAndExtractSpeakerNotes` + `generateCapsuleVideoAllLanguages`).
+- **CAP-29.5** — Cucumber BDD E2E multi-langue (`multi_language_capsule.feature`).
+- **CAP-29.6** — Documentation + dogfooding (1 deck × 3 langues fr/en/ar).
+- Modifications S-079 non committées (Règle 1 — demander permission de commit).
+- Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider 0.0.16 (compileOnly).
+- Domaines DDD capsule : `capsule.feed` + `capsule.ci` + `capsule.multilang`.
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 421 unit tests VERT (S-075 baseline)
+* 460 unit tests VERT (S-079 baseline) — vérifier avant de coder
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * English only : code, Gherkin, commentaires
-* Domaines DDD capsule : `capsule.feed` + `capsule.ci` (post-CR-10)
+* Économie d'encre = skip WebM existant + probe > 0 (ink economy)

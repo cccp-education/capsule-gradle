@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-08 (Session 078 — CAP-29.2 CapsuleVideoPlan + CapsuleVideoPlanner)
+:last_update: 2026-08-08 (Session 079 — CAP-29.3 GenerateCapsuleVideoAllLanguagesTask)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -270,7 +270,7 @@ existants (CR-1 refactor). Output : `<deckName>_<lang>.webm` par langue.
 Économie d'encre : skip langue si WebM existe et est valide (probe duration > 0).
 Baby-step TDD : unit (plan iteration mocké) + functional (NoOp engines, 3 langues).
 | 4
-| ⬜ TODO
+| ✅ TERMINÉ (S-079, 6 unit + 1 functional, 460 unit VERT)
 
 | CAP-29.4
 | *Câblage `translateAndExtractSpeakerNotes` → `generateCapsuleVideoAllLanguages`*
@@ -304,7 +304,7 @@ _Total_ : 7 US (US-0 cadrage + US-1→6 exécution), ~20 pts. _Méthode_ : baby-
 DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber), English only
 code/Gherkin. _Pattern de référence_ : SLD-5 (DeckTranslationPipeline one-to-many),
 CAP-MODEL (unification domaine). _Statut_ : 🟡 EN COURS (CAP-29.0 ✅ S-076,
-CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, 3→6 TODO).
+CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, 2→6 TODO).
 
 '''
 == 🔴 EPIC CAP-CR3 — Revue CR-GLOBALE-003 : Création de Contenu Solide

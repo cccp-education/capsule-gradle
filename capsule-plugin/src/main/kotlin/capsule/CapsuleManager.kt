@@ -10,6 +10,7 @@ class CapsuleManager(private val project: Project) {
         project.registerGenerateCapsuleScriptTask()
         project.registerGenerateCapsuleTask()
         project.registerGenerateCapsuleVideoTask()
+        project.registerGenerateCapsuleVideoAllLanguagesTask()
         project.registerDeployCapsuleTask()
         project.registerCollectCapsuleContextTask()
         project.registerTransformCapsuleContextTask()
@@ -42,6 +43,16 @@ class CapsuleManager(private val project: Project) {
             task.group = "generate"
             task.description = "Injects TTS audio into deck HTML then captures video via Playwright Java"
             task.dependsOn("generateCapsule")
+        }
+    }
+
+    private fun Project.registerGenerateCapsuleVideoAllLanguagesTask() {
+        tasks.register(
+            "generateCapsuleVideoAllLanguages",
+            capsule.multilang.GenerateCapsuleVideoAllLanguagesTask::class.java,
+        ) { task ->
+            task.group = "generate"
+            task.description = "Generates one localized capsule WebM per target language from translated decks + scripts"
         }
     }
 

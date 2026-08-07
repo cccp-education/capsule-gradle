@@ -191,7 +191,7 @@ open class CapsuleVideoTask : DefaultTask() {
         }
     }
 
-    private fun resolveTtsEngine(): TtsEngine {
+    internal fun resolveTtsEngine(): TtsEngine {
         if (ttsEngine != null) return ttsEngine!!
 
         val langCode = capsuleExtension.ttsLanguage.get()
@@ -491,7 +491,7 @@ open class CapsuleVideoTask : DefaultTask() {
     }
 
     @TaskAction
-    fun execute() {
+    open fun execute() {
         val deckDir = CapsuleManager.resolveDeckDir(project, capsuleExtension)
         val scriptDir = CapsuleManager.resolveScriptDir(project, capsuleExtension)
 
@@ -719,7 +719,7 @@ open class CapsuleVideoTask : DefaultTask() {
         return failedSlides.size
     }
 
-    private fun injectAudio(deckFile: File, script: CapsuleScript, audioDir: File): File {
+    internal fun injectAudio(deckFile: File, script: CapsuleScript, audioDir: File): File {
         val originalHtml = deckFile.readText()
         val injectedDir = project.layout.buildDirectory.dir("capsule/injected").get().asFile
         injectedDir.mkdirs()
