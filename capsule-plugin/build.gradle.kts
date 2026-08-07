@@ -17,6 +17,24 @@ cucumberConventions {
     featuresDir = "src/test/features"
 }
 
+// CR-10 — cucumberTest is expensive (Playwright + FFmpeg, ~15 min).
+// Skip unless -PrunCucumber or CI env var is active.
+// Decision logic documented/tested in capsule.ci.CucumberTestGuard (pure domain).
+afterEvaluate {
+    val hasRunCucumber = project.hasProperty("runCucumber")
+    val isCi = System.getenv("CI") == "true"
+    val shouldRun = hasRunCucumber || isCi
+
+    tasks.named("cucumberTest").configure {
+        onlyIf { shouldRun }
+        doFirst {
+            if (!shouldRun) {
+                logger.lifecycle("cucumberTest skipped (pass -PrunCucumber or set CI=true to enable)")
+            }
+        }
+    }
+}
+
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
 

@@ -6,8 +6,8 @@ _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
 _Derniere mise a jour_ : 2026-08-07
-_Session terminee_ : 074 — CR-9 Robust HTML parsing. `HtmlSectionParser.findTopLevelSectionOpenTags` (38 lignes, domaine `capsule`). Nouvelle méthode réutilisant le depth-tracking existant (skip nested + self-closing), retourne les `MatchResult` des tags d'ouverture top-level avec positions. `injectAudioSequentialFallback` (`CapsuleVideoTask.kt`) : 2 lignes regex raw `Regex("""<section\b[^>]*>""")` supprimées → 1 ligne `HtmlSectionParser.findTopLevelSectionOpenTags`. DRY — réutilise `HtmlSectionParser` (DRY-2 S-031). Bug fix : vertical stacks (sections imbriquées) n'étaient pas skippées par la regex raw → `data-audio` injecté sur sous-sections. +8 unit tests `HtmlSectionParserTest.findTopLevelSectionOpenTags` (flat, nested, self-closing, attributes, empty, malformed, positions, multiline) + 1 test `CapsuleVideoTaskTest.sequential fallback skips nested sections in vertical stack` (data-audio count = 2, pas 4). +1 scénario cucumber `@audio @sequential` + 2 step defs. 414 unit VERT (+9).
-_Prochaine session_ : 075 — Backlog capsule restant : CR-10 (CI optimization), CAP-29 (pipeline traduction vidéo multi-langue, débloqué), CAP-ARCH (cross-borough, à planifier après CAP-29).
+_Session terminee_ : 075 — CR-10 CI optimization cucumberTest onlyIf. Domaine `capsule.ci.CucumberTestGuard` (data class pure, 4 méthodes) + 7 unit tests `CucumberTestGuardTest`. Câblage `onlyIf { shouldRun }` dans `build.gradle.kts` (logique inlinée — script ne peut pas importer classpath `main`). BDD `cucumber_skip.feature` (4 scénarios `@ci`) + `CucumberSkipSteps` (5 step defs). `./gradlew check` VERT (cucumberTest SKIPPED sans flag). 421 unit VERT (+7). Bug préexistant découvert : `CucumberTestRunner` ne lance que `capsule.feature` (à investiguer). EPIC CR TERMINÉ (10/10).
+_Prochaine session_ : 076 — Backlog capsule restant : CAP-CR3-1 (CI full vrais binaires), CAP-CR3-2 (mode strict anti-NoOp), CAP-29 (pipeline traduction multi-langue), CAP-ARCH (cross-borough, après CAP-29).
 _Session en cours_ : —
 
 '''
@@ -57,6 +57,7 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 
 |===
 | # | Date | Type | Sujet | Score
+| 075 | 2026-08-07 | refactor+tdd+bdd | **CR-10 CI optimization cucumberTest onlyIf** — Domaine `capsule.ci.CucumberTestGuard` (data class pure, 4 méthodes) + 7 unit tests `CucumberTestGuardTest`. Câblage `onlyIf { shouldRun }` dans `build.gradle.kts` (logique inlinée — script ne peut pas importer classpath `main`). BDD `cucumber_skip.feature` (4 scénarios `@ci`) + `CucumberSkipSteps` (5 step defs). `./gradlew check` VERT (cucumberTest SKIPPED sans flag). 421 unit VERT (+7). Bug préexistant découvert : `CucumberTestRunner` ne lance que `capsule.feature` (à investiguer). EPIC CR TERMINÉ (10/10). | 9/10
 | 074 | 2026-08-07 | refactor+tdd+bdd | **CR-9 Robust HTML parsing** — `HtmlSectionParser.findTopLevelSectionOpenTags` (38 lignes, depth-tracking existant réutilisé). `injectAudioSequentialFallback` : 2 lignes regex raw supprimées → 1 ligne `HtmlSectionParser.findTopLevelSectionOpenTags`. DRY (DRY-2 S-031). Bug fix : vertical stacks (sections imbriquées) n'étaient pas skippées → `data-audio` injecté sur sous-sections. +8 unit `HtmlSectionParserTest` (flat, nested, self-closing, attributes, empty, malformed, positions, multiline) + 1 unit `CapsuleVideoTaskTest` (data-audio count = 2, pas 4) + 1 scénario cucumber `@audio @sequential` + 2 step defs. 414 unit VERT (+9). | 9/10
 | 073 | 2026-08-07 | refactor+tdd+bdd+cadrage | **CR-8 Logging structuré + EPIC CAP-ARCH cadré** — `CapsulePlugin.kt:40-48` 1 ligne monolithic 13 placeholders → 4 lignes `logger.lifecycle` par section (TTS/Capture/Subtitles/Manim). `CapsuleConfigLogger` object pur extrait (domaine `capsule.config`), `formatConfigLog(config): List<String>`. Tokens préservés verbatim → Cucumber @config existants verts. +9 unit tests `CapsuleConfigLoggerTest`, +1 scénario cucumber `@config @logging` (5 steps). 405 unit VERT (+9). EPIC CAP-ARCH cadré au BACKLOG (cross-borough slider+codebase, 6 US ~19 pts). | 9/10
 | 072 | 2026-08-07 | refactor+tdd+bdd | **CR-5 DRY CapsuleConfigMerger** — 10 méthodes `mergeXxxConfig`/`mergeXxxConfigNoYaml` (~76 lignes dupliquées) → 5 méthodes unifiées + 4 helpers génériques (`mergeStr/mergeInt/mergeDouble/mergeBoolean`). `merge()` dispatch sur `yaml: T?` nullable. 322→302 lignes (-19 net). Sémantique préservée : `toBoolean()` lenient, heuristic `isNotBlank()` strings, Bool/Int/Double YAML>Props>ENV. +13 unit tests NoYaml (48 total), +1 scénario cucumber `@config @no-yaml`. 396 unit VERT (+12). | 9/10
@@ -171,7 +172,7 @@ _Source_ : `CODE_REVIEW.adoc` (analyse 2026-06-16, Session 039). 15 problèmes �
 | CR-7 | Validation YAML — CapsulePlugin.afterEvaluate try/catch gracieux | 🟠 MAJEUR | ✅ TERMINE (session 071, déjà implémenté + test)
 | CR-8 | Logging structuré — CapsulePlugin l.36-44 → 4-5 logger.lifecycle par section | 🟡 MOYEN | ✅ TERMINE (session 073)
 | CR-9 | Robust HTML parsing — HtmlSectionParser au lieu de regex raw dans injectAudioSequentialFallback | 🟡 MOYEN | ✅ TERMINE (session 074)
-| CR-10 | CI optimization — cucumberTest onlyIf { hasProperty("runCucumber") || CI } | 🟡 MOYEN | ⬜ TODO
+| CR-10 | CI optimization — cucumberTest onlyIf { hasProperty("runCucumber") || CI } | 🟡 MOYEN | ✅ TERMINE (session 075) |
 |===
 
 '''
@@ -235,7 +236,7 @@ workspace-bom `i18n-contracts` 0.0.2 + `pipeline-contracts` 0.0.2.
 | CAP-ARCH-5 | *Cucumber BDD boundary cross-borough* — scénario E2E slider → capsule × 10 langues, tags `@i18n @cross-borough @architecture` | 3 | ⬜ TODO
 |===
 
-_Total_ : 6 US, ~19 pts. _Statut_ : ⬜ TODO (cadrage à planifier après CAP-29 et CR-10).
+_Total_ : 6 US, ~19 pts. _Statut_ : ⬜ TODO (cadrage à planifier après CAP-29).
 
 '''
 == EPIC CAP-MODEL — Unification modèle capsule.feed ↔ capsule.CapsuleScript (Session 069 — Cadrage)

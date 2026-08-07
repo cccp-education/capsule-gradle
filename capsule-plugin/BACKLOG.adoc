@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-07 (Session 074 — CR-9 robust HTML parsing)
+:last_update: 2026-08-07 (Session 075 — CR-10 CI optimization cucumberTest onlyIf)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -158,8 +158,14 @@ Ou : parser HTML léger (Jsoup? déjà en dépendance transitive?).
 | **CI optimization — cucumberTest upToDateWhen { false }** — Toujours re-run, ~15 min (Playwright + FFmpeg).
 _Fix_ : `onlyIf { project.hasProperty("runCucumber") || System.getenv("CI") == "true" }`.
 | 🟡 MOYEN
-| ⬜ TODO
+| ✅ TERMINE (session 075)
 |===
+
+_EPIC CR TERMINÉ_ (10/10 EPICs, S-040→S-075). Tous les problèmes de la code review
+globale (S-039) sont résolus : refactor execute() (CR-1), thread safety (CR-2),
+error handling TTS (CR-3), HTML escape XSS (CR-4), DRY ConfigMerger (CR-5),
+robust CLI parsing (CR-6), validation YAML (CR-7), logging structuré (CR-8),
+robust HTML parsing (CR-9), CI optimization cucumberTest onlyIf (CR-10).
 
 '''
 == 🟢 EPIC CAP — Fonctionnalités Restantes
@@ -371,4 +377,4 @@ _Total_ : 6 US, ~19 pts. _Méthode_ : baby-step DDD/TDD/BDD, 3 niveaux tests/US
 (unit → functional → cucumber), English only code/Gherkin. _Pattern de référence_ :
 document-gradle (`DocumentI18nBridge`), bakery-gradle (`ContentTranslationService`),
 plantuml-gradle (`PlantumlTranslationServiceAdapter`). _Statut_ : ⬜ TODO (cadrage
-à planifier après CAP-29 et CR-10).
+à planifier après CAP-29).

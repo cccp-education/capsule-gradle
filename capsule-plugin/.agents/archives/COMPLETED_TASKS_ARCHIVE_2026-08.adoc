@@ -1,6 +1,30 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-07
 
+== Session 075 — CR-10 CI optimization cucumberTest onlyIf ✅
+
+CI optimization (CR-10, 🟡 MOYEN). `cucumberTest` skippé sauf demande explicite
+(`-PrunCucumber` ou `CI=true`) pour garder `./gradlew check` rapide en local.
+
+Tâches terminées :
+. Domaine `capsule.ci.CucumberTestGuard` (data class pure, 4 méthodes :
+  shouldRun/shouldSkip/skipReason) — nouveau domaine DDD
+. 7 unit tests `CucumberTestGuardTest` (runCucumber active, CI active, both,
+  neither, shouldSkip negation, skipReason mention, skipReason blank)
+. Câblage `onlyIf { shouldRun }` dans `build.gradle.kts` (logique inlinée —
+  script ne peut pas importer classpath `main`)
+. BDD `cucumber_skip.feature` (4 scénarios `@ci`) + `CucumberSkipSteps`
+  (5 step defs)
+. `./gradlew check` VERT — cucumberTest SKIPPED sans flag (garde active)
+. `./gradlew cucumberTest -PrunCucumber` s'exécute (garde désactivée)
+. Bug préexistant découvert : `CucumberTestRunner` ne lance que `capsule.feature`
+  (à investiguer session future)
+
+Métriques : +7 unit tests (421 total), EPIC CR TERMINÉ (10/10), `check` VERT
+sans cucumber.
+
+Rapport : `.agents/sessions/075-cr10-ci-optimization-cucumber-onlyif.adoc`.
+
 == Session 074 — CR-9 Robust HTML parsing ✅
 
 Refactor robust HTML parsing (CR-9, 🟡 MOYEN). Regex raw `Regex("""<section\b[^>]*>""")`

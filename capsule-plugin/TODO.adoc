@@ -64,10 +64,10 @@
 '''
 == 🟡 Backlog restant — À planifier
 
-. [ ] **CR-9** (robust HTML parsing) — à coder
-. [ ] **CR-10** (CI optimization cucumberTest onlyIf) — à coder
+. [x] **CR-9** (robust HTML parsing) — à coder ✅ S-074
+. [x] **CR-10** (CI optimization cucumberTest onlyIf) — à coder ✅ S-075
 . [ ] **CAP-29** (pipeline traduction vidéo multi-langue) — à cadrer (débloqué)
-. [ ] **CAP-ARCH** (collaboration cross-borough slider+codebase) — à planifier après CAP-29 et CR-10
+. [ ] **CAP-ARCH** (collaboration cross-borough slider+codebase) — à planifier après CAP-29
 
 '''
 == ✅ README i18n — TERMINE (session 041)
@@ -118,7 +118,19 @@
 . [x] 414 unit tests VERT (+9), 0 FAIL, 0 SKIP
 
 '''
-== 🟡 Prochaine session — CR-10 CI optimization cucumberTest onlyIf
+== ✅ CR-10 CI optimization cucumberTest onlyIf — TERMINE (session 075)
+
+. [x] Domaine `capsule.ci.CucumberTestGuard` (data class pure, 4 méthodes : shouldRun/shouldSkip/skipReason)
+. [x] 7 unit tests `CucumberTestGuardTest` (runCucumber active, CI active, both, neither, shouldSkip negation, skipReason mention, skipReason blank)
+. [x] Câblage `onlyIf { shouldRun }` dans `build.gradle.kts` (logique inlinée — script ne peut pas importer classpath `main`)
+. [x] BDD `cucumber_skip.feature` (4 scénarios `@ci`) + `CucumberSkipSteps` (5 step defs)
+. [x] `./gradlew check` VERT — cucumberTest SKIPPED sans flag (garde active)
+. [x] `./gradlew cucumberTest -PrunCucumber` s'exécute (garde désactivée)
+. [x] 421 unit tests VERT (+7), 0 FAIL, 0 SKIP
+. [x] Bug préexistant découvert : `CucumberTestRunner` ne lance que `capsule.feature` (à investiguer session future)
+
+'''
+== 🟡 Prochaine session — Backlog capsule restant (CAP-CR3, CAP-29, CAP-ARCH)
 
 '''
 == Backlog priorisé (ordre d'attaque)
@@ -132,8 +144,12 @@
 . [x] 🟠 CR-7 — Validation YAML avec try/catch gracieux ✅ S-071
 . [x] 🟡 CR-8 — Logging structuré CapsulePlugin ✅ S-073
 . [x] 🟡 CR-9 — Robust HTML parsing (HtmlSectionParser au lieu de regex raw) ✅ S-074
-. [ ] 🟡 CR-10 — CI optimization cucumberTest onlyIf
+. [x] 🟡 CR-10 — CI optimization cucumberTest onlyIf ✅ S-075
 . [ ] 🟢 CAP-27 — VTT burn-in
 . [ ] 🟢 CAP-28 — Coverage gaps (PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%)
+. [ ] 🔴 CAP-CR3-1 — CI `full` avec vrais binaires + probe de durée vidéo
+. [ ] 🔴 CAP-CR3-2 — Mode strict anti-NoOp (`capsule.strictMode`)
+. [ ] 🟠 CAP-CR3-3 — Décision `ScreenshotCaptureImpl` vs `PlaywrightCaptureImpl`
+. [ ] 🟡 CAP-CR3-4 — Convention Gradle `resolveScriptDir/resolveDeckDir`
 . [ ] 🟢 CAP-29 — Pipeline Traduction Vidéo Multi-Langue (6 US ~20 pts, débloqué)
 . [ ] 🟠 CAP-ARCH — Collaboration cross-borough slider+codebase (6 US ~19 pts, cadré S-073)

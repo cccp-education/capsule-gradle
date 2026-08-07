@@ -1,37 +1,46 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 070 — Sync slider 0.0.15 → 0.0.16 (cross-borough)
-_Prochaine session_ : 071 — Backlog capsule restant
+_Session terminee_ : 075 — CR-10 CI optimization cucumberTest onlyIf
+_Prochaine session_ : 076 — Backlog capsule restant
 
-== Mission session 070 (TERMINÉE)
+== Mission session 075 (TERMINÉE)
 
-. Synchronisation consommateur capsule-gradle suite à la publication
-  slider 0.0.16 (session 066 slider-gradle) + BOM 0.017 (session 019
-  workspace-bom).
-. Bump `capsule-plugin/gradle/libs.versions.toml` `slider = "0.0.15"` →
-  `"0.0.16"`.
-. `./gradlew compileKotlin` VERT avec slider 0.0.16 (mavenLocal).
-. Zéro code production modifié. Session pure sync consommateur.
-. 1 fichier build bumpé — commit + push (accord pilote).
+. CR-10 — `cucumberTest` est coûteux (Playwright + FFmpeg, ~15 min).
+. Skip sauf demande explicite (`-PrunCucumber` ou `CI=true`).
+. Domaine `capsule.ci.CucumberTestGuard` (data class pure, 4 méthodes).
+. 7 unit tests `CucumberTestGuardTest` (414 → 421 unit VERT).
+. BDD `cucumber_skip.feature` (4 scénarios `@ci`) + `CucumberSkipSteps`.
+. Câblage `onlyIf` dans `build.gradle.kts` (logique inlinée — script ne peut
+  pas importer le classpath `main` du projet).
+. `./gradlew check` VERT (cucumberTest SKIPPED sans flag).
+. Zéro code production modifié hors build script + nouveau domaine.
 
-== Contexte reprise session 071
+== Contexte reprise session 076
 
-- EPIC CAP-MODEL TERMINÉ (S-069, 7/7 US, 361 unit tests VERT +124).
-- Sync slider 0.0.16 + BOM 0.0.17 faites (S-070 cross-borough).
+- EPIC CR TERMINÉ (CR-1→CR-10, 10/10 EPICs).
+- 421 unit tests VERT (+7 vs S-074 414).
+- `./gradlew check` VERT — cucumberTest skippé par défaut (CR-10).
+- Bug préexistant découvert : `CucumberTestRunner` ne lance que `capsule.feature`,
+  pas les autres features (à investiguer).
 - Backlog capsule restant :
-  - CR-2 (thread safety) — à planifier.
-  - CR-3 (TTS error handling) — à planifier.
-  - CAP-29 (pipeline traduction vidéo multi-langue) — à planifier.
+  - CAP-CR3-1 (CI `full` vrais binaires + probe durée) — 🔴 P0
+  - CAP-CR3-2 (Mode strict anti-NoOp) — 🔴 P0
+  - CAP-CR3-3 (Décision ScreenshotCapture vs Playwright) — 🟠 P1
+  - CAP-CR3-4 (Convention Gradle resolveScriptDir/resolveDeckDir) — 🟡 P2
+  - CAP-27 (VTT burn-in) — P2
+  - CAP-28 (Coverage gaps) — P2
+  - CAP-29 (Pipeline traduction vidéo multi-langue, 6 US ~20 pts) — P0
+  - CAP-ARCH (cross-borough slider+codebase i18n, 6 US ~19 pts) — après CAP-29
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central).
 - Capsule consomme slider 0.0.16 (compileOnly + runtime apply).
-- Domaine `capsule.feed` unifié (EPIC CAP-MODEL S-069).
-- Baseline : `main` propre (après commit + push S-070).
+- Domaine `capsule.ci` créé (CR-10).
+- Baseline : `main` avec modifications non committées (S-075).
 - Règle 1 — AUCUN commit sans permission.
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 361 unit tests VERT (S-069 baseline)
+* 421 unit tests VERT (S-075 baseline)
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * English only : code, Gherkin, commentaires
-* Domaines DDD capsule : `capsule.feed` unifié (post-CAP-MODEL)
+* Domaines DDD capsule : `capsule.feed` + `capsule.ci` (post-CR-10)

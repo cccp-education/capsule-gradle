@@ -1,0 +1,112 @@
+= Session 075 — Capsule — CR-10 CI optimization cucumberTest onlyIf
+:date: 2026-08-07
+:method: baby-step DDD/TDD/BDD (unit → cucumber)
+:epic: CR-10
+:status: ✅ TERMINÉ
+
+== Objectif
+
+CR-10 — `cucumberTest` est coûteux (Playwright + FFmpeg, ~15 min).
+Le skipper sauf demande explicite (`-PrunCucumber` ou `CI=true`) pour
+garder `./gradlew check` rapide en local.
+
+== Méthode
+
+Baby-step DDD/TDD/BDD, 3 niveaux de tests :
+1. **Unit** (pur) — `CucumberTestGuardTest` (domaine `capsule.ci`)
+2. **Functional** — supprimé (scope mismatch — `cucumberTest` est câblé dans le
+   build script du plugin, pas exposé aux projets consommateurs)
+3. **BDD Cucumber** — `cucumber_skip.feature` (4 scénarios `@ci`)
+
+== Livrables
+
+=== Domaine `capsule.ci` (nouveau)
+
+`src/main/kotlin/capsule/ci/CucumberTestGuard.kt` — data class pure (4 méthodes) :
+- `shouldRun(): Boolean` — `hasRunCucumberProperty || isCi`
+- `shouldSkip(): Boolean` — négation
+- `skipReason(): String` — message explicatif si skip, blank si run
+
+=== Câblage build.gradle.kts
+
+`afterEvaluate` block (lignes 20-35) :
+- `val hasRunCucumber = project.hasProperty("runCucumber")`
+- `val isCi = System.getenv("CI") == "true"`
+- `tasks.named("cucumberTest").configure { onlyIf { shouldRun } }`
+- `doFirst { if (!shouldRun) logger.lifecycle(...) }`
+
+Note : logique inlinée dans le build script car le script ne peut pas importer
+le classpath `main` du projet lui-même (contrainte precompiled script plugins).
+La classe `CucumberTestGuard` documente et teste le contrat (pur domain).
+
+=== Tests unitaires
+
+`src/test/kotlin/capsule/CucumberTestGuardTest.kt` — 7 tests :
+- `shouldRun returns true when runCucumber property is present`
+- `shouldRun returns true when CI env var is true`
+- `shouldRun returns true when both runCucumber and CI are active`
+- `shouldRun returns false when neither runCucumber nor CI is active`
+- `shouldSkip is the negation of shouldRun`
+- `skipReason explains cucumber task is skipped when neither flag is active`
+- `skipReason is blank when guard should run`
+
+=== BDD Cucumber
+
+`src/test/features/cucumber_skip.feature` — 4 scénarios `@ci` :
+- `cucumberTest is skipped when no flag is active`
+- `cucumberTest runs when runCucumber property is active`
+- `cucumberTest runs when CI env var is true`
+- `cucumberTest runs when both runCucumber and CI are active`
+
+`src/test/kotlin/capsule/scenarios/CucumberSkipSteps.kt` — 5 step defs :
+- `Given a cucumber test guard with runCucumber {string} and CI {string}`
+- `Then the guard should skip the cucumber test`
+- `Then the guard should run the cucumber test`
+- `And the skip reason should mention {string}`
+- `And the skip reason should be blank`
+
+== Vérification
+
+- `./gradlew compileKotlin` ✅ VERT
+- `./gradlew test` ✅ VERT — 421 unit tests (414 + 7 nouveaux), 0 FAIL
+- `./gradlew check` ✅ VERT — `cucumberTest` SKIPPED (garde active), check passe
+- `./gradlew cucumberTest` → SKIPPED (sans flag)
+- `./gradlew cucumberTest -PrunCucumber` → s'exécute (garde désactivée)
+- Zéro secret, zéro régression
+
+== Bug préexistant découvert
+
+`CucumberTestRunner` (filtre `not @wip and not @integration`) ne lance que
+`capsule.feature`. Les autres features (`capsule_speaker_notes`,
+`consolidated_capsule_model`, `parallel_capture_timeout`,
+`translate_and_extract_speaker_notes`, `cucumber_skip`) ne sont pas lancées
+par ce runner. Seul `CucumberIntegrationTestRunner` (filtre
+`@integration or @manim`) tourne et skippe les scénarios non-`@integration`.
+
+Ce bug de découverte JUnit Platform préexiste à cette session (depuis au moins
+S-071 qui mentionne "64 cucumber tests" — ce chiffre correspond aux scénarios
+`@integration`/`@manim` uniquement). À investiguer en session future : les
+features non-`capsule.feature` sont peut-être filtrées par un mécanisme
+non documenté dans le `CucumberConventionsPlugin` ou la config JUnit Platform.
+
+== Fichiers modifiés
+
+|===
+| Fichier | Rôle | Lignes
+
+| `src/main/kotlin/capsule/ci/CucumberTestGuard.kt` | Domaine pur (nouveau) | +20
+| `src/test/kotlin/capsule/CucumberTestGuardTest.kt` | Unit tests (nouveau) | +60
+| `src/test/features/cucumber_skip.feature` | BDD feature (nouveau) | +27
+| `src/test/kotlin/capsule/scenarios/CucumberSkipSteps.kt` | BDD steps (nouveau) | +58
+| `build.gradle.kts` | Câblage onlyIf (modifié) | +19/-1
+|===
+
+== Statut EPIC CR
+
+CR-10 ✅ TERMINÉ (S-075). Tous les EPICs CR (CR-1→CR-10) sont maintenant TERMINÉS.
+
+== Score
+
+9/10 — baby-step DDD respecté, domaine pur testable, câblage build script,
+BDD feature créée. -1 point pour le bug préexistant `CucumberTestRunner` non
+résolu (découvert mais hors scope CR-10).
