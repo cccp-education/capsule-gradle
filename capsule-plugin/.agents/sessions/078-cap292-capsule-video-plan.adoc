@@ -1,0 +1,89 @@
+= Session 078 — CAP-29.2 CapsuleVideoPlan + CapsuleVideoPlanner
+:date: 2026-08-08
+:session: 078
+:epic: CAP-29
+:us: CAP-29.2
+:method: baby-step DDD/TDD (unit)
+
+== Objectif
+
+Implémenter CAP-29.2 : créer le domaine `capsule.multilang` avec
+`CapsuleVideoPlan` (data class immutable : liste d'entrées par langue) et
+`CapsuleVideoPlanner` (object pur construisant le plan à partir des decks
+traduits `<deckName>_<lang>-deck.html` + scripts `<deckName>_<lang>-script.txt`).
+
+== Méthode
+
+Baby-step TDD strict : RED → GREEN → REFACTOR. US purement unit (~18 tests
+nouveaux). Aucune dépendance fonctionnelle/cucumber modifiée (US suivantes
+CAP-29.3 → functional, CAP-29.5 → cucumber).
+
+== Décisions d'architecture
+
+. *`CapsuleVideoEntry`* (data class immutable, domaine `capsule.multilang`) —
+  4 champs : `deckFile`, `scriptFile`, `language: SupportedLanguage` (N0),
+  `outputVideo`. Invariants à la construction (fail-fast) : deckFile exists,
+  scriptFile exists, language code in `LanguageCatalog`.
+. *`CapsuleVideoPlan`* (data class immutable) — `entries: List<CapsuleVideoEntry>`,
+  invariant `entries.isNotEmpty()` (plan vide = misconfiguration upstream,
+  fail-fast). Accès : `size()`, `isEmpty()`, `languages()`.
+. *`CapsuleVideoPlanner`* (object pur) — `plan(deckDir, scriptDir, outputDir,
+  targetLanguages: List<SupportedLanguage>): CapsuleVideoPlan`. Pour chaque
+  langue : cherche `_<lang>-deck.html` dans deckDir, dérive le deckName
+  (`kotlin-basics_fr-deck.html` → `kotlin-basics`), cherche le script
+  `_<lang>-script.txt` dans scriptDir, calcule `outputDir/<deckName>_<lang>.webm`.
+  Skip silencieux si deck ou script manquant (traduction partielle légitime).
+  Fail-fast si aucune langue ne produit de paire deck+script.
+. *Nommage aligné slider* — `<deckName>_<lang>-deck.html` + `<deckName>_<lang>-script.txt`
+  → `<deckName>_<lang>.webm` (cohérent avec `slider.translateDeck` qui produit
+  `<slug>_<lang>-deck.adoc`).
+
+== Livrables
+
+Production (2 fichiers) :
+. `src/main/kotlin/capsule/multilang/CapsuleVideoPlan.kt` (nouveau) — `CapsuleVideoEntry`
+  (invariants fail-fast) + `CapsuleVideoPlan` (invariant non-empty).
+. `src/main/kotlin/capsule/multilang/CapsuleVideoPlanner.kt` (nouveau) — object pur
+  `plan(deckDir, scriptDir, outputDir, targetLanguages)`.
+
+Tests (2 fichiers) :
+. `src/test/kotlin/capsule/multilang/CapsuleVideoPlanTest.kt` (nouveau, 10 unit)
+  — plan single/multiple entries, plan vide → IllegalArgumentException, languages(),
+  isEmpty(), entry invariants (deck manquant, script manquant, language hors catalog),
+  fields préservés.
+. `src/test/kotlin/capsule/multilang/CapsuleVideoPlannerTest.kt` (nouveau, 8 unit)
+  — plan 3 langues, skip deck manquant, skip script manquant, plan vide → throw,
+  naming `<deckName>_<lang>.webm`, deck/script paths préservés, RTL Arabic.
+
+== Vérification
+
+[source,shell]
+----
+./gradlew test --tests "capsule.multilang.*"   # 18 unit VERT (10 plan + 8 planner)
+./gradlew check                                # BUILD SUCCESSFUL (unit + functional + kover)
+rg "TOKEN|SECRET|PASSWORD|API_KEY|gho_|ghp_"   # zéro secret
+----
+
+== Delta tests
+
+- Avant : 436 unit (baseline S-077)
+- Après : 454 unit (+18 net)
+  - +10 `CapsuleVideoPlanTest`
+  - +8 `CapsuleVideoPlannerTest`
+
+== Score
+
+9/10 — US isolée, purement unit, baby-step TDD strict respecté (RED : 18 tests
+compilent en erreur classe inexistante → GREEN : implémentation minimale),
+zéro régression, domaine `capsule.multilang` enrichi (entry + plan + planner),
+invariants fail-fast conformes au PROMPT_REPRISE. 1 pt de marge : pas de test
+fonctionnel/cucumber (US suivantes CAP-29.3/29.5).
+
+== Prochaine session — 079
+
+. 🟡 **CAP-29.3** — `GenerateCapsuleVideoAllLanguagesTask` (itération du
+  `CapsuleVideoPlan` + TTS+capture par langue avec `ttsLanguage` adapté,
+  économie d'encre : skip WebM existant valide). Unit + functional (NoOp, 3 langues).
+. **CAP-29.4** — Câblage `translateAndGenerateCapsuleVideos` (dependsOn chaîné).
+. **CAP-29.5** — Cucumber BDD E2E 10 langues (`multi_language_capsule.feature`).
+. **CAP-29.6** — Documentation + dogfooding (1 deck × 3 langues fr/en/ar).

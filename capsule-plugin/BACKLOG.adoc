@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-07 (Session 077 — CAP-29.1 MultiLanguageResolver + VoiceMapping 10 langues)
+:last_update: 2026-08-08 (Session 078 — CAP-29.2 CapsuleVideoPlan + CapsuleVideoPlanner)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -253,13 +253,14 @@ unknown code → null, RTL flag préservé) → GREEN. `VoiceMappingTest` étend
 
 | CAP-29.2
 | *`CapsuleVideoPlan` (domaine `capsule.multilang`)* — data class immutable :
-liste de `CapsuleVideoTask per language (deckFile: File, scriptFile: File,
-language: SupportedLanguage, outputVideo: File)` + invariants (deckFile exists,
-language in LanguageCatalog, non-empty plan). `CapsuleVideoPlanner` (object pur)
-construit le plan à partir des decks traduits (`<deckName>_<lang>-deck.html` +
-`<deckName>_<lang>-script.txt`). Baby-step TDD : RED → GREEN. ~12 unit
+`CapsuleVideoEntry` (deckFile, scriptFile, language: SupportedLanguage,
+outputVideo) + invariants (deckFile exists, scriptFile exists, language in
+LanguageCatalog, non-empty plan). `CapsuleVideoPlanner` (object pur) construit
+le plan à partir des decks traduits (`<deckName>_<lang>-deck.html` +
+`<deckName>_<lang>-script.txt` → `<deckName>_<lang>.webm`). Baby-step TDD :
+RED → GREEN. ~12 unit
 | 3
-| ⬜ TODO
+| ✅ TERMINÉ (S-078, 18 unit)
 
 | CAP-29.3
 | *`GenerateCapsuleVideoAllLanguagesTask`* — tâche Gradle qui itère sur le
@@ -302,7 +303,8 @@ selon disponibilité). MàJ INDEX/BACKLOG.
 _Total_ : 7 US (US-0 cadrage + US-1→6 exécution), ~20 pts. _Méthode_ : baby-step
 DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber), English only
 code/Gherkin. _Pattern de référence_ : SLD-5 (DeckTranslationPipeline one-to-many),
-CAP-MODEL (unification domaine). _Statut_ : 🟡 EN COURS (CAP-29.0 ✅, CAP-29.1 ✅, CAP-29.2→6 TODO).
+CAP-MODEL (unification domaine). _Statut_ : 🟡 EN COURS (CAP-29.0 ✅ S-076,
+CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, 3→6 TODO).
 
 '''
 == 🔴 EPIC CAP-CR3 — Revue CR-GLOBALE-003 : Création de Contenu Solide

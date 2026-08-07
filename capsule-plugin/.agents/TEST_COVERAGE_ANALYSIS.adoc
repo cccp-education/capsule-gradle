@@ -1,6 +1,22 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
-:date: 2026-08-07
-:session: 077 CAP-29.1 MultiLanguageResolver + VoiceMapping 10 langues
+:date: 2026-08-08
+:session: 078 CAP-29.2 CapsuleVideoPlan + CapsuleVideoPlanner
+
+== Couverture — 8 août 2026 (après session 078)
+
+.Modifications session 078 — 18 nouveaux tests (domaine `capsule.multilang`)
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/multilang/CapsuleVideoPlan.kt` (nouveau) | `CapsuleVideoEntry` (data class immutable 4 champs deckFile/scriptFile/language/outputVideo, invariants fail-fast deck exists + script exists + language in LanguageCatalog) + `CapsuleVideoPlan` (invariant non-empty, size()/isEmpty()/languages()) | 10 unit `CapsuleVideoPlanTest`
+| `capsule/multilang/CapsuleVideoPlanner.kt` (nouveau) | Object pur `plan(deckDir, scriptDir, outputDir, targetLanguages)` — découverte `_<lang>-deck.html` + `_<lang>-script.txt`, skip langues manquantes, fail-fast plan vide, nommage `<deckName>_<lang>.webm` | 8 unit `CapsuleVideoPlannerTest`
+|===
+
+- Unitaires : 454 VERT (was 436, +18 net : +10 `CapsuleVideoPlanTest` + 8 `CapsuleVideoPlannerTest`)
+- 0 FAIL, 0 SKIP
+- `./gradlew check` BUILD SUCCESSFUL
+- Couverture `CapsuleVideoPlan` : 10/10 (single/multi entries, plan vide throw, languages, isEmpty, deck manquant, script manquant, language hors catalog, fields préservés)
+- Couverture `CapsuleVideoPlanner` : 8/8 (3 langues, skip deck manquant, skip script manquant, plan vide throw, naming, deck/script paths préservés, RTL Arabic)
+- Secrets : 0 trouvé
 
 == Couverture — 7 août 2026 (après session 077)
 

@@ -1,5 +1,28 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
-:date: 2026-08-07
+:date: 2026-08-08
+
+== Session 078 — CAP-29.2 CapsuleVideoPlan + CapsuleVideoPlanner ✅
+
+Domaine `capsule.multilang` enrichi. `CapsuleVideoEntry` (data class immutable
+4 champs) + `CapsuleVideoPlan` (invariant non-empty) + `CapsuleVideoPlanner`
+(object pur). 454 unit tests VERT (+18 net).
+
+Tâches terminées :
+. `CapsuleVideoPlan.kt` (nouveau) — `CapsuleVideoEntry` (deckFile, scriptFile,
+  language: SupportedLanguage, outputVideo) avec invariants fail-fast (deck
+  exists, script exists, language in LanguageCatalog) + `CapsuleVideoPlan`
+  (invariant non-empty, accès `size()`/`isEmpty()`/`languages()`)
+. `CapsuleVideoPlanner.kt` (nouveau) — object pur `plan(deckDir, scriptDir,
+  outputDir, targetLanguages)` : skip silencieux des langues sans deck+script,
+  fail-fast si plan vide. Nommage `<deckName>_<lang>-deck.html` +
+  `<deckName>_<lang>-script.txt` → `<deckName>_<lang>.webm` (aligné slider)
+. Tests — 10 unit `CapsuleVideoPlanTest` (entries, invariants, languages) +
+  8 unit `CapsuleVideoPlannerTest` (découverte 3 langues, skip, throw, naming,
+  RTL Arabic) avec `@TempDir`
+. Vérifications — `test` 454 VERT (0 FAIL), `check` BUILD SUCCESSFUL, zéro secret
+
+Prochaine session : CAP-29.3 `GenerateCapsuleVideoAllLanguagesTask`, baby-step
+TDD unit + functional (NoOp engines, 3 langues).
 
 == Session 077 — CAP-29.1 MultiLanguageResolver + VoiceMapping 10 langues ✅
 
