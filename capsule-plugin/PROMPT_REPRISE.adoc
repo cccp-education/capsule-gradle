@@ -1,48 +1,60 @@
-= PROMPT_REPRISE — Capsule — Session 083
-:session: 083
-:date: 2026-08-08
+= PROMPT_REPRISE — Capsule — Session 084
+:session: 084
+:date: 2026-08-09
 
-== Session 082 terminée — CAP-29.6 Documentation + dogfooding + clôture EPIC CAP-29 ✅
+== Session 083 terminée — CAP-ARCH-0 Cadrage EPIC CAP-ARCH refondu ✅
 
-EPIC CAP-29 TERMINÉ 7/7 US. README master EN + README plugin mis à jour
-(domaine `capsule.multilang`, table des tâches, convention nommage
-`<deckName>_<lang>-deck.html|script.txt|webm`). Dogfooding réel consommateur
-composite `includeBuild` (`/tmp/opencode/dogfood-multilang`) : 3 WebM générés
-(fr/en/ar dont 1 RTL) en 3m07 (Piper fr/en + espeak, chromium Playwright).
+Audit fondé sur le code réel (pas l'hypothèse S-073) :
+- Zéro `Ollama`/`ChatModel`/`ChatLanguageModel`/`langchain4j`/`LLM` dans
+  `src/main` → capsule n'a AUCUN appel LLM à purger.
+- `koog-agents` `0.8.0` en `implementation` mais **0 usage** dans le code →
+  dépendance morte, à réactiver en `1.0.0` pour CAP-ARCH-3.
+- `compileOnly slider` mais **0 import** de classe slider (seul
+  `dependsOn("translateDeck")` string-based) → à re-confirmer en CAP-ARCH-4.
+- `i18n-contracts` 0.0.2 déjà consommé (CAP-29.1) → l'US « migration i18n »
+  du cadrage S-073 est largement faite.
+- Pattern de référence : slider `AssistantManager` (SLD-8) —
+  `registerLlmBuildService()` + `resolveModel()` → `LlmProvider` codebase →
+  `LlmProviderChatModelAdapter` → `ChatModel` langchain4j.
+- `codebase-contracts` 0.1.0 expose `CompositeContext` (EAGER + RAG +
+  Graphify + Docs) = la « réalité augmentée complète » consommable.
 
-Défaut de nommage découvert par le dogfooding : le rendu produisait
-`<deckName>_<lang>-deck.webm` (dérivé du header script) au lieu du plan
-`<deckName>_<lang>.webm` (`entry.outputVideo`), brisant l'économie d'encre.
-Fix TDD : `CapsuleVideoOutputRenamer` (domaine `capsule.multilang`, object pur,
-4 unit RED→GREEN) + wiring post-capture dans `GenerateCapsuleVideoAllLanguagesTask.renderEntry`.
-Re-dogfooding : alignement `-deck.webm` → `_<lang>.webm` (3 langues) + économie
-d'encre prouvée (`--rerun-tasks` → `0/3 rendered, 3 skipped`).
+Vision refondue : capsule LLM-driven piloté par codebase (koog + langchain4j
++ RAG + graphify), backend d'exécution existant recyclé intact
+(extractSpeakerNotes, TTS, capture, subtitles, multi-lang CAP-29).
+EPIC redécoupé : 7 US (CAP-ARCH-0 ✅, 1→6 TODO, ~21 pts).
+Zéro code modifié. MàJ BACKLOG/INDEX/PROMPT_REPRISE/TODO.
 
-Livrables :
-- `capsule/multilang/CapsuleVideoOutputRenamer.kt` (nouveau)
-- `capsule/multilang/GenerateCapsuleVideoAllLanguagesTask.kt` (modifié)
-- `capsule/multilang/CapsuleVideoOutputRenamerTest.kt` (nouveau, 4 unit)
-- `README.md` + `capsule-plugin/README.md` (modifiés)
+== Prochaine session — 084 : CAP-ARCH-1 Socle LLM bridge (pattern SLD-8)
 
-Tests : 464 unit VERT (+4) + 25 functional VERT + 6 cucumber multilang GREEN.
-1 FAIL `@integration` burn-in préexistant (subtitle path `build/capsule/` vs
-`outputDir=capsules`) — hors CAP-29, connu S-069/S-072.
+Découpage baby-step (unit → functional → cucumber) :
+. **CAP-ARCH-1a** — Dépendances : `implementation` codebase plugin (comme
+  slider) + koog-agents `1.0.0` (bump 0.8.0, exclusion koog submodules,
+  forcer `org.jetbrains:annotations:26.0.2-1` — pattern slider). Purge de la
+  dépendance morte koog 0.8.0. `compileKotlin` VERT.
+. **CAP-ARCH-1b** — Domaine `capsule.ai` : `CapsuleLlmService` (object pur).
+  `registerLlmBuildService(project): Provider<LlmBuildService>` +
+  `resolveModel(provider, serviceProvider): ChatModel` (via
+  `LlmProviderChatModelAdapter`) + `-Pai.provider` default `ollama`.
+  TDD RED → GREEN : unit purs (register/resolve avec LlmProvider mocké).
+. **CAP-ARCH-1c** — Wiring : tâche Gradle `capsuleAiSmokeTest` (ou intégration
+  dans une tâche existante) qui appelle le ChatModel résolu avec un prompt de
+  smoke test. functional test (GradleTestKit, mock HTTP `-Pollama.baseUrl`).
+. **CAP-ARCH-1d** — Cucumber : `capsule_ai.feature` tags `@ai`, mock LLM HTTP,
+  vérifier registration + résolution + smoke call (NoOp/mock).
+  MàJ INDEX/BACKLOG/PROMPT_REPRISE.
 
-== Prochaine session — 083 (au choix, non décidé)
+== Backlog restant (ordre)
 
-. 🟠 **CAP-ARCH** — Cross-borough slider+codebase (6 US ~19 pts, cadré S-073,
-  débloqué par CAP-29 ✅). Vision : création de contenu IA + i18n via les hubs
-  (`slider` decks, `codebase` RAG/vibecoding) plutôt qu'appels LLM dispersés.
-  Inspiration : document-gradle (`DocumentI18nBridge`), bakery-gradle
-  (`ContentTranslationService`), plantuml-gradle (`PlantumlTranslationServiceAdapter`).
-. 🔴 **CAP-CR3** — Solidité chaîne vidéo (empêcher « faux positif » exit 0 +
-  livrable illisible). CAP-CR3-1 CI full vrais binaires + probe durée WebM ;
-  CAP-CR3-2 mode strict anti-NoOp (`capsule.strictMode` DSL) ;
-  CAP-CR3-3 décision capture ; CAP-CR3-4 convention `resolveScriptDir/resolveDeckDir`.
-  Inclut le fix du burn-in `@integration` FAIL.
-
-== Backlog restant
-
+. 🔵 **CAP-ARCH-1** (socle LLM bridge) → **CAP-ARCH-2** (contexte augmenté
+  CompositeContext) → **CAP-ARCH-3** (koog `CapsulePipelineGraph` +
+  `generateCapsuleContent`) → **CAP-ARCH-4** (wiring backend existant) →
+  **CAP-ARCH-5** (i18n aligné socle) → **CAP-ARCH-6** (cucumber cross-borough).
+. 🔴 **CAP-CR3** — Solidité chaîne vidéo (CAP-CR3-1 CI full vrais binaires +
+  probe durée WebM ; CAP-CR3-2 mode strict anti-NoOp `capsule.strictMode` ;
+  CAP-CR3-3 décision `ScreenshotCaptureImpl` vs `PlaywrightCaptureImpl` ;
+  CAP-CR3-4 convention `resolveScriptDir/resolveDeckDir`). Inclut le fix du
+  burn-in `@integration` FAIL (subtitle path).
 . 🟢 **CAP-27** — VTT burn-in. **CAP-28** — Coverage gaps (PiperTtsEngine 31%,
   ManimEngineImpl 25%, ScreenshotCaptureImpl 26%).
 . 🐛 **Bug** — `CucumberTestRunner` ne lance que `capsule.feature` (S-075, à
@@ -53,6 +65,7 @@ Tests : 464 unit VERT (+4) + 25 functional VERT + 6 cucumber multilang GREEN.
 
 - Build migré vers conventions plugins (education.cccp.build.* 0.0.2)
 - BOM workspace-bom 0.0.16 (Central) + i18n-contracts 0.0.2 (Central)
+- codebase-contracts 0.1.0 (mavenLocal) — CompositeContext/ContextChannel/ChannelBudget
 - Version capsule : 0.0.1-SNAPSHOT (non publié Maven Central)
 - Version slider : 0.0.16 (mavenLocal)
 - 464 unit tests VERT (capsule) + 0 FAIL, 0 SKIP
@@ -67,3 +80,5 @@ Tests : 464 unit VERT (+4) + 25 functional VERT + 6 cucumber multilang GREEN.
 - Loi de l'Économie d'Encre (AGENT.adoc) : vérifier artefact résultat avant opération coûteuse
 - `i18n-contracts` 0.0.2 consommé : `LanguageCatalog` (10 langues),
   `SupportedLanguage` (code/name/nativeName/rtl/localeTag)
+- Pattern slider SLD-8 : `LlmBuildService` (codebase.koog.llm.service) +
+  `LlmProvider` (fun interface suspend) + `LlmProviderChatModelAdapter`

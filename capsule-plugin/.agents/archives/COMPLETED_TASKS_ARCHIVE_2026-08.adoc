@@ -1,5 +1,31 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
-:date: 2026-08-08
+:date: 2026-08-09
+
+== Session 083 — CAP-ARCH-0 Cadrage EPIC CAP-ARCH refondu ✅
+
+Cadrage EPIC CAP-ARCH refondu fondé sur le code réel. L'audit corrige le
+cadrage S-073 (périmé, fait avant CAP-29) : zéro appel LLM dans capsule (rien
+à purger), `koog-agents` 0.8.0 dépendance morte (0 usage), `compileOnly slider`
+0 import de classe, `i18n-contracts` déjà consommé (CAP-29.1). Vision refondue
+sur la demande product owner : capsule LLM-driven piloté par codebase
+(koog + langchain4j + RAG + graphify), backend d'exécution existant recyclé
+intact. EPIC redécoupé en 7 US (CAP-ARCH-0 ✅, CAP-ARCH-1→6 TODO, ~21 pts).
+Zéro code modifié.
+
+Tâches terminées :
+. `BACKLOG.adoc` — section EPIC CAP-ARCH refondue (audit S-083, vision,
+  décisions de cadrage, 7 US détaillées), en-tête `last_update` 2026-08-09
+. `.agents/INDEX.adoc` — session 083 ajoutée, section EPIC CAP-ARCH refondue,
+  roadmap (CAP-ARCH 🟡 EN COURS), métadonnées (prochaine 084)
+. `PROMPT_REPRISE.adoc` — réécrit pour session 084 (CAP-ARCH-1, baby-steps 1a-d)
+. `TODO.adoc` — CAP-ARCH-0 coché, US 1-6 ajoutées, en-tête mis à jour
+. `.agents/SESSIONS_HISTORY.adoc` — entrée 083 ajoutée
+. `.agents/sessions/083-caparch0-cadrage-llm-driven.adoc` — rapport de session
+. Vérifications — `compileKotlin` VERT, zéro secret, marqueurs backlog légitimes,
+  pas de commit (règle 1)
+
+Prochaine session : CAP-ARCH-1 — Socle LLM bridge (pattern SLD-8, domaine
+`capsule.ai`, `CapsuleLlmService`, bump koog 1.0.0, purge dépendance morte).
 
 == Session 082 — CAP-29.6 Documentation + dogfooding + clôture EPIC CAP-29 ✅
 

@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-08-08 (Session 082 — CAP-29.6 Documentation + dogfooding + clôture EPIC CAP-29 TERMINÉ 7/7 US)
+:last_update: 2026-08-09 (Session 083 — CAP-ARCH-0 Cadrage EPIC CAP-ARCH refondu)
 
 '''
 == ✅ EPIC CAP-MODEL — TERMINE (session 069)
@@ -119,14 +119,15 @@
 . [x] EPIC CAP-29 TERMINÉ 7/7 US — domaine `capsule.multilang` clos (7 fichiers prod)
 
 '''
-== 🟡 EPIC CAP-ARCH — Collaboration cross-borough (slider + codebase) — CADRÉ (session 073)
+== 🟡 EPIC CAP-ARCH — Capsule LLM-driven piloté par codebase (koog + langchain4j + RAG + graphify) — EN COURS (CAP-ARCH-0 ✅ S-083)
 
-. [ ] CAP-ARCH-0 — Cadrage EPIC (audit appels LLM dispersés, inventaire contrats N0)
-. [ ] CAP-ARCH-1 — Migration i18n vers `i18n-contracts` (`CapsuleI18nBridge`)
-. [ ] CAP-ARCH-2 — Délégation génération contenu → codebase (RAG + vibecoding)
-. [ ] CAP-ARCH-3 — Pipeline i18n aligné sur slider (`translateDeck` → capsule)
-. [ ] CAP-ARCH-4 — Suppression appels LLM dispersés (capsule = consommateur terminal)
-. [ ] CAP-ARCH-5 — Cucumber BDD boundary cross-borough (slider → capsule × 10 langues)
+. [x] CAP-ARCH-0 — Cadrage EPIC refondu (audit code réel : zéro LLM, koog 0.8.0 mort, i18n-contracts déjà consommé) ✅ S-083
+. [ ] CAP-ARCH-1 — Socle LLM bridge (pattern SLD-8, domaine `capsule.ai`, `CapsuleLlmService`, bump koog 1.0.0, purge dépendance morte)
+. [ ] CAP-ARCH-2 — Contexte augmenté CompositeContext (domaine `capsule.context`, `CapsuleContextBuilder`)
+. [ ] CAP-ARCH-3 — Koog pipeline génération contenu (domaine `capsule.pipeline`, `CapsulePipelineGraph`, `generateCapsuleContent`)
+. [ ] CAP-ARCH-4 — Wiring exécution existante (sortie LLM → backend sans modification, décision compileOnly slider)
+. [ ] CAP-ARCH-5 — i18n aligné sur le socle (translateDeck codebase-LLM, non-régression CAP-29)
+. [ ] CAP-ARCH-6 — Cucumber BDD boundary cross-borough (@i18n @cross-borough @architecture @ai)
 
 '''
 == 🟡 Backlog restant — À planifier
@@ -134,7 +135,8 @@
 . [x] **CR-9** (robust HTML parsing) — à coder ✅ S-074
 . [x] **CR-10** (CI optimization cucumberTest onlyIf) — à coder ✅ S-075
 . [x] **CAP-29** (pipeline traduction vidéo multi-langue) — TERMINÉ 7/7 US (CAP-29.0 ✅ S-076, CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, CAP-29.4 ✅ S-080, CAP-29.5 ✅ S-081, CAP-29.6 ✅ S-082)
-. [ ] **CAP-ARCH** (collaboration cross-borough slider+codebase) — à planifier (débloqué par CAP-29 ✅)
+. [x] **CAP-ARCH-0** (cadrage refondu LLM-driven via codebase) — ✅ S-083
+. [ ] **CAP-ARCH-1→6** (socle LLM bridge, contexte augmenté, koog pipeline, wiring, i18n, cucumber boundary) — EN COURS (prochaine session 084)
 
 '''
 == ✅ README i18n — TERMINE (session 041)

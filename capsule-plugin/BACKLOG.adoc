@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-08 (Session 082 — CAP-29.6 Documentation + dogfooding + clôture EPIC CAP-29 TERMINÉ 7/7 US)
+:last_update: 2026-08-09 (Session 083 — CAP-ARCH-0 Cadrage EPIC CAP-ARCH refondu : LLM-driven via codebase koog+langchain4j+RAG+graphify)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -414,91 +414,140 @@ Boundary realignment : slider produit HTML Reveal.js uniquement, capsule parse
 _Total_ : 6 US TERMINÉ, 1 US TODO (suivi). +42 unit +8 functional +16 cucumber = 66 nouveaux tests, 0 FAIL.
 
 '''
-== 🟠 EPIC CAP-ARCH — Collaboration Cross-Borough (slider + codebase) pour Création de Contenu et i18n
+== 🔵 EPIC CAP-ARCH — Capsule LLM-driven : génération de contenu + i18n pilotés par codebase (koog + langchain4j + RAG + graphify)
 
-_Vision_ : La création de contenu assistée par IA dans capsule (scripts TTS,
-speaker notes, traduction multi-langue) doit s'appuyer sur les hubs existants
-(`slider` pour la génération de decks, `codebase` pour le RAG/vibecoding/LLM
-pool) plutôt que d'éparpiller des appels LLM directs dans capsule. L'i18n suit
-la même logique : le pipeline `translateDeck` de slider (10 langues, 425 tests)
-et les contrats `i18n-contracts` (workspace-bom N0) sont les briques partagées.
-Capsule est un consommateur terminal du DAG N2, pas un point d'émission LLM.
+_Cadrage_ : CAP-ARCH-0 (Session 083) — audit fondé sur le code réel, remplace le
+cadrage S-073 (périmé, fait avant CAP-29 sur une hypothèse de « purge des appels
+LLM » jamais vérifiée).
 
-_Inspiration_ : `document-gradle` (bridge `DocumentI18nBridge` → `i18n-contracts`),
-`bakery-gradle` (`ContentTranslationService` + dogfooding LLM réel multi-langue),
-`plantuml-gradle` (`PlantumlTranslationServiceAdapter` + `i18n-contracts` 0.0.2).
-Ces 3 boroughs ont déjà migré vers le pattern « hub codebase + contrats N0 »
-au lieu d'appels LLM dispersés.
+_Vision (refondée S-083)_ : La génération de capsules (speaker notes enrichies,
+scripts TTS, i18n) est *pilotée par LLM via le hub codebase (N1)* : koog
+(orchestration graphe), langchain4j (exécution), RAG pgvector + Graphify
+(contexte augmenté multi-canal « réalité augmentée complète »), le tout bridgé
+en Gradle par `codebase.koog.llm.service.LlmBuildService` (pattern slider
+SLD-8). Capsule conserve *intact* son backend d'exécution existant
+(`extractSpeakerNotes`, TTS Piper/espeak, capture Playwright, subtitles,
+burn-in, plan multi-langue CAP-29) : la couche LLM l'alimente, elle ne le
+remplace pas. Rien du code existant n'est perdu — la logique recyclable est
+réutilisée (CAP-29.1 a déjà migré l'i18n vers `i18n-contracts`).
 
-_Boundary cible_ :
-- Capsule ne porte PAS de logique LLM/RAG en direct (pas de `OllamaChatClient`,
-  pas de `ChatLanguageModel` inline, pas de prompt engineering dispersé).
-- Capsule consomme les decks traduits produits par `slider.translateDeck`
-  (10 langues) via le pipeline `translateAndExtractSpeakerNotes` (SLD-11.4).
-- Capsule délègue la génération de contenu (speaker notes enrichies, scripts
-  pédagogiques) au hub `codebase` (RAG pgvector + vibecoding-aware) via les
-  contrats `pipeline-contracts` / `agent-contracts` (workspace-bom N0).
-- L'i18n des artefacts capsule (logs, messages, rapports) passe par
-  `i18n-contracts` (`SupportedLanguage`, `LanguageCatalog`, `MessageBundle`).
-- Le TTS multi-langue (CAP-29) consomme les voices déjà configurées via
-  `LanguageVoiceMapping` (FR/EN/ES/DE) + 7 langues manquantes (zh/hi/ar/bn/pt/ru/ur),
-  alignées sur `LanguageCatalog.supportedCodes()` du BOM.
+_Audit CAP-ARCH-0 (données réelles, S-083)_ :
+- *Zéro* référence `Ollama`/`ChatModel`/`ChatLanguageModel`/`langchain4j`/`LLM`
+  dans `src/main` → capsule n'a AUCUN appel LLM à purger (le cadrage S-073
+  supposait le contraire, hypothèse périmée).
+- `koog-agents` `0.8.0` en `implementation` mais *0 usage* dans le code →
+  dépendance morte, à réactiver en `1.0.0` pour CAP-ARCH-3 (pattern slider :
+  exclusion koog submodules + forcer `annotations:26.0.2-1`).
+- `compileOnly slider` mais *0 import* de classe slider (seul
+  `dependsOn("translateDeck")` string-based dans `CapsuleFeedTaskRegistrar`)
+  → à re-confirmer en CAP-ARCH-4.
+- `i18n-contracts` `0.0.2` déjà consommé (`MultiLanguageResolver`, `TtsManager`,
+  `VoiceMapping`) → l'US « migration i18n » du cadrage S-073 est largement faite.
+- Pattern de référence : slider `AssistantManager` (SLD-8 US-8.1/8.2) —
+  `registerLlmBuildService()` (`gradle.sharedServices.registerIfAbsent`) +
+  `resolveModel()` → `LlmProvider` codebase → `LlmProviderChatModelAdapter` →
+  `ChatModel` langchain4j.
+- `codebase-contracts` `0.1.0` (mavenLocal) expose `CompositeContext` (canaux
+  EAGER + RAG + *Graphify* + Docs), `ContextChannel`, `ChannelBudget` — la
+  « réalité augmentée complète » consommable sans couplage au plugin.
+- codebase expose aussi `codebase.i18n.LlmTranslator` (traduction LLM) et le
+  graphe `codebase.koog.KoogAugmentedContextGraph`.
 
-_Dépendances_ : CAP-29 (pipeline multi-langue), SLD-11 (cross-borough slider),
-workspace-bom `i18n-contracts` 0.0.2 + `pipeline-contracts` 0.0.2.
+_Décisions de cadrage (S-083)_ :
+. Capsule consomme le plugin codebase en `implementation` (comme slider) pour
+  `LlmBuildService`/`LlmProvider` + `koog-agents` `1.0.0`.
+. L'i18n des decks reste via `slider.translateDeck` (déjà LLM codebase depuis
+  SLD-8 US-8.2) — capsule consomme les decks traduits, pas de traduction propre.
+. La génération de contenu enrichi (speaker notes, scripts) est LA nouveauté :
+  graphe koog capsule (`CapsulePipelineGraph`) + contexte augmenté
+  (`CompositeContext`) + prompts pédagogiques (domaine `capsule.ai`/`capsule.context`/`capsule.pipeline`).
+. Économie d'encre (AGENT.adoc) : skip si l'artefact généré existe et est valide.
+
+_Dépendances_ : CAP-29 ✅, SLD-11 ✅, codebase-plugin (N1), koog-agents 1.0.0,
+workspace-bom `i18n-contracts` 0.0.2 + `codebase-contracts` 0.1.0.
 
 [cols="1,3,2,2", options="header"]
 |===
 | US | Description | Pts | Statut
 
 | CAP-ARCH-0
-| *Cadrage EPIC* — audit des appels LLM dispersés dans capsule (si existants),
-  inventaire des contrats N0 consommables (i18n, pipeline, agent), découpage US.
-  MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+| *Cadrage EPIC* — audit fondé sur le code (zéro LLM, koog 0.8.0 mort,
+  i18n-contracts déjà consommé), inventaire contrats N0 (codebase-contracts
+  0.1.0, i18n-contracts 0.0.2, pipeline-contracts 0.0.2), pattern slider SLD-8
+  (LlmBuildService bridge). Refonte des US sur la vision LLM-driven. MàJ
+  INDEX/BACKLOG/PROMPT_REPRISE/TODO.
 | 1
-| ⬜ TODO
+| ✅ TERMINÉ (S-083)
 
 | CAP-ARCH-1
-| *Migration i18n vers `i18n-contracts`* — créer `CapsuleI18nBridge` (pattern
-  document-gradle) consommant `SupportedLanguage` + `LanguageCatalog` du BOM.
-  Remplacer les hardcodés `Language` enum / `LanguageVoiceMapping` par les
-  contrats N0 partagés. Tests unitaires bridge + non-regression.
+| *Socle LLM bridge (pattern SLD-8)* — dépendance `implementation`
+  `codebase` plugin + koog-agents `1.0.0` (bump 0.8.0, exclusion koog
+  submodules, annotations forcé). Domaine `capsule.ai` : `CapsuleLlmService`
+  (object pur — `registerLlmBuildService(project)` +
+  `resolveModel(provider, serviceProvider): ChatModel` via adapter +
+  `-Pai.provider` default ollama). Purge de la dépendance morte koog 0.8.0.
+  Baby-step TDD : unit (register/resolve mock) → functional (task LLM mocké)
+  → cucumber (`@ai`, mock HTTP).
 | 3
 | ⬜ TODO
 
 | CAP-ARCH-2
-| *Délégation génération contenu → codebase* — capsule ne porte plus de prompt
-  engineering LLM. Les speaker notes enrichies / scripts pédagogiques sont
-  produits par le hub codebase (RAG + vibecoding) via `pipeline-contracts`.
-  Capsule consomme le résultat (`.txt` / `.adoc`) sans appel LLM direct.
-| 5
+| *Contexte augmenté (RAG + Graphify)* — domaine `capsule.context` : consomme
+  `CompositeContext` (codebase-contracts 0.1.0) — canaux EAGER/RAG/Graphify/Docs
+  + `ChannelBudget`. `CapsuleContextBuilder` (object pur) assemble le contexte
+  augmenté pour la génération de contenu. Wiring : tâche de collecte du
+  `CompositeContext` (ou consommation du job codebase existant). Baby-step TDD :
+  unit (toChannels/channelsWithBudget/merge) → functional → cucumber
+  (`@context @rag`).
+| 4
 | ⬜ TODO
 
 | CAP-ARCH-3
-| *Pipeline i18n aligné sur slider* — `translateAndExtractSpeakerNotes` (SLD-11.4)
-  consomme `slider.translateDeck` (10 langues) au lieu de traduire côté capsule.
-  Capsule parse le `.adoc` traduit directement (boundary SLD-11). Tests E2E
-  cross-borough (slider → capsule × 10 langues).
+| *Koog pipeline génération contenu* — domaine `capsule.pipeline` :
+  `CapsulePipelineGraph` (koog, pattern `DeckPipelineGraph` slider) — nœuds
+  propose-context → validate-context → generate-speaker-notes + edges
+  conditionnels. `CapsulePromptBuilder` (port, prompts pédagogiques : speaker
+  notes enrichies, scripts TTS) + `CapsuleLlm` (port suspend). Tâche
+  `generateCapsuleContent` : deck/adoc + CompositeContext → speaker notes
+  enrichies `.adoc` / script TTS `.txt`. Économie d'encre : skip si artefact
+  valide existe (delta). Baby-step TDD : unit (graphe, états, transitions) →
+  functional (mock LLM, NoOp) → cucumber (`@pipeline @ai`).
 | 5
 | ⬜ TODO
 
 | CAP-ARCH-4
-| *Suppression des appels LLM dispersés* — purger tout `OllamaChatClient` /
-  `ChatLanguageModel` inline de capsule (si présents). Capsule devient
-  consommateur terminal pur du DAG N2. Vérification : `grep -r "Ollama\|ChatModel\|ChatLanguageModel" capsule-plugin/src/main/` → zéro.
+| *Wiring exécution existante* — la sortie du pipeline LLM alimente le backend
+  existant *sans le modifier* : extractSpeakerNotes (feed), TTS, capture,
+  multi-lang CAP-29. `generateCapsuleContent` → `generateCapsuleVideoAllLanguages`.
+  Décision `compileOnly slider` confirmée ou remplacée (0 import réel).
+  Baby-step TDD : functional (chaîne complète NoOp) → cucumber
+  (`@i18n @cross-borough`).
 | 2
 | ⬜ TODO
 
 | CAP-ARCH-5
-| *Cucumber BDD boundary cross-borough* — scénario end-to-end : deck source
-  → `slider.translateDeck` (10 langues) → `capsule.translateAndExtractSpeakerNotes`
-  → `capsule.generateCapsuleVideo` × 10. Tags `@i18n @cross-borough @architecture`.
+| *i18n aligné sur le socle* — l'i18n reste via `slider.translateDeck` (déjà
+  LLM codebase depuis SLD-8). Vérification pipeline complet : deck source →
+  translateDeck (10 langues, codebase-LLM) → extractSpeakerNotes →
+  generateCapsuleVideoAllLanguages. `CapsuleI18nBridge` (artefacts capsule,
+  logs/messages) si nécessaire — CAP-29.1 a déjà l'essentiel. Non-régression :
+  464 unit + 25 functional + 6 cucumber multilang GREEN.
+| 3
+| ⬜ TODO
+
+| CAP-ARCH-6
+| *Cucumber BDD boundary cross-borough* — scénario E2E : deck source →
+  `slider.translateDeck` (10 langues) → `capsule.translateAndExtractSpeakerNotes`
+  → `capsule.generateCapsuleContent` (mock LLM) →
+  `capsule.generateCapsuleVideoAllLanguages`. Tags `@i18n @cross-borough
+  @architecture @ai`. Mock LLM HTTP (`-Pollama.baseUrl` pattern slider).
 | 3
 | ⬜ TODO
 |===
 
-_Total_ : 6 US, ~19 pts. _Méthode_ : baby-step DDD/TDD/BDD, 3 niveaux tests/US
-(unit → functional → cucumber), English only code/Gherkin. _Pattern de référence_ :
-document-gradle (`DocumentI18nBridge`), bakery-gradle (`ContentTranslationService`),
-plantuml-gradle (`PlantumlTranslationServiceAdapter`). _Statut_ : ⬜ TODO (cadré
-S-073, débloqué par CAP-29 ✅ S-082 — prochain EPIC candidat).
+_Total_ : 7 US (US-0 cadrage + US-1→6 exécution), ~21 pts. _Méthode_ : baby-step
+DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber), English only
+code/Gherkin. _Pattern de référence_ : slider SLD-8 (`LlmBuildService` bridge) +
+SLD-8.3 (`DeckPipelineGraph` koog), codebase (`KoogAugmentedContextGraph`,
+`CompositeContext`). _Statut_ : 🟡 EN COURS (CAP-ARCH-0 ✅ S-083, CAP-ARCH-1→6
+⬜ TODO).
