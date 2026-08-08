@@ -1,6 +1,23 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-08-08
-:session: 081 CAP-29.5 Cucumber BDD E2E 10 langues
+:session: 082 CAP-29.6 Documentation + dogfooding + clôture EPIC CAP-29
+
+== Couverture — 8 août 2026 (après session 082)
+
+.Modifications session 082 — 4 unit tests + fix nommage + dogfooding réel (domaine `capsule.multilang`)
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/multilang/CapsuleVideoOutputRenamer.kt` (nouveau) | Object pur `rename(rendered, target): File` — aligne le WebM rendu (`<scriptDeckName>.webm`, dérivé du header script) sur `entry.outputVideo` (contrat plan `<deckName>_<lang>.webm`). No-op si même path ou si rendu absent. Fallback copy+delete si `renameTo` échoue | 4 unit `CapsuleVideoOutputRenamerTest`
+| `capsule/multilang/GenerateCapsuleVideoAllLanguagesTask.kt` (modifié) | Wiring post-capture : après `captureDeckSequential/Parallel`, `CapsuleVideoOutputRenamer.rename(outDir/${parsed.deckName}.webm, entry.outputVideo)` + log d'alignement conditionnel. Répare l'économie d'encre (le probe `shouldRender` matche désormais l'output existant) | 0 régression (functional GREEN)
+| `README.md` + `capsule-plugin/README.md` (modifiés) | Doc domaine `capsule.multilang` + table des tâches + convention nommage `<deckName>_<lang>-deck.html|script.txt|webm` + totaux tests 464/25/6 | N/A (doc)
+|===
+
+- Unitaires : 464 VERT (+4 net : +4 `CapsuleVideoOutputRenamerTest`, 0 FAIL)
+- Functional : 25 VERT (`GenerateCapsuleVideoAllLanguagesFunctionalTest` GREEN — exerce le même path NoOp, rename no-op car deckName header == plan deckName)
+- Cucumber multilang : 6/6 GREEN (S-081 baseline, non régressés — runner interrompu par timeout tooling, non par échec)
+- Dogfooding réel : 3 WebM générés (fr/en/ar) + économie d'encre prouvée (`--rerun-tasks` → `0/3 rendered, 3 skipped`)
+- 1 FAIL `@integration` burn-in préexistant (subtitle path `build/capsule/` vs `outputDir=capsules`) — hors CAP-29, connu S-069/S-072
+- Secrets : 0 trouvé
 
 == Couverture — 8 août 2026 (après session 081)
 

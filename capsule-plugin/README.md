@@ -30,7 +30,15 @@ capsule-plugin/
     ├── main/kotlin/capsule/
     │   ├── CapsulePlugin.kt           # entry point — applies slider, registers tasks, config merge
     │   ├── CapsuleManager.kt          # task registration + script parsing + factory methods
-    │   ├── CapsuleModels.kt           # CapsuleExtension DSL + CapsuleConventions + data models
+    │   ├── feed/                      # domain: speaker-notes extraction contract (SLD-11)
+    │   ├── multilang/                 # domain: multi-language video pipeline (CAP-29)
+    │   │   ├── MultiLanguageResolver.kt  # LanguageCatalog → Piper/espeak voice resolution
+    │   │   ├── VoiceMapping.kt           # 10-language voice mapping
+    │   │   ├── CapsuleVideoPlan.kt       # immutable plan + entry (deck/script/language/output)
+    │   │   ├── CapsuleVideoPlanner.kt    # builds the plan from translated deck+script pairs
+    │   │   ├── CapsuleVideoAllLanguagesRunner.kt  # pure iteration + Ink Economy skip
+    │   │   └── GenerateCapsuleVideoAllLanguagesTask.kt  # generateCapsuleVideoAllLanguages
+    │   ├── CapsuleConfig.kt           # immutable config (5 sections: input, tts, capture, distrib, manim)
     │   ├── CapsuleConfig.kt           # immutable config (5 sections: input, tts, capture, distrib, manim)
     │   ├── CapsuleConfigLoader.kt     # YAML loader with ${VAR} env resolution
     │   ├── CapsuleConfigMerger.kt     # 4-source merge (CLI > YAML > props > ENV)
@@ -55,7 +63,6 @@ capsule-plugin/
     │   ├── HtmlSectionParser.kt       # reveal.js deck HTML parsing
     │   ├── AudioConversionUtil.kt    # WAV→MP3 conversion
     │   ├── MediaProbeUtil.kt         # ffprobe duration probing
-    │   └── LanguageVoiceMapping.kt    # FR/EN/ES/DE voice mapping
     ├── test/kotlin/capsule/
     │   ├── CapsulePluginTest.kt
     │   ├── scenarios/                 # Cucumber BDD step definitions + runners
@@ -71,7 +78,7 @@ capsule-plugin/
 
 ## N2 dependency
 
-`capsule-gradle` consumes `slider-gradle` (`education.cccp:slider:0.0.6`) via `compileOnly`.
+`capsule-gradle` consumes `slider-gradle` (`education.cccp:slider:0.0.16`) via `compileOnly`.
 The contract is file-based — capsule reads the deck HTML and script text files produced by slider,
 never modifies them. CapsulePlugin auto-applies `education.cccp.slider` at runtime if available.
 
@@ -85,7 +92,7 @@ never modifies them. CapsulePlugin auto-applies `education.cccp.slider` at runti
 | **Kover** | 0.9.8 | Coverage reports (XML + HTML, wired into `check`) |
 | **Cucumber** | 7.34.3 | BDD tests (cucumber-java, junit-platform-engine, picocontainer) |
 | **Kotlin** | 2.3.20 | Plugin DSL |
-| **slider** | 0.0.6 | compileOnly — reveal.js deck + capsule script source |
+| **slider** | 0.0.16 | compileOnly — reveal.js deck + capsule script source |
 
 External tools (not Maven dependencies):
 - **Piper** — local offline TTS engine (default)
@@ -105,7 +112,7 @@ External tools (not Maven dependencies):
 
 Cucumber tags: `@integration`, `@manim`, `@config`, `@tts`, `@subtitles`, `@burnin`, `@style`, `@parallel`.
 
-Test totals: **195 unit + 22 Cucumber = 217 PASS** (session 029 baseline).
+Test totals: **460 unit + 25 functional + 6 Cucumber multilang = 491 PASS** (session 081 baseline; cucumber skipped by default since CR-10).
 
 ## JVM tuning
 
@@ -180,10 +187,16 @@ CAP-0 through CAP-25 terminated. Active EPICs (see `.agents/INDEX.adoc`):
 | EPIC | Description | Status |
 |------|-------------|--------|
 | CR-1 | Refactor `CapsuleVideoTask.execute()` (218→76 lines) | ✅ Terminated (session 040) |
-| CR-2 | Thread safety + timeout `captureSlideParallel` | ⬜ TODO |
-| CR-3 | Error handling TTS — degradation signaled | ⬜ TODO |
-| CR-4 | HTML escape security — `injectSubtitleTrack` | ⬜ TODO |
-| CR-5 | DRY `CapsuleConfigMerger` (~76 lines duplicated) | ⬜ TODO |
+| CR-2 | Thread safety + timeout `captureSlideParallel` | ✅ Terminated (session 071) |
+| CR-3 | Error handling TTS — degradation signaled | ✅ Terminated (session 071) |
+| CR-4 | HTML escape security — `injectSubtitleTrack` | ✅ Terminated (session 071) |
+| CR-5 | DRY `CapsuleConfigMerger` (~76 lines duplicated) | ✅ Terminated (session 072) |
+| CR-6 | Robust CLI parsing | ✅ Terminated (session 071) |
+| CR-7 | Validation YAML | ✅ Terminated (session 071) |
+| CR-8 | Structured logging | ✅ Terminated (session 073) |
+| CR-9 | Robust HTML parsing | ✅ Terminated (session 074) |
+| CR-10 | CI optimization — cucumberTest onlyIf | ✅ Terminated (session 075) |
+| CAP-29 | Multi-language video pipeline (`capsule.multilang`) | 🟡 In progress (CAP-29.0→29.5 done) |
 | CAP-27 | VTT burn-in (currently SRT only) | ⬜ TODO |
 | CAP-28 | Coverage gaps — PiperTtsEngine 31%, ManimEngineImpl 25% | ⬜ TODO |
 

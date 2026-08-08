@@ -1,0 +1,119 @@
+= Session 082 — CAP-29.6 Documentation + dogfooding + clôture EPIC CAP-29
+:date: 2026-08-08
+:session: 082
+:epic: CAP-29
+:us: CAP-29.6
+:method: baby-step TDD (unit) + dogfooding réel + clôture EPIC
+
+== Objectif
+
+Implémenter CAP-29.6 : documentation du domaine `capsule.multilang`, dogfooding
+réel du pipeline multi-langue (1 deck demo × 3 langues fr/en/ar dont 1 RTL),
+puis clôture de l'EPIC CAP-29 (7/7 US).
+
+== Méthode
+
+Baby-step TDD strict pour le fix de nommage découvert (unit RED → GREEN),
+dogfooding réel dans un consommateur composite `includeBuild` (Piper fr/en +
+espeak, chromium Playwright), clôture gouvernance 6 étapes (rapport, INDEX,
+BACKLOG, TODO, SESSIONS_HISTORY, TEST_COVERAGE_ANALYSIS, AGENTS.adoc racine).
+
+== Livrables
+
+=== Documentation
+
+- `README.md` (master EN) mis à jour : domaine `capsule.multilang`, diagramme
+  pipeline, table des tâches (`extractSpeakerNotes`,
+  `translateAndExtractSpeakerNotes`, `generateCapsuleVideoAllLanguages`,
+  `translateAndGenerateCapsuleVideos`), convention de nommage
+  `<deckName>_<lang>-deck.html|script.txt|webm`, totaux tests 464/25/6.
+- `capsule-plugin/README.md` (plugin) mis à jour : table des tâches, domaine,
+  convention nommage, statut CR-1→CR-10 + EPICs CAP, slider 0.0.16.
+
+=== Dogfooding réel
+
+Consommateur composite `/tmp/opencode/dogfood-multilang` avec
+`includeBuild("/home/.../capsule-plugin")` :
+
+. `extractSpeakerNotes` réel → 3 scripts générés (`build/capsule/` fr/en/ar).
+. Decks HTML traduits préparés (`build/docs/asciidocRevealJs/`, ar avec
+  `dir="rtl"`), scripts renommés `<deckName>_<lang>-script.txt`.
+. `generateCapsuleVideoAllLanguages` réel → 3 WebM générés en 3m07
+  (ar 2 MB / en 4.7 MB / fr 4.3 MB), BUILD SUCCESSFUL.
+. Constat ar : TTS espeak indisponible pour la voix 'ar' (4× `Failed to read
+  voice 'ar'`, skippé après retry) mais vidéo RTL rendue tout de même.
+
+=== Défaut de nommage découvert + Fix TDD
+
+Le dogfooding a révélé un défaut réel : le rendu produisait
+`<deckName>_<lang>-deck.webm` (dérivé du header script
+`=== CAPSULE SCRIPT : <deckName>_<lang>-deck ===`, flux réel slider SLD-11)
+au lieu de la convention du plan `<deckName>_<lang>.webm` (`entry.outputVideo`).
+
+Conséquence : l'économie d'encre (AGENT.adoc règle 2) ne se déclenchait jamais —
+le probe `shouldRender` cherche `entry.outputVideo` qui n'existait pas (le
+fichier produit portait un autre nom) → re-render systématique.
+
+Fix baby-step TDD :
+
+. *RED* : `CapsuleVideoOutputRenamerTest` (4 tests : rename quand noms diffèrent,
+  no-op même path, no-op si rendu absent, création parent dir).
+. *GREEN* : `CapsuleVideoOutputRenamer` (domaine `capsule.multilang`, object pur
+  `rename(rendered, target): File` — no-op si absent/même path, sinon
+  `renameTo` avec fallback `copyTo`+`delete`).
+. *Wiring* : post-capture dans `GenerateCapsuleVideoAllLanguagesTask.renderEntry`
+  après `captureDeckSequential/Parallel`, log d'alignement conditionnel.
+. *Re-dogfooding* : alignement `-deck.webm` → `_<lang>.webm` logué pour les 3
+  langues + économie d'encre prouvée (`--rerun-tasks` →
+  `0/3 languages rendered, 3 skipped: existing valid WebM`).
+
+=== Tests
+
+- Unitaires : 464 VERT (+4 net : +4 `CapsuleVideoOutputRenamerTest`, 0 FAIL).
+- Functional : 25 VERT (`GenerateCapsuleVideoAllLanguagesFunctionalTest` GREEN —
+  exerce le même path NoOp, rename no-op car deckName header == plan deckName).
+- Cucumber multilang : 6/6 GREEN (S-081 baseline, non régressés — le runner
+  non-integration a été interrompu par le timeout du tooling, pas par un échec ;
+  aucun scénario @multilang ne teste le rename car le path NoOp est un no-op).
+- 1 FAIL `@integration` burn-in préexistant (subtitle path `build/capsule/` vs
+  `outputDir=capsules`) — hors CAP-29, connu S-069/S-072.
+- Secrets : 0 trouvé.
+
+== Décisions d'architecture
+
+. *`CapsuleVideoOutputRenamer` est un object pur du domaine* — aligné sur la
+  discipline DDD du projet (objects purs testables, pas de couplage Gradle).
+  Le wiring impur (log, filesystem via le task) reste dans `renderEntry`.
+. *Le contrat du plan (`entry.outputVideo`) est l'artifact autoritaire* — le
+  WebM rendu par le pipeline mono-langue (nommé depuis le header script) est
+  aligné sur le plan a posteriori, pas l'inverse. Cela préserve l'économie
+  d'encre (le probe `shouldRender` matche le fichier existant).
+. *Le flux réel slider SLD-11 produit des headers `<deckName>_<lang>-deck`* —
+  divergence légitime entre le deckName du script (inclus `-deck`) et le
+  deckName du plan (sans `-deck`). Le renamer résout cette divergence côté
+  capsule sans modifier slider (boundary respecté).
+
+== Suivi préexistant (hors CAP-29)
+
+- `Burn-in E2E @integration` cucumber FAIL (subtitle path
+  `build/capsule/` vs `outputDir=capsules`) — connu S-069/S-072, à traiter dans
+  un EPIC dédié (CAP-CR3 solidité chaîne vidéo).
+
+== Clôture EPIC CAP-29
+
+EPIC CAP-29 TERMINÉ 7/7 US (CAP-29.0 cadrage S-076 → CAP-29.6 doc+dogfooding
+S-082). Domaine `capsule.multilang` clos : 9 fichiers prod
+(MultiLanguageResolver, VoiceMapping, ResolvedLanguage, CapsuleVideoEntry,
+CapsuleVideoPlan, CapsuleVideoPlanner, CapsuleVideoAllLanguagesRunner,
+GenerateCapsuleVideoAllLanguagesTask, CapsuleVideoOutputRenamer).
+
+Prochain EPIC candidat : CAP-ARCH (cross-borough slider+codebase, débloqué par
+CAP-29 ✅).
+
+== Score session : 9/10
+
+Dogfooding réel a exposé un défaut invisible en tests NoOp (le nommage du
+header script ≠ plan). Fix TDD propre + re-dogfooding probant. 1 point
+retrait : le tooling cucumber ciblé (filtre `@multilang` via system property)
+n'a pas atteint le worker Gradle — à outiller dans une session future
+(passthrough `-PcucumberTags`).

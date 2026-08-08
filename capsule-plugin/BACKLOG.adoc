@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-08 (Session 081 — CAP-29.5 Cucumber BDD E2E 10 langues)
+:last_update: 2026-08-08 (Session 082 — CAP-29.6 Documentation + dogfooding + clôture EPIC CAP-29 TERMINÉ 7/7 US)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -195,7 +195,7 @@ Ajouter tests unitaires + Cucumber pour les branches non couvertes.
 |===
 
 '''
-== 🔴 EPIC CAP-29 — Pipeline Traduction Vidéo Multi-Langue (Session 076 — Cadrage)
+== ✅ EPIC CAP-29 — Pipeline Traduction Vidéo Multi-Langue (Session 076 — Cadrage, Session 082 — TERMINÉ)
 
 _Vision_ : Un deck source → 10 vidéos localisées en une tâche Gradle. Le pipeline
 `slider.translateDeck` (10 langues, 425 tests PASS) produit les decks traduits. Le
@@ -292,20 +292,36 @@ générés). Tags `@multilang @i18n`. NoOp engines (pas de vrais Piper/Playwrigh
 | ✅ TERMINÉ (S-081, 6 scénarios cucumber 0 FAIL)
 
 | CAP-29.6
-| *Documentation + dogfooding* — README master EN mis à jour avec domaine
-`capsule.multilang` + tâche `generateCapsuleVideoAllLanguages`. Dogfooding :
-1 deck demo × 3 langues (fr/en/ar dont 1 RTL) = 3 vidéos générées (NoOp ou réel
-selon disponibilité). MàJ INDEX/BACKLOG.
+| *Documentation + dogfooding + clôture EPIC* — README master EN + README plugin
+mis à jour (domaine `capsule.multilang`, diagramme pipeline, table des tâches
+`extractSpeakerNotes`/`translateAndExtractSpeakerNotes`/`generateCapsuleVideoAllLanguages`/`translateAndGenerateCapsuleVideos`,
+convention de nommage `<deckName>_<lang>-deck.html|script.txt|webm`, totaux tests
+464 unit + 25 functional + 6 cucumber multilang). Dogfooding réel dans un
+consommateur composite `includeBuild` : 1 deck demo × 3 langues (fr/en/ar dont 1
+RTL) → `extractSpeakerNotes` réel → `generateCapsuleVideoAllLanguages` réel
+(Piper fr/en + espeak, chromium Playwright) → 3 WebM générés en 3m07. Défaut de
+nommage découvert : le rendu produisait `<deckName>_<lang>-deck.webm` (dérivé du
+header script) au lieu de la convention du plan `<deckName>_<lang>.webm`, ce qui
+brisait aussi l'économie d'encre (skip jamais déclenché). Fix TDD baby-step :
+`CapsuleVideoOutputRenamer` (domaine `capsule.multilang`, 4 unit) aligne le WebM
+rendu sur `entry.outputVideo` (contrat plan), wiring post-capture dans
+`renderEntry`. Re-dogfooding : alignement `-deck.webm` → `_<lang>.webm` pour les
+3 langues + économie d'encre prouvée (`0/3 rendered, 3 skipped: existing
+valid WebM`). 464 unit VERT (+4 net) + 25 functional VERT + 6 cucumber multilang
+GREEN (1 FAIL `@integration` burn-in préexistant hors CAP-29). EPIC CAP-29
+TERMINÉ 7/7 US.
 | 2
-| ⬜ TODO
+| ✅ TERMINÉ (S-082, 4 unit + 3 WebM réels dogfooding + fix nommage)
 |===
 
 _Total_ : 7 US (US-0 cadrage + US-1→6 exécution), ~20 pts. _Méthode_ : baby-step
 DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber), English only
 code/Gherkin. _Pattern de référence_ : SLD-5 (DeckTranslationPipeline one-to-many),
-CAP-MODEL (unification domaine). _Statut_ : 🟡 EN COURS (CAP-29.0 ✅ S-076,
+CAP-MODEL (unification domaine). _Statut_ : ✅ TERMINÉ (CAP-29.0 ✅ S-076,
 CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, CAP-29.4 ✅ S-080,
-CAP-29.5 ✅ S-081, 6→TODO).
+CAP-29.5 ✅ S-081, CAP-29.6 ✅ S-082). 7/7 US livrées. 464 unit + 25 functional +
+6 cucumber multilang GREEN. Domaine `capsule.multilang` clos (7 fichiers prod).
+Prochain EPIC : CAP-ARCH (cross-borough slider+codebase, dépendait CAP-29).
 
 '''
 == 🔴 EPIC CAP-CR3 — Revue CR-GLOBALE-003 : Création de Contenu Solide
@@ -484,5 +500,5 @@ workspace-bom `i18n-contracts` 0.0.2 + `pipeline-contracts` 0.0.2.
 _Total_ : 6 US, ~19 pts. _Méthode_ : baby-step DDD/TDD/BDD, 3 niveaux tests/US
 (unit → functional → cucumber), English only code/Gherkin. _Pattern de référence_ :
 document-gradle (`DocumentI18nBridge`), bakery-gradle (`ContentTranslationService`),
-plantuml-gradle (`PlantumlTranslationServiceAdapter`). _Statut_ : ⬜ TODO (cadrage
-à planifier après CAP-29).
+plantuml-gradle (`PlantumlTranslationServiceAdapter`). _Statut_ : ⬜ TODO (cadré
+S-073, débloqué par CAP-29 ✅ S-082 — prochain EPIC candidat).

@@ -104,5 +104,11 @@ open class GenerateCapsuleVideoAllLanguagesTask : CapsuleVideoTask() {
         } else {
             captureDeckSequential(parsed, modifiedDeck, videoOutputDir, audioDir, outDir, slideDurations, subtitleFile)
         }
+
+        val renderedVideo = outDir.resolve("${parsed.deckName}.webm")
+        if (renderedVideo.exists() && renderedVideo.absolutePath != entry.outputVideo.absolutePath) {
+            logger.lifecycle("  Aligning output name '{}' → '{}' (plan contract)", renderedVideo.name, entry.outputVideo.name)
+        }
+        CapsuleVideoOutputRenamer.rename(renderedVideo, entry.outputVideo)
     }
 }

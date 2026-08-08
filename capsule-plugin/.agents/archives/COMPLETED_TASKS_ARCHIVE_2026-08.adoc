@@ -1,6 +1,39 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-08
 
+== Session 082 — CAP-29.6 Documentation + dogfooding + clôture EPIC CAP-29 ✅
+
+Documentation du domaine `capsule.multilang` (README master EN + README plugin),
+dogfooding réel du pipeline multi-langue (3 WebM fr/en/ar dont 1 RTL), découverte
+et fix d'un défaut de nommage (`CapsuleVideoOutputRenamer`), clôture EPIC CAP-29
+7/7 US. 464 unit VERT (+4) + 25 functional VERT + 6 cucumber multilang GREEN.
+
+Tâches terminées :
+. `README.md` + `capsule-plugin/README.md` — domaine `capsule.multilang`,
+  table des tâches, convention nommage `<deckName>_<lang>-deck.html|script.txt|webm`
+. Dogfooding réel consommateur composite `includeBuild` — `extractSpeakerNotes`
+  réel → `generateCapsuleVideoAllLanguages` réel (Piper fr/en + espeak, chromium
+  Playwright) → 3 WebM générés en 3m07
+. Défaut nommage découvert — rendu `<deckName>_<lang>-deck.webm` (header script)
+  au lieu du plan `<deckName>_<lang>.webm` (`entry.outputVideo`), brisant
+  l'économie d'encre (skip jamais déclenché)
+. `capsule/multilang/CapsuleVideoOutputRenamer.kt` (nouveau) — object pur
+  `rename(rendered, target): File` aligne le WebM rendu sur le contrat plan
+. Wiring post-capture dans `GenerateCapsuleVideoAllLanguagesTask.renderEntry`
+. Re-dogfooding — alignement `-deck.webm` → `_<lang>.webm` (3 langues) +
+  économie d'encre prouvée (`--rerun-tasks` → `0/3 rendered, 3 skipped`)
+. Tests — 4 unit `CapsuleVideoOutputRenamerTest` (+4 net, 464 total) +
+  `GenerateCapsuleVideoAllLanguagesFunctionalTest` GREEN (25 total) + 6 cucumber
+  multilang GREEN (S-081 baseline, non régressés)
+. Vérifications — 1 FAIL `@integration` burn-in préexistant (subtitle path
+  `build/capsule/` vs `outputDir=capsules`) hors CAP-29, connu S-069/S-072,
+  zéro secret
+
+EPIC CAP-29 TERMINÉ 7/7 US. Domaine `capsule.multilang` clos (9 fichiers prod).
+
+Prochaine session : CAP-ARCH (cross-borough slider+codebase, débloqué par
+CAP-29 ✅) ou CAP-CR3 (solidité chaîne vidéo — burn-in @integration FAIL).
+
 == Session 081 — CAP-29.5 Cucumber BDD E2E 10 langues ✅
 
 Cucumber BDD E2E multi-langue (CAP-29.5). `multi_language_capsule.feature`

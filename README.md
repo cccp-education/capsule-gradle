@@ -9,7 +9,7 @@
 [![License](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=License)](../LICENSE)
 
 - **Version**: `0.0.1-SNAPSHOT` (non publié) · **Group**: `education.cccp` · **Plugin ID**: `education.cccp.capsule`
-- **Build**: `./gradlew build` · **Tests**: `./gradlew check` (195 unit + 22 Cucumber PASS)
+- **Build**: `./gradlew build` · **Tests**: `./gradlew check` (460 unit + 25 functional PASS, cucumber via `-PrunCucumber`)
 - **Coverage**: Kover XML + HTML reports wired into `check`
 
 🌐 Languages: **EN** | [中文](README.consommateurs/README.zh.md) | [हिन्दी](README.consommateurs/README.hi.md) | [Español](README.consommateurs/README.es.md) | [Français](README.consommateurs/README.fr.md) | [العربية](README.consommateurs/README.ar.md) | [বাংলা](README.consommateurs/README.bn.md) | [Português](README.consommateurs/README.pt.md) | [Русский](README.consommateurs/README.ru.md) | [اردو](README.consommateurs/README.ur.md)
@@ -82,13 +82,51 @@ tasks.named("capsulevideo") {
 ./gradlew capsulevideo    # slider deck + script → capsule video
 ```
 
+### Multi-language video pipeline (CAP-29, domain `capsule.multilang`)
+
+One source deck → one localized capsule WebM per target language. The pipeline
+consumes the translated decks produced by `slider.translateDeck` (10 languages,
+`LanguageCatalog` from the N0 `i18n-contracts` BOM) and delegates the per-language
+TTS voice + Piper/espeak resolution to the pure `capsule.multilang` domain
+(`MultiLanguageResolver` + `VoiceMapping`).
+
+```
+source deck (AsciiDoc)
+        ↓ slider.translateDeck (10 languages, LanguageCatalog)
+<deckName>_<lang>-deck.html (one per language)
+        ↓ capsule.extractSpeakerNotes
+<deckName>_<lang>-script.txt (one per language)
+        ↓ capsule.generateCapsuleVideoAllLanguages
+<deckName>_<lang>.webm (one localized capsule video per language)
+```
+
+File naming convention (boundary contract, aligned with slider):
+
+- translated deck:   `<deckName>_<lang>-deck.html`
+- speaker script:    `<deckName>_<lang>-script.txt`
+- localized video:   `<deckName>_<lang>.webm`
+
+```bash
+./gradlew generateCapsuleVideoAllLanguages   # one WebM per language with deck+script pair
+./gradlew translateAndGenerateCapsuleVideos  # full composite: translateDeck → extractSpeakerNotes → videos
+```
+
+`generateCapsuleVideoAllLanguages` iterates over all 10 `LanguageCatalog`
+languages, silently skips any language without a matching deck + script pair,
+and applies the **Economy of Ink** rule (AGENT.adoc): a language whose WebM
+already exists and probes valid is never re-rendered.
+
 ## Available tasks
 
 | Task | Group | Description |
 |------|-------|-------------|
+| `extractSpeakerNotes`         | capsule   | Parses AsciiDoc speaker notes into the plain-text `*-script.txt` contract |
+| `translateAndExtractSpeakerNotes` | capsule | Composite: `translateDeck` (slider) → `extractSpeakerNotes` |
 | `generateCapsuleScript`   | generate  | Reads `*-script.txt` from slider and validates the capsule script |
 | `generateCapsule`          | generate  | Generates TTS audio files from capsule scripts (Piper/espeak) |
 | `generateCapsuleVideo`     | generate  | Injects TTS audio into deck HTML then captures video via Playwright |
+| `generateCapsuleVideoAllLanguages` | generate | One localized capsule WebM per target language (`capsule.multilang`) |
+| `translateAndGenerateCapsuleVideos` | capsule | Composite: `translateDeck` → `extractSpeakerNotes` → `generateCapsuleVideoAllLanguages` |
 | `deployCapsule`            | deploy    | Recrops capsules to vertical 9:16 (TikTok/Shorts) via FFmpeg |
 | `collectCapsuleContext`    | collect   | Exports capsule context (video paths + metadata) as JSON for N3 engine |
 | `transformCapsuleContext`  | transform | Parses `capsule-context.json` and returns a list of decks |
@@ -112,7 +150,7 @@ capsule {
     ttsFallbackEnabled.set(true)
     espeakVoice.set("fr")
     espeakSpeed.set(150)
-    ttsLanguage.set("fr")                     // fr, en, es, de
+    ttsLanguage.set("fr")                     // 10 languages (fr, en, es, de, zh, hi, ar, bn, pt, ru, ur)
 
     // Capture
     viewportWidth.set(1408)

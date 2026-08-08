@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-08-08 (Session 081 — CAP-29.5 Cucumber BDD E2E 10 langues)
+:last_update: 2026-08-08 (Session 082 — CAP-29.6 Documentation + dogfooding + clôture EPIC CAP-29 TERMINÉ 7/7 US)
 
 '''
 == ✅ EPIC CAP-MODEL — TERMINE (session 069)
@@ -107,6 +107,18 @@
 . [x] 460 unit VERT (inchangé) + 25 functional VERT + kover VERT, `check` BUILD SUCCESSFUL, zéro secret
 
 '''
+== ✅ CAP-29.6 Documentation + dogfooding + clôture EPIC — TERMINE (session 082)
+
+. [x] README master EN + README plugin mis à jour (domaine `capsule.multilang`, table des tâches, convention nommage)
+. [x] Dogfooding réel consommateur composite `includeBuild` : `extractSpeakerNotes` réel → `generateCapsuleVideoAllLanguages` réel
+. [x] 3 WebM générés (fr/en/ar dont 1 RTL) en 3m07 (Piper fr/en + espeak, chromium Playwright)
+. [x] Défaut nommage découvert : rendu `<deckName>_<lang>-deck.webm` au lieu du plan `<deckName>_<lang>.webm` (brise économie d'encre)
+. [x] Fix TDD `CapsuleVideoOutputRenamer` (4 unit) + wiring post-capture `renderEntry`
+. [x] Re-dogfooding : alignement `-deck.webm` → `_<lang>.webm` (3 langues) + économie d'encre prouvée (0/3 rendered, 3 skipped)
+. [x] 464 unit VERT (+4 net) + 25 functional VERT + 6 cucumber multilang GREEN, zéro secret
+. [x] EPIC CAP-29 TERMINÉ 7/7 US — domaine `capsule.multilang` clos (7 fichiers prod)
+
+'''
 == 🟡 EPIC CAP-ARCH — Collaboration cross-borough (slider + codebase) — CADRÉ (session 073)
 
 . [ ] CAP-ARCH-0 — Cadrage EPIC (audit appels LLM dispersés, inventaire contrats N0)
@@ -121,8 +133,8 @@
 
 . [x] **CR-9** (robust HTML parsing) — à coder ✅ S-074
 . [x] **CR-10** (CI optimization cucumberTest onlyIf) — à coder ✅ S-075
-. [ ] **CAP-29** (pipeline traduction vidéo multi-langue) — EN COURS (CAP-29.0 ✅ S-076, CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, CAP-29.4 ✅ S-080, CAP-29.5 ✅ S-081, 6→TODO)
-. [ ] **CAP-ARCH** (collaboration cross-borough slider+codebase) — à planifier après CAP-29
+. [x] **CAP-29** (pipeline traduction vidéo multi-langue) — TERMINÉ 7/7 US (CAP-29.0 ✅ S-076, CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, CAP-29.4 ✅ S-080, CAP-29.5 ✅ S-081, CAP-29.6 ✅ S-082)
+. [ ] **CAP-ARCH** (collaboration cross-borough slider+codebase) — à planifier (débloqué par CAP-29 ✅)
 
 '''
 == ✅ README i18n — TERMINE (session 041)
@@ -185,7 +197,7 @@
 . [x] Bug préexistant découvert : `CucumberTestRunner` ne lance que `capsule.feature` (à investiguer session future)
 
 '''
-== 🟡 Prochaine session — Backlog capsule restant (CAP-CR3, CAP-29, CAP-ARCH)
+== 🟡 Prochaine session — Backlog capsule restant (CAP-CR3, CAP-ARCH)
 
 '''
 == Backlog priorisé (ordre d'attaque)
@@ -206,5 +218,5 @@
 . [ ] 🔴 CAP-CR3-2 — Mode strict anti-NoOp (`capsule.strictMode`)
 . [ ] 🟠 CAP-CR3-3 — Décision `ScreenshotCaptureImpl` vs `PlaywrightCaptureImpl`
 . [ ] 🟡 CAP-CR3-4 — Convention Gradle `resolveScriptDir/resolveDeckDir`
-. [ ] 🟢 CAP-29 — Pipeline Traduction Vidéo Multi-Langue (7 US ~20 pts, EN COURS : CAP-29.0 ✅ S-076, CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, CAP-29.4 ✅ S-080, CAP-29.5 ✅ S-081, 6→TODO)
-. [ ] 🟠 CAP-ARCH — Collaboration cross-borough slider+codebase (6 US ~19 pts, cadré S-073)
+. [x] 🟢 CAP-29 — Pipeline Traduction Vidéo Multi-Langue (7 US ~20 pts, TERMINÉ 7/7 US : CAP-29.0 ✅ S-076, CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, CAP-29.4 ✅ S-080, CAP-29.5 ✅ S-081, CAP-29.6 ✅ S-082)
+. [ ] 🟠 CAP-ARCH — Collaboration cross-borough slider+codebase (6 US ~19 pts, cadré S-073, débloqué par CAP-29 ✅)
