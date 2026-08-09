@@ -12,6 +12,7 @@ codebase = "0.0.5"
 koog = "1.0.0"
 workspace-bom = "0.0.16"
 i18n-contracts = "0.0.2"
+codebase-contracts = "0.1.0"
 
 [libraries]
 kotlin-test-junit5 = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit5", version.ref = "kotlin" }
@@ -30,6 +31,7 @@ codebase-plugin = { module = "education.cccp:codebase-plugin", version.ref = "co
 langchain4j = { module = "dev.langchain4j:langchain4j" }
 langchain4j-ollama = { module = "dev.langchain4j:langchain4j-ollama" }
 i18n-contracts = { module = "education.cccp:i18n-contracts", version.ref = "i18n-contracts" }
+codebase-contracts = { module = "education.cccp:codebase-contracts", version.ref = "codebase-contracts" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

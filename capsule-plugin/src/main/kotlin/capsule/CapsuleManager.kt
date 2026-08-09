@@ -17,6 +17,7 @@ class CapsuleManager(private val project: Project) {
         project.registerTransformCapsuleContextTask()
         project.registerScaffoldCapsuleContextTask()
         project.registerAiSmokeTestTask()
+        project.registerCollectAugmentedContextTask()
     }
 
     private fun Project.registerExtractSpeakerNotesTask() {
@@ -114,6 +115,29 @@ class CapsuleManager(private val project: Project) {
             task.description = "Smoke-tests the codebase LLM bridge (LlmBuildService + ChatModel adapter) with a minimal prompt"
             task.llmService.set(llmServiceProvider)
             task.usesService(llmServiceProvider)
+        }
+    }
+
+    private fun Project.registerCollectAugmentedContextTask() {
+        tasks.register(
+            "collectCapsuleAugmentedContext",
+            capsule.context.CollectCapsuleAugmentedContextTask::class.java,
+        ) { task ->
+            task.group = "collect"
+            task.description = "Collects the augmented context (EAGER governance + RAG + Graphify + Docs) and renders it for content generation"
+            task.eagerFiles.from(
+                project.layout.projectDirectory.file(".agents/INDEX.adoc"),
+                project.layout.projectDirectory.file("PROMPT_REPRISE.adoc"),
+                project.layout.projectDirectory.file("AGENT.adoc"),
+            )
+            task.ragContent.set(project.findProperty("context.ragContent")?.toString().orEmpty())
+            task.graphifyContent.set(project.findProperty("context.graphifyContent")?.toString().orEmpty())
+            task.docsContent.set(project.findProperty("context.docsContent")?.toString().orEmpty())
+            task.tokenBudget.set(
+                project.findProperty("context.tokenBudget")?.toString()?.toIntOrNull()
+                    ?: contracts.context.ContextChannel.DEFAULT_TOKEN_BUDGET
+            )
+            task.outputFile.set(project.layout.buildDirectory.file("capsule/augmented-context.txt"))
         }
     }
 

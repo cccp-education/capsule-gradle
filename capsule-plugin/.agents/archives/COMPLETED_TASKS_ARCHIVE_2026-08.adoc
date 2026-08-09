@@ -1,6 +1,38 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-09
 
+== Session 085 — CAP-ARCH-2 Contexte augmenté (RAG + Graphify, domaine `capsule.context`) ✅
+
+US-2 de l'EPIC CAP-ARCH. Domaine `capsule.context` : `CapsuleContextBuilder`
+(object pur) assemble le `CompositeContext` (codebase-contracts 0.1.0) —
+canaux EAGER/RAG/Graphify/Docs + `ChannelBudget`. 491 unit VERT (+14) +
+31 functional VERT (+3) + 4 cucumber `@context @rag` GREEN. `check` VERT.
+
+Tâches terminées :
+. `gradle/libs.versions.toml` + `build.gradle.kts` — codebase-contracts 0.0.2 → 0.1.0 +
+  `implementation(libs.codebase.contracts)` + `CucumberTaskSpec("cucumberTestContext")`
+. `src/main/kotlin/capsule/context/CapsuleContext.kt` — data class, invariant
+  `rendered.isBlank() == channels.isEmpty()`, isEmpty/nonEmptyCount/tokenEstimate
+. `src/main/kotlin/capsule/context/CapsuleContextBuilder.kt` — object pur
+  (defaultBudget/toChannels/channelsWithBudget/merge/build)
+. `src/main/kotlin/capsule/context/CollectCapsuleAugmentedContextTask.kt` — tâche
+  `collectCapsuleAugmentedContext` (groupe `collect`, eagerFiles
+  `.agents/INDEX.adoc` + `PROMPT_REPRISE.adoc` + `AGENT.adoc`
+  `@PathSensitive(RELATIVE)`, `-Pcontext.*`, output `build/capsule/augmented-context.txt`)
+. `src/main/kotlin/capsule/CapsuleManager.kt` — wiring registerCollectAugmentedContextTask
+. `src/test/kotlin/capsule/context/CapsuleContextBuilderTest.kt` — 14 unit tests
+. `src/functionalTest/kotlin/capsule/context/CapsuleAugmentedContextFunctionalTest.kt` — 3 functional (registration, artefact, UP-TO-DATE)
+. `src/test/features/capsule_context.feature` + `CapsuleContextSteps.kt` +
+  `CapsuleContextCucumberRunner.kt` — 4 scénarios `@context @rag` (runner dédié contourne bug S-082)
+. Gouvernance — BACKLOG/INDEX/PROMPT_REPRISE/TODO/SESSIONS_HISTORY/
+  TEST_COVERAGE/rapport 085
+. Vérifications — `check` BUILD SUCCESSFUL (3m33s), zéro secret,
+  marqueurs backlog légitimes, pas de commit (règle 1)
+
+Prochaine session : CAP-ARCH-3 — Koog pipeline génération contenu (domaine
+`capsule.pipeline`, `CapsulePipelineGraph` pattern `DeckPipelineGraph` slider,
+`generateCapsuleContent`).
+
 == Session 084 — CAP-ARCH-1 Socle LLM bridge (pattern SLD-8, domaine `capsule.ai`) ✅
 
 US-1 de l'EPIC CAP-ARCH. Capsule devient consommatrice du hub codebase (N1)

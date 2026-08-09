@@ -503,7 +503,7 @@ workspace-bom `i18n-contracts` 0.0.2 + `codebase-contracts` 0.1.0.
   unit (toChannels/channelsWithBudget/merge) → functional → cucumber
   (`@context @rag`).
 | 4
-| ⬜ TODO
+| ✅ TERMINÉ (S-085)
 
 | CAP-ARCH-3
 | *Koog pipeline génération contenu* — domaine `capsule.pipeline` :
@@ -553,4 +553,4 @@ DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber), English only
 code/Gherkin. _Pattern de référence_ : slider SLD-8 (`LlmBuildService` bridge) +
 SLD-8.3 (`DeckPipelineGraph` koog), codebase (`KoogAugmentedContextGraph`,
 `CompositeContext`). _Statut_ : 🟡 EN COURS (CAP-ARCH-0 ✅ S-083, CAP-ARCH-1 ✅ S-084,
-CAP-ARCH-2→6 ⬜ TODO).
+CAP-ARCH-2 ✅ S-085, CAP-ARCH-3→6 ⬜ TODO).

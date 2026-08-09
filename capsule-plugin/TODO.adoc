@@ -119,11 +119,11 @@
 . [x] EPIC CAP-29 TERMINÉ 7/7 US — domaine `capsule.multilang` clos (7 fichiers prod)
 
 '''
-== 🟡 EPIC CAP-ARCH — Capsule LLM-driven piloté par codebase (koog + langchain4j + RAG + graphify) — EN COURS (CAP-ARCH-0 ✅ S-083, CAP-ARCH-1 ✅ S-084)
+== 🟡 EPIC CAP-ARCH — Capsule LLM-driven piloté par codebase (koog + langchain4j + RAG + graphify) — EN COURS (CAP-ARCH-0 ✅ S-083, CAP-ARCH-1 ✅ S-084, CAP-ARCH-2 ✅ S-085)
 
 . [x] CAP-ARCH-0 — Cadrage EPIC refondu (audit code réel : zéro LLM, koog 0.8.0 mort, i18n-contracts déjà consommé) ✅ S-083
 . [x] CAP-ARCH-1 — Socle LLM bridge (pattern SLD-8, domaine `capsule.ai`, `CapsuleLlmService` register/resolve/adapter, bump koog 1.0.0, purge dépendance morte, tâche `capsuleAiSmokeTest`, 477 unit + 28 functional + 3 cucumber `@ai`) ✅ S-084
-. [ ] CAP-ARCH-2 — Contexte augmenté CompositeContext (domaine `capsule.context`, `CapsuleContextBuilder`)
+. [x] CAP-ARCH-2 — Contexte augmenté CompositeContext (domaine `capsule.context`, `CapsuleContextBuilder`, `CapsuleContext` invariant fail-fast, tâche `collectCapsuleAugmentedContext`, 491 unit + 31 functional + 4 cucumber `@context @rag`) ✅ S-085
 . [ ] CAP-ARCH-3 — Koog pipeline génération contenu (domaine `capsule.pipeline`, `CapsulePipelineGraph`, `generateCapsuleContent`)
 . [ ] CAP-ARCH-4 — Wiring exécution existante (sortie LLM → backend sans modification, décision compileOnly slider)
 . [ ] CAP-ARCH-5 — i18n aligné sur le socle (translateDeck codebase-LLM, non-régression CAP-29)
@@ -137,7 +137,8 @@
 . [x] **CAP-29** (pipeline traduction vidéo multi-langue) — TERMINÉ 7/7 US (CAP-29.0 ✅ S-076, CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, CAP-29.4 ✅ S-080, CAP-29.5 ✅ S-081, CAP-29.6 ✅ S-082)
 . [x] **CAP-ARCH-0** (cadrage refondu LLM-driven via codebase) — ✅ S-083
 . [x] **CAP-ARCH-1** (socle LLM bridge codebase, domaine `capsule.ai`) — ✅ S-084
-. [ ] **CAP-ARCH-2→6** (contexte augmenté, koog pipeline, wiring, i18n, cucumber boundary) — EN COURS (prochaine session 085)
+. [x] **CAP-ARCH-2** (contexte augmenté CompositeContext, domaine `capsule.context`) — ✅ S-085
+. [ ] **CAP-ARCH-3→6** (koog pipeline, wiring, i18n, cucumber boundary) — EN COURS (prochaine session 086)
 
 '''
 == ✅ README i18n — TERMINE (session 041)
@@ -222,4 +223,4 @@
 . [ ] 🟠 CAP-CR3-3 — Décision `ScreenshotCaptureImpl` vs `PlaywrightCaptureImpl`
 . [ ] 🟡 CAP-CR3-4 — Convention Gradle `resolveScriptDir/resolveDeckDir`
 . [x] 🟢 CAP-29 — Pipeline Traduction Vidéo Multi-Langue (7 US ~20 pts, TERMINÉ 7/7 US : CAP-29.0 ✅ S-076, CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, CAP-29.4 ✅ S-080, CAP-29.5 ✅ S-081, CAP-29.6 ✅ S-082)
-. [x] 🟢 CAP-ARCH — Collaboration cross-borough slider+codebase (7 US ~21 pts, refondu S-083 LLM-driven via codebase — CAP-ARCH-0 ✅ S-083, CAP-ARCH-1 ✅ S-084, prochaine CAP-ARCH-2 S-085)
+. [x] 🟢 CAP-ARCH — Collaboration cross-borough slider+codebase (7 US ~21 pts, refondu S-083 LLM-driven via codebase — CAP-ARCH-0 ✅ S-083, CAP-ARCH-1 ✅ S-084, CAP-ARCH-2 ✅ S-085, prochaine CAP-ARCH-3 S-086)

@@ -2,6 +2,7 @@
 // koog-agents 1.0.0 → koog-utils/koog-http-client-core/koog-prompt-llm → annotations.
 // codebase-plugin exclut koog-agents mais les sous-modules koog transitifs
 // contournent l'exclusion. Solution : forcer annotations:26.0.2-1 (pattern slider).
+import build.CucumberTaskSpec
 buildscript {
     repositories { mavenLocal(); mavenCentral() }
     configurations.all { resolutionStrategy { force("org.jetbrains:annotations:26.0.2-1") } }
@@ -25,6 +26,17 @@ repositories {
 
 cucumberConventions {
     featuresDir = "src/test/features"
+    additionalTasks = listOf(
+        // Focused cucumber run for the CAP-ARCH-2 augmented context feature
+        // (fast iteration without the full Playwright suite, ~15 min).
+        CucumberTaskSpec(
+            name = "cucumberTestContext",
+            features = listOf("src/test/features/capsule_context.feature"),
+            tags = listOf("@context"),
+            runnerClass = "capsule.scenarios.CapsuleContextCucumberRunner",
+            timeoutMinutes = 30,
+        ),
+    )
 }
 
 // CR-10 — cucumberTest is expensive (Playwright + FFmpeg, ~15 min).
@@ -70,6 +82,9 @@ dependencies {
 
     // N0 contracts — i18n (LanguageCatalog 10 languages, cross-borough translation alliance)
     implementation(libs.i18n.contracts)
+
+    // N0 contracts — codebase context (CompositeContext/ContextChannel/ChannelBudget, CAP-ARCH-2)
+    implementation(libs.codebase.contracts)
 
     testImplementation(kotlin("test-junit5"))
     testImplementation("org.assertj:assertj-core:3.27.7")

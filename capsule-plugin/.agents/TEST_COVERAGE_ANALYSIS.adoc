@@ -1,8 +1,28 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-08-09
-:session: 084 CAP-ARCH-1 Socle LLM bridge (pattern SLD-8, domaine `capsule.ai`)
+:session: 085 CAP-ARCH-2 Contexte augmenté (RAG + Graphify, domaine `capsule.context`)
 
-== Couverture — 9 août 2026 (après session 084)
+== Couverture — 9 août 2026 (après session 085)
+
+.Modifications session 085 — contexte augmenté CompositeContext (domaine `capsule.context`) + dépendance N0 + tâche collect + cucumber dédié
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/context/CapsuleContext.kt` (nouveau) | Data class 2 champs `rendered: String` + `channels: List<ContextChannel>` — invariant fail-fast `rendered.isBlank() == channels.isEmpty()`, `isEmpty()`/`nonEmptyCount()`/`tokenEstimate()` | 14 unit `CapsuleContextBuilderTest`
+| `capsule/context/CapsuleContextBuilder.kt` (nouveau) | Object pur — `defaultBudget()` (`ChannelBudget()` 8000 40/30/20/10/0), `toChannels(composite)` (5 canaux EAGER→RAG→GRAPHIFY→DOCS→RESOURCE), `channelsWithBudget(channels, budget)` (troncature par canal + append `\n`), `merge(channels)` (sections `==== <sectionHeader> (<name>)`, canaux vides ignorés), `build(composite, budget=defaultBudget())` | couvert par `CapsuleContextBuilderTest`
+| `capsule/context/CollectCapsuleAugmentedContextTask.kt` (nouveau) | Tâche `collectCapsuleAugmentedContext` (groupe `collect`) — eagerFiles `.agents/INDEX.adoc` + `PROMPT_REPRISE.adoc` + `AGENT.adoc` (`@InputFiles @PathSensitive(RELATIVE)`), `-Pcontext.{ragContent,graphifyContent,docsContent,tokenBudget=8000}`, output `build/capsule/augmented-context.txt`, log `CAPSULE CONTEXT → …`, no-op si contexte vide | 3 functional `CapsuleAugmentedContextFunctionalTest`
+| `capsule/CapsuleManager.kt` (modifié) | Wiring `registerCollectAugmentedContextTask()` | 0 régression (check VERT)
+| `gradle/libs.versions.toml` + `build.gradle.kts` (modifiés) | `codebase-contracts 0.0.2 → 0.1.0` + `implementation(libs.codebase.contracts)` (non transitif en compile, absent BOM 0.0.16) + `CucumberTaskSpec("cucumberTestContext")` (`import build.CucumberTaskSpec`) | N/A (deps + task)
+| `src/test/features/capsule_context.feature` (nouveau) | Feature `@context @rag` — 4 scénarios : tâche listée, artefact EAGER+RAG+Graphify, budget par défaut 8000, budget custom `-Pcontext.tokenBudget=5000` | 4 scénarios cucumber
+| `src/test/kotlin/capsule/scenarios/CapsuleContextSteps.kt` + `CapsuleContextCucumberRunner.kt` (nouveaux) | Step defs dédiés (phrases uniques — évite DuplicateStepDefinitionException S-071) + runner dédié (contourne bug S-082 `@ConfigurationParameter(FEATURES_PROPERTY_NAME)`) | 4 scénarios couverts
+|===
+
+- Unitaires : 491 VERT (+14 net, 0 FAIL, 0 SKIP) — dont `CapsuleContextBuilderTest`
+- Functional : 31 VERT (+3, `CapsuleAugmentedContextFunctionalTest` — registration, artefact EAGER+RAG+Graphify écrit, UP-TO-DATE)
+- Cucumber : `capsule_context.feature` `@context @rag` 4/4 GREEN (~31s, runner dédié `cucumberTestContext`, zéro LLM réel)
+- `./gradlew check` BUILD SUCCESSFUL (3m33s : test + functionalTest + kover + validatePlugins ; cucumberTest SKIPPED par défaut — CR-10)
+- Secrets : 0 trouvé
+
+## Couverture — 9 août 2026 (après session 084)
 
 .Modifications session 084 — socle LLM bridge codebase (domaine `capsule.ai`) + dépendances + tâche smoke
 |===

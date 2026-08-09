@@ -1,0 +1,127 @@
+= Session 085 — Capsule — CAP-ARCH-2 Contexte augmenté (RAG + Graphify, domaine `capsule.context`)
+:date: 2026-08-09
+:method: TDD baby-step (unit → functional → cucumber), English only
+:epic: CAP-ARCH
+:status: ✅ TERMINÉ (US-2)
+
+== Objectif
+
+CAP-ARCH-2 — Contexte augmenté (RAG + Graphify). Domaine `capsule.context` :
+`CapsuleContextBuilder` (object pur) assemble le `CompositeContext`
+(codebase-contracts 0.1.0) — canaux EAGER/RAG/Graphify/Docs + `ChannelBudget` —
+en contexte augmenté exploitable pour la génération de contenu (futur
+CAP-ARCH-3). Baby-steps 2a→2d : dépendance N0 → domaine pur → tâche Gradle
+`collectCapsuleAugmentedContext` → cucumber `@context @rag`.
+
+== 2a — Dépendance codebase-contracts (compileKotlin VERT)
+
+- `gradle/libs.versions.toml` : `codebase-contracts = "0.0.2" → "0.1.0"` (bump N0,
+  expose `CompositeContext`/`ContextChannel`/`ChannelBudget`).
+- `build.gradle.kts` : `implementation(libs.codebase.contracts)` — requis en
+  compile car `codebase-contracts` est **non transitif** en compile (scope
+  runtime via `codebase-plugin` 0.0.5) et absent du BOM 0.0.16.
+- `./gradlew compileKotlin` VERT.
+
+== 2b — Domaine `capsule.context` (TDD RED→GREEN)
+
+- `CapsuleContext.kt` (data class, 2 champs : `rendered: String` +
+  `channels: List<ContextChannel>`). Invariant fail-fast :
+  `rendered.isBlank() == channels.isEmpty()`. Méthodes `isEmpty()`,
+  `nonEmptyCount()`, `tokenEstimate()`.
+- `CapsuleContextBuilder.kt` (object pur) :
+  * `defaultBudget()` — `ChannelBudget()` (8000 tokens, 40/30/20/10/0).
+  * `toChannels(composite)` — les 5 canaux EAGER→RAG→GRAPHIFY→DOCS→RESOURCE.
+  * `channelsWithBudget(channels, budget)` — troncature par canal + append `\n`.
+  * `merge(channels)` — sections `==== <sectionHeader> (<name>)`, canaux vides
+    ignorés, jointure par `\n`, invariant final vérifié par la factory.
+  * `build(composite, budget=defaultBudget())` — orchestre toChannels →
+    channelsWithBudget → merge.
+- Tests : `CapsuleContextBuilderTest` **14/14 GREEN** (bilan complet, budget
+  mixte, budget nul, canaux vides ignorés, invariant croisé, tokenEstimate).
+- `./gradlew :test` — 491 unit VERT (+14 net, 0 FAIL, 0 SKIP).
+
+== 2c — Tâche + wiring (functional, ink economy)
+
+- `CollectCapsuleAugmentedContextTask.kt` — tâche `collectCapsuleAugmentedContext`
+  (groupe `collect`) :
+  * `@InputFiles @PathSensitive(PathSensitivity.RELATIVE)` `eagerFiles` =
+    `.agents/INDEX.adoc`, `PROMPT_REPRISE.adoc`, `AGENT.adoc` (raison : fixtures
+    à chemin absolu dans les functional tests → sensitive RELATIVE pour
+    UP-TO-DATE portable).
+  * Propriétés `@Input` optionnelles via `-Pcontext.ragContent`,
+    `-Pcontext.graphifyContent`, `-Pcontext.docsContent` + `-Pcontext.tokenBudget`
+    (défaut 8000).
+  * Build `CompositeContext` (CompositeContextConfig.Builder) →
+    `CapsuleContextBuilder.build` → écrit `build/capsule/augmented-context.txt`
+    + log `CAPSULE CONTEXT → <output>`.
+  * `@TaskAction` : no-op si contexte vide.
+- `CapsuleManager.kt` — wiring `registerCollectAugmentedContextTask()`.
+- `CapsuleAugmentedContextFunctionalTest` **3/3 GREEN** (registration + tâche
+  listée, artefact EAGER+RAG+Graphify écrit, second run UP-TO-DATE —
+  économie d'encre).
+
+== 2d — Cucumber `capsule_context.feature` (`@context @rag`)
+
+- Runner dédié `CapsuleContextCucumberRunner` — nécessaire car le
+  `@ConfigurationParameter(FEATURES_PROPERTY_NAME)` du `CucumberTestRunner`
+  (S-082) écrase la system property `cucumber.features` du conventions plugin.
+- `capsule_context.feature` — 4 scénarios `@context @rag` : tâche listée,
+  artefact EAGER+RAG+Graphify, budget par défaut 8000, budget custom
+  (`-Pcontext.tokenBudget=5000`).
+- `CapsuleContextSteps.kt` — step defs dédiés (phrases uniques pour éviter la
+  DuplicateStepDefinitionException S-071).
+- `build.gradle.kts` : `cucumberConventions.additionalTasks` +
+  `CucumberTaskSpec("cucumberTestContext", ..., runnerClass)`
+  (`import build.CucumberTaskSpec`).
+- `./gradlew :cucumberTestContext` — **4/4 GREEN** en ~31s (mock zéro LLM réel).
+
+== Résultats tests
+
+- `./gradlew :test` — 491 unit VERT (+14 net, 0 FAIL, 0 SKIP)
+- `./gradlew :functionalTest` — 31 functional VERT (+3, CAP-ARCH-2)
+- `./gradlew :cucumberTestContext` — `capsule_context.feature` 4/4 GREEN
+- `./gradlew check` — BUILD SUCCESSFUL (3m33s : test + functionalTest + kover +
+  validatePlugins ; cucumberTest SKIPPED par défaut — CR-10)
+
+== Livrables gouvernance
+
+. `BACKLOG.adoc` — CAP-ARCH-2 `✅ TERMINÉ (S-085)`, statut EPIC (3/7 US), paragraphe
+. `.agents/INDEX.adoc` — session 085, roadmap, métadonnées (prochaine 086)
+. `PROMPT_REPRISE.adoc` — réécrit pour session 086 (CAP-ARCH-3)
+. `TODO.adoc` — CAP-ARCH-2 coché, en-tête mis à jour
+. `.agents/SESSIONS_HISTORY.adoc` — entrée 085 ajoutée
+. `.agents/TEST_COVERAGE_ANALYSIS.adoc` — section session 085
+. `.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-08.adoc` — CAP-ARCH-2 archivé
+
+== Vérifications
+
+. `./gradlew check` — ✅ BUILD SUCCESSFUL
+. `grep -rn "TOKEN\|SECRET\|PASSWORD\|API_KEY\|gho_\|ghp_" src` — ✅ zéro secret
+. Backlog synchronisation (`grep "🟡\|⏳\|À FAIRE\|à planifier"`) — ✅
+  marqueurs restants légitimes (`🟡 EN COURS` CAP-ARCH réel, CAP-27/CAP-28/CAP-CR3)
+. `git status` — modifications non committées (règle 1)
+
+== Prochaine session — 086
+
+CAP-ARCH-3 — Koog pipeline génération contenu. Domaine `capsule.pipeline` :
+`CapsulePipelineGraph` (koog, pattern `DeckPipelineGraph` slider SLD-8.3) —
+propose-context → validate-context → generate-speaker-notes + edges
+conditionnels. `CapsulePromptBuilder` (port) + `CapsuleLlm` (port suspend).
+Tâche `generateCapsuleContent`. Économie d'encre (delta). Baby-step TDD : unit →
+functional (mock LLM, NoOp) → cucumber (`@pipeline @ai`).
+
+== Score
+
+9/10 — Baby-step TDD complet 3 niveaux, domaine `capsule.context` pur
+consommant les contrats N0 0.1.0, tâche Gradle idiomatique
+(`@PathSensitive(RELATIVE)`, UP-TO-DATE prouvé en functional), runner cucumber
+dédié contournant le bug S-082, zéro régression sur le reste de la suite.
+
+== Points d'attention pour la suite
+
+- Bug connu S-082 confirmé : tout nouveau feature cucumber nécessite un runner
+  dédié (le runner global ne sélectionne que `capsule.feature`).
+- `codebase-contracts` doit rester en `implementation` explicite tant que le
+  BOM 0.0.16 ne le déclare pas (non transitif en compile via codebase-plugin).
+- Le contexte augmenté `augmented-context.txt` est le contrat d'entrée de
+  CAP-ARCH-3 (`generateCapsuleContent`).
