@@ -1,54 +1,57 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 085 — CAP-ARCH-2 Contexte augmenté (RAG + Graphify, domaine `capsule.context`)
-_Prochaine session_ : 086 — CAP-ARCH-3 Koog pipeline génération contenu (domaine `capsule.pipeline`)
+_Session terminee_ : 086 — CAP-ARCH-3 Koog pipeline génération contenu (domaine `capsule.pipeline`)
+_Prochaine session_ : 087 — CAP-ARCH-4 Wiring exécution existante
 
-== Mission session 085 (TERMINÉE)
+== Mission session 086 (TERMINÉE)
 
-. CAP-ARCH-2 — Contexte augmenté (RAG + Graphify). Domaine `capsule.context` :
-  `CapsuleContextBuilder` (object pur) assemble le `CompositeContext`
-  (codebase-contracts 0.1.0) — canaux EAGER/RAG/Graphify/Docs + `ChannelBudget`
-  (8000, 40/30/20/10/0). `CapsuleContext` (data class, invariant
-  `rendered.isBlank() == channels.isEmpty()`).
-. Tâche `collectCapsuleAugmentedContext` (groupe `collect`) : eagerFiles
-  `.agents/INDEX.adoc` + `PROMPT_REPRISE.adoc` + `AGENT.adoc`
-  (`@PathSensitive(RELATIVE)`), `-Pcontext.{ragContent,graphifyContent,docsContent,
-  tokenBudget}` → `build/capsule/augmented-context.txt`. Wiring dans
-  `CapsuleManager`. 3 functional VERT (registration, artefact, UP-TO-DATE).
-. Cucumber `capsule_context.feature` `@context @rag` : runner dédié
-  `CapsuleContextCucumberRunner` (contourne S-082) + `CucumberTaskSpec`
-  `cucumberTestContext` (import build.CucumberTaskSpec). 4/4 GREEN.
-. Baby-step TDD/BDD 3 niveaux : 491 unit VERT (+14), 31 functional VERT (+3),
-  4 cucumber `@context @rag` GREEN. `check` BUILD SUCCESSFUL (3m33s).
-. Zéro régression (unit + functional + kover + validatePlugins), zéro secret.
+. CAP-ARCH-3 — Koog pipeline génération contenu. Domaine `capsule.pipeline`
+  (9 fichiers prod) : `CapsulePipelineGraph` (koog 1.0.0, pattern
+  `DeckPipelineGraph` slider) — propose-context → validate-context →
+  generate-speaker-notes + edges conditionnels, `execute()` séquentiel,
+  `asMermaidDiagram()`. `CapsuleState` (stage machine + invariants),
+  `CapsulePromptBuilder`/`DefaultCapsulePromptBuilder` (prompts pédagogiques
+  contrat `capsule.feed`), `CapsuleLlm`/`ChatModelCapsuleLlm`,
+  `ContentPlanValidator` (8 checks), `TtsScriptDeriver`.
+. Tâche `generateCapsuleContent` : deck (`-Pdeck.file` ou premier `.adoc` de
+  `slides/misc`) + contexte augmenté (`build/capsule/augmented-context.txt`
+  `@Optional`) → `-speaker-notes.adoc` + `-script.txt` (sorties déclarées →
+  économie d'encre UP-TO-DATE), `@ServiceReference LlmBuildService`, mock
+  `-Pollama.baseUrl` routé propose/generate, log `CAPSULE PIPELINE → …`.
+  Wiring `CapsuleManager.registerGenerateCapsuleContentTask()`.
+. Durcissement API : `check(deck.exists())`, contexte configuré inexistant
+  fail-fast, "No deck found" convention.
+. Baby-step TDD 2 niveaux : 540 unit VERT (+49) + 34 functional VERT (+3).
+. README master EN mis à jour (layout ai/context/pipeline, section "LLM content
+  pipeline (CAP-ARCH-3)", Key libraries koog 1.0.0/codebase-plugin
+  0.0.5/codebase-contracts 0.1.0, totaux, EPIC status).
+. `check` BUILD SUCCESSFUL (3m39s). Zéro régression.
 
-== Contexte reprise session 086
+== Contexte reprise session 087
 
 - EPIC CAP-ARCH : 0 cadrage ✅ (S-083), 1 socle LLM bridge ✅ (S-084),
-  **2 contexte augmenté ✅ (S-085)** — reste CAP-ARCH-3→6 (5+2+3+3 pts).
-  Prochain : CAP-ARCH-3 (~5 pts).
-- 491 unit VERT + 31 functional VERT + 3 cucumber `@ai` + 4 cucumber `@context`.
-- **CAP-ARCH-3** — domaine `capsule.pipeline` : `CapsulePipelineGraph` (koog,
-  pattern `DeckPipelineGraph` slider SLD-8.3) — nœuds propose-context →
-  validate-context → generate-speaker-notes + edges conditionnels.
-  `CapsulePromptBuilder` (port, prompts pédagogiques) + `CapsuleLlm` (port
-  suspend). Tâche `generateCapsuleContent` : deck/adoc + CompositeContext →
-  speaker notes enrichies `.adoc` / script TTS `.txt`. Économie d'encre : skip
-  si artefact valide existe (delta). Baby-step TDD : unit (graphe, états,
-  transitions) → functional (mock LLM, NoOp) → cucumber (`@pipeline @ai`).
-- Le `augmented-context.txt` de CAP-ARCH-2 est le contrat d'entrée de
-  `generateCapsuleContent`.
+  2 contexte augmenté ✅ (S-085), **3 koog pipeline ✅ (S-086)** — reste
+  CAP-ARCH-4→6 (2+3+3 pts). Prochain : CAP-ARCH-4 (~2 pts).
+- 540 unit VERT + 34 functional VERT + 3 cucumber `@ai` + 4 cucumber `@context`.
+- **CAP-ARCH-4 — Wiring exécution existante** : la sortie du pipeline LLM
+  (`generateCapsuleContent` → speaker notes `.adoc` + script `.txt`) alimente le
+  backend existant *sans le modifier* : `generateCapsuleVideoAllLanguages`.
+  Décision `compileOnly slider` confirmée ou remplacée (0 import réel).
+  Baby-step TDD : functional (chaîne complète NoOp) → cucumber
+  (`@i18n @cross-borough`).
+- Le contrat d'entrée du pipeline est `build/capsule/augmented-context.txt`
+  (CAP-ARCH-2) ; la sortie de CAP-ARCH-3 est le contrat d'entrée de CAP-ARCH-4.
 - Backend existant intact : extractSpeakerNotes, TTS, capture, multi-lang CAP-29.
-- Modifications S-083→085 non committées (Règle 1 — demander permission de commit).
+- Modifications S-083→086 non committées (Règle 1 — demander permission de commit).
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider 0.0.16
   (compileOnly, 0 import réel — décision CAP-ARCH-4).
 - Domaines DDD capsule : `capsule.feed` + `capsule.ci` + `capsule.multilang` +
-  `capsule.ai` + `capsule.context`.
+  `capsule.ai` + `capsule.context` + `capsule.pipeline`.
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 491 unit tests VERT (S-085 baseline) — vérifier avant de coder
+* 540 unit tests VERT (S-086 baseline) — vérifier avant de coder
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082 :
   `@ConfigurationParameter(FEATURES_PROPERTY_NAME)` du CucumberTestRunner écrase

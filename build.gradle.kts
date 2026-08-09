@@ -1,3 +1,10 @@
+buildscript {
+    repositories { mavenLocal(); mavenCentral() }
+    configurations.all {
+        resolutionStrategy.force("education.cccp:capsule-plugin:${libs.plugins.capsule.get().version}")
+    }
+}
+
 plugins {
     alias(libs.plugins.slider)
     alias(libs.plugins.capsule)
@@ -15,6 +22,3 @@ capsule {
     ttsEngine.set("espeak")
 }
 
-tasks.named("capsulevideo") {
-    dependsOn("asciidoctorRevealJs", "asciidocCapsule")
-}

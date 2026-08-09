@@ -1,6 +1,36 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-09
 
+== Session 086 — CAP-ARCH-3 Koog pipeline génération contenu (domaine `capsule.pipeline`) ✅
+
+US-3 de l'EPIC CAP-ARCH. Domaine `capsule.pipeline` : `CapsulePipelineGraph`
+(koog 1.0.0, pattern `DeckPipelineGraph` slider) — propose-context →
+validate-context → generate-speaker-notes + edges conditionnels. Tâche
+`generateCapsuleContent`. 540 unit VERT (+49) + 34 functional VERT (+3).
+`check` VERT (3m39s). README master EN mis à jour.
+
+Tâches terminées :
+. `src/main/kotlin/capsule/pipeline/CapsuleState.kt` — stage machine `CapsuleStage` + invariants
+. `src/main/kotlin/capsule/pipeline/CapsulePromptBuilder.kt` + `DefaultCapsulePromptBuilder.kt` — ports pédagogiques
+. `src/main/kotlin/capsule/pipeline/CapsuleLlm.kt` + `ChatModelCapsuleLlm.kt` — port + adapter langchain4j
+. `src/main/kotlin/capsule/pipeline/ContentPlanValidator.kt` + `ContentPlanValidationResult.kt` — 8 checks
+. `src/main/kotlin/capsule/pipeline/TtsScriptDeriver.kt` — dérivation `*-script.txt`
+. `src/main/kotlin/capsule/pipeline/CapsulePipelineGraph.kt` — graphe koog (execute séquentiel + mermaid)
+. `src/main/kotlin/capsule/pipeline/GenerateCapsuleContentTask.kt` — tâche (deck + contexte → `.adoc`/`.txt`, UP-TO-DATE, mock routé, durcissement API)
+. `src/main/kotlin/capsule/CapsuleManager.kt` — wiring registerGenerateCapsuleContentTask
+. `src/test/kotlin/capsule/pipeline/` — 49 unit (CapsuleStateTest, ContentPlanValidatorTest, TtsScriptDeriverTest, CapsulePipelineGraphTest)
+. `src/functionalTest/kotlin/capsule/pipeline/GenerateCapsuleContentFunctionalTest.kt` — 3 functional (registration, pipeline E2E, no-deck)
+. `README.md` — layout ai/context/pipeline + section "LLM content pipeline (CAP-ARCH-3)" + libs réelles + totaux
+. Gouvernance — BACKLOG/INDEX/PROMPT_REPRISE/TODO/SESSIONS_HISTORY/
+  TEST_COVERAGE/rapport 086
+. Vérifications — `check` BUILD SUCCESSFUL (3m39s), zéro secret,
+  marqueurs backlog légitimes, pas de commit (règle 1)
+
+Prochaine session : CAP-ARCH-4 — Wiring exécution existante : sortie pipeline
+LLM → `generateCapsuleVideoAllLanguages` sans modifier le backend. Décision
+`compileOnly slider` confirmée/remplacée. Baby-step TDD : functional (chaîne
+complète NoOp) → cucumber (`@i18n @cross-borough`).
+
 == Session 085 — CAP-ARCH-2 Contexte augmenté (RAG + Graphify, domaine `capsule.context`) ✅
 
 US-2 de l'EPIC CAP-ARCH. Domaine `capsule.context` : `CapsuleContextBuilder`

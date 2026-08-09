@@ -1,0 +1,25 @@
+= Kotlin Coroutines
+
+== Slide 1 — Introduction
+
+[NOTE.speaker]
+--
+Welcome to this capsule on Kotlin coroutines. We will cover suspension,
+structured concurrency and flow.
+--
+
+== Slide 2 — suspend fun
+
+[NOTE.speaker]
+--
+A suspend function can pause without blocking the thread. It resumes on
+the same dispatcher unless the continuation is handed elsewhere.
+--
+
+== Slide 3 — Structured concurrency
+
+[NOTE.speaker]
+--
+Structured concurrency guarantees that a coroutine completes before its
+parent scope. Cancellation propagates top-down through the scope.
+--

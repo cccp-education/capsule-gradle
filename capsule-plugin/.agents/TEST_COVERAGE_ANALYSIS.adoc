@@ -1,8 +1,27 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-08-09
-:session: 085 CAP-ARCH-2 Contexte augmenté (RAG + Graphify, domaine `capsule.context`)
+:session: 086 CAP-ARCH-3 Koog pipeline génération contenu (domaine `capsule.pipeline`)
 
-== Couverture — 9 août 2026 (après session 085)
+== Couverture — 9 août 2026 (après session 086)
+
+.Modifications session 086 — koog pipeline génération contenu (domaine `capsule.pipeline`) + tâche generateCapsuleContent + durcissement API
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/pipeline/CapsuleState.kt` (nouveau) | Data class immutable + `CapsuleStage` enum — invariants croisés fail-fast (`init` : erreur non nulle seulement si FAILED, cohérence stage/contentPlanJson/speakerNotesAdoc/ttsScript) | 17 unit `CapsuleStateTest`
+| `capsule/pipeline/CapsulePromptBuilder.kt` + `DefaultCapsulePromptBuilder.kt` (nouveaux) | Port + impl pédagogique — propose (plan JSON strict deck + contexte augmenté), generate (speaker notes enrichies, contrat `capsule.feed` `[NOTE.speaker]`) | 0 direct (couvert via `CapsulePipelineGraphTest`)
+| `capsule/pipeline/CapsuleLlm.kt` + `ChatModelCapsuleLlm.kt` (nouveaux) | Port suspend + adapter langchain4j `ChatModel` | 0 direct (couvert via `CapsulePipelineGraphTest` + functional)
+| `capsule/pipeline/ContentPlanValidator.kt` + `ContentPlanValidationResult.kt` (nouveaux) | Validation pure du plan JSON propose — 8 checks ordonnés (champs requis, types, langue ISO) | 18 unit `ContentPlanValidatorTest`
+| `capsule/pipeline/TtsScriptDeriver.kt` (nouveau) | Dérive `*-script.txt` (contrat `capsule.feed`) depuis les speaker notes enrichies | 8 unit `TtsScriptDeriverTest`
+| `capsule/pipeline/CapsulePipelineGraph.kt` (nouveau) | Graphe koog `strategy<CapsuleState, CapsuleState>` — 3 nœuds + edges conditionnels, `execute()` séquentiel, `asMermaidDiagram()` | 6 unit `CapsulePipelineGraphTest`
+| `capsule/pipeline/GenerateCapsuleContentTask.kt` (nouveau) | Tâche `generateCapsuleContent` (groupe `generate`) — deck + contexte augmenté → `-speaker-notes.adoc` + `-script.txt` (sorties déclarées → UP-TO-DATE), `@ServiceReference LlmBuildService`, mock routé, durcissement API (`check(deck.exists())`, contexte inexistant fail-fast) | 3 functional `GenerateCapsuleContentFunctionalTest`
+| `capsule/CapsuleManager.kt` (modifié) | Wiring `registerGenerateCapsuleContentTask()` | 0 régression (check VERT)
+|===
+
+- Unitaires : 540 VERT (+49 net, 0 FAIL, 0 SKIP) — dont `CapsulePipelineGraphTest` 6, `CapsuleStateTest` 17, `ContentPlanValidatorTest` 18, `TtsScriptDeriverTest` 8
+- Functional : 34 VERT (+3, `GenerateCapsuleContentFunctionalTest` — registration, pipeline E2E mock routé, no-deck fail-fast)
+- `./gradlew check` BUILD SUCCESSFUL (3m39s : test + functionalTest + kover + validatePlugins ; cucumberTest SKIPPED par défaut — CR-10)
+- Secrets : 0 trouvé
+
 
 .Modifications session 085 — contexte augmenté CompositeContext (domaine `capsule.context`) + dépendance N0 + tâche collect + cucumber dédié
 |===

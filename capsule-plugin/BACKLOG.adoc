@@ -512,11 +512,13 @@ workspace-bom `i18n-contracts` 0.0.2 + `codebase-contracts` 0.1.0.
   conditionnels. `CapsulePromptBuilder` (port, prompts pédagogiques : speaker
   notes enrichies, scripts TTS) + `CapsuleLlm` (port suspend). Tâche
   `generateCapsuleContent` : deck/adoc + CompositeContext → speaker notes
-  enrichies `.adoc` / script TTS `.txt`. Économie d'encre : skip si artefact
-  valide existe (delta). Baby-step TDD : unit (graphe, états, transitions) →
-  functional (mock LLM, NoOp) → cucumber (`@pipeline @ai`).
+  enrichies `.adoc` / script TTS `.txt`. Économie d'encre (UP-TO-DATE, sorties
+  déclarées). Baby-step TDD : unit (49 : graphe, états, transitions, validator,
+  deriver) → functional (3 : registration, pipeline E2E mock routé, no-deck
+  fail-fast) → durcissement API (check deck.exists + contexte configuré
+  inexistant fail-fast).
 | 5
-| ⬜ TODO
+| ✅ TERMINÉ (S-086)
 
 | CAP-ARCH-4
 | *Wiring exécution existante* — la sortie du pipeline LLM alimente le backend
@@ -553,4 +555,8 @@ DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber), English only
 code/Gherkin. _Pattern de référence_ : slider SLD-8 (`LlmBuildService` bridge) +
 SLD-8.3 (`DeckPipelineGraph` koog), codebase (`KoogAugmentedContextGraph`,
 `CompositeContext`). _Statut_ : 🟡 EN COURS (CAP-ARCH-0 ✅ S-083, CAP-ARCH-1 ✅ S-084,
-CAP-ARCH-2 ✅ S-085, CAP-ARCH-3→6 ⬜ TODO).
+CAP-ARCH-2 ✅ S-085, CAP-ARCH-3 ✅ S-086, CAP-ARCH-4→6 ⬜ TODO).
+
+_Version de référence_ : 540 unit + 34 functional (session 086), cucumber
+SKIPPED par défaut (CR-10). Prochaine : CAP-ARCH-4 (wiring backend,
+`generateCapsuleContent` → `generateCapsuleVideoAllLanguages`).

@@ -1,0 +1,165 @@
+= Session 086 — Capsule — CAP-ARCH-3 Koog pipeline génération contenu (domaine `capsule.pipeline`)
+:date: 2026-08-09
+:method: TDD baby-step (unit → functional), English only
+:epic: CAP-ARCH
+:status: ✅ TERMINÉ (US-3)
+
+== Objectif
+
+CAP-ARCH-3 — Koog pipeline génération contenu. Domaine `capsule.pipeline` :
+`CapsulePipelineGraph` (koog, pattern `DeckPipelineGraph` slider SLD-8.3) —
+nœuds propose-context → validate-context → generate-speaker-notes + edges
+conditionnels. Tâche `generateCapsuleContent` : deck/adoc + contexte augmenté →
+speaker notes enrichies `.adoc` / script TTS `.txt`. Économie d'encre
+(UP-TO-DATE, sorties déclarées). Baby-steps : domaine pur (unit) → tâche Gradle
++ wiring (functional) → durcissement API.
+
+== 3a — Domaine `capsule.pipeline` (TDD RED→GREEN, 49 unit)
+
+- `CapsuleState` — data class immutable, machine à états (`CapsuleStage` :
+  IDLE → PROPOSE_CONTEXT → CONTEXT_VALIDATED → CONTENT_GENERATED / FAILED),
+  invariants croisés fail-fast (`init` : erreur non nulle seulement si FAILED,
+  cohérence stage/contentPlanJson/speakerNotesAdoc/ttsScript).
+- `CapsulePromptBuilder` (port) + `DefaultCapsulePromptBuilder` — prompts
+  pédagogiques : propose (plan JSON strict, deck + contexte augmenté),
+  generate (speaker notes enrichies, contrat `capsule.feed` `[NOTE.speaker]`).
+- `CapsuleLlm` (port suspend) + `ChatModelCapsuleLlm` — adapter langchain4j
+  `ChatModel`.
+- `ContentPlanValidator` + `ContentPlanValidationResult` — validation pure du
+  plan JSON propose (8 checks ordonnés : champs requis, types, langue ISO).
+- `TtsScriptDeriver` — dérive le script TTS depuis les speaker notes enrichies
+  (contrat `*-script.txt` de `capsule.feed`).
+- `CapsulePipelineGraph` — graphe koog (`strategy<CapsuleState, CapsuleState>`),
+  pattern `codebase.KoogAugmentedContextGraph` : `execute()` séquentiel,
+  3 nœuds + edges conditionnels (propose FAILED → stop, validate INVALID →
+  FAILED), `asMermaidDiagram()`.
+- Tests : 49 unit RED→GREEN (CapsuleStateTest 17, ContentPlanValidatorTest 18,
+  TtsScriptDeriverTest 8, CapsulePipelineGraphTest 6 — happy path, contentPlanJson
+  peuplé, invalide → FAILED, LLM throws → FAILED).
+- `./gradlew :test` — 540 unit VERT (+49 net, 0 FAIL, 0 SKIP).
+
+== 3b — Tâche + wiring (functional, mock LLM routé)
+
+- `GenerateCapsuleContentTask` — tâche `generateCapsuleContent` (groupe
+  `generate`) :
+  * `@InputFile @PathSensitive(RELATIVE)` `deckFile` (convention
+    `-Pdeck.file=<path>` ou premier `.adoc` de `slides/misc` via
+    `CapsuleAdocDir`), `@Input` `language` (`-Pdeck.language`, défaut `fr`),
+    `@InputFile @Optional` `augmentedContextFile`
+    (`build/capsule/augmented-context.txt` — convention résolue à null si
+    absent pour satisfaire `@Optional`).
+  * `@OutputFile` `speakerNotesOutput` + `ttsScriptOutput` (déclarés →
+    économie d'encre UP-TO-DATE) :
+    `build/capsule/<deckName>-speaker-notes.adoc` + `-script.txt`.
+  * `@ServiceReference LlmBuildService` (DI Gradle) + `usesService`.
+  * `@TaskAction` : résout le modèle (mock `-Pollama.baseUrl` ou `LlmBuildService`
+    production), exécute `CapsulePipelineGraph.execute`, écrit les 2 artefacts,
+    log `CAPSULE PIPELINE → <deckName> speaker notes (N chars) + TTS script (M chars)`.
+- `CapsuleManager.kt` — wiring `registerGenerateCapsuleContentTask()` dans
+  `registerTasks()`.
+- `GenerateCapsuleContentFunctionalTest` **3/3 GREEN** : task listée, exécution
+  pipeline E2E (mock routé propose/generate → artefacts écrits + log +
+  compteur ≥ 2 appels LLM), erreur claire "No deck found" si aucun deck.
+
+== 3c — Durcissement API (points d'attention S-086)
+
+- Vérification explicite `check(deck.exists())` — erreur claire si
+  `-Pdeck.file` pointe vers un fichier absent (au lieu d'un FileNotFoundException
+  sournois).
+- `augmentedContextFile` : si configuré mais inexistant → erreur claire
+  ("Run collectCapsuleAugmentedContext first or unset the property").
+- Convention deck `error("No deck found: set -Pdeck.file=<path> or add a .adoc
+  in slides/misc")` — fail-fast au `.get()`.
+
+== Résultats tests
+
+- `./gradlew :test` — 540 unit VERT (+49 net, CAP-ARCH-3, 0 FAIL, 0 SKIP)
+- `./gradlew :functionalTest` — 34 functional VERT (+3, CAP-ARCH-3)
+- `./gradlew check` — BUILD SUCCESSFUL (3m39s : test + functionalTest + kover +
+  validatePlugins ; cucumberTest SKIPPED par défaut — CR-10)
+
+== Livrables gouvernance
+
+. `README.md` (master EN) — layout ajouté domaines `ai`/`context`/`pipeline`,
+  section "LLM content pipeline (CAP-ARCH-3)" (usage `generateCapsuleContent`),
+  Key libraries réelles (koog 1.0.0, codebase-plugin 0.0.5, codebase-contracts
+  0.1.0), totaux 540 unit + 34 functional, EPIC status CAP-29 ✅ + CAP-ARCH.
+. `BACKLOG.adoc` — CAP-ARCH-3 `✅ TERMINÉ (S-086)`, statut EPIC (4/7 US), paragraphe
+. `.agents/INDEX.adoc` — session 086, roadmap, métadonnées (prochaine 087)
+. `PROMPT_REPRISE.adoc` — réécrit pour session 087 (CAP-ARCH-4)
+. `TODO.adoc` — CAP-ARCH-3 coché, en-tête mis à jour
+. `.agents/SESSIONS_HISTORY.adoc` — entrée 086 ajoutée
+. `.agents/TEST_COVERAGE_ANALYSIS.adoc` — section session 086
+. `.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-08.adoc` — CAP-ARCH-3 archivé
+
+== Vérifications
+
+. `./gradlew check` — ✅ BUILD SUCCESSFUL
+. `grep -rn "TOKEN\|SECRET\|PASSWORD\|API_KEY\|gho_\|ghp_" src` — ✅ zéro secret
+. Backlog synchronisation (`grep "🟡\|⏳\|À FAIRE\|à planifier"`) — ✅
+  marqueurs restants légitimes (`🟡 EN COURS` CAP-ARCH réel, CAP-27/CAP-28)
+. `git status` — modifications non committées (règle 1)
+
+== Prochaine session — 087
+
+CAP-ARCH-4 — Wiring exécution existante : sortie pipeline LLM →
+`generateCapsuleVideoAllLanguages` sans modifier le backend. Décision
+`compileOnly slider` confirmée/remplacée. Baby-step TDD : functional (chaîne
+complète NoOp) → cucumber (`@i18n @cross-borough`).
+
+== Score
+
+9/10 — Baby-step TDD 2 niveaux (unit 49 + functional 3), domaine
+`capsule.pipeline` pur (koog 1.0.0 consommé direct, pattern
+`DeckPipelineGraph` slider), tâche Gradle idiomatique (sorties déclarées →
+économie d'encre, `@ServiceReference`, mock `-Pollama.baseUrl` routé),
+durcissement API explicite, zéro régression (540 unit + 34 functional).
+
+== Points d'attention pour la suite
+
+- Bug connu S-082 confirmé : tout nouveau feature cucumber nécessite un runner
+  dédié (le runner global ne sélectionne que `capsule.feature`).
+- `augmented-context.txt` (`collectCapsuleAugmentedContext`) est le contrat
+  d'entrée du pipeline — si absent, `generateCapsuleContent` tourne sans
+  contexte (pas d'erreur, log info).
+- Dogfooding réel (CAP-ARCH-3 → backend) : **RÉALISÉ** (voir section
+  "Dogfooding réel" ci-dessous).
+
+== Dogfooding réel (validé en clôture S-086)
+
+Exécuté depuis la **racine consommateur** `capsule-gradle/` (pattern
+"Racine Consommateur", article 0124 — zéro `includeBuild`, zéro consumer
+externe) :
+
+1. **Bump/synchronisation racine** :
+   - `gradle/libs.versions.toml` : id plugin `com.cheroliv.capsule` →
+     `education.cccp.capsule` (renommage groupId), slider `0.0.14` →
+     `0.0.16`.
+   - `build.gradle.kts` racine : `buildscript.resolutionStrategy.force`
+     `capsule-plugin:0.0.1-SNAPSHOT` — le BOM `workspace-bom:0.0.16`
+     (tiré transitivement via slider → codebase-plugin) épingle
+     `capsule-plugin:0.0.1` (release) ; en ordering Gradle la release bat
+     le SNAPSHOT → échec `Could not find capsule-plugin:0.0.1`. Force
+     rétablit le SNAPSHOT.
+   - Suppression du câblage racine obsolète `tasks.named("capsulevideo")`
+     (tâche expulsée vers `capsule.feed` / `extractSpeakerNotes`).
+2. **Deck dogfood** : `slides/misc/kotlin-coroutines.adoc` (3 slides,
+   `[NOTE.speaker]`) ajouté à la racine.
+3. **Exécution LLM réel** : `./gradlew generateCapsuleContent
+   -Pdeck.file=slides/misc/kotlin-coroutines.adoc
+   -Pollama.baseUrl=http://localhost:11437
+   -Pollama.modelName=gpt-oss:120b-cloud -Pollama.timeout=300`
+   → `CAPSULE PIPELINE → kotlin-coroutines speaker notes (3975 chars) +
+   TTS script (3974 chars)`, BUILD SUCCESSFUL (41s).
+   Note : timeout par défaut du mock Ollama = 6s (`ollama.timeout`) — trop
+   court pour l'inférence cloud 120B → `-Pollama.timeout=300` requis.
+4. **Économie d'encre prouvée** : rerun sans changement →
+   `:generateCapsuleContent UP-TO-DATE` (7s, zéro appel LLM).
+5. **Artefacts** : `build/capsule/kotlin-coroutines-speaker-notes.adoc`
+   (4180 o) + `kotlin-coroutines-script.txt` (4179 o).
+
+Point de vigilance : la contrainte BOM `capsule-plugin:0.0.1` (release)
+dans `workspace-bom:0.0.16` est la source de friction du dogfooding
+SNAPSHOT. Un bump BOM vers `0.0.1-SNAPSHOT` (ou suppression de l'épingle
+tant que capsule n'est pas publié) éliminerait le `resolutionStrategy.force`
+racine — à cadrer en CAP-ARCH-4/cross-borough.

@@ -30,14 +30,29 @@ capsule-plugin/
     ├── main/kotlin/capsule/
     │   ├── CapsulePlugin.kt           # entry point — applies slider, registers tasks, config merge
     │   ├── CapsuleManager.kt          # task registration + script parsing + factory methods
-    │   ├── feed/                      # domain: speaker-notes extraction contract (SLD-11)
-    │   ├── multilang/                 # domain: multi-language video pipeline (CAP-29)
-    │   │   ├── MultiLanguageResolver.kt  # LanguageCatalog → Piper/espeak voice resolution
-    │   │   ├── VoiceMapping.kt           # 10-language voice mapping
-    │   │   ├── CapsuleVideoPlan.kt       # immutable plan + entry (deck/script/language/output)
-    │   │   ├── CapsuleVideoPlanner.kt    # builds the plan from translated deck+script pairs
-    │   │   ├── CapsuleVideoAllLanguagesRunner.kt  # pure iteration + Ink Economy skip
-    │   │   └── GenerateCapsuleVideoAllLanguagesTask.kt  # generateCapsuleVideoAllLanguages
+│   ├── feed/                      # domain: speaker-notes extraction contract (SLD-11)
+│   ├── multilang/                 # domain: multi-language video pipeline (CAP-29)
+│   │   ├── MultiLanguageResolver.kt  # LanguageCatalog → Piper/espeak voice resolution
+│   │   ├── VoiceMapping.kt           # 10-language voice mapping
+│   │   ├── CapsuleVideoPlan.kt       # immutable plan + entry (deck/script/language/output)
+│   │   ├── CapsuleVideoPlanner.kt    # builds the plan from translated deck+script pairs
+│   │   ├── CapsuleVideoAllLanguagesRunner.kt  # pure iteration + Ink Economy skip
+│   │   └── GenerateCapsuleVideoAllLanguagesTask.kt  # generateCapsuleVideoAllLanguages
+│   ├── ai/                        # domain: LLM bridge to the codebase LlmBuildService (CAP-ARCH-1)
+│   │   ├── CapsuleLlmService.kt       # provider selection + mock-LLM fallback (-Pollama.baseUrl)
+│   │   └── CapsuleAiSmokeTestTask.kt  # capsuleAiSmokeTest
+│   ├── context/                   # domain: augmented context via CompositeContext (CAP-ARCH-2)
+│   │   ├── CapsuleContext.kt          # rendered context + channel list (invariant fail-fast)
+│   │   ├── CapsuleContextBuilder.kt   # pure builder: channels → budget → merged sections
+│   │   └── CollectCapsuleAugmentedContextTask.kt  # collectCapsuleAugmentedContext
+│   ├── pipeline/                  # domain: koog content-generation pipeline (CAP-ARCH-3)
+│   │   ├── CapsulePipelineGraph.kt    # koog StateGraph: propose-context → validate → generate
+│   │   ├── CapsuleState.kt            # stage machine + invariants
+│   │   ├── CapsulePromptBuilder.kt    # port + DefaultCapsulePromptBuilder (pedagogical prompts)
+│   │   ├── CapsuleLlm.kt              # port + ChatModelCapsuleLlm (langchain4j adapter)
+│   │   ├── ContentPlanValidator.kt    # pure validation of the propose-context JSON plan
+│   │   ├── TtsScriptDeriver.kt        # derives the *-script.txt contract from speaker notes
+│   │   └── GenerateCapsuleContentTask.kt  # generateCapsuleContent
     │   ├── CapsuleConfig.kt           # immutable config (5 sections: input, tts, capture, distrib, manim)
     │   ├── CapsuleConfig.kt           # immutable config (5 sections: input, tts, capture, distrib, manim)
     │   ├── CapsuleConfigLoader.kt     # YAML loader with ${VAR} env resolution
@@ -82,16 +97,23 @@ capsule-plugin/
 The contract is file-based — capsule reads the deck HTML and script text files produced by slider,
 never modifies them. CapsulePlugin auto-applies `education.cccp.slider` at runtime if available.
 
+Since CAP-ARCH-1, capsule also consumes the codebase LLM socle (`education.cccp:codebase-plugin`)
+as `implementation` — the `LlmBuildService` bridge (SLD-8 pattern) provides the `ChatModel`
+used by the `generateCapsuleContent` pipeline, with a mock-LLM fallback via `-Pollama.baseUrl`
+for tests (zero network, zero pool).
+
 ## Key libraries
 
 | Library | Version | Role |
 |---------|---------|------|
 | **Playwright** | 1.52.0 | Headless Chromium — reveal.js control + video capture (JVM native, zero npm) |
-| **koog-agents** | 0.8.0 | Kotlin DSL for agent orchestration (StateGraph / ConditionalEdges) |
+| **koog-agents** | 1.0.0 | Kotlin DSL for agent orchestration (StateGraph / ConditionalEdges) — `CapsulePipelineGraph` |
 | **Jackson** | 2.18.3 | YAML config + JSON serialization (databind, kotlin, dataformat-yaml) |
 | **Kover** | 0.9.8 | Coverage reports (XML + HTML, wired into `check`) |
 | **Cucumber** | 7.34.3 | BDD tests (cucumber-java, junit-platform-engine, picocontainer) |
 | **Kotlin** | 2.3.20 | Plugin DSL |
+| **codebase-plugin** | 0.0.5 | N1 LLM socle — LlmBuildService bridge (`capsule.ai`) |
+| **codebase-contracts** | 0.1.0 | N0 contracts — CompositeContext / ContextChannel / ChannelBudget (`capsule.context`) |
 | **slider** | 0.0.16 | compileOnly — reveal.js deck + capsule script source |
 
 External tools (not Maven dependencies):
@@ -112,7 +134,30 @@ External tools (not Maven dependencies):
 
 Cucumber tags: `@integration`, `@manim`, `@config`, `@tts`, `@subtitles`, `@burnin`, `@style`, `@parallel`.
 
-Test totals: **460 unit + 25 functional + 6 Cucumber multilang = 491 PASS** (session 081 baseline; cucumber skipped by default since CR-10).
+Test totals: **540 unit + 34 functional = 574 PASS** (session 086 baseline; cucumber skipped by default since CR-10).
+
+## LLM content pipeline (CAP-ARCH-3)
+
+`generateCapsuleContent` orchestrates the koog `CapsulePipelineGraph` in one invocation:
+
+```
+propose-context → validate-context → generate-speaker-notes
+```
+
+- **Inputs**: source deck `.adoc` (`-Pdeck.file=<path>` or first `.adoc` in `slides/misc`),
+  optional augmented context from `collectCapsuleAugmentedContext` (`build/capsule/augmented-context.txt`),
+  target language (`-Pdeck.language`, default `fr`).
+- **Outputs** (declared → Ink Economy via UP-TO-DATE): enriched speaker notes
+  `build/capsule/<deckName>-speaker-notes.adoc` + TTS script `build/capsule/<deckName>-script.txt`.
+- **LLM**: resolved via the codebase `LlmBuildService`; tests inject a mock Ollama server with
+  `-Pollama.baseUrl=http://localhost:<port>` (routed by prompt: propose → content plan JSON,
+  generate → enriched AsciiDoc). Zero network, zero pool in tests.
+
+```bash
+./gradlew generateCapsuleContent \
+  -Pdeck.file=slides/misc/my-deck.adoc \
+  -Pdeck.language=en
+```
 
 ## JVM tuning
 
@@ -196,7 +241,8 @@ CAP-0 through CAP-25 terminated. Active EPICs (see `.agents/INDEX.adoc`):
 | CR-8 | Structured logging | ✅ Terminated (session 073) |
 | CR-9 | Robust HTML parsing | ✅ Terminated (session 074) |
 | CR-10 | CI optimization — cucumberTest onlyIf | ✅ Terminated (session 075) |
-| CAP-29 | Multi-language video pipeline (`capsule.multilang`) | 🟡 In progress (CAP-29.0→29.5 done) |
+| CAP-29 | Multi-language video pipeline (`capsule.multilang`) | ✅ Terminated (session 082) |
+| CAP-ARCH | LLM-driven capsule (koog pipeline, augmented context) — CAP-ARCH-0→3 done (`capsule.ai`, `capsule.context`, `capsule.pipeline`) | 🟡 In progress (CAP-ARCH-4→6 TODO) |
 | CAP-27 | VTT burn-in (currently SRT only) | ⬜ TODO |
 | CAP-28 | Coverage gaps — PiperTtsEngine 31%, ManimEngineImpl 25% | ⬜ TODO |
 

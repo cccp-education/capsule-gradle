@@ -18,6 +18,7 @@ class CapsuleManager(private val project: Project) {
         project.registerScaffoldCapsuleContextTask()
         project.registerAiSmokeTestTask()
         project.registerCollectAugmentedContextTask()
+        project.registerGenerateCapsuleContentTask()
     }
 
     private fun Project.registerExtractSpeakerNotesTask() {
@@ -138,6 +139,59 @@ class CapsuleManager(private val project: Project) {
                     ?: contracts.context.ContextChannel.DEFAULT_TOKEN_BUDGET
             )
             task.outputFile.set(project.layout.buildDirectory.file("capsule/augmented-context.txt"))
+        }
+    }
+
+    private fun Project.registerGenerateCapsuleContentTask() {
+        val llmServiceProvider = registerLlmBuildService()
+        tasks.register(
+            "generateCapsuleContent",
+            capsule.pipeline.GenerateCapsuleContentTask::class.java,
+        ) { task ->
+            task.group = "generate"
+            task.description = "Orchestrates the koog pipeline (propose-context → validate → generate speaker notes) via LLM and derives the TTS script"
+            val deckProp = findProperty("deck.file") as? String
+            if (deckProp != null) {
+                task.deckFile.convention(
+                    project.layout.file(project.provider { project.file(deckProp) })
+                )
+            } else {
+                task.deckFile.convention(
+                    project.layout.file(
+                        project.provider {
+                            capsule.feed.CapsuleAdocDir(project.projectDir).adocFiles()
+                                .firstOrNull()
+                                ?.let { project.file(it) }
+                                ?: error("No deck found: set -Pdeck.file=<path> or add a .adoc in slides/misc")
+                        }
+                    )
+                )
+            }
+            task.language.convention(findProperty("deck.language")?.toString() ?: "fr")
+            task.augmentedContextFile.convention(
+                project.layout.buildDirectory.file(
+                    project.provider {
+                        val f = project.layout.buildDirectory.file("capsule/augmented-context.txt").get().asFile
+                        if (f.exists()) "capsule/augmented-context.txt" else null
+                    }
+                )
+            )
+            task.speakerNotesOutput.convention(
+                project.layout.buildDirectory.file(
+                    task.deckFile.map { deck ->
+                        "capsule/${deck.asFile.nameWithoutExtension}-speaker-notes.adoc"
+                    }
+                )
+            )
+            task.ttsScriptOutput.convention(
+                project.layout.buildDirectory.file(
+                    task.deckFile.map { deck ->
+                        "capsule/${deck.asFile.nameWithoutExtension}-script.txt"
+                    }
+                )
+            )
+            task.llmService.set(llmServiceProvider)
+            task.usesService(llmServiceProvider)
         }
     }
 
