@@ -1,8 +1,28 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
-:date: 2026-08-08
-:session: 082 CAP-29.6 Documentation + dogfooding + clôture EPIC CAP-29
+:date: 2026-08-09
+:session: 084 CAP-ARCH-1 Socle LLM bridge (pattern SLD-8, domaine `capsule.ai`)
 
-== Couverture — 8 août 2026 (après session 082)
+== Couverture — 9 août 2026 (après session 084)
+
+.Modifications session 084 — socle LLM bridge codebase (domaine `capsule.ai`) + dépendances + tâche smoke
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/ai/CapsuleLlmService.kt` (nouveau) | Object pur — `registerLlmBuildService(project)` (`sharedServices.registerIfAbsent("capsuleLlmService")` + convention model), `resolveModel(provider, serviceProvider): ChatModel`, `aiProvider(project)` `-Pai.provider` default `ollama` | 10 unit `CapsuleLlmServiceTest`
+| `capsule/ai/LlmProviderChatModelAdapter.kt` (nouveau) | Pont `LlmProvider` (codebase) → `ChatModel` (langchain4j) — `chat()` délègue à `llmProvider.call` + trace log | 2 unit `LlmProviderChatModelAdapterTest`
+| `capsule/ai/CapsuleAiSmokeTestTask.kt` (nouveau) | Tâche `capsuleAiSmokeTest` (groupe `generate`) — résout `ChatModel` via `LlmBuildService`, prompt minimal, log `CAPSULE AI → <réponse>`, fail si réponse non conforme | 3 functional `CapsuleAiSmokeTestFunctionalTest`
+| `capsule/CapsuleManager.kt` (modifié) | Câblage `registerAiSmokeTestTask()` (+12 lignes, `usesService`) | 0 régression (check VERT)
+| `build.gradle.kts` + `gradle/libs.versions.toml` (modifiés) | codebase 0.0.5 + koog 1.0.0 (bump 0.8.0 mort) + langchain4j/langchain4j-ollama (BOM) + buildscript force annotations | N/A (deps)
+| `src/test/features/capsule_ai.feature` (nouveau) | Feature `@ai` — 3 scénarios : task listée, smoke mock LLM (log `CAPSULE AI` + réponse), fail-fast unreachable | 3 scénarios cucumber
+| `src/test/kotlin/capsule/scenarios/CapsuleAiSteps.kt` (nouveau) | Step defs — GradleRunner `capsuleAiSmokeTest` + mock `HttpServer` Ollama local (`-Pollama.baseUrl`) | 3 scénarios couverts
+|===
+
+- Unitaires : 477 VERT (+10 net, 0 FAIL) — dont `CapsuleLlmServiceTest` + `LlmProviderChatModelAdapterTest`
+- Functional : 28 VERT (+3, `CapsuleAiSmokeTestFunctionalTest` — registration, mock HTTP, unreachable fail)
+- Cucumber (`-PrunCucumber`) : `capsule_ai.feature` `@ai` 3/3 GREEN (8.3s, mock HTTP — zéro LLM réel). Suite complète 160 tests, 1 FAIL préexistant `@integration` burn-in (subtitle path `build/capsule/` vs `outputDir=capsules`) — hors CAP-ARCH-1, connu S-069/S-072
+- `./gradlew check` BUILD SUCCESSFUL (cucumber SKIPPED par défaut — CR-10)
+- Secrets : 0 trouvé
+
+## Couverture — 8 août 2026 (après session 082)
 
 .Modifications session 082 — 4 unit tests + fix nommage + dogfooding réel (domaine `capsule.multilang`)
 |===

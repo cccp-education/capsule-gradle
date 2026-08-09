@@ -1,6 +1,40 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-09
 
+== Session 084 — CAP-ARCH-1 Socle LLM bridge (pattern SLD-8, domaine `capsule.ai`) ✅
+
+US-1 de l'EPIC CAP-ARCH. Capsule devient consommatrice du hub codebase (N1)
+pour son futur contenu LLM-driven : plugin codebase `implementation` 0.0.5
+(`LlmBuildService` + `LlmProvider`), `koog-agents` bump 0.8.0 (dépendance
+morte) → 1.0.0 (exclude annotations + buildscript force annotations:26.0.2-1),
+langchain4j / langchain4j-ollama (BOM 0.0.16). Domaine `capsule.ai` :
+`CapsuleLlmService` (object pur — `registerLlmBuildService` +
+`resolveModel(provider, serviceProvider): ChatModel` via
+`LlmProviderChatModelAdapter` + `-Pai.provider` default ollama). Tâche
+`capsuleAiSmokeTest` (groupe `generate`, `usesService`, mock `-Pollama.baseUrl`,
+log `CAPSULE AI → …`) câblée dans `CapsuleManager`. Baby-step TDD/BDD 3 niveaux :
+477 unit VERT (+10), 28 functional VERT (+3), cucumber `capsule_ai.feature` `@ai`
+3/3 GREEN (mock HTTP, zéro LLM réel). `./gradlew check` VERT. 1 FAIL
+`@integration` burn-in préexistant (hors CAP-ARCH, connu S-069/S-072).
+
+Tâches terminées :
+. `build.gradle.kts` + `gradle/libs.versions.toml` — codebase 0.0.5 + koog 1.0.0 +
+  langchain4j/langchain4j-ollama (BOM) + buildscript force annotations
+. `src/main/kotlin/capsule/ai/CapsuleLlmService.kt` — register + resolve + aiProvider
+. `src/main/kotlin/capsule/ai/LlmProviderChatModelAdapter.kt` — pont ChatModel
+. `src/main/kotlin/capsule/ai/CapsuleAiSmokeTestTask.kt` — tâche smoke test
+. `src/main/kotlin/capsule/CapsuleManager.kt` — câblage registerAiSmokeTestTask
+. `src/test/kotlin/capsule/ai/` — 12 unit tests (CapsuleLlmService + Adapter)
+. `src/functionalTest/kotlin/capsule/ai/` — 3 functional tests GradleTestKit
+. `src/test/features/capsule_ai.feature` + `CapsuleAiSteps.kt` — 3 scénarios `@ai`
+. Gouvernance — BACKLOG/INDEX/PROMPT_REPRISE/TODO/SESSIONS_HISTORY/
+  TEST_COVERAGE/rapport 084
+. Vérifications — `check` VERT, zéro secret, marqueurs backlog légitimes,
+  pas de commit (règle 1)
+
+Prochaine session : CAP-ARCH-2 — Contexte augmenté (RAG + Graphify, domaine
+`capsule.context`, `CapsuleContextBuilder` + `CompositeContext` + `ChannelBudget`).
+
 == Session 083 — CAP-ARCH-0 Cadrage EPIC CAP-ARCH refondu ✅
 
 Cadrage EPIC CAP-ARCH refondu fondé sur le code réel. L'audit corrige le

@@ -1,43 +1,43 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 081 — CAP-29.5 Cucumber BDD E2E 10 langues
-_Prochaine session_ : 082 — CAP-29.6 Documentation + dogfooding + clôture EPIC CAP-29
+_Session terminee_ : 084 — CAP-ARCH-1 Socle LLM bridge (pattern SLD-8, domaine `capsule.ai`)
+_Prochaine session_ : 085 — CAP-ARCH-2 Contexte augmenté (RAG + Graphify, domaine `capsule.context`)
 
-== Mission session 081 (TERMINÉE)
+== Mission session 084 (TERMINÉE)
 
-. CAP-29.5 — Cucumber BDD E2E 10 langues : `multi_language_capsule.feature`
-  (6 scénarios `@multilang @i18n`) + `MultiLanguageCapsuleSteps` (step defs).
-. Scénarios : plan 10 langues (LanguageCatalog), convention nommage
-  `<deckName>_<lang>.webm`, skip langue sans paire, fail-fast plan vide,
-  E2E GradleRunner NoOp 10 WebM + log `CAPSULE MULTILANG → n/n`,
-  E2E RTL ar/ur.
-. `./gradlew cucumberTest -PrunCucumber` : 6/6 multilang GREEN (0 FAIL).
-  Suite complète 154 tests, 1 FAIL préexistant `@integration` burn-in
-  (subtitle path `build/capsule/` vs `outputDir=capsules`) — hors périmètre.
-. `./gradlew check` BUILD SUCCESSFUL — 460 unit + 25 functional + kover VERT,
-  cucumber SKIPPED par défaut (CR-10).
+. CAP-ARCH-1 — Socle LLM bridge. Codebase plugin `implementation` (0.0.5) +
+  koog-agents 1.0.0 (bump 0.8.0 mort, exclude annotations + buildscript force
+  annotations:26.0.2-1 pattern slider) + langchain4j / langchain4j-ollama (BOM).
+. Domaine `capsule.ai` : `CapsuleLlmService` (object pur —
+  `registerLlmBuildService` + `resolveModel` + `aiProvider` `-Pai.provider`
+  default ollama) + `LlmProviderChatModelAdapter` (LlmProvider → ChatModel).
+. Tâche `capsuleAiSmokeTest` (groupe `generate`, `usesService`, mock
+  `-Pollama.baseUrl`) câblée dans `CapsuleManager`.
+. Baby-step TDD/BDD 3 niveaux : 477 unit VERT (+10), 28 functional VERT (+3),
+  cucumber `capsule_ai.feature` `@ai` 3/3 GREEN (mock HTTP). `check` VERT.
+. 1 FAIL préexistant `@integration` burn-in (subtitle path) — hors CAP-ARCH.
 
-== Contexte reprise session 082
+== Contexte reprise session 085
 
-- EPIC CAP-29 : 29.0 cadrage ✅, 29.1 MultiLanguageResolver ✅, 29.2 Plan/Planner ✅,
-  29.3 génération multi-langue ✅, 29.4 wiring composite ✅, 29.5 cucumber ✅ —
-  **reste 29.6 (~2 pts)** puis clôture EPIC (7/7 US).
-- 460 unit VERT + 25 functional VERT + 6 cucumber multilang GREEN.
-- **CAP-29.6** — README master EN (domaine `capsule.multilang` + tâches
-  `generateCapsuleVideoAllLanguages` / `translateAndGenerateCapsuleVideos`) +
-  dogfooding 1 deck demo × 3 langues fr/en/ar (dont 1 RTL). MàJ INDEX/BACKLOG.
-- **Clôture EPIC CAP-29** — statut final, paragraphe récapitulatif,
-  archivage, table AGENTS.adoc racine.
-- **Suivi préexistant** — burn-in E2E `@integration` cassé (path subtitle) —
-  à corriger hors CAP-29.
-- Modifications S-079→081 non committées (Règle 1 — demander permission de commit).
-- Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider 0.0.16 (compileOnly).
-- Domaines DDD capsule : `capsule.feed` + `capsule.ci` + `capsule.multilang`.
+- EPIC CAP-ARCH : 0 cadrage ✅ (S-083), 1 socle LLM bridge ✅ (S-084) —
+  **reste CAP-ARCH-2→6** (4+2+3+3 pts). Prochain : CAP-ARCH-2 (~4 pts).
+- 477 unit VERT + 28 functional VERT + 3 cucumber `@ai` GREEN.
+- **CAP-ARCH-2** — domaine `capsule.context` : `CapsuleContextBuilder` (object
+  pur) assemble `CompositeContext` (codebase-contracts 0.1.0) — canaux
+  EAGER/RAG/Graphify/Docs + `ChannelBudget`. Unit (toChannels/channelsWithBudget/
+  merge) → functional → cucumber (`@context @rag`).
+- Backend existant intact : extractSpeakerNotes, TTS, capture, multi-lang CAP-29.
+- Modifications S-083→084 non committées (Règle 1 — demander permission de commit).
+- Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider 0.0.16
+  (compileOnly, 0 import réel — décision CAP-ARCH-4).
+- Domaines DDD capsule : `capsule.feed` + `capsule.ci` + `capsule.multilang` +
+  `capsule.ai`.
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 460 unit tests VERT (S-080 baseline) — vérifier avant de coder
+* 477 unit tests VERT (S-084 baseline) — vérifier avant de coder
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * English only : code, Gherkin, commentaires
 * Économie d'encre = skip WebM existant + probe > 0 (ink economy)
+* Ports Ollama : 11437-11465 rotation (11434-11436 INTERDITS)

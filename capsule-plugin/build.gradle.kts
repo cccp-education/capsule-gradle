@@ -1,9 +1,19 @@
+// ── buildscript resolutionStrategy ────────────────────────────────────────────────
+// koog-agents 1.0.0 → koog-utils/koog-http-client-core/koog-prompt-llm → annotations.
+// codebase-plugin exclut koog-agents mais les sous-modules koog transitifs
+// contournent l'exclusion. Solution : forcer annotations:26.0.2-1 (pattern slider).
+buildscript {
+    repositories { mavenLocal(); mavenCentral() }
+    configurations.all { resolutionStrategy { force("org.jetbrains:annotations:26.0.2-1") } }
+}
+
 plugins {
     id("education.cccp.build.gradle-plugin") version "0.0.2"
     id("education.cccp.build.publishing") version "0.0.2"
     id("education.cccp.build.functional-test") version "0.0.2"
     id("education.cccp.build.cucumber") version "0.0.2"
     alias(libs.plugins.kover)
+    alias(libs.plugins.codebase)
 }
 
 group = "education.cccp"
@@ -44,7 +54,19 @@ dependencies {
     implementation(libs.jackson.databind)
     implementation(libs.jackson.module.kotlin)
     implementation(libs.jackson.dataformat.yaml)
-    implementation(libs.koog.agents)
+
+    // N1 codebase — LLM socle (CAP-ARCH-1): LlmBuildService + LlmProvider
+    implementation(libs.codebase.plugin)
+
+    // koog-agents — orchestration DSL (CAP-ARCH-3). Not transitive via codebase
+    // (codebase exposes it as `implementation`), so capsule depends directly via BOM.
+    implementation(libs.koog.agents) {
+        exclude(group = "org.jetbrains", module = "annotations")
+    }
+
+    // langchain4j — ChatModel bridge (LlmProviderChatModelAdapter, CAP-ARCH-1)
+    implementation(libs.langchain4j)
+    implementation(libs.langchain4j.ollama)
 
     // N0 contracts — i18n (LanguageCatalog 10 languages, cross-borough translation alliance)
     implementation(libs.i18n.contracts)

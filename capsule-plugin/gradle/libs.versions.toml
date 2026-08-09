@@ -8,8 +8,8 @@ playwright = "1.52.0"
 kover = "0.9.8"
 cucumber = "7.34.3"
 jackson = "2.18.3"
-codebase = "0.0.1"
-koog = "0.8.0"
+codebase = "0.0.5"
+koog = "1.0.0"
 workspace-bom = "0.0.16"
 i18n-contracts = "0.0.2"
 
@@ -26,6 +26,9 @@ jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", ver
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 koog-agents = { module = "ai.koog:koog-agents", version.ref = "koog" }
+codebase-plugin = { module = "education.cccp:codebase-plugin", version.ref = "codebase" }
+langchain4j = { module = "dev.langchain4j:langchain4j" }
+langchain4j-ollama = { module = "dev.langchain4j:langchain4j-ollama" }
 i18n-contracts = { module = "education.cccp:i18n-contracts", version.ref = "i18n-contracts" }
 
 [plugins]

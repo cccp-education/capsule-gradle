@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-09 (Session 083 — CAP-ARCH-0 Cadrage EPIC CAP-ARCH refondu : LLM-driven via codebase koog+langchain4j+RAG+graphify)
+:last_update: 2026-08-09 (Session 084 — CAP-ARCH-1 Socle LLM bridge codebase ✅ : codebase 0.0.5 + koog 1.0.0 + langchain4j, domaine `capsule.ai`, tâche `capsuleAiSmokeTest`, 477 unit + 28 functional + 3 cucumber `@ai` GREEN)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -481,15 +481,18 @@ workspace-bom `i18n-contracts` 0.0.2 + `codebase-contracts` 0.1.0.
 
 | CAP-ARCH-1
 | *Socle LLM bridge (pattern SLD-8)* — dépendance `implementation`
-  `codebase` plugin + koog-agents `1.0.0` (bump 0.8.0, exclusion koog
-  submodules, annotations forcé). Domaine `capsule.ai` : `CapsuleLlmService`
+  `codebase` plugin 0.0.5 + koog-agents `1.0.0` (bump 0.8.0, exclusion
+  annotations, buildscript force annotations:26.0.2-1) + langchain4j /
+  langchain4j-ollama (BOM). Domaine `capsule.ai` : `CapsuleLlmService`
   (object pur — `registerLlmBuildService(project)` +
-  `resolveModel(provider, serviceProvider): ChatModel` via adapter +
-  `-Pai.provider` default ollama). Purge de la dépendance morte koog 0.8.0.
-  Baby-step TDD : unit (register/resolve mock) → functional (task LLM mocké)
-  → cucumber (`@ai`, mock HTTP).
+  `resolveModel(provider, serviceProvider): ChatModel` via
+  `LlmProviderChatModelAdapter` + `-Pai.provider` default ollama). Tâche
+  `capsuleAiSmokeTest` (groupe `generate`, `usesService`, mock
+  `-Pollama.baseUrl`) câblée dans `CapsuleManager`. Purge de la dépendance
+  morte koog 0.8.0. Baby-step TDD : 477 unit (+10) → 28 functional (+3) →
+  cucumber `capsule_ai.feature` `@ai` 3/3 (mock HTTP) GREEN.
 | 3
-| ⬜ TODO
+| ✅ TERMINÉ (S-084)
 
 | CAP-ARCH-2
 | *Contexte augmenté (RAG + Graphify)* — domaine `capsule.context` : consomme
@@ -549,5 +552,5 @@ _Total_ : 7 US (US-0 cadrage + US-1→6 exécution), ~21 pts. _Méthode_ : baby-
 DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber), English only
 code/Gherkin. _Pattern de référence_ : slider SLD-8 (`LlmBuildService` bridge) +
 SLD-8.3 (`DeckPipelineGraph` koog), codebase (`KoogAugmentedContextGraph`,
-`CompositeContext`). _Statut_ : 🟡 EN COURS (CAP-ARCH-0 ✅ S-083, CAP-ARCH-1→6
-⬜ TODO).
+`CompositeContext`). _Statut_ : 🟡 EN COURS (CAP-ARCH-0 ✅ S-083, CAP-ARCH-1 ✅ S-084,
+CAP-ARCH-2→6 ⬜ TODO).

@@ -1,5 +1,6 @@
 package capsule
 
+import capsule.ai.CapsuleLlmService.registerLlmBuildService
 import org.gradle.api.Project
 import java.io.File
 
@@ -15,6 +16,7 @@ class CapsuleManager(private val project: Project) {
         project.registerCollectCapsuleContextTask()
         project.registerTransformCapsuleContextTask()
         project.registerScaffoldCapsuleContextTask()
+        project.registerAiSmokeTestTask()
     }
 
     private fun Project.registerExtractSpeakerNotesTask() {
@@ -102,6 +104,16 @@ class CapsuleManager(private val project: Project) {
         tasks.register("scaffoldCapsuleContext", CapsuleScaffoldTask::class.java) { task ->
             task.group = "generate"
             task.description = "Scaffolds a default capsule-context.yml configuration file with comments"
+        }
+    }
+
+    private fun Project.registerAiSmokeTestTask() {
+        val llmServiceProvider = registerLlmBuildService()
+        tasks.register("capsuleAiSmokeTest", capsule.ai.CapsuleAiSmokeTestTask::class.java) { task ->
+            task.group = "generate"
+            task.description = "Smoke-tests the codebase LLM bridge (LlmBuildService + ChatModel adapter) with a minimal prompt"
+            task.llmService.set(llmServiceProvider)
+            task.usesService(llmServiceProvider)
         }
     }
 

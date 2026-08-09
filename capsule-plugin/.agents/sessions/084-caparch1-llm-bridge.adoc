@@ -1,0 +1,104 @@
+= Session 084 — Capsule — CAP-ARCH-1 Socle LLM bridge (pattern SLD-8, domaine `capsule.ai`)
+:date: 2026-08-09
+:method: TDD baby-step (unit → functional → cucumber), English only
+:epic: CAP-ARCH
+:status: ✅ TERMINÉ (US-1)
+
+== Objectif
+
+CAP-ARCH-1 — Socle LLM bridge. Capsule devient consommatrice du hub codebase
+(N1) pour son futur contenu LLM-driven : plugin codebase en `implementation`
+(`LlmBuildService` + `LlmProvider`), `koog-agents` bump 0.8.0 → 1.0.0 (purge de
+la dépendance morte), langchain4j `ChatModel` via adapter, tâche Gradle
+`capsuleAiSmokeTest` (mock HTTP, zéro LLM réel). Baby-steps 1a→1d.
+
+== 1a — Dépendances (compileKotlin VERT)
+
+- `gradle/libs.versions.toml` : `codebase = "0.0.1" → "0.0.5"` (aligné sur la
+  publication Central de Queens), `koog = "0.8.0" → "1.0.0"`. Ajout des
+  coordinateurs `codebase-plugin` (education.cccp), `langchain4j`,
+  `langchain4j-ollama` (version par BOM 0.0.16, aucune version durcie).
+- `build.gradle.kts` :
+  * `buildscript` + `resolutionStrategy { force("org.jetbrains:annotations:26.0.2-1") }`
+    — koog 1.0.0 → koog-utils/koog-http-client-core/koog-prompt-llm → annotations ;
+    codebase exclut koog-agents mais les sous-modules koog transitifs contournent
+    l'exclusion, donc force (pattern slider SLD-8).
+  * `alias(libs.plugins.codebase)` — plugin codebase dans le classpath de build.
+  * `implementation(libs.codebase.plugin)` — N1 (LlmBuildService + LlmProvider).
+  * `implementation(libs.koog.agents)` avec `exclude(org.jetbrains:annotations)`
+    — orchestration DSL, réservé CAP-ARCH-3.
+  * `implementation(libs.langchain4j)` + `implementation(libs.langchain4j.ollama)`
+    — pont `ChatModel`.
+- `koog-agents` 0.8.0 (dépendance morte, 0 usage) remplacée par 1.0.0.
+
+## 1b — Domaine `capsule.ai` (TDD RED→GREEN)
+
+- `CapsuleLlmService.kt` (object pur) :
+  * `registerLlmBuildService(project): ServiceProvider<LlmBuildService>` —
+    `gradle.sharedServices.registerIfAbsent("capsuleLlmService", ...)` +
+    `spec.parameters.model.convention(project.aiProvider)`.
+  * `resolveModel(provider, serviceProvider): ChatModel` — délègue au provider
+    codebase via `LlmProviderChatModelAdapter`.
+  * `aiProvider(project): String` — `-Pai.provider`, default `ollama`.
+- `LlmProviderChatModelAdapter.kt` — pont `LlmProvider` (codebase) → `ChatModel`
+  (langchain4j) : implémente `chat(String)` via `llmProvider.call` + trace log.
+- Tests unitaires : `CapsuleLlmServiceTest` + `LlmProviderChatModelAdapterTest`
+  (registration, convention model, mock provider call forwarding).
+
+## 1c — Tâche + functional (mock HTTP)
+
+- `CapsuleAiSmokeTestTask.kt` — tâche `capsuleAiSmokeTest` (groupe `generate`) :
+  résout le `ChatModel` via `LlmBuildService`, prompt minimal
+  « Respond with exactly: capsule-ai-ok », log `CAPSULE AI → <réponse>`,
+  fail si réponse non conforme. `-Pollama.baseUrl` (mock) sinon pool rotation.
+- `CapsuleManager.kt` — câblage `registerAiSmokeTestTask()` (+12 lignes).
+- `CapsuleAiSmokeTestFunctionalTest.kt` — 3 tests GradleTestKit : registration,
+  mock HTTP (réponse attendue), unreachable (fail clair).
+
+## 1d — Cucumber `capsule_ai.feature` (`@ai`)
+
+- 3 scénarios : task listée, smoke mock LLM (log `CAPSULE AI` + réponse),
+  fail-fast LLM unreachable. Step defs `CapsuleAiSteps` (HttpServer mock local).
+
+== Résultats tests
+
+- `./gradlew :test` — 477 unit VERT (0 FAIL, dont `CapsuleLlmServiceTest` +10)
+- `./gradlew :functionalTest` — 28 functional VERT (25 + 3 CAP-ARCH-1)
+- `./gradlew :cucumberTest -PrunCucumber` — `capsule_ai.feature` 3/3 GREEN
+  (file `C404...-2.xml` : 3 tests, 8.3s). Suite complète 160 tests, 1 FAIL
+  préexistant `@integration` burn-in (subtitle path `build/capsule/` vs
+  `outputDir=capsules`) — hors CAP-ARCH-1, connu S-069/S-072.
+- `./gradlew check` — BUILD SUCCESSFUL (cucumber SKIPPED par défaut, CR-10).
+
+== Livrables gouvernance
+
+. `BACKLOG.adoc` — CAP-ARCH-1 `✅ TERMINÉ (S-084)`, statut EPIC (2/7 US), paragraphe
+. `.agents/INDEX.adoc` — session 084, roadmap, métadonnées (prochaine 085)
+. `PROMPT_REPRISE.adoc` — réécrit pour session 085 (CAP-ARCH-2)
+. `TODO.adoc` — CAP-ARCH-1 coché, en-tête mis à jour
+. `.agents/SESSIONS_HISTORY.adoc` — entrée 084 ajoutée
+. `.agents/TEST_COVERAGE_ANALYSIS.adoc` — section session 084
+. `.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-08.adoc` — CAP-ARCH-1 archivé
+
+== Vérifications
+
+. `./gradlew check` — ✅ BUILD SUCCESSFUL
+. `grep -rn "TOKEN\|SECRET\|PASSWORD\|API_KEY\|gho_\|ghp_"` — ✅ zéro secret
+. Backlog synchronisation (`grep "🟡\|⏳\|À FAIRE\|à planifier"`) — ✅
+  marqueurs restants légitimes (sévérités backlog, `🟡 EN COURS` CAP-ARCH réel)
+. `git status` — 3 fichiers modifiés + 6 nouveaux, pas de commit (règle 1)
+
+== Prochaine session — 085
+
+CAP-ARCH-2 — Contexte augmenté (RAG + Graphify). Domaine `capsule.context` :
+`CapsuleContextBuilder` (object pur) assemble `CompositeContext`
+(codebase-contracts 0.1.0) — canaux EAGER/RAG/Graphify/Docs + `ChannelBudget`.
+Unit (toChannels/channelsWithBudget/merge) → functional → cucumber
+(`@context @rag`).
+
+== Score
+
+9/10 — Pattern slider SLD-8 répliqué sans copier-coller (LlmBuildService +
+adapter + provider convention), TDD baby-step complet aux 3 niveaux, purge de la
+dépendance morte koog 0.8.0, zéro LLM réel requis (mock HTTP), seul le burn-in
+`@integration` préexistant reste rouge (connu, hors périmètre).
