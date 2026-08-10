@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-11 (Session 093 — CAP-DOCCONTEXT EPIC TERMINÉ 5/5 US. ContextConfig + mergeStrList + DocContextLoader + wiring + cucumber. 694 unit + 47 functional + 4 cucumber. Séquence MVP0 : DOCCONTEXT ✅ > SPD > CR3-3 > MP4 > AUDIO)
+:last_update: 2026-08-11 (Session 094 — CAP-SPD US-2 CapsuleContext.spdSection + CapsuleContextBuilder + DefaultCapsulePromptBuilder étendus. 9/9 unit GREEN. 713 unit VERT. Séquence MVP0 : DOCCONTEXT ✅ > SPD (US-2 ✅) > CR3-3 > MP4 > AUDIO)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -818,20 +818,20 @@ format-agnostic, valide `type=="SPD"` uniquement).
 
 | CAP-SPD-2
 | *`CapsuleContext` étendu + `CapsuleContextBuilder` étendu +
-`DefaultCapsulePromptBuilder` étendu* — `CapsuleContext` 3ème champ
-`spdSection: String = ""`, invariant ajusté `rendered.isBlank() ==
-(channels.isEmpty() && spdSection.isBlank())`. `CapsuleContextBuilder.build()`
-signature étendue `build(composite, budget, spdSection: String = ""):
-CapsuleContext` — rend `==== SPD Pedagogical Context (spd)\n<spdSection>` si
-non-blank, append après les canaux N0. `DefaultCapsulePromptBuilder.
-buildGeneratePrompt` étendu — instruction line : "Speaker notes must address
-the SPD objectives. Target duration and prerequisites are specified in the
-SPD Pedagogical Context section." Baby-step TDD : ~6 unit (CapsuleContext
-invariant spdSection, builder renders spd section, builder drops blank spd,
-prompt contains instruction, empty spd fallback generic prompt, channels +
-spd coexist).
+  `DefaultCapsulePromptBuilder` étendu* — `CapsuleContext` 3ème champ
+  `spdSection: String = ""`, invariant ajusté `rendered.isBlank() ==
+  (channels.isEmpty() && spdSection.isBlank())`. `CapsuleContextBuilder.build()`
+  signature étendue `build(composite, budget, spdSection: String = ""):
+  CapsuleContext` — rend `==== SPD Pedagogical Context (spd)\n<spdSection>` si
+  non-blank, append après les canaux N0. `DefaultCapsulePromptBuilder.
+  buildGeneratePrompt` étendu — instruction line : "Speaker notes must address
+  the SPD objectives. Target duration and prerequisites are specified in the
+  SPD Pedagogical Context section." Baby-step TDD : ~6 unit (CapsuleContext
+  invariant spdSection, builder renders spd section, builder drops blank spd,
+  prompt contains instruction, empty spd fallback generic prompt, channels +
+  spd coexist).
 | 2
-| ⬜ TODO
+| ✅ TERMINÉ (S-094)
 
 | CAP-SPD-3
 | *Wiring `collectCapsuleAugmentedContext -Pspd.file`* — tâche existante
@@ -866,8 +866,9 @@ tests/US (unit → functional → cucumber), English only code/Gherkin.
 _Pattern de référence_ : CAP-DOCCONTEXT S-093 (`DocContextLoader` mirror),
 CAP-ARCH-2 S-085 (`CapsuleContextBuilder`), CAP-ARCH-3 S-086
 (`DefaultCapsulePromptBuilder`). _Statut_ : 🟡 EN COURS (CAP-SPD-0 ✅ S-094,
-CAP-SPD-1 ✅ S-094 10/10 unit GREEN). 704 unit VERT (+10). Reste US-2, US-3,
-US-4.
+CAP-SPD-1 ✅ S-094 10/10 unit GREEN, CAP-SPD-2 ✅ S-094 9/9 unit GREEN).
+713 unit VERT (+19 net : 10 SpdContextLoader + 6 CapsuleContextBuilder + 3
+DefaultCapsulePromptBuilder). Reste US-3, US-4.
 
 === 🗂️ EPIC CAP-GLOSSARY — Injection terminologique (contexte augmenté)
 
@@ -1271,7 +1272,7 @@ _Total_ : 3 US, ~4 pts.
 | 5
 | 10
 | 🔴 P0
-| ⬜ TODO
+| 🟡 EN COURS (S-094 US-0/1/2 ✅)
 
 | Contexte
 | CAP-GLOSSARY

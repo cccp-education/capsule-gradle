@@ -47,6 +47,12 @@ class DefaultCapsulePromptBuilder : CapsulePromptBuilder {
             appendLine()
             appendLine("Augmented context (EAGER/RAG/Graphify/Docs):")
             appendLine(state.augmentedContext)
+            if (state.augmentedContext.contains("SPD Pedagogical Context")) {
+                appendLine()
+                appendLine(
+                    "Speaker notes must address the SPD objectives. Target duration and prerequisites are specified in the SPD Pedagogical Context section.",
+                )
+            }
         }
         appendLine()
         appendLine("Rules: keep one `== ` level-2 heading per slide; after each heading add a speaker note block:")

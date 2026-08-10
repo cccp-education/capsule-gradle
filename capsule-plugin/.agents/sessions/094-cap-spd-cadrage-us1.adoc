@@ -1,7 +1,7 @@
-= Session 094 — CAP-SPD US-0 Cadrage + US-1 SpdContext/SpdContextLoader (EN COURS)
+= Session 094 — CAP-SPD US-0 Cadrage + US-1 SpdContext/SpdContextLoader + US-2 CapsuleContext/PromptBuilder étendus
 
 _Date_ : 2026-08-11
-_Type_ : cadrage+gouvernance+feat+tdd
+_Type_ : cadrage+gouvernance+feat+tdd+ddd
 _Score_ : 9/10
 
 == Mission
@@ -14,7 +14,9 @@ SPD dans le contexte augmenté, le LLM ancre ses speaker notes dans les
 objectifs de la session.
 
 Session 094 : US-0 cadrage (7 décisions architecturales) + US-1
-`SpdContext`/`SpdContextLoader` (10/10 unit GREEN). US-2/3/4 restantes.
+`SpdContext`/`SpdContextLoader` (10/10 unit GREEN) + US-2
+`CapsuleContext.spdSection`/`CapsuleContextBuilder`/`DefaultCapsulePromptBuilder`
+étendus (9/9 unit GREEN). US-3/4 restantes.
 
 == US terminées
 
@@ -128,10 +130,65 @@ INDEX (roadmap + session 094), PROMPT_REPRISE.
 0 errors, 0 skipped** (694 baseline + 10 SpdContextLoaderTest). BUILD
 SUCCESSFUL.
 
+=== US-2 CapsuleContext.spdSection + Builder + PromptBuilder étendus (2 pts) ✅
+
+*Fichiers modifiés (production)* :
+- `capsule/context/CapsuleContext.kt` (39→49 lignes) — 3ème champ
+  `spdSection: String = ""`, invariant ajusté
+  `rendered.isBlank() == (channels.isEmpty() && spdSection.isBlank())`.
+  KDoc mis à jour (capsule-local SPD payload, CAP-SPD-2).
+- `capsule/context/CapsuleContextBuilder.kt` (67→81 lignes) — signature
+  `build(composite, budget, spdSection: String = "")` étendue. Rendu :
+  channels block + `\n\n` + trimmedSpd (si non-blank). 4 cas couverts
+  (blank+blank, blank+spd, channels+blank, channels+spd). Trim sur
+  spdSection (graceful trailing whitespace).
+- `capsule/pipeline/DefaultCapsulePromptBuilder.kt` (59→66 lignes) —
+  `buildGeneratePrompt` étendu : instruction line SPD "Speaker notes must
+  address the SPD objectives. Target duration and prerequisites are
+  specified in the SPD Pedagogical Context section." Émise uniquement
+  quand `augmentedContext.contains("SPD Pedagogical Context")` (référence
+  textuelle, pas d'accès structuré au `SpdContext` dans le prompt builder).
+  Conditionnelle dans le block `if (augmentedContext.isNotBlank())`.
+
+*Nouveau fichier test* :
+- `capsule/pipeline/DefaultCapsulePromptBuilderTest.kt` (82 lignes) — 3
+  unit tests : SPD-augmented context → instruction line présente
+  ("SPD objectives", "Target duration", "prerequisites"), empty
+  augmentedContext → fallback générique sans instruction, augmented
+  context sans SPD section → pas de référence SPD.
+
+*Tests ajoutés dans fichier existant* :
+- `CapsuleContextBuilderTest.kt` (195→258 lignes) — +6 unit tests :
+  build with non-blank spdSection renders SPD section after channels,
+  build with blank spdSection drops SPD section, build with empty
+  channels + non-blank spdSection renders only SPD, CapsuleContext
+  invariant accepts non-blank rendered with no channels + non-blank
+  spdSection, CapsuleContext invariant rejects non-blank rendered with
+  no channels + blank spdSection, build with channels + spdSection
+  coexist.
+
+*Baby-step TDD* :
+- RED : `./gradlew :compileTestKotlin` → 6 erreurs "No parameter with
+  name 'spdSection' found" + 3 erreurs `DefaultCapsulePromptBuilder` non
+  trouvé (nouveau fichier).
+- GREEN : implémentation `CapsuleContext.spdSection` + invariant +
+  `CapsuleContextBuilder.build` étendu + `DefaultCapsulePromptBuilder`
+  instruction line. `./gradlew :test --tests
+  "capsule.context.CapsuleContextBuilderTest" --tests
+  "capsule.pipeline.DefaultCapsulePromptBuilderTest"` → 15/15 PASS
+  (6 nouveaux CapsuleContextBuilder + 3 DefaultCapsulePromptBuilder +
+  6 existants CapsuleContextBuilder).
+- REFACTOR : trim sur spdSection (graceful trailing whitespace),
+  conditionnelle `contains("SPD Pedagogical Context")` plutôt que
+  `contains("spdSection")` (le builder ne connaît pas le nom du champ
+  capsule-local, il lit le rendu textuel).
+
+*Vérification régression* : `./gradlew :test` → **713 unit tests, 0
+failures, 0 errors, 0 skipped** (704 baseline + 9 nouveaux). BUILD
+SUCCESSFUL. Zéro régression.
+
 == US restantes (prochaine session)
 
-- US-2 `CapsuleContext.spdSection` + `CapsuleContextBuilder` étendu +
-  `DefaultCapsulePromptBuilder` étendu (~6 unit).
 - US-3 Wiring `collectCapsuleAugmentedContext -Pspd.file` (2 functional).
 - US-4 Cucumber BDD `capsule_spd_context.feature` (3 scénarios + runner
   dédié + steps préfixés "spd context").
@@ -140,26 +197,33 @@ SUCCESSFUL.
 
 *Modifiés gouvernance* :
 - `BACKLOG.adoc` — section EPIC CAP-SPD refondue (7 décisions + 5 US
-  détaillées), US-0 ✅ + US-1 ✅, statut EN COURS.
+  détaillées), US-0 ✅ + US-1 ✅ + US-2 ✅, statut EN COURS.
 - `.agents/INDEX.adoc` — header (session en cours 094), roadmap CAP-SPD,
   table sessions (ligne 094).
-- `PROMPT_REPRISE.adoc` — mission session 094 (US-0 ✅ + US-1 10/10 GREEN),
-  contexte reprise, rappels (capsule public OSS format-agnostic).
+- `PROMPT_REPRISE.adoc` — mission session 094 (US-0 ✅ + US-1 10/10 GREEN
+  + US-2 9/9 GREEN), contexte reprise, rappels.
 - `TODO.adoc` — coches CAP-ARCH-5/6 (S-089/090 rétroactif), CAP-DOCCONTEXT
-  ajout, CAP-SPD US-0/1 ajout.
+  ajout, CAP-SPD US-0/1/2 ajout.
 
 *Créés code* :
 - `src/main/kotlin/capsule/context/SpdContext.kt` (NEW).
 - `src/main/kotlin/capsule/context/SpdContextLoader.kt` (NEW).
 - `src/test/kotlin/capsule/context/SpdContextLoaderTest.kt` (NEW).
+- `src/test/kotlin/capsule/pipeline/DefaultCapsulePromptBuilderTest.kt` (NEW).
+
+*Modifiés code* :
+- `src/main/kotlin/capsule/context/CapsuleContext.kt` (+10 lignes).
+- `src/main/kotlin/capsule/context/CapsuleContextBuilder.kt` (+14 lignes).
+- `src/main/kotlin/capsule/pipeline/DefaultCapsulePromptBuilder.kt` (+7 lignes).
+- `src/test/kotlin/capsule/context/CapsuleContextBuilderTest.kt` (+63 lignes).
 
 == Vérifications
 
 - `./gradlew :compileKotlin` UP-TO-DATE (build VERT).
-- `./gradlew :test` → 704 tests, 0 failures, 0 errors, 0 skipped.
+- `./gradlew :test` → 713 tests, 0 failures, 0 errors, 0 skipped.
 - `grep -r "TOKEN\|SECRET\|PASSWORD\|API_KEY\|gho_\|ghp_" --include="*.kts"
   --include="*.properties" --include="*.yml"` → zéro secret.
-- Git : 3 fichiers gouvernance modifiés + 3 fichiers code créés.
+- Git : 4 fichiers gouvernance modifiés + 4 fichiers code créés/modifiés.
 
 == Leçons
 
@@ -180,3 +244,13 @@ SUCCESSFUL.
   avec le design — malformed metadata = skip metadata, adoc reste parsé).
   Correction test (pas du code) → 10/10 GREEN. Le test révèle le design, pas
   l'inverse.
+- *Invariant ajusté CAP-SPD-2* : l'invariant `rendered.isBlank() ==
+  channels.isEmpty()` ne tenait plus avec `spdSection` — un contexte sans
+  channels mais avec SPD section a un `rendered` non-blank. Nouvel
+  invariant : `rendered.isBlank() == (channels.isEmpty() && spdSection.
+  isBlank())`. L'invariant suit le domaine, pas l'inverse.
+- *Prompt builder référence textuelle* : le `DefaultCapsulePromptBuilder` ne
+  connaît pas `SpdContext` — il lit le `augmentedContext` rendu
+  (`contains("SPD Pedagogical Context")`). Découplage prompt builder /
+  modèle de contexte. Le prompt est piloté par le texte rendu, pas par la
+  structure objet.

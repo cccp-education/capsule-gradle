@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-08-11 (Session 094 — CAP-SPD US-0 ✅ + US-1 ✅ 10/10 unit GREEN)
+:last_update: 2026-08-11 (Session 094 — CAP-SPD US-0 ✅ + US-1 ✅ 10/10 unit + US-2 ✅ 9/9 unit GREEN, 713 unit VERT)
 
 '''
 == ✅ EPIC CAP-MODEL — TERMINE (session 069)
@@ -163,11 +163,11 @@
 . [x] 694 unit VERT (+20) + 47 functional (+3) + 4 cucumber GREEN
 
 '''
-== 🟡 CAP-SPD — Consommation métadonnées SPD (EPIC EN COURS 2/5 US)
+== 🟡 CAP-SPD — Consommation métadonnées SPD (EPIC EN COURS 3/5 US)
 
 . [x] CAP-SPD-0 — Cadrage EPIC (audit CapsulePipelineGraph/CapsuleContextBuilder, contrat SPD format-agnostic, 7 décisions architecturales BACKLOG) ✅ S-094
 . [x] CAP-SPD-1 — `SpdContext` data class + `SpdContextLoader` (object pur mirror `DocContextLoader`, valide `type=="SPD"` pas `source`, parse AsciiDoc, 10/10 unit GREEN) ✅ S-094
-. [ ] CAP-SPD-2 — `CapsuleContext.spdSection` + `CapsuleContextBuilder` étendu + `DefaultCapsulePromptBuilder` étendu (~6 unit)
+. [x] CAP-SPD-2 — `CapsuleContext.spdSection` + `CapsuleContextBuilder` étendu + `DefaultCapsulePromptBuilder` étendu (invariant ajusté, append SPD après channels, instruction line SPD conditionnelle, 9/9 unit GREEN) ✅ S-094
 . [ ] CAP-SPD-3 — Wiring `collectCapsuleAugmentedContext -Pspd.file` (`ContextConfig.spdFile`, `mergeContextConfig` étendu, 4 sources, 2 functional)
 . [ ] CAP-SPD-4 — Cucumber BDD `capsule_spd_context.feature` `@context @spd` (3 scénarios + runner dédié + steps préfixés "spd context")
 

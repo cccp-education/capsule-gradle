@@ -1,11 +1,13 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-11
 
-== Session 094 — CAP-SPD US-0 Cadrage + US-1 SpdContext/SpdContextLoader ✅
+== Session 094 — CAP-SPD US-0 Cadrage + US-1 SpdContext/SpdContextLoader + US-2 CapsuleContext/Builder/PromptBuilder étendus ✅
 
 EPIC CAP-SPD démarré (P0, 2ème EPIC axe contexte augmenté, 5 US ~10 pts).
 Session 094 : US-0 cadrage (7 décisions architecturales) + US-1
-`SpdContext`/`SpdContextLoader` (10/10 unit GREEN). US-2/3/4 restantes.
+`SpdContext`/`SpdContextLoader` (10/10 unit GREEN) + US-2
+`CapsuleContext.spdSection`/`CapsuleContextBuilder`/`DefaultCapsulePromptBuilder`
+étendus (9/9 unit GREEN). US-3/4 restantes.
 
 Correction majeure : capsule public OSS format-agnostic. Le producteur SPD
 est un borough privé non nommé publiquement (le cadrage S-092 citait
@@ -15,30 +17,35 @@ dans le code ou les messages publics. SPD absent → vidéo non bloquée
 (fallback no-op).
 
 Tâches terminées :
-. `capsule/context/SpdContext.kt` (NEW) — data class immutable 6 champs (objectives, duration, prerequisites, modalities, sessionTitle, module), invariant `sessionTitle.isNotBlank()`
-. `capsule/context/SpdContextLoader.kt` (NEW) — object pur mirror `DocContextLoader`, `load(metadataFile, adocFile, maxTokens)`, valide `type=="SPD"`, parse AsciiDoc (title/attribute/bullet/text sections), rend `==== SPD Pedagogical Context (spd)`, tronque `ContextChannel.Docs.truncateToTokens`
-. `src/test/kotlin/capsule/context/SpdContextLoaderTest.kt` (NEW) — 10 unit tests `@TempDir` + `jacksonObjectMapper`
-. `BACKLOG.adoc` — section EPIC CAP-SPD refondue (7 décisions + 5 US détaillées), US-0 ✅ + US-1 ✅
-. `.agents/INDEX.adoc` — header session 094, roadmap CAP-SPD, table sessions (ligne 094)
-. `PROMPT_REPRISE.adoc` — mission session 094 (US-0 ✅ + US-1 10/10 GREEN)
-. `TODO.adoc` — coches CAP-ARCH-5/6 (S-089/090 rétroactif), CAP-DOCCONTEXT ajout, CAP-SPD US-0/1 ajout
-. `.agents/sessions/094-cap-spd-cadrage-us1.adoc` (NEW) — rapport session 094
-. `.agents/SESSIONS_HISTORY.adoc` — ligne 094 ajoutée
-. `.agents/TEST_COVERAGE_ANALYSIS.adoc` — entrée session 094 ajoutée
+ . `capsule/context/SpdContext.kt` (NEW) — data class immutable 6 champs (objectives, duration, prerequisites, modalities, sessionTitle, module), invariant `sessionTitle.isNotBlank()`
+ . `capsule/context/SpdContextLoader.kt` (NEW) — object pur mirror `DocContextLoader`, `load(metadataFile, adocFile, maxTokens)`, valide `type=="SPD"`, parse AsciiDoc (title/attribute/bullet/text sections), rend `==== SPD Pedagogical Context (spd)`, tronque `ContextChannel.Docs.truncateToTokens`
+ . `capsule/context/CapsuleContext.kt` (MODIFIED) — 3ème champ `spdSection: String = ""`, invariant ajusté `rendered.isBlank() == (channels.isEmpty() && spdSection.isBlank())`
+ . `capsule/context/CapsuleContextBuilder.kt` (MODIFIED) — `build(composite, budget, spdSection="")` étendu, append SPD section après channels, trim, 4 cas
+ . `capsule/pipeline/DefaultCapsulePromptBuilder.kt` (MODIFIED) — `buildGeneratePrompt` instruction line SPD (conditionnelle `contains("SPD Pedagogical Context")`)
+ . `src/test/kotlin/capsule/context/SpdContextLoaderTest.kt` (NEW) — 10 unit tests `@TempDir` + `jacksonObjectMapper`
+ . `src/test/kotlin/capsule/pipeline/DefaultCapsulePromptBuilderTest.kt` (NEW) — 3 unit tests (SPD instruction, empty fallback, no-SPD context)
+ . `src/test/kotlin/capsule/context/CapsuleContextBuilderTest.kt` (MODIFIED) — +6 unit tests (build avec spdSection, blank drop, empty channels + spd, invariant accept/reject, coexist)
+ . `BACKLOG.adoc` — section EPIC CAP-SPD refondue (7 décisions + 5 US détaillées), US-0 ✅ + US-1 ✅ + US-2 ✅
+ . `.agents/INDEX.adoc` — header session 094, roadmap CAP-SPD, table sessions (ligne 094)
+ . `PROMPT_REPRISE.adoc` — mission session 095 (US-3 + US-4), contexte reprise
+ . `TODO.adoc` — coches CAP-ARCH-5/6 (S-089/090 rétroactif), CAP-DOCCONTEXT ajout, CAP-SPD US-0/1/2 ajout
+ . `.agents/sessions/094-cap-spd-cadrage-us1.adoc` (UPDATED) — rapport session 094 (US-0/1/2)
+ . `.agents/SESSIONS_HISTORY.adoc` — ligne 094 mise à jour
+ . `.agents/TEST_COVERAGE_ANALYSIS.adoc` — entrée session 094 US-2 ajoutée
 
 7 décisions architecturales (BACKLOG) :
-. Producteur SPD = borough privé non nommé publiquement (capsule public OSS format-agnostic)
-. metadata.json K-2 = enveloppe provenance (valide `type=="SPD"` uniquement, pas `source`)
-. N0 `ContextChannel` sealed → extension capsule-local `CapsuleContext.spdSection` (pas de bump N0)
-. Rubriques SPD AFNOR/REAC — `SpdContext` extrait objectifs/durée/prérequis/modalités/titre/module
-. Wiring sur `collectCapsuleAugmentedContext -Pspd.file` (cohérence CAP-DOCCONTEXT)
-. `DefaultCapsulePromptBuilder` étendu — instruction line référençant section SPD
-. Cucumber runner dédié `CapsuleSpdContextCucumberRunner` + steps préfixés "spd context" (bug S-088)
+ . Producteur SPD = borough privé non nommé publiquement (capsule public OSS format-agnostic)
+ . metadata.json K-2 = enveloppe provenance (valide `type=="SPD"` uniquement, pas `source`)
+ . N0 `ContextChannel` sealed → extension capsule-local `CapsuleContext.spdSection` (pas de bump N0)
+ . Rubriques SPD AFNOR/REAC — `SpdContext` extrait objectifs/durée/prérequis/modalités/titre/module
+ . Wiring sur `collectCapsuleAugmentedContext -Pspd.file` (cohérence CAP-DOCCONTEXT)
+ . `DefaultCapsulePromptBuilder` étendu — instruction line référençant section SPD (conditionnelle `contains`)
+ . Cucumber runner dédié `CapsuleSpdContextCucumberRunner` + steps préfixés "spd context" (bug S-088)
 
-Tests : 704 unit VERT (+10 `SpdContextLoaderTest`), 0 FAIL, 0 SKIP. Zéro
-régression (694 baseline préservée). `./gradlew :test` BUILD SUCCESSFUL.
+Tests : 713 unit VERT (+9 net : 6 `CapsuleContextBuilderTest` + 3 `DefaultCapsulePromptBuilderTest`), 0 FAIL, 0 SKIP. Zéro
+régression (704 baseline préservée). `./gradlew :test` BUILD SUCCESSFUL.
 
-Reste session suivante : US-2 `CapsuleContext.spdSection` + `CapsuleContextBuilder` + `DefaultCapsulePromptBuilder` étendus, US-3 wiring + functional, US-4 cucumber BDD.
+Reste session suivante : US-3 wiring `collectCapsuleAugmentedContext -Pspd.file` + functional, US-4 cucumber BDD.
 
 == Session 093 — CAP-DOCCONTEXT injection corpus documentaire (EPIC TERMINÉ 5/5 US) ✅
 

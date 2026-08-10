@@ -52,14 +52,26 @@ object CapsuleContextBuilder {
      * Assembles the augmented context for a generation intent.
      *
      * Budgets the composite channels via [channelsWithBudget], drops the empty
-     * ones and renders the survivors via [merge].
+     * ones and renders the survivors via [merge]. When [spdSection] is non-blank,
+     * it is appended after the channel blocks (CAP-SPD-2 — the SPD pedagogical
+     * payload is capsule-local and does not extend the sealed N0
+     * [ContextChannel] contract).
      */
     fun build(
         composite: CompositeContext,
         budget: ChannelBudget = defaultBudget(),
+        spdSection: String = "",
     ): CapsuleContext {
         val channels = composite.channelsWithBudget(budget).filter { it.isNotEmpty() }
-        return CapsuleContext(channels = channels, rendered = merge(channels))
+        val channelBlock = merge(channels)
+        val trimmedSpd = spdSection.trim()
+        val rendered = when {
+            channelBlock.isBlank() && trimmedSpd.isBlank() -> ""
+            channelBlock.isBlank() -> trimmedSpd
+            trimmedSpd.isBlank() -> channelBlock
+            else -> "$channelBlock\n\n$trimmedSpd"
+        }
+        return CapsuleContext(channels = channels, rendered = rendered, spdSection = trimmedSpd)
     }
 
     /** The N0 default token budget (8000 tokens, 40/30/20/10/0). */
