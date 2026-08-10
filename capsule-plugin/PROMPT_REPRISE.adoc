@@ -1,41 +1,30 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 094 — CAP-SPD US-0 cadrage + US-1 `SpdContext`/`SpdContextLoader` (10/10 unit GREEN) + US-2 `CapsuleContext.spdSection`/`CapsuleContextBuilder`/`DefaultCapsulePromptBuilder` étendus (9/9 unit GREEN). Capsule public OSS format-agnostic : valide `type=="SPD"` uniquement, PAS `source`. Invariant `CapsuleContext` ajusté `rendered.isBlank() == (channels.isEmpty() && spdSection.isBlank())`. `CapsuleContextBuilder.build(composite, budget, spdSection="")` étendu, append SPD section après channels. `DefaultCapsulePromptBuilder.buildGeneratePrompt` instruction line SPD (conditionnelle `contains("SPD Pedagogical Context")`).
-_Prochaine session_ : 095 — CAP-SPD US-3 Wiring `collectCapsuleAugmentedContext -Pspd.file` (`spdFile: RegularFileProperty @Optional`, `ContextConfig.spdFile`, `mergeContextConfig` étendu `mergeStr`, `CapsuleExtension.spdFile`, 4 sources, 2 functional), puis US-4 Cucumber `capsule_spd_context.feature` (3 scénarios, runner dédié `CapsuleSpdContextCucumberRunner` pattern S-082, steps préfixés "spd context", `CucumberTaskSpec("cucumberTestSpdContext")`).
+_Session terminee_ : 095 — CAP-SPD US-3 Wiring `collectCapsuleAugmentedContext -Pcapsule.context.scenarioFile` + US-4 Cucumber `capsule_scenario_context.feature` (3/3 scénarios GREEN). Renommage SPD→PedagogicalScenario (`SpdContext`→`PedagogicalScenario`, `SpdContextLoader`→`PedagogicalScenarioLoader`, `spdSection`→`scenarioSection`, header `"==== Pedagogical Scenario (scenario)"`, instruction line `contains("Pedagogical Scenario")`). US-3 : `ContextConfig.scenarioFile: String?`, `mergeContextConfig` étendu `mergeStr`, `CapsuleExtension.scenarioFile: Property<String>`, `pushConfigIntoExtension`, `CollectCapsuleAugmentedContextTask.scenarioFile: ConfigurableFileCollection @Optional`, `resolveScenarioSection()` (5% budget, directory→metadata.json+first.adoc, file→direct adoc), `CapsuleManager` wiring lazy provider. 2 functional tests `ScenarioContextFunctionalTest` GREEN. US-4 : feature `capsule_scenario_context.feature` 3 scénarios, `CapsuleScenarioContextSteps`, runner dédié `CapsuleScenarioContextCucumberRunner` (pattern S-082), `CucumberTaskSpec("cucumberTestScenarioContext")` câblé. 713 unit + 49 functional + 3 cucumber dédiés GREEN, 0 FAIL.
+_Prochaine session_ : 096 — Prochain EPIC de la séquence MVP0 : CAP-CR3-3 (Branchement ScreenshotCapture, 5 US ~13 pts). Alternative : EPIC CAP-SPD TERMINÉ, borough Détroit repasse en maintenance/actif selon priorités MVP0. Vérifier séquence backlog : CAP-CR3-3 (P0) > CAP-MP4 (P1) > CAP-AUDIO (P1) > CAP-GLOSSARY (P1).
 
-== Mission session 095 (À COMMENCER — US-3 + US-4)
+== Contexte reprise session 096 (post CAP-SPD)
 
-. **CAP-SPD US-3** (2 pts) — Wiring `collectCapsuleAugmentedContext -Pspd.file`
-  (`spdFile: RegularFileProperty @Optional`, `ContextConfig.spdFile`,
-  `mergeContextConfig` étendu `mergeStr`, `CapsuleExtension.spdFile`,
-  4 sources ENV `CAPSULE_CONTEXT_SPD_FILE` < props `capsule.context.spdFile`
-  < YAML < CLI). 2 functional.
-
-. **CAP-SPD US-4** (2 pts) — Cucumber `capsule_spd_context.feature`
-  `@context @spd` (3 scénarios), runner dédié `CapsuleSpdContextCucumberRunner`
-  (pattern S-082), steps préfixés "spd context" (bug S-088),
-  `CucumberTaskSpec("cucumberTestSpdContext")` câblé.
-
-== Contexte reprise session 095 (CAP-SPD)
-
-- EPIC CAP-SPD deuxième de la séquence MVP0 (P0, axe contexte augmenté).
-  5 US ~10 pts : US-0 cadrage ✅, US-1 `SpdContext`/`SpdContextLoader` ✅,
-  US-2 `CapsuleContext`/`CapsuleContextBuilder`/`DefaultCapsulePromptBuilder`
-  étendus ✅, US-3 Wiring `collectCapsuleAugmentedContext -Pspd.file`,
-  US-4 Cucumber BDD.
-- 713 unit VERT + 47 functional VERT + 4 cucumber dédiés GREEN (baseline S-094).
+- EPIC CAP-SPD TERMINÉ 5/5 US (S-094 US-0/1/2, S-095 US-3/4 + renommage).
+  Capsule public OSS format-agnostic : valide `type=="SPD"` (format K-2)
+  uniquement, jamais `source` (pas de couplage borough producteur).
+- Sémantique "SPD" n'appartient pas à capsule — renommage en
+  `PedagogicalScenario`/`PedagogicalScenarioLoader`/`scenarioSection`.
+  Header rendu `"==== Pedagogical Scenario (scenario)"` (pas "SPD Pedagogical Context (spd)").
+- `DefaultCapsulePromptBuilder` détection textuelle `contains("Pedagogical Scenario")`.
+- N0 `ContextChannel` sealed (5 variants) — pas de canal `spd` N0 ;
+  extension capsule-local `CapsuleContext.scenarioSection`.
+- DSL 4 sources: ENV (`CAPSULE_CONTEXT_*`) < gradle.properties (`capsule.context.*`) < YAML < CLI (`-Pcapsule.context.*`).
+- 713 unit + 49 functional + 3 cucumber dédiés VERT (baseline S-095).
 - Domaines DDD capsule (8) : `capsule.feed` + `capsule.ci` +
   `capsule.multilang` + `capsule.ai` + `capsule.context` +
   `capsule.pipeline` + `capsule.support` + `capsule.i18n`.
-  (`capsule.config` = package transverse, pas un domaine DDD dédié.)
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider
   0.0.16 (compileOnly, 0 import réel — décision CAP-ARCH-4).
-- Modifications S-083→094 committées (git propre). S-094 = US-0/1/2 livrés.
-- Borough Détroit actif (CAP-DOCCONTEXT terminé S-093, CAP-SPD en cours S-094).
+- Modifications S-095 committées (à pousser).
 
 == EPICs restants (séquence MVP0)
 
-* CAP-SPD (P0, EN COURS) — consommation métadonnées SPD, US-3/4 restantes
 * CAP-CR3-3 (P0) — branchement ScreenshotCapture, 5 US ~13 pts
 * CAP-CR3-1 (P0, maintenance) — CI `full` avec vrais binaires + probe durée
 * CAP-MP4 (P1) — export MP4/H.264, 4 US ~4 pts
@@ -53,16 +42,16 @@ _Prochaine session_ : 095 — CAP-SPD US-3 Wiring `collectCapsuleAugmentedContex
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 713 unit tests VERT (S-094 baseline) — vérifier avant de coder
+* 713 unit + 49 functional VERT (S-095 baseline)
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082 :
   `@ConfigurationParameter(FEATURES_PROPERTY_NAME)` du CucumberTestRunner
   écrase la system property cucumber.features) — pattern
   `CapsuleContextCucumberRunner` / `CapsuleDocContextCucumberRunner` /
-  `CapsuleSpdContextCucumberRunner` (NEW S-094)
+  `CapsuleScenarioContextCucumberRunner` (NEW S-095)
 * Glue `capsule.scenarios` partagé : tous les steps doivent avoir des
   signatures uniques (bug S-088 `DuplicateStepDefinitionException`) —
-  préfixer par feature (ex. "spd context")
+  préfixer par feature (ex. "scenario context")
 * English only : code, Gherkin, commentaires
 * Économie d'encre = skip WebM existant + probe > 0 (ffprobe durée > 0)
 * Ports Ollama : 11437-11465 rotation (11434-11436 INTERDITS)
@@ -72,7 +61,7 @@ _Prochaine session_ : 095 — CAP-SPD US-3 Wiring `collectCapsuleAugmentedContex
 * Runners cucumber dédiés : `CapsuleContextCucumberRunner`,
   `CapsuleContentAndVideosCucumberRunner`, `CapsuleDistribCucumberRunner`,
   `CapsuleArchBoundaryCucumberRunner`, `CapsuleStrictModeCucumberRunner`,
-  `CapsuleDocContextCucumberRunner`,
+  `CapsuleDocContextCucumberRunner`, `CapsuleScenarioContextCucumberRunner`,
   `CucumberIntegrationTestRunner` (pattern S-082)
 * `StrictModeGuard` (domaine `capsule.config`) — 6 resolve* branchés,
   `noop` explicite non concerné
@@ -83,15 +72,15 @@ _Prochaine session_ : 095 — CAP-SPD US-3 Wiring `collectCapsuleAugmentedContex
 * `CompositeContext` (codebase-contracts 0.1.0) — canaux EAGER/RAG/Graphify/
   Docs + `ChannelBudget`. `CapsuleContextBuilder` (domaine `capsule.context`).
   `DocContextLoader` (S-093) — résout fichiers pré-matchés, concatène trié par
-  nom, tronque `budget.docsTokens` (10%). `SpdContextLoader` (S-094 US-1,
-  mirror `DocContextLoader`) — valide metadata.json + extrait AsciiDoc SPD.
+  nom, tronque `budget.docsTokens` (10%). `PedagogicalScenarioLoader` (S-094/095,
+  mirror `DocContextLoader`) — valide metadata.json + extrait AsciiDoc scenario.
 * `CapsulePipelineGraph` (koog 1.0.0, domaine `capsule.pipeline`) — 3 nœuds
   propose/validate/generate, `CapsulePromptBuilder` port pédagogique,
-  `DefaultCapsulePromptBuilder` (étendu US-2 instruction line SPD
-  conditionnelle `contains("SPD Pedagogical Context")`).
+  `DefaultCapsulePromptBuilder` (étendu S-095 instruction line scenario
+  conditionnelle `contains("Pedagogical Scenario")`).
 * `ContextChannel` sealed N0 (5 variants) — PAS de canal `spd` N0.
-  Extension capsule-local `CapsuleContext.spdSection` (pas de bump N0).
-* `CapsuleContext` (S-094 US-2) — 3 champs `channels`/`rendered`/`spdSection`,
-  invariant `rendered.isBlank() == (channels.isEmpty() && spdSection.isBlank())`.
-  `CapsuleContextBuilder.build(composite, budget, spdSection="")` — append
-  SPD section après channels, trim sur spdSection.
+  Extension capsule-local `CapsuleContext.scenarioSection` (pas de bump N0).
+* `CapsuleContext` (S-095) — 3 champs `channels`/`rendered`/`scenarioSection`,
+  invariant `rendered.isBlank() == (channels.isEmpty() && scenarioSection.isBlank())`.
+  `CapsuleContextBuilder.build(composite, budget, scenarioSection="")` — append
+  scenario section après channels, trim sur scenarioSection.

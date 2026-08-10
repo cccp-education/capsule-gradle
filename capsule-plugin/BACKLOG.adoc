@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-11 (Session 094 — CAP-SPD US-2 CapsuleContext.spdSection + CapsuleContextBuilder + DefaultCapsulePromptBuilder étendus. 9/9 unit GREEN. 713 unit VERT. Séquence MVP0 : DOCCONTEXT ✅ > SPD (US-2 ✅) > CR3-3 > MP4 > AUDIO)
+:last_update: 2026-08-11 (Session 095 — CAP-SPD US-3 Wiring + US-4 Cucumber + renommage SPD→PedagogicalScenario. EPIC CAP-SPD TERMINÉ 5/5 US. 713 unit + 49 functional + 3 cucumber dédiés GREEN. Séquence MVP0 : DOCCONTEXT ✅ > SPD ✅ > CR3-3 > MP4 > AUDIO)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -834,41 +834,48 @@ format-agnostic, valide `type=="SPD"` uniquement).
 | ✅ TERMINÉ (S-094)
 
 | CAP-SPD-3
-| *Wiring `collectCapsuleAugmentedContext -Pspd.file`* — tâche existante
-(CAP-ARCH-2/S-093) étendue : `-Pspd.file=<path>` (path AsciiDoc SPD, ou
-directory contenant metadata.json + .adoc), `spdFile: RegularFileProperty`
-(`@InputFile @PathSensitive(RELATIVE) @Optional`), résolution + appel
-`SpdContextLoader.load()`, section injectée dans `augmented-context.txt`.
-`context.spdFile` 4 sources (ENV `CAPSULE_CONTEXT_SPD_FILE` < props
-`capsule.context.spdFile` < YAML `capsule-context.yml` < CLI `-Pspd.file`).
-`ContextConfig` étendu `spdFile: String? = null`. `mergeContextConfig` étendu
-(utilise `mergeStr`). `CapsuleExtension.spdFile: Property<String>`.
-`pushConfigIntoExtension` wiring. Functional test : 2 scénarios (SPD fourni →
-contexte enrichi section spd, SPD absent → fallback générique no-op).
+| *Wiring `collectCapsuleAugmentedContext -Pcapsule.context.scenarioFile`* — tâche existante
+(CAP-ARCH-2/S-093) étendue : `-Pcapsule.context.scenarioFile=<path>` (path AsciiDoc scenario, ou
+directory contenant metadata.json + .adoc), `scenarioFile: ConfigurableFileCollection`
+(`@Optional`), résolution + appel
+`PedagogicalScenarioLoader.load()`, section injectée dans `augmented-context.txt`.
+`context.scenarioFile` 4 sources (ENV `CAPSULE_CONTEXT_SCENARIO_FILE` < props
+`capsule.context.scenarioFile` < YAML `capsule-context.yml` < CLI `-Pcapsule.context.scenarioFile`).
+`ContextConfig` étendu `scenarioFile: String? = null`. `mergeContextConfig` étendu
+(utilise `mergeStr`). `CapsuleExtension.scenarioFile: Property<String>`.
+`pushConfigIntoExtension` wiring. `resolveScenarioSection()` (5% budget = 400 tokens/8000,
+directory→metadata.json+first.adoc, file→direct adoc). Functional test : 2 scénarios (scenario fourni →
+contexte enrichi section scenario ~140 tokens, absent → fallback no-op ~61 tokens).
 | 2
-| ⬜ TODO
+| ✅ TERMINÉ (S-095, 2 functional GREEN)
 
 | CAP-SPD-4
-| *Cucumber BDD* — `capsule_spd_context.feature` `@context @spd` (3 scénarios :
-SPD injecté → section spd dans augmented-context.txt, SPD absent → fallback
-no-op, SPD malformé → gracefully skipped empty section). Runner dédié
-`CapsuleSpdContextCucumberRunner` (pattern S-082
-`@SelectClasspathResource("features/capsule_spd_context.feature")` + filter
-`@context and @spd and not @wip and not @integration`). Steps
-`CapsuleSpdContextSteps` préfixés "spd context" (bug S-088 glue partagée).
-`CucumberTaskSpec("cucumberTestSpdContext")` câblé `build.gradle.kts`.
+| *Cucumber BDD* — `capsule_scenario_context.feature` `@context @scenario` (3 scénarios :
+scenario injecté → section scenario dans augmented-context.txt, absent → fallback
+no-op, metadata malformé → gracefully skipped adoc still parsed). Runner dédié
+`CapsuleScenarioContextCucumberRunner` (pattern S-082
+`@SelectClasspathResource("features/capsule_scenario_context.feature")` + filter
+`@context and @scenario and not @wip and not @integration`). Steps
+`CapsuleScenarioContextSteps` préfixés "scenario context" (bug S-088 glue partagée).
+`CucumberTaskSpec("cucumberTestScenarioContext")` câblé `build.gradle.kts`.
 | 2
-| ⬜ TODO
+| ✅ TERMINÉ (S-095, 3/3 scénarios PASSED)
 |===
 
 _Total_ : 5 US, ~10 pts. _Méthode_ : baby-step DDD/TDD/BDD, 3 niveaux
 tests/US (unit → functional → cucumber), English only code/Gherkin.
 _Pattern de référence_ : CAP-DOCCONTEXT S-093 (`DocContextLoader` mirror),
 CAP-ARCH-2 S-085 (`CapsuleContextBuilder`), CAP-ARCH-3 S-086
-(`DefaultCapsulePromptBuilder`). _Statut_ : 🟡 EN COURS (CAP-SPD-0 ✅ S-094,
-CAP-SPD-1 ✅ S-094 10/10 unit GREEN, CAP-SPD-2 ✅ S-094 9/9 unit GREEN).
-713 unit VERT (+19 net : 10 SpdContextLoader + 6 CapsuleContextBuilder + 3
-DefaultCapsulePromptBuilder). Reste US-3, US-4.
+(`DefaultCapsulePromptBuilder`). _Statut_ : ✅ TERMINÉ (CAP-SPD-0 ✅ S-094,
+CAP-SPD-1 ✅ S-094 10/10 unit GREEN, CAP-SPD-2 ✅ S-094 9/9 unit GREEN,
+CAP-SPD-3 ✅ S-095 2 functional GREEN, CAP-SPD-4 ✅ S-095 3 cucumber GREEN).
+713 unit VERT (+19 net : 10 PedagogicalScenarioLoader + 6 CapsuleContextBuilder + 3
+DefaultCapsulePromptBuilder) + 49 functional (+2) + 3 cucumber dédiés. EPIC clos.
+_Renommage S-095_ : SPD→PedagogicalScenario (`SpdContext`→`PedagogicalScenario`,
+`SpdContextLoader`→`PedagogicalScenarioLoader`, `spdSection`→`scenarioSection`,
+header `"==== Pedagogical Scenario (scenario)"`). Sémantique "SPD" n'appartient pas
+à capsule (borough public OSS format-agnostic). `metadata.json` validation
+`type=="SPD"` inchangé (format externe K-2).
 
 === 🗂️ EPIC CAP-GLOSSARY — Injection terminologique (contexte augmenté)
 
@@ -1272,7 +1279,7 @@ _Total_ : 3 US, ~4 pts.
 | 5
 | 10
 | 🔴 P0
-| 🟡 EN COURS (S-094 US-0/1/2 ✅)
+| ✅ TERMINÉ (S-094 US-0/1/2, S-095 US-3/4 + renommage SPD→PedagogicalScenario)
 
 | Contexte
 | CAP-GLOSSARY

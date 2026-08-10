@@ -6,8 +6,9 @@ import contracts.context.ContextChannel
 import java.io.File
 
 /**
- * Pure loader for the SPD (Scénario Pédagogique Détaillé) pedagogical payload
- * that feeds the capsule-local `spdSection` of [CapsuleContext] (CAP-SPD-1).
+ * Pure loader for a training-scenario pedagogical payload that feeds the
+ * capsule-local [scenarioSection][CapsuleContext.scenarioSection] of
+ * [CapsuleContext] (CAP-SPD-1).
  *
  * Mirrors [DocContextLoader]: pure object (no Gradle, no I/O wiring) that
  * consumes pre-resolved files. The K-2 `metadata.json` envelope is validated
@@ -20,34 +21,34 @@ import java.io.File
  * any specific producer borough).
  *
  * The rendered section follows the [CapsuleContextBuilder.merge] convention:
- * `==== SPD Pedagogical Context (spd)\nObjectives: ...\nDuration: ...\n
+ * `==== Pedagogical Scenario (scenario)\nObjectives: ...\nDuration: ...\n
  * Prerequisites: ...\nModalities: ...\nSession: ...\nModule: ...`. The result
  * is truncated to [maxTokens] via the N0 [ContextChannel.Docs.truncateToTokens]
  * method (the Docs variant is semantically close — corpus documentaire — and
- * reusing it avoids extending the sealed N0 contract with a new `Spd` variant).
+ * reusing it avoids extending the sealed N0 contract with a new variant).
  *
  * Missing files are skipped silently — a null metadata file or a missing
  * AsciiDoc yields an empty string (backward compatible, no error). A
  * metadata.json whose `type` is not `"SPD"` is also skipped (graceful no-op).
  */
-object SpdContextLoader {
+object PedagogicalScenarioLoader {
 
     private val mapper: ObjectMapper = ObjectMapper()
 
     /**
-     * Loads the SPD pedagogical section from [metadataFile] (optional K-2
+     * Loads the pedagogical scenario section from [metadataFile] (optional K-2
      * envelope) and [adocFile] (companion AsciiDoc), truncated to
      * [maxTokens].
      *
      * @param metadataFile  optional `metadata.json` K-2 envelope. When null or
      *                      missing, the AsciiDoc is still parsed. When present
      *                      but malformed, it is skipped silently.
-     * @param adocFile      the companion AsciiDoc SPD file. Missing or empty
-     *                      file yields a blank string.
-     * @param maxTokens     the SPD channel token budget (computed by the
+     * @param adocFile      the companion AsciiDoc scenario file. Missing or
+     *                      empty file yields a blank string.
+     * @param maxTokens     the scenario channel token budget (computed by the
      *                      wiring layer, e.g. 5% of the total budget).
-     * @return the `==== SPD Pedagogical Context (spd)\n...` section, truncated
-     *         to [maxTokens]. Blank when no usable payload or zero budget.
+     * @return the `==== Pedagogical Scenario (scenario)\n...` section,
+     *         truncated to [maxTokens]. Blank when no usable payload or zero budget.
      */
     fun load(metadataFile: File?, adocFile: File, maxTokens: Int): String {
         if (maxTokens <= 0) return ""
@@ -59,8 +60,8 @@ object SpdContextLoader {
         val adocText = adocFile.readText()
         if (adocText.isBlank()) return ""
 
-        val context = parseAdoc(adocFile.name, adocText)
-        val raw = renderSection(context)
+        val scenario = parseAdoc(adocFile.name, adocText)
+        val raw = renderSection(scenario)
         if (raw.isBlank()) return ""
 
         val truncated = ContextChannel.Docs(raw).truncateToTokens(maxTokens)
@@ -71,10 +72,10 @@ object SpdContextLoader {
      * Parses the K-2 `metadata.json` envelope. Returns `null` when the file
      * is malformed (graceful skip) — never throws.
      */
-    private fun parseMetadata(file: File): SpdMetadata? {
+    private fun parseMetadata(file: File): ScenarioMetadata? {
         return try {
             val node: JsonNode = mapper.readTree(file)
-            SpdMetadata(
+            ScenarioMetadata(
                 type = node.path("type").asText(""),
                 version = node.path("version").asText(""),
             )
@@ -92,7 +93,7 @@ object SpdContextLoader {
      * - `modalities` = text block under `== Modalités d'évaluation`
      * - `duration` = first line under `== Durée estimée` (when present)
      */
-    private fun parseAdoc(filename: String, text: String): SpdContext {
+    private fun parseAdoc(filename: String, text: String): PedagogicalScenario {
         val lines = text.lines()
         val title = extractTitle(lines) ?: filenameWithoutExtension(filename)
         val module = extractAttribute(lines, "module")
@@ -104,7 +105,7 @@ object SpdContextLoader {
         val duration = extractTextSection(lines, "Durée estimée").ifBlank {
             extractTextSection(lines, "Durée")
         }
-        return SpdContext(
+        return PedagogicalScenario(
             objectives = objectives,
             duration = duration,
             prerequisites = prerequisites,
@@ -181,20 +182,20 @@ object SpdContextLoader {
         return builder.toString().trim()
     }
 
-    /** Renders the [SpdContext] as the prompt-ready SPD section block. */
-    private fun renderSection(context: SpdContext): String {
+    /** Renders the [PedagogicalScenario] as the prompt-ready scenario section block. */
+    private fun renderSection(scenario: PedagogicalScenario): String {
         val builder = StringBuilder()
-        builder.append("==== SPD Pedagogical Context (spd)\n")
-        builder.append("Session: ${context.sessionTitle}\n")
-        if (context.module.isNotBlank()) builder.append("Module: ${context.module}\n")
-        if (context.objectives.isNotEmpty()) {
-            builder.append("Objectives: ${context.objectives.joinToString("; ")}\n")
+        builder.append("==== Pedagogical Scenario (scenario)\n")
+        builder.append("Session: ${scenario.sessionTitle}\n")
+        if (scenario.module.isNotBlank()) builder.append("Module: ${scenario.module}\n")
+        if (scenario.objectives.isNotEmpty()) {
+            builder.append("Objectives: ${scenario.objectives.joinToString("; ")}\n")
         }
-        if (context.duration.isNotBlank()) builder.append("Duration: ${context.duration}\n")
-        if (context.prerequisites.isNotEmpty()) {
-            builder.append("Prerequisites: ${context.prerequisites.joinToString("; ")}\n")
+        if (scenario.duration.isNotBlank()) builder.append("Duration: ${scenario.duration}\n")
+        if (scenario.prerequisites.isNotEmpty()) {
+            builder.append("Prerequisites: ${scenario.prerequisites.joinToString("; ")}\n")
         }
-        if (context.modalities.isNotBlank()) builder.append("Modalities: ${context.modalities}\n")
+        if (scenario.modalities.isNotBlank()) builder.append("Modalities: ${scenario.modalities}\n")
         return builder.toString().trimEnd()
     }
 
@@ -202,7 +203,7 @@ object SpdContextLoader {
         filename.substringBeforeLast('.')
 
     /** Internal validated metadata envelope (K-2 subset — type only). */
-    private data class SpdMetadata(
+    private data class ScenarioMetadata(
         val type: String,
         val version: String,
     )

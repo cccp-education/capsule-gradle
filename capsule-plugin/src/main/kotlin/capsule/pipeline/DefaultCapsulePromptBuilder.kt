@@ -47,10 +47,10 @@ class DefaultCapsulePromptBuilder : CapsulePromptBuilder {
             appendLine()
             appendLine("Augmented context (EAGER/RAG/Graphify/Docs):")
             appendLine(state.augmentedContext)
-            if (state.augmentedContext.contains("SPD Pedagogical Context")) {
+            if (state.augmentedContext.contains("Pedagogical Scenario")) {
                 appendLine()
                 appendLine(
-                    "Speaker notes must address the SPD objectives. Target duration and prerequisites are specified in the SPD Pedagogical Context section.",
+                    "Speaker notes must address the pedagogical scenario objectives. Target duration and prerequisites are specified in the Pedagogical Scenario section.",
                 )
             }
         }

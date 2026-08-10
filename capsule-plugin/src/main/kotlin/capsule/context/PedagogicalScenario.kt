@@ -1,13 +1,15 @@
 package capsule.context
 
 /**
- * Immutable pedagogical payload extracted from a SPD (Scénario Pédagogique
- * Détaillé) companion AsciiDoc (CAP-SPD-1).
+ * Immutable pedagogical payload extracted from a training scenario companion
+ * AsciiDoc (CAP-SPD-1).
  *
  * The K-2 `metadata.json` envelope carries only provenance (source, type,
  * sessions, generatedAt, model, version, dependencies) — the pedagogical
  * fields live in the AsciiDoc. This data class is the capsule-local consumer
- * model: there is no N0 contract for SPD, so capsule owns it.
+ * model: capsule is format-agnostic (validates `type == "SPD"` as a content
+ * type, never the producer borough), and owns the pedagogical scenario model
+ * since there is no N0 contract for it.
  *
  * @property objectives    bullet objectives extracted from `== Objectifs`
  *                         (empty list when the section is absent).
@@ -20,7 +22,7 @@ package capsule.context
  *                         filename fallback. Non-blank by invariant.
  * @property module         `:module:` document attribute, or empty string.
  */
-data class SpdContext(
+data class PedagogicalScenario(
     val objectives: List<String>,
     val duration: String,
     val prerequisites: List<String>,
@@ -30,11 +32,11 @@ data class SpdContext(
 ) {
     init {
         require(sessionTitle.isNotBlank()) {
-            "SpdContext sessionTitle must be non-blank"
+            "PedagogicalScenario sessionTitle must be non-blank"
         }
     }
 
-    /** `true` when the SPD carries no usable pedagogical signal. */
+    /** `true` when the scenario carries no usable pedagogical signal. */
     val isEmpty: Boolean
         get() = objectives.isEmpty() && duration.isBlank() && prerequisites.isEmpty() && modalities.isBlank()
 }

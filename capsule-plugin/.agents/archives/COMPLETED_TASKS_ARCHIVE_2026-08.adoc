@@ -675,3 +675,53 @@ Métriques : 568 unit VERT (+28 net) + 37 functional VERT (+3). Cucumber
 `@burnin @integration` E2E VERT.
 
 Rapport : `.agents/sessions/087-code-review-burn-in-fix-caparch7.adoc`.
+
+== Session 095 — CAP-SPD US-3 Wiring + US-4 Cucumber + renommage SPD→PedagogicalScenario ✅
+
+EPIC CAP-SPD TERMINÉ 5/5 US (S-094 US-0/1/2, S-095 US-3/4 + renommage).
+713 unit + 49 functional (+2) + 3 cucumber dédiés GREEN, zéro régression.
+
+*Renommage sémantique* (la sémantique "SPD" n'appartient pas à capsule,
+borough public OSS format-agnostic) :
+- `SpdContext` → `PedagogicalScenario` (data class)
+- `SpdContextLoader` → `PedagogicalScenarioLoader` (object pur)
+- `SpdContextLoaderTest` → `PedagogicalScenarioLoaderTest`
+- `CapsuleContext.spdSection` → `scenarioSection`
+- Header `"==== SPD Pedagogical Context (spd)"` → `"==== Pedagogical Scenario (scenario)"`
+- Instruction line `contains("SPD Pedagogical Context")` → `contains("Pedagogical Scenario")`
+- `metadata.json` validation `type=="SPD"` inchangé (format externe K-2)
+
+*US-3 Wiring* `collectCapsuleAugmentedContext -Pcapsule.context.scenarioFile` :
+- `ContextConfig.scenarioFile: String?` (8ème champ section context)
+- `mergeContextConfig` étendu `mergeStr` + `loadFromEnvironment` + `buildConfigFromProperties`
+- `CapsuleExtension.scenarioFile: Property<String>` + `pushConfigIntoExtension`
+- `CollectCapsuleAugmentedContextTask.scenarioFile: ConfigurableFileCollection @Optional`
+- `resolveScenarioSection()` (5% budget = 400 tokens/8000, directory→metadata.json+first.adoc, file→direct adoc)
+- `CapsuleManager` wiring lazy provider
+- 2 functional `ScenarioContextFunctionalTest` GREEN
+
+*US-4 Cucumber BDD* :
+- `capsule_scenario_context.feature` 3 scénarios `@context @scenario`
+- `CapsuleScenarioContextSteps` (préfixés "scenario context" — bug S-088)
+- Runner dédié `CapsuleScenarioContextCucumberRunner` (pattern S-082)
+- `CucumberTaskSpec("cucumberTestScenarioContext")` câblé
+- 3/3 scénarios PASSED (1m06s)
+
+Tâches terminées :
+ . Renommage 3 fichiers via `git mv` (PedagogicalScenario, PedagogicalScenarioLoader, PedagogicalScenarioLoaderTest)
+ . `ContextConfig.kt` — `scenarioFile: String? = null`
+ . `CapsuleConfigMerger.kt` — `mergeContextConfig` scenarioFile
+ . `CapsuleModels.kt` — `CapsuleExtension.scenarioFile: Property<String>`
+ . `CapsulePlugin.kt` — `pushConfigIntoExtension` scenarioFile
+ . `CollectCapsuleAugmentedContextTask.kt` — scenarioFile + resolveScenarioSection
+ . `CapsuleManager.kt` — wiring lazy provider scenarioFile
+ . `ScenarioContextFunctionalTest.kt` (NEW) — 2 functional US-3
+ . `capsule_scenario_context.feature` (NEW) — 3 scénarios US-4
+ . `CapsuleScenarioContextSteps.kt` (NEW) — BDD steps US-4
+ . `CapsuleScenarioContextCucumberRunner.kt` (NEW) — runner dédié US-4
+ . `build.gradle.kts` — `CucumberTaskSpec("cucumberTestScenarioContext")`
+
+Métriques : 713 unit VERT (inchangé) + 49 functional VERT (+2) + 3 cucumber
+dédiés GREEN. `./gradlew test functionalTest` BUILD SUCCESSFUL (1m31s).
+
+Rapport : `.agents/sessions/095-cap-spd-us3-us4-rename.adoc`.

@@ -126,7 +126,8 @@ object CapsuleConfigMerger {
                 enabled = env["CAPSULE_STRICT_MODE_ENABLED"]?.toBoolean() ?: false
             ),
             context = ContextConfig(
-                docsGlobs = env["CAPSULE_CONTEXT_DOCS_GLOBS"]?.let { splitCommaList(it) } ?: emptyList()
+                docsGlobs = env["CAPSULE_CONTEXT_DOCS_GLOBS"]?.let { splitCommaList(it) } ?: emptyList(),
+                scenarioFile = env["CAPSULE_CONTEXT_SCENARIO_FILE"]?.takeIf { it.isNotBlank() }
             )
         )
     }
@@ -186,7 +187,8 @@ object CapsuleConfigMerger {
                 enabled = props["capsule.strictMode.enabled"]?.toBoolean() ?: false
             ),
             context = ContextConfig(
-                docsGlobs = props["capsule.context.docsGlobs"]?.let { splitCommaList(it) } ?: emptyList()
+                docsGlobs = props["capsule.context.docsGlobs"]?.let { splitCommaList(it) } ?: emptyList(),
+                scenarioFile = props["capsule.context.scenarioFile"]?.takeIf { it.isNotBlank() }
             )
         )
     }
@@ -275,7 +277,8 @@ object CapsuleConfigMerger {
 
     private fun mergeContextConfig(env: ContextConfig, props: ContextConfig, yaml: ContextConfig?, cli: Map<String, Any?>): ContextConfig {
         return ContextConfig(
-            docsGlobs = mergeStrList(cli, "context.docsGlobs", yaml?.docsGlobs, props.docsGlobs, env.docsGlobs)
+            docsGlobs = mergeStrList(cli, "context.docsGlobs", yaml?.docsGlobs, props.docsGlobs, env.docsGlobs),
+            scenarioFile = mergeStr(cli, "context.scenarioFile", yaml?.scenarioFile, props.scenarioFile ?: "", env.scenarioFile ?: "").takeIf { it.isNotBlank() }
         )
     }
 

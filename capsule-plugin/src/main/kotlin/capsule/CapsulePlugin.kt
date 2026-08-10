@@ -115,7 +115,10 @@ class CapsulePlugin : Plugin<Project> {
         // StrictMode section (CAP-CR3-2)
         if (!ext.strictMode.isPresent || ext.strictMode.get() == false) ext.strictMode.set(config.strictMode.enabled)
 
-        // Context section (CAP-DOCCONTEXT-1)
+        // Context section (CAP-DOCCONTEXT-1 + CAP-SPD-3)
         if (ext.docsGlobs.get().isEmpty()) ext.docsGlobs.set(config.context.docsGlobs)
+        if (!ext.scenarioFile.isPresent || ext.scenarioFile.get().isBlank()) {
+            config.context.scenarioFile?.let { ext.scenarioFile.set(it) }
+        }
     }
 }

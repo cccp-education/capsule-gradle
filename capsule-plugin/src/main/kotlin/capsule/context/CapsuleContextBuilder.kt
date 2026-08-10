@@ -52,26 +52,26 @@ object CapsuleContextBuilder {
      * Assembles the augmented context for a generation intent.
      *
      * Budgets the composite channels via [channelsWithBudget], drops the empty
-     * ones and renders the survivors via [merge]. When [spdSection] is non-blank,
-     * it is appended after the channel blocks (CAP-SPD-2 — the SPD pedagogical
-     * payload is capsule-local and does not extend the sealed N0
-     * [ContextChannel] contract).
+     * ones and renders the survivors via [merge]. When [scenarioSection] is
+     * non-blank, it is appended after the channel blocks (CAP-SPD-2 — the
+     * pedagogical scenario payload is capsule-local and does not extend the
+     * sealed N0 [ContextChannel] contract).
      */
     fun build(
         composite: CompositeContext,
         budget: ChannelBudget = defaultBudget(),
-        spdSection: String = "",
+        scenarioSection: String = "",
     ): CapsuleContext {
         val channels = composite.channelsWithBudget(budget).filter { it.isNotEmpty() }
         val channelBlock = merge(channels)
-        val trimmedSpd = spdSection.trim()
+        val trimmedScenario = scenarioSection.trim()
         val rendered = when {
-            channelBlock.isBlank() && trimmedSpd.isBlank() -> ""
-            channelBlock.isBlank() -> trimmedSpd
-            trimmedSpd.isBlank() -> channelBlock
-            else -> "$channelBlock\n\n$trimmedSpd"
+            channelBlock.isBlank() && trimmedScenario.isBlank() -> ""
+            channelBlock.isBlank() -> trimmedScenario
+            trimmedScenario.isBlank() -> channelBlock
+            else -> "$channelBlock\n\n$trimmedScenario"
         }
-        return CapsuleContext(channels = channels, rendered = rendered, spdSection = trimmedSpd)
+        return CapsuleContext(channels = channels, rendered = rendered, scenarioSection = trimmedScenario)
     }
 
     /** The N0 default token budget (8000 tokens, 40/30/20/10/0). */

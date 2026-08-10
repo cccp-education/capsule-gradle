@@ -178,6 +178,18 @@ class CapsuleManager(private val project: Project) {
             task.ragContent.set(project.findProperty("context.ragContent")?.toString().orEmpty())
             task.graphifyContent.set(project.findProperty("context.graphifyContent")?.toString().orEmpty())
             task.docsContent.set(project.findProperty("context.docsContent")?.toString().orEmpty())
+
+            // CAP-SPD-3 — resolve scenarioFile lazily (extension afterEvaluate > CLI).
+            task.scenarioFile.from(project.provider {
+                val extPath = capsuleExt?.scenarioFile?.orNull
+                val path = when {
+                    !extPath.isNullOrBlank() -> extPath
+                    else -> project.findProperty("capsule.context.scenarioFile")?.toString().orEmpty()
+                }
+                if (path.isBlank()) emptyList<Any>()
+                else listOf(project.file(path))
+            })
+
             task.tokenBudget.set(
                 project.findProperty("context.tokenBudget")?.toString()?.toIntOrNull()
                     ?: contracts.context.ContextChannel.DEFAULT_TOKEN_BUDGET

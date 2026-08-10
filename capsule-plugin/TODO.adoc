@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-08-11 (Session 094 — CAP-SPD US-0 ✅ + US-1 ✅ 10/10 unit + US-2 ✅ 9/9 unit GREEN, 713 unit VERT)
+:last_update: 2026-08-11 (Session 095 — CAP-SPD US-3 ✅ 2 functional + US-4 ✅ 3 cucumber + renommage SPD→PedagogicalScenario. EPIC CAP-SPD TERMINÉ 5/5 US. 713 unit + 49 functional + 3 cucumber dédiés GREEN)
 
 '''
 == ✅ EPIC CAP-MODEL — TERMINE (session 069)
@@ -163,13 +163,14 @@
 . [x] 694 unit VERT (+20) + 47 functional (+3) + 4 cucumber GREEN
 
 '''
-== 🟡 CAP-SPD — Consommation métadonnées SPD (EPIC EN COURS 3/5 US)
+== ✅ CAP-SPD — Consommation métadonnées SPD / PedagogicalScenario (EPIC TERMINÉ 5/5 US) — TERMINE (session 095)
 
 . [x] CAP-SPD-0 — Cadrage EPIC (audit CapsulePipelineGraph/CapsuleContextBuilder, contrat SPD format-agnostic, 7 décisions architecturales BACKLOG) ✅ S-094
-. [x] CAP-SPD-1 — `SpdContext` data class + `SpdContextLoader` (object pur mirror `DocContextLoader`, valide `type=="SPD"` pas `source`, parse AsciiDoc, 10/10 unit GREEN) ✅ S-094
-. [x] CAP-SPD-2 — `CapsuleContext.spdSection` + `CapsuleContextBuilder` étendu + `DefaultCapsulePromptBuilder` étendu (invariant ajusté, append SPD après channels, instruction line SPD conditionnelle, 9/9 unit GREEN) ✅ S-094
-. [ ] CAP-SPD-3 — Wiring `collectCapsuleAugmentedContext -Pspd.file` (`ContextConfig.spdFile`, `mergeContextConfig` étendu, 4 sources, 2 functional)
-. [ ] CAP-SPD-4 — Cucumber BDD `capsule_spd_context.feature` `@context @spd` (3 scénarios + runner dédié + steps préfixés "spd context")
+. [x] CAP-SPD-1 — `PedagogicalScenario` data class (was `SpdContext`) + `PedagogicalScenarioLoader` (object pur mirror `DocContextLoader`, valide `type=="SPD"` pas `source`, parse AsciiDoc, 10/10 unit GREEN) ✅ S-094
+. [x] CAP-SPD-2 — `CapsuleContext.scenarioSection` (was `spdSection`) + `CapsuleContextBuilder` étendu + `DefaultCapsulePromptBuilder` étendu (invariant ajusté, append scenario après channels, instruction line scenario conditionnelle, 9/9 unit GREEN) ✅ S-094
+. [x] CAP-SPD-3 — Wiring `collectCapsuleAugmentedContext -Pcapsule.context.scenarioFile` (`ContextConfig.scenarioFile`, `mergeContextConfig` étendu `mergeStr`, 4 sources ENV < props < YAML < CLI, `resolveScenarioSection()` 5% budget, 2 functional GREEN) ✅ S-095
+. [x] CAP-SPD-4 — Cucumber BDD `capsule_scenario_context.feature` `@context @scenario` (3 scénarios + runner dédié `CapsuleScenarioContextCucumberRunner` + steps préfixés "scenario context" + `CucumberTaskSpec("cucumberTestScenarioContext")`, 3/3 PASSED) ✅ S-095
+. [x] Renommage SPD→PedagogicalScenario (3 fichiers `git mv`, header `"==== Pedagogical Scenario (scenario)"`, instruction `contains("Pedagogical Scenario")`, `metadata.json` `type=="SPD"` inchangé format externe K-2) ✅ S-095
 
 '''
 == ✅ README i18n — TERMINE (session 041)

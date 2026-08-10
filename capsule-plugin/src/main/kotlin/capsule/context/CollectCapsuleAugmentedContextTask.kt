@@ -81,6 +81,16 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
     @get:Input
     abstract val tokenBudget: Property<Int>
 
+    /**
+     * Pedagogical scenario file/directory (CAP-SPD-3). When present, the
+     * [PedagogicalScenarioLoader] resolves `metadata.json` + companion AsciiDoc
+     * and renders the scenario section appended after the N0 channels.
+     */
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:Optional
+    abstract val scenarioFile: ConfigurableFileCollection
+
     /** Rendered augmented context artefact. */
     @get:OutputFile
     abstract val outputFile: RegularFileProperty
@@ -97,6 +107,8 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
 
         val docsSection = resolveDocsSection(budget)
 
+        val scenarioSection = resolveScenarioSection(budget)
+
         val composite = CompositeContext(
             eagerSection = eager,
             ragSection = ragContent.orNull.orEmpty(),
@@ -104,7 +116,7 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
             docsSection = docsSection,
             config = CompositeContextConfig(),
         )
-        val context = CapsuleContextBuilder.build(composite, budget)
+        val context = CapsuleContextBuilder.build(composite, budget, scenarioSection)
 
         val output = outputFile.asFile.get()
         output.parentFile.mkdirs()
@@ -114,8 +126,8 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
             "CAPSULE CONTEXT → ${context.nonEmptyCount} non-empty channels, " +
                 "~${context.tokenEstimate} tokens → ${output.absolutePath}",
         )
-        if (context.isEmpty) {
-            logger.warn("CAPSULE CONTEXT → no EAGER/RAG/Graphify/Docs content collected (empty augmented context)")
+        if (context.isEmpty && context.scenarioSection.isBlank()) {
+            logger.warn("CAPSULE CONTEXT → no EAGER/RAG/Graphify/Docs/scenario content collected (empty augmented context)")
         }
     }
 
@@ -133,5 +145,35 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
             return DocContextLoader.load(globFiles, budget)
         }
         return docsContent.orNull.orEmpty()
+    }
+
+    /**
+     * Resolves the pedagogical scenario section content (CAP-SPD-3).
+     *
+     * The [scenarioFile] collection is fed by the wiring layer from the
+     * 4-source config (ENV < props < YAML < CLI). When it contains a
+     * directory, the [PedagogicalScenarioLoader] resolves `metadata.json` +
+     * the first `.adoc` companion. When it contains a direct `.adoc` file,
+     * the metadata is skipped. When empty, the scenario section is blank
+     * (backward compatible no-op).
+     *
+     * Token budget: 5% of the total budget (the scenario is a lightweight
+     * anchoring payload, not a corpus).
+     */
+    private fun resolveScenarioSection(budget: ChannelBudget): String {
+        val files = scenarioFile.files.toList()
+        if (files.isEmpty()) return ""
+        val target = files.first()
+        if (!target.exists()) return ""
+
+        val scenarioBudget = (budget.totalTokenBudget * 0.05).toInt().coerceAtLeast(50)
+        return if (target.isDirectory) {
+            val metadata = target.listFiles()?.firstOrNull { it.name == "metadata.json" }
+            val adoc = target.listFiles()?.firstOrNull { it.extension.equals("adoc", ignoreCase = true) }
+            if (adoc == null) return ""
+            PedagogicalScenarioLoader.load(metadata, adoc, scenarioBudget)
+        } else {
+            PedagogicalScenarioLoader.load(null, target, scenarioBudget)
+        }
     }
 }

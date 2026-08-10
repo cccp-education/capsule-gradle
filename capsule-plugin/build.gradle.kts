@@ -81,6 +81,15 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleDocContextCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // Focused cucumber run for the CAP-SPD-4 pedagogical scenario injection feature
+        // (fast iteration — pure config + scenario file, no Playwright/FFmpeg needed).
+        CucumberTaskSpec(
+            name = "cucumberTestScenarioContext",
+            features = listOf("src/test/features/capsule_scenario_context.feature"),
+            tags = listOf("@context", "@scenario"),
+            runnerClass = "capsule.scenarios.CapsuleScenarioContextCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task

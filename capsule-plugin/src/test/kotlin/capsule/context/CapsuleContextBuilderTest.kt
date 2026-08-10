@@ -193,64 +193,64 @@ class CapsuleContextBuilderTest {
         assertEquals(0.30, budget.budgetRag)
     }
 
-    // ─── CAP-SPD-2: spdSection extension ───────────────────────────────
+    // ─── CAP-SPD-2: scenarioSection extension ──────────────────────────
 
     @Test
-    fun `build with non-blank spdSection renders the SPD section after channels`() {
+    fun `build with non-blank scenarioSection renders the scenario section after channels`() {
         val ctx = CapsuleContextBuilder.build(
             composite(eager = "EAGER governance"),
-            spdSection = "==== SPD Pedagogical Context (spd)\nSession: Bienvenue\nObjectives: Goal A; Goal B",
+            scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Bienvenue\nObjectives: Goal A; Goal B",
         )
         assertTrue(ctx.rendered.contains("EAGER governance"), "channels must still be rendered")
-        assertTrue(ctx.rendered.contains("SPD Pedagogical Context"), "SPD section must be rendered")
-        assertTrue(ctx.rendered.contains("Bienvenue"), "SPD content must be present")
+        assertTrue(ctx.rendered.contains("Pedagogical Scenario"), "scenario section must be rendered")
+        assertTrue(ctx.rendered.contains("Bienvenue"), "scenario content must be present")
     }
 
     @Test
-    fun `build with blank spdSection drops the SPD section`() {
-        val ctx = CapsuleContextBuilder.build(composite(eager = "EAGER only"), spdSection = "")
+    fun `build with blank scenarioSection drops the scenario section`() {
+        val ctx = CapsuleContextBuilder.build(composite(eager = "EAGER only"), scenarioSection = "")
         assertTrue(ctx.rendered.contains("EAGER only"))
-        assertTrue(!ctx.rendered.contains("SPD Pedagogical Context"), "blank spdSection must not add an SPD header")
+        assertTrue(!ctx.rendered.contains("Pedagogical Scenario"), "blank scenarioSection must not add a scenario header")
     }
 
     @Test
-    fun `build with empty channels and non-blank spdSection renders only the SPD section`() {
+    fun `build with empty channels and non-blank scenarioSection renders only the scenario section`() {
         val ctx = CapsuleContextBuilder.build(
             composite(),
-            spdSection = "==== SPD Pedagogical Context (spd)\nSession: Solo SPD",
+            scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Solo scenario",
         )
         assertTrue(ctx.isEmpty, "channels list must be empty")
-        assertTrue(ctx.rendered.isNotBlank(), "rendered must carry the SPD section")
-        assertTrue(ctx.rendered.contains("Solo SPD"))
+        assertTrue(ctx.rendered.isNotBlank(), "rendered must carry the scenario section")
+        assertTrue(ctx.rendered.contains("Solo scenario"))
     }
 
     @Test
-    fun `CapsuleContext with no channels but non-blank spdSection accepts non-blank rendered`() {
+    fun `CapsuleContext with no channels but non-blank scenarioSection accepts non-blank rendered`() {
         val ctx = CapsuleContext(
             channels = emptyList(),
-            rendered = "==== SPD Pedagogical Context (spd)\nSession: only SPD",
-            spdSection = "==== SPD Pedagogical Context (spd)\nSession: only SPD",
+            rendered = "==== Pedagogical Scenario (scenario)\nSession: only scenario",
+            scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: only scenario",
         )
         assertTrue(ctx.isEmpty)
         assertTrue(ctx.rendered.isNotBlank())
     }
 
     @Test
-    fun `CapsuleContext invariant rejects non-blank rendered with no channels and blank spdSection`() {
+    fun `CapsuleContext invariant rejects non-blank rendered with no channels and blank scenarioSection`() {
         assertFailsWith<IllegalArgumentException> {
-            CapsuleContext(channels = emptyList(), rendered = "orphan text", spdSection = "")
+            CapsuleContext(channels = emptyList(), rendered = "orphan text", scenarioSection = "")
         }
     }
 
     @Test
-    fun `build with both channels and spdSection coexist in rendered`() {
+    fun `build with both channels and scenarioSection coexist in rendered`() {
         val ctx = CapsuleContextBuilder.build(
             composite(eager = "EAGER content", rag = "RAG snippet"),
-            spdSection = "==== SPD Pedagogical Context (spd)\nSession: Combined",
+            scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Combined",
         )
         assertEquals(2, ctx.nonEmptyCount)
         assertTrue(ctx.rendered.contains("EAGER content"))
         assertTrue(ctx.rendered.contains("RAG snippet"))
-        assertTrue(ctx.rendered.contains("SPD Pedagogical Context"))
+        assertTrue(ctx.rendered.contains("Pedagogical Scenario"))
     }
 }
