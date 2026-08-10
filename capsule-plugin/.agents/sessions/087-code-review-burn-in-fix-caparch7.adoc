@@ -1,0 +1,121 @@
+= Session 087 — Capsule Code Review + Bug Burn-in + CAP-ARCH-7 Video Destination Versioning
+:toc:
+:last_update: 2026-08-10
+
+== Résumé
+
+Session de **code review** puis **correction de bug** et **nouvelle feature**
+suite à la review. 3 livrables :
+
+. **Code review capsule** (analyse post-S-083→086) — 4 points relevés :
+  - Duplication verbatim `CapsulePipelineGraph` ≈ `DeckPipelineGraph` (dette
+    structurelle acceptable par boundary N2, à tracer pour extraction future
+    `pipeline-contracts` MEMPHIS).
+  - Versionning `codebase-contracts 0.1.0` non aligné (régularisation future).
+  - Hack `buildscript force annotations` (pattern slider, acceptable).
+  - **1 bug réel actionnable** : FAIL `@integration` burn-in (subtitle path
+    `build/capsule/` vs `outputDir=capsules`, connu S-069/S-082, jamais traité).
+. **Fix bug burn-in** (CAP-ARCH-7 US-0 implicite) — `CapsuleOutputDirResolver`
+  (object pur, package `capsule.support`) résout l'`outputDir` depuis le
+  `build.gradle` du projet Cucumber au lieu de hardcoder `build/capsule/`.
+  9 unit tests TDD RED→GREEN. Steps Cucumber `aSubtitleFileIsGenerated`,
+  `theVideoFileHasAValidWebmEbmlHeader`, `aVideoFileIsGenerated` migrés vers
+  résolution dynamique. Runner `cucumberTestIntegration` câblé dans
+  `build.gradle.kts` (`CucumberTaskSpec` dédié) pour exécuter les scénarios
+  `@integration` orphelins. **BUILD SUCCESSFUL 3m39s** — scénario E2E burn-in
+  maintenant VERT (était FAIL depuis S-069).
+. **CAP-ARCH-7 Video Destination Versioning** — nouvelle feature issue de la
+  review : post-capture distribution versionnée. 3 US livrées (US-1→3) :
+  - **US-1** : `OutputConfig` + `VersioningStrategy` (enum TIMESTAMP|INCREMENTAL)
+    étend `CapsuleConfig` (section `output`). `CapsuleConfigMerger` 4 sources
+    (ENV < props < YAML < CLI). 10 unit tests TDD.
+  - **US-2** : `VideoDestinationResolver` (object pur) — `resolveVersionLabel`
+    (timestamp ISO-8601 compact ou incremental depuis `collectExistingVersions`),
+    `resolveDestinationDir`, `resolveDestinationFile`. 10 unit tests TDD.
+  - **US-3** : `DistributeCapsuleVideoTask` (tâche `distributeCapsuleVideo`,
+    groupe `distribute`) copie les WebM de `build/<outputDir>/` vers
+    `<videoDestinationDir>/<version>/`. CLI `-Poutput.*` overrides. Économie
+    d'encre : skip si destination existe et non-vide. Wiring
+    `CapsuleManager.registerDistributeCapsuleVideoTask()`. 3 functional tests
+    (registration, copy versionné, skip idempotent).
+
+== Méthode
+
+Baby-step TDD/BDD (agile software craftsmanship) — RED → GREEN → REFACTOR :
+. Bug burn-in : test unit `CapsuleOutputDirResolverTest` RED → création
+  `CapsuleOutputDirResolver` GREEN → câblage steps Cucumber → validation BDD
+  `cucumberTestBurnInDebug` (runner temporaire supprimé après fix).
+. CAP-ARCH-7 US-1 : tests `CapsuleConfigMergerTest` (10 nouveaux) RED →
+  `OutputConfig` + `VersioningStrategy` + merger 4 sources GREEN.
+. CAP-ARCH-7 US-2 : tests `VideoDestinationResolverTest` (10 nouveaux) RED →
+  `VideoDestinationResolver` GREEN.
+. CAP-ARCH-7 US-3 : tests `DistributeCapsuleVideoFunctionalTest` (3 nouveaux)
+  → tâche `DistributeCapsuleVideoTask` + wiring `CapsuleManager`.
+
+== Tests
+
+- **568 unit tests VERT** (+28 net : +9 `CapsuleOutputDirResolverTest` + 10
+  `CapsuleConfigMergerTest` OutputConfig + 10 `VideoDestinationResolverTest`
+  -1 debug runner supprimé).
+- **37 functional tests VERT** (+3 `DistributeCapsuleVideoFunctionalTest`).
+- Cucumber `@burnin @integration` E2E VERT (scénario ligne 292, était FAIL
+  depuis S-069 — `BUILD SUCCESSFUL 3m39s`).
+- `./gradlew test` BUILD SUCCESSFUL (2m7s).
+
+== Livrables Code
+
+. `capsule/support/CapsuleOutputDirResolver.kt` (test source, object pur) +
+  `CapsuleOutputDirResolverTest.kt` (9 unit)
+. `capsule/CapsuleConfig.kt` — `OutputConfig` + `VersioningStrategy` (section
+  `output`, 3 champs)
+. `capsule/CapsuleConfigMerger.kt` — `mergeOutputConfig` + `mergeVersioning` +
+  `loadFromEnvironment`/`buildConfigFromProperties` étendus
+. `capsule/VideoDestinationResolver.kt` (main, object pur) +
+  `VideoDestinationResolverTest.kt` (10 unit)
+. `capsule/DistributeCapsuleVideoTask.kt` (tâche Gradle `distributeCapsuleVideo`)
+. `capsule/CapsuleManager.kt` — `registerDistributeCapsuleVideoTask()`
+. `capsule/scenarios/CapsuleStepDefinitions.kt` — 3 steps migrés vers
+  `CapsuleOutputDirResolver` (subtitle file, WebM EBML, video generated)
+. `build.gradle.kts` — `cucumberTestIntegration` `CucumberTaskSpec` câblé
+  (runner `CucumberIntegrationTestRunner` orphelin désormais exécuté)
+. `CapsuleConfigMergerTest.kt` — 10 tests `OutputConfig` (defaults, YAML, props,
+  env, CLI override, blank YAML fallback, versioning, versionPrefix)
+
+== Points d'Amélioration (trace review)
+
+. **Duplication pipeline koog** — `CapsulePipelineGraph` (capsule) ≈
+  `DeckPipelineGraph` (slider) à `Deck→Capsule` près. Accepté par boundary N2
+  (pas de shared kernel pipeline). À tracer : extraction `pipeline-contracts`
+  dans workspace-bom (MEMPHIS) si un 3e borough adopte le pattern. EPIC à
+  cadrer (non urgent).
+. **Versionning `codebase-contracts 0.1.0`** — schéma `0.1.0` non aligné avec
+  `i18n-contracts 0.0.2` et le reste en `0.0.x`. Régularisation à la prochaine
+  publication MEMPHIS.
+. **Steps Cucumber hardcodant `build/capsule/`** — 15+ steps (lignes 43, 171,
+  181, 192, 202, 212, 214, 226, 228, 535, 553, 575, 603, 663, 689, 715, 739,
+  768, 978) hardcodent encore `build/capsule/`. Les 3 steps vidéo/sous-titre
+  critiques (burn-in) sont corrigés. Le reste est dette technique à migrer
+  vers `CapsuleOutputDirResolver` progressivement (tracé au BACKLOG).
+. **Cucumber `@integration` orphelin** — le runner `CucumberIntegrationTestRunner`
+  existait mais n'était pas câblé dans `build.gradle.kts`. Désormais câblé via
+  `cucumberTestIntegration` `CucumberTaskSpec`. Les scénarios `@integration`
+  (Audio constraint, Output constraint, WebM validity, Burn-in E2E) sont
+  maintenant exécutables.
+
+== Zéro Régression
+
+- Unit tests : 568 VERT (tous existants préservés).
+- Functional tests : 37 VERT (tous existants préservés).
+- Build `compileKotlin` VERT.
+- Zéro secret ajouté.
+
+== Prochaine Session
+
+. **CAP-ARCH-7 US-4** — Cucumber BDD `@distrib @versioning` scénario (feature
+  `capsule_distrib.feature` + steps `CapsuleDistribSteps`).
+. **CAP-ARCH-4** — Wiring exécution existante (sortie pipeline LLM →
+  `generateCapsuleVideoAllLanguages` sans modifier le backend).
+. **Dette technique** — migrer les 15+ steps Cucumber restants vers
+  `CapsuleOutputDirResolver` ( tracé BACKLOG).
+. **EPIC extraction pipeline-contracts** (MEMPHIS) — à cadrer si un 3e borough
+  adopte le pattern pipeline koog.

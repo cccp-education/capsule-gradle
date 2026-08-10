@@ -36,6 +36,18 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleContextCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // Integration cucumber run — scenarios tagged @integration or @manim
+        // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
+        // default cucumberTest runner by `not @integration`; this dedicated task
+        // exercises them via CucumberIntegrationTestRunner. Run explicitly:
+        //   ./gradlew cucumberTestIntegration -PrunCucumber
+        CucumberTaskSpec(
+            name = "cucumberTestIntegration",
+            features = listOf("src/test/features"),
+            tags = listOf("@integration"),
+            runnerClass = "capsule.scenarios.CucumberIntegrationTestRunner",
+            timeoutMinutes = 30,
+        ),
     )
 }
 

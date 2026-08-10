@@ -548,15 +548,30 @@ workspace-bom `i18n-contracts` 0.0.2 + `codebase-contracts` 0.1.0.
   @architecture @ai`. Mock LLM HTTP (`-Pollama.baseUrl` pattern slider).
 | 3
 | ⬜ TODO
+
+| CAP-ARCH-7
+| *Video Destination Versioning (post-capture distribution)* — étend le modèle
+  `capsule-context.yml` avec une section `output` (`OutputConfig` :
+  `videoDestinationDir`, `versioning: timestamp|incremental`, `versionPrefix`).
+  `VideoDestinationResolver` (object pur) résout le path versionné. Tâche
+  `distributeCapsuleVideo` (groupe `distribute`) copie les WebM de
+  `build/<outputDir>/` vers `<videoDestinationDir>/<version>/` (comparaison de
+  versions côté utilisateur). Économie d'encre : skip si destination existe et
+  non-vide. Baby-step TDD : 10 unit `OutputConfig` (merger 4 sources) + 10 unit
+  `VideoDestinationResolver` (timestamp, incremental, collectExisting) + 3
+  functional (registration, copy versionné, skip idempotent).
+| 4
+| 🟡 EN COURS (S-087 : US-1 ✅, US-2 ✅, US-3 ✅, US-4 Cucumber ⬜ TODO)
 |===
 
-_Total_ : 7 US (US-0 cadrage + US-1→6 exécution), ~21 pts. _Méthode_ : baby-step
+_Total_ : 8 US (US-0 cadrage + US-1→7 exécution), ~25 pts. _Méthode_ : baby-step
 DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber), English only
 code/Gherkin. _Pattern de référence_ : slider SLD-8 (`LlmBuildService` bridge) +
 SLD-8.3 (`DeckPipelineGraph` koog), codebase (`KoogAugmentedContextGraph`,
 `CompositeContext`). _Statut_ : 🟡 EN COURS (CAP-ARCH-0 ✅ S-083, CAP-ARCH-1 ✅ S-084,
-CAP-ARCH-2 ✅ S-085, CAP-ARCH-3 ✅ S-086, CAP-ARCH-4→6 ⬜ TODO).
+CAP-ARCH-2 ✅ S-085, CAP-ARCH-3 ✅ S-086, CAP-ARCH-7 🟡 S-087, CAP-ARCH-4→6 ⬜ TODO).
 
-_Version de référence_ : 540 unit + 34 functional (session 086), cucumber
+_Version de référence_ : 568 unit + 37 functional (session 087), cucumber
 SKIPPED par défaut (CR-10). Prochaine : CAP-ARCH-4 (wiring backend,
-`generateCapsuleContent` → `generateCapsuleVideoAllLanguages`).
+`generateCapsuleContent` → `generateCapsuleVideoAllLanguages`) ou CAP-ARCH-7 US-4
+(Cucumber `@distrib @versioning`).

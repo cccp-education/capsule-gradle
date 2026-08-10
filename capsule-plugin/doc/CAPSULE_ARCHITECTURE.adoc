@@ -57,6 +57,7 @@ playwright --> livrable : capture video
 Le pipeline global transforme l'AsciiDoc source en un livrable video unique.
 
 '''
+
 == Architecture des Composants
 
 [plantuml,target="composants",format="svg"]

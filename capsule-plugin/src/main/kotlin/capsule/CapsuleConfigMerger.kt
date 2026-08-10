@@ -32,7 +32,8 @@ object CapsuleConfigMerger {
             tts = mergeTtsConfig(envConfig.tts, propertiesConfig.tts, yaml?.tts, cliParams),
             capture = mergeCaptureConfig(envConfig.capture, propertiesConfig.capture, yaml?.capture, cliParams),
             distrib = mergeDistribConfig(envConfig.distrib, propertiesConfig.distrib, yaml?.distrib, cliParams),
-            manim = mergeManimConfig(envConfig.manim, propertiesConfig.manim, yaml?.manim, cliParams)
+            manim = mergeManimConfig(envConfig.manim, propertiesConfig.manim, yaml?.manim, cliParams),
+            output = mergeOutputConfig(envConfig.output, propertiesConfig.output, yaml?.output, cliParams)
         )
     }
 
@@ -113,6 +114,11 @@ object CapsuleConfigMerger {
                 outputDir = env["CAPSULE_MANIM_OUTPUT_DIR"] ?: "build/capsule/manim",
                 parallelRender = env["CAPSULE_MANIM_PARALLEL_RENDER"]?.toBoolean() ?: false,
                 parallelRenderThreads = env["CAPSULE_MANIM_PARALLEL_RENDER_THREADS"]?.toIntOrNull() ?: 4
+            ),
+            output = OutputConfig(
+                videoDestinationDir = env["CAPSULE_OUTPUT_VIDEO_DESTINATION_DIR"] ?: "office/videos",
+                versioning = VersioningStrategy.fromString(env["CAPSULE_OUTPUT_VERSIONING"]),
+                versionPrefix = env["CAPSULE_OUTPUT_VERSION_PREFIX"] ?: "v"
             )
         )
     }
@@ -162,6 +168,11 @@ object CapsuleConfigMerger {
                 outputDir = props["capsule.manim.outputDir"] ?: "build/capsule/manim",
                 parallelRender = props["capsule.manim.parallelRender"]?.toBoolean() ?: false,
                 parallelRenderThreads = props["capsule.manim.parallelRenderThreads"]?.toIntOrNull() ?: 4
+            ),
+            output = OutputConfig(
+                videoDestinationDir = props["capsule.output.videoDestinationDir"] ?: "office/videos",
+                versioning = VersioningStrategy.fromString(props["capsule.output.versioning"]),
+                versionPrefix = props["capsule.output.versionPrefix"] ?: "v"
             )
         )
     }
@@ -232,6 +243,26 @@ object CapsuleConfigMerger {
             parallelRender = mergeBoolean(cli, "manim.parallelRender", yaml?.parallelRender, props.parallelRender),
             parallelRenderThreads = mergeInt(cli, "manim.parallelRenderThreads", yaml?.parallelRenderThreads, props.parallelRenderThreads)
         )
+    }
+
+    private fun mergeOutputConfig(env: OutputConfig, props: OutputConfig, yaml: OutputConfig?, cli: Map<String, Any?>): OutputConfig {
+        return OutputConfig(
+            videoDestinationDir = mergeStr(cli, "output.videoDestinationDir", yaml?.videoDestinationDir, props.videoDestinationDir, env.videoDestinationDir),
+            versioning = mergeVersioning(cli, "output.versioning", yaml?.versioning, props.versioning),
+            versionPrefix = mergeStr(cli, "output.versionPrefix", yaml?.versionPrefix, props.versionPrefix, env.versionPrefix)
+        )
+    }
+
+    private fun mergeVersioning(
+        cli: Map<String, Any?>,
+        key: String,
+        yaml: VersioningStrategy?,
+        props: VersioningStrategy
+    ): VersioningStrategy {
+        val cliValue = cli[key]?.toString()
+        if (!cliValue.isNullOrBlank()) return VersioningStrategy.fromString(cliValue)
+        yaml?.let { return it }
+        return props
     }
 
     // ─── Generic merge helpers (CLI > YAML > Props > ENV) ────────

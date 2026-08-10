@@ -13,7 +13,8 @@ data class CapsuleConfig(
     val tts: TtsConfig = TtsConfig(),
     val capture: CaptureConfig = CaptureConfig(),
     val distrib: DistribConfig = DistribConfig(),
-    val manim: ManimConfig = ManimConfig()
+    val manim: ManimConfig = ManimConfig(),
+    val output: OutputConfig = OutputConfig()
 )
 
 data class InputConfig(
@@ -54,6 +55,45 @@ data class DistribConfig(
     val ffmpegExecutablePath: String = "ffmpeg",
     val outputWidth: Int = 1080,
     val outputHeight: Int = 1920
+)
+
+/**
+ * Versioning strategy for video destination copies (CAP-ARCH-7).
+ *
+ * - [TIMESTAMP] — each copy is versioned with an ISO-8601 timestamp
+ *   (`v2026-08-10T0423`). Idempotent, no state to manage.
+ * - [INCREMENTAL] — copies are versioned with an incrementing integer
+ *   (`v1`, `v2`, ...). Requires reading the destination directory to
+ *   determine the next version.
+ */
+enum class VersioningStrategy {
+    TIMESTAMP,
+    INCREMENTAL;
+
+    companion object {
+        fun fromString(value: String?): VersioningStrategy =
+            entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: TIMESTAMP
+    }
+}
+
+/**
+ * Configuration for the versioned video destination (CAP-ARCH-7).
+ *
+ * The capsule pipeline writes videos to `build/<outputDir>/` during the
+ * build. This config drives a *post-capture distribution* step that copies
+ * the final WebM to a versioned subdirectory under [videoDestinationDir],
+ * enabling the user to compare capsule versions side-by-side.
+ *
+ * @param videoDestinationDir absolute or relative path to the destination
+ *        root (default `office/videos`, relative to the workspace root).
+ * @param versioning           the versioning strategy (default [TIMESTAMP]).
+ * @param versionPrefix        prefix prepended to the version label
+ *        (default `v`).
+ */
+data class OutputConfig(
+    val videoDestinationDir: String = "office/videos",
+    val versioning: VersioningStrategy = VersioningStrategy.TIMESTAMP,
+    val versionPrefix: String = "v"
 )
 
 data class ManimConfig(

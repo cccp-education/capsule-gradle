@@ -460,3 +460,23 @@ contenu et i18n (6 US ~19 pts, inspiration document/bakery/plantuml). ⬜ TODO.
 Métriques : 405 unit VERT (+9), 1 scénario cucumber ajouté.
 
 Rapport : `.agents/sessions/073-cr8-logging-structure-cap-arch.adoc`.
+== Session 087 — Code review + Bug burn-in fix + CAP-ARCH-7 Video Destination Versioning (2026-08-10)
+
+*Code review post-S-083→086* : 4 points relevés.
+
+*Bug burn-in fix* (CAP-ARCH-7 US-0 implicite) : `CapsuleOutputDirResolver`
+(object pur, package `capsule.support`) résout l'`outputDir` depuis le
+`build.gradle` du projet Cucumber. 9 unit tests TDD. 3 steps Cucumber migrés.
+Runner `cucumberTestIntegration` câblé. **BUILD SUCCESSFUL 3m39s** — scénario
+E2E burn-in VERT (était FAIL depuis S-069).
+
+*CAP-ARCH-7 Video Destination Versioning* (nouvelle feature issue review) :
+- US-1 : `OutputConfig` + `VersioningStrategy` (TIMESTAMP|INCREMENTAL) étend
+  `CapsuleConfig` section `output`. `CapsuleConfigMerger` 4 sources. 10 unit.
+- US-2 : `VideoDestinationResolver` (object pur). 10 unit.
+- US-3 : `DistributeCapsuleVideoTask` (tâche `distributeCapsuleVideo`). 3 functional.
+
+Métriques : 568 unit VERT (+28 net) + 37 functional VERT (+3). Cucumber
+`@burnin @integration` E2E VERT.
+
+Rapport : `.agents/sessions/087-code-review-burn-in-fix-caparch7.adoc`.

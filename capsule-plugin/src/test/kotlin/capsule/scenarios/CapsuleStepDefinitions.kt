@@ -1,5 +1,6 @@
 package capsule.scenarios
 
+import capsule.support.CapsuleOutputDirResolver
 import io.cucumber.java.en.And
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
@@ -143,7 +144,7 @@ $slides
 
     @Then("a video file {string} is generated")
     fun aVideoFileIsGenerated(videoName: String) {
-        val videoFile = projectDir.resolve("build/capsule/$videoName")
+        val videoFile = capsuleOutputDir().resolve(videoName)
         assertTrue(videoFile.exists(), "Expected video at ${videoFile.absolutePath}")
     }
 
@@ -303,7 +304,7 @@ $slides
 
     @Then("the video file {string} has a valid WebM EBML header")
     fun theVideoFileHasAValidWebmEbmlHeader(videoName: String) {
-        val videoFile = projectDir.resolve("build/capsules/$videoName")
+        val videoFile = capsuleOutputDir().resolve(videoName)
         assertTrue(videoFile.exists(), "Video must exist at ${videoFile.absolutePath}")
         assertTrue(videoFile.length() > 0, "Video must not be empty")
 
@@ -947,14 +948,15 @@ class $sceneName(Scene):
 
     @Then("a subtitle file {string} is generated in the capsule output directory")
     fun aSubtitleFileIsGeneratedInTheCapsuleOutputDirectory(fileName: String) {
-        val subtitleFile = projectDir.resolve("build/capsule/$fileName")
-        assertTrue(subtitleFile.exists(), "Subtitle file $fileName should exist in build/capsule/. Expected: ${subtitleFile.absolutePath}")
+        val subtitleFile = capsuleOutputSubtitleFile(fileName)
+        assertTrue(subtitleFile.exists(), "Subtitle file $fileName should exist in ${subtitleFile.parent}. Expected: ${subtitleFile.absolutePath}")
     }
 
     @Then("the subtitle file contains valid SRT format with {int} cues")
     fun theSubtitleFileContainsValidSrtFormatWithCues(expectedCues: Int) {
-        val subtitleFile = projectDir.resolve("build/capsule").listFiles { f -> f.name.endsWith(".srt") }?.firstOrNull()
-        assertNotNull(subtitleFile, "Should have an SRT subtitle file")
+        val srtDir = capsuleOutputDir()
+        val subtitleFile = srtDir.listFiles { f -> f.name.endsWith(".srt") }?.firstOrNull()
+        assertNotNull(subtitleFile, "Should have an SRT subtitle file in ${srtDir.absolutePath}")
         val content = subtitleFile.readText()
         assertTrue(content.contains("-->"), "SRT should contain timestamp arrows '-->'")
         val cueCount = content.lines().count { it.trim().matches(Regex("""^\d+$""")) }
@@ -963,8 +965,9 @@ class $sceneName(Scene):
 
     @Then("the subtitle file contains valid VTT format with WEBVTT header")
     fun theSubtitleFileContainsValidVttFormatWithWebvttHeader() {
-        val subtitleFile = projectDir.resolve("build/capsule").listFiles { f -> f.name.endsWith(".vtt") }?.firstOrNull()
-        assertNotNull(subtitleFile, "Should have a VTT subtitle file")
+        val vttDir = capsuleOutputDir()
+        val subtitleFile = vttDir.listFiles { f -> f.name.endsWith(".vtt") }?.firstOrNull()
+        assertNotNull(subtitleFile, "Should have a VTT subtitle file in ${vttDir.absolutePath}")
         val content = subtitleFile.readText()
         assertTrue(content.trimStart().startsWith("WEBVTT"), "VTT should start with WEBVTT header. Got: ${content.take(100)}")
         assertTrue(content.contains("-->"), "VTT should contain timestamp arrows '-->'")
@@ -1142,4 +1145,18 @@ class $sceneName(Scene):
             "Build output should contain a Manim config log line with quality= token. Got: ${lastBuildResult.take(2000)}"
         )
     }
+
+    // ─── CapsuleOutputDirResolver helpers (S-087 path mismatch fix) ───────
+    // Steps resolving subtitle/video files must honor the `outputDir` configured
+    // in the Cucumber project build.gradle instead of hardcoding `build/capsule/`.
+    // See [capsule.support.CapsuleOutputDirResolver].
+
+    private fun capsuleBuildGradleContent(): String =
+        projectDir.resolve("build.gradle").takeIf { it.exists() }?.readText() ?: ""
+
+    private fun capsuleOutputDir(): File =
+        CapsuleOutputDirResolver.resolveBuildOutputPath(projectDir, capsuleBuildGradleContent())
+
+    private fun capsuleOutputSubtitleFile(fileName: String): File =
+        CapsuleOutputDirResolver.resolveSubtitleFile(projectDir, capsuleBuildGradleContent(), fileName)
 }

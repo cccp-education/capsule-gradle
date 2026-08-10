@@ -19,6 +19,7 @@ class CapsuleManager(private val project: Project) {
         project.registerAiSmokeTestTask()
         project.registerCollectAugmentedContextTask()
         project.registerGenerateCapsuleContentTask()
+        project.registerDistributeCapsuleVideoTask()
     }
 
     private fun Project.registerExtractSpeakerNotesTask() {
@@ -66,6 +67,18 @@ class CapsuleManager(private val project: Project) {
             task.group = "deploy"
             task.description = "Recadre les capsules en format vertical 9:16 (TikTok/Shorts) via FFmpeg"
             task.dependsOn("generateCapsuleVideo")
+        }
+    }
+
+    private fun Project.registerDistributeCapsuleVideoTask() {
+        tasks.register("distributeCapsuleVideo", DistributeCapsuleVideoTask::class.java) { task ->
+            task.group = "distribute"
+            task.description = "Copies capsule WebM videos to a versioned destination directory (CAP-ARCH-7)"
+            val config = CapsuleConfigLoader.load(File(project.projectDir, "capsule-context.yml"))
+            val merged = CapsuleConfigMerger.merge(project.projectDir, config, emptyMap())
+            task.videoDestinationDir.set(merged.output.videoDestinationDir)
+            task.versioning.set(merged.output.versioning.name)
+            task.versionPrefix.set(merged.output.versionPrefix)
         }
     }
 

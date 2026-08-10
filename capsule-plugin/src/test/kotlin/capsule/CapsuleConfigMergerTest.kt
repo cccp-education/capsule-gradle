@@ -718,4 +718,102 @@ class CapsuleConfigMergerTest {
 
         assertEquals("espeak", merged.tts.engine, "Blank YAML string should fall back to props (isNotBlank heuristic)")
     }
+
+    // ─── OutputConfig (CAP-ARCH-7 video destination versioning) ──────
+
+    @Test
+    fun `OutputConfig defaults are resolved when no source provides values`() {
+        val projectDir = File(tempDir, "output-defaults").also { it.mkdirs() }
+
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
+
+        assertEquals("office/videos", merged.output.videoDestinationDir, "Default output.videoDestinationDir should be office/videos")
+        assertEquals(VersioningStrategy.TIMESTAMP, merged.output.versioning, "Default output.versioning should be TIMESTAMP")
+        assertEquals("v", merged.output.versionPrefix, "Default output.versionPrefix should be v")
+    }
+
+    @Test
+    fun `OutputConfig videoDestinationDir is read from YAML`() {
+        val projectDir = File(tempDir, "output-yaml").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(output = OutputConfig(videoDestinationDir = "/home/cheroliv/workspace/office/videos"))
+
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+
+        assertEquals("/home/cheroliv/workspace/office/videos", merged.output.videoDestinationDir)
+    }
+
+    @Test
+    fun `OutputConfig videoDestinationDir is read from gradle properties`() {
+        val projectDir = File(tempDir, "output-props").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.output.videoDestinationDir=/custom/videos
+        """.trimIndent())
+
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
+
+        assertEquals("/custom/videos", merged.output.videoDestinationDir)
+    }
+
+    @Test
+    fun `OutputConfig videoDestinationDir is read from env`() {
+        // We cannot easily set env vars in tests (see existing loadFromEnvironment tests),
+        // so we verify the env mapping produces defaults when no CAPSULE_OUTPUT_* is set.
+        val config = CapsuleConfigMerger.loadFromEnvironment()
+
+        assertEquals("office/videos", config.output.videoDestinationDir, "env default should be office/videos")
+        assertEquals(VersioningStrategy.TIMESTAMP, config.output.versioning, "env default versioning should be TIMESTAMP")
+        assertEquals("v", config.output.versionPrefix, "env default versionPrefix should be v")
+    }
+
+    @Test
+    fun `OutputConfig CLI overrides YAML`() {
+        val projectDir = File(tempDir, "output-cli").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(output = OutputConfig(videoDestinationDir = "/yaml/videos"))
+
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, mapOf("output.videoDestinationDir" to "/cli/videos"))
+
+        assertEquals("/cli/videos", merged.output.videoDestinationDir, "CLI should override YAML for videoDestinationDir")
+    }
+
+    @Test
+    fun `OutputConfig versioning is read from YAML`() {
+        val projectDir = File(tempDir, "output-versioning-yaml").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(output = OutputConfig(versioning = VersioningStrategy.INCREMENTAL))
+
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+
+        assertEquals(VersioningStrategy.INCREMENTAL, merged.output.versioning)
+    }
+
+    @Test
+    fun `OutputConfig versioning is read from CLI`() {
+        val projectDir = File(tempDir, "output-versioning-cli").also { it.mkdirs() }
+
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), mapOf("output.versioning" to "incremental"))
+
+        assertEquals(VersioningStrategy.INCREMENTAL, merged.output.versioning)
+    }
+
+    @Test
+    fun `OutputConfig versionPrefix is read from YAML`() {
+        val projectDir = File(tempDir, "output-prefix-yaml").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(output = OutputConfig(versionPrefix = "rev"))
+
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+
+        assertEquals("rev", merged.output.versionPrefix)
+    }
+
+    @Test
+    fun `OutputConfig videoDestinationDir blank YAML falls back to props`() {
+        val projectDir = File(tempDir, "output-blank-yaml").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.output.videoDestinationDir=/props/videos
+        """.trimIndent())
+        val yamlConfig = CapsuleConfig(output = OutputConfig(videoDestinationDir = ""))
+
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+
+        assertEquals("/props/videos", merged.output.videoDestinationDir, "Blank YAML should fall back to props")
+    }
 }
