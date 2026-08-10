@@ -111,5 +111,8 @@ class CapsulePlugin : Plugin<Project> {
         if (ext.manimOutputDir.get() == conventions.manimOutputDir) ext.manimOutputDir.set(config.manim.outputDir)
         if (ext.manimParallelRender.get() == conventions.manimParallelRender) ext.manimParallelRender.set(config.manim.parallelRender)
         if (ext.manimParallelRenderThreads.get() == conventions.manimParallelRenderThreads) ext.manimParallelRenderThreads.set(config.manim.parallelRenderThreads)
+
+        // StrictMode section (CAP-CR3-2)
+        if (!ext.strictMode.isPresent || ext.strictMode.get() == false) ext.strictMode.set(config.strictMode.enabled)
     }
 }

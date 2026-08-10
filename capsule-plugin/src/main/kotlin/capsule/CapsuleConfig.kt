@@ -14,7 +14,8 @@ data class CapsuleConfig(
     val capture: CaptureConfig = CaptureConfig(),
     val distrib: DistribConfig = DistribConfig(),
     val manim: ManimConfig = ManimConfig(),
-    val output: OutputConfig = OutputConfig()
+    val output: OutputConfig = OutputConfig(),
+    val strictMode: StrictModeConfig = StrictModeConfig()
 )
 
 data class InputConfig(

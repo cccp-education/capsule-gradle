@@ -1,6 +1,44 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-10
 
+== Session 091 — CAP-CR3-2 Mode strict anti-NoOp (EPIC CAP-CR3-2 TERMINÉ 4/4 US) ✅
+
+`capsule.strictMode` DSL (Boolean, défaut `false`, 4 sources ENV < props < YAML
+< CLI). `StrictModeGuard` (object pur, domaine `capsule.config`) —
+`requireAvailable(strict, engineName, isAvailable, path)` lève
+`IllegalStateException` avec message actionable. 6 `resolve*` branchés
+(CapsuleBuildTask piper/espeak, CapsuleVideoTask piper/espeak/playwright,
+CapsuleManager manim/mixer/subtitle — param `strict` ajouté, défaut `false`
+rétrocompatible). `noop` explicite reste légitime, non concerné.
+`StrictModeConfig` data class. `CapsuleConfigMerger.mergeStrictModeConfig`.
+`CapsuleExtension.strictMode` Property. Cucumber `@strict @config` 4 scénarios
+(runner dédié `CapsuleStrictModeCucumberRunner` pattern S-082). 674 unit VERT
+(+19) + 44 functional VERT (+4) + 8 cucumber dédiés GREEN. `check` BUILD
+SUCCESSFUL 6m54s. Zéro régression, zéro secret.
+
+Tâches terminées :
+. `src/main/kotlin/capsule/StrictModeConfig.kt` — data class 1 champ `enabled: Boolean = false`
+. `src/main/kotlin/capsule/StrictModeGuard.kt` — object pur, `requireAvailable` lève en strict mode
+. `src/main/kotlin/capsule/CapsuleConfig.kt` — étendu `strictMode: StrictModeConfig`
+. `src/main/kotlin/capsule/CapsuleConfigMerger.kt` — `mergeStrictModeConfig` + env + props
+. `src/main/kotlin/capsule/CapsuleModels.kt` — `CapsuleExtension.strictMode` Property
+. `src/main/kotlin/capsule/CapsulePlugin.kt` — `pushConfigIntoExtension` push strictMode
+. `src/main/kotlin/capsule/CapsuleBuildTask.kt` — guard piper/espeak
+. `src/main/kotlin/capsule/CapsuleVideoTask.kt` — guard piper/espeak/playwright + 3 appelants manim/mixer/subtitle
+. `src/main/kotlin/capsule/CapsuleManager.kt` — param `strict` 3 resolve*
+. `src/test/kotlin/capsule/StrictModeConfigTest.kt` — 3 unit
+. `src/test/kotlin/capsule/StrictModeGuardTest.kt` — 7 unit
+. `src/test/kotlin/capsule/CapsuleConfigMergerTest.kt` — +9 strictMode tests
+. `src/functionalTest/kotlin/capsule/StrictModeFunctionalTest.kt` — 4 functional
+. `src/test/features/capsule_strict_mode.feature` — 4 scénarios `@strict @config`
+. `src/test/kotlin/capsule/scenarios/CapsuleStrictModeSteps.kt` — steps self-contained
+. `src/test/kotlin/capsule/scenarios/CapsuleStrictModeCucumberRunner.kt` — runner dédié S-082
+. `build.gradle.kts` — `CucumberTaskSpec("cucumberTestStrictMode")` câblé
+
+EPIC CAP-CR3-2 TERMINÉ 4/4 US (S-091). Le « faux positif » vidéo est éliminé.
+
+---
+
 == Session 090 — CAP-ARCH-6 Cucumber BDD boundary cross-borough (EPIC CAP-ARCH TERMINÉ 8/8 US) ✅
 
 `capsule_arch_boundary.feature` (4 scénarios `@cross-borough @architecture

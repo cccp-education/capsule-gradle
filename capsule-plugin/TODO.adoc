@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-08-10 (Session 088 — CAP-ARCH-4 Wiring backend ✅ + CAP-ARCH-7 US-4 Cucumber distrib ✅)
+:last_update: 2026-08-10 (Session 091 — CAP-CR3-2 Mode strict anti-NoOp ✅ TERMINÉ 4/4 US)
 
 '''
 == ✅ EPIC CAP-MODEL — TERMINE (session 069)
@@ -230,7 +230,7 @@
 . [ ] 🟢 CAP-27 — VTT burn-in
 . [ ] 🟢 CAP-28 — Coverage gaps (PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%)
 . [ ] 🔴 CAP-CR3-1 — CI `full` avec vrais binaires + probe de durée vidéo
-. [ ] 🔴 CAP-CR3-2 — Mode strict anti-NoOp (`capsule.strictMode`)
+. [x] 🔴 CAP-CR3-2 — Mode strict anti-NoOp (`capsule.strictMode`) ✅ S-091
 . [ ] 🟠 CAP-CR3-3 — Décision `ScreenshotCaptureImpl` vs `PlaywrightCaptureImpl`
 . [ ] 🟡 CAP-CR3-4 — Convention Gradle `resolveScriptDir/resolveDeckDir`
 . [x] 🟢 CAP-29 — Pipeline Traduction Vidéo Multi-Langue (7 US ~20 pts, TERMINÉ 7/7 US : CAP-29.0 ✅ S-076, CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, CAP-29.4 ✅ S-080, CAP-29.5 ✅ S-081, CAP-29.6 ✅ S-082)

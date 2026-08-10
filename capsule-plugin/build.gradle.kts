@@ -63,6 +63,15 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleDistribCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // Focused cucumber run for the CAP-CR3-2 strict mode anti-NoOp feature
+        // (fast iteration — pure config, no Playwright/FFmpeg needed).
+        CucumberTaskSpec(
+            name = "cucumberTestStrictMode",
+            features = listOf("src/test/features/capsule_strict_mode.feature"),
+            tags = listOf("@strict"),
+            runnerClass = "capsule.scenarios.CapsuleStrictModeCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task

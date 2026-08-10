@@ -229,10 +229,15 @@ class CapsuleManager(private val project: Project) {
          * - Otherwise, returns ManimVideoMixerImpl
          */
         @JvmStatic
-        fun resolveManimVideoMixer(ffmpegPath: String = "ffmpeg"): ManimVideoMixer {
+        fun resolveManimVideoMixer(ffmpegPath: String = "ffmpeg", strict: Boolean = false): ManimVideoMixer {
             if (ffmpegPath == "noop") return NoOpManimVideoMixer()
             val mixer = ManimVideoMixerImpl(ffmpegPath)
-            return if (mixer.isAvailable()) mixer else NoOpManimVideoMixer()
+            return if (mixer.isAvailable()) {
+                mixer
+            } else {
+                StrictModeGuard.requireAvailable(strict, "ffmpeg (manim video mixer)", false, ffmpegPath)
+                NoOpManimVideoMixer()
+            }
         }
 
         /**
@@ -250,12 +255,17 @@ class CapsuleManager(private val project: Project) {
          * - Otherwise, creates ManimEngineImpl(config) and falls back to NoOpManimEngine if unavailable
          */
         @JvmStatic
-        fun resolveManimEngine(config: ManimConfig): ManimEngine {
+        fun resolveManimEngine(config: ManimConfig, strict: Boolean = false): ManimEngine {
             if (config.executablePath == "noop") {
                 return NoOpManimEngine()
             }
             val engine = ManimEngineImpl(config)
-            return if (engine.isAvailable()) engine else NoOpManimEngine()
+            return if (engine.isAvailable()) {
+                engine
+            } else {
+                StrictModeGuard.requireAvailable(strict, "manim", false, config.executablePath)
+                NoOpManimEngine()
+            }
         }
 
         /**
@@ -278,10 +288,15 @@ class CapsuleManager(private val project: Project) {
          * - Otherwise, returns SubtitleBurnInServiceImpl if ffmpeg is available
          */
         @JvmStatic
-        fun resolveSubtitleBurnInService(ffmpegPath: String = "ffmpeg", style: SubtitleBurnInStyle = SubtitleBurnInStyle()): SubtitleBurnInService {
+        fun resolveSubtitleBurnInService(ffmpegPath: String = "ffmpeg", style: SubtitleBurnInStyle = SubtitleBurnInStyle(), strict: Boolean = false): SubtitleBurnInService {
             if (ffmpegPath == "noop") return NoOpSubtitleBurnInService()
             val service = SubtitleBurnInServiceImpl(ffmpegPath, style)
-            return if (service.isAvailable()) service else NoOpSubtitleBurnInService()
+            return if (service.isAvailable()) {
+                service
+            } else {
+                StrictModeGuard.requireAvailable(strict, "ffmpeg (subtitle burn-in)", false, ffmpegPath)
+                NoOpSubtitleBurnInService()
+            }
         }
 
         fun readScriptFiles(dir: File): List<File> {

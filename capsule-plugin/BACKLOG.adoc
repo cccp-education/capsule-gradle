@@ -346,7 +346,7 @@ C'est LE contrat de solidité vidéo : `check` vert ≠ vidéo exploitable sans 
 `NoOpPlaywrightCapture`/`NoOpManimEngine`/`NoOpTtsEngine` ne doivent jamais être valables en prod.
 Fix : `capsule.strictMode` DSL (defaut false) ; si true, `resolve*` lève au lieu de logger.warn.
 | 🔴 P0
-| ⬜ TODO
+| ✅ TERMINÉ (S-091)
 
 | CAP-CR3-3
 | **Décision capture : `ScreenshotCaptureImpl` vs `PlaywrightCaptureImpl`** — Le premier (PNG→ffmpeg, annoncé « faster »)

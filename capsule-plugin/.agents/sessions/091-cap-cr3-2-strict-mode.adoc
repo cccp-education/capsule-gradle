@@ -1,0 +1,191 @@
+= Session 091 — CAP-CR3-2 Mode strict anti-NoOp (EPIC CAP-CR3-2 US-1→4)
+
+_Date_ : 2026-08-10
+_Type_ : feat+ddd+tdd+bdd
+_Score_ : 9/10
+
+== Objectif
+
+Livrer l'EPIC CAP-CR3-2 (Mode strict anti-NoOp) — le P0 de l'EPIC CAP-CR3
+(revue CR-GLOBALE-003 solidité vidéo). L'objectif est d'empêcher le « faux
+positif » : `check` vert + livrable illisible quand un engine (Piper, espeak,
+Playwright, ffmpeg, manim) est absent et silently remplacé par un NoOp
+placeholder. En strict mode, le build doit FAIL avec un message actionable.
+
+== Cadrage (US-0 implicite)
+
+*Audit code* : 6 fonctions `resolve*` retournent silencieusement un engine
+NoOp quand l'outil réel est absent. Le pattern est partout le même :
+`if (engine.isAvailable()) engine else NoOpXxxEngine()`.
+
+*Inventaire des 6 fallbacks silencieux* :
+. `CapsuleBuildTask.resolveTtsEngine` (piper absent, espeak absent, unknown)
+. `CapsuleVideoTask.resolveTtsEngine` (piper absent, espeak absent, else)
+. `CapsuleVideoTask.resolvePlaywrightCapture` (Playwright absent)
+. `CapsuleManager.resolveManimEngine` (manim absent)
+. `CapsuleManager.resolveManimVideoMixer` (ffmpeg absent)
+. `CapsuleManager.resolveSubtitleBurnInService` (ffmpeg absent)
+
+*Note* : `resolveManimParallelRenderer` n'est pas un fallback d'indisponibilité
+— `NoOpManimParallelRenderer` est un mode séquentiel légitime (parallelism ≤ 1).
+Hors périmètre.
+
+== Décisions de cadrage
+
+. *DSL* : `capsule.strictMode` (Boolean, défaut `false`) — rétrocompatible.
+. *4 sources* : ENV `CAPSULE_STRICT_MODE_ENABLED` < props
+  `capsule.strictMode.enabled` < YAML `strictMode.enabled` < CLI
+  `-Pcapsule.strictMode.enabled`.
+. *Portée* : 6 fallbacks deviennent erreurs quand `strictMode = true`. Le
+  `noop` explicite (`ttsEngine = "noop"`, `ffmpegPath = "noop"`) reste
+  légitime pour tests → non concerné.
+. *Exception* : `IllegalStateException` avec message exploitable nommant
+  l'engine, le path, et suggérant `strictMode=false` ou `install <tool>`.
+. *Domaine* : `capsule.config` déjà existant (`CapsuleConfig`,
+  `CapsuleConfigMerger`, `CapsuleConfigLogger`) → étend `CapsuleConfig` avec
+  `StrictModeConfig` (1 champ `enabled: Boolean`). Pas de nouveau domaine.
+. *Helper* : `StrictModeGuard` (object pur, domaine `capsule.config`) —
+  `requireAvailable(strict, engineName, isAvailable, path)` lève si
+  `strict && !isAvailable`. Testable unit pur.
+
+== US-1 — StrictModeConfig + StrictModeGuard (domaine pur)
+
+*Niveau* : unit tests.
+
+*RED* : 10 tests écrits (7 `StrictModeGuardTest` + 3 `StrictModeConfigTest`)
+avant le code de production. Compilation échoue (`Unresolved reference
+StrictModeGuard`).
+
+*GREEN* : 2 fichiers prod créés :
+. `StrictModeConfig.kt` — data class 1 champ `enabled: Boolean = false`.
+. `StrictModeGuard.kt` — object pur, `requireAvailable(strict, engineName,
+  isAvailable, path)` : no-op si `!strict || isAvailable`, sinon
+  `IllegalStateException` avec message :
+  `"strictMode is enabled: <engine> not available at '<path>'.
+  Disable strictMode (capsule.strictMode=false) or install <engine>."`.
+  Path segment omis si blank (pas de dangling ` at ''`).
+
+*Résultat* : 10 tests unit VERT (+10).
+
+== US-2 — DSL + merger 4 sources
+
+*Niveau* : unit tests.
+
+*RED* : 9 tests ajoutés à `CapsuleConfigMergerTest` (default disabled, YAML,
+CLI override YAML, props, YAML > props, CLI > props no-YAML, env default,
+loadFromGradleProperties). Compilation échoue (`CapsuleConfig.strictMode`
+manquant).
+
+*GREEN* :
+. `CapsuleConfig` étendu avec `strictMode: StrictModeConfig = StrictModeConfig()`.
+. `CapsuleConfigMerger` : `mergeStrictModeConfig` (utilise `mergeBoolean`
+  existant), `loadFromEnvironment` lit `CAPSULE_STRICT_MODE_ENABLED`,
+  `buildConfigFromProperties` lit `capsule.strictMode.enabled`.
+. `CapsuleExtension.strictMode: Property<Boolean>` (convention `false`).
+. `CapsulePlugin.pushConfigIntoExtension` : push `strictMode` si non
+  explicitement set par DSL.
+
+*Correction TDD* : le test "strictMode is read from gradle properties"
+échouait initialement car `CapsuleConfig()` default `strictMode=false`
+écrasait les props via `mergeBoolean` (YAML > props). Fix : `yamlLoaded =
+false` pour que les props prennent effet (comportement correct du merger).
+
+*Résultat* : 66 tests merger VERT (+9). 674 unit total (+19 net).
+
+== US-3 — Wiring 6 resolve* + functional tests
+
+*Niveau* : functional tests.
+
+*RED* : 4 tests `StrictModeFunctionalTest` écrits (default NoOp préserveré,
+strict + piper absent → FAIL, strict + noop explicite → OK, CLI flag strict
+→ FAIL). 2 tests échouent (strict DSL + strict CLI : le build ne fail pas
+avec le bon message — `ttsFallbackEnabled = false` court-circuitait avant
+le guard avec une `TtsException` générique).
+
+*GREEN* : 6 `resolve*` branchés avec `StrictModeGuard.requireAvailable` :
+. `CapsuleBuildTask.resolveTtsEngine` — piper absent + fallback enabled →
+  guard avant NoOp (espeak absent idem). `noop` explicite skip guard.
+. `CapsuleVideoTask.resolveTtsEngine` — piper/espeak absent → guard.
+. `CapsuleVideoTask.resolvePlaywrightCapture` — Playwright absent → guard
+  (path = `chromiumExecutablePath`).
+. `CapsuleManager.resolveManimEngine(config, strict)` — param `strict`
+  ajouté (défaut `false` pour rétrocompatibilité).
+. `CapsuleManager.resolveManimVideoMixer(ffmpegPath, strict)` — idem.
+. `CapsuleManager.resolveSubtitleBurnInService(ffmpegPath, style, strict)` —
+  idem. 3 appelants dans `CapsuleVideoTask` passent
+  `strict = capsuleExtension.strictMode.get()`.
+
+*Correction test* : `ttsFallbackEnabled` mis à `true` dans les tests strict
+pour que le chemin passe par le guard (fallback enabled → warn → guard →
+NoOp), pas par l'exception `TtsException` (fallback disabled).
+
+*Résultat* : 4/4 functional VERT. 44 functional total (+4). Zéro régression.
+
+== US-4 — Cucumber BDD @strict
+
+*Niveau* : cucumber dédié.
+
+*RED* : `capsule_strict_mode.feature` (4 scénarios `@strict @config`) +
+`CapsuleStrictModeSteps` (self-contained GradleRunner, steps préfixées
+"strict" pour éviter doublons glue) + `CapsuleStrictModeCucumberRunner`
+(pattern S-082 `@SelectClasspathResource` + `FILTER_TAGS_PROPERTY_NAME`).
+`CucumberTaskSpec("cucumberTestStrictMode")` câblé `build.gradle.kts`.
+4 scénarios échouent (double bloc `capsule { }` écrasait la config tts).
+
+*GREEN* : `CapsuleStrictModeSteps` refactorisé — `writeBuildFile()` privé
+regénère le `build.gradle` complet à chaque step (strict/disabled), au lieu
+d'`appendText` un second bloc. 4/4 scénarios VERT.
+
+*Scénarios* :
+. Strict mode disabled by default preserves the NoOp fallback
+. Strict mode enabled fails the build when piper is not available
+. Strict mode enabled accepts explicit noop engine
+. Strict mode enabled via CLI flag fails the build when piper is not available
+
+*Résultat* : 8 cucumber tests VERT (4 scénarios × 2 features, pattern connu
+des runners dédiés). `cucumberTestStrictMode` BUILD SUCCESSFUL 1m04s.
+
+== Vérification finale
+
+`./gradlew check` BUILD SUCCESSFUL 6m54s :
+. 674 unit tests VERT (baseline 655 + 19)
+. 44 functional tests VERT (baseline 40 + 4)
+. 8 cucumber dédiés VERT (cucumberTestStrictMode, validé séparément)
+. Kover VERT, validatePlugins VERT
+. Cucumber SKIPPED par défaut (CR-10), déjà validé via cucumberTestStrictMode
+. Zéro régression, zéro secret
+
+== Bilan
+
+*EPIC CAP-CR3-2 TERMINÉ* (4 US : US-1 domaine, US-2 DSL+merger, US-3 wiring,
+US-4 cucumber). Le « faux positif » vidéo est éliminé : en strict mode,
+tout engine absent (hors `noop` explicite) fait FAIL le build avec un
+message actionable. Comportement par défaut inchangé (rétrocompatible).
+
+*Fichiers créés* (6) :
+. `src/main/kotlin/capsule/StrictModeConfig.kt`
+. `src/main/kotlin/capsule/StrictModeGuard.kt`
+. `src/test/kotlin/capsule/StrictModeConfigTest.kt`
+. `src/test/kotlin/capsule/StrictModeGuardTest.kt`
+. `src/test/kotlin/capsule/scenarios/CapsuleStrictModeSteps.kt`
+. `src/test/kotlin/capsule/scenarios/CapsuleStrictModeCucumberRunner.kt`
+. `src/test/features/capsule_strict_mode.feature`
+. `src/functionalTest/kotlin/capsule/StrictModeFunctionalTest.kt`
+
+*Fichiers modifiés* (6) :
+. `src/main/kotlin/capsule/CapsuleConfig.kt` (+strictMode field)
+. `src/main/kotlin/capsule/CapsuleConfigMerger.kt` (+mergeStrictModeConfig,
+  +env, +props)
+. `src/main/kotlin/capsule/CapsuleModels.kt` (+strictMode Property)
+. `src/main/kotlin/capsule/CapsulePlugin.kt` (+pushConfigIntoExtension
+  strictMode)
+. `src/main/kotlin/capsule/CapsuleBuildTask.kt` (+guard piper/espeak)
+. `src/main/kotlin/capsule/CapsuleVideoTask.kt` (+guard
+  piper/espeak/playwright/manim/mixer/subtitle, +strict param 3 appelants)
+. `src/main/kotlin/capsule/CapsuleManager.kt` (+strict param 3 resolve*)
+. `src/test/kotlin/capsule/CapsuleConfigMergerTest.kt` (+9 strictMode tests)
+. `build.gradle.kts` (+CucumberTaskSpec cucumberTestStrictMode)
+
+*Méthode* : baby-step DDD/TDD/BDD 3 niveaux (unit → functional → cucumber),
+RED → GREEN → REFACTOR, English only (code + Gherkin). Pattern S-082 runner
+cucumber dédié respecté.

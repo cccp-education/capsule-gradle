@@ -816,4 +816,93 @@ class CapsuleConfigMergerTest {
 
         assertEquals("/props/videos", merged.output.videoDestinationDir, "Blank YAML should fall back to props")
     }
+
+    // ─── StrictModeConfig (CAP-CR3-2) ────────────────────────────
+
+    @Test
+    fun `default merge has strictMode disabled`() {
+        val projectDir = File(tempDir, "strict-default").also { it.mkdirs() }
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
+        assertEquals(false, merged.strictMode.enabled, "strictMode should default to false")
+    }
+
+    @Test
+    fun `strictMode is read from YAML`() {
+        val projectDir = File(tempDir, "strict-yaml").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(strictMode = StrictModeConfig(enabled = true))
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+        assertEquals(true, merged.strictMode.enabled, "YAML strictMode should be honored")
+    }
+
+    @Test
+    fun `strictMode CLI overrides YAML`() {
+        val projectDir = File(tempDir, "strict-cli-over-yaml").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(strictMode = StrictModeConfig(enabled = true))
+        val merged = CapsuleConfigMerger.merge(
+            projectDir, yamlConfig, mapOf("strictMode.enabled" to "false")
+        )
+        assertEquals(false, merged.strictMode.enabled, "CLI false should override YAML true")
+    }
+
+    @Test
+    fun `strictMode CLI true overrides YAML false`() {
+        val projectDir = File(tempDir, "strict-cli-true").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(strictMode = StrictModeConfig(enabled = false))
+        val merged = CapsuleConfigMerger.merge(
+            projectDir, yamlConfig, mapOf("strictMode.enabled" to "true")
+        )
+        assertEquals(true, merged.strictMode.enabled, "CLI true should override YAML false")
+    }
+
+    @Test
+    fun `strictMode is read from gradle properties`() {
+        val projectDir = File(tempDir, "strict-props").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.strictMode.enabled=true
+        """.trimIndent())
+        // No YAML file → yamlLoaded=false so props can take effect
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
+        assertEquals(true, merged.strictMode.enabled, "props strictMode should be honored when no YAML")
+    }
+
+    @Test
+    fun `strictMode YAML overrides gradle properties`() {
+        val projectDir = File(tempDir, "strict-yaml-over-props").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.strictMode.enabled=false
+        """.trimIndent())
+        val yamlConfig = CapsuleConfig(strictMode = StrictModeConfig(enabled = true))
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+        assertEquals(true, merged.strictMode.enabled, "YAML should override props")
+    }
+
+    @Test
+    fun `strictMode CLI overrides gradle properties when no YAML`() {
+        val projectDir = File(tempDir, "strict-cli-over-props").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.strictMode.enabled=false
+        """.trimIndent())
+        val merged = CapsuleConfigMerger.merge(
+            projectDir, CapsuleConfig(), mapOf("strictMode.enabled" to "true"),
+            yamlLoaded = false
+        )
+        assertEquals(true, merged.strictMode.enabled, "CLI should override props when no YAML")
+    }
+
+    @Test
+    fun `loadFromEnvironment reads CAPSULE_STRICT_MODE_ENABLED`() {
+        // We cannot set env vars in unit tests, so we verify the default.
+        val config = CapsuleConfigMerger.loadFromEnvironment()
+        assertEquals(false, config.strictMode.enabled, "env default strictMode should be false")
+    }
+
+    @Test
+    fun `loadFromGradleProperties reads capsule strictMode enabled`() {
+        val projectDir = File(tempDir, "strict-props-load").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.strictMode.enabled=true
+        """.trimIndent())
+        val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
+        assertEquals(true, config.strictMode.enabled, "loadFromGradleProperties should read strictMode")
+    }
 }

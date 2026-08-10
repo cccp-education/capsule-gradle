@@ -187,6 +187,12 @@ open class CapsuleVideoTask : DefaultTask() {
             impl
         } else {
             logger.warn("Playwright not available, falling back to noop capture")
+            StrictModeGuard.requireAvailable(
+                strict = capsuleExtension.strictMode.get(),
+                engineName = "playwright",
+                isAvailable = false,
+                path = capsuleExtension.chromiumExecutablePath.get()
+            )
             NoOpPlaywrightCapture()
         }
     }
@@ -204,13 +210,33 @@ open class CapsuleVideoTask : DefaultTask() {
                     capsuleExtension.ttsVoice.get(),
                     language = resolvedLanguage
                 )
-                if (engine.isAvailable()) engine else NoOpTtsEngine()
+                if (engine.isAvailable()) {
+                    engine
+                } else {
+                    StrictModeGuard.requireAvailable(
+                        strict = capsuleExtension.strictMode.get(),
+                        engineName = "piper",
+                        isAvailable = false,
+                        path = capsuleExtension.piperExecutablePath.get()
+                    )
+                    NoOpTtsEngine()
+                }
             }
             "espeak" -> {
                 val voice = capsuleExtension.espeakVoice.get()
                 val speed = capsuleExtension.espeakSpeed.get()
                 val engine = EspeakTtsEngine(voice = voice, speed = speed, language = resolvedLanguage)
-                if (engine.isAvailable()) engine else NoOpTtsEngine()
+                if (engine.isAvailable()) {
+                    engine
+                } else {
+                    StrictModeGuard.requireAvailable(
+                        strict = capsuleExtension.strictMode.get(),
+                        engineName = "espeak",
+                        isAvailable = false,
+                        path = "espeak"
+                    )
+                    NoOpTtsEngine()
+                }
             }
             else -> NoOpTtsEngine()
         }
@@ -225,7 +251,7 @@ open class CapsuleVideoTask : DefaultTask() {
             scriptsDir = capsuleExtension.manimScriptsDir.get(),
             outputDir = capsuleExtension.manimOutputDir.get()
         )
-        val engine = CapsuleManager.resolveManimEngine(config)
+        val engine = CapsuleManager.resolveManimEngine(config, strict = capsuleExtension.strictMode.get())
         if (engine.isAvailable()) {
             logger.lifecycle("Manim engine: {} (available)", engine.name())
         } else {
@@ -238,7 +264,7 @@ open class CapsuleVideoTask : DefaultTask() {
         if (manimVideoMixer != null) return manimVideoMixer!!
 
         val ffmpegPath = capsuleExtension.ffmpegExecutablePath.get()
-        val mixer = CapsuleManager.resolveManimVideoMixer(ffmpegPath)
+        val mixer = CapsuleManager.resolveManimVideoMixer(ffmpegPath, strict = capsuleExtension.strictMode.get())
         if (mixer.isAvailable()) {
             logger.lifecycle("Manim video mixer: {} (available)", mixer.name())
         } else {
@@ -596,7 +622,7 @@ open class CapsuleVideoTask : DefaultTask() {
             outlineColor = capsuleExtension.subtitleBurnInOutlineColor.get(),
             position = capsuleExtension.subtitleBurnInPosition.get()
         )
-        val service = CapsuleManager.resolveSubtitleBurnInService(ffmpegPath, style)
+        val service = CapsuleManager.resolveSubtitleBurnInService(ffmpegPath, style, strict = capsuleExtension.strictMode.get())
         if (service.isAvailable()) {
             logger.lifecycle("Subtitle burn-in service: {} (available, style: fontSize={}, color={}, position={})", service.name(), style.fontSize, style.fontColor, style.position)
         } else {

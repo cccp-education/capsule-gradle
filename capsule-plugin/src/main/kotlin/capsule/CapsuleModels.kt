@@ -13,6 +13,10 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val language: Property<String> = objects.property(String::class.java)
         .convention("en")
 
+    /** CAP-CR3-2 — strict mode: fail build instead of NoOp fallback when a tool is missing. Defaults to false. */
+    val strictMode: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
     val ttsEngine: Property<String> = objects.property(String::class.java)
         .convention("piper")
 

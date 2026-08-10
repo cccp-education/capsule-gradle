@@ -50,6 +50,12 @@ open class CapsuleBuildTask : DefaultTask() {
                     engine
                 } else if (capsuleExtension.ttsFallbackEnabled.get()) {
                     logger.warn("Piper not available at {}, falling back to noop placeholder", piperPath)
+                    StrictModeGuard.requireAvailable(
+                        strict = capsuleExtension.strictMode.get(),
+                        engineName = "piper",
+                        isAvailable = false,
+                        path = piperPath
+                    )
                     NoOpTtsEngine()
                 } else {
                     throw TtsException("Piper not available at: $piperPath and fallback is disabled")
@@ -64,6 +70,12 @@ open class CapsuleBuildTask : DefaultTask() {
                     engine
                 } else {
                     logger.warn("espeak not available, falling back to noop placeholder")
+                    StrictModeGuard.requireAvailable(
+                        strict = capsuleExtension.strictMode.get(),
+                        engineName = "espeak",
+                        isAvailable = false,
+                        path = "espeak"
+                    )
                     NoOpTtsEngine()
                 }
             }

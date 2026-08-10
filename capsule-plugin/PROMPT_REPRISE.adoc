@@ -1,72 +1,92 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 090 — CAP-ARCH-6 Cucumber BDD boundary cross-borough (EPIC CAP-ARCH TERMINÉ 8/8 US)
-_Prochaine session_ : — (EPIC CAP-ARCH clos, borough Détroit en maintenance)
+_Session terminee_ : 091 — CAP-CR3-2 Mode strict anti-NoOp (EPIC CAP-CR3-2 TERMINÉ 4/4 US)
+_Prochaine session_ : — (EPIC CAP-CR3-2 clos, borough Détroit en maintenance)
 
-== Mission session 090 (TERMINÉE)
+== Mission session 091 (TERMINÉE)
 
-. **CAP-ARCH-6 Cucumber BDD boundary cross-borough** (3 pts) —
-  `capsule_arch_boundary.feature` (4 scénarios `@cross-borough @architecture
-  @i18n @ai`) single-language français (pas 10 langues — CAP-29.5 garde la
-  responsabilité i18n, éviter test redondant). Scénarios : registration task
-  `generateCapsuleContentAndVideos` groupe `capsule`, content pipeline LLM
-  (`generateCapsuleContent` mock Ollama 2 réponses alternées propose/generate →
-  `demo-speaker-notes.adoc` + `demo-script.txt`), video pipeline composite
-  (NoOp engines → `demo_fr.webm`), économie d'encre skip WebM pré-existant
-  valide (ffmpeg 1s, `ffprobe` > 0). Runner dédié `CapsuleArchBoundaryCucumberRunner`
-  (pattern S-082). `CapsuleArchBoundarySteps` self-contained GradleRunner (fake
-  `translateDeck`, pré-génération artefacts fr `demo_fr-deck.html` +
-  `demo_fr-script.txt`). `CucumberTaskSpec("cucumberTestArchBoundary")` câblé
-  `build.gradle.kts`. Baby-step TDD/BDD 3 niveaux : RED (8 failed) → GREEN
-  (4 PASSED, itérations : doublons glue `DuplicateStepDefinitionException` →
-  steps préfixées "capsule arch boundary", skip `MINIMAL_WEBM` → ffmpeg WebM
-  valide 1s, feature `demo_fr-speaker-notes.adoc` corrigé en
-  `demo-speaker-notes.adoc`) → REFACTOR (`check` BUILD SUCCESSFUL 6m12s).
-  655 unit + 40 functional inchangés + 4 cucumber dédiés GREEN. Zéro
-  régression, zéro secret.
+. **CAP-CR3-2 Mode strict anti-NoOp** (~10 pts) — `capsule.strictMode` DSL
+  (Boolean, défaut `false`, 4 sources ENV \u003c props \u003c YAML \u003c CLI).
+  `StrictModeGuard` (object pur, domaine `capsule.config`) —
+  `requireAvailable(strict, engineName, isAvailable, path)` lève
+  `IllegalStateException` avec message actionable si
+  `strict && !isAvailable`. 6 `resolve*` branchés :
+  `CapsuleBuildTask.resolveTtsEngine` (piper/espeak),
+  `CapsuleVideoTask.resolveTtsEngine` (piper/espeak),
+  `CapsuleVideoTask.resolvePlaywrightCapture`,
+  `CapsuleManager.resolveManimEngine`,
+  `CapsuleManager.resolveManimVideoMixer`,
+  `CapsuleManager.resolveSubtitleBurnInService` (3 derniers avec param
+  `strict` ajouté, défaut `false` rétrocompatible). `noop` explicite
+  (`ttsEngine = "noop"`, `ffmpegPath = "noop"`) reste légitime, non
+  concerné. `StrictModeConfig` (data class 1 champ `enabled`).
+  `CapsuleConfigMerger.mergeStrictModeConfig` + `loadFromEnvironment`
+  (`CAPSULE_STRICT_MODE_ENABLED`) + `buildConfigFromProperties`
+  (`capsule.strictMode.enabled`). `CapsuleExtension.strictMode` Property.
+  `CapsulePlugin.pushConfigIntoExtension` push strictMode. Baby-step
+  TDD/BDD 3 niveaux : RED → GREEN → REFACTOR (unit → functional →
+  cucumber). 674 unit VERT (+19) + 44 functional VERT (+4) + 8 cucumber
+  dédiés GREEN (`capsule_strict_mode.feature` 4 scénarios `@strict
+  @config`, runner `CapsuleStrictModeCucumberRunner` pattern S-082).
+  Zéro régression, zéro secret. `check` BUILD SUCCESSFUL 6m54s.
 
-== Contexte reprise session 091 (maintenance)
+== Contexte reprise session 092 (maintenance)
 
-- EPIC CAP-ARCH TERMINÉ 8/8 US : CAP-ARCH-0 ✅ S-083, 1 ✅ S-084,
-  2 ✅ S-085, 3 ✅ S-086, 4 ✅ S-088, 5 ✅ S-089, **6 ✅ S-090**,
-  7 ✅ S-087+S-088.
-- 655 unit VERT + 40 functional VERT + cucumber dédiés GREEN :
-  `CapsuleContextCucumberRunner` (@context), `CapsuleContentAndVideosCucumberRunner`
-  (@architecture @wiring), `CapsuleDistribCucumberRunner` (@distrib @versioning),
-  `CapsuleArchBoundaryCucumberRunner` (@cross-borough), `CucumberIntegrationTestRunner`
-  (@integration burn-in).
-- Domaines DDD capsule (8) : `capsule.feed` + `capsule.ci` + `capsule.multilang`
-  + `capsule.ai` + `capsule.context` + `capsule.pipeline` + `capsule.support`
-  + `capsule.i18n`.
-- Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider 0.0.16
-  (compileOnly, 0 import réel — décision CAP-ARCH-4).
-- Modifications S-083→090 non committées (Règle 1 — demander permission de commit).
-- Borough Détroit en maintenance (tous EPICs terminés).
+- EPIC CAP-CR3-2 TERMINÉ 4/4 US : US-1 ✅ S-091 (domaine),
+  US-2 ✅ S-091 (DSL+merger), US-3 ✅ S-091 (wiring),
+  US-4 ✅ S-091 (cucumber).
+- 674 unit VERT + 44 functional VERT + cucumber dédiés GREEN :
+  `CapsuleContextCucumberRunner` (@context),
+  `CapsuleContentAndVideosCucumberRunner` (@architecture @wiring),
+  `CapsuleDistribCucumberRunner` (@distrib @versioning),
+  `CapsuleArchBoundaryCucumberRunner` (@cross-borough),
+  `CapsuleStrictModeCucumberRunner` (@strict @config),
+  `CucumberIntegrationTestRunner` (@integration burn-in).
+- Domaines DDD capsule (8) : `capsule.feed` + `capsule.ci` +
+  `capsule.multilang` + `capsule.ai` + `capsule.context` +
+  `capsule.pipeline` + `capsule.support` + `capsule.i18n`.
+  (`capsule.config` = package transverse, pas un domaine DDD dédié.)
+- Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider
+  0.0.16 (compileOnly, 0 import réel — décision CAP-ARCH-4).
+- Modifications S-083→091 non committées (Règle 1 — demander permission
+  de commit).
+- Borough Détroit en maintenance (tous EPICs majeurs terminés).
 
 == EPICs restants (maintenance, non planifiés)
 
+* CAP-CR3-1 CI `full` avec vrais binaires + probe durée (P0) — job CI
+  installant Playwright + ffmpeg + manim. Re-rend un deck démo, probe la
+  durée du WebM final (`MediaProbeUtil.probeDuration`) et compare à la
+  somme des durées audio TTS. Si |durée vidéo - somme audio| > tolérance →
+  FAIL.
 * CAP-27 VTT burn-in (P2) — FFmpeg subtitles filter avec VTT (actuellement SRT)
-* CAP-28 Coverage gaps (P2) — PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%
-* CAP-CR3-1 CI `full` avec vrais binaires + probe durée (P0) — job CI installant Playwright + ffmpeg + manim
-* CAP-CR3-2 Mode strict anti-NoOp (P0) — `capsule.strictMode` DSL
+* CAP-28 Coverage gaps (P2) — PiperTtsEngine 31%, ManimEngineImpl 25%,
+  ScreenshotCaptureImpl 26%
 * CAP-CR3-3 Décision capture ScreenshotCaptureImpl vs PlaywrightCaptureImpl (P1)
 * CAP-CR3-4 Convention Gradle explicite resolveScriptDir/resolveDeckDir (P2)
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 655 unit tests VERT (S-089/090 baseline) — vérifier avant de coder
+* 674 unit tests VERT (S-091 baseline) — vérifier avant de coder
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082 :
-  `@ConfigurationParameter(FEATURES_PROPERTY_NAME)` du CucumberTestRunner écrase
-  la system property cucumber.features) — pattern `CapsuleContextCucumberRunner`
-* Glue `capsule.scenarios` partagé : tous les steps doivent avoir des signatures
-  uniques (bug S-088 `DuplicateStepDefinitionException`) — préfixer par feature
+  `@ConfigurationParameter(FEATURES_PROPERTY_NAME)` du CucumberTestRunner
+  écrase la system property cucumber.features) — pattern
+  `CapsuleContextCucumberRunner`
+* Glue `capsule.scenarios` partagé : tous les steps doivent avoir des
+  signatures uniques (bug S-088 `DuplicateStepDefinitionException`) —
+  préfixer par feature
 * English only : code, Gherkin, commentaires
 * Économie d'encre = skip WebM existant + probe > 0 (ffprobe durée > 0)
 * Ports Ollama : 11437-11465 rotation (11434-11436 INTERDITS)
-* `CapsuleMessages` object (domaine `capsule.i18n`) — 11 `Messages*.properties`
-  10 langues, `resolveLanguage(project)` cascade `-Pcapsule.language` > DSL > `"en"`
+* `CapsuleMessages` object (domaine `capsule.i18n`) — 11
+  `Messages*.properties` 10 langues, `resolveLanguage(project)` cascade
+  `-Pcapsule.language` \u003e DSL \u003e `"en"`
 * Runners cucumber dédiés : `CapsuleContextCucumberRunner`,
   `CapsuleContentAndVideosCucumberRunner`, `CapsuleDistribCucumberRunner`,
-  `CapsuleArchBoundaryCucumberRunner`, `CucumberIntegrationTestRunner` (pattern S-082)
+  `CapsuleArchBoundaryCucumberRunner`, `CapsuleStrictModeCucumberRunner`,
+  `CucumberIntegrationTestRunner` (pattern S-082)
+* `StrictModeGuard` (domaine `capsule.config`) — 6 resolve* branchés,
+  `noop` explicite non concerné, `IllegalStateException` message
+  actionable (nomme engine + path + suggestion install/disable)

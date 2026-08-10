@@ -33,7 +33,8 @@ object CapsuleConfigMerger {
             capture = mergeCaptureConfig(envConfig.capture, propertiesConfig.capture, yaml?.capture, cliParams),
             distrib = mergeDistribConfig(envConfig.distrib, propertiesConfig.distrib, yaml?.distrib, cliParams),
             manim = mergeManimConfig(envConfig.manim, propertiesConfig.manim, yaml?.manim, cliParams),
-            output = mergeOutputConfig(envConfig.output, propertiesConfig.output, yaml?.output, cliParams)
+            output = mergeOutputConfig(envConfig.output, propertiesConfig.output, yaml?.output, cliParams),
+            strictMode = mergeStrictModeConfig(envConfig.strictMode, propertiesConfig.strictMode, yaml?.strictMode, cliParams)
         )
     }
 
@@ -119,6 +120,9 @@ object CapsuleConfigMerger {
                 videoDestinationDir = env["CAPSULE_OUTPUT_VIDEO_DESTINATION_DIR"] ?: "office/videos",
                 versioning = VersioningStrategy.fromString(env["CAPSULE_OUTPUT_VERSIONING"]),
                 versionPrefix = env["CAPSULE_OUTPUT_VERSION_PREFIX"] ?: "v"
+            ),
+            strictMode = StrictModeConfig(
+                enabled = env["CAPSULE_STRICT_MODE_ENABLED"]?.toBoolean() ?: false
             )
         )
     }
@@ -173,6 +177,9 @@ object CapsuleConfigMerger {
                 videoDestinationDir = props["capsule.output.videoDestinationDir"] ?: "office/videos",
                 versioning = VersioningStrategy.fromString(props["capsule.output.versioning"]),
                 versionPrefix = props["capsule.output.versionPrefix"] ?: "v"
+            ),
+            strictMode = StrictModeConfig(
+                enabled = props["capsule.strictMode.enabled"]?.toBoolean() ?: false
             )
         )
     }
@@ -250,6 +257,12 @@ object CapsuleConfigMerger {
             videoDestinationDir = mergeStr(cli, "output.videoDestinationDir", yaml?.videoDestinationDir, props.videoDestinationDir, env.videoDestinationDir),
             versioning = mergeVersioning(cli, "output.versioning", yaml?.versioning, props.versioning),
             versionPrefix = mergeStr(cli, "output.versionPrefix", yaml?.versionPrefix, props.versionPrefix, env.versionPrefix)
+        )
+    }
+
+    private fun mergeStrictModeConfig(env: StrictModeConfig, props: StrictModeConfig, yaml: StrictModeConfig?, cli: Map<String, Any?>): StrictModeConfig {
+        return StrictModeConfig(
+            enabled = mergeBoolean(cli, "strictMode.enabled", yaml?.enabled, props.enabled)
         )
     }
 
