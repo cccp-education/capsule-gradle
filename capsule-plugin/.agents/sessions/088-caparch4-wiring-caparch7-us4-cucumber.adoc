@@ -1,0 +1,134 @@
+= Session 088 — CAP-ARCH-4 Wiring Backend + CAP-ARCH-7 US-4 Cucumber Distrib
+:toc:
+:last_update: 2026-08-10
+
+== Résumé
+
+Session de **wiring** et **BDD cucumber** pour clôturer 2 US de l'EPIC CAP-ARCH.
+2 livrables :
+
+. **CAP-ARCH-4 — Wiring exécution existante** (2 pts) : tâche composite
+  `generateCapsuleContentAndVideos` (groupe `capsule`) chaîne
+  `generateCapsuleContent` → `translateAndGenerateCapsuleVideos` (qui chaîne
+  déjà translateDeck → extractSpeakerNotes → generateCapsuleVideoAllLanguages).
+  Le backend existant n'est PAS modifié — la tâche composite est un
+  `DefaultTask` vide avec `dependsOn` par nom string (pattern
+  `translateAndGenerateCapsuleVideos` S-080). Baby-step TDD/BDD :
+  - 3 functional tests (`GenerateCapsuleContentAndVideosFunctionalTest`) :
+    registration, description, dependsOn chain `--dry-run` (dummy deck requis
+    car `generateCapsuleContent` résout `deckFile` par convention).
+  - 3 cucumber scénarios `@architecture @wiring` (`capsule_content_and_videos.feature`)
+    : task name stable, description mentions both sub-tasks, group capsule.
+  - Runner dédié `CapsuleContentAndVideosCucumberRunner` (pattern
+    `CapsuleContextCucumberRunner` — contourne bug S-082).
+  - `CucumberTaskSpec("cucumberTestContentAndVideos")` câblé dans `build.gradle.kts`.
+
+. **CAP-ARCH-7 US-4 — Cucumber BDD `@distrib @versioning`** : feature
+  `capsule_distrib.feature` (5 scénarios) + steps `CapsuleDistribSteps`
+  (self-contained GradleRunner pattern `MultiLanguageCapsuleSteps`) + runner
+  dédié `CapsuleDistribCucumberRunner`. Scénarios :
+  - Registration : `distributeCapsuleVideo` listée dans `tasks --group distribute`.
+  - Copy versionné TIMESTAMP : WebM copié vers sous-dossier `v<yyyyMMddHHmm>`.
+  - Copy versionné INCREMENTAL : WebM copié vers `v1`.
+  - Second run incremental : `v2` créé à côté de `v1` existant.
+  - Skip idempotent (économie d'encre) : 2e run skip le WebM existant.
+  - `CucumberTaskSpec("cucumberTestDistrib")` câblé dans `build.gradle.kts`.
+
+== Fichiers modifiés
+
+=== Production (main)
+. `src/main/kotlin/capsule/feed/CapsuleFeedTaskDomain.kt` — constante
+   `GENERATE_CAPSULE_CONTENT_AND_VIDEOS` + `CONTENT_AND_VIDEOS_DESCRIPTION`.
+. `src/main/kotlin/capsule/feed/CapsuleFeedTaskRegistrar.kt` —
+   `registerGenerateCapsuleContentAndVideos(project)` (tâche composite
+   `DefaultTask`, dependsOn `generateCapsuleContent` +
+   `translateAndGenerateCapsuleVideos`).
+. `src/main/kotlin/capsule/CapsuleManager.kt` — câblage
+   `registerGenerateCapsuleContentAndVideos(this)` dans
+   `registerExtractSpeakerNotesTask()`.
+
+=== Tests fonctionnels
+. `src/functionalTest/kotlin/capsule/pipeline/GenerateCapsuleContentAndVideosFunctionalTest.kt`
+   (nouveau) — 3 tests : registration, description, dependsOn chain `--dry-run`.
+
+=== Tests Cucumber
+. `src/test/features/capsule_content_and_videos.feature` (nouveau) — 3 scénarios
+   `@architecture @wiring`.
+. `src/test/kotlin/capsule/scenarios/CapsuleContentAndVideosSteps.kt` (nouveau) —
+   step defs (constants pures, pattern `TranslateAndExtractSpeakerNotesSteps`
+   avec steps `@Then` uniques "content and videos" pour éviter doublons).
+. `src/test/kotlin/capsule/scenarios/CapsuleContentAndVideosCucumberRunner.kt`
+   (nouveau) — runner dédié.
+. `src/test/features/capsule_distrib.feature` (nouveau) — 5 scénarios
+   `@distrib @versioning`.
+. `src/test/kotlin/capsule/scenarios/CapsuleDistribSteps.kt` (nouveau) —
+   step defs self-contained GradleRunner (steps `@When`/`@Then` uniques
+   "distrib" pour éviter doublons avec `CapsuleStepDefinitions`).
+. `src/test/kotlin/capsule/scenarios/CapsuleDistribCucumberRunner.kt`
+   (nouveau) — runner dédié.
+
+=== Build
+. `build.gradle.kts` — 2 `CucumberTaskSpec` ajoutés :
+   `cucumberTestContentAndVideos` + `cucumberTestDistrib`.
+. `../build.gradle.kts` (racine capsule-gradle) — suppression commentaire
+   opencode obsolète (diff trivial).
+
+== Tests
+
+[cols="3,2,2"]
+|===
+| Niveau | Avant | Après
+| Unit   | 568   | 568 (inchangé)
+| Functional | 37 | 40 (+3 CAP-ARCH-4)
+| Cucumber `@architecture @wiring` | 0 | 3 GREEN (CAP-ARCH-4)
+| Cucumber `@distrib @versioning` | 0 | 5 GREEN (CAP-ARCH-7 US-4)
+|===
+
+`./gradlew check` BUILD SUCCESSFUL (cucumberTest SKIPPED par CR-10).
+`./gradlew cucumberTestContentAndVideos -PrunCucumber` → 3/3 GREEN.
+`./gradlew cucumberTestDistrib -PrunCucumber` → 5/5 GREEN.
+
+== Décisions techniques
+
+. **Pattern tâche composite** : `DefaultTask` vide + `dependsOn` par nom string,
+   exactement comme `translateAndGenerateCapsuleVideos` (S-080). Aucune logique
+   métier dans la tâche composite — le wiring se fait par dépendance Gradle.
+. **Dummy deck pour `--dry-run`** : `generateCapsuleContent` résout
+   `deckFile` par convention (scan `slides/misc` pour premier `.adoc`).
+   En `--dry-run`, Gradle tente de résoudre les dépendances → échec si pas
+   de deck. Solution : fixture `dummy.adoc` dans `slides/misc` du projet test.
+. **Steps Cucumber uniques** : pour éviter `DuplicateStepDefinitionException`,
+   les steps `@When`/`@Then` sont préfixés ("distrib", "content and videos")
+   au lieu de réutiliser les patterns génériques de `CapsuleStepDefinitions`.
+. **Runners dédiés** (bug S-082) : chaque feature cucumber a son runner
+   `@SelectClasspathResource("features/<file>.feature")` + `@ConfigurationParameter(FILTER_TAGS_PROPERTY_NAME)`
+   pour contourner le bug où `FEATURES_PROPERTY_NAME` du `CucumberTestRunner`
+   global écrase la system property.
+
+== État EPIC CAP-ARCH
+
+[cols="1,3,2"]
+|===
+| US | Description | Statut
+| CAP-ARCH-0 | Cadrage | ✅ S-083
+| CAP-ARCH-1 | Socle LLM bridge | ✅ S-084
+| CAP-ARCH-2 | Contexte augmenté | ✅ S-085
+| CAP-ARCH-3 | Koog pipeline | ✅ S-086
+| CAP-ARCH-4 | Wiring backend | ✅ S-088
+| CAP-ARCH-5 | i18n aligné socle | ⬜ TODO
+| CAP-ARCH-6 | Cucumber boundary cross-borough | ⬜ TODO
+| CAP-ARCH-7 | Video Destination Versioning | ✅ S-087 + S-088 US-4
+|===
+
+5/8 US terminés (CAP-ARCH-0→4 + CAP-ARCH-7). Reste CAP-ARCH-5 (i18n) et
+CAP-ARCH-6 (cucumber cross-borough E2E).
+
+== Non-committé
+
+Modifications S-088 non committées (Règle 1 — demander permission de commit).
+
+== Score
+
+9/10 — Baby-step TDD/BDD strict (RED → GREEN → REFACTOR), 3 niveaux tests/US
+(unit → functional → cucumber), zéro régression, patterns existants respectés
+(tâche composite, runner dédié, steps self-contained).

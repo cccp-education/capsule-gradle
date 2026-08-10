@@ -9,7 +9,7 @@ plugins {
     alias(libs.plugins.slider)
     alias(libs.plugins.capsule)
 }
-//opencode -s ses_1cfe069beffeleql0GVIXgr5Np
+
 repositories {
     mavenLocal()
     mavenCentral()

@@ -72,6 +72,7 @@ object CapsuleFeedTaskNames {
     const val EXTRACT_SPEAKER_NOTES = "extractSpeakerNotes"
     const val TRANSLATE_AND_EXTRACT_SPEAKER_NOTES = "translateAndExtractSpeakerNotes"
     const val TRANSLATE_AND_GENERATE_CAPSULE_VIDEOS = "translateAndGenerateCapsuleVideos"
+    const val GENERATE_CAPSULE_CONTENT_AND_VIDEOS = "generateCapsuleContentAndVideos"
     const val GROUP = "capsule"
     const val DESCRIPTION =
         "Extract speaker notes from AsciiDoc decks and generate a capsule script (replaces slider-gradle generateCapsule)."
@@ -79,4 +80,6 @@ object CapsuleFeedTaskNames {
         "Translate a deck into multiple languages then extract speaker notes for all translated decks. Depends on translateDeck and extractSpeakerNotes."
     const val TRANSLATE_AND_GENERATE_VIDEOS_DESCRIPTION =
         "Translate a deck, extract speaker notes for all translated decks, then generate one localized capsule WebM per language. Depends on translateAndExtractSpeakerNotes and generateCapsuleVideoAllLanguages."
+    const val CONTENT_AND_VIDEOS_DESCRIPTION =
+        "Orchestrates LLM content generation then the full multi-language video pipeline. Depends on generateCapsuleContent and translateAndGenerateCapsuleVideos."
 }

@@ -1,59 +1,54 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 087 — Code review + Bug burn-in fix + CAP-ARCH-7 Video Destination Versioning (US-1→3)
-_Prochaine session_ : 088 — CAP-ARCH-7 US-4 (Cucumber `@distrib @versioning`) ou CAP-ARCH-4 (wiring backend)
+_Session terminee_ : 088 — CAP-ARCH-4 Wiring backend + CAP-ARCH-7 US-4 Cucumber distrib
+_Prochaine session_ : 089 — CAP-ARCH-5 (i18n aligné socle) ou CAP-ARCH-6 (cucumber cross-borough E2E)
 
-== Mission session 087 (TERMINÉE)
+== Mission session 088 (TERMINÉE)
 
-. **Code review capsule** (post-S-083→086) — 4 points relevés :
-  duplication pipeline koog (dette structurelle, extraction MEMPHIS future),
-  versionning codebase-contracts 0.1.0 (régularisation future), hack
-  buildscript force (acceptable pattern slider), **1 bug réel** : FAIL
-  `@integration` burn-in (subtitle path `build/capsule/` vs `outputDir=capsules`,
-  connu S-069/S-082, jamais traité).
-. **Fix bug burn-in** — `CapsuleOutputDirResolver` (object pur, package
-  `capsule.support`) résout l'`outputDir` depuis le `build.gradle` du projet
-  Cucumber. 9 unit tests TDD. 3 steps Cucumber migrés (subtitle file, WebM
-  EBML, video generated). Runner `cucumberTestIntegration` câblé. **BUILD
-  SUCCESSFUL 3m39s** — scénario E2E burn-in VERT (était FAIL depuis S-069).
-. **CAP-ARCH-7 Video Destination Versioning** (nouvelle feature issue review) :
-  - **US-1** : `OutputConfig` + `VersioningStrategy` (TIMESTAMP|INCREMENTAL)
-    étend `CapsuleConfig` section `output`. `CapsuleConfigMerger` 4 sources.
-    10 unit tests.
-  - **US-2** : `VideoDestinationResolver` (object pur) — `resolveVersionLabel`
-    (timestamp ISO-8601 ou incremental), `resolveDestinationDir`,
-    `collectExistingVersions`. 10 unit tests.
-  - **US-3** : `DistributeCapsuleVideoTask` (tâche `distributeCapsuleVideo`,
-    groupe `distribute`) copie WebM vers `<videoDestinationDir>/<version>/`.
-    CLI `-Poutput.*` overrides. Économie d'encre skip idempotent. 3 functional.
-. 568 unit VERT (+28 net) + 37 functional VERT (+3). Zéro régression.
+. **CAP-ARCH-4 Wiring exécution existante** (2 pts) — tâche composite
+  `generateCapsuleContentAndVideos` (groupe `capsule`) chaîne
+  `generateCapsuleContent` → `translateAndGenerateCapsuleVideos` (qui chaîne
+  déjà translateDeck → extractSpeakerNotes → generateCapsuleVideoAllLanguages).
+  Backend existant intact. Pattern `DefaultTask` + `dependsOn` par nom string
+  (S-080). 3 functional + 3 cucumber `@architecture @wiring` GREEN.
+. **CAP-ARCH-7 US-4 Cucumber BDD `@distrib @versioning`** — feature
+  `capsule_distrib.feature` (5 scénarios) + `CapsuleDistribSteps`
+  (self-contained GradleRunner) + `CapsuleDistribCucumberRunner`. Scénarios :
+  registration, copy timestamp, copy incremental v1, second run v2, skip
+  idempotent (économie d'encre). 5 cucumber GREEN.
+. 568 unit VERT (inchangé) + 40 functional VERT (+3) + 8 cucumber dédiés
+  GREEN (3 `@architecture @wiring` + 5 `@distrib @versioning`). Zéro régression.
 
-== Contexte reprise session 088
+== Contexte reprise session 089
 
-- EPIC CAP-ARCH : 0 cadrage ✅ (S-083), 1 socle LLM bridge ✅ (S-084),
-  2 contexte augmenté ✅ (S-085), 3 koog pipeline ✅ (S-086),
-  **7 video destination versioning 🟡 (S-087 : US-1→3 ✅, US-4 ⬜)** — reste
-  CAP-ARCH-4→6 (2+3+3 pts) + CAP-ARCH-7 US-4 (cucumber).
-- 568 unit VERT + 37 functional VERT + cucumber `@burnin @integration` E2E VERT.
-- **CAP-ARCH-7 US-4** — Cucumber BDD `@distrib @versioning` : feature
-  `capsule_distrib.feature` + steps `CapsuleDistribSteps`. Scénarios :
-  registration, copy versionné (timestamp + incremental), skip idempotent.
-- **CAP-ARCH-4** — Wiring exécution existante : sortie pipeline LLM
-  (`generateCapsuleContent`) → `generateCapsuleVideoAllLanguages` sans
-  modifier le backend. Décision `compileOnly slider` confirmée/remplacée.
+- EPIC CAP-ARCH : 0 ✅ S-083, 1 ✅ S-084, 2 ✅ S-085, 3 ✅ S-086,
+  **4 ✅ S-088**, 7 ✅ S-087+S-088 — reste **CAP-ARCH-5 (3 pts) + CAP-ARCH-6
+  (3 pts)** = 6 pts.
+- 568 unit VERT + 40 functional VERT + cucumber `@burnin @integration` E2E VERT
+  + 3 cucumber `@architecture @wiring` + 5 cucumber `@distrib @versioning`.
+- **CAP-ARCH-5** — i18n aligné sur le socle : i18n reste via
+  `slider.translateDeck` (déjà LLM codebase SLD-8). Vérification pipeline
+  complet × 10 langues. `CapsuleI18nBridge` si nécessaire. Non-régression :
+  464 unit + 25 functional + 6 cucumber multilang GREEN.
+- **CAP-ARCH-6** — Cucumber BDD boundary cross-borough : E2E deck source →
+  translateDeck (10 langues) → translateAndExtractSpeakerNotes →
+  generateCapsuleContent (mock LLM) → generateCapsuleVideoAllLanguages. Tags
+  `@i18n @cross-borough @architecture @ai`. Mock LLM HTTP (`-Pollama.baseUrl`).
 - Backend existant intact : extractSpeakerNotes, TTS, capture, multi-lang CAP-29.
 - `CapsuleOutputDirResolver` (package `capsule.support`) disponible pour
-  migrer les 15+ steps Cucumber restants qui hardcodent `build/capsule/`.
-- Modifications S-083→087 non committées (Règle 1 — demander permission de commit).
+  migrer les steps Cucumber restants qui hardcodent `build/capsule/`.
+- Modifications S-083→088 non committées (Règle 1 — demander permission de commit).
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider 0.0.16
   (compileOnly, 0 import réel — décision CAP-ARCH-4).
 - Domaines DDD capsule : `capsule.feed` + `capsule.ci` + `capsule.multilang` +
   `capsule.ai` + `capsule.context` + `capsule.pipeline` + `capsule.support` (test).
+- Runners cucumber dédiés : `CapsuleContextCucumberRunner`, `CapsuleContentAndVideosCucumberRunner`,
+  `CapsuleDistribCucumberRunner`, `CucumberIntegrationTestRunner` (pattern S-082).
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 568 unit tests VERT (S-087 baseline) — vérifier avant de coder
+* 568 unit tests VERT (S-088 baseline) — vérifier avant de coder
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082 :
   `@ConfigurationParameter(FEATURES_PROPERTY_NAME)` du CucumberTestRunner écrase
@@ -61,6 +56,7 @@ _Prochaine session_ : 088 — CAP-ARCH-7 US-4 (Cucumber `@distrib @versioning`) 
 * English only : code, Gherkin, commentaires
 * Économie d'encre = skip WebM existant + probe > 0 (ink economy)
 * Ports Ollama : 11437-11465 rotation (11434-11436 INTERDITS)
-* `cucumberTestIntegration` maintenant câblé (`CucumberTaskSpec` dédié) —
-  exécute les scénarios `@integration` via `CucumberIntegrationTestRunner`.
+* `cucumberTestIntegration` câblé — exécute les scénarios `@integration`.
   Lancer avec : `./gradlew cucumberTestIntegration -PrunCucumber`
+* `cucumberTestContentAndVideos` câblé — `./gradlew cucumberTestContentAndVideos -PrunCucumber`
+* `cucumberTestDistrib` câblé — `./gradlew cucumberTestDistrib -PrunCucumber`

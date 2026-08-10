@@ -36,6 +36,24 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleContextCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // Focused cucumber run for the CAP-ARCH-4 content+videos wiring feature
+        // (fast iteration without the full Playwright suite, ~15 min).
+        CucumberTaskSpec(
+            name = "cucumberTestContentAndVideos",
+            features = listOf("src/test/features/capsule_content_and_videos.feature"),
+            tags = listOf("@architecture"),
+            runnerClass = "capsule.scenarios.CapsuleContentAndVideosCucumberRunner",
+            timeoutMinutes = 30,
+        ),
+        // Focused cucumber run for the CAP-ARCH-7 US-4 video destination versioning feature
+        // (fast iteration without the full Playwright suite, ~15 min).
+        CucumberTaskSpec(
+            name = "cucumberTestDistrib",
+            features = listOf("src/test/features/capsule_distrib.feature"),
+            tags = listOf("@distrib"),
+            runnerClass = "capsule.scenarios.CapsuleDistribCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task

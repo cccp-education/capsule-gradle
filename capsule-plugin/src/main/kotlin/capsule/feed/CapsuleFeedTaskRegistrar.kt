@@ -83,6 +83,26 @@ object CapsuleFeedTaskRegistrar {
             task.dependsOn("generateCapsuleVideoAllLanguages")
         }
     }
+
+    /**
+     * Registers the `generateCapsuleContentAndVideos` composite task on [project]
+     * (CAP-ARCH-4).
+     *
+     * This task wires the LLM content generation pipeline (`generateCapsuleContent`)
+     * to the existing multi-language video pipeline (`translateAndGenerateCapsuleVideos`)
+     * without modifying either backend. A single Gradle invocation produces
+     * enriched speaker notes then localized capsule WebMs.
+     */
+    fun registerGenerateCapsuleContentAndVideos(project: Project) {
+        project.tasks.register(
+            CapsuleFeedTaskNames.GENERATE_CAPSULE_CONTENT_AND_VIDEOS,
+        ) { task ->
+            task.group = CapsuleFeedTaskNames.GROUP
+            task.description = CapsuleFeedTaskNames.CONTENT_AND_VIDEOS_DESCRIPTION
+            task.dependsOn("generateCapsuleContent")
+            task.dependsOn(CapsuleFeedTaskNames.TRANSLATE_AND_GENERATE_CAPSULE_VIDEOS)
+        }
+    }
 }
 
 /**
