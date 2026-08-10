@@ -3,6 +3,7 @@ package capsule
 import capsule.ai.CapsuleLlmService.registerLlmBuildService
 import capsule.i18n.CapsuleMessages
 import org.gradle.api.Project
+import org.gradle.api.file.ConfigurableFileCollection
 import java.io.File
 
 class CapsuleManager(private val project: Project) {
@@ -146,6 +147,7 @@ class CapsuleManager(private val project: Project) {
 
     private fun Project.registerCollectAugmentedContextTask() {
         val lang = CapsuleMessages.resolveLanguage(this)
+        val capsuleExt = project.extensions.findByType(CapsuleExtension::class.java)
         tasks.register(
             "collectCapsuleAugmentedContext",
             capsule.context.CollectCapsuleAugmentedContextTask::class.java,
@@ -157,6 +159,22 @@ class CapsuleManager(private val project: Project) {
                 project.layout.projectDirectory.file("PROMPT_REPRISE.adoc"),
                 project.layout.projectDirectory.file("AGENT.adoc"),
             )
+
+            // CAP-DOCCONTEXT-3 — resolve docsGlobs lazily (extension afterEvaluate > CLI).
+            // The extension is populated by pushConfigIntoExtension in afterEvaluate,
+            // so we use a provider to defer resolution until task execution.
+            task.docsGlobs.set(project.provider {
+                val extGlobs = capsuleExt?.docsGlobs?.orNull ?: emptyList()
+                if (extGlobs.isNotEmpty()) extGlobs
+                else project.findProperty("capsule.context.docsGlobs")?.toString()
+                    ?.let { CapsuleConfigMerger.splitCommaList(it) }
+                    ?: emptyList()
+            })
+            task.docsFiles.from(project.provider {
+                val globs = task.docsGlobs.get()
+                if (globs.isEmpty()) emptyList<Any>() else listOf(resolveGlobFiles(globs))
+            })
+
             task.ragContent.set(project.findProperty("context.ragContent")?.toString().orEmpty())
             task.graphifyContent.set(project.findProperty("context.graphifyContent")?.toString().orEmpty())
             task.docsContent.set(project.findProperty("context.docsContent")?.toString().orEmpty())
@@ -166,6 +184,19 @@ class CapsuleManager(private val project: Project) {
             )
             task.outputFile.set(project.layout.buildDirectory.file("capsule/augmented-context.txt"))
         }
+    }
+
+    /**
+     * Resolves Ant-style globs into a file collection relative to the project root
+     * (CAP-DOCCONTEXT-3).
+     */
+    private fun Project.resolveGlobFiles(globs: List<String>): ConfigurableFileCollection {
+        val collection = files()
+        for (glob in globs) {
+            val tree = fileTree(project.projectDir).matching { it.include(glob) }
+            collection.from(tree)
+        }
+        return collection
     }
 
     private fun Project.registerGenerateCapsuleContentTask() {

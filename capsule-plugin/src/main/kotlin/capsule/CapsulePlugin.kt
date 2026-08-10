@@ -114,5 +114,8 @@ class CapsulePlugin : Plugin<Project> {
 
         // StrictMode section (CAP-CR3-2)
         if (!ext.strictMode.isPresent || ext.strictMode.get() == false) ext.strictMode.set(config.strictMode.enabled)
+
+        // Context section (CAP-DOCCONTEXT-1)
+        if (ext.docsGlobs.get().isEmpty()) ext.docsGlobs.set(config.context.docsGlobs)
     }
 }

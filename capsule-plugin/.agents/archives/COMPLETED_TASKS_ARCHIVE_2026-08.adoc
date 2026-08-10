@@ -1,5 +1,33 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
-:date: 2026-08-10
+:date: 2026-08-11
+
+== Session 093 — CAP-DOCCONTEXT injection corpus documentaire (EPIC TERMINÉ 5/5 US) ✅
+
+EPIC CAP-DOCCONTEXT terminé (5/5 US, ~12 pts). Le canal Docs de `CompositeContext`
+(CAP-ARCH-2) était nourri par un seul string CLI `-Pcontext.docsContent`. Désormais,
+`context.docsGlobs` (4 sources ENV < props < YAML < CLI) résout des globs Ant-style
+et concatène les fichiers documentaires (AFNOR/REAC) via `DocContextLoader` (object
+pur). Le LLM reçoit le matériel de formation réel, pas un prompt vide.
+
+Tâches terminées :
+. `capsule/ContextConfig.kt` (NEW) — `data class ContextConfig(val docsGlobs: List<String> = emptyList())`
+. `capsule/CapsuleConfig.kt` — 8ème section `context: ContextConfig = ContextConfig()`
+. `capsule/CapsuleConfigMerger.kt` — `mergeContextConfig` + `mergeStrList` (NEW helper) + `splitCommaList` + `loadFromEnvironment` + `buildConfigFromProperties`
+. `capsule/CapsuleModels.kt` — `CapsuleExtension.docsGlobs: ListProperty<String>`
+. `capsule/CapsulePlugin.kt` — `pushConfigIntoExtension` push context
+. `capsule/context/DocContextLoader.kt` (NEW) — object pur, concatène + tronque `budget.docsTokens`
+. `capsule/context/CollectCapsuleAugmentedContextTask.kt` — `docsFiles` + `docsGlobs` + `resolveDocsSection`
+. `capsule/CapsuleManager.kt` — lazy `project.provider { }` + `resolveGlobFiles`
+. `src/test/kotlin/capsule/CapsuleConfigMergerTest.kt` — +11 unit tests
+. `src/test/kotlin/capsule/context/DocContextLoaderTest.kt` (NEW) — 9 unit tests
+. `src/functionalTest/kotlin/capsule/context/DocContextFunctionalTest.kt` (NEW) — 3 functional
+. `src/test/features/capsule_doc_context.feature` (NEW) — 4 scénarios `@context @docs`
+. `src/test/kotlin/capsule/scenarios/CapsuleDocContextCucumberRunner.kt` (NEW) — runner dédié
+. `src/test/kotlin/capsule/scenarios/CapsuleDocContextSteps.kt` (NEW) — steps préfixés "doc context"
+. `build.gradle.kts` — `CucumberTaskSpec("cucumberTestDocContext")` câblé
+. `BACKLOG.adoc` — US-0→4 statuts + correction budget (40% → 10% Docs)
+
+Totaux : 694 unit VERT (+20) + 47 functional VERT (+3) + 4 cucumber GREEN. Zéro FAIL, zéro régression, zéro secret.
 
 == Session 092 — Cadrage 11 EPICs neufs (contexte augmenté + post-production) ✅
 

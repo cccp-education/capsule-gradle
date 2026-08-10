@@ -1,61 +1,52 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 092 — Cadrage 11 EPICs neufs (5 contexte augmenté + 5 post-production + CAP-CR3-3 branchement screenshot). 47 US, ~88 pts. Séquence MVP0 définie.
-_Prochaine session_ : 093 — CAP-DOCCONTEXT US-0 cadrage + US-1 `DocContextConfig` + merger 4 sources (P0, premier EPIC de l'axe contexte augmenté).
+_Session terminee_ : 093 — CAP-DOCCONTEXT injection corpus documentaire (EPIC TERMINÉ 5/5 US). `ContextConfig` data class (`docsGlobs: List<String>`) 8ème section `CapsuleConfig`. `mergeContextConfig` + `mergeStrList` helper (List<String> comma-separated 4 sources ENV < props < YAML < CLI) + `splitCommaList` utilitaire dans `CapsuleConfigMerger`. `CapsuleExtension.docsGlobs: ListProperty<String>`. `DocContextLoader` (object pur, domaine `capsule.context`) résout fichiers pré-matchés, concatène trié par nom `--- filename ---\n<content>`, tronque via `ContextChannel.Docs.truncateToTokens(budget.docsTokens)` (10% = 800 tokens/8000). `CollectCapsuleAugmentedContextTask` étendu : `docsFiles` (`@InputFiles @PathSensitive(RELATIVE)`) + `docsGlobs` (`@Input`) + `resolveDocsSection` (globs > legacy CLI string rétrocompat). Wiring `CapsuleManager` lazy `project.provider { }` (extension afterEvaluate > CLI). 4 scénarios cucumber `@context @docs` + runner dédié `CapsuleDocContextCucumberRunner` (pattern S-082) + steps préfixés "doc context" (bug S-088). 694 unit + 47 functional + 4 cucumber = 749 VERT.
+_Prochaine session_ : 094 — CAP-SPD US-0 cadrage + US-1 `SpdContextLoader` parse metadata.json K-2 (P0, deuxième EPIC axe contexte augmenté, 5 US ~10 pts).
 
-== Mission session 092 (TERMINÉE)
+== Mission session 093 (TERMINÉE)
 
-. **Cadrage 11 EPICs neufs** — Audit post-CAP-ARCH/CAP-CR3-2. Le borough a
-  une infrastructure LLM (`capsule.ai`/`capsule.context`/`capsule.pipeline`)
-  et un backend d'exécution solide. 10 EPICs neufs étendent le périmètre sur
-  2 axes : post-production (5) et contexte augmenté (5). Priorité MVP0 :
-  contexte augmenté d'abord (qualité du contenu généré), post-production
-  ensuite (qualité perçue du livrable).
-  * Axe contexte augmenté (5 EPICs) : CAP-DOCCONTEXT (injection corpus
-    documentaire, `context.docsGlobs` 4 sources, `DocContextLoader`, 5 US
-    ~12 pts), CAP-SPD (consommation métadonnées SPD, `SpdContextLoader` parse
-    metadata.json K-2, canal `spd` dans `CapsulePipelineGraph`, 5 US ~10 pts),
-    CAP-GLOSSARY (injection terminologique, `context.glossaryFile`, canal
-    `glossary`, 4 US ~6 pts), CAP-PROVENANCE (audit context anti-hallucination,
-    `ProvenanceTracker` → `context-provenance.json`, 3 US ~5 pts), CAP-TRANSCRIPT
-    (reverse pipeline capsule → article AsciiDoc, domaine `capsule.transcript`,
-    cross-borough document/bakery, 5 US ~10 pts).
-  * Axe post-production (5 EPICs + CR3-3) : CAP-CR3-3 (branchement
-    ScreenshotCapture, `capture.strategy: playwright|screenshot` 4 sources,
-    `ScreenshotCaptureImpl` multi-slide, `resolveCapture` factory, 5 US ~13 pts),
-    CAP-MP4 (export MP4/H.264, `output.format: webm|mp4|both`, 4 US ~4 pts),
-    CAP-AUDIO (post-production audio BGM + loudnorm EBU R128 + ducking, domaine
-    `capsule.audio`, 5 US ~10 pts), CAP-CHAPITRE (intro/outro + chapter markers
-    Matroska, domaines `capsule.cards`/`capsule.chapters`, 5 US ~10 pts),
-    CAP-PODCAST (extraction audio-only, `PodcastConcatenator`, 3 US ~4 pts),
-    CAP-PREVIEW (mode dry-run PNGs sans mux, `capture.previewOnly`, 3 US ~4 pts).
-  * Décision architecturale CAP-CR3-3 : brancher ScreenshotCapture (non
-    expulser) — avantages fonctionnels (CI-friendly CAP-CR3-1, 10x plus rapide
-    sur decks statiques, empreinte CI plus légère, cohérent avec chemin Manim,
-    artifact preview/debug).
-  * MàJ BACKLOG (11 sections EPIC + synthèse + séquence MVP0), INDEX (roadmap
-    12 lignes), PROMPT_REPRISE. Zéro code modifié, `compileKotlin` VERT.
+. **CAP-DOCCONTEXT EPIC TERMINÉ 5/5 US** — Le canal Docs de `CompositeContext`
+  (CAP-ARCH-2) était nourri par un seul string CLI `-Pcontext.docsContent`.
+  Désormais, `context.docsGlobs` (4 sources) résout des globs Ant-style et
+  concatène les fichiers documentaires (AFNOR/REAC) via `DocContextLoader`.
+  Le LLM reçoit le matériel de formation réel, pas un prompt vide.
+  * US-0 Cadrage (1 pt) — audit canal Docs actuel, inventaire globs,
+    correction budget BACKLOG (40% → 10% Docs), patterns de référence.
+  * US-1 ContextConfig + merger 4 sources (3 pts) — `ContextConfig.kt`
+    (NEW), `CapsuleConfig` 8ème section, `mergeContextConfig` +
+    `mergeStrList` helper (NEW), `loadFromEnvironment`/`buildConfigFromProperties`
+    étendus, `CapsuleExtension.docsGlobs`, `pushConfigIntoExtension`. 11 unit.
+  * US-2 DocContextLoader (3 pts) — `capsule/context/DocContextLoader.kt`
+    (NEW, object pur). Concatène fichiers triés par nom, tronque à
+    `budget.docsTokens` via `ContextChannel.Docs.truncateToTokens`. 9 unit.
+  * US-3 Wiring (2 pts) — `CollectCapsuleAugmentedContextTask` étendu
+    (`docsFiles` + `docsGlobs` + `resolveDocsSection`), `CapsuleManager`
+    lazy `project.provider { }` + `resolveGlobFiles`. 3 functional.
+  * US-4 Cucumber BDD (3 pts) — `capsule_doc_context.feature` (4 scénarios
+    `@context @docs`), `CapsuleDocContextCucumberRunner` (pattern S-082),
+    `CapsuleDocContextSteps` (préfixés "doc context" bug S-088),
+    `CucumberTaskSpec("cucumberTestDocContext")` câblé `build.gradle.kts`.
 
-== Contexte reprise session 093 (CAP-DOCCONTEXT)
+== Contexte reprise session 094 (CAP-SPD)
 
-- EPIC CAP-DOCCONTEXT premier de la séquence MVP0 (P0, axe contexte augmenté).
-  5 US ~12 pts : US-0 cadrage, US-1 `DocContextConfig` + merger 4 sources,
-  US-2 `DocContextLoader` (object pur), US-3 wiring
-  `collectCapsuleAugmentedContext`, US-4 Cucumber BDD.
-- 674 unit VERT + 44 functional VERT + cucumber dédiés GREEN (baseline S-091).
+- EPIC CAP-SPD deuxième de la séquence MVP0 (P0, axe contexte augmenté).
+  5 US ~10 pts : US-0 cadrage, US-1 `SpdContext` data class +
+  `SpdContextLoader` (parse metadata.json K-2 + extrait section AsciiDoc SPD),
+  US-2 `CapsulePromptBuilder` étendu (prompt LLM ancré objectifs/durée/prérequis),
+  US-3 Wiring `generateCapsuleContent -Pspd.file`, US-4 Cucumber BDD.
+- 694 unit VERT + 47 functional VERT + 4 cucumber dédiés GREEN (baseline S-093).
 - Domaines DDD capsule (8) : `capsule.feed` + `capsule.ci` +
   `capsule.multilang` + `capsule.ai` + `capsule.context` +
   `capsule.pipeline` + `capsule.support` + `capsule.i18n`.
   (`capsule.config` = package transverse, pas un domaine DDD dédié.)
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider
   0.0.16 (compileOnly, 0 import réel — décision CAP-ARCH-4).
-- Modifications S-083→091 committées (git propre).
-- Borough Détroit actif (11 EPICs neufs cadrés, plus en maintenance).
+- Modifications S-083→093 committées (git propre).
+- Borough Détroit actif (CAP-DOCCONTEXT terminé, 10 EPICs neufs restants).
 
 == EPICs restants (séquence MVP0)
 
-* CAP-DOCCONTEXT (P0, prochain) — injection corpus documentaire, 5 US ~12 pts
-* CAP-SPD (P0) — consommationmétadonnées SPD, 5 US ~10 pts
+* CAP-SPD (P0, prochain) — consommationmétadonnées SPD, 5 US ~10 pts
 * CAP-CR3-3 (P0) — branchement ScreenshotCapture, 5 US ~13 pts
 * CAP-CR3-1 (P0, maintenance) — CI `full` avec vrais binaires + probe durée
 * CAP-MP4 (P1) — export MP4/H.264, 4 US ~4 pts
@@ -73,15 +64,15 @@ _Prochaine session_ : 093 — CAP-DOCCONTEXT US-0 cadrage + US-1 `DocContextConf
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 674 unit tests VERT (S-091 baseline) — vérifier avant de coder
+* 694 unit tests VERT (S-093 baseline) — vérifier avant de coder
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082 :
   `@ConfigurationParameter(FEATURES_PROPERTY_NAME)` du CucumberTestRunner
   écrase la system property cucumber.features) — pattern
-  `CapsuleContextCucumberRunner`
+  `CapsuleContextCucumberRunner` / `CapsuleDocContextCucumberRunner`
 * Glue `capsule.scenarios` partagé : tous les steps doivent avoir des
   signatures uniques (bug S-088 `DuplicateStepDefinitionException`) —
-  préfixer par feature
+  préfixer par feature (ex. "doc context")
 * English only : code, Gherkin, commentaires
 * Économie d'encre = skip WebM existant + probe > 0 (ffprobe durée > 0)
 * Ports Ollama : 11437-11465 rotation (11434-11436 INTERDITS)
@@ -91,14 +82,17 @@ _Prochaine session_ : 093 — CAP-DOCCONTEXT US-0 cadrage + US-1 `DocContextConf
 * Runners cucumber dédiés : `CapsuleContextCucumberRunner`,
   `CapsuleContentAndVideosCucumberRunner`, `CapsuleDistribCucumberRunner`,
   `CapsuleArchBoundaryCucumberRunner`, `CapsuleStrictModeCucumberRunner`,
+  `CapsuleDocContextCucumberRunner` (NEW S-093),
   `CucumberIntegrationTestRunner` (pattern S-082)
 * `StrictModeGuard` (domaine `capsule.config`) — 6 resolve* branchés,
-  `noop` explicite non concerné, `IllegalStateException` message
-  actionable (nomme engine + path + suggestion install/disable)
+  `noop` explicite non concerné
 * DSL 4 sources pattern : ENV (`CAPSULE_*`) < gradle.properties
   (`capsule.*`) < YAML (`capsule-context.yml`) < CLI (`-P*`). Merger
-  `CapsuleConfigMerger` + `mergeStr/mergeInt/mergeDouble/mergeBoolean`.
+  `CapsuleConfigMerger` + helpers `mergeStr/mergeInt/mergeDouble/mergeBoolean`
+  + `mergeStrList` (NEW S-093, List<String> comma-separated).
 * `CompositeContext` (codebase-contracts 0.1.0) — canaux EAGER/RAG/Graphify/
   Docs + `ChannelBudget`. `CapsuleContextBuilder` (domaine `capsule.context`).
+  `DocContextLoader` (NEW S-093, domaine `capsule.context`) — résout fichiers
+  pré-matchés, concatène trié par nom, tronque `budget.docsTokens` (10%).
 * `CapsulePipelineGraph` (koog 1.0.0, domaine `capsule.pipeline`) — 3 nœuds
   propose/validate/generate, `CapsulePromptBuilder` port pédagogique.

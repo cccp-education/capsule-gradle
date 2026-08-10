@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-10 (Session 092 — Cadrage 11 EPICs neufs : 5 contexte augmenté + 5 post-production + CAP-CR3-3 branchement screenshot. 47 US, ~88 pts. Axe contexte : CAP-DOCCONTEXT/SPD/GLOSSARY/PROVENANCE/TRANSCRIPT. Axe post-prod : CAP-CR3-3/MP4/AUDIO/CHAPITRE/PODCAST/PREVIEW. Séquence MVP0 : DOCCONTEXT > SPD > CR3-3 > MP4 > AUDIO)
+:last_update: 2026-08-11 (Session 093 — CAP-DOCCONTEXT EPIC TERMINÉ 5/5 US. ContextConfig + mergeStrList + DocContextLoader + wiring + cucumber. 694 unit + 47 functional + 4 cucumber. Séquence MVP0 : DOCCONTEXT ✅ > SPD > CR3-3 > MP4 > AUDIO)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -637,41 +637,65 @@ TAXONOMIE K-2 ✅ (format pivot metadata.json).
 | CAP-DOCCONTEXT-0
 | *Cadrage EPIC* — vision, audit canal Docs actuel, inventaire globs,
 découpage US. MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+_Audit S-093_ : canal Docs nourri par un seul string CLI `-Pcontext.docsContent`
+(wiring `CapsuleManager.registerCollectAugmentedContextTask` L147-169). Pas de
+`ContextConfig` dans `CapsuleConfig` (7 sections existantes : input/tts/capture/
+distrib/manim/output/strictMode). Pas de `mergeContextConfig` dans le merger.
+Pas de `mergeStrList` helper (les 4 helpers existants gèrent scalaires
+seulement). `ChannelBudget.budgetDocs=0.10` (10% = 800 tokens/8000, pas 40% qui
+est EAGER — correction du cadrage S-092). `DocContextLoader` truncate à
+`budget.docsTokens` (800 tokens défaut). Pattern à suivre : `StrictModeConfig`
+(section la plus simple), `mergeStrictModeConfig` (merger), `CapsuleContextBuilder`
+(object pur testé), `CapsuleContextCucumberRunner` (runner dédié S-082),
+`CapsuleContextSteps` (steps préfixés feature — bug S-088 glue partagée).
 | 1
-| ⬜ TODO
+| ✅ TERMINÉ (S-093)
 
 | CAP-DOCCONTEXT-1
-| *`DocContextConfig` + merger 4 sources* — `context.docsGlobs: List<String>`
-(4 sources ENV < props < YAML < CLI). `CapsuleConfig.context` section étendue.
-`CapsuleExtension.docsGlobs` Property. `pushConfigIntoExtension` wiring.
-Baby-step TDD : ~10 unit (defaults, YAML globs, props override, CLI override,
-empty globs fallback, glob resolution mocké).
+| *`ContextConfig` + merger 4 sources* — nouvelle section `context` dans
+`CapsuleConfig` (`ContextConfig(val docsGlobs: List<String> = emptyList())`,
+pattern `StrictModeConfig`). Nouveau helper `mergeStrList` dans
+`CapsuleConfigMerger` (List<String> comma-separated, 4 sources ENV < props < YAML
+< CLI). `mergeContextConfig` (pattern `mergeStrictModeConfig`).
+`loadFromGradleProperties` (`capsule.context.docsGlobs` comma-split) +
+`loadFromEnvironment` (`CAPSULE_CONTEXT_DOCS_GLOBS` comma-split). `merge()`
+distribue `context = mergeContextConfig(...)`. `CapsuleExtension.docsGlobs:
+ListProperty<String>` + `pushConfigIntoExtension` wiring. Baby-step TDD :
+11 unit (defaults empty, YAML globs, props override, CLI override, ENV override,
+empty globs fallback, comma-split CLI, comma-split props, single glob, merge
+order ENV<props<YAML<CLI).
 | 3
-| ⬜ TODO
+| ✅ TERMINÉ (S-093)
 
 | CAP-DOCCONTEXT-2
 | *`DocContextLoader` (object pur)* — résout globs via `project.fileTree()`,
-lit + concatène fichiers (AsciiDoc/MD/txt), tronque par `ChannelBudget` (40%
-du budget total). `CapsuleContextBuilder` consomme le loader au lieu du
-paramètre CLI string. Baby-step TDD : ~8 unit (glob match, concat order,
-budget truncation, missing dir gracefully skipped, empty result).
+lit + concatène fichiers (AsciiDoc/MD/txt), tronque par `ChannelBudget`
+(`budget.docsTokens` = 10% = 800 tokens défaut, *pas* 40% qui est EAGER —
+correction S-093). `CollectCapsuleAugmentedContextTask` consomme le loader au
+lieu du paramètre CLI string. Baby-step TDD : 9 unit (glob match, concat order,
+budget truncation, missing dir gracefully skipped, empty result, multiple
+globs, file order sorted, budget zero edge case, multi-format).
 | 3
-| ⬜ TODO
+| ✅ TERMINÉ (S-093)
 
 | CAP-DOCCONTEXT-3
 | *Wiring `collectCapsuleAugmentedContext`* — tâche existante (CAP-ARCH-2)
 étendue : résout globs si `context.docsGlobs` non-vide, fallback param CLI
-`-Pcontext.docsContent` si vide (rétrocompat). Functional test : 3 scénarios
+`-Pcontext.docsContent` si vide (rétrocompat). Nouvel input `@InputFiles
+@PathSensitive(RELATIVE) docsFiles: ConfigurableFileCollection` pour
+UP-TO-DATE tracking (économie d'encre). Functional test : 3 scénarios
 (default param CLI rétrocompat, globs résolus, empty globs no-op).
 | 2
-| ⬜ TODO
+| ✅ TERMINÉ (S-093)
 
 | CAP-DOCCONTEXT-4
 | *Cucumber BDD* — `capsule_doc_context.feature` `@context @docs` (4 scénarios :
-default param CLI, globs YAML résolus, globs CLI override, empty globs fallback).
-Runner dédié `CapsuleDocContextCucumberRunner` (pattern S-082).
+default param CLI rétrocompat, globs CLI résolus, globs > docsContent override,
+empty globs fallback). Runner dédié `CapsuleDocContextCucumberRunner` (pattern
+S-082). Steps `CapsuleDocContextSteps` préfixés "doc context" (bug S-088 glue
+partagée). `CucumberTaskSpec("cucumberTestDocContext")` câblé `build.gradle.kts`.
 | 3
-| ⬜ TODO
+| ✅ TERMINÉ (S-093)
 |===
 
 _Total_ : 5 US, ~12 pts.
@@ -1120,7 +1144,7 @@ FFmpeg, log "PREVIEW → N slides PNG". 1 functional + 2 cucumber `@preview`
 _Total_ : 3 US, ~4 pts.
 
 '''
-== 📊 Synthèse EPICs neufs (Session 092 — Cadrage)
+== 📊 Synthèse EPICs neufs (Session 092 — Cadrage, Session 093 — DOCCONTEXT terminé)
 
 [cols="2,2,1,1,1,1", options="header"]
 |===
@@ -1131,7 +1155,7 @@ _Total_ : 3 US, ~4 pts.
 | 5
 | 12
 | 🔴 P0
-| ⬜ TODO
+| ✅ TERMINÉ (S-093)
 
 | Contexte
 | CAP-SPD

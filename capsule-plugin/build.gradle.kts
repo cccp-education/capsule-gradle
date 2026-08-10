@@ -72,6 +72,15 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleStrictModeCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // Focused cucumber run for the CAP-DOCCONTEXT-4 documentary corpus injection feature
+        // (fast iteration — pure config + file globs, no Playwright/FFmpeg needed).
+        CucumberTaskSpec(
+            name = "cucumberTestDocContext",
+            features = listOf("src/test/features/capsule_doc_context.feature"),
+            tags = listOf("@context", "@docs"),
+            runnerClass = "capsule.scenarios.CapsuleDocContextCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task

@@ -1,6 +1,7 @@
 package capsule
 
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import javax.inject.Inject
 
@@ -16,6 +17,10 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     /** CAP-CR3-2 — strict mode: fail build instead of NoOp fallback when a tool is missing. Defaults to false. */
     val strictMode: Property<Boolean> = objects.property(Boolean::class.java)
         .convention(false)
+
+    /** CAP-DOCCONTEXT-1 — glob patterns for documentary corpus feeding the Docs channel. Defaults to empty. */
+    val docsGlobs: ListProperty<String> = objects.listProperty(String::class.java)
+        .convention(emptyList())
 
     val ttsEngine: Property<String> = objects.property(String::class.java)
         .convention("piper")

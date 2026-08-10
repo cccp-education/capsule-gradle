@@ -7,6 +7,7 @@ import contracts.context.ContextChannel
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
@@ -32,12 +33,17 @@ import org.gradle.work.DisableCachingByDefault
  * raw contract. Task inputs/outputs are declared Gradle-native, so the build
  * is UP-TO-DATE when nothing changed (law of economy of ink — AGENT.adoc).
  *
- * RAG / Graphify / Docs channels are injected via `-Pcontext.*` properties
+ * RAG / Graphify channels are injected via `-Pcontext.*` properties
  * (mockable in tests, codebase pgvector integration is out of scope here):
  *   - `-Pcontext.ragContent=...`      RAG pgvector section
  *   - `-Pcontext.graphifyContent=...` Graphify relations section
- *   - `-Pcontext.docsContent=...`     Codex/documentary section
  *   - `-Pcontext.tokenBudget=...`     total token budget (default 8000)
+ *
+ * Docs channel (CAP-DOCCONTEXT): two sources feed `docsSection`:
+ *   - `-Pcontext.docsContent=...`    raw string (legacy, rétrocompat)
+ *   - `-Pcapsule.context.docsGlobs=...`  comma-separated globs resolved by the
+ *     wiring layer into [docsFiles] (CAP-DOCCONTEXT-3). Globs take precedence
+ *     over the raw string when non-empty.
  */
 @DisableCachingByDefault(because = "Augmented context collection — governance files, non-cacheable")
 abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
@@ -46,6 +52,15 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val eagerFiles: ConfigurableFileCollection
+
+    /** Documentary corpus files resolved from `context.docsGlobs` (CAP-DOCCONTEXT-3). */
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val docsFiles: ConfigurableFileCollection
+
+    /** Glob patterns that triggered [docsFiles] resolution (for input tracking). */
+    @get:Input
+    abstract val docsGlobs: ListProperty<String>
 
     /** RAG pgvector section content (optional). */
     @get:Input
@@ -57,7 +72,7 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
     @get:Optional
     abstract val graphifyContent: Property<String>
 
-    /** Codex/documentary section content (optional). */
+    /** Codex/documentary section content (optional, legacy CLI string). */
     @get:Input
     @get:Optional
     abstract val docsContent: Property<String>
@@ -78,17 +93,18 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
                 "--- ${file.name} ---\n${file.readText().trim()}"
             }
 
+        val budget = ChannelBudget(totalTokenBudget = tokenBudget.get())
+
+        val docsSection = resolveDocsSection(budget)
+
         val composite = CompositeContext(
             eagerSection = eager,
             ragSection = ragContent.orNull.orEmpty(),
             graphifySection = graphifyContent.orNull.orEmpty(),
-            docsSection = docsContent.orNull.orEmpty(),
+            docsSection = docsSection,
             config = CompositeContextConfig(),
         )
-        val context = CapsuleContextBuilder.build(
-            composite,
-            ChannelBudget(totalTokenBudget = tokenBudget.get()),
-        )
+        val context = CapsuleContextBuilder.build(composite, budget)
 
         val output = outputFile.asFile.get()
         output.parentFile.mkdirs()
@@ -101,5 +117,21 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
         if (context.isEmpty) {
             logger.warn("CAPSULE CONTEXT → no EAGER/RAG/Graphify/Docs content collected (empty augmented context)")
         }
+    }
+
+    /**
+     * Resolves the Docs section content (CAP-DOCCONTEXT-3).
+     *
+     * Precedence: globs (resolved into [docsFiles]) > legacy CLI string
+     * ([docsContent]). When globs are configured and files are resolved,
+     * [DocContextLoader] concatenates + truncates them. Otherwise the raw CLI
+     * string is used as-is (backward compatible with CAP-ARCH-2).
+     */
+    private fun resolveDocsSection(budget: ChannelBudget): String {
+        val globFiles = docsFiles.files.toList()
+        if (globFiles.isNotEmpty()) {
+            return DocContextLoader.load(globFiles, budget)
+        }
+        return docsContent.orNull.orEmpty()
     }
 }

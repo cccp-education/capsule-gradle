@@ -34,7 +34,8 @@ object CapsuleConfigMerger {
             distrib = mergeDistribConfig(envConfig.distrib, propertiesConfig.distrib, yaml?.distrib, cliParams),
             manim = mergeManimConfig(envConfig.manim, propertiesConfig.manim, yaml?.manim, cliParams),
             output = mergeOutputConfig(envConfig.output, propertiesConfig.output, yaml?.output, cliParams),
-            strictMode = mergeStrictModeConfig(envConfig.strictMode, propertiesConfig.strictMode, yaml?.strictMode, cliParams)
+            strictMode = mergeStrictModeConfig(envConfig.strictMode, propertiesConfig.strictMode, yaml?.strictMode, cliParams),
+            context = mergeContextConfig(envConfig.context, propertiesConfig.context, yaml?.context, cliParams)
         )
     }
 
@@ -123,6 +124,9 @@ object CapsuleConfigMerger {
             ),
             strictMode = StrictModeConfig(
                 enabled = env["CAPSULE_STRICT_MODE_ENABLED"]?.toBoolean() ?: false
+            ),
+            context = ContextConfig(
+                docsGlobs = env["CAPSULE_CONTEXT_DOCS_GLOBS"]?.let { splitCommaList(it) } ?: emptyList()
             )
         )
     }
@@ -180,6 +184,9 @@ object CapsuleConfigMerger {
             ),
             strictMode = StrictModeConfig(
                 enabled = props["capsule.strictMode.enabled"]?.toBoolean() ?: false
+            ),
+            context = ContextConfig(
+                docsGlobs = props["capsule.context.docsGlobs"]?.let { splitCommaList(it) } ?: emptyList()
             )
         )
     }
@@ -266,6 +273,12 @@ object CapsuleConfigMerger {
         )
     }
 
+    private fun mergeContextConfig(env: ContextConfig, props: ContextConfig, yaml: ContextConfig?, cli: Map<String, Any?>): ContextConfig {
+        return ContextConfig(
+            docsGlobs = mergeStrList(cli, "context.docsGlobs", yaml?.docsGlobs, props.docsGlobs, env.docsGlobs)
+        )
+    }
+
     private fun mergeVersioning(
         cli: Map<String, Any?>,
         key: String,
@@ -332,6 +345,28 @@ object CapsuleConfigMerger {
         return props
     }
 
+    /**
+     * Merges a `List<String>` field from the 4 sources (CLI > YAML > props > ENV).
+     *
+     * CLI and props/ENV are comma-separated strings; YAML provides a native list.
+     * An empty/blank CLI string does NOT override (falls back to YAML/props/ENV).
+     * A non-empty YAML list always wins over props/ENV (consistent with the
+     * scalar `mergeStr` heuristic).
+     */
+    private fun mergeStrList(
+        cli: Map<String, Any?>,
+        key: String,
+        yaml: List<String>?,
+        props: List<String>,
+        env: List<String>
+    ): List<String> {
+        val cliValue = cli[key]?.toString()
+        if (!cliValue.isNullOrBlank()) return splitCommaList(cliValue)
+        if (!yaml.isNullOrEmpty()) return yaml
+        if (props.isNotEmpty()) return props
+        return env
+    }
+
     /** Helper: if this string is not blank, return it; otherwise return [fallback]. */
     private fun String.ifNotBlankOrElse(fallback: String): String =
         if (this.isNotBlank()) this else fallback
@@ -344,4 +379,8 @@ object CapsuleConfigMerger {
 
     private fun Map<String, Any?>.cliBoolean(key: String): Boolean? =
         this[key]?.let { (it as? Boolean) ?: it.toString().toBoolean() }
+
+    /** Splits a comma-separated string into a trimmed list of non-blank entries. */
+    internal fun splitCommaList(value: String): List<String> =
+        value.split(",").map { it.trim() }.filter { it.isNotBlank() }
 }
