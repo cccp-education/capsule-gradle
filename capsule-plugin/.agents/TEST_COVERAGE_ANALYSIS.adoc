@@ -233,3 +233,18 @@
 | CapsuleScaffoldTask.kt | lateinit var → lazy delegation | 0 régression
 | CapsuleManager.kt | Suppression capsuleExt field + 6 injections | 0 régression
 | CapsuleConfig.kt | validate() when explicite | 0 régression
+
+== Couverture — 11 août 2026 (après session 094)
+
+.Modifications session 094 — CAP-SPD US-0 cadrage + US-1 SpdContext/SpdContextLoader (domaine `capsule.context` étendu)
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/context/SpdContext.kt` (nouveau) | Data class immutable 6 champs (objectives, duration, prerequisites, modalities, sessionTitle, module), invariant fail-fast `sessionTitle.isNotBlank()`, derived `isEmpty` | 0 direct (couvert via `SpdContextLoaderTest`)
+| `capsule/context/SpdContextLoader.kt` (nouveau) | Object pur mirror `DocContextLoader` — `load(metadataFile, adocFile, maxTokens)`, valide metadata.json K-2 (`type=="SPD"` uniquement, pas `source` — capsule public OSS format-agnostic), parse AsciiDoc (extractTitle/extractAttribute/extractBulletSection/extractTextSection), rend `==== SPD Pedagogical Context (spd)`, tronque `ContextChannel.Docs.truncateToTokens` | 10 unit `SpdContextLoaderTest`
+|===
+
+- Unitaires : 704 VERT (+10 net, 0 FAIL, 0 SKIP) — 10 `SpdContextLoaderTest` (null metadata + missing adoc, valid metadata + adoc extracts objectives, missing metadata still parses adoc, type != SPD skips, empty objectives fallback, budget truncation, malformed metadata skipped + adoc still parsed, multi-line objectives, zero budget blank, empty adoc blank)
+- Zéro régression (694 baseline + 10 nouveau)
+- Domaine `capsule.context` : 5 fichiers (CapsuleContext + CapsuleContextBuilder + DocContextLoader + CollectCapsuleAugmentedContextTask + 2 NEW SpdContext/SpdContextLoader)
+- Baby-step TDD : RED (10 tests unresolved `SpdContextLoader`) → GREEN (9/10, 1 test assertion incohérente corrigée) → REFACTOR (`source` retiré `SpdMetadata`)
+- Non-blocage : SPD absent → blank → vidéo générée sans ancrage SPD (fallback no-op)

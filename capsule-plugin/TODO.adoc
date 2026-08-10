@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-08-10 (Session 091 — CAP-CR3-2 Mode strict anti-NoOp ✅ TERMINÉ 4/4 US)
+:last_update: 2026-08-11 (Session 094 — CAP-SPD US-0 ✅ + US-1 ✅ 10/10 unit GREEN)
 
 '''
 == ✅ EPIC CAP-MODEL — TERMINE (session 069)
@@ -130,8 +130,8 @@
 . [x] CAP-ARCH-7 US-2 — `VideoDestinationResolver` (object pur, timestamp/incremental), 10 unit tests ✅ S-087
 . [x] CAP-ARCH-7 US-3 — `DistributeCapsuleVideoTask` (tâche `distributeCapsuleVideo`), 3 functional tests ✅ S-087
 . [x] CAP-ARCH-7 US-4 — Cucumber BDD `@distrib @versioning` (feature `capsule_distrib.feature` 5 scénarios + `CapsuleDistribSteps` + `CapsuleDistribCucumberRunner`) ✅ S-088
-. [ ] CAP-ARCH-5 — i18n aligné sur le socle (translateDeck codebase-LLM, non-régression CAP-29)
-. [ ] CAP-ARCH-6 — Cucumber BDD boundary cross-borough (@i18n @cross-borough @architecture @ai)
+. [x] CAP-ARCH-5 — i18n aligné sur le socle (domaine `capsule.i18n`, `CapsuleMessages` 10 langues) ✅ S-089
+. [x] CAP-ARCH-6 — Cucumber BDD boundary cross-borough (@i18n @cross-borough @architecture @ai) ✅ S-090
 
 . [x] **Code review S-087** — Bug burn-in fix : `CapsuleOutputDirResolver` (package `capsule.support`), 3 steps Cucumber migrés (résolution dynamique `outputDir` au lieu de hardcoder `build/capsule/`), runner `cucumberTestIntegration` câblé. Scénario E2E burn-in `@burnin @integration` VERT (était FAIL depuis S-069). ✅ S-087
 . [ ] **Dette technique** — 15+ steps Cucumber restants hardcodent `build/capsule/` (lignes 43, 171, 181, 192, 202, 212, 214, 226, 228, 535, 553, 575, 603, 663, 689, 715, 739, 768, 978). Migrer vers `CapsuleOutputDirResolver` progressivement.
@@ -149,7 +149,27 @@
 . [x] **CAP-ARCH-3** (koog pipeline génération contenu, domaine `capsule.pipeline`) — ✅ S-086
 . [x] **CAP-ARCH-4** (wiring backend `generateCapsuleContentAndVideos`) — ✅ S-088
 . [x] **CAP-ARCH-7** (video destination versioning, 4 US) — ✅ S-087+S-088
-. [ ] **CAP-ARCH-5→6** (i18n aligné socle, cucumber boundary cross-borough) — TODO (prochaine session 089)
+. [x] CAP-ARCH-5→6 (i18n aligné socle, cucumber boundary cross-borough) — ✅ S-089 + S-090
+
+'''
+== ✅ CAP-DOCCONTEXT — Injection corpus documentaire (EPIC TERMINÉ 5/5 US) — TERMINE (session 093)
+
+. [x] `ContextConfig` data class (`docsGlobs: List<String>`) 8ème section `CapsuleConfig`
+. [x] `CapsuleConfigMerger.mergeContextConfig` + helper `mergeStrList` (comma-separated, 4 sources)
+. [x] `CapsuleExtension.docsGlobs: ListProperty<String>` + `pushConfigIntoExtension`
+. [x] `DocContextLoader` (object pur, domaine `capsule.context`) — concatène + tronque `budget.docsTokens`
+. [x] `CollectCapsuleAugmentedContextTask` — `docsFiles` + `docsGlobs` + `resolveDocsSection`
+. [x] Cucumber `@context @docs` (4 scénarios) + runner `CapsuleDocContextCucumberRunner`
+. [x] 694 unit VERT (+20) + 47 functional (+3) + 4 cucumber GREEN
+
+'''
+== 🟡 CAP-SPD — Consommation métadonnées SPD (EPIC EN COURS 2/5 US)
+
+. [x] CAP-SPD-0 — Cadrage EPIC (audit CapsulePipelineGraph/CapsuleContextBuilder, contrat SPD format-agnostic, 7 décisions architecturales BACKLOG) ✅ S-094
+. [x] CAP-SPD-1 — `SpdContext` data class + `SpdContextLoader` (object pur mirror `DocContextLoader`, valide `type=="SPD"` pas `source`, parse AsciiDoc, 10/10 unit GREEN) ✅ S-094
+. [ ] CAP-SPD-2 — `CapsuleContext.spdSection` + `CapsuleContextBuilder` étendu + `DefaultCapsulePromptBuilder` étendu (~6 unit)
+. [ ] CAP-SPD-3 — Wiring `collectCapsuleAugmentedContext -Pspd.file` (`ContextConfig.spdFile`, `mergeContextConfig` étendu, 4 sources, 2 functional)
+. [ ] CAP-SPD-4 — Cucumber BDD `capsule_spd_context.feature` `@context @spd` (3 scénarios + runner dédié + steps préfixés "spd context")
 
 '''
 == ✅ README i18n — TERMINE (session 041)

@@ -1,0 +1,182 @@
+= Session 094 — CAP-SPD US-0 Cadrage + US-1 SpdContext/SpdContextLoader (EN COURS)
+
+_Date_ : 2026-08-11
+_Type_ : cadrage+gouvernance+feat+tdd
+_Score_ : 9/10
+
+== Mission
+
+Implémenter l'EPIC CAP-SPD (P0, deuxième EPIC de l'axe contexte augmenté),
+5 US ~10 pts. `generateCapsuleContent` (CAP-ARCH-3) génère des speaker notes
+à partir d'un deck rendu, mais le LLM ignore le "pourquoi" pédagogique
+(objectifs, modalités, durée, prérequis — tous dans le SPD). En injectant le
+SPD dans le contexte augmenté, le LLM ancre ses speaker notes dans les
+objectifs de la session.
+
+Session 094 : US-0 cadrage (7 décisions architecturales) + US-1
+`SpdContext`/`SpdContextLoader` (10/10 unit GREEN). US-2/3/4 restantes.
+
+== US terminées
+
+=== US-0 Cadrage (1 pt) ✅
+
+Audit fondé sur le code réel via sous-agents explore parallèles :
+
+* `CapsulePipelineGraph` (11 fichiers pipeline, 148 lignes graphe koog, 3
+  nœuds propose/validate/generate + edges conditionnels).
+* `CapsuleContextBuilder` (67 lignes, `build(composite, budget)`).
+* `CapsuleContext` (39 lignes, 2 champs `channels`/`rendered` + invariant
+  `rendered.isBlank() == channels.isEmpty()`).
+* `DocContextLoader` (51 lignes, pattern mirror — object pur, pre-resolved
+  files, `--- filename ---` headers, truncate `ContextChannel.Docs.
+  truncateToTokens`).
+* `CollectCapsuleAugmentedContextTask` (137 lignes, wiring globs S-093,
+  `resolveDocsSection`, `resolveGlobFiles`).
+* `GenerateCapsuleContentTask` (121 lignes, `-Pdeck.file`/`-Pdeck.language` +
+  `augmentedContextFile` optional).
+* `DefaultCapsulePromptBuilder` (59 lignes, `buildProposePrompt`/
+  `buildGeneratePrompt`).
+* `ContextConfig` (1 champ `docsGlobs`), `mergeContextConfig` (helper
+  `mergeStrList`), `CapsuleExtension.docsGlobs: ListProperty<String>`.
+* 7 `CucumberTaskSpec` existants dans `build.gradle.kts`.
+* Contrat SPD : audit format pivot K-2 (`TAXONOMIE_WORKSPACE.adoc` lines
+  91-128) + AFNOR/REAC rubriques (5 obligatoires : Identification,
+  Déroulement, Moyens, Évaluation, Traçabilité) + fixtures formation
+  (`001_bienvenue.adoc`, `002_objectifs.adoc`).
+
+7 décisions architecturales documentées BACKLOG :
+
+. *Producteur SPD = borough privé non nommé publiquement*. Correction du
+  cadrage S-092 qui citait "planner" publiquement. Capsule-gradle étant public
+  OSS (Apache 2.0), il ne couple à aucun borough producteur — il consomme le
+  *format* SPD (K-2 metadata.json + AsciiDoc), pas un borough. Aucune
+  référence à un borough producteur dans le code ou les messages publics.
+
+. *metadata.json K-2 = enveloppe provenance uniquement* (7 champs : source,
+  type, sessions, generatedAt, model, version, dependencies). AUCUN champ
+  pédagogique. Le `SpdContextLoader` valide uniquement `type == "SPD"` (le
+  format) — capsule ne valide pas `source` (pas de couplage borough producteur).
+
+. *N0 `ContextChannel` sealed (5 variants : Eager/Rag/Graphify/Resource/Docs)*.
+  Pas de canal `spd` N0 — bump N0 = multi-borough. Décision : **extension
+  capsule-local**. `CapsuleContext` (wrapper capsule, PAS N0) étendu avec
+  `spdSection: String = ""` (US-2).
+
+. *Rubriques SPD AFNOR/REAC* — `SpdContext` extrait les rubriques pertinentes
+  pour le prompt LLM : objectifs, durée, prérequis, modalités, titre de
+  session, module.
+
+. *Wiring sur `collectCapsuleAugmentedContext`* (PAS `generateCapsuleContent`
+  — cohérence CAP-DOCCONTEXT S-093) : `-Pspd.file=<path>` résout le SPD,
+  `SpdContextLoader.load()` produit la section, injectée dans
+  `augmented-context.txt`. SPD absent → vidéo non bloquée (fallback no-op).
+
+. *`DefaultCapsulePromptBuilder` étendu* — instruction line référençant la
+  section SPD (référence textuelle, le SPD est déjà dans le contexte rendu).
+
+. *Cucumber runner dédié* `CapsuleSpdContextCucumberRunner` (pattern S-082) +
+  steps préfixés "spd context" (bug S-088 glue `capsule.scenarios` partagée).
+
+MàJ BACKLOG (section EPIC CAP-SPD refondue 7 décisions + US détaillées),
+INDEX (roadmap + session 094), PROMPT_REPRISE.
+
+=== US-1 SpdContext + SpdContextLoader (3 pts) ✅
+
+*Nouveaux fichiers* :
+- `capsule/context/SpdContext.kt` (47 lignes) — data class immutable 6
+  champs (`objectives: List<String>`, `duration: String`, `prerequisites:
+  List<String>`, `modalities: String`, `sessionTitle: String`, `module:
+  String`), invariant fail-fast `sessionTitle.isNotBlank()`, derived
+  `isEmpty`.
+- `capsule/context/SpdContextLoader.kt` (209 lignes) — object pur, mirror
+  `DocContextLoader`. API : `load(metadataFile: File?, adocFile: File,
+  maxTokens: Int): String`. Valide metadata.json K-2 (`type == "SPD"`
+  uniquement, pas `source` — capsule public OSS format-agnostic). Parse
+  AsciiDoc compagnon : `extractTitle` (first `= Title`), `extractAttribute`
+  (`:module:`), `extractBulletSection` (`== Objectifs`/`== Prérequis`),
+  `extractTextSection` (`== Modalités d'évaluation`/`== Durée estimée`).
+  Rend `==== SPD Pedagogical Context (spd)\nSession: ...\nModule: ...\n
+  Objectives: ...\nDuration: ...\nPrerequisites: ...\nModalities: ...`.
+  Tronque via `ContextChannel.Docs(raw).truncateToTokens(maxTokens)` (réutilise
+  le variant Docs — pas de nouveau variant sealed N0). Missing file gracefully
+  skipped (empty string). Internal `SpdMetadata` (type + version seulement —
+  `source` retiré REFACTOR car capsule format-agnostic).
+
+*Nouveau fichier test* :
+- `capsule/context/SpdContextLoaderTest.kt` (168 lignes) — 10 unit tests
+  `@TempDir` + `jacksonObjectMapper` : null metadata + missing adoc → blank,
+  valid metadata + adoc extracts objectives, missing metadata still parses
+  adoc, type != SPD skips (SPG → blank), empty objectives fallback, budget
+  truncation (50 tokens), malformed metadata skipped + adoc still parsed,
+  multi-line objectives, zero budget blank, empty adoc blank.
+
+*Baby-step TDD* :
+- RED : `./gradlew :compileTestKotlin` → "Unresolved reference 'SpdContextLoader'"
+  (10 tests échouent compilation).
+- GREEN : écriture `SpdContext` + `SpdContextLoader`, `./gradlew :test
+  --tests "capsule.context.SpdContextLoaderTest"` → 9/10 PASS, 1 FAIL
+  (`load with malformed metadata json gracefully skipped` assertion
+  incohérente avec le design — malformed metadata = skip metadata, adoc
+  reste parsé → non-blank). Correction test : assertion `isNotBlank()` +
+  `contains("Goal")`. Re-run → 10/10 PASS.
+- REFACTOR : `source` field retiré de `SpdMetadata` (capsule format-agnostic,
+  valide `type=="SPD"` uniquement). Fixtures test `source = "newark"` →
+  `source = "producer"` (générique). KDoc test corrigé (retirer
+  `source == "newark"`).
+
+*Vérification régression* : `./gradlew :test` → **704 unit tests, 0 failures,
+0 errors, 0 skipped** (694 baseline + 10 SpdContextLoaderTest). BUILD
+SUCCESSFUL.
+
+== US restantes (prochaine session)
+
+- US-2 `CapsuleContext.spdSection` + `CapsuleContextBuilder` étendu +
+  `DefaultCapsulePromptBuilder` étendu (~6 unit).
+- US-3 Wiring `collectCapsuleAugmentedContext -Pspd.file` (2 functional).
+- US-4 Cucumber BDD `capsule_spd_context.feature` (3 scénarios + runner
+  dédié + steps préfixés "spd context").
+
+== Fichiers modifiés (gouvernance) + créés (code)
+
+*Modifiés gouvernance* :
+- `BACKLOG.adoc` — section EPIC CAP-SPD refondue (7 décisions + 5 US
+  détaillées), US-0 ✅ + US-1 ✅, statut EN COURS.
+- `.agents/INDEX.adoc` — header (session en cours 094), roadmap CAP-SPD,
+  table sessions (ligne 094).
+- `PROMPT_REPRISE.adoc` — mission session 094 (US-0 ✅ + US-1 10/10 GREEN),
+  contexte reprise, rappels (capsule public OSS format-agnostic).
+- `TODO.adoc` — coches CAP-ARCH-5/6 (S-089/090 rétroactif), CAP-DOCCONTEXT
+  ajout, CAP-SPD US-0/1 ajout.
+
+*Créés code* :
+- `src/main/kotlin/capsule/context/SpdContext.kt` (NEW).
+- `src/main/kotlin/capsule/context/SpdContextLoader.kt` (NEW).
+- `src/test/kotlin/capsule/context/SpdContextLoaderTest.kt` (NEW).
+
+== Vérifications
+
+- `./gradlew :compileKotlin` UP-TO-DATE (build VERT).
+- `./gradlew :test` → 704 tests, 0 failures, 0 errors, 0 skipped.
+- `grep -r "TOKEN\|SECRET\|PASSWORD\|API_KEY\|gho_\|ghp_" --include="*.kts"
+  --include="*.properties" --include="*.yml"` → zéro secret.
+- Git : 3 fichiers gouvernance modifiés + 3 fichiers code créés.
+
+== Leçons
+
+- *Audit borough privé vs public* : un borough public OSS ne doit ni
+  référencer ni coupler à un borough producteur privé. Capsule valide le
+  *format* SPD (`type=="SPD"`), pas le *producteur* (`source`). Le code et
+  les messages publics ne nomment jamais le borough producteur.
+- *N0 sealed extension locale* : quand le contrat N0 est sealed (5 variants
+  `ContextChannel`), étendre le wrapper capsule-local (`CapsuleContext.
+  spdSection`) plutôt que bumper le contrat N0 multi-borough.
+- *Mirror pattern* : `SpdContextLoader` mirror exact `DocContextLoader`
+  (object pur, pre-resolved files, `ContextChannel.Docs.truncateToTokens`)
+  — cohérence domaine `capsule.context`.
+- *SPD colonne vertébrale optionnelle* : sa présence enrichit le contexte,
+  son absence ne bloque jamais la création de capsule vidéo (fallback
+  no-op, `augmented-context.txt` sans section spd).
+- *Baby-step TDD itération* : 1 test failing sur 10 (assertion incohérente
+  avec le design — malformed metadata = skip metadata, adoc reste parsé).
+  Correction test (pas du code) → 10/10 GREEN. Le test révèle le design, pas
+  l'inverse.

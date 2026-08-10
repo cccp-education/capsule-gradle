@@ -704,62 +704,170 @@ _Total_ : 5 US, ~12 pts.
 
 _Vision_ : `generateCapsuleContent` (CAP-ARCH-3) génère des speaker notes à
 partir d'un deck rendu. Le LLM ignore le "pourquoi" pédagogique : objectifs,
-modalités, durée, prérequis — tous dans le SPD (Scénario Pédagogique Détaillé,
-format pivot K-2 metadata.json + AsciiDoc). En injectant le SPD dans le
-`CapsulePipelineGraph`, le LLM ancre ses speaker notes dans les objectifs de
-la session, pas juste les titres de slides. Cross-borough planner (SPG/SPD
-source).
+modalités, durée, prérequis — tous dans le SPD (Scénario Pédagogique Détaillé).
+En injectant le SPD dans le contexte augmenté, le LLM ancre ses speaker notes
+dans les objectifs de la session, pas juste les titres de slides.
 
-_Domaine_ : `capsule.context` étendu (canal `spd`).
+_Décisions de cadrage (US-0, Session 094)_ :
 
-_Dépendances_ : CAP-ARCH-3 ✅ (`CapsulePipelineGraph`), planner-gradle (SPD
-source, DAG N2), TAXONOMIE K-2 ✅ (metadata.json).
+. *Producteur SPD = borough privé (non nommé publiquement)*. Correction du
+  cadrage S-092 qui citait "planner" : le producteur SPD est un borough privé
+  du workspace. Capsule-gradle étant public OSS (Apache 2.0), il ne couple à
+  aucun borough producteur spécifique — il consomme le *format* SPD (K-2
+  metadata.json + AsciiDoc), pas un borough. Aucune référence à un borough
+  producteur dans le code ou les messages. Le SPD est une *colonne
+  vertébrale optionnelle* de la formation : sa présence enrichit le contexte,
+  son absence ne bloque jamais la création de capsule vidéo (fallback no-op).
+
+. *metadata.json K-2 = enveloppe provenance uniquement* (7 champs : source,
+  type, sessions, generatedAt, model, version, dependencies). AUCUN champ
+  pédagogique. Les objectifs/durée/prérequis/modalités sont dans l'**AsciiDoc
+  compagnon** (sections `==` et attributs `:module:`/`:title:`/`:order:`).
+  Le `SpdContextLoader` valide uniquement `type == "SPD"` (le format) —
+  capsule ne valide pas `source` (pas de couplage à un borough producteur).
+
+. *N0 `ContextChannel` sealed (5 variants : Eager/Rag/Graphify/Resource/Docs)*.
+  Pas de canal `spd` N0 — toucher au contrat sealed = bump codebase-contracts
+  multi-borough. Décision : **extension capsule-local**. `CapsuleContext`
+  (wrapper capsule, PAS N0 `CompositeContext`) étendu avec
+  `spdSection: String = ""`. Invariant ajusté :
+  `rendered.isBlank() == (channels.isEmpty() && spdSection.isBlank())`.
+  `CapsuleContextBuilder.build()` accepte `spdSection` optionnel et l'ajoute
+  au rendu (`==== SPD Pedagogical Context (spd)\n<content>`).
+
+. *Rubriques SPD AFNOR/REAC* (5 rubriques obligatoires) :
+  Identification (titre/module/séquence/durée/objectif/prérequis),
+  Déroulement, Moyens, Évaluation, Traçabilité. `SpdContext` extrait les
+  rubriques pertinentes pour le prompt LLM : objectifs, durée, prérequis,
+  modalités, titre de session, module.
+
+. *Wiring sur `collectCapsuleAugmentedContext`* (PAS `generateCapsuleContent`
+  — cohérence avec CAP-DOCCONTEXT S-093) : `-Pspd.file=<path>` résout le
+  fichier SPD (metadata.json + AsciiDoc compagnon), `SpdContextLoader.load()`
+  produit la section, injectée dans `augmented-context.txt`.
+  `generateCapsuleContent` consomme le fichier enrichi inchangé. SPD absent →
+  section vide → vidéo générée sans ancrage SPD (non-blocant).
+
+. *`DefaultCapsulePromptBuilder` étendu* — instruction line référençant la
+  section SPD : "Speaker notes must address the SPD objectives. Target
+  duration and prerequisites are specified in the SPD Pedagogical Context
+  section." Référence textuelle (le SPD est déjà dans le contexte rendu),
+  pas d'accès structuré au `SpdContext` dans le prompt builder.
+
+. *Cucumber runner dédié* `CapsuleSpdContextCucumberRunner` (pattern S-082
+  `@SelectClasspathResource` + filter `@context and @spd and not @wip and not
+  @integration`). Steps `CapsuleSpdContextSteps` préfixés "spd context" (bug
+  S-088 glue `capsule.scenarios` partagée — step texts doivent être uniques).
+  `CucumberTaskSpec("cucumberTestSpdContext")` câblé `build.gradle.kts`.
+
+_Domaine_ : `capsule.context` étendu (pas de nouveau domaine — `SpdContext` +
+`SpdContextLoader` rejoignent `DocContextLoader` dans le domaine existant).
+
+_Dépendances_ : CAP-ARCH-2 ✅ (`CapsuleContextBuilder`/`CapsuleContext`),
+CAP-ARCH-3 ✅ (`CapsulePipelineGraph`/`DefaultCapsulePromptBuilder`),
+CAP-DOCCONTEXT ✅ (pattern `DocContextLoader` mirror), format SPD K-2 ✅
+(metadata.json + AsciiDoc), TAXONOMIE K-4 ✅ (convention over configuration
+— module/order/title inférés du filesystem).
 
 [cols="1,3,2,2", options="header"]
 |===
 | US | Description | Pts | Statut
 
 | CAP-SPD-0
-| *Cadrage EPIC* — vision, audit `CapsulePipelineGraph` actuel, contrat SPD
-(metadata.json + AsciiDoc), découpage US. MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+| *Cadrage EPIC* — audit `CapsulePipelineGraph`/`CapsuleContextBuilder` actuels,
+  contrat SPD (metadata.json K-2 enveloppe + AsciiDoc payload pédagogique),
+  producteur = borough privé non nommé publiquement (correction S-092 qui
+  citait planner), capsule public OSS format-agnostic (valide `type=="SPD"`
+  uniquement, pas `source`), N0 ContextChannel sealed (extension capsule-local
+  pas N0), découpage US. MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+_Audit_ : `CapsuleContext` (39 lignes, 2 champs + invariant), `CapsuleContextBuilder`
+(67 lignes, `build(composite, budget)`), `DocContextLoader` (51 lignes, pattern
+mirror), `CollectCapsuleAugmentedContextTask` (137 lignes, wiring globs S-093),
+`GenerateCapsuleContentTask` (121 lignes, `-Pdeck.file`/`-Pdeck.language` +
+`augmentedContextFile` optional), `DefaultCapsulePromptBuilder` (59 lignes,
+`buildProposePrompt`/`buildGeneratePrompt`), `ContextConfig` (1 champ
+`docsGlobs`), `mergeContextConfig` (helper `mergeStrList`), `CapsuleExtension`
+(`docsGlobs: ListProperty<String>`), 7 `CucumberTaskSpec` existants.
 | 1
-| ⬜ TODO
+| ✅ TERMINÉ (S-094)
 
 | CAP-SPD-1
-| *`SpdContext` data class + `SpdContextLoader`* — parse metadata.json (K-2)
-+ extrait section AsciiDoc SPD (objectifs, modalités, prérequis). Canal `spd`
-dans `CompositeContext`. `CapsuleContextBuilder` étendu. Baby-step TDD :
-~8 unit (parse metadata, extract objectives, missing file gracefully skipped,
-empty objectives fallback).
+| *`SpdContext` data class + `SpdContextLoader` (object pur)* — domaine
+`capsule.context`. `SpdContext` (data class immutable : `objectives:
+List<String>`, `duration: String`, `prerequisites: List<String>`,
+`modalities: String`, `sessionTitle: String`, `module: String`, invariant
+fail-fast si sessionTitle blank). `SpdContextLoader` (object pur, mirror
+`DocContextLoader`) — `load(metadataFile: File?, adocFile: File, maxTokens:
+Int): String`. Valide metadata.json (`type=="SPD"` uniquement, pas `source` —
+capsule public OSS format-agnostic) si présent, extrait sections AsciiDoc
+(`== Objectifs`, `== Prérequis`, `== Modalités d'évaluation`, attributs
+`:module:`/`:title:`), rend `==== SPD Pedagogical Context (spd)\nObjectives:
+...\nDuration: ...\nPrerequisites: ...\nModalities: ...\nSession: ...\nModule:
+...`, tronque via `ContextChannel.Docs.truncateToTokens(maxTokens)` (réutilise
+le variant Docs, pas de nouveau variant sealed N0). Missing file gracefully
+skipped (empty string). SPD absent → vidéo non bloquée (fallback no-op).
+Baby-step TDD : RED (10 tests unresolved `SpdContextLoader`) → GREEN (10/10
+PASS — SpdContextLoaderTest : null metadata + missing adoc, valid metadata
++ adoc extracts objectives, missing metadata still parses adoc, type != SPD
+skips, empty objectives fallback, budget truncation, malformed metadata
+skipped + adoc still parsed, multi-line objectives, zero budget blank, empty
+adoc blank). REFACTOR : `source` field retiré de `SpdMetadata` (capsule
+format-agnostic, valide `type=="SPD"` uniquement).
 | 3
-| ⬜ TODO
+| ✅ TERMINÉ (S-094)
 
 | CAP-SPD-2
-| *`CapsulePromptBuilder` étendu* — prompt LLM enrichi : "Speaker notes must
-address these objectives: {spd.objectives}. Target duration: {spd.duration}.
-Prerequisites: {spd.prerequisites}." `DefaultCapsulePromptBuilder` étendu.
-Baby-step TDD : ~6 unit (prompt contains objectives, duration, prerequisites,
-empty SPD fallback to generic prompt).
+| *`CapsuleContext` étendu + `CapsuleContextBuilder` étendu +
+`DefaultCapsulePromptBuilder` étendu* — `CapsuleContext` 3ème champ
+`spdSection: String = ""`, invariant ajusté `rendered.isBlank() ==
+(channels.isEmpty() && spdSection.isBlank())`. `CapsuleContextBuilder.build()`
+signature étendue `build(composite, budget, spdSection: String = ""):
+CapsuleContext` — rend `==== SPD Pedagogical Context (spd)\n<spdSection>` si
+non-blank, append après les canaux N0. `DefaultCapsulePromptBuilder.
+buildGeneratePrompt` étendu — instruction line : "Speaker notes must address
+the SPD objectives. Target duration and prerequisites are specified in the
+SPD Pedagogical Context section." Baby-step TDD : ~6 unit (CapsuleContext
+invariant spdSection, builder renders spd section, builder drops blank spd,
+prompt contains instruction, empty spd fallback generic prompt, channels +
+spd coexist).
 | 2
 | ⬜ TODO
 
 | CAP-SPD-3
-| *Wiring `generateCapsuleContent -Pspd.file`* — tâche existante étendue :
-`-Pspd.file` (path metadata.json ou AsciiDoc SPD), résolution + injection
-canal `spd` dans `CapsuleState.context`. Functional test : 2 scénarios
-(SPD fourni → contexte enrichi, SPD absent → fallback générique).
+| *Wiring `collectCapsuleAugmentedContext -Pspd.file`* — tâche existante
+(CAP-ARCH-2/S-093) étendue : `-Pspd.file=<path>` (path AsciiDoc SPD, ou
+directory contenant metadata.json + .adoc), `spdFile: RegularFileProperty`
+(`@InputFile @PathSensitive(RELATIVE) @Optional`), résolution + appel
+`SpdContextLoader.load()`, section injectée dans `augmented-context.txt`.
+`context.spdFile` 4 sources (ENV `CAPSULE_CONTEXT_SPD_FILE` < props
+`capsule.context.spdFile` < YAML `capsule-context.yml` < CLI `-Pspd.file`).
+`ContextConfig` étendu `spdFile: String? = null`. `mergeContextConfig` étendu
+(utilise `mergeStr`). `CapsuleExtension.spdFile: Property<String>`.
+`pushConfigIntoExtension` wiring. Functional test : 2 scénarios (SPD fourni →
+contexte enrichi section spd, SPD absent → fallback générique no-op).
 | 2
 | ⬜ TODO
 
 | CAP-SPD-4
 | *Cucumber BDD* — `capsule_spd_context.feature` `@context @spd` (3 scénarios :
-SPD injecté, SPD absent fallback, SPD malformé gracefully skipped). Runner
-dédié (pattern S-082).
+SPD injecté → section spd dans augmented-context.txt, SPD absent → fallback
+no-op, SPD malformé → gracefully skipped empty section). Runner dédié
+`CapsuleSpdContextCucumberRunner` (pattern S-082
+`@SelectClasspathResource("features/capsule_spd_context.feature")` + filter
+`@context and @spd and not @wip and not @integration`). Steps
+`CapsuleSpdContextSteps` préfixés "spd context" (bug S-088 glue partagée).
+`CucumberTaskSpec("cucumberTestSpdContext")` câblé `build.gradle.kts`.
 | 2
 | ⬜ TODO
 |===
 
-_Total_ : 5 US, ~10 pts.
+_Total_ : 5 US, ~10 pts. _Méthode_ : baby-step DDD/TDD/BDD, 3 niveaux
+tests/US (unit → functional → cucumber), English only code/Gherkin.
+_Pattern de référence_ : CAP-DOCCONTEXT S-093 (`DocContextLoader` mirror),
+CAP-ARCH-2 S-085 (`CapsuleContextBuilder`), CAP-ARCH-3 S-086
+(`DefaultCapsulePromptBuilder`). _Statut_ : 🟡 EN COURS (CAP-SPD-0 ✅ S-094,
+CAP-SPD-1 ✅ S-094 10/10 unit GREEN). 704 unit VERT (+10). Reste US-2, US-3,
+US-4.
 
 === 🗂️ EPIC CAP-GLOSSARY — Injection terminologique (contexte augmenté)
 
@@ -1019,7 +1127,8 @@ depuis `SlideSegment.titles`).
 _Domaine_ : `capsule.cards` (nouveau) + `capsule.chapters` (nouveau).
 
 _Dépendances_ : CAP-ARCH-2 ✅ (EAGER), TAXONOMIE K-2 ✅ (metadata.json),
-planner-gradle (SPG/SPD source).
+format SPD K-2 (AsciiDoc + metadata.json, borough producteur non couplé —
+capsule public OSS format-agnostic).
 
 [cols="1,3,2,2", options="header"]
 |===
