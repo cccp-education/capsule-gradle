@@ -6,8 +6,8 @@ _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
 _Derniere mise a jour_ : 2026-08-10
-_Session terminee_ : 091 — CAP-CR3-2 Mode strict anti-NoOp (EPIC CAP-CR3-2 TERMINÉ 4/4 US). `capsule.strictMode` DSL (Boolean, défaut `false`, 4 sources ENV < props < YAML < CLI). `StrictModeGuard` (object pur, domaine `capsule.config`) — `requireAvailable(strict, engineName, isAvailable, path)` lève `IllegalStateException` avec message actionable si `strict && !isAvailable`. 6 `resolve*` branchés (CapsuleBuildTask piper/espeak, CapsuleVideoTask piper/espeak/playwright, CapsuleManager manim/mixer/subtitle — param `strict` ajouté, défaut `false` rétrocompatible). `noop` explicite reste légitime, non concerné. `StrictModeConfig` data class. `CapsuleConfigMerger.mergeStrictModeConfig` + env (`CAPSULE_STRICT_MODE_ENABLED`) + props (`capsule.strictMode.enabled`). `CapsuleExtension.strictMode` Property. Baby-step TDD/BDD 3 niveaux : RED → GREEN → REFACTOR (unit → functional → cucumber). 674 unit VERT (+19) + 44 functional VERT (+4) + 8 cucumber dédiés GREEN (`capsule_strict_mode.feature` 4 scénarios `@strict @config`, runner `CapsuleStrictModeCucumberRunner` pattern S-082). Zéro régression, zéro secret. `check` BUILD SUCCESSFUL 6m54s.
-_Prochaine session_ : — (EPIC CAP-CR3-2 clos, borough en maintenance).
+_Session terminee_ : 091 — CAP-CR3-2 Mode strict anti-NoOp (EPIC CAP-CR3-2 TERMINÉ 4/4 US). `capsule.strictMode` DSL (Boolean, défaut `false`, 4 sources ENV < props < YAML < CLI). `StrictModeGuard` (object pur, domaine `capsule.config`) — `requireAvailable(strict, engineName, isAvailable, path)` lève `IllegalStateException` avec message actionable si `strict && !isAvailable` (nomme engine + path + suggestion `strictMode=false` ou `install <tool>`). 6 `resolve*` branchés (CapsuleBuildTask piper/espeak, CapsuleVideoTask piper/espeak/playwright, CapsuleManager manim/mixer/subtitle — param `strict` ajouté, défaut `false` rétrocompatible). `noop` explicite reste légitime, non concerné. `StrictModeConfig` data class (1 champ `enabled: Boolean = false`). `CapsuleConfig` étendu `strictMode: StrictModeConfig`. `CapsuleConfigMerger.mergeStrictModeConfig` (utilise `mergeBoolean`) + `loadFromEnvironment` (`CAPSULE_STRICT_MODE_ENABLED`) + `buildConfigFromProperties` (`capsule.strictMode.enabled`). `CapsuleExtension.strictMode: Property<Boolean>` (convention `false`). `CapsulePlugin.pushConfigIntoExtension` push strictMode. Baby-step TDD/BDD 3 niveaux : RED → GREEN → REFACTOR (unit → functional → cucumber). 674 unit VERT (+19 : 7 `StrictModeGuardTest` + 3 `StrictModeConfigTest` + 9 strictMode merger) → 44 functional VERT (+4 `StrictModeFunctionalTest` : default NoOp preserved, strict + piper absent → FAIL, strict + noop explicite → OK, CLI flag strict → FAIL) → 8 cucumber dédiés GREEN (`capsule_strict_mode.feature` 4 scénarios `@strict @config`, runner `CapsuleStrictModeCucumberRunner` pattern S-082, steps p... (line truncated to 2000 chars)
+_Prochaine session_ : 092 — Cadrage EPICs neufs (11 EPICs, 47 US, ~88 pts). Séquence MVP0 : CAP-DOCCONTEXT (P0) > CAP-SPD (P0) > CAP-CR3-3 (P0) > CAP-MP4 (P1) > CAP-AUDIO (P1) > CAP-GLOSSARY (P1) > CAP-PROVENANCE (P1) > CAP-CHAPITRE (P2) > CAP-TRANSCRIPT (P2) > CAP-PODCAST (P2) > CAP-PREVIEW (P2).
 _Session en cours_ : —
 
 '''
@@ -172,6 +172,17 @@ _Pattern aligné sur plantuml-gradle (ConfigLoader + ConfigMerger + 4 sources do
 | CAP-29 | Pipeline Traduction Vidéo Multi-Langue — domaine `capsule.multilang`, `MultiLanguageResolver` + `VoiceMapping` 10 langues (LanguageCatalog), `CapsuleVideoPlan` + `CapsuleVideoPlanner`, `generateCapsuleVideoAllLanguages`, `translateAndGenerateCapsuleVideos` (composite), Cucumber E2E 10 langues, dogfooding réel 3 WebM + fix nommage `CapsuleVideoOutputRenamer`. 7 US ~20 pts | ✅ TERMINÉ (S-082, 7/7 US, 464 unit + 25 functional + 6 cucumber multilang) | P0
 | CAP-ARCH | Capsule LLM-driven : génération de contenu + i18n pilotés par codebase (koog + langchain4j + RAG + graphify) — socle LLM bridge SLD-8 (`capsule.ai`), contexte augmenté CompositeContext (`capsule.context`), graphe koog `CapsulePipelineGraph` (`capsule.pipeline`), wiring backend existant (`generateCapsuleContentAndVideos` composite), i18n via translateDeck, cucumber cross-borough, video destination versioning (`capsule.support` + `OutputConfig` + `VideoDestinationResolver` + `DistributeCapsuleVideoTask`), i18n messages socle (`capsule.i18n` + `CapsuleMessages` + 11 `Messages*.properties` 10 langues). 8 US ~25 pts | ✅ TERMINÉ (CAP-ARCH-0 ✅ S-083, CAP-ARCH-1 ✅ S-084, CAP-ARCH-2 ✅ S-085, CAP-ARCH-3 ✅ S-086, CAP-ARCH-4 ✅ S-088, CAP-ARCH-5 ✅ S-089, CAP-ARCH-6 ✅ S-090, CAP-ARCH-7 ✅ S-087+S-088) | P0
 | CAP-CR3-2 | Mode strict anti-NoOp — `capsule.strictMode` DSL (4 sources), `StrictModeGuard` (object pur), 6 `resolve*` branchés, `StrictModeConfig`, cucumber `@strict @config`. 4 US ~10 pts | ✅ TERMINÉ (S-091, 674 unit + 44 functional + 8 cucumber dédiés) | P0
+| CAP-DOCCONTEXT | Injection corpus documentaire — `context.docsGlobs` 4 sources, `DocContextLoader` résout globs (`docs/afnor/**/*.adoc`), canal Docs enrichi. 5 US ~12 pts | ⬜ TODO | P0
+| CAP-SPD | Consommation métadonnées SPD — `SpdContextLoader` parse metadata.json K-2, canal `spd` dans `CapsulePipelineGraph`, prompt LLM ancré objectifs. 5 US ~10 pts | ⬜ TODO | P0
+| CAP-CR3-3 | Branchement ScreenshotCapture — `capture.strategy: playwright|screenshot` 4 sources, `ScreenshotCaptureImpl` étendu multi-slide, `resolveCapture` factory + StrictModeGuard, cucumber `@capture @strategy`. 5 US ~13 pts | ⬜ TODO | P0
+| CAP-MP4 | Export MP4/H.264 — `output.format: webm|mp4|both` 4 sources, `VideoFormatConverter` transcode FFmpeg, `DistributeCapsuleVideoTask` étendu. 4 US ~4 pts | ⬜ TODO | P1
+| CAP-AUDIO | Post-production audio — BGM + loudnorm EBU R128 + sidechain ducking, `AudioPostProcessor`, domaine `capsule.audio`. 5 US ~10 pts | ⬜ TODO | P1
+| CAP-GLOSSARY | Injection terminologique — `context.glossaryFile` 4 sources, canal `glossary`, prompt "Use official terminology". 4 US ~6 pts | ⬜ TODO | P1
+| CAP-PROVENANCE | Audit context — `ProvenanceTracker` accumulate canaux → `context-provenance.json`, anti-hallucination. 3 US ~5 pts | ⬜ TODO | P1
+| CAP-CHAPITRE | Intro/outro + chapter markers — `CardRenderer` PNG, `ChapterMarkers` Matroska tags depuis `SlideSegment.titles`, domaines `capsule.cards`/`capsule.chapters`. 5 US ~10 pts | ⬜ TODO | P2
+| CAP-TRANSCRIPT | Reverse pipeline capsule → article AsciiDoc — `TranscriptBuilder` + `TranscriptLlmEnhancer`, domaine `capsule.transcript`, cross-borough document/bakery. 5 US ~10 pts | ⬜ TODO | P2
+| CAP-PODCAST | Extraction audio-only — `PodcastConcatenator` FFmpeg concat MP3 slides, tâche `generateCapsulePodcast`. 3 US ~4 pts | ⬜ TODO | P2
+| CAP-PREVIEW | Mode dry-run — `capture.previewOnly` 4 sources, screenshot path s'arrête après PNG. 3 US ~4 pts | ⬜ TODO | P2
 |===
 
 '''
@@ -471,12 +482,9 @@ générés). Tags `@multilang @i18n`. NoOp engines (pas de vrais Piper/Playwrigh
 | ✅ TERMINÉ (S-081, 6 scénarios cucumber 0 FAIL)
 
 | CAP-29.6
-| *Documentation + dogfooding* — README master EN mis à jour avec domaine
-`capsule.multilang` + tâche `generateCapsuleVideoAllLanguages`. Dogfooding :
-1 deck demo × 3 langues (fr/en/ar dont 1 RTL) = 3 vidéos générées (NoOp ou réel
-selon disponibilité). MàJ INDEX/BACKLOG.
+| *Documentation + dogfooding + clôture EPIC* — README master EN + README plugin mis à jour (domaine `capsule.multilang`, diagramme pipeline, table des tâches `extractSpeakerNotes`/`translateAndExtractSpeakerNotes`/`generateCapsuleVideoAllLanguages`/`translateAndGenerateCapsuleVideos`, convention de nommage `<deckName>_<lang>-deck.html|script.txt|webm`, totaux tests 464 unit + 25 functional + 6 cucumber multilang). Dogfooding réel consommateur composite `includeBuild` : 1 deck demo × 3 langues (fr/en/ar dont 1 RTL) → `extractSpeakerNotes` réel → `generateCapsuleVideoAllLanguages` réel (Piper fr/en + espeak, chromium Playwright) → 3 WebM générés en 3m07. Défaut de nommage découvert : le rendu produisait `<deckName>_<lang>-deck.webm` (dérivé du header script) au lieu de la convention du plan `<deckName>_<lang>.webm`, ce qui brisait aussi l'économie d'encre (skip jamais déclenché). Fix TDD baby-step : `CapsuleVideoOutputRenamer` (domaine `capsule.multilang`, 4 unit) aligne le WebM rendu sur `entry.outputVideo` (contrat plan), wiring post-capture dans `renderEntry`. Re-dogfooding : alignement `-deck.webm` → `_<lang>.webm` pour les 3 langues + économie d'encre prouvée (`0/3 rendered, 3 skipped: existing valid WebM`). 464 unit VERT (+4 net) + 25 functional VERT + 6 cucumber multilang GREEN (1 FAIL `@integration` burn-in préexistant hors CAP-29). EPIC CAP-29 TERMINÉ 7/7 US.
 | 2
-| ⬜ TODO
+| ✅ TERMINÉ (S-082, 4 unit + 3 WebM réels dogfooding + fix nommage)
 |===
 
 _Total_ : 7 US (US-0 cadrage + US-1→6 exécution), ~20 pts. _Méthode_ : baby-step
@@ -484,7 +492,7 @@ DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber), English only
 code/Gherkin. _Pattern de référence_ : SLD-5 (DeckTranslationPipeline one-to-many),
 CAP-MODEL (unification domaine). _Statut_ : 🟡 EN COURS (CAP-29.0 ✅ S-076,
 CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, CAP-29.4 ✅ S-080,
-CAP-29.5 ✅ S-081, 6→TODO).
+CAP-29.5 ✅ S-081, CAP-29.6 ✅ S-082). 7/7 US terminés. EPIC clos.
 
 '''
 == Fichiers Associes

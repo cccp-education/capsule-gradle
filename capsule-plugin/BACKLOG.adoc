@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-10 (Session 090 — CAP-ARCH-6 Cucumber BDD boundary cross-borough ✅ : EPIC CAP-ARCH TERMINÉ 8/8 US. `capsule_arch_boundary.feature` 4 scénarios `@cross-borough @architecture @i18n @ai` single-language français (mock Ollama 2 réponses alternées, NoOp engines, skip WebM pré-existant ffmpeg valide). Runner dédié `CapsuleArchBoundaryCucumberRunner` + `CapsuleArchBoundarySteps`. `CucumberTaskSpec("cucumberTestArchBoundary")` câblé. 655 unit + 40 functional inchangés + 4 cucumber dédiés GREEN. Zéro régression)
+:last_update: 2026-08-10 (Session 092 — Cadrage 11 EPICs neufs : 5 contexte augmenté + 5 post-production + CAP-CR3-3 branchement screenshot. 47 US, ~88 pts. Axe contexte : CAP-DOCCONTEXT/SPD/GLOSSARY/PROVENANCE/TRANSCRIPT. Axe post-prod : CAP-CR3-3/MP4/AUDIO/CHAPITRE/PODCAST/PREVIEW. Séquence MVP0 : DOCCONTEXT > SPD > CR3-3 > MP4 > AUDIO)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -590,3 +590,629 @@ CAP-ARCH-6 ✅ S-090, CAP-ARCH-7 ✅ S-087+S-088). 8/8 US terminés. EPIC clos.
 
 _Version de référence_ : 655 unit + 40 functional (session 089/090), cucumber
 SKIPPED par défaut (CR-10). EPIC CAP-ARCH TERMINÉ — borough Détroit en maintenance.
+
+'''
+== 🟢 EPICs NEUFS — Extension périmètre capsule (Session 092 — Cadrage pipeline)
+
+_Cadrage_ : audit post-CAP-ARCH/CAP-CR3-2. Le borough a une infrastructure LLM
+(`capsule.ai`/`capsule.context`/`capsule.pipeline`) et un backend d'exécution
+solide (TTS, capture, subtitles, burn-in, multi-lang, distrib, strict mode).
+10 EPICs neufs étendent le périmètre sur 2 axes : post-production (5) et
+contexte augmenté (5). Priorité MVP0 : contexte augmenté d'abord (qualité du
+contenu généré), post-production ensuite (qualité perçue du livrable).
+
+_Axe 1 — Contexte augmenté_ : CAP-ARCH-2 a livré `CompositeContext` (canaux
+EAGER/RAG/Graphify/Docs) mais le canal Docs est nourri par un seul paramètre
+CLI string (`-Pcontext.docsContent`). Pour 32 capsules FPA, le LLM génère des
+speaker notes à l'aveugle sans les manuels AFNOR/REAC, sans le SPD source, sans
+le glossaire métier. Ces EPICs dotent l'infrastructure `capsule.context` en
+munitions réelles — le contenu précède la production.
+
+_Axe 2 — Post-production_ : le WebM produit est TTS brut. BGM, normalisation,
+format distribution, chapter markers, podcast — différenciateurs qualité OF.
+
+_Méthode_ : baby-step DDD/TDD/BDD, 3 niveaux tests/US (unit → functional →
+cucumber), English only code/Gherkin. Économie d'encre préservée (skip si
+artefact existe et valide). DSL 4 sources (ENV < props < YAML < CLI) pour
+toute nouvelle config. StrictModeGuard (S-091) sur toute résolution engine.
+
+=== 📚 EPIC CAP-DOCCONTEXT — Injection corpus documentaire (contexte augmenté)
+
+_Vision_ : Le canal Docs de `CompositeContext` (CAP-ARCH-2) est nourri par un
+seul string CLI (`-Pcontext.docsContent`). Pour une capsule FPA, le LLM doit
+recevoir le manuel AFNOR + REAC + slides source en contexte. `collectCapsuleAugmentedContext`
+résout des globs (`docs/afnor/**/*.adoc`, `docs/reac/**/*.adoc`) et concatène
+les fichiers correspondants dans le canal Docs. Le LLM a enfin le matériel de
+formation réel, pas un prompt vide.
+
+_Domaine_ : `capsule.context` étendu (pas de nouveau domaine).
+
+_Dépendances_ : CAP-ARCH-2 ✅ (`CompositeContext`/`CapsuleContextBuilder`),
+TAXONOMIE K-2 ✅ (format pivot metadata.json).
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-DOCCONTEXT-0
+| *Cadrage EPIC* — vision, audit canal Docs actuel, inventaire globs,
+découpage US. MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+| 1
+| ⬜ TODO
+
+| CAP-DOCCONTEXT-1
+| *`DocContextConfig` + merger 4 sources* — `context.docsGlobs: List<String>`
+(4 sources ENV < props < YAML < CLI). `CapsuleConfig.context` section étendue.
+`CapsuleExtension.docsGlobs` Property. `pushConfigIntoExtension` wiring.
+Baby-step TDD : ~10 unit (defaults, YAML globs, props override, CLI override,
+empty globs fallback, glob resolution mocké).
+| 3
+| ⬜ TODO
+
+| CAP-DOCCONTEXT-2
+| *`DocContextLoader` (object pur)* — résout globs via `project.fileTree()`,
+lit + concatène fichiers (AsciiDoc/MD/txt), tronque par `ChannelBudget` (40%
+du budget total). `CapsuleContextBuilder` consomme le loader au lieu du
+paramètre CLI string. Baby-step TDD : ~8 unit (glob match, concat order,
+budget truncation, missing dir gracefully skipped, empty result).
+| 3
+| ⬜ TODO
+
+| CAP-DOCCONTEXT-3
+| *Wiring `collectCapsuleAugmentedContext`* — tâche existante (CAP-ARCH-2)
+étendue : résout globs si `context.docsGlobs` non-vide, fallback param CLI
+`-Pcontext.docsContent` si vide (rétrocompat). Functional test : 3 scénarios
+(default param CLI rétrocompat, globs résolus, empty globs no-op).
+| 2
+| ⬜ TODO
+
+| CAP-DOCCONTEXT-4
+| *Cucumber BDD* — `capsule_doc_context.feature` `@context @docs` (4 scénarios :
+default param CLI, globs YAML résolus, globs CLI override, empty globs fallback).
+Runner dédié `CapsuleDocContextCucumberRunner` (pattern S-082).
+| 3
+| ⬜ TODO
+|===
+
+_Total_ : 5 US, ~12 pts.
+
+=== 📖 EPIC CAP-SPD — Consommation métadonnées SPD (contexte augmenté)
+
+_Vision_ : `generateCapsuleContent` (CAP-ARCH-3) génère des speaker notes à
+partir d'un deck rendu. Le LLM ignore le "pourquoi" pédagogique : objectifs,
+modalités, durée, prérequis — tous dans le SPD (Scénario Pédagogique Détaillé,
+format pivot K-2 metadata.json + AsciiDoc). En injectant le SPD dans le
+`CapsulePipelineGraph`, le LLM ancre ses speaker notes dans les objectifs de
+la session, pas juste les titres de slides. Cross-borough planner (SPG/SPD
+source).
+
+_Domaine_ : `capsule.context` étendu (canal `spd`).
+
+_Dépendances_ : CAP-ARCH-3 ✅ (`CapsulePipelineGraph`), planner-gradle (SPD
+source, DAG N2), TAXONOMIE K-2 ✅ (metadata.json).
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-SPD-0
+| *Cadrage EPIC* — vision, audit `CapsulePipelineGraph` actuel, contrat SPD
+(metadata.json + AsciiDoc), découpage US. MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+| 1
+| ⬜ TODO
+
+| CAP-SPD-1
+| *`SpdContext` data class + `SpdContextLoader`* — parse metadata.json (K-2)
++ extrait section AsciiDoc SPD (objectifs, modalités, prérequis). Canal `spd`
+dans `CompositeContext`. `CapsuleContextBuilder` étendu. Baby-step TDD :
+~8 unit (parse metadata, extract objectives, missing file gracefully skipped,
+empty objectives fallback).
+| 3
+| ⬜ TODO
+
+| CAP-SPD-2
+| *`CapsulePromptBuilder` étendu* — prompt LLM enrichi : "Speaker notes must
+address these objectives: {spd.objectives}. Target duration: {spd.duration}.
+Prerequisites: {spd.prerequisites}." `DefaultCapsulePromptBuilder` étendu.
+Baby-step TDD : ~6 unit (prompt contains objectives, duration, prerequisites,
+empty SPD fallback to generic prompt).
+| 2
+| ⬜ TODO
+
+| CAP-SPD-3
+| *Wiring `generateCapsuleContent -Pspd.file`* — tâche existante étendue :
+`-Pspd.file` (path metadata.json ou AsciiDoc SPD), résolution + injection
+canal `spd` dans `CapsuleState.context`. Functional test : 2 scénarios
+(SPD fourni → contexte enrichi, SPD absent → fallback générique).
+| 2
+| ⬜ TODO
+
+| CAP-SPD-4
+| *Cucumber BDD* — `capsule_spd_context.feature` `@context @spd` (3 scénarios :
+SPD injecté, SPD absent fallback, SPD malformé gracefully skipped). Runner
+dédié (pattern S-082).
+| 2
+| ⬜ TODO
+|===
+
+_Total_ : 5 US, ~10 pts.
+
+=== 🗂️ EPIC CAP-GLOSSARY — Injection terminologique (contexte augmenté)
+
+_Vision_ : FPA a un vocabulaire AFNOR/REAC que le LLM genericise (ex :
+"compétence" au lieu de "compétence transversale", "évaluation" au lieu
+"évaluation formative"). Injecter un glossaire (fichier AsciiDoc/CSV/JSON
+terme→définition) dans le contexte + instruction prompt "Use official
+terminology from glossary". Le LLM aligne son vocabulaire sur le référentiel.
+
+_Domaine_ : `capsule.context` étendu (canal `glossary`).
+
+_Dépendances_ : CAP-ARCH-2 ✅, CAP-ARCH-3 ✅ (`CapsulePromptBuilder`).
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-GLOSSARY-0
+| *Cadrage EPIC* — vision, format glossaire (AsciiDoc/CSV/JSON), découpage US.
+MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+| 1
+| ⬜ TODO
+
+| CAP-GLOSSARY-1
+| *`GlossaryContext` + `GlossaryLoader`* — parse glossaire (terme→définition),
+canal `glossary` dans `CompositeContext`. `context.glossaryFile` 4 sources.
+Baby-step TDD : ~6 unit (parse terms, missing file skipped, empty glossary
+fallback, budget truncation).
+| 2
+| ⬜ TODO
+
+| CAP-GLOSSARY-2
+| *`CapsulePromptBuilder` étendu* — prompt : "Use official terminology:
+{glossary.terms}". `DefaultCapsulePromptBuilder` étendu. Baby-step TDD :
+~4 unit (prompt contains terms, empty glossary fallback).
+| 1
+| ⬜ TODO
+
+| CAP-GLOSSARY-3
+| *Wiring + Cucumber* — `collectCapsuleAugmentedContext` étendu +
+`capsule_glossary_context.feature` `@context @glossary` (3 scénarios).
+Runner dédié (pattern S-082). Baby-step TDD/BDD : 1 functional + 3 cucumber.
+| 2
+| ⬜ TODO
+|===
+
+_Total_ : 4 US, ~6 pts.
+
+=== 🔍 EPIC CAP-PROVENANCE — Audit context anti-hallucination (contexte augmenté)
+
+_Vision_ : Le LLM génère des speaker notes à partir d'un contexte augmenté
+multi-canal. L'auteur doit vérifier l'ancrage : quel canal a nourri quelle
+partie ? Sans provenance, le LLM peut halluciner en s'appuyant sur un canal
+vide. `CapsulePipelineGraph` log "Context used: EAGER[INDEX.adoc:1200 chars],
+RAG[chunk-3:500 chars], Graphify[node-42]" → `build/capsule/context-provenance.json`.
+L'auteur inspecte l'ancrage avant de valider les notes.
+
+_Domaine_ : `capsule.context` étendu (provenance tracker).
+
+_Dépendances_ : CAP-ARCH-2 ✅, CAP-ARCH-3 ✅.
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-PROVENANCE-0
+| *Cadrage EPIC* — vision, format provenance (JSON), découpage US. MàJ
+INDEX/BACKLOG/PROMPT_REPRISE.
+| 1
+| ⬜ TODO
+
+| CAP-PROVENANCE-1
+| *`ContextProvenance` data class + `ProvenanceTracker`* — tracker accumule
+pendant `CapsuleContextBuilder.build()` : canal, source file, chars, tokens.
+`@OutputFile` dans `collectCapsuleAugmentedContext`. Baby-step TDD : ~6 unit
+(track channel, accumulate chars, JSON serialize, empty context).
+| 2
+| ⬜ TODO
+
+| CAP-PROVENANCE-2
+| *Wiring + Cucumber* — `collectCapsuleAugmentedContext` étendu +
+`capsule_provenance.feature` `@context @provenance` (3 scénarios : provenance
+JSON generated, channels tracked, empty context → empty provenance). Runner
+dédié (pattern S-082). 1 functional + 3 cucumber.
+| 2
+| ⬜ TODO
+|===
+
+_Total_ : 3 US, ~5 pts.
+
+=== 📝 EPIC CAP-TRANSCRIPT — Reverse pipeline capsule → article AsciiDoc (contexte augmenté)
+
+_Vision_ : Le stagiaire révisionne en lecture, pas vidéo. `generateCapsuleTranscript`
+produit un article AsciiDoc depuis les speaker notes + slide titles + metadata
+(via LLM ou template). L'article est publiable par document-gradle (WRITE +
+PUBLISH multi-format) ou bakery-gradle (site statique). Cross-borough document
++ bakery. Double le livrable MVP0 : capsule vidéo + article de révision.
+
+_Domaine_ : `capsule.transcript` (nouveau domaine DDD).
+
+_Dépendances_ : CAP-ARCH-3 ✅ (`CapsulePipelineGraph`/`CapsuleLlm`),
+document-gradle (publish), bakery-gradle (site).
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-TRANSCRIPT-0
+| *Cadrage EPIC* — vision, format article AsciiDoc, LLM vs template, découpage
+US. MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+| 1
+| ⬜ TODO
+
+| CAP-TRANSCRIPT-1
+| *`TranscriptPlan` + `TranscriptBuilder`* — data class immutable (deckName,
+segments, metadata, outputPath). `TranscriptBuilder` (object pur) assemble
+template AsciiDoc (titre, intro, sections par slide, speaker notes, outro).
+Baby-step TDD : ~8 unit (plan, template, empty segments, metadata injection).
+| 3
+| ⬜ TODO
+
+| CAP-TRANSCRIPT-2
+| *`TranscriptLlmEnhancer`* — port + adapter LLM (pattern `CapsuleLlm`).
+Enrichit le template : transitions, introductions, reformulations pédagogiques.
+`TranscriptStrategy` enum (TEMPLATE, LLM). Baby-step TDD : ~6 unit (strategy
+dispatch, LLM mock, template fallback, empty output).
+| 2
+| ⬜ TODO
+
+| CAP-TRANSCRIPT-3
+| *Tâche `generateCapsuleTranscript`* — groupe `generate`, `@OutputFile`,
+dépend de `generateCapsuleContent` (speaker notes source). DSL
+`transcriptEnabled` + `transcriptStrategy` (4 sources). Wiring `CapsuleManager`.
+Baby-step TDD : 2 functional (registration, output artefact).
+| 2
+| ⬜ TODO
+
+| CAP-TRANSCRIPT-4
+| *Cucumber BDD* — `capsule_transcript.feature` `@transcript` (4 scénarios :
+template strategy, LLM strategy mock, disabled default, output AsciiDoc
+valid). Runner dédié (pattern S-082).
+| 2
+| ⬜ TODO
+|===
+
+_Total_ : 5 US, ~10 pts.
+
+=== 🎵 EPIC CAP-AUDIO — Post-production audio (BGM + normalisation + ducking)
+
+_Vision_ : Le WebM produit est TTS brut, sans lit musical ni normalisation.
+Une capsule pédagogique sans audio bed sonne amateur ; les volumes Piper/espeak
+sur 10 langues sont inégaux. FFmpeg `loudnorm` (EBU R128) + mix BGM + sidechain
+ducking (baisser le BGM quand la voix parle). Post-`burnInSubtitlesIfEnabled`.
+
+_Domaine_ : `capsule.audio` (nouveau domaine DDD).
+
+_Dépendances_ : FFmpeg (déjà dépendance), media-use (borough bakery pour
+assets BGM, optionnel).
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-AUDIO-0
+| *Cadrage EPIC* — vision, BGM source (file glob vs media-use), loudness EBU
+R128, découpage US. MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+| 1
+| ⬜ TODO
+
+| CAP-AUDIO-1
+| *`AudioPostConfig` + merger 4 sources* — `audioPost { bgmEnabled, bgmFile,
+bgmLevel, loudnessTarget, duckingEnabled }` (4 sources). `CapsuleConfig.audioPost`
+section. `CapsuleExtension` properties. Baby-step TDD : ~8 unit.
+| 2
+| ⬜ TODO
+
+| CAP-AUDIO-2
+| *`LoudnessNormalizer` (object pur)* — FFmpeg `loudnorm` filter (EBU R128
+target -16 LUFS, mode single-pass). `AudioPostProcessor` (object pur) orchestre
+loudnorm → BGM mix → ducking. Baby-step TDD : ~6 unit (command builder,
+loudness target, BGM level, ducking threshold, NoOp fallback).
+| 2
+| ⬜ TODO
+
+| CAP-AUDIO-3
+| *Wiring `CapsuleVideoTask`* — post-`burnInSubtitlesIfEnabled` dans
+`captureDeckSequential`/`captureDeckParallel`. `resolveAudioPostProcessor`
+factory + StrictModeGuard. 2 functional (NoOp default, BGM enabled → ffmpeg
+invoked mocké).
+| 2
+| ⬜ TODO
+
+| CAP-AUDIO-4
+| *Cucumber BDD* — `capsule_audio_post.feature` `@audio @post` (4 scénarios :
+default NoOp, BGM enabled, loudness only, ducking). Runner dédié
+(pattern S-082).
+| 3
+| ⬜ TODO
+|===
+
+_Total_ : 5 US, ~10 pts.
+
+=== 📼 EPIC CAP-MP4 — Export MP4/H.264 + format distribution
+
+_Vision_ : WebM seul. LMS (Moodle, Canvas), YouTube, plateformes OF
+(talaria.school) consomment majoritairement MP4/H.264/AAC. Post-capture
+transcode FFmpeg WebM→MP4 (`-c:v libx264 -c:a aac -movflags +faststart`).
+`DistributeCapsuleVideoTask` (S-087) étendu pour copier le format actif.
+
+_Domaine_ : `capsule` (pas de nouveau domaine, étend distrib existant).
+
+_Dépendances_ : CAP-ARCH-7 ✅ (`DistributeCapsuleVideoTask`), FFmpeg.
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-MP4-0
+| *Cadrage EPIC* — vision, format webm|mp4|both, découpage US. MàJ
+INDEX/BACKLOG/PROMPT_REPRISE.
+| 1
+| ⬜ TODO
+
+| CAP-MP4-1
+| *`OutputFormat` enum + merger 4 sources* — `output.format: webm|mp4|both`
+(4 sources). `CapsuleConfig.output.format` étendu. `CapsuleExtension.outputFormat`
+Property. Baby-step TDD : ~4 unit (defaults, enum parse, 4 sources).
+| 1
+| ⬜ TODO
+
+| CAP-MP4-2
+| *`VideoFormatConverter` (object pur) + wiring* — FFmpeg WebM→MP4 transcode.
+`DistributeCapsuleVideoTask` étendu copie format actif. `resolveFormatConverter`
+factory + StrictModeGuard. Baby-step TDD : ~4 unit (command builder, NoOp) +
+1 functional (MP4 produced mocké).
+| 1
+| ⬜ TODO
+
+| CAP-MP4-3
+| *Cucumber BDD* — `capsule_format.feature` `@distrib @format` (3 scénarios :
+default webm, mp4 strategy, both formats). Runner dédié (pattern S-082).
+| 1
+| ⬜ TODO
+|===
+
+_Total_ : 4 US, ~4 pts.
+
+=== 📑 EPIC CAP-CHAPITRE — Intro/outro + chapter markers depuis métadonnées SPD
+
+_Vision_ : Capsules brutes sans carte de titre, carte de fin, ni chapitres
+navigables. Pour 32 capsules MVP0, le stagiaire doit pouvoir sauter au
+module/session. Intro card (titre module + numéro session + logo, depuis
+metadata.json K-2). Outro card (next session + call-to-action, depuis
+INDEX.adoc/PROMPT_REPRISE.adoc EAGER). Chapter markers WebM (matroska tags
+depuis `SlideSegment.titles`).
+
+_Domaine_ : `capsule.cards` (nouveau) + `capsule.chapters` (nouveau).
+
+_Dépendances_ : CAP-ARCH-2 ✅ (EAGER), TAXONOMIE K-2 ✅ (metadata.json),
+planner-gradle (SPG/SPD source).
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-CHAPITRE-0
+| *Cadrage EPIC* — vision, intro/outro template, chapter markers Matroska,
+découpage US. MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+| 1
+| ⬜ TODO
+
+| CAP-CHAPITRE-1
+| *`IntroCard` + `OutroCard` + `CardRenderer`* — data class (title, subtitle,
+logoPath, durationSec). `CardRenderer` (object pur) produit PNG via FFmpeg
+lavfi ou HTML→screenshot. Baby-step TDD : ~8 unit (card data, render command,
+missing logo fallback, default template).
+| 3
+| ⬜ TODO
+
+| CAP-CHAPITRE-2
+| *`ChapterMarkers` (object pur)* — Matroska tags depuis `SlideSegment.titles`
++ timestamps. FFmpeg `-metadata` ou mux post-capture. Baby-step TDD : ~6 unit
+(markers from segments, timestamps, empty segments, JSON serialize).
+| 2
+| ⬜ TODO
+
+| CAP-CHAPITRE-3
+| *Wiring `CapsuleVideoTask`* — pré-capture (intro card mux) + post-capture
+(outro card + chapter markers). `resolveCardRenderer` factory. 2 functional
+(intro+outro NoOp, chapters injected).
+| 2
+| ⬜ TODO
+
+| CAP-CHAPITRE-4
+| *Cucumber BDD* — `capsule_chapters.feature` `@cards @chapters` (4 scénarios :
+intro card, outro card, chapter markers, disabled default). Runner dédié
+(pattern S-082).
+| 2
+| ⬜ TODO
+|===
+
+_Total_ : 5 US, ~10 pts.
+
+=== 🎧 EPIC CAP-PODCAST — Extraction audio-only (mode podcast)
+
+_Vision_ : Stagiaires en mobilité. Le MP3 existe déjà par slide
+(`audioDir/slide-XX.mp3`), il suffit de concaténer. Tâche
+`generateCapsulePodcast` (groupe `generate`) — FFmpeg concat MP3 slides →
+`${deckName}.mp3` dans `outputDir`. Économie d'encre : skip si MP3 final
+existe et `ffprobe` > 0.
+
+_Domaine_ : `capsule` (pas de nouveau domaine, tâche standalone).
+
+_Dépendances_ : FFmpeg, TTS pipeline existant.
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-PODCAST-0
+| *Cadrage EPIC* — vision, tâche standalone, économie d'encre, découpage US.
+MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+| 1
+| ⬜ TODO
+
+| CAP-PODCAST-1
+| *`PodcastConcatenator` (object pur)* — FFmpeg concat MP3 slides → MP3 final.
+`MediaProbeUtil.probeDuration` pour skip si existe + valide. Baby-step TDD :
+~4 unit (concat command, skip existing, missing slides, NoOp).
+| 1
+| ⬜ TODO
+
+| CAP-PODCAST-2
+| *Tâche `generateCapsulePodcast` + Cucumber* — groupe `generate`, DSL
+`podcastEnabled` (4 sources), `@OutputFile`, wiring `CapsuleManager`. 1
+functional + 2 cucumber `@podcast` (disabled default, enabled → MP3 produit).
+Runner dédié (pattern S-082).
+| 2
+| ⬜ TODO
+|===
+
+_Total_ : 3 US, ~4 pts.
+
+=== 🖼️ EPIC CAP-PREVIEW — Mode dry-run (PNGs sans mux)
+
+_Vision_ : Avant de committer 30 min de capture, valider le contenu visuel.
+`ScreenshotCaptureImpl` (CAP-CR3-3 branchement) produit déjà des PNG par
+slide. Flag `capture.previewOnly: Boolean` (4 sources). Si true : screenshot
+path s'arrête après PNG (pas de mux WebM), log "PREVIEW → N slides PNG in
+`dir`". Le consommateur (opencode/humain) inspecte les PNG avant de lancer
+le rendu complet. Build sur CAP-CR3-3 (ordonnancement : après).
+
+_Domaine_ : `capsule` (pas de nouveau domaine, étend capture existant).
+
+_Dépendances_ : CAP-CR3-3 (branchement ScreenshotCapture), FFmpeg.
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-PREVIEW-0
+| *Cadrage EPIC* — vision, flag previewOnly, économie d'encre, découpage US.
+MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+| 1
+| ⬜ TODO
+
+| CAP-PREVIEW-1
+| *`PreviewConfig` + merger 4 sources* — `capture.previewOnly: Boolean` (4
+sources). `CapsuleConfig.capture.previewOnly` étendu. Baby-step TDD : ~4 unit.
+| 1
+| ⬜ TODO
+
+| CAP-PREVIEW-2
+| *Wiring `ScreenshotCaptureImpl` + Cucumber* — si `previewOnly`, skip mux
+FFmpeg, log "PREVIEW → N slides PNG". 1 functional + 2 cucumber `@preview`
+(previewOnly → PNGs only, previewOnly false → WebM). Runner dédié
+(pattern S-082).
+| 2
+| ⬜ TODO
+|===
+
+_Total_ : 3 US, ~4 pts.
+
+'''
+== 📊 Synthèse EPICs neufs (Session 092 — Cadrage)
+
+[cols="2,2,1,1,1,1", options="header"]
+|===
+| Axe | EPIC | US | Pts | Priorité MVP0 | Statut
+
+| Contexte
+| CAP-DOCCONTEXT
+| 5
+| 12
+| 🔴 P0
+| ⬜ TODO
+
+| Contexte
+| CAP-SPD
+| 5
+| 10
+| 🔴 P0
+| ⬜ TODO
+
+| Contexte
+| CAP-GLOSSARY
+| 4
+| 6
+| 🟠 P1
+| ⬜ TODO
+
+| Contexte
+| CAP-PROVENANCE
+| 3
+| 5
+| 🟠 P1
+| ⬜ TODO
+
+| Contexte
+| CAP-TRANSCRIPT
+| 5
+| 10
+| 🟡 P2
+| ⬜ TODO
+
+| Post-prod
+| CAP-CR3-3
+| 5
+| 13
+| 🔴 P0
+| ⬜ TODO
+
+| Post-prod
+| CAP-MP4
+| 4
+| 4
+| 🟠 P1
+| ⬜ TODO
+
+| Post-prod
+| CAP-AUDIO
+| 5
+| 10
+| 🟠 P1
+| ⬜ TODO
+
+| Post-prod
+| CAP-CHAPITRE
+| 5
+| 10
+| 🟡 P2
+| ⬜ TODO
+
+| Post-prod
+| CAP-PODCAST
+| 3
+| 4
+| 🟡 P2
+| ⬜ TODO
+
+| Post-prod
+| CAP-PREVIEW
+| 3
+| 4
+| 🟡 P2
+| ⬜ TODO
+|===
+
+_Total_ : 11 EPICs, 47 US, ~88 pts. _Séquence MVP0 recommandée_ :
+. CAP-DOCCONTEXT (P0 — contenu ancré corpus)
+. CAP-SPD (P0 — contenu ancré objectifs pédagogiques)
+. CAP-CR3-3 (P0 — branchement screenshot, débloque CAP-PREVIEW + CAP-CR3-1)
+. CAP-MP4 (P1 — distribution talaria.school)
+. CAP-AUDIO (P1 — qualité perçue)
+. CAP-GLOSSARY (P1 — vocabulaire référentiel)
+. CAP-PROVENANCE (P1 — anti-hallucination)
+. CAP-CHAPITRE (P2 — navigabilité 32 capsules)
+. CAP-TRANSCRIPT (P2 — livrable révision article)
+. CAP-PODCAST (P2 — mobilité)
+. CAP-PREVIEW (P2 — itération contenu)

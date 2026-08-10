@@ -1,6 +1,22 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-10
 
+== Session 092 — Cadrage 11 EPICs neufs (contexte augmenté + post-production) ✅
+
+Cadrage de 11 EPICs neufs (47 US, ~88 pts) étendant le périmètre capsule sur
+2 axes. Axe contexte augmenté (5 EPICs) : CAP-DOCCONTEXT, CAP-SPD, CAP-GLOSSARY,
+CAP-PROVENANCE, CAP-TRANSCRIPT. Axe post-production (5 EPICs + CAP-CR3-3) :
+CAP-CR3-3, CAP-MP4, CAP-AUDIO, CAP-CHAPITRE, CAP-PODCAST, CAP-PREVIEW. Décision
+architecturale CAP-CR3-3 : brancher ScreenshotCapture (non expulser). Séquence
+MVP0 définie. Zéro code modifié, `compileKotlin` VERT.
+
+Tâches terminées (gouvernance uniquement) :
+. `BACKLOG.adoc` — 11 sections EPIC + synthèse + séquence MVP0 + `:last_update:`
+. `.agents/INDEX.adoc` — roadmap 12 lignes + en-tête (session 092 + prochaine 093) + correction faux positif CAP-29.6 (`⬜ TODO` → `✅ TERMINÉ S-082`)
+. `PROMPT_REPRISE.adoc` — session 092 + contexte reprise 093 (CAP-DOCCONTEXT) + EPICs restants séquence MVP0
+. `.agents/SESSIONS_HISTORY.adoc` — entrée 092
+. `.agents/sessions/092-cadrage-epics-neufs.adoc` — rapport de session
+
 == Session 091 — CAP-CR3-2 Mode strict anti-NoOp (EPIC CAP-CR3-2 TERMINÉ 4/4 US) ✅
 
 `capsule.strictMode` DSL (Boolean, défaut `false`, 4 sources ENV < props < YAML

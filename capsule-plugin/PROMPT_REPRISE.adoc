@@ -1,69 +1,74 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 091 — CAP-CR3-2 Mode strict anti-NoOp (EPIC CAP-CR3-2 TERMINÉ 4/4 US)
-_Prochaine session_ : — (EPIC CAP-CR3-2 clos, borough Détroit en maintenance)
+_Session terminee_ : 092 — Cadrage 11 EPICs neufs (5 contexte augmenté + 5 post-production + CAP-CR3-3 branchement screenshot). 47 US, ~88 pts. Séquence MVP0 définie.
+_Prochaine session_ : 093 — CAP-DOCCONTEXT US-0 cadrage + US-1 `DocContextConfig` + merger 4 sources (P0, premier EPIC de l'axe contexte augmenté).
 
-== Mission session 091 (TERMINÉE)
+== Mission session 092 (TERMINÉE)
 
-. **CAP-CR3-2 Mode strict anti-NoOp** (~10 pts) — `capsule.strictMode` DSL
-  (Boolean, défaut `false`, 4 sources ENV \u003c props \u003c YAML \u003c CLI).
-  `StrictModeGuard` (object pur, domaine `capsule.config`) —
-  `requireAvailable(strict, engineName, isAvailable, path)` lève
-  `IllegalStateException` avec message actionable si
-  `strict && !isAvailable`. 6 `resolve*` branchés :
-  `CapsuleBuildTask.resolveTtsEngine` (piper/espeak),
-  `CapsuleVideoTask.resolveTtsEngine` (piper/espeak),
-  `CapsuleVideoTask.resolvePlaywrightCapture`,
-  `CapsuleManager.resolveManimEngine`,
-  `CapsuleManager.resolveManimVideoMixer`,
-  `CapsuleManager.resolveSubtitleBurnInService` (3 derniers avec param
-  `strict` ajouté, défaut `false` rétrocompatible). `noop` explicite
-  (`ttsEngine = "noop"`, `ffmpegPath = "noop"`) reste légitime, non
-  concerné. `StrictModeConfig` (data class 1 champ `enabled`).
-  `CapsuleConfigMerger.mergeStrictModeConfig` + `loadFromEnvironment`
-  (`CAPSULE_STRICT_MODE_ENABLED`) + `buildConfigFromProperties`
-  (`capsule.strictMode.enabled`). `CapsuleExtension.strictMode` Property.
-  `CapsulePlugin.pushConfigIntoExtension` push strictMode. Baby-step
-  TDD/BDD 3 niveaux : RED → GREEN → REFACTOR (unit → functional →
-  cucumber). 674 unit VERT (+19) + 44 functional VERT (+4) + 8 cucumber
-  dédiés GREEN (`capsule_strict_mode.feature` 4 scénarios `@strict
-  @config`, runner `CapsuleStrictModeCucumberRunner` pattern S-082).
-  Zéro régression, zéro secret. `check` BUILD SUCCESSFUL 6m54s.
+. **Cadrage 11 EPICs neufs** — Audit post-CAP-ARCH/CAP-CR3-2. Le borough a
+  une infrastructure LLM (`capsule.ai`/`capsule.context`/`capsule.pipeline`)
+  et un backend d'exécution solide. 10 EPICs neufs étendent le périmètre sur
+  2 axes : post-production (5) et contexte augmenté (5). Priorité MVP0 :
+  contexte augmenté d'abord (qualité du contenu généré), post-production
+  ensuite (qualité perçue du livrable).
+  * Axe contexte augmenté (5 EPICs) : CAP-DOCCONTEXT (injection corpus
+    documentaire, `context.docsGlobs` 4 sources, `DocContextLoader`, 5 US
+    ~12 pts), CAP-SPD (consommation métadonnées SPD, `SpdContextLoader` parse
+    metadata.json K-2, canal `spd` dans `CapsulePipelineGraph`, 5 US ~10 pts),
+    CAP-GLOSSARY (injection terminologique, `context.glossaryFile`, canal
+    `glossary`, 4 US ~6 pts), CAP-PROVENANCE (audit context anti-hallucination,
+    `ProvenanceTracker` → `context-provenance.json`, 3 US ~5 pts), CAP-TRANSCRIPT
+    (reverse pipeline capsule → article AsciiDoc, domaine `capsule.transcript`,
+    cross-borough document/bakery, 5 US ~10 pts).
+  * Axe post-production (5 EPICs + CR3-3) : CAP-CR3-3 (branchement
+    ScreenshotCapture, `capture.strategy: playwright|screenshot` 4 sources,
+    `ScreenshotCaptureImpl` multi-slide, `resolveCapture` factory, 5 US ~13 pts),
+    CAP-MP4 (export MP4/H.264, `output.format: webm|mp4|both`, 4 US ~4 pts),
+    CAP-AUDIO (post-production audio BGM + loudnorm EBU R128 + ducking, domaine
+    `capsule.audio`, 5 US ~10 pts), CAP-CHAPITRE (intro/outro + chapter markers
+    Matroska, domaines `capsule.cards`/`capsule.chapters`, 5 US ~10 pts),
+    CAP-PODCAST (extraction audio-only, `PodcastConcatenator`, 3 US ~4 pts),
+    CAP-PREVIEW (mode dry-run PNGs sans mux, `capture.previewOnly`, 3 US ~4 pts).
+  * Décision architecturale CAP-CR3-3 : brancher ScreenshotCapture (non
+    expulser) — avantages fonctionnels (CI-friendly CAP-CR3-1, 10x plus rapide
+    sur decks statiques, empreinte CI plus légère, cohérent avec chemin Manim,
+    artifact preview/debug).
+  * MàJ BACKLOG (11 sections EPIC + synthèse + séquence MVP0), INDEX (roadmap
+    12 lignes), PROMPT_REPRISE. Zéro code modifié, `compileKotlin` VERT.
 
-== Contexte reprise session 092 (maintenance)
+== Contexte reprise session 093 (CAP-DOCCONTEXT)
 
-- EPIC CAP-CR3-2 TERMINÉ 4/4 US : US-1 ✅ S-091 (domaine),
-  US-2 ✅ S-091 (DSL+merger), US-3 ✅ S-091 (wiring),
-  US-4 ✅ S-091 (cucumber).
-- 674 unit VERT + 44 functional VERT + cucumber dédiés GREEN :
-  `CapsuleContextCucumberRunner` (@context),
-  `CapsuleContentAndVideosCucumberRunner` (@architecture @wiring),
-  `CapsuleDistribCucumberRunner` (@distrib @versioning),
-  `CapsuleArchBoundaryCucumberRunner` (@cross-borough),
-  `CapsuleStrictModeCucumberRunner` (@strict @config),
-  `CucumberIntegrationTestRunner` (@integration burn-in).
+- EPIC CAP-DOCCONTEXT premier de la séquence MVP0 (P0, axe contexte augmenté).
+  5 US ~12 pts : US-0 cadrage, US-1 `DocContextConfig` + merger 4 sources,
+  US-2 `DocContextLoader` (object pur), US-3 wiring
+  `collectCapsuleAugmentedContext`, US-4 Cucumber BDD.
+- 674 unit VERT + 44 functional VERT + cucumber dédiés GREEN (baseline S-091).
 - Domaines DDD capsule (8) : `capsule.feed` + `capsule.ci` +
   `capsule.multilang` + `capsule.ai` + `capsule.context` +
   `capsule.pipeline` + `capsule.support` + `capsule.i18n`.
   (`capsule.config` = package transverse, pas un domaine DDD dédié.)
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider
   0.0.16 (compileOnly, 0 import réel — décision CAP-ARCH-4).
-- Modifications S-083→091 non committées (Règle 1 — demander permission
-  de commit).
-- Borough Détroit en maintenance (tous EPICs majeurs terminés).
+- Modifications S-083→091 committées (git propre).
+- Borough Détroit actif (11 EPICs neufs cadrés, plus en maintenance).
 
-== EPICs restants (maintenance, non planifiés)
+== EPICs restants (séquence MVP0)
 
-* CAP-CR3-1 CI `full` avec vrais binaires + probe durée (P0) — job CI
-  installant Playwright + ffmpeg + manim. Re-rend un deck démo, probe la
-  durée du WebM final (`MediaProbeUtil.probeDuration`) et compare à la
-  somme des durées audio TTS. Si |durée vidéo - somme audio| > tolérance →
-  FAIL.
-* CAP-27 VTT burn-in (P2) — FFmpeg subtitles filter avec VTT (actuellement SRT)
-* CAP-28 Coverage gaps (P2) — PiperTtsEngine 31%, ManimEngineImpl 25%,
-  ScreenshotCaptureImpl 26%
-* CAP-CR3-3 Décision capture ScreenshotCaptureImpl vs PlaywrightCaptureImpl (P1)
-* CAP-CR3-4 Convention Gradle explicite resolveScriptDir/resolveDeckDir (P2)
+* CAP-DOCCONTEXT (P0, prochain) — injection corpus documentaire, 5 US ~12 pts
+* CAP-SPD (P0) — consommationmétadonnées SPD, 5 US ~10 pts
+* CAP-CR3-3 (P0) — branchement ScreenshotCapture, 5 US ~13 pts
+* CAP-CR3-1 (P0, maintenance) — CI `full` avec vrais binaires + probe durée
+* CAP-MP4 (P1) — export MP4/H.264, 4 US ~4 pts
+* CAP-AUDIO (P1) — post-production audio, 5 US ~10 pts
+* CAP-GLOSSARY (P1) — injection terminologique, 4 US ~6 pts
+* CAP-PROVENANCE (P1) — audit context, 3 US ~5 pts
+* CAP-CHAPITRE (P2) — intro/outro + chapter markers, 5 US ~10 pts
+* CAP-TRANSCRIPT (P2) — reverse pipeline article AsciiDoc, 5 US ~10 pts
+* CAP-PODCAST (P2) — extraction audio-only, 3 US ~4 pts
+* CAP-PREVIEW (P2) — mode dry-run, 3 US ~4 pts
+* CAP-CR3-4 (P2, maintenance) — convention Gradle explicite resolveScriptDir/resolveDeckDir
+* CAP-27 (P2, maintenance) — VTT burn-in
+* CAP-28 (P2, maintenance) — coverage gaps
 
 == Rappels
 
@@ -90,3 +95,10 @@ _Prochaine session_ : — (EPIC CAP-CR3-2 clos, borough Détroit en maintenance)
 * `StrictModeGuard` (domaine `capsule.config`) — 6 resolve* branchés,
   `noop` explicite non concerné, `IllegalStateException` message
   actionable (nomme engine + path + suggestion install/disable)
+* DSL 4 sources pattern : ENV (`CAPSULE_*`) < gradle.properties
+  (`capsule.*`) < YAML (`capsule-context.yml`) < CLI (`-P*`). Merger
+  `CapsuleConfigMerger` + `mergeStr/mergeInt/mergeDouble/mergeBoolean`.
+* `CompositeContext` (codebase-contracts 0.1.0) — canaux EAGER/RAG/Graphify/
+  Docs + `ChannelBudget`. `CapsuleContextBuilder` (domaine `capsule.context`).
+* `CapsulePipelineGraph` (koog 1.0.0, domaine `capsule.pipeline`) — 3 nœuds
+  propose/validate/generate, `CapsulePromptBuilder` port pédagogique.

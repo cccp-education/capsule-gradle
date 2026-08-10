@@ -1,0 +1,136 @@
+= Session 092 — Cadrage 11 EPICs neufs (contexte augmenté + post-production)
+
+_Date_ : 2026-08-10
+_Type_ : cadrage + gouvernance
+_Score_ : 9/10
+
+== Mission
+
+Cadrer 11 EPICs neufs étendant le périmètre capsule sur 2 axes :
+contexte augmenté (5 EPICs) et post-production (5 EPICs + CAP-CR3-3
+branchement screenshot). 47 US, ~88 pts total. Séquence MVP0 définie.
+
+== Contexte
+
+Le borough a une infrastructure LLM (`capsule.ai`/`capsule.context`/
+`capsule.pipeline`) et un backend d'exécution solide (TTS, capture,
+subtitles, burn-in, multi-lang, distrib, strict mode). Tous les EPICs
+majeurs sont terminés (CAP-MODEL, CAP-29, CAP-ARCH, CR-1→10, CAP-CR3-2).
+Le borough était en maintenance. Cette session cadre l'extension de
+périmètre pour livrer une formation FPA complète (MVP0).
+
+== Audit
+
+. **CAP-CR3-3 (décision architecturale)** — Examen des 3 implémentations
+  `PlaywrightCapture` (`PlaywrightCaptureImpl` real-time video recording,
+  `ScreenshotCaptureImpl` 1 PNG→mux FFmpeg 1-slide non câblé,
+  `NoOpPlaywrightCapture`). Recommandation initiale : expulser (YAGNI).
+  Recommandation révisée après analyse avantages fonctionnels : **brancher**
+  (CI-friendly pour CAP-CR3-1, 10x plus rapide sur decks statiques, empreinte
+  CI plus légère, cohérent avec chemin Manim, artifact preview/debug). Décision
+  validée par l'utilisateur.
+
+. **Axe contexte augmenté (gap identifié)** — CAP-ARCH-2 a livré
+  `CompositeContext` (canaux EAGER/RAG/Graphify/Docs) mais le canal Docs est
+  nourri par un seul paramètre CLI string (`-Pcontext.docsContent`). Pour 32
+  capsules FPA, le LLM génère des speaker notes à l'aveugle sans les manuels
+  AFNOR/REAC, sans le SPD source, sans le glossaire métier. L'axe contexte
+  augmenté dote l'infrastructure `capsule.context` en munitions réelles.
+
+. **Axe post-production** — Le WebM produit est TTS brut, sans lit musical ni
+  normalisation. WebM seul (pas MP4 pour LMS/YouTube/OF). Pas de chapter
+  markers ni intro/outro. Pas de mode podcast ni preview. 5 EPICs + CAP-CR3-3
+  comblent ces gaps.
+
+== EPICs cadrés
+
+=== Axe contexte augmenté (5 EPICs)
+
+. **CAP-DOCCONTEXT** (P0, 5 US, ~12 pts) — Injection corpus documentaire.
+  `context.docsGlobs: List<String>` 4 sources, `DocContextLoader` résout
+  globs (`docs/afnor/**/*.adoc`), canal Docs enrichi. Domaine
+  `capsule.context` étendu.
+
+. **CAP-SPD** (P0, 5 US, ~10 pts) — Consommation métadonnées SPD.
+  `SpdContextLoader` parse metadata.json K-2, canal `spd` dans
+  `CapsulePipelineGraph`, prompt LLM ancré objectifs. Cross-borough planner.
+
+. **CAP-GLOSSARY** (P1, 4 US, ~6 pts) — Injection terminologique.
+  `context.glossaryFile` 4 sources, canal `glossary`, prompt "Use official
+  terminology".
+
+. **CAP-PROVENANCE** (P1, 3 US, ~5 pts) — Audit context anti-hallucination.
+  `ProvenanceTracker` accumulate canaux → `context-provenance.json`.
+
+. **CAP-TRANSCRIPT** (P2, 5 US, ~10 pts) — Reverse pipeline capsule → article
+  AsciiDoc. `TranscriptBuilder` + `TranscriptLlmEnhancer`, domaine
+  `capsule.transcript`. Cross-borough document/bakery.
+
+=== Axe post-production (5 EPICs + CAP-CR3-3)
+
+. **CAP-CR3-3** (P0, 5 US, ~13 pts) — Branchement ScreenshotCapture.
+  `capture.strategy: playwright|screenshot` 4 sources, `ScreenshotCaptureImpl`
+  étendu multi-slide, `resolveCapture` factory + StrictModeGuard.
+
+. **CAP-MP4** (P1, 4 US, ~4 pts) — Export MP4/H.264.
+  `output.format: webm|mp4|both` 4 sources, `VideoFormatConverter` transcode
+  FFmpeg, `DistributeCapsuleVideoTask` étendu.
+
+. **CAP-AUDIO** (P1, 5 US, ~10 pts) — Post-production audio.
+  BGM + loudnorm EBU R128 + sidechain ducking, `AudioPostProcessor`, domaine
+  `capsule.audio`.
+
+. **CAP-CHAPITRE** (P2, 5 US, ~10 pts) — Intro/outro + chapter markers.
+  `CardRenderer` PNG, `ChapterMarkers` Matroska tags depuis
+  `SlideSegment.titles`, domaines `capsule.cards`/`capsule.chapters`.
+
+. **CAP-PODCAST** (P2, 3 US, ~4 pts) — Extraction audio-only.
+  `PodcastConcatenator` FFmpeg concat MP3 slides, tâche
+  `generateCapsulePodcast`.
+
+. **CAP-PREVIEW** (P2, 3 US, ~4 pts) — Mode dry-run.
+  `capture.previewOnly` 4 sources, screenshot path s'arrête après PNG.
+
+== Séquence MVP0
+
+. CAP-DOCCONTEXT (P0 — contenu ancré corpus)
+. CAP-SPD (P0 — contenu ancré objectifs pédagogiques)
+. CAP-CR3-3 (P0 — branchement screenshot, débloque CAP-PREVIEW + CAP-CR3-1)
+. CAP-MP4 (P1 — distribution talaria.school)
+. CAP-AUDIO (P1 — qualité perçue)
+. CAP-GLOSSARY (P1 — vocabulaire référentiel)
+. CAP-PROVENANCE (P1 — anti-hallucination)
+. CAP-CHAPITRE (P2 — navigabilité 32 capsules)
+. CAP-TRANSCRIPT (P2 — livrable révision article)
+. CAP-PODCAST (P2 — mobilité)
+. CAP-PREVIEW (P2 — itération contenu)
+
+== Livrables
+
+. BACKLOG.adoc — 11 sections EPIC + synthèse + séquence MVP0
+. INDEX.adoc — roadmap 12 lignes + en-tête + correction faux positif
+  CAP-29.6 (`⬜ TODO` → `✅ TERMINÉ S-082`)
+. PROMPT_REPRISE.adoc — session 092 + contexte reprise 093 (CAP-DOCCONTEXT)
+. SESSIONS_HISTORY.adoc — entrée 092
+. Rapport de session (ce fichier)
+
+== Méthode
+
+. Baby-step DDD/TDD/BDD (RED → GREEN → REFACTOR, 3 niveaux unit → functional
+  → cucumber) — à appliquer sur chaque US des 11 EPICs.
+. Économie d'encre préservée (skip si artefact existe et valide).
+. DSL 4 sources (ENV < props < YAML < CLI) pour toute nouvelle config.
+. StrictModeGuard (S-091) sur toute résolution engine.
+. English only : code, Gherkin, commentaires.
+
+== Vérifications
+
+. `compileKotlin` VERT (UP-TO-DATE, baseline S-091 inchangée)
+. Zéro code production modifié (session de cadrage pur)
+. Zéro secret ajouté (grep `TOKEN|SECRET|PASSWORD|API_KEY|gho_|ghp_` → N/A)
+. Synchronisation backlog vérifiée (aucun marqueur périmé pour EPIC terminé)
+
+== Prochaine session
+
+**093 — CAP-DOCCONTEXT US-0 cadrage + US-1 `DocContextConfig` + merger 4
+sources** (P0, premier EPIC de l'axe contexte augmenté).
