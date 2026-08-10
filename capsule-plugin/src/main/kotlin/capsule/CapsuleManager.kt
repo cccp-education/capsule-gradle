@@ -1,6 +1,7 @@
 package capsule
 
 import capsule.ai.CapsuleLlmService.registerLlmBuildService
+import capsule.i18n.CapsuleMessages
 import org.gradle.api.Project
 import java.io.File
 
@@ -30,51 +31,57 @@ class CapsuleManager(private val project: Project) {
     }
 
     private fun Project.registerGenerateCapsuleScriptTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
         tasks.register("generateCapsuleScript", CapsuleScriptTask::class.java) { task ->
-            task.group = "generate"
-            task.description = "Reads *-script.txt produced by extractSpeakerNotes and validates the capsule script"
+            task.group = CapsuleMessages.get("task.group.generate", lang)
+            task.description = CapsuleMessages.get("task.generateCapsuleScript.description", lang)
             task.dependsOn(capsule.feed.CapsuleFeedTaskNames.EXTRACT_SPEAKER_NOTES)
         }
     }
 
     private fun Project.registerGenerateCapsuleTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
         tasks.register("generateCapsule", CapsuleBuildTask::class.java) { task ->
-            task.group = "generate"
-            task.description = "Generates TTS audio files from capsule scripts (Piper placeholder)"
+            task.group = CapsuleMessages.get("task.group.generate", lang)
+            task.description = CapsuleMessages.get("task.generateCapsule.description", lang)
             task.dependsOn("generateCapsuleScript")
         }
     }
 
     private fun Project.registerGenerateCapsuleVideoTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
         tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java) { task ->
-            task.group = "generate"
-            task.description = "Injects TTS audio into deck HTML then captures video via Playwright Java"
+            task.group = CapsuleMessages.get("task.group.generate", lang)
+            task.description = CapsuleMessages.get("task.generateCapsuleVideo.description", lang)
             task.dependsOn("generateCapsule")
         }
     }
 
     private fun Project.registerGenerateCapsuleVideoAllLanguagesTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
         tasks.register(
             "generateCapsuleVideoAllLanguages",
             capsule.multilang.GenerateCapsuleVideoAllLanguagesTask::class.java,
         ) { task ->
-            task.group = "generate"
-            task.description = "Generates one localized capsule WebM per target language from translated decks + scripts"
+            task.group = CapsuleMessages.get("task.group.generate", lang)
+            task.description = CapsuleMessages.get("task.generateCapsuleVideoAllLanguages.description", lang)
         }
     }
 
     private fun Project.registerDeployCapsuleTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
         tasks.register("deployCapsule", CapsuleDistribTask::class.java) { task ->
-            task.group = "deploy"
-            task.description = "Recadre les capsules en format vertical 9:16 (TikTok/Shorts) via FFmpeg"
+            task.group = CapsuleMessages.get("task.group.deploy", lang)
+            task.description = CapsuleMessages.get("task.deployCapsule.description", lang)
             task.dependsOn("generateCapsuleVideo")
         }
     }
 
     private fun Project.registerDistributeCapsuleVideoTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
         tasks.register("distributeCapsuleVideo", DistributeCapsuleVideoTask::class.java) { task ->
-            task.group = "distribute"
-            task.description = "Copies capsule WebM videos to a versioned destination directory (CAP-ARCH-7)"
+            task.group = CapsuleMessages.get("task.group.distribute", lang)
+            task.description = CapsuleMessages.get("task.distributeCapsuleVideo.description", lang)
             val config = CapsuleConfigLoader.load(File(project.projectDir, "capsule-context.yml"))
             val merged = CapsuleConfigMerger.merge(project.projectDir, config, emptyMap())
             task.videoDestinationDir.set(merged.output.videoDestinationDir)
@@ -84,17 +91,19 @@ class CapsuleManager(private val project: Project) {
     }
 
     private fun Project.registerCollectCapsuleContextTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
         tasks.register("collectCapsuleContext", CapsuleCompositeContextTask::class.java) { task ->
-            task.group = "collect"
-            task.description = "Exporte le contexte des capsules (chemins videos + metadonnees) en JSON compatible engine N3"
+            task.group = CapsuleMessages.get("task.group.collect", lang)
+            task.description = CapsuleMessages.get("task.collectCapsuleContext.description", lang)
             task.dependsOn("deployCapsule")
         }
     }
 
     private fun Project.registerTransformCapsuleContextTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
         tasks.register("transformCapsuleContext", CapsuleParseContextTask::class.java) { task ->
-            task.group = "transform"
-            task.description = "Parse le fichier capsule-context.json et retourne une liste de decks"
+            task.group = CapsuleMessages.get("task.group.transform", lang)
+            task.description = CapsuleMessages.get("task.transformCapsuleContext.description", lang)
             task.contextFile.convention(
                 project.layout.buildDirectory.file("capsule/capsule-context.json")
             )
@@ -104,8 +113,8 @@ class CapsuleManager(private val project: Project) {
         }
 
         tasks.register("collectCapsuleRetrieve", CapsuleParseContextTask::class.java) { task ->
-            task.group = "collect"
-            task.description = "Retrieve capsule decks from capsule-context.json (N3 engine contract)"
+            task.group = CapsuleMessages.get("task.group.collect", lang)
+            task.description = CapsuleMessages.get("task.collectCapsuleRetrieve.description", lang)
             val outputFile = project.findProperty("outputFile") as? String
             if (outputFile != null) {
                 task.outputFile.set(File(outputFile))
@@ -117,29 +126,32 @@ class CapsuleManager(private val project: Project) {
     }
 
     private fun Project.registerScaffoldCapsuleContextTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
         tasks.register("scaffoldCapsuleContext", CapsuleScaffoldTask::class.java) { task ->
-            task.group = "generate"
-            task.description = "Scaffolds a default capsule-context.yml configuration file with comments"
+            task.group = CapsuleMessages.get("task.group.generate", lang)
+            task.description = CapsuleMessages.get("task.scaffoldCapsuleContext.description", lang)
         }
     }
 
     private fun Project.registerAiSmokeTestTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
         val llmServiceProvider = registerLlmBuildService()
         tasks.register("capsuleAiSmokeTest", capsule.ai.CapsuleAiSmokeTestTask::class.java) { task ->
-            task.group = "generate"
-            task.description = "Smoke-tests the codebase LLM bridge (LlmBuildService + ChatModel adapter) with a minimal prompt"
+            task.group = CapsuleMessages.get("task.group.generate", lang)
+            task.description = CapsuleMessages.get("task.capsuleAiSmokeTest.description", lang)
             task.llmService.set(llmServiceProvider)
             task.usesService(llmServiceProvider)
         }
     }
 
     private fun Project.registerCollectAugmentedContextTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
         tasks.register(
             "collectCapsuleAugmentedContext",
             capsule.context.CollectCapsuleAugmentedContextTask::class.java,
         ) { task ->
-            task.group = "collect"
-            task.description = "Collects the augmented context (EAGER governance + RAG + Graphify + Docs) and renders it for content generation"
+            task.group = CapsuleMessages.get("task.group.collect", lang)
+            task.description = CapsuleMessages.get("task.collectCapsuleAugmentedContext.description", lang)
             task.eagerFiles.from(
                 project.layout.projectDirectory.file(".agents/INDEX.adoc"),
                 project.layout.projectDirectory.file("PROMPT_REPRISE.adoc"),
@@ -157,13 +169,14 @@ class CapsuleManager(private val project: Project) {
     }
 
     private fun Project.registerGenerateCapsuleContentTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
         val llmServiceProvider = registerLlmBuildService()
         tasks.register(
             "generateCapsuleContent",
             capsule.pipeline.GenerateCapsuleContentTask::class.java,
         ) { task ->
-            task.group = "generate"
-            task.description = "Orchestrates the koog pipeline (propose-context → validate → generate speaker notes) via LLM and derives the TTS script"
+            task.group = CapsuleMessages.get("task.group.generate", lang)
+            task.description = CapsuleMessages.get("task.generateCapsuleContent.description", lang)
             val deckProp = findProperty("deck.file") as? String
             if (deckProp != null) {
                 task.deckFile.convention(

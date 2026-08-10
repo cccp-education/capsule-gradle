@@ -9,6 +9,10 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val configPath: Property<String> = objects.property(String::class.java)
         .convention("capsule-context.yml")
 
+    /** Active UI language for task descriptions and log messages. Defaults to "en". */
+    val language: Property<String> = objects.property(String::class.java)
+        .convention("en")
+
     val ttsEngine: Property<String> = objects.property(String::class.java)
         .convention("piper")
 

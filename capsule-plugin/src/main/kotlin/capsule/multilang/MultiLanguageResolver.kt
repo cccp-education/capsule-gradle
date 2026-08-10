@@ -20,8 +20,11 @@ data class ResolvedLanguage(
  * [VoiceMapping] Piper/espeak table. Replaces the deleted `Language` enum +
  * `Language.fromCode()` hardcoding.
  *
- * Pattern: document-gradle `DocumentI18nBridge`, plantuml-gradle
- * `PlantumlTranslationServiceAdapter`.
+ * Pattern: direct consumption of `LanguageCatalog`/`SupportedLanguage` N0
+ * contracts (same as plantuml-gradle `PlantumlTranslationServiceAdapter` and
+ * slider-gradle `DeckTranslator`). Log-message i18n is handled by
+ * [capsule.i18n.CapsuleMessages] (cross-borough convention with
+ * `SliderMessages` and `PlantumlMessages`).
  */
 object MultiLanguageResolver {
 

@@ -1,5 +1,6 @@
 package capsule.feed
 
+import capsule.i18n.CapsuleMessages
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskAction
@@ -31,13 +32,14 @@ object CapsuleFeedTaskRegistrar {
     fun register(project: Project) {
         val adocDir = CapsuleAdocDir(project.projectDir)
         val scriptDir = CapsuleScriptDir(project.layout.buildDirectory.get().asFile)
+        val lang = CapsuleMessages.resolveLanguage(project)
 
         project.tasks.register(
             CapsuleFeedTaskNames.EXTRACT_SPEAKER_NOTES,
             ExtractSpeakerNotesTask::class.java,
         ) { task ->
-            task.group = CapsuleFeedTaskNames.GROUP
-            task.description = CapsuleFeedTaskNames.DESCRIPTION
+            task.group = CapsuleMessages.get("task.group.capsule", lang)
+            task.description = CapsuleMessages.get("task.extractSpeakerNotes.description", lang)
             task.outputs.upToDateWhen { false }
             task.adocDir = adocDir
             task.scriptDir = scriptDir
@@ -54,11 +56,12 @@ object CapsuleFeedTaskRegistrar {
      * `translateAndGenerateCapsule` composite task.
      */
     fun registerTranslateAndExtractSpeakerNotes(project: Project) {
+        val lang = CapsuleMessages.resolveLanguage(project)
         project.tasks.register(
             CapsuleFeedTaskNames.TRANSLATE_AND_EXTRACT_SPEAKER_NOTES,
         ) { task ->
-            task.group = CapsuleFeedTaskNames.GROUP
-            task.description = CapsuleFeedTaskNames.TRANSLATE_AND_EXTRACT_DESCRIPTION
+            task.group = CapsuleMessages.get("task.group.capsule", lang)
+            task.description = CapsuleMessages.get("task.translateAndExtractSpeakerNotes.description", lang)
             task.dependsOn(CapsuleFeedTaskNames.EXTRACT_SPEAKER_NOTES)
             task.dependsOn("translateDeck")
         }
@@ -74,11 +77,12 @@ object CapsuleFeedTaskRegistrar {
      * language from a single source deck.
      */
     fun registerTranslateAndGenerateCapsuleVideos(project: Project) {
+        val lang = CapsuleMessages.resolveLanguage(project)
         project.tasks.register(
             CapsuleFeedTaskNames.TRANSLATE_AND_GENERATE_CAPSULE_VIDEOS,
         ) { task ->
-            task.group = CapsuleFeedTaskNames.GROUP
-            task.description = CapsuleFeedTaskNames.TRANSLATE_AND_GENERATE_VIDEOS_DESCRIPTION
+            task.group = CapsuleMessages.get("task.group.capsule", lang)
+            task.description = CapsuleMessages.get("task.translateAndGenerateCapsuleVideos.description", lang)
             task.dependsOn(CapsuleFeedTaskNames.TRANSLATE_AND_EXTRACT_SPEAKER_NOTES)
             task.dependsOn("generateCapsuleVideoAllLanguages")
         }
@@ -94,11 +98,12 @@ object CapsuleFeedTaskRegistrar {
      * enriched speaker notes then localized capsule WebMs.
      */
     fun registerGenerateCapsuleContentAndVideos(project: Project) {
+        val lang = CapsuleMessages.resolveLanguage(project)
         project.tasks.register(
             CapsuleFeedTaskNames.GENERATE_CAPSULE_CONTENT_AND_VIDEOS,
         ) { task ->
-            task.group = CapsuleFeedTaskNames.GROUP
-            task.description = CapsuleFeedTaskNames.CONTENT_AND_VIDEOS_DESCRIPTION
+            task.group = CapsuleMessages.get("task.group.capsule", lang)
+            task.description = CapsuleMessages.get("task.generateCapsuleContentAndVideos.description", lang)
             task.dependsOn("generateCapsuleContent")
             task.dependsOn(CapsuleFeedTaskNames.TRANSLATE_AND_GENERATE_CAPSULE_VIDEOS)
         }

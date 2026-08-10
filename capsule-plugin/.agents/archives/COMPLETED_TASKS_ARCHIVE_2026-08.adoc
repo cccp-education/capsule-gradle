@@ -1,6 +1,27 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-10
 
+== Session 089 — CAP-ARCH-5 i18n aligné socle (CapsuleMessages) ✅
+
+Domaine `capsule.i18n` créé (8ème) : `CapsuleMessages` object (pattern
+`SliderMessages`/`PlantumlMessages`). 11 `Messages*.properties` 10 langues.
+Wiring `CapsuleManager` (13 tasks) + `CapsuleFeedTaskRegistrar` (4 tasks).
+Fix 3 descriptions françaises hardcoded. 655 unit VERT (+87) + 40 functional.
+
+Tâches terminées :
+. `src/main/kotlin/capsule/i18n/CapsuleMessages.kt` — object pur `utf8Control` + `forLanguage`/`get`/`format`/`resolveLanguage(project)`
+. `src/main/resources/i18n/Messages.properties` — base EN (23 keys)
+. `src/main/resources/i18n/Messages_en.properties` — EN explicite (fallback default locale)
+. `src/main/resources/i18n/Messages_{fr,zh,hi,es,ar,bn,pt,ru,ur}.properties` — 9 traductions
+. `src/test/kotlin/capsule/i18n/CapsuleMessagesTest.kt` — 65 unit (23 keys × EN/FR + 10 langs + fallback + missing)
+. `src/test/kotlin/capsule/i18n/MessagesFrTranslationTest.kt` — 22 unit (assertNotEquals EN/FR)
+. `src/main/kotlin/capsule/CapsuleManager.kt` — 13 task registrations i18n'd + import `CapsuleMessages`
+. `src/main/kotlin/capsule/CapsuleModels.kt` — `CapsuleExtension.language` ajouté
+. `src/main/kotlin/capsule/feed/CapsuleFeedTaskRegistrar.kt` — 4 task registrations i18n'd + import
+. `src/main/kotlin/capsule/multilang/MultiLanguageResolver.kt` — KDoc corrigé (remove `DocumentI18nBridge`)
+
+---
+
 == Session 088 — CAP-ARCH-4 Wiring backend + CAP-ARCH-7 US-4 Cucumber distrib ✅
 
 CAP-ARCH-4 : tâche composite `generateCapsuleContentAndVideos` chaîne

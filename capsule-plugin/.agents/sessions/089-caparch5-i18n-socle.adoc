@@ -1,0 +1,152 @@
+= Session 089 — CAP-ARCH-5 i18n aligné socle (CapsuleMessages)
+:session: 089
+:date: 2026-08-10
+:epic: CAP-ARCH
+:us: CAP-ARCH-5
+:score: 9/10
+
+== Objectif
+
+CAP-ARCH-5 — i18n aligné sur le socle : créer l'infrastructure `CapsuleMessages`
+(pattern `SliderMessages`/`PlantumlMessages`), traduire les task descriptions
+en 10 langues, fixer les 3 descriptions françaises hardcoded dans
+`CapsuleManager.kt` (violation règle English-only).
+
+== Audit préalable
+
+Audit complet i18n capsule (sous-agent explore) :
+
+* *Déjà i18n'd* : pipeline multi-langue CAP-29 (`MultiLanguageResolver` →
+  `LanguageCatalog` 10 langues, `VoiceMapping`, `generateCapsuleVideoAllLanguages`).
+* *Gaps* : (1) zéro `Messages*.properties` (contrairement à slider 11 fichiers
+  + plantuml 11 fichiers), (2) 3 descriptions de tâches en français dans
+  `CapsuleManager.kt` (lignes 69, 89, 97), (3) ~80 messages log hardcoded
+  English littéraux.
+
+Audit socle i18n (sous-agent explore) :
+
+* `i18n-contracts` N0 : `LanguageCatalog`/`SupportedLanguage` (consommés),
+  `TranslationService` (consommé par slider/document), `MessageBundle`/
+  `LocaleResolver` (contrats morts, zéro consommateur).
+* `DocumentI18nBridge` (document-gradle) = *supprimé* S-030 (code mort,
+  anti-pattern). Ne pas recréer de "Bridge".
+* Pattern prouvé : `SliderMessages`/`PlantumlMessages` object + 11
+  `Messages*.properties` (ResourceBundle UTF-8 custom Control +
+  `MessageFormat`). Duplication cross-borough acceptée (futur EPIC extraction).
+
+== Réalisation
+
+=== Baby-step 1 — RED : CapsuleMessagesTest + MessagesFrTranslationTest
+
+* `CapsuleMessagesTest` (src/test/kotlin/capsule/i18n/) : 23 keys (6 groups +
+  17 descriptions) resolve EN, 23 keys resolve FR, 10 langs resolve
+  `task.generateCapsuleVideo.description`, missing key throws
+  `MissingResourceException`, fallback EN for unsupported language,
+  `forLanguage` non-null 10 langs, group keys non-blank EN.
+* `MessagesFrTranslationTest` : 22 keys (excluant `task.group.capsule` =
+  "capsule" identique dans toutes les langues) `assertNotEquals(en, fr)`.
+* RED confirmé : `Unresolved reference 'CapsuleMessages'`.
+
+=== Baby-step 1 — GREEN : CapsuleMessages + Messages.properties + Messages_en + Messages_fr
+
+* `capsule.i18n.CapsuleMessages` (src/main/kotlin/capsule/i18n/) : object pur
+  pattern `SliderMessages` — `utf8Control` (ResourceBundle.Control UTF-8),
+  `forLanguage(code)`, `get(key, language)`, `format(key, language, vararg)`,
+  `localeFor(code)` mapping 10 langs, `resolveLanguage(project)` cascade
+  (`-Pcapsule.language` > DSL `capsule { language }` > default `"en"`).
+* `Messages.properties` (base EN, 29 lignes) + `Messages_en.properties`
+  (copie explicite — requis car `Locale.ENGLISH` fallback sur default locale
+  système `fr_FR` sans fichier `_en` explicite) + `Messages_fr.properties`
+  (29 lignes, traductions françaises).
+* 23 keys : 6 task groups (generate/collect/deploy/distribute/transform/
+  capsule) + 17 task descriptions.
+* Bug découvert : `MessagesFrTranslationTest` 23 FAIL — `Locale.ENGLISH`
+  chargeait `Messages_fr.properties` (default locale système `fr_FR`).
+  Fix : créer `Messages_en.properties` explicite (pattern slider/plantuml).
+  Après fix : 1 FAIL `task.group.capsule` ("capsule" == "capsule" — nom
+  propre non traduisible). Exclusion du test FR. GREEN.
+
+=== Baby-step 2 — 8 autres Messages_{code}.properties
+
+* Sous-agent général : création 8 fichiers (zh, hi, es, ar, bn, pt, ru, ur).
+  Vocabulaire task groups aligné sur plantuml-gradle (cross-borough). Termes
+  techniques préservés (TTS, WebM, FFmpeg, Playwright, LLM, koog, RAG,
+  Graphify, JSON, AsciiDoc, HTML, N3, EAGER, CAP-ARCH-7, TikTok, Shorts,
+  9:16, slider-gradle, speaker notes, noms de tâches Gradle).
+* `task.group.capsule=capsule` dans toutes les langues (nom propre).
+* 11 fichiers total dans `src/main/resources/i18n/`.
+
+=== Baby-step 3 — Wiring CapsuleManager + CapsuleFeedTaskRegistrar
+
+* `CapsuleManager.kt` : 13 task registrations migrées vers
+  `CapsuleMessages.get("key", lang)` (group + description). 3 descriptions
+  françaises fixées :
+  - `deployCapsule` : "Recadre les capsules..." → `task.deployCapsule.description`
+  - `collectCapsuleContext` : "Exporte le contexte..." → `task.collectCapsuleContext.description`
+  - `transformCapsuleContext` : "Parse le fichier..." → `task.transformCapsuleContext.description`
+* `CapsuleFeedTaskRegistrar.kt` : 4 task registrations migrées (extractSpeakerNotes,
+  translateAndExtractSpeakerNotes, translateAndGenerateCapsuleVideos,
+  generateCapsuleContentAndVideos). Import `CapsuleMessages` ajouté.
+* `CapsuleExtension` : champ `language: Property<String>` ajouté (default
+  `"en"`) pour `resolveLanguage(project)` cascade DSL.
+* `CapsuleFeedTaskNames.DESCRIPTION`/`TRANSLATE_AND_EXTRACT_DESCRIPTION`/
+  `TRANSLATE_AND_GENERATE_VIDEOS_DESCRIPTION`/`CONTENT_AND_VIDEOS_DESCRIPTION`
+  conservés (contrat potentiel, non supprimés — wiring utilise `CapsuleMessages`).
+
+=== Baby-step 4 — MultiLanguageResolver KDoc
+
+* KDoc mis à jour : suppression référence `DocumentI18nBridge` (supprimé
+  S-030, anti-pattern). Référence `capsule.i18n.CapsuleMessages` ajoutée
+  (convention cross-borough `SliderMessages`/`PlantumlMessages`).
+
+== Tests
+
+* 655 unit VERT (+87 net : 65 `CapsuleMessagesTest` + 22 `MessagesFrTranslationTest`)
+* 40 functional VERT (inchangé)
+* Cucumber SKIPPED par défaut (CR-10 onlyIf)
+* `compileKotlin` VERT
+* `test` + `functionalTest` BUILD SUCCESSFUL (1m21s)
+* Zéro régression
+
+== Fichiers modifiés/créés
+
+* *Créés* (11) :
+  - `src/main/kotlin/capsule/i18n/CapsuleMessages.kt` (109 lignes)
+  - `src/main/resources/i18n/Messages.properties` (29 lignes, base EN)
+  - `src/main/resources/i18n/Messages_en.properties` (29 lignes, EN explicite)
+  - `src/main/resources/i18n/Messages_fr.properties` (29 lignes)
+  - `src/main/resources/i18n/Messages_zh.properties`
+  - `src/main/resources/i18n/Messages_hi.properties`
+  - `src/main/resources/i18n/Messages_es.properties`
+  - `src/main/resources/i18n/Messages_ar.properties`
+  - `src/main/resources/i18n/Messages_bn.properties`
+  - `src/main/resources/i18n/Messages_pt.properties`
+  - `src/main/resources/i18n/Messages_ru.properties`
+  - `src/main/resources/i18n/Messages_ur.properties`
+  - `src/test/kotlin/capsule/i18n/CapsuleMessagesTest.kt` (87 lignes)
+  - `src/test/kotlin/capsule/i18n/MessagesFrTranslationTest.kt` (37 lignes)
+* *Modifiés* (4) :
+  - `src/main/kotlin/capsule/CapsuleManager.kt` (13 task registrations i18n'd + import)
+  - `src/main/kotlin/capsule/CapsuleModels.kt` (champ `language` ajouté à `CapsuleExtension`)
+  - `src/main/kotlin/capsule/feed/CapsuleFeedTaskRegistrar.kt` (4 task registrations i18n'd + import)
+  - `src/main/kotlin/capsule/multilang/MultiLanguageResolver.kt` (KDoc mis à jour)
+
+== Décisions
+
+* *Pas de `CapsuleI18nBridge`* : anti-pattern `DocumentI18nBridge` supprimé
+  S-030 (code mort). Pattern prouvé = `XxxMessages` object direct.
+* *Pas de `MessageBundle`/`LocaleResolver`* : contrats N0 morts (zéro
+  consommateur cross-borough). `ResourceBundle.Control` UTF-8 custom est le
+  pattern prouvé (slider/plantuml).
+* *`Messages_en.properties` explicite* : requis car `Locale.ENGLISH` sans
+  fichier `_en` explicite fallback sur default locale système (`fr_FR`).
+  Pattern slider/plantuml.
+* *`task.group.capsule` non traduit* : "capsule" est un nom propre (plugin
+  name), identique dans toutes les langues. Exclu du test `assertNotEquals`.
+
+== EPIC CAP-ARCH — Statut post-session
+
+* CAP-ARCH-0 ✅ S-083, 1 ✅ S-084, 2 ✅ S-085, 3 ✅ S-086, 4 ✅ S-088,
+  **5 ✅ S-089**, 7 ✅ S-087+S-088 — reste **CAP-ARCH-6** (3 pts) =
+  cucumber BDD boundary cross-borough E2E.
+* 7/8 US terminés.

@@ -1,54 +1,52 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 088 — CAP-ARCH-4 Wiring backend + CAP-ARCH-7 US-4 Cucumber distrib
-_Prochaine session_ : 089 — CAP-ARCH-5 (i18n aligné socle) ou CAP-ARCH-6 (cucumber cross-borough E2E)
+_Session terminee_ : 089 — CAP-ARCH-5 i18n aligné socle (CapsuleMessages)
+_Prochaine session_ : 090 — CAP-ARCH-6 (cucumber cross-borough E2E) → EPIC CAP-ARCH TERMINÉ
 
-== Mission session 088 (TERMINÉE)
+== Mission session 089 (TERMINÉE)
 
-. **CAP-ARCH-4 Wiring exécution existante** (2 pts) — tâche composite
-  `generateCapsuleContentAndVideos` (groupe `capsule`) chaîne
-  `generateCapsuleContent` → `translateAndGenerateCapsuleVideos` (qui chaîne
-  déjà translateDeck → extractSpeakerNotes → generateCapsuleVideoAllLanguages).
-  Backend existant intact. Pattern `DefaultTask` + `dependsOn` par nom string
-  (S-080). 3 functional + 3 cucumber `@architecture @wiring` GREEN.
-. **CAP-ARCH-7 US-4 Cucumber BDD `@distrib @versioning`** — feature
-  `capsule_distrib.feature` (5 scénarios) + `CapsuleDistribSteps`
-  (self-contained GradleRunner) + `CapsuleDistribCucumberRunner`. Scénarios :
-  registration, copy timestamp, copy incremental v1, second run v2, skip
-  idempotent (économie d'encre). 5 cucumber GREEN.
-. 568 unit VERT (inchangé) + 40 functional VERT (+3) + 8 cucumber dédiés
-  GREEN (3 `@architecture @wiring` + 5 `@distrib @versioning`). Zéro régression.
+. **CAP-ARCH-5 i18n aligné socle** (3 pts) — infrastructure `CapsuleMessages`
+  (domaine `capsule.i18n`, pattern `SliderMessages`/`PlantumlMessages`) :
+  object pur `utf8Control` (ResourceBundle.Control UTF-8) + `forLanguage` +
+  `get` + `format` + `resolveLanguage(project)` cascade (`-Pcapsule.language` >
+  DSL `capsule { language }` > default `"en"`). 11 `Messages*.properties`
+  (base + en + 9 langues fr/zh/hi/es/ar/bn/pt/ru/ur) — 23 keys (6 task groups
+  + 17 task descriptions). Wiring `CapsuleManager` (13 tasks) +
+  `CapsuleFeedTaskRegistrar` (4 tasks) → `CapsuleMessages.get("key", lang)`.
+  Fix 3 descriptions françaises hardcoded (deployCapsule,
+  collectCapsuleContext, transformCapsuleContext). `CapsuleExtension.language`
+  ajouté. `MultiLanguageResolver` KDoc corrigé (remove `DocumentI18nBridge`
+  ref). Décisions : pas de `CapsuleI18nBridge` (anti-pattern S-030), pas de
+  `MessageBundle`/`LocaleResolver` (contrats N0 morts), `Messages_en.properties`
+  explicite requis (fallback default locale système). 655 unit VERT (+87) +
+  40 functional VERT. Zéro régression.
 
-== Contexte reprise session 089
+== Contexte reprise session 090
 
 - EPIC CAP-ARCH : 0 ✅ S-083, 1 ✅ S-084, 2 ✅ S-085, 3 ✅ S-086,
-  **4 ✅ S-088**, 7 ✅ S-087+S-088 — reste **CAP-ARCH-5 (3 pts) + CAP-ARCH-6
-  (3 pts)** = 6 pts.
-- 568 unit VERT + 40 functional VERT + cucumber `@burnin @integration` E2E VERT
-  + 3 cucumber `@architecture @wiring` + 5 cucumber `@distrib @versioning`.
-- **CAP-ARCH-5** — i18n aligné sur le socle : i18n reste via
-  `slider.translateDeck` (déjà LLM codebase SLD-8). Vérification pipeline
-  complet × 10 langues. `CapsuleI18nBridge` si nécessaire. Non-régression :
-  464 unit + 25 functional + 6 cucumber multilang GREEN.
+  4 ✅ S-088, **5 ✅ S-089**, 7 ✅ S-087+S-088 — reste **CAP-ARCH-6 (3 pts)**
+  = cucumber BDD boundary cross-borough E2E.
+- 655 unit VERT + 40 functional VERT + cucumber dédiés GREEN (3 `@architecture
+  @wiring` + 5 `@distrib @versioning` + burn-in `@integration`).
 - **CAP-ARCH-6** — Cucumber BDD boundary cross-borough : E2E deck source →
   translateDeck (10 langues) → translateAndExtractSpeakerNotes →
   generateCapsuleContent (mock LLM) → generateCapsuleVideoAllLanguages. Tags
   `@i18n @cross-borough @architecture @ai`. Mock LLM HTTP (`-Pollama.baseUrl`).
-- Backend existant intact : extractSpeakerNotes, TTS, capture, multi-lang CAP-29.
-- `CapsuleOutputDirResolver` (package `capsule.support`) disponible pour
-  migrer les steps Cucumber restants qui hardcodent `build/capsule/`.
-- Modifications S-083→088 non committées (Règle 1 — demander permission de commit).
+  Runner cucumber dédié (pattern S-082 `CapsuleContextCucumberRunner`).
+- Domaines DDD capsule : `capsule.feed` + `capsule.ci` + `capsule.multilang` +
+  `capsule.ai` + `capsule.context` + `capsule.pipeline` + `capsule.support` +
+  `capsule.i18n` (8ème, créé S-089).
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider 0.0.16
   (compileOnly, 0 import réel — décision CAP-ARCH-4).
-- Domaines DDD capsule : `capsule.feed` + `capsule.ci` + `capsule.multilang` +
-  `capsule.ai` + `capsule.context` + `capsule.pipeline` + `capsule.support` (test).
-- Runners cucumber dédiés : `CapsuleContextCucumberRunner`, `CapsuleContentAndVideosCucumberRunner`,
-  `CapsuleDistribCucumberRunner`, `CucumberIntegrationTestRunner` (pattern S-082).
+- Modifications S-083→089 non committées (Règle 1 — demander permission de commit).
+- Runners cucumber dédiés : `CapsuleContextCucumberRunner`,
+  `CapsuleContentAndVideosCucumberRunner`, `CapsuleDistribCucumberRunner`,
+  `CucumberIntegrationTestRunner` (pattern S-082).
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 568 unit tests VERT (S-088 baseline) — vérifier avant de coder
+* 655 unit tests VERT (S-089 baseline) — vérifier avant de coder
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082 :
   `@ConfigurationParameter(FEATURES_PROPERTY_NAME)` du CucumberTestRunner écrase
@@ -56,7 +54,8 @@ _Prochaine session_ : 089 — CAP-ARCH-5 (i18n aligné socle) ou CAP-ARCH-6 (cuc
 * English only : code, Gherkin, commentaires
 * Économie d'encre = skip WebM existant + probe > 0 (ink economy)
 * Ports Ollama : 11437-11465 rotation (11434-11436 INTERDITS)
-* `cucumberTestIntegration` câblé — exécute les scénarios `@integration`.
-  Lancer avec : `./gradlew cucumberTestIntegration -PrunCucumber`
+* `cucumberTestIntegration` câblé — `./gradlew cucumberTestIntegration -PrunCucumber`
 * `cucumberTestContentAndVideos` câblé — `./gradlew cucumberTestContentAndVideos -PrunCucumber`
 * `cucumberTestDistrib` câblé — `./gradlew cucumberTestDistrib -PrunCucumber`
+* `CapsuleMessages` object (domaine `capsule.i18n`) — 11 `Messages*.properties`
+  10 langues, `resolveLanguage(project)` cascade `-Pcapsule.language` > DSL > `"en"`

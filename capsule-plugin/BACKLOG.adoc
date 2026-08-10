@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-10 (Session 088 — CAP-ARCH-4 Wiring backend ✅ + CAP-ARCH-7 US-4 Cucumber distrib ✅ : tâche composite `generateCapsuleContentAndVideos`, 3 functional + 3 cucumber `@architecture @wiring`, feature `capsule_distrib.feature` 5 scénarios `@distrib @versioning`, 568 unit + 40 functional VERT)
+:last_update: 2026-08-10 (Session 089 — CAP-ARCH-5 i18n aligné socle ✅ : domaine `capsule.i18n` créé, `CapsuleMessages` object + 11 `Messages*.properties` 10 langues, wiring 17 task descriptions, fix 3 français hardcoded, 655 unit + 40 functional VERT)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -530,14 +530,18 @@ workspace-bom `i18n-contracts` 0.0.2 + `codebase-contracts` 0.1.0.
 | ✅ TERMINÉ (S-088)
 
 | CAP-ARCH-5
-| *i18n aligné sur le socle* — l'i18n reste via `slider.translateDeck` (déjà
-  LLM codebase depuis SLD-8). Vérification pipeline complet : deck source →
-  translateDeck (10 langues, codebase-LLM) → extractSpeakerNotes →
-  generateCapsuleVideoAllLanguages. `CapsuleI18nBridge` (artefacts capsule,
-  logs/messages) si nécessaire — CAP-29.1 a déjà l'essentiel. Non-régression :
-  464 unit + 25 functional + 6 cucumber multilang GREEN.
+| *i18n aligné sur le socle* — domaine `capsule.i18n` (8ème) : `CapsuleMessages`
+  object (pattern `SliderMessages`/`PlantumlMessages` — `utf8Control`
+  ResourceBundle UTF-8, `forLanguage`/`get`/`format`/`resolveLanguage(project)`
+  cascade `-Pcapsule.language` > DSL > `"en"`). 11 `Messages*.properties` (base
+  + en + 9 langues) — 23 keys (6 task groups + 17 task descriptions). Wiring
+  `CapsuleManager` (13 tasks) + `CapsuleFeedTaskRegistrar` (4 tasks). Fix 3
+  descriptions françaises hardcoded. `CapsuleExtension.language` ajouté.
+  `MultiLanguageResolver` KDoc corrigé. Pas de `CapsuleI18nBridge` (anti-pattern
+  S-030), pas de `MessageBundle`/`LocaleResolver` (contrats N0 morts). Baby-step
+  TDD : 655 unit (+87 : 65 `CapsuleMessagesTest` + 22 `MessagesFrTranslationTest`).
 | 3
-| ⬜ TODO
+| ✅ TERMINÉ (S-089)
 
 | CAP-ARCH-6
 | *Cucumber BDD boundary cross-borough* — scénario E2E : deck source →
@@ -568,9 +572,9 @@ DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber), English only
 code/Gherkin. _Pattern de référence_ : slider SLD-8 (`LlmBuildService` bridge) +
 SLD-8.3 (`DeckPipelineGraph` koog), codebase (`KoogAugmentedContextGraph`,
 `CompositeContext`). _Statut_ : 🟡 EN COURS (CAP-ARCH-0 ✅ S-083, CAP-ARCH-1 ✅ S-084,
-CAP-ARCH-2 ✅ S-085, CAP-ARCH-3 ✅ S-086, CAP-ARCH-4 ✅ S-088, CAP-ARCH-7 ✅ S-087+S-088,
-CAP-ARCH-5→6 ⬜ TODO). 6/8 US terminés.
+CAP-ARCH-2 ✅ S-085, CAP-ARCH-3 ✅ S-086, CAP-ARCH-4 ✅ S-088, CAP-ARCH-5 ✅ S-089,
+CAP-ARCH-7 ✅ S-087+S-088, CAP-ARCH-6 ⬜ TODO). 7/8 US terminés.
 
-_Version de référence_ : 568 unit + 40 functional (session 088), cucumber
-SKIPPED par défaut (CR-10). Prochaine : CAP-ARCH-5 (i18n aligné socle) ou
-CAP-ARCH-6 (cucumber cross-borough E2E).
+_Version de référence_ : 655 unit + 40 functional (session 089), cucumber
+SKIPPED par défaut (CR-10). Prochaine : CAP-ARCH-6 (cucumber cross-borough E2E)
+→ EPIC CAP-ARCH TERMINÉ.
