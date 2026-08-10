@@ -45,6 +45,15 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleContentAndVideosCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // Focused cucumber run for the CAP-ARCH-6 content + video boundary feature
+        // (fast iteration — single-language French, NoOp engines, mock LLM HTTP).
+        CucumberTaskSpec(
+            name = "cucumberTestArchBoundary",
+            features = listOf("src/test/features/capsule_arch_boundary.feature"),
+            tags = listOf("@cross-borough"),
+            runnerClass = "capsule.scenarios.CapsuleArchBoundaryCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // Focused cucumber run for the CAP-ARCH-7 US-4 video destination versioning feature
         // (fast iteration without the full Playwright suite, ~15 min).
         CucumberTaskSpec(

@@ -1,6 +1,25 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-10
 
+== Session 090 — CAP-ARCH-6 Cucumber BDD boundary cross-borough (EPIC CAP-ARCH TERMINÉ 8/8 US) ✅
+
+`capsule_arch_boundary.feature` (4 scénarios `@cross-borough @architecture
+@i18n @ai`) single-language français. Runner dédié `CapsuleArchBoundaryCucumberRunner`
+(pattern S-082). `CapsuleArchBoundarySteps` self-contained GradleRunner (mock
+Ollama 2 réponses alternées propose/generate, fake translateDeck, pré-génération
+artefacts fr, ffmpeg WebM valide 1s pour skip). `CucumberTaskSpec("cucumberTestArchBoundary")`
+câblé. 655 unit + 40 functional inchangés + 4 cucumber dédiés GREEN. Zéro régression.
+
+Tâches terminées :
+. `src/test/features/capsule_arch_boundary.feature` — 4 scénarios (registration, content, video, skip)
+. `src/test/kotlin/capsule/scenarios/CapsuleArchBoundaryCucumberRunner.kt` — runner dédié S-082
+. `src/test/kotlin/capsule/scenarios/CapsuleArchBoundarySteps.kt` — steps self-contained (mock Ollama alterné, fake translateDeck, ffmpeg WebM skip)
+. `build.gradle.kts` — `CucumberTaskSpec("cucumberTestArchBoundary")` câblé `cucumberConventions.additionalTasks`
+
+EPIC CAP-ARCH TERMINÉ 8/8 US (S-083→S-090). Borough Détroit en maintenance.
+
+---
+
 == Session 089 — CAP-ARCH-5 i18n aligné socle (CapsuleMessages) ✅
 
 Domaine `capsule.i18n` créé (8ème) : `CapsuleMessages` object (pattern

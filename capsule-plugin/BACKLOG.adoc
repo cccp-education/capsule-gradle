@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-10 (Session 089 — CAP-ARCH-5 i18n aligné socle ✅ : domaine `capsule.i18n` créé, `CapsuleMessages` object + 11 `Messages*.properties` 10 langues, wiring 17 task descriptions, fix 3 français hardcoded, 655 unit + 40 functional VERT)
+:last_update: 2026-08-10 (Session 090 — CAP-ARCH-6 Cucumber BDD boundary cross-borough ✅ : EPIC CAP-ARCH TERMINÉ 8/8 US. `capsule_arch_boundary.feature` 4 scénarios `@cross-borough @architecture @i18n @ai` single-language français (mock Ollama 2 réponses alternées, NoOp engines, skip WebM pré-existant ffmpeg valide). Runner dédié `CapsuleArchBoundaryCucumberRunner` + `CapsuleArchBoundarySteps`. `CucumberTaskSpec("cucumberTestArchBoundary")` câblé. 655 unit + 40 functional inchangés + 4 cucumber dédiés GREEN. Zéro régression)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -414,7 +414,7 @@ Boundary realignment : slider produit HTML Reveal.js uniquement, capsule parse
 _Total_ : 6 US TERMINÉ, 1 US TODO (suivi). +42 unit +8 functional +16 cucumber = 66 nouveaux tests, 0 FAIL.
 
 '''
-== 🔵 EPIC CAP-ARCH — Capsule LLM-driven : génération de contenu + i18n pilotés par codebase (koog + langchain4j + RAG + graphify)
+== ✅ EPIC CAP-ARCH — Capsule LLM-driven : génération de contenu + i18n pilotés par codebase (koog + langchain4j + RAG + graphify) (TERMINÉ 8/8 US, Session 090)
 
 _Cadrage_ : CAP-ARCH-0 (Session 083) — audit fondé sur le code réel, remplace le
 cadrage S-073 (périmé, fait avant CAP-29 sur une hypothèse de « purge des appels
@@ -544,13 +544,26 @@ workspace-bom `i18n-contracts` 0.0.2 + `codebase-contracts` 0.1.0.
 | ✅ TERMINÉ (S-089)
 
 | CAP-ARCH-6
-| *Cucumber BDD boundary cross-borough* — scénario E2E : deck source →
-  `slider.translateDeck` (10 langues) → `capsule.translateAndExtractSpeakerNotes`
-  → `capsule.generateCapsuleContent` (mock LLM) →
-  `capsule.generateCapsuleVideoAllLanguages`. Tags `@i18n @cross-borough
-  @architecture @ai`. Mock LLM HTTP (`-Pollama.baseUrl` pattern slider).
+| *Cucumber BDD boundary cross-borough* — `capsule_arch_boundary.feature`
+  (4 scénarios `@cross-borough @architecture @i18n @ai`) single-language
+  français (pas 10 langues — CAP-29.5 garde la responsabilité i18n, éviter
+  test redondant). Scénarios : registration task `generateCapsuleContentAndVideos`
+  groupe `capsule`, content pipeline LLM (`generateCapsuleContent` mock Ollama
+  2 réponses alternées propose/generate → `demo-speaker-notes.adoc` +
+  `demo-script.txt`), video pipeline composite (NoOp engines → `demo_fr.webm`),
+  économie d'encre skip WebM pré-existant valide (ffmpeg 1s, `ffprobe` > 0).
+  Runner dédié `CapsuleArchBoundaryCucumberRunner` (pattern S-082).
+  `CapsuleArchBoundarySteps` self-contained GradleRunner (fake `translateDeck`,
+  pré-génération artefacts fr `demo_fr-deck.html` + `demo_fr-script.txt`).
+  `CucumberTaskSpec("cucumberTestArchBoundary")` câblé `build.gradle.kts`.
+  Baby-step TDD/BDD 3 niveaux : RED (8 failed) → GREEN (4 PASSED, itérations :
+  doublons glue `DuplicateStepDefinitionException` → steps préfixées "capsule
+  arch boundary", skip `MINIMAL_WEBM` → ffmpeg WebM valide 1s, feature
+  `demo_fr-speaker-notes.adoc` corrigé en `demo-speaker-notes.adoc`) → REFACTOR
+  (`check` BUILD SUCCESSFUL 6m12s). 655 unit + 40 functional inchangés + 4
+  cucumber dédiés GREEN.
 | 3
-| ⬜ TODO
+| ✅ TERMINÉ (S-090)
 
 | CAP-ARCH-7
 | *Video Destination Versioning (post-capture distribution)* — étend le modèle
@@ -571,10 +584,9 @@ _Total_ : 8 US (US-0 cadrage + US-1→7 exécution), ~25 pts. _Méthode_ : baby-
 DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber), English only
 code/Gherkin. _Pattern de référence_ : slider SLD-8 (`LlmBuildService` bridge) +
 SLD-8.3 (`DeckPipelineGraph` koog), codebase (`KoogAugmentedContextGraph`,
-`CompositeContext`). _Statut_ : 🟡 EN COURS (CAP-ARCH-0 ✅ S-083, CAP-ARCH-1 ✅ S-084,
+`CompositeContext`). _Statut_ : ✅ TERMINÉ (CAP-ARCH-0 ✅ S-083, CAP-ARCH-1 ✅ S-084,
 CAP-ARCH-2 ✅ S-085, CAP-ARCH-3 ✅ S-086, CAP-ARCH-4 ✅ S-088, CAP-ARCH-5 ✅ S-089,
-CAP-ARCH-7 ✅ S-087+S-088, CAP-ARCH-6 ⬜ TODO). 7/8 US terminés.
+CAP-ARCH-6 ✅ S-090, CAP-ARCH-7 ✅ S-087+S-088). 8/8 US terminés. EPIC clos.
 
-_Version de référence_ : 655 unit + 40 functional (session 089), cucumber
-SKIPPED par défaut (CR-10). Prochaine : CAP-ARCH-6 (cucumber cross-borough E2E)
-→ EPIC CAP-ARCH TERMINÉ.
+_Version de référence_ : 655 unit + 40 functional (session 089/090), cucumber
+SKIPPED par défaut (CR-10). EPIC CAP-ARCH TERMINÉ — borough Détroit en maintenance.

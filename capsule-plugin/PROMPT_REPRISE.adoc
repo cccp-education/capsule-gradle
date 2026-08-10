@@ -1,61 +1,72 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 089 — CAP-ARCH-5 i18n aligné socle (CapsuleMessages)
-_Prochaine session_ : 090 — CAP-ARCH-6 (cucumber cross-borough E2E) → EPIC CAP-ARCH TERMINÉ
+_Session terminee_ : 090 — CAP-ARCH-6 Cucumber BDD boundary cross-borough (EPIC CAP-ARCH TERMINÉ 8/8 US)
+_Prochaine session_ : — (EPIC CAP-ARCH clos, borough Détroit en maintenance)
 
-== Mission session 089 (TERMINÉE)
+== Mission session 090 (TERMINÉE)
 
-. **CAP-ARCH-5 i18n aligné socle** (3 pts) — infrastructure `CapsuleMessages`
-  (domaine `capsule.i18n`, pattern `SliderMessages`/`PlantumlMessages`) :
-  object pur `utf8Control` (ResourceBundle.Control UTF-8) + `forLanguage` +
-  `get` + `format` + `resolveLanguage(project)` cascade (`-Pcapsule.language` >
-  DSL `capsule { language }` > default `"en"`). 11 `Messages*.properties`
-  (base + en + 9 langues fr/zh/hi/es/ar/bn/pt/ru/ur) — 23 keys (6 task groups
-  + 17 task descriptions). Wiring `CapsuleManager` (13 tasks) +
-  `CapsuleFeedTaskRegistrar` (4 tasks) → `CapsuleMessages.get("key", lang)`.
-  Fix 3 descriptions françaises hardcoded (deployCapsule,
-  collectCapsuleContext, transformCapsuleContext). `CapsuleExtension.language`
-  ajouté. `MultiLanguageResolver` KDoc corrigé (remove `DocumentI18nBridge`
-  ref). Décisions : pas de `CapsuleI18nBridge` (anti-pattern S-030), pas de
-  `MessageBundle`/`LocaleResolver` (contrats N0 morts), `Messages_en.properties`
-  explicite requis (fallback default locale système). 655 unit VERT (+87) +
-  40 functional VERT. Zéro régression.
+. **CAP-ARCH-6 Cucumber BDD boundary cross-borough** (3 pts) —
+  `capsule_arch_boundary.feature` (4 scénarios `@cross-borough @architecture
+  @i18n @ai`) single-language français (pas 10 langues — CAP-29.5 garde la
+  responsabilité i18n, éviter test redondant). Scénarios : registration task
+  `generateCapsuleContentAndVideos` groupe `capsule`, content pipeline LLM
+  (`generateCapsuleContent` mock Ollama 2 réponses alternées propose/generate →
+  `demo-speaker-notes.adoc` + `demo-script.txt`), video pipeline composite
+  (NoOp engines → `demo_fr.webm`), économie d'encre skip WebM pré-existant
+  valide (ffmpeg 1s, `ffprobe` > 0). Runner dédié `CapsuleArchBoundaryCucumberRunner`
+  (pattern S-082). `CapsuleArchBoundarySteps` self-contained GradleRunner (fake
+  `translateDeck`, pré-génération artefacts fr `demo_fr-deck.html` +
+  `demo_fr-script.txt`). `CucumberTaskSpec("cucumberTestArchBoundary")` câblé
+  `build.gradle.kts`. Baby-step TDD/BDD 3 niveaux : RED (8 failed) → GREEN
+  (4 PASSED, itérations : doublons glue `DuplicateStepDefinitionException` →
+  steps préfixées "capsule arch boundary", skip `MINIMAL_WEBM` → ffmpeg WebM
+  valide 1s, feature `demo_fr-speaker-notes.adoc` corrigé en
+  `demo-speaker-notes.adoc`) → REFACTOR (`check` BUILD SUCCESSFUL 6m12s).
+  655 unit + 40 functional inchangés + 4 cucumber dédiés GREEN. Zéro
+  régression, zéro secret.
 
-== Contexte reprise session 090
+== Contexte reprise session 091 (maintenance)
 
-- EPIC CAP-ARCH : 0 ✅ S-083, 1 ✅ S-084, 2 ✅ S-085, 3 ✅ S-086,
-  4 ✅ S-088, **5 ✅ S-089**, 7 ✅ S-087+S-088 — reste **CAP-ARCH-6 (3 pts)**
-  = cucumber BDD boundary cross-borough E2E.
-- 655 unit VERT + 40 functional VERT + cucumber dédiés GREEN (3 `@architecture
-  @wiring` + 5 `@distrib @versioning` + burn-in `@integration`).
-- **CAP-ARCH-6** — Cucumber BDD boundary cross-borough : E2E deck source →
-  translateDeck (10 langues) → translateAndExtractSpeakerNotes →
-  generateCapsuleContent (mock LLM) → generateCapsuleVideoAllLanguages. Tags
-  `@i18n @cross-borough @architecture @ai`. Mock LLM HTTP (`-Pollama.baseUrl`).
-  Runner cucumber dédié (pattern S-082 `CapsuleContextCucumberRunner`).
-- Domaines DDD capsule : `capsule.feed` + `capsule.ci` + `capsule.multilang` +
-  `capsule.ai` + `capsule.context` + `capsule.pipeline` + `capsule.support` +
-  `capsule.i18n` (8ème, créé S-089).
+- EPIC CAP-ARCH TERMINÉ 8/8 US : CAP-ARCH-0 ✅ S-083, 1 ✅ S-084,
+  2 ✅ S-085, 3 ✅ S-086, 4 ✅ S-088, 5 ✅ S-089, **6 ✅ S-090**,
+  7 ✅ S-087+S-088.
+- 655 unit VERT + 40 functional VERT + cucumber dédiés GREEN :
+  `CapsuleContextCucumberRunner` (@context), `CapsuleContentAndVideosCucumberRunner`
+  (@architecture @wiring), `CapsuleDistribCucumberRunner` (@distrib @versioning),
+  `CapsuleArchBoundaryCucumberRunner` (@cross-borough), `CucumberIntegrationTestRunner`
+  (@integration burn-in).
+- Domaines DDD capsule (8) : `capsule.feed` + `capsule.ci` + `capsule.multilang`
+  + `capsule.ai` + `capsule.context` + `capsule.pipeline` + `capsule.support`
+  + `capsule.i18n`.
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider 0.0.16
   (compileOnly, 0 import réel — décision CAP-ARCH-4).
-- Modifications S-083→089 non committées (Règle 1 — demander permission de commit).
-- Runners cucumber dédiés : `CapsuleContextCucumberRunner`,
-  `CapsuleContentAndVideosCucumberRunner`, `CapsuleDistribCucumberRunner`,
-  `CucumberIntegrationTestRunner` (pattern S-082).
+- Modifications S-083→090 non committées (Règle 1 — demander permission de commit).
+- Borough Détroit en maintenance (tous EPICs terminés).
+
+== EPICs restants (maintenance, non planifiés)
+
+* CAP-27 VTT burn-in (P2) — FFmpeg subtitles filter avec VTT (actuellement SRT)
+* CAP-28 Coverage gaps (P2) — PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%
+* CAP-CR3-1 CI `full` avec vrais binaires + probe durée (P0) — job CI installant Playwright + ffmpeg + manim
+* CAP-CR3-2 Mode strict anti-NoOp (P0) — `capsule.strictMode` DSL
+* CAP-CR3-3 Décision capture ScreenshotCaptureImpl vs PlaywrightCaptureImpl (P1)
+* CAP-CR3-4 Convention Gradle explicite resolveScriptDir/resolveDeckDir (P2)
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 655 unit tests VERT (S-089 baseline) — vérifier avant de coder
+* 655 unit tests VERT (S-089/090 baseline) — vérifier avant de coder
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082 :
   `@ConfigurationParameter(FEATURES_PROPERTY_NAME)` du CucumberTestRunner écrase
   la system property cucumber.features) — pattern `CapsuleContextCucumberRunner`
+* Glue `capsule.scenarios` partagé : tous les steps doivent avoir des signatures
+  uniques (bug S-088 `DuplicateStepDefinitionException`) — préfixer par feature
 * English only : code, Gherkin, commentaires
-* Économie d'encre = skip WebM existant + probe > 0 (ink economy)
+* Économie d'encre = skip WebM existant + probe > 0 (ffprobe durée > 0)
 * Ports Ollama : 11437-11465 rotation (11434-11436 INTERDITS)
-* `cucumberTestIntegration` câblé — `./gradlew cucumberTestIntegration -PrunCucumber`
-* `cucumberTestContentAndVideos` câblé — `./gradlew cucumberTestContentAndVideos -PrunCucumber`
-* `cucumberTestDistrib` câblé — `./gradlew cucumberTestDistrib -PrunCucumber`
 * `CapsuleMessages` object (domaine `capsule.i18n`) — 11 `Messages*.properties`
   10 langues, `resolveLanguage(project)` cascade `-Pcapsule.language` > DSL > `"en"`
+* Runners cucumber dédiés : `CapsuleContextCucumberRunner`,
+  `CapsuleContentAndVideosCucumberRunner`, `CapsuleDistribCucumberRunner`,
+  `CapsuleArchBoundaryCucumberRunner`, `CucumberIntegrationTestRunner` (pattern S-082)
