@@ -1,0 +1,199 @@
+= Session 105 — CAP-AUDIO US-3 Wiring applyAudioPostIfEnabled + câblage captureDeckSequential/Parallel
+
+_Date_ : 2026-08-11
+_Borough_ : Détroit (capsule-gradle)
+_Type_ : feat+ddd+tdd
+_Score_ : 9/10
+_EPIC_ : CAP-AUDIO (P1) — post-production audio, 5 US ~12 pts
+
+== Objectif
+
+Livrer US-3 du EPIC CAP-AUDIO : wiring `CapsuleVideoTask.
+applyAudioPostIfEnabled(finalVideo: File)` + câblage dans
+`captureDeckSequential` (post-burnIn, pre-convertFormat) +
+`captureDeckParallel` (même position). Baby-step TDD strict
+RED → GREEN → REFACTOR (3 functional tests).
+
+== Contexte pré-session
+
+- US-0 ✅ S-102 (cadrage 12 décisions architecturales)
+- US-1 ✅ S-103 (`AudioPostConfig` + merger 4 sources, 802 unit VERT)
+- US-2 ✅ S-104 (`AudioPostProcessor` interface + Impl + NoOp +
+  `AudioPostException` + `AudioPostCommand` object pur + factory
+  `resolveAudioPostProcessor` 5ème, 819 unit VERT)
+- Domaine `capsule.audio` (10ème) : 5 fichiers prod (`AudioPostConfig`,
+  `AudioPostProcessor`, `AudioPostProcessorImpl`, `AudioPostCommand`,
+  `AudioPostException`).
+- 5 factories `resolve*` dans `CapsuleManager` :
+  `resolveManimVideoMixer`, `resolveManimEngine`,
+  `resolveSubtitleBurnInService`, `resolveFormatConverter`,
+  `resolveAudioPostProcessor`.
+- Point d'insertion identifié : `CapsuleVideoTask.captureDeckSequential`
+  L492 (après `burnInSubtitlesIfEnabled`, avant `convertFormatIfEnabled`)
+  + `captureDeckParallel` L523 (même position).
+- Pattern de référence : `burnInSubtitlesIfEnabled` (L658-680) — skip
+  si disabled, factory, service.process, rename tmpFile → videoFile,
+  warn si échec. 2ème pattern : `convertFormatIfEnabled` (L694-714) —
+  factory + NoOp log + return produced.
+- `CapsuleExtension` — 5 properties `audioPost*` (S-103) :
+  `audioPostBgmEnabled`/`audioPostBgmFile`/`audioPostBgmLevel`/
+  `audioPostLoudnessTarget`/`audioPostDuckingEnabled` avec
+  conventions backward compat (`false`/`""`/`-18.0`/`-16.0`/`false`).
+
+== Livrables
+
+=== Production code (1 fichier modifié)
+
+. `src/main/kotlin/capsule/CapsuleVideoTask.kt` :
+  * Import `capsule.audio.AudioPostConfig` + `capsule.audio.
+    NoOpAudioPostProcessor` ajoutés (lignes 3-4).
+  * Câblage `applyAudioPostIfEnabled(finalVideo)` inséré dans
+    `captureDeckSequential` (L493 — entre `burnInSubtitlesIfEnabled`
+    et `convertFormatIfEnabled`) + `captureDeckParallel` (L524 —
+    même position).
+  * Nouvelle méthode `internal fun applyAudioPostIfEnabled(finalVideo:
+    File)` (20 lignes) — pattern `burnInSubtitlesIfEnabled` :
+    - Économie d'encre : skip si `!bgmEnabled && !duckingEnabled`
+      (défaut false → no-op backward compat).
+    - Skip si `finalVideo` n'existe pas (capture échouée) → warn +
+      return.
+    - Factory `CapsuleManager.resolveAudioPostProcessor(ffmpegPath,
+      strict = capsuleExtension.strictMode.get())` (5ème factory).
+    - Log lifecycle si processor disponible (non-NoOp), pattern
+      `convertFormatIfEnabled`.
+    - Construction `AudioPostConfig` depuis `capsuleExtension.
+      audioPost*` (5 champs).
+    - `processor.process(finalVideo, tmpFile, config)` : si succès
+      rename `tmpFile` → `finalVideo` + log "Audio post: BGM +
+      loudness + ducking applied" ; si échec (`false`) warn +
+      garde original (degraded).
+    - `catch (AudioPostException)` warn + garde original (pattern
+      `burnInSubtitlesIfEnabled` `catch (BurnInException)`).
+    - `finally` delete `tmpFile` si existe (pattern burn-in).
+
+=== Tests (1 fichier créé)
+
+. `src/functionalTest/kotlin/capsule/AudioPostFunctionalTest.kt` :
+  3 functional tests (pattern `CaptureStrategyFunctionalTest`,
+  NoOp capture, `generateCapsuleVideo` task) :
+  * `audio post default config skips step and produces WebM` —
+    défaut `bgmEnabled=false` + `duckingEnabled=false` → étape
+    skippée (économie d'encre), pas de log "Audio post:", WebM
+    produit.
+  * `audio post BGM enabled with NoOp processor degrades and keeps
+    original WebM` — `audioPostBgmEnabled=true` + `audioPostBgmFile`
+    + `ffmpegExecutablePath="noop"` → étape déclenchée, log
+    "Audio post:" présent, NoOp `process()` retourne `false` →
+    degraded garde original, WebM produit.
+  * `audio post ducking enabled with NoOp processor degrades and
+    keeps original WebM` — `audioPostDuckingEnabled=true` +
+    `ffmpegExecutablePath="noop"` → étape déclenchée (ducking
+    passe le guard économie d'encre), log "Audio post:" présent,
+    NoOp `process()` retourne `false` → degraded garde original,
+    WebM produit.
+
+== Baby-step TDD RED → GREEN → REFACTOR
+
+=== RED
+
+3 functional tests écrits avant implémentation. `./gradlew
+functionalTest --tests "capsule.AudioPostFunctionalTest"` :
+* Test 1 (default skip) : PASSED — le test asserte l'absence de log
+  "Audio post:", vrai car la méthode n'existe pas encore (aucun
+  log produit).
+* Test 2 (BGM enabled) : FAILED à L114 — assert `result.output.
+  contains("Audio post:")` échoue (méthode inexistante).
+* Test 3 (ducking enabled) : FAILED à L114 — même raison.
+
+Résultat : 2 failed / 1 passed (1 passed par accident — l'absence
+de la méthode valide l'absence du log, mais ce n'est pas un vrai
+vert car le test aurait dû détecter un appel absent).
+
+=== GREEN
+
+Implémentation de `applyAudioPostIfEnabled` + câblage dans les 2
+branches (`captureDeckSequential` + `captureDeckParallel`). `./gradlew
+functionalTest --tests "capsule.AudioPostFunctionalTest"` :
+3/3 PASSED en 2m37s.
+
+=== REFACTOR
+
+* `./gradlew compileKotlin compileTestKotlin` : BUILD SUCCESSFUL.
+* `./gradlew test` : 819 unit VERT (0 failures, inchangé baseline
+  S-104).
+* `./gradlew check` : BUILD SUCCESSFUL en 9m20s (test + functionalTest
+  + kover + validatePlugins + cucumber SKIPPED par défaut CR-10).
+  819 unit + 60 functional = 879 tests, 0 FAIL.
+* Aucun refactoring nécessaire — patterns `burnInSubtitlesIfEnabled`
+  + `convertFormatIfEnabled` strictement respectés, économie d'encre
+  préservée, backward compat (défaut false → no-op).
+
+== Économie d'encre (AGENT.adoc)
+
+* Skip si `!bgmEnabled && !duckingEnabled` (défaut false → no-op
+  backward compat — aucun appel ffmpeg, aucun log).
+* Skip si `finalVideo` n'existe pas (capture échouée) → warn +
+  return.
+* NoOp `process()` retourne `false` → degraded garde original
+  (aucune perte de l'artefact valide).
+* `AudioPostProcessorImpl` (S-104) skip si BGM enabled mais
+  `bgmFile` blank/missing → `false` (degraded).
+* `tmpFile` supprimé en `finally` (pas de fuite artefact).
+
+== Statut EPIC CAP-AUDIO
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-AUDIO-0 | Cadrage EPIC | 1 | ✅ S-102
+| CAP-AUDIO-1 | `AudioPostConfig` + merger 4 sources | 3 | ✅ S-103
+| CAP-AUDIO-2 | `AudioPostProcessor` + Impl + NoOp + Command + factory | 4 | ✅ S-104
+| CAP-AUDIO-3 | Wiring `applyAudioPostIfEnabled` + câblage | 2 | ✅ S-105
+| CAP-AUDIO-4 | Cucumber BDD | 2 | ⬜ TODO
+|===
+
+4/5 US terminés (10/12 pts). Reste US-4 cucumber (feature
+`capsule_audio_post.feature` `@audio @post` 4 scénarios + runner
+dédié `CapsuleAudioPostCucumberRunner` + `CucumberTaskSpec
+("cucumberTestAudioPost")` 11ème cucumber dédié, 12ème
+`CucumberTaskSpec`).
+
+== Compteurs
+
+- 819 unit VERT (S-104 baseline préservée, inchangé)
+- 60 functional VERT (+3 net : 57 baseline S-101 + 3
+  `AudioPostFunctionalTest`)
+- 11 cucumber dédiés (inchangés — cucumber SKIPPED par CR-10)
+- 0 FAIL, 0 régression, 0 secret
+
+== Fichiers modifiés
+
+. `src/main/kotlin/capsule/CapsuleVideoTask.kt` (+22 lignes : 2
+  imports + 2 câblages + 1 méthode 20 lignes)
+. `src/functionalTest/kotlin/capsule/AudioPostFunctionalTest.kt`
+  (nouveau, 139 lignes)
+
+== Prochaine session
+
+106 — CAP-AUDIO US-4 Cucumber BDD. Feature
+`capsule_audio_post.feature` `@audio @post` (4 scénarios : default
+NoOp preserved, BGM enabled NoOp → degraded, loudness only NoOp →
+degraded, ducking enabled + BGM enabled NoOp → degraded). Runner
+dédié `CapsuleAudioPostCucumberRunner` (pattern S-082
+`@SelectClasspathResource` + filter `@audio and @post and not @wip
+and not @integration`). Steps `CapsuleAudioPostSteps` préfixés
+"audio post" (bug S-088 glue `capsule.scenarios` partagée — step
+texts uniques). `CucumberTaskSpec("cucumberTestAudioPost")` câblé
+`build.gradle.kts` (11ème cucumber dédié, 12ème `CucumberTaskSpec`).
+NoOp processor (pas de vrai FFmpeg). Baby-step BDD : RED (undefined
+steps) → GREEN → REFACTOR. ~2 pts. Clôture EPIC CAP-AUDIO
+TERMINÉ 5/5 US.
+
+== Vérification finale
+
+* `git status` : 2 fichiers (1 modifié + 1 nouveau).
+* `grep -r "TOKEN\|SECRET\|PASSWORD\|API_KEY\|gho_\|ghp_"
+  --include="*.kts" --include="*.properties" --include="*.yml"` :
+  zéro match.
+* `./gradlew check` : BUILD SUCCESSFUL.

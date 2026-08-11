@@ -864,3 +864,42 @@ EPIC CAP-MP4 TERMINÉ 4/4 US :
  . US-3 cucumber (S-100) — 3 scénarios cucumber GREEN
 
 Rapport : `.agents/sessions/100-cap-mp4-us3-cucumber-cloture.adoc`.
+
+== Session 105 — CAP-AUDIO US-3 Wiring applyAudioPostIfEnabled (2026-08-11)
+
+_Borough_ : Détroit (capsule-gradle)
+_EPIC_ : CAP-AUDIO (P1) — post-production audio
+_US_ : US-3 Wiring `CapsuleVideoTask.applyAudioPostIfEnabled`
+
+Livrables :
+ . `CapsuleVideoTask.kt` modifié (+22 lignes : 2 imports + 2 câblages
+   + 1 méthode 20 lignes `applyAudioPostIfEnabled`)
+ . `AudioPostFunctionalTest.kt` créé (139 lignes, 3 functional tests)
+ . Câblage `captureDeckSequential` L493 + `captureDeckParallel` L524
+   (post-burnIn, pre-convertFormat)
+
+Méthode `applyAudioPostIfEnabled` (pattern `burnInSubtitlesIfEnabled`) :
+ . Skip si `!bgmEnabled && !duckingEnabled` (économie d'encre défaut
+   false → no-op backward compat)
+ . Skip si `finalVideo` n'existe pas → warn + return
+ . Factory `resolveAudioPostProcessor(ffmpegPath, strict)`
+ . `AudioPostConfig` depuis `capsuleExtension.audioPost*` (5 champs)
+ . `processor.process(finalVideo, tmpFile, config)` → si succès
+   rename tmpFile → finalVideo + log, si échec warn + garde original
+   (degraded)
+ . `catch (AudioPostException)` warn + garde original
+ . `finally` delete tmpFile
+
+Métriques : 819 unit VERT (inchangé baseline S-104) + 60 functional
+VERT (+3 net `AudioPostFunctionalTest`) + 11 cucumber dédiés (inchangés).
+`./gradlew check` BUILD SUCCESSFUL 9m20s. Cucumber SKIPPED par défaut
+(CR-10). Zéro régression, zéro secret.
+
+EPIC CAP-AUDIO 4/5 US terminés (10/12 pts) :
+ . US-0 cadrage (S-102) — 12 décisions architecturales
+ . US-1 config+merger (S-103) — 20 unit
+ . US-2 processor+factory (S-104) — 17 unit
+ . US-3 wiring (S-105) — 3 functional
+ . US-4 cucumber — TODO (S-106)
+
+Rapport : `.agents/sessions/105-cap-audio-us3-wiring.adoc`.

@@ -1,5 +1,7 @@
 package capsule
 
+import capsule.audio.AudioPostConfig
+import capsule.audio.NoOpAudioPostProcessor
 import capsule.feed.CapsuleScript
 import capsule.feed.CapsuleScriptReader
 import capsule.feed.SlideSegment
@@ -490,6 +492,7 @@ open class CapsuleVideoTask : DefaultTask() {
             generatedVideo.copyTo(finalVideo, overwrite = true)
             mixAudioWithVideo(finalVideo, audioDir, parsed.segments, capsuleExtension.slideDurationSeconds.get())
             burnInSubtitlesIfEnabled(finalVideo, subtitleFile)
+            applyAudioPostIfEnabled(finalVideo)
             val produced = convertFormatIfEnabled(finalVideo)
             logger.lifecycle("CAPSULE → {}", produced.absolutePath)
         } else {
@@ -521,6 +524,7 @@ open class CapsuleVideoTask : DefaultTask() {
             concatVideo.copyTo(finalVideo, overwrite = true)
             mixAudioWithVideo(finalVideo, audioDir, parsed.segments, capsuleExtension.slideDurationSeconds.get())
             burnInSubtitlesIfEnabled(finalVideo, subtitleFile)
+            applyAudioPostIfEnabled(finalVideo)
             val produced = convertFormatIfEnabled(finalVideo)
             logger.lifecycle("CAPSULE (parallel) → {}", produced.absolutePath)
         } else {
@@ -674,6 +678,62 @@ open class CapsuleVideoTask : DefaultTask() {
             }
         } catch (e: BurnInException) {
             logger.warn("  Subtitle burn-in error: {} — keeping original video", e.message)
+        } finally {
+            if (tmpFile.exists()) tmpFile.delete()
+        }
+    }
+
+    /**
+     * Audio post-production (CAP-AUDIO US-3). Applies BGM mix, loudness
+     * normalization (EBU R128), and sidechain ducking to the final WebM,
+     * *after* subtitle burn-in and *before* MP4 format conversion.
+     *
+     * Economy of ink (AGENT.adoc): the step is skipped entirely when both
+     * [CapsuleExtension.audioPostBgmEnabled] and
+     * [CapsuleExtension.audioPostDuckingEnabled] are `false` (default —
+     * backward compat). When enabled, the resolved [capsule.audio.AudioPostProcessor]
+     * is invoked; a `false` result (NoOp fallback, ffmpeg unavailable,
+     * missing BGM file) keeps the original video (degraded mode).
+     */
+    internal fun applyAudioPostIfEnabled(finalVideo: File) {
+        val bgmEnabled = capsuleExtension.audioPostBgmEnabled.get()
+        val duckingEnabled = capsuleExtension.audioPostDuckingEnabled.get()
+        if (!bgmEnabled && !duckingEnabled) return
+
+        if (!finalVideo.exists()) {
+            logger.warn("Audio post: final video not found ('{}') — skipping", finalVideo.name)
+            return
+        }
+
+        val ffmpegPath = capsuleExtension.ffmpegExecutablePath.get()
+        val processor = CapsuleManager.resolveAudioPostProcessor(ffmpegPath, strict = capsuleExtension.strictMode.get())
+        if (processor !is NoOpAudioPostProcessor) {
+            logger.lifecycle(
+                "Audio post: {} (available, ffmpeg={})",
+                processor.name(),
+                ffmpegPath
+            )
+        }
+
+        val config = AudioPostConfig(
+            bgmEnabled = bgmEnabled,
+            bgmFile = capsuleExtension.audioPostBgmFile.get(),
+            bgmLevel = capsuleExtension.audioPostBgmLevel.get(),
+            loudnessTarget = capsuleExtension.audioPostLoudnessTarget.get(),
+            duckingEnabled = duckingEnabled
+        )
+
+        val tmpFile = File(finalVideo.absolutePath + ".audiopost.webm")
+        try {
+            val success = processor.process(finalVideo, tmpFile, config)
+            if (success && tmpFile.exists() && tmpFile.length() > 0) {
+                tmpFile.renameTo(finalVideo)
+                logger.lifecycle("Audio post: BGM + loudness + ducking applied to {}", finalVideo.name)
+            } else {
+                logger.warn("Audio post: {} returned false — keeping original video", processor.name())
+            }
+        } catch (e: capsule.audio.AudioPostException) {
+            logger.warn("Audio post: error '{}' — keeping original video", e.message)
         } finally {
             if (tmpFile.exists()) tmpFile.delete()
         }

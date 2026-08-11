@@ -1,8 +1,18 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-08-11
-:session: 096 CAP-CR3-3 Branchement ScreenshotCapture (EPIC TERMINÉ 5/5 US)
+:session: 105 CAP-AUDIO US-3 Wiring applyAudioPostIfEnabled
 
-== Couverture — 11 août 2026 (après session 096 CAP-CR3-3)
+== Couverture — 11 août 2026 (après session 105 CAP-AUDIO US-3)
+
+.Modifications session 105 — CAP-AUDIO US-3 Wiring
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/CapsuleVideoTask.kt` (modifié) | Imports `capsule.audio.AudioPostConfig` + `NoOpAudioPostProcessor`. Câblage `applyAudioPostIfEnabled(finalVideo)` dans `captureDeckSequential` L493 + `captureDeckParallel` L524 (post-burnIn, pre-convertFormat). Nouvelle méthode `internal fun applyAudioPostIfEnabled(finalVideo: File)` (20 lignes, pattern `burnInSubtitlesIfEnabled`) : skip si `!bgmEnabled && !duckingEnabled` (économie d'encre), factory `resolveAudioPostProcessor`, `processor.process(finalVideo, tmpFile, config)` → rename si succès / warn + garde original si échec, `catch (AudioPostException)`, `finally` delete tmpFile. | +3 functional (`AudioPostFunctionalTest` : default skip, BGM enabled NoOp degraded, ducking enabled NoOp degraded)
+|===
+
+*Totaux* : 819 unit VERT (inchangé baseline S-104), 60 functional VERT
+(+3 net), 11 cucumber dédiés (inchangés). `./gradlew check` BUILD
+SUCCESSFUL en 9m20s. Cucumber SKIPPED par défaut (CR-10).
 
 .Modifications session 096 — CAP-CR3-3 Branchement ScreenshotCapture
 |===

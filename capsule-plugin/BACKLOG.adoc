@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-11 (Session 104 — CAP-AUDIO US-2 `AudioPostProcessor` (interface + Impl + NoOp + Exception) + `AudioPostCommand` (object pur) + factory `resolveAudioPostProcessor` 5ème. Domaine `capsule.audio` enrichi (4 fichiers prod + 1 exception). `AudioPostProcessor` interface (`process(video, output, config): Boolean` + `isAvailable()` + `name()`) — `process` retourne Boolean degraded (pattern `VideoFormatConverter`), `AudioPostException` erreurs critiques (pattern `BurnInException`). `AudioPostProcessorImpl` (FFmpeg `loudnorm=I=-16:TP=-1.5:LRA=11` EBU R128 + `volume + amix` BGM + `sidechaincompress` ducking — `sidechaincompress` ignoré si ducking sans BGM). `NoOpAudioPostProcessor` (returns `false` — degraded garde original). `AudioPostCommand` object pur — `buildFilterGraph(config, hasBgmInput): String` (loudness-only / loudness+BGM / loudness+BGM+ducking / ducking-without-BGM ignored) + `buildArgv(video, bgm, output, config, ffmpegPath): List<String>` (BGM = 2ème `-i` + `-filter_complex`, no-BGM = `-af`). `CapsuleManager.resolveAudioPostProcessor(ffmpegPath, strict)` 5ème factory `resolve*` (pattern `resolveFormatConverter` — noop→NoOp, unavailable+non-strict→NoOp, unavailable+strict→throw via `StrictModeGuard`, available→Impl). Baby-step TDD RED → GREEN → REFACTOR : +17 unit (5 `buildFilterGraph` + 2 `buildArgv` + 4 Impl + 2 NoOp + 4 factory). 819 unit VERT (802 baseline + 17), zéro régression, zéro secret.)
+:last_update: 2026-08-11 (Session 105 — CAP-AUDIO US-3 Wiring `CapsuleVideoTask.applyAudioPostIfEnabled(finalVideo: File)` + câblage `captureDeckSequential` L493 + `captureDeckParallel` L524 (post-burnIn, pre-convertFormat). Pattern `burnInSubtitlesIfEnabled` : skip si `!bgmEnabled && !duckingEnabled` (économie d'encre), skip si `finalVideo` n'existe pas, factory `resolveAudioPostProcessor`, `processor.process(finalVideo, tmpFile, config)` retourne Boolean, si succès rename tmpFile → finalVideo + log, si échec warn + garde original (degraded). `catch (AudioPostException)` warn + garde original. `finally` delete tmpFile. Log lifecycle si processor non-NoOp. `AudioPostConfig` depuis `capsuleExtension.audioPost*` (5 champs). Baby-step TDD RED → GREEN → REFACTOR : +3 functional (`AudioPostFunctionalTest`). 819 unit VERT (inchangé baseline S-104), 60 functional VERT (+3), zéro régression, zéro secret.)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -1410,7 +1410,7 @@ _Décisions architecturales (US-0, Session 102)_ :
   NoOp processor → degraded garde original, loudness enabled + NoOp → 
   degraded).
 | 2
-| ⬜ TODO
+| ✅ TERMINÉ (S-105, 3 functional GREEN — default skip, BGM enabled NoOp degraded, ducking enabled NoOp degraded)
 
 | CAP-AUDIO-4
 | *Cucumber BDD* — `capsule_audio_post.feature` `@audio @post` (4 scénarios 
@@ -1434,7 +1434,7 @@ référence_ : CAP-MP4 S-097→S-100 (`VideoFormatConverter` +
 (`ValidationConfig` + `mergeValidationConfig` 4 sources), 
 `SubtitleBurnInService` (interface + Impl + NoOp + factory + Exception). 
 _Séquence_ : US-0 cadrage ✅ → US-1 config+merger ✅ → US-2 processor+factory ✅ → 
-US-3 wiring → US-4 cucumber.
+US-3 wiring ✅ → US-4 cucumber.
 
 === 📼 EPIC CAP-MP4 — Export MP4/H.264 + format distribution
 
@@ -2063,7 +2063,7 @@ _Total_ : 3 US, ~4 pts.
 | 5
 | 12
 | 🟠 P1
-| 🟡 US-0 ✅ S-102 (cadrage), US-1 ✅ S-103 (config+merger), US-2 ✅ S-104 (processor+factory), US-3→4 TODO
+| 🟡 US-0 ✅ S-102 (cadrage), US-1 ✅ S-103 (config+merger), US-2 ✅ S-104 (processor+factory), US-3 ✅ S-105 (wiring), US-4 TODO
 
 | Post-prod
 | CAP-CHAPITRE
