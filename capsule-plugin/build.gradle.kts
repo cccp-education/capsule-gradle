@@ -119,6 +119,17 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleDurationValidationCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // CAP-AUDIO US-4 — audio post-production (BGM + loudness EBU R128 + ducking).
+        // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
+        // Uses a NoOp processor (no real FFmpeg); validates applyAudioPostIfEnabled
+        // wiring + economy-of-ink guard + factory dispatch in CapsuleVideoTask.
+        CucumberTaskSpec(
+            name = "cucumberTestAudioPost",
+            features = listOf("src/test/features/capsule_audio_post.feature"),
+            tags = listOf("@audio", "@post"),
+            runnerClass = "capsule.scenarios.CapsuleAudioPostCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task

@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-11 (Session 105 — CAP-AUDIO US-3 Wiring `CapsuleVideoTask.applyAudioPostIfEnabled(finalVideo: File)` + câblage `captureDeckSequential` L493 + `captureDeckParallel` L524 (post-burnIn, pre-convertFormat). Pattern `burnInSubtitlesIfEnabled` : skip si `!bgmEnabled && !duckingEnabled` (économie d'encre), skip si `finalVideo` n'existe pas, factory `resolveAudioPostProcessor`, `processor.process(finalVideo, tmpFile, config)` retourne Boolean, si succès rename tmpFile → finalVideo + log, si échec warn + garde original (degraded). `catch (AudioPostException)` warn + garde original. `finally` delete tmpFile. Log lifecycle si processor non-NoOp. `AudioPostConfig` depuis `capsuleExtension.audioPost*` (5 champs). Baby-step TDD RED → GREEN → REFACTOR : +3 functional (`AudioPostFunctionalTest`). 819 unit VERT (inchangé baseline S-104), 60 functional VERT (+3), zéro régression, zéro secret.)
+:last_update: 2026-08-11 (Session 106 — CAP-AUDIO US-4 Cucumber BDD + clôture EPIC CAP-AUDIO 5/5 US. Feature `capsule_audio_post.feature` `@audio @post` (4 scénarios : default NoOp skip économie d'encre, BGM enabled NoOp → degraded, ducking only NoOp → degraded, ducking + BGM NoOp → degraded) + `CapsuleAudioPostSteps` (13 step defs préfixés "audio post", pattern `CapsuleCaptureStrategySteps`) + `CapsuleAudioPostCucumberRunner` (pattern S-082) + `CucumberTaskSpec("cucumberTestAudioPost")` 12ème câblé `build.gradle.kts` (11ème cucumber dédié). 4/4 scénarios PASSED en 7m21s (NoOp processor — valide wiring + économie d'encre + factory dispatch). `./gradlew check` BUILD SUCCESSFUL in 24m12s. 819 unit VERT + 60 functional VERT + 4 cucumber audio post GREEN. Zéro régression, zéro secret. EPIC CAP-AUDIO TERMINÉ 5/5 US. Domaine `capsule.audio` (10ème) clos.)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -1137,7 +1137,7 @@ câblé `build.gradle.kts`. Baby-step BDD : RED (undefined steps) → GREEN → 
 _Total_ : 5 US, ~13 pts. _Séquence baby-step_ : US-0 cadrage → US-1/2/3 unit
 tests RED→GREEN → US-4 functional → US-5 cucumber. _EPIC TERMINÉ (S-096)_.
 
-=== 🎵 EPIC CAP-AUDIO — Post-production audio (BGM + normalisation EBU R128 + ducking)
+=== ✅ EPIC CAP-AUDIO — Post-production audio (BGM + normalisation EBU R128 + ducking) — TERMINÉ (S-106, 5/5 US)
 
 _Vision_ : Le WebM produit est TTS brut, sans lit musical ni normalisation.
 Une capsule pédagogique sans audio bed sonne amateur ; les volumes Piper/espeak
@@ -1424,7 +1424,7 @@ _Décisions architecturales (US-0, Session 102)_ :
   cucumber dédié, 12ème `CucumberTaskSpec`). NoOp processor (pas de vrai 
   FFmpeg — valide le wiring + factory dispatch, pas le rendu audio).
 | 2
-| ⬜ TODO
+| ✅ TERMINÉ (S-106, 4/4 scénarios GREEN en 7m21s)
 |===
 
 _Total_ : 5 US, ~12 pts. _Méthode_ : baby-step DDD/TDD/BDD, 3 niveaux tests/US 
@@ -1434,7 +1434,7 @@ référence_ : CAP-MP4 S-097→S-100 (`VideoFormatConverter` +
 (`ValidationConfig` + `mergeValidationConfig` 4 sources), 
 `SubtitleBurnInService` (interface + Impl + NoOp + factory + Exception). 
 _Séquence_ : US-0 cadrage ✅ → US-1 config+merger ✅ → US-2 processor+factory ✅ → 
-US-3 wiring ✅ → US-4 cucumber.
+US-3 wiring ✅ → US-4 cucumber ✅. _EPIC TERMINÉ (S-106, 5/5 US)_.
 
 === 📼 EPIC CAP-MP4 — Export MP4/H.264 + format distribution
 
@@ -2063,7 +2063,7 @@ _Total_ : 3 US, ~4 pts.
 | 5
 | 12
 | 🟠 P1
-| 🟡 US-0 ✅ S-102 (cadrage), US-1 ✅ S-103 (config+merger), US-2 ✅ S-104 (processor+factory), US-3 ✅ S-105 (wiring), US-4 TODO
+| ✅ US-0 ✅ S-102 (cadrage), US-1 ✅ S-103 (config+merger), US-2 ✅ S-104 (processor+factory), US-3 ✅ S-105 (wiring), US-4 ✅ S-106 (cucumber + clôture)
 
 | Post-prod
 | CAP-CHAPITRE

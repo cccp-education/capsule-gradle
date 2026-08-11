@@ -903,3 +903,44 @@ EPIC CAP-AUDIO 4/5 US terminés (10/12 pts) :
  . US-4 cucumber — TODO (S-106)
 
 Rapport : `.agents/sessions/105-cap-audio-us3-wiring.adoc`.
+
+== Session 106 — CAP-AUDIO US-4 Cucumber BDD + clôture EPIC CAP-AUDIO (5/5 US)
+
+_Date_ : 2026-08-11
+_Type_ : feat+bdd+cucumber+cloture
+
+Feature `capsule_audio_post.feature` `@audio @post` (4 scénarios : default
+NoOp skip économie d'encre, BGM enabled NoOp → degraded, ducking only NoOp
+→ degraded, ducking + BGM NoOp → degraded) + `CapsuleAudioPostSteps` (13
+step defs préfixés "audio post", pattern `CapsuleCaptureStrategySteps` —
+étape interne `generateCapsuleVideo`, pas tâche standalone) +
+`CapsuleAudioPostCucumberRunner` (pattern S-082 `@SelectClasspathResource`
++ filter `@audio and @post and not @wip and not @integration`) +
+`CucumberTaskSpec("cucumberTestAudioPost")` 12ème câblé `build.gradle.kts`
+(11ème cucumber dédié, 12ème `CucumberTaskSpec` total avec
+`cucumberTestIntegration`). Position : après `cucumberTestDurationValidation`,
+avant `cucumberTestIntegration`. NoOp processor (pas de vrai FFmpeg —
+`ffmpegExecutablePath = "noop"` routes through `NoOpAudioPostProcessor`
+which returns `false`, keeping original video) — valide le wiring +
+economy-of-ink guard + factory dispatch, pas le rendu audio (couvert par
+US-2 unit tests `AudioPostProcessorTest` 17 unit).
+
+Baby-step BDD RED → GREEN → REFACTOR : RED (feature + steps + runner +
+CucumberTaskSpec écrits) → GREEN (4/4 scénarios PASSED en 7m21s, BUILD
+SUCCESSFUL) → REFACTOR (`./gradlew check` BUILD SUCCESSFUL in 24m12s, 819
+unit VERT baseline S-105 préservée, 60 functional VERT baseline S-105
+préservée, `validatePlugins` VERT, Kover VERT, zéro régression, zéro
+secret).
+
+EPIC CAP-AUDIO TERMINÉ 5/5 US (12/12 pts) :
+ . US-0 cadrage (S-102) — 12 décisions architecturales
+ . US-1 config+merger (S-103) — 20 unit
+ . US-2 processor+factory (S-104) — 17 unit
+ . US-3 wiring (S-105) — 3 functional
+ . US-4 cucumber (S-106) — 4 cucumber scénarios
+
+Domaine `capsule.audio` (10ème) clos (6 fichiers prod : `AudioPostConfig`,
+`AudioPostProcessor` interface, `AudioPostProcessorImpl`,
+`NoOpAudioPostProcessor`, `AudioPostCommand`, `AudioPostException`).
+
+Rapport : `.agents/sessions/106-cap-audio-us4-cucumber-cloture.adoc`.

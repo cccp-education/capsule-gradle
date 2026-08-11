@@ -1,0 +1,169 @@
+= Session 106 — CAP-AUDIO US-4 Cucumber BDD + Clôture EPIC CAP-AUDIO (5/5 US)
+
+_Date_ : 2026-08-11
+_Type_ : feat+bdd+cucumber+cloture
+_Score_ : 9/10
+
+== Mission
+
+Livrer US-4 du EPIC CAP-AUDIO : Cucumber BDD `capsule_audio_post.feature`
+`@audio @post` (4 scénarios) + runner dédié `CapsuleAudioPostCucumberRunner`
+(pattern S-082) + steps `CapsuleAudioPostSteps` préfixés "audio post"
+(bug S-088 glue `capsule.scenarios` partagée) + `CucumberTaskSpec
+("cucumberTestAudioPost")` 12ème `CucumberTaskSpec` câblé `build.gradle.kts`.
+Clôture EPIC CAP-AUDIO TERMINÉ 5/5 US.
+
+== Contexte d'ouverture
+
+- Session 105 terminée (CAP-AUDIO US-3 wiring `applyAudioPostIfEnabled`).
+- EPIC CAP-AUDIO 4/5 US (US-0 cadrage ✅ S-102, US-1 config+merger ✅ S-103,
+  US-2 processor+factory ✅ S-104, US-3 wiring ✅ S-105). Reste US-4 cucumber.
+- 819 unit VERT + 60 functional VERT (baseline S-105).
+- Git working tree propre.
+- Build compile (`compileKotlin` BUILD SUCCESSFUL 1m28s).
+
+== Ce qui a été fait
+
+. **Audit patterns cucumber existants** — 3 patterns références inventoriés :
+  - `capsule_format.feature` (CAP-MP4 US-3 S-100) : tâche standalone
+    `distributeCapsuleVideo` + GradleRunner self-contained, steps préfixés
+    "format distribution". NoOp converter valide la distribution filter.
+  - `capsule_capture_strategy.feature` (CAP-CR3-3-5 S-096) : étape interne
+    `generateCapsuleVideo` (`capture` est une étape du pipeline, pas une
+    tâche standalone), steps préfixés "capture strategy". NoOp capture
+    valide le wiring + factory dispatch.
+  - `capsule_duration_validation.feature` (CAP-CR3-1 US-3 S-101) : tâche
+    standalone `validateCapsuleVideoDuration`, steps préfixés "duration
+    validation". NoOp probe valide le skip + fail-fast.
+  - **Décision** : CAP-AUDIO US-4 suit le pattern `capsule_capture_strategy`
+    (étape interne `generateCapsuleVideo`, pas tâche standalone —
+    `applyAudioPostIfEnabled` est câblée dans `CapsuleVideoTask` post-burnIn
+    pre-convertFormat, pas une tâche Gradle). NoOp processor valide le
+    wiring + economy-of-ink guard + factory dispatch, pas le rendu audio
+    (couvert par US-2 unit tests `AudioPostProcessorTest` 17 unit).
+
+. **RED — Feature `capsule_audio_post.feature`** — 4 scénarios `@audio @post` :
+  - Default audio post config is a no-op skip (economy of ink) — default
+    `bgmEnabled=false` + `duckingEnabled=false` → `applyAudioPostIfEnabled`
+    returns early (no "Audio post:" log), WebM produced.
+  - BGM enabled with NoOp processor degrades and keeps original WebM —
+    `bgmEnabled=true` + `ffmpegPath="noop"` → `resolveAudioPostProcessor`
+    routes to `NoOpAudioPostProcessor` → `process()` returns `false` →
+    "Audio post:" log (degraded warn), WebM produced (original kept).
+  - Ducking enabled without BGM triggers loudness-only fallback with NoOp
+    degraded — `duckingEnabled=true` + `bgmEnabled=false` → passes the
+    economy-of-ink guard (either flag triggers), `AudioPostCommand.
+    buildFilterGraph` falls back to loudness-only (ducking without BGM
+    is meaningless), NoOp → "Audio post:" log, WebM produced.
+  - Ducking and BGM enabled with NoOp processor degrades and keeps original
+    WebM — `bgmEnabled=true` + `duckingEnabled=true` + `ffmpegPath="noop"`
+    → both flags trigger, NoOp → "Audio post:" log, WebM produced.
+
+. **RED — `CapsuleAudioPostSteps`** — 13 step definitions préfixées "audio
+  post" (bug S-088 `DuplicateStepDefinitionException` — glue
+  `capsule.scenarios` classpath-wide, step texts must be unique). Pattern
+  `CapsuleCaptureStrategySteps` : self-contained GradleRunner, temp project
+  + fake deck + fake script + `generateCapsuleVideo` task run + assertions
+  sur log output + WebM file existence. `writeBuildGradle(capsuleBlock)`
+  helper pour configurer le `capsule { }` block par scénario.
+
+. **RED — `CapsuleAudioPostCucumberRunner`** — pattern S-082
+  `@SelectClasspathResource("features/capsule_audio_post.feature")` +
+  filter `@audio and @post and not @wip and not @integration` +
+  glue `capsule.scenarios` + plugin pretty/html/json reports
+  (`cucumber-audio-post.html/.json`).
+
+. **RED — `CucumberTaskSpec("cucumberTestAudioPost")` 12ème** — câblé
+  `build.gradle.kts` dans `cucumberConventions.additionalTasks` (11ème
+  cucumber dédié, 12ème `CucumberTaskSpec` total avec `cucumberTestIntegration`
+  — le rapport INDEX dit "11ème cucumber dédié (12ème `CucumberTaskSpec`)"
+  qui correspond à `cucumberTestAudioPost` + `cucumberTestIntegration`).
+  Position : après `cucumberTestDurationValidation`, avant
+  `cucumberTestIntegration`.
+
+. **GREEN — `./gradlew cucumberTestAudioPost -PrunCucumber`** — 4/4
+  scénarios PASSED en 7m21s. Le scénario "Default audio post config is a
+  no-op skip" valide l'absence de log "Audio post:" (economy of ink).
+  Les 3 autres scénarios valident la présence de "Audio post:" (step
+  triggered + NoOp degraded). WebM produit dans les 4 cas (original kept
+  degraded mode). BUILD SUCCESSFUL.
+
+. **REFACTOR — `./gradlew check`** — BUILD SUCCESSFUL in 24m12s. 819 unit
+  VERT (baseline S-105 préservée), 60 functional VERT (baseline S-105
+  préservée), 4 cucumber audio post GREEN. Zéro régression, zéro secret
+  (`rg "TOKEN|SECRET|PASSWORD|API_KEY|gho_|ghp_"` = empty). `validatePlugins`
+  VERT. Kover VERT.
+
+== Statut EPIC CAP-AUDIO
+
+[cols="1,3,1,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-AUDIO-0 | Cadrage EPIC (12 décisions architecturales) | 1 | ✅ S-102
+
+| CAP-AUDIO-1 | `AudioPostConfig` + merger 4 sources (5 champs, section `audioPost` 10ème) | 3 | ✅ S-103
+
+| CAP-AUDIO-2 | `AudioPostProcessor` interface + Impl + NoOp + `AudioPostException` + `AudioPostCommand` + factory | 4 | ✅ S-104
+
+| CAP-AUDIO-3 | Wiring `applyAudioPostIfEnabled` (post-burnIn, pre-convertFormat) | 2 | ✅ S-105
+
+| CAP-AUDIO-4 | Cucumber BDD `@audio @post` (4 scénarios + runner dédié + `CucumberTaskSpec`) | 2 | ✅ S-106
+|===
+
+_Total_ : 5 US, ~12 pts. _Statut_ : ✅ TERMINÉ (5/5 US). EPIC clos.
+
+_Domaine `capsule.audio` (10ème)_ clos (4 fichiers prod + 1 exception :
+`AudioPostConfig`, `AudioPostProcessor` interface, `AudioPostProcessorImpl`,
+`NoOpAudioPostProcessor`, `AudioPostCommand`, `AudioPostException`).
+
+== Totaux tests
+
+[cols="2,1,1,1", options="header"]
+|===
+| Niveau | Avant (S-105) | Après (S-106) | Delta
+| Unit | 819 | 819 | 0
+| Functional | 60 | 60 | 0
+| Cucumber `@audio @post` | 0 | 4 | +4
+|===
+
+_12 `CucumberTaskSpec` total_ (11 cucumber dédiés + `cucumberTestIntegration`).
+
+== Fichiers créés (3)
+
+. `src/test/features/capsule_audio_post.feature` (40 lignes) — 4 scénarios
+  `@audio @post`.
+. `src/test/kotlin/capsule/scenarios/CapsuleAudioPostSteps.kt` (146 lignes) —
+  13 step defs préfixés "audio post".
+. `src/test/kotlin/capsule/scenarios/CapsuleAudioPostCucumberRunner.kt` (37
+  lignes) — runner dédié pattern S-082.
+
+== Fichiers modifiés (1)
+
+. `build.gradle.kts` — `CucumberTaskSpec("cucumberTestAudioPost")` 12ème
+  câblé dans `cucumberConventions.additionalTasks` (11 lignes ajoutées
+  avant `cucumberTestIntegration`).
+
+== Prochaine session (107)
+
+_À définir lors de la procédure de fermeture_ — EPICs restants dans le
+BACKLOG :
+- CAP-GLOSSARY (P1) — Injection terminologique, 4 US ~6 pts.
+- CAP-PROVENANCE (P1) — Audit context, 3 US ~5 pts.
+- CAP-CHAPITRE (P2) — Intro/outro + chapter markers, 5 US ~10 pts.
+- CAP-TRANSCRIPT (P2) — Reverse pipeline capsule → AsciiDoc, 5 US ~10 pts.
+- CAP-PODCAST (P2) — Extraction audio-only, 3 US ~4 pts.
+- CAP-PREVIEW (P2) — Mode dry-run, 3 US ~4 pts.
+
+_Candidat suggéré_ : CAP-GLOSSARY (P1, suivant dans la roadmap) ou
+CAP-PROVENANCE (P1, plus léger). Décision lors de la clôture.
+
+== Vérifications finales
+
+. `git status` : working tree propre (modifications non committées —
+  Règle 1, demander permission de commit).
+. `rg "TOKEN|SECRET|PASSWORD|API_KEY|gho_|ghp_"` : zéro secret.
+. `./gradlew check` : BUILD SUCCESSFUL in 24m12s.
+. `validatePlugins` : VERT.
+. Kover : VERT.
+. Zéro régression (819 unit + 60 functional baseline préservée).

@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-08-11 (Session 103 — CAP-AUDIO US-1 ✅ config+merger. Domaine `capsule.audio` (10ème) créé avec `AudioPostConfig` 5 champs. Section `audioPost` 10ème `CapsuleConfig`. `mergeAudioPostConfig` 4 sources. `CapsuleExtension` +5 properties + conventions + push. +20 unit. 802 unit VERT. EPIC CAP-AUDIO EN COURS 2/5 US.)
+:last_update: 2026-08-11 (Session 106 — CAP-AUDIO US-4 ✅ Cucumber BDD + clôture EPIC CAP-AUDIO 5/5 US. Feature `capsule_audio_post.feature` 4 scénarios + `CapsuleAudioPostSteps` + `CapsuleAudioPostCucumberRunner` (pattern S-082) + `CucumberTaskSpec("cucumberTestAudioPost")` 12ème. 4/4 scénarios PASSED. `check` BUILD SUCCESSFUL. 819 unit + 60 functional + 4 cucumber GREEN. Domaine `capsule.audio` clos. EPIC CAP-AUDIO TERMINÉ 5/5 US.)
 
 '''
 == ✅ EPIC CAP-MODEL — TERMINE (session 069)
@@ -266,10 +266,10 @@
 . [x] 🟢 CAP-MP4-3 — Cucumber BDD `capsule_format.feature` 3 scénarios + runner dédié `CapsuleFormatCucumberRunner` + steps préfixés "format distribution" + `CucumberTaskSpec("cucumberTestFormat")` ✅ S-100
 
 '''
-== 🟡 EPIC CAP-AUDIO — Post-production audio (BGM + loudnorm EBU R128 + ducking) (EN COURS 2/5 US)
+== ✅ EPIC CAP-AUDIO — Post-production audio (BGM + loudnorm EBU R128 + ducking) (TERMINÉ 5/5 US)
 
 . [x] CAP-AUDIO-0 — Cadrage EPIC (12 décisions architecturales, domaine `capsule.audio` 10ème, `AudioPostConfig` 5 champs, `AudioPostProcessor` interface + Impl + NoOp + factory + `AudioPostException`, wiring `applyAudioPostIfEnabled` post-burnIn pre-convertFormat, runner dédié `CapsuleAudioPostCucumberRunner`) ✅ S-102
 . [x] CAP-AUDIO-1 — `AudioPostConfig` + merger 4 sources (5 champs `bgmEnabled`/`bgmFile`/`bgmLevel`/`loudnessTarget`/`duckingEnabled`, section `audioPost` 10ème `CapsuleConfig`, `mergeAudioPostConfig`, `CapsuleExtension` 5 properties + conventions + push) ✅ S-103
-. [ ] CAP-AUDIO-2 — `AudioPostProcessor` interface + `AudioPostProcessorImpl` (FFmpeg loudnorm + amix + sidechaincompress) + `NoOpAudioPostProcessor` + `AudioPostException` + `AudioPostCommand` (object pur) + factory `resolveAudioPostProcessor` 5ème — ~14 unit
-. [ ] CAP-AUDIO-3 — Wiring `CapsuleVideoTask.applyAudioPostIfEnabled` post-burnIn pre-convertFormat (L492.5/L523.5) — 3 functional
-. [ ] CAP-AUDIO-4 — Cucumber BDD `capsule_audio_post.feature` 4 scénarios + runner dédié `CapsuleAudioPostCucumberRunner` + `CucumberTaskSpec("cucumberTestAudioPost")` 12ème
+. [x] CAP-AUDIO-2 — `AudioPostProcessor` interface + `AudioPostProcessorImpl` (FFmpeg loudnorm + amix + sidechaincompress) + `NoOpAudioPostProcessor` + `AudioPostException` + `AudioPostCommand` (object pur) + factory `resolveAudioPostProcessor` 5ème ✅ S-104 (17 unit)
+. [x] CAP-AUDIO-3 — Wiring `CapsuleVideoTask.applyAudioPostIfEnabled` post-burnIn pre-convertFormat (L493/L524) ✅ S-105 (3 functional)
+. [x] CAP-AUDIO-4 — Cucumber BDD `capsule_audio_post.feature` 4 scénarios + runner dédié `CapsuleAudioPostCucumberRunner` + `CucumberTaskSpec("cucumberTestAudioPost")` 12ème ✅ S-106 (4 cucumber)

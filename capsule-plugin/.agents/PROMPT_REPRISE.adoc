@@ -1,59 +1,67 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 087 — Code review + Bug burn-in fix + CAP-ARCH-7 Video Destination Versioning (US-1→3)
-_Prochaine session_ : 088 — CAP-ARCH-7 US-4 (Cucumber `@distrib @versioning`) ou CAP-ARCH-4 (wiring backend)
+_Session terminée_ : 106 — CAP-AUDIO US-4 Cucumber BDD + clôture EPIC CAP-AUDIO (5/5 US)
+_Prochaine session_ : 107 — CAP-GLOSSARY (P1) ou CAP-PROVENANCE (P1) — à décider
 
-== Mission session 087 (TERMINÉE)
+== Mission session 106 (TERMINÉE)
 
-. **Code review capsule** (post-S-083→086) — 4 points relevés :
-  duplication pipeline koog (dette structurelle, extraction MEMPHIS future),
-  versionning codebase-contracts 0.1.0 (régularisation future), hack
-  buildscript force (acceptable pattern slider), **1 bug réel** : FAIL
-  `@integration` burn-in (subtitle path `build/capsule/` vs `outputDir=capsules`,
-  connu S-069/S-082, jamais traité).
-. **Fix bug burn-in** — `CapsuleOutputDirResolver` (object pur, package
-  `capsule.support`) résout l'`outputDir` depuis le `build.gradle` du projet
-  Cucumber. 9 unit tests TDD. 3 steps Cucumber migrés (subtitle file, WebM
-  EBML, video generated). Runner `cucumberTestIntegration` câblé. **BUILD
-  SUCCESSFUL 3m39s** — scénario E2E burn-in VERT (était FAIL depuis S-069).
-. **CAP-ARCH-7 Video Destination Versioning** (nouvelle feature issue review) :
-  - **US-1** : `OutputConfig` + `VersioningStrategy` (TIMESTAMP|INCREMENTAL)
-    étend `CapsuleConfig` section `output`. `CapsuleConfigMerger` 4 sources.
-    10 unit tests.
-  - **US-2** : `VideoDestinationResolver` (object pur) — `resolveVersionLabel`
-    (timestamp ISO-8601 ou incremental), `resolveDestinationDir`,
-    `collectExistingVersions`. 10 unit tests.
-  - **US-3** : `DistributeCapsuleVideoTask` (tâche `distributeCapsuleVideo`,
-    groupe `distribute`) copie WebM vers `<videoDestinationDir>/<version>/`.
-    CLI `-Poutput.*` overrides. Économie d'encre skip idempotent. 3 functional.
-. 568 unit VERT (+28 net) + 37 functional VERT (+3). Zéro régression.
+. **CAP-AUDIO US-4 Cucumber BDD** — Feature `capsule_audio_post.feature`
+  `@audio @post` (4 scénarios : default NoOp skip économie d'encre, BGM
+  enabled NoOp → degraded, ducking only NoOp → degraded, ducking + BGM
+  NoOp → degraded) + `CapsuleAudioPostSteps` (13 step defs préfixés
+  "audio post", pattern `CapsuleCaptureStrategySteps` — étape interne
+  `generateCapsuleVideo`, pas tâche standalone) + `CapsuleAudioPostCucumberRunner`
+  (pattern S-082 `@SelectClasspathResource` + filter `@audio and @post and
+  not @wip and not @integration`) + `CucumberTaskSpec("cucumberTestAudioPost")`
+  12ème câblé `build.gradle.kts` (11ème cucumber dédié).
+. 4/4 scénarios PASSED en 7m21s (NoOp processor, pas de vrai FFmpeg —
+  valide wiring `applyAudioPostIfEnabled` + économie d'encre + factory
+  dispatch, pas le rendu audio couvert par US-2 unit tests).
+. `./gradlew check` BUILD SUCCESSFUL in 24m12s. 819 unit VERT (baseline
+  S-105 préservée) + 60 functional VERT (baseline S-105 préservée) +
+  4 cucumber audio post GREEN. Zéro régression, zéro secret.
+. **EPIC CAP-AUDIO TERMINÉ 5/5 US** (US-0 cadrage S-102, US-1 config+merger
+  S-103, US-2 processor+factory S-104, US-3 wiring S-105, US-4 cucumber S-106).
+  Domaine `capsule.audio` (10ème) clos (6 fichiers prod : `AudioPostConfig`,
+  `AudioPostProcessor` interface, `AudioPostProcessorImpl`, `NoOpAudioPostProcessor`,
+  `AudioPostCommand`, `AudioPostException`).
 
-== Contexte reprise session 088
+== Contexte reprise session 107
 
-- EPIC CAP-ARCH : 0 cadrage ✅ (S-083), 1 socle LLM bridge ✅ (S-084),
-  2 contexte augmenté ✅ (S-085), 3 koog pipeline ✅ (S-086),
-  **7 video destination versioning 🟡 (S-087 : US-1→3 ✅, US-4 ⬜)** — reste
-  CAP-ARCH-4→6 (2+3+3 pts) + CAP-ARCH-7 US-4 (cucumber).
-- 568 unit VERT + 37 functional VERT + cucumber `@burnin @integration` E2E VERT.
-- **CAP-ARCH-7 US-4** — Cucumber BDD `@distrib @versioning` : feature
-  `capsule_distrib.feature` + steps `CapsuleDistribSteps`. Scénarios :
-  registration, copy versionné (timestamp + incremental), skip idempotent.
-- **CAP-ARCH-4** — Wiring exécution existante : sortie pipeline LLM
-  (`generateCapsuleContent`) → `generateCapsuleVideoAllLanguages` sans
-  modifier le backend. Décision `compileOnly slider` confirmée/remplacée.
-- Backend existant intact : extractSpeakerNotes, TTS, capture, multi-lang CAP-29.
-- `CapsuleOutputDirResolver` (package `capsule.support`) disponible pour
-  migrer les 15+ steps Cucumber restants qui hardcodent `build/capsule/`.
-- Modifications S-083→087 non committées (Règle 1 — demander permission de commit).
-- Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider 0.0.16
-  (compileOnly, 0 import réel — décision CAP-ARCH-4).
-- Domaines DDD capsule : `capsule.feed` + `capsule.ci` + `capsule.multilang` +
-  `capsule.ai` + `capsule.context` + `capsule.pipeline` + `capsule.support` (test).
+- EPIC CAP-AUDIO ✅ TERMINÉ 5/5 US (domaine `capsule.audio` clos).
+- 819 unit VERT + 60 functional VERT + 12 `CucumberTaskSpec` (11 cucumber
+  dédiés + `cucumberTestIntegration`).
+- Modifications S-102→S-106 non committées (Règle 1 — demander permission
+  de commit).
+- Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider
+  0.0.16 (compileOnly, 0 import réel — décision CAP-ARCH-4).
+- Domaines DDD capsule : `capsule.feed` + `capsule.ci` + `capsule.multilang`
+  + `capsule.ai` + `capsule.context` + `capsule.pipeline` + `capsule.support`
+  + `capsule.i18n` + `capsule.validation` + `capsule.audio` (clos).
+- `cucumberTestAudioPost` câblé (12ème `CucumberTaskSpec`) — exécute les
+  scénarios `@audio @post` via `CapsuleAudioPostCucumberRunner`.
+
+== EPICs restants (BACKLOG)
+
+. **CAP-GLOSSARY** (P1) — Injection terminologique — `context.glossaryFile`
+  4 sources, canal `glossary`, prompt "Use official terminology". 4 US ~6 pts.
+. **CAP-PROVENANCE** (P1) — Audit context — `ProvenanceTracker` accumulate
+  canaux → `context-provenance.json`, anti-hallucination. 3 US ~5 pts.
+. **CAP-CHAPITRE** (P2) — Intro/outro + chapter markers — `CardRenderer` PNG,
+  `ChapterMarkers` Matroska tags, domaines `capsule.cards`/`capsule.chapters`.
+  5 US ~10 pts.
+. **CAP-TRANSCRIPT** (P2) — Reverse pipeline capsule → article AsciiDoc —
+  `TranscriptBuilder` + `TranscriptLlmEnhancer`, domaine `capsule.transcript`,
+  cross-borough document/bakery. 5 US ~10 pts.
+. **CAP-PODCAST** (P2) — Extraction audio-only — `PodcastConcatenator`
+  FFmpeg concat MP3 slides, tâche `generateCapsulePodcast`. 3 US ~4 pts.
+. **CAP-PREVIEW** (P2) — Mode dry-run — `capture.previewOnly` 4 sources,
+  screenshot path s'arrête après PNG. 3 US ~4 pts.
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 568 unit tests VERT (S-087 baseline) — vérifier avant de coder
+* 819 unit tests VERT (S-106 baseline) — vérifier avant de coder
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082 :
   `@ConfigurationParameter(FEATURES_PROPERTY_NAME)` du CucumberTestRunner écrase
@@ -61,6 +69,9 @@ _Prochaine session_ : 088 — CAP-ARCH-7 US-4 (Cucumber `@distrib @versioning`) 
 * English only : code, Gherkin, commentaires
 * Économie d'encre = skip WebM existant + probe > 0 (ink economy)
 * Ports Ollama : 11437-11465 rotation (11434-11436 INTERDITS)
-* `cucumberTestIntegration` maintenant câblé (`CucumberTaskSpec` dédié) —
-  exécute les scénarios `@integration` via `CucumberIntegrationTestRunner`.
+* `cucumberTestIntegration` câblé (`CucumberTaskSpec` dédié) — exécute les
+  scénarios `@integration` via `CucumberIntegrationTestRunner`.
   Lancer avec : `./gradlew cucumberTestIntegration -PrunCucumber`
+* `cucumberTestAudioPost` câblé (12ème `CucumberTaskSpec`) — exécute les
+  scénarios `@audio @post` via `CapsuleAudioPostCucumberRunner`.
+  Lancer avec : `./gradlew cucumberTestAudioPost -PrunCucumber`
