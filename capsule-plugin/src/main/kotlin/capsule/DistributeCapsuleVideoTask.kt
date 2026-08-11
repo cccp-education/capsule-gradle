@@ -40,6 +40,10 @@ abstract class DistributeCapsuleVideoTask : DefaultTask() {
     @get:Input
     abstract val versionPrefix: Property<String>
 
+    /** CAP-MP4 — output format filter (WEBM only, MP4 only, or both). */
+    @get:Input
+    abstract val format: Property<String>
+
     @get:Internal
     internal var capsuleExtension: CapsuleExtension
         get() = _capsuleExtension ?: project.extensions.getByType(CapsuleExtension::class.java).also { _capsuleExtension = it }
@@ -53,7 +57,16 @@ abstract class DistributeCapsuleVideoTask : DefaultTask() {
             capsuleExtension.outputDir.get()
         ).get().asFile
 
-        val videos = capDir.listFiles { f -> f.name.endsWith(".webm") }?.toList()
+        val resolvedFormat = OutputFormat.fromString(
+            (project.findProperty("output.format") as? String) ?: format.get()
+        )
+        val extensions = when (resolvedFormat) {
+            OutputFormat.WEBM -> listOf(".webm")
+            OutputFormat.MP4 -> listOf(".mp4")
+            OutputFormat.BOTH -> listOf(".webm", ".mp4")
+        }
+
+        val videos = capDir.listFiles { f -> extensions.any { f.name.endsWith(it) } }?.toList()
             ?: emptyList()
 
         if (videos.isEmpty()) {

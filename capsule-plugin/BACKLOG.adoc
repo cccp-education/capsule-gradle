@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-11 (Session 098 — CAP-MP4 US-1 `OutputFormat` enum + `OutputConfig.format` + merger 4 sources. EPIC CAP-MP4 EN COURS 2/4 US. 759 unit + 52 functional + 3 cucumber dédiés GREEN. Séquence MVP0 : DOCCONTEXT ✅ > SPD ✅ > CR3-3 ✅ > MP4 (EN COURS) > AUDIO)
+:last_update: 2026-08-11 (Session 099 — CAP-MP4 US-2 `VideoFormatConverter` + `FormatConversion` + wiring. EPIC CAP-MP4 EN COURS 3/4 US. 772 unit + 54 functional + 3 cucumber dédiés GREEN. Séquence MVP0 : DOCCONTEXT ✅ > SPD ✅ > CR3-3 ✅ > MP4 (EN COURS) > AUDIO)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -1327,26 +1327,24 @@ _Audit code (S-097)_ :
 
 | CAP-MP4-2
 | *`VideoFormatConverter` (object pur) + wiring* — `VideoFormatConverter`
-  (domaine `capsule`, object pur) : `convertToMp4(webmFile, mp4File,
+  (interface, domaine `capsule`) : `convertToMp4(webmFile, mp4File,
   ffmpegPath): Boolean` (FFmpeg `-c:v libx264 -c:a aac -movflags +faststart
   -y`, retourne `true` si succès), `isAvailable(ffmpegPath): Boolean`
   (pattern `MediaProbeUtil.isFfprobeAvailable`). `resolveFormatConverter`
   factory (pattern `CaptureResolver.resolve` S-096) + `StrictModeGuard.
   requireAvailable` (ffmpeg absent → fail si strict). `NoOpVideoFormatConverter`
-  (retourne `false`, log warn) pour tests. `convertFormatIfEnabled(
-  finalVideo, format, converter)` étape post-burnIn dans
+  (retourne `false`, log warn) pour tests. `FormatConversion.convertIfNeeded(
+  finalVideo, format, converter, probeDuration)` étape post-burnIn dans
   `captureDeckSequential` + `captureDeckParallel` : si `format == MP4` →
   transcode + supprime WebM, si `BOTH` → transcode + garde WebM, si `WEBM`
   → no-op. Économie d'encre : skip transcode si `.mp4` existe ET
   `MediaProbeUtil.probeDuration(mp4) > 0`. `DistributeCapsuleVideoTask` étendu
   filtre selon `output.format` (`.webm` / `.mp4` / both) + `task.format`
   Property. `CapsuleManager.registerDistributeCapsuleVideoTask` push format.
-  Baby-step TDD : ~8 unit (VideoFormatConverter convert success/failure,
-  NoOp, isAvailable ; convertFormatIfEnabled MP4/BOTH/WEBM dispatch, skip
-  existing MP4) + 2 functional (MP4 produced NoOp fallback, strict + ffmpeg
-  absent → FAIL).
+  Baby-step TDD : 13 unit (7 `VideoFormatConverterTest` + 6 `FormatConversionTest`)
+  + 2 functional (`FormatConversionFunctionalTest` : MP4 filter, BOTH filter).
 | 2
-| ⬜ TODO
+| ✅ TERMINÉ (S-099, 13 unit + 2 functional)
 
 | CAP-MP4-3
 | *Cucumber BDD* — `capsule_format.feature` `@distrib @format` (3 scénarios :
@@ -1559,7 +1557,7 @@ _Total_ : 3 US, ~4 pts.
 | 4
 | 5
 | 🟠 P1
-| 🟡 EN COURS (S-097 US-0 cadrage, S-098 US-1 enum+merger, US-2/3 TODO)
+| 🟡 EN COURS (S-097 US-0 cadrage, S-098 US-1 enum+merger, S-099 US-2 converter+wiring, US-3 TODO cucumber)
 
 | Post-prod
 | CAP-AUDIO

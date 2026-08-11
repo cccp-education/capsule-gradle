@@ -1,6 +1,53 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-11
 
+== Session 099 — CAP-MP4 US-2 VideoFormatConverter + FormatConversion + wiring ✅
+
+EPIC CAP-MP4 US-2 terminé (P1, 3ème US sur 4, converter + wiring 2 pts).
+
+`VideoFormatConverter.kt` (interface + `VideoFormatConverterImpl` FFmpeg
+`-c:v libx264 -c:a aac -movflags +faststart -y` + `NoOpVideoFormatConverter`
+returns `false`, pattern `SubtitleBurnInService`). `FormatConversion.kt`
+(object pur `convertIfNeeded(finalVideo, format, converter, probeDuration):
+File` — WEBM → no-op, MP4 → transcode + supprime WebM, BOTH → transcode +
+garde WebM, skip si `.mp4` existe ET probe>0 économie d'encre, échec transcode
+→ garde WebM degraded). `CapsuleManager.resolveFormatConverter(ffmpegPath,
+strict)` factory (4ème factory `resolve*`, pattern
+`resolveSubtitleBurnInService` — "noop"→NoOp, unavailable+non-strict→NoOp,
+unavailable+strict→throw via `StrictModeGuard`).
+`CapsuleVideoTask.convertFormatIfEnabled(finalVideo)` post-burnIn (L693-712)
+câblé `captureDeckSequential` L493 + `captureDeckParallel` L523, log
+`CAPSULE →` pointe vers fichier produit. `DistributeCapsuleVideoTask.format:
+Property<String>` + filtre `.webm`/`.mp4`/both selon `OutputFormat.fromString`
+(CLI `-Poutput.format` override). `registerDistributeCapsuleVideoTask` push
+`merged.output.format.name`.
+
+Baby-step TDD RED → GREEN → REFACTOR (unit → functional) :
+. **RED** : 2 fichiers test (7 `VideoFormatConverterTest` + 6
+   `FormatConversionTest`) → `Unresolved reference 'VideoFormatConverterImpl'`/`'resolveFormatConverter'`
+. **GREEN** : converter + FormatConversion + factory + wiring +
+   DistributeCapsuleVideoTask + 2 functional
+. **REFACTOR** : patterns `CaptureResolver`/`SubtitleBurnInService`
+   respectés, 4 factory `resolve*` + 7 `StrictModeGuard` cohérents
+
+772 unit VERT (+13) + 54 functional VERT (+2), zéro régression, zéro secret.
+
+Fichiers modifiés :
+. `src/main/kotlin/capsule/VideoFormatConverter.kt` — NOUVEAU (interface +
+   Impl + NoOp)
+. `src/main/kotlin/capsule/FormatConversion.kt` — NOUVEAU (object pur dispatch)
+. `src/test/kotlin/capsule/VideoFormatConverterTest.kt` — NOUVEAU (7 unit)
+. `src/test/kotlin/capsule/FormatConversionTest.kt` — NOUVEAU (6 unit)
+. `src/functionalTest/kotlin/capsule/FormatConversionFunctionalTest.kt` — NOUVEAU (2 functional)
+. `src/main/kotlin/capsule/CapsuleManager.kt` — factory `resolveFormatConverter` + push format
+. `src/main/kotlin/capsule/CapsuleVideoTask.kt` — `convertFormatIfEnabled` post-burnIn wiring
+. `src/main/kotlin/capsule/DistributeCapsuleVideoTask.kt` — `format` Property + filtre
+. `BACKLOG.adoc` — section EPIC CAP-MP4 US-2 statut mis à jour
+. `.agents/INDEX.adoc` — header session 099, table sessions (ligne 099), roadmap CAP-MP4
+. `.agents/SESSIONS_HISTORY.adoc` — entrée 099 ajoutée
+. `PROMPT_REPRISE.adoc` — contexte reprise session 100
+. `TODO.adoc` — CAP-MP4 US-2 coché
+
 == Session 098 — CAP-MP4 US-1 OutputFormat enum + OutputConfig.format + merger 4 sources ✅
 
 EPIC CAP-MP4 US-1 terminé (P1, 2ème US sur 4, config pure 1 pt).

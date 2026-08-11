@@ -1,0 +1,146 @@
+= Session 099 — CAP-MP4 US-2 VideoFormatConverter + FormatConversion + wiring
+
+**Date** : 2026-08-11
+**EPIC** : CAP-MP4 — Export MP4/H.264 + format distribution
+**US** : US-2 (3ème US sur 4, converter + wiring)
+**Score** : 9/10
+**Baseline** : S-098 (759 unit + 52 functional)
+**Final** : 772 unit + 54 functional (zéro régression)
+
+== Objectif
+
+Implémenter la couche de conversion de format WebM→MP4/H.264 et le wiring
+post-capture. `VideoFormatConverter` (FFmpeg libx264+aac+faststart) avec NoOp
+fallback. `FormatConversion.convertIfNeeded` dispatch pur sur `OutputFormat`
+(WEBM/MP4/BOTH) avec économie d'encre (skip si `.mp4` existe ET probe>0).
+`DistributeCapsuleVideoTask` étendu pour filtrer selon `output.format`.
+
+== Méthode
+
+Baby-step DDD/TDD : RED → GREEN → REFACTOR (unit → functional).
+
+. **RED** : 2 fichiers test écrits en premier
+  - `VideoFormatConverterTest` (7 unit) — converter + factory + StrictModeGuard
+  - `FormatConversionTest` (6 unit) — dispatch WEBM/MP4/BOTH + skip MP4 existant
+  - `compileTestKotlin` → `Unresolved reference 'VideoFormatConverterImpl'`,
+    `Unresolved reference 'resolveFormatConverter'` (RED confirmé)
+
+. **GREEN** : implémentation
+  - `VideoFormatConverter.kt` (interface + `VideoFormatConverterImpl` +
+    `NoOpVideoFormatConverter`) — pattern `SubtitleBurnInService`
+  - `FormatConversion.kt` (object pur `convertIfNeeded`) — dispatch WEBM no-op,
+    MP4 transcode+supprime WebM, BOTH transcode+garde WebM, skip si mp4 existe
+    ET probeDuration>0
+  - `CapsuleManager.resolveFormatConverter` factory (pattern
+    `resolveSubtitleBurnInService` — "noop"→NoOp, unavailable+non-strict→NoOp,
+    unavailable+strict→throw via `StrictModeGuard`)
+  - `CapsuleVideoTask.convertFormatIfEnabled` post-burnIn — câblé dans
+    `captureDeckSequential` L493 + `captureDeckParallel` L523, log pointe
+    vers le fichier produit (WebM ou MP4)
+  - `DistributeCapsuleVideoTask.format: Property<String>` + filtre `.webm`/
+    `.mp4`/both selon `OutputFormat` (CLI `-Poutput.format` override)
+  - `CapsuleManager.registerDistributeCapsuleVideoTask` push `merged.output.format.name`
+
+. **REFACTOR** : patterns `CaptureResolver`/`SubtitleBurnInService` respectés,
+  économie d'encre AGENT.adoc, backward compat (WEBM = no-op). Aucun refactor
+  supplémentaire — les patterns établis sont cohérents (4 factory `resolve*`
+  dans `CapsuleManager`, 4 `StrictModeGuard.requireAvailable` branchés).
+
+== Tests
+
+=== Unitaires (13 nouveaux, 772 total)
+
+`VideoFormatConverterTest` (7) :
+- NoOpVideoFormatConverter returns false from convertToMp4
+- NoOpVideoFormatConverter isAvailable returns true and names noop-format
+- VideoFormatConverterImpl with noop path returns unavailable
+- resolveFormatConverter with ffmpegPath noop returns NoOp
+- resolveFormatConverter unavailable and non-strict falls back to NoOp
+- resolveFormatConverter unavailable and strict throws IllegalStateException
+- resolveFormatConverter named ffmpeg-format when impl returned
+
+`FormatConversionTest` (6) :
+- WEBM format is a no-op and returns the webm file unchanged
+- MP4 format transcodes and removes the webm intermediate on success
+- MP4 format keeps webm when transcode fails
+- BOTH format transcodes and keeps the webm intermediate
+- MP4 format skips transcode when mp4 already exists and probe is positive
+- BOTH format skips transcode when mp4 already exists and probe is positive
+
+=== Fonctionnels (2 nouveaux, 54 total)
+
+`FormatConversionFunctionalTest` (2) :
+- distributeCapsuleVideo filters mp4 files when format is MP4
+- distributeCapsuleVideo copies both formats when format is BOTH
+
+=== Cucumber
+
+Non concerné (US-3 session suivante).
+
+== Fichiers modifiés
+
+=== Nouveaux (4)
+. `src/main/kotlin/capsule/VideoFormatConverter.kt` — interface +
+   `VideoFormatConverterImpl` (FFmpeg libx264+aac+faststart) +
+   `NoOpVideoFormatConverter` (pattern `SubtitleBurnInService`)
+. `src/main/kotlin/capsule/FormatConversion.kt` — object pur
+   `convertIfNeeded(finalVideo, format, converter, probeDuration)` :
+   dispatch WEBM/MP4/BOTH + économie d'encre
+. `src/test/kotlin/capsule/VideoFormatConverterTest.kt` — 7 unit tests
+. `src/test/kotlin/capsule/FormatConversionTest.kt` — 6 unit tests
+
+=== Modifiés (4)
+. `src/main/kotlin/capsule/CapsuleManager.kt` — factory
+   `resolveFormatConverter(ffmpegPath, strict)` (L344-355, pattern
+   `resolveSubtitleBurnInService`) + push `merged.output.format.name` dans
+   `registerDistributeCapsuleVideoTask`
+. `src/main/kotlin/capsule/CapsuleVideoTask.kt` —
+   `convertFormatIfEnabled(finalVideo)` (L693-712) post-burnIn, câblé dans
+   `captureDeckSequential` L493 + `captureDeckParallel` L523
+. `src/main/kotlin/capsule/DistributeCapsuleVideoTask.kt` —
+   `format: Property<String>` + filtre selon `OutputFormat`
+. `src/functionalTest/kotlin/capsule/FormatConversionFunctionalTest.kt` —
+   2 functional tests
+
+== Vérifications
+
+- `compileKotlin` + `compileTestKotlin` VERT
+- 772 unit tests VERT (0 fail, 0 skip) — +13 vs S-098
+- 54 functional tests VERT (0 fail, 0 skip) — +2 vs S-098
+- Zéro régression, zéro secret
+
+== Décisions architecturales
+
+. *`VideoFormatConverter` interface (pas object)* — pattern
+  `SubtitleBurnInService` : interface + Impl + NoOp. Permet tests sans
+  ffmpeg (NoOp fallback) + strict mode via factory.
+. *`FormatConversion` object pur séparé* — dispatch logique isolé du
+  converter (testable sans I/O, injecte `probeDuration` lambda). Pattern
+  `ScreenshotPlanner` (argv builders purs).
+. *Factory `resolveFormatConverter` dans `CapsuleManager`* — pattern
+  `resolveSubtitleBurnInService` (4ème factory `resolve*` : ManimEngine,
+  ManimVideoMixer, SubtitleBurnInService, FormatConverter). `StrictModeGuard`
+  réutilisé (7ème garde branché).
+. *Économie d'encre préservée* — skip transcode si `.mp4` existe ET
+  `probeDuration(mp4) > 0` (AGENTS.adoc "Loi de l'Économie d'Encre").
+  Skip WebM→MP4 si format==WEBM (no-op). Skip distrib si destination existe
+  (déjà S-087).
+. *Wiring post-burnIn* — `convertFormatIfEnabled` appelé après
+  `burnInSubtitlesIfEnabled` dans les 2 chemins (sequential + parallel).
+  Log `CAPSULE →` pointe vers le fichier produit (WebM ou MP4).
+. *`DistributeCapsuleVideoTask.format` Property* — résolu depuis le merger
+  (push `merged.output.format.name`), CLI `-Poutput.format` override.
+  Filtre `.webm`/`.mp4`/both selon `OutputFormat.fromString`.
+
+== Prochaine session (100)
+
+**CAP-MP4 US-3 Cucumber BDD** — `capsule_format.feature` 3 scénarios
+`@distrib @format` (default WEBM no-op, MP4 strategy transcode, BOTH
+formats). Runner dédié `CapsuleFormatCucumberRunner` (pattern S-082
+`@SelectClasspathResource("features/capsule_format.feature")` + filter
+`@distrib and @format and not @wip and not @integration`). Steps
+`CapsuleFormatSteps` préfixés "format distribution" (bug S-088 glue
+`capsule.scenarios` partagée). `CucumberTaskSpec("cucumberTestFormat")`
+câblé `build.gradle.kts`. NoOp converter (pas de vrai FFmpeg). Baby-step
+BDD : RED (undefined steps) → GREEN → REFACTOR. EPIC CAP-MP4 clôture
+(4/4 US terminés).

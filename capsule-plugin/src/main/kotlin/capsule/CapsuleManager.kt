@@ -88,6 +88,7 @@ class CapsuleManager(private val project: Project) {
             task.videoDestinationDir.set(merged.output.videoDestinationDir)
             task.versioning.set(merged.output.versioning.name)
             task.versionPrefix.set(merged.output.versionPrefix)
+            task.format.set(merged.output.format.name)
         }
     }
 
@@ -339,6 +340,28 @@ class CapsuleManager(private val project: Project) {
             } else {
                 StrictModeGuard.requireAvailable(strict, "ffmpeg (subtitle burn-in)", false, ffmpegPath)
                 NoOpSubtitleBurnInService()
+            }
+        }
+
+        /**
+         * Resolves the appropriate [VideoFormatConverter] based on ffmpeg
+         * availability (CAP-MP4 US-2). Pattern mirrors
+         * [resolveSubtitleBurnInService]:
+         * - If ffmpegPath is "noop", returns [NoOpVideoFormatConverter]
+         * - Otherwise, returns [VideoFormatConverterImpl] if ffmpeg is available
+         * - If unavailable and strict, [StrictModeGuard] throws
+         * - If unavailable and non-strict, returns [NoOpVideoFormatConverter]
+         *   (degraded mode — WebM kept, backward compat)
+         */
+        @JvmStatic
+        fun resolveFormatConverter(ffmpegPath: String = "ffmpeg", strict: Boolean = false): VideoFormatConverter {
+            if (ffmpegPath == "noop") return NoOpVideoFormatConverter()
+            val converter = VideoFormatConverterImpl(ffmpegPath)
+            return if (converter.isAvailable()) {
+                converter
+            } else {
+                StrictModeGuard.requireAvailable(strict, "ffmpeg (format conversion)", false, ffmpegPath)
+                NoOpVideoFormatConverter()
             }
         }
 
