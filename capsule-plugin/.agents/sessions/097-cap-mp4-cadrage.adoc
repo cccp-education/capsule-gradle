@@ -1,0 +1,135 @@
+= Session 097 — CAP-MP4 US-0 Cadrage EPIC Export MP4/H.264
+
+== Cadrage
+
+**EPIC** : CAP-MP4 — Export MP4/H.264 + format distribution
+**Priorité** : P1 (séquence MVP0 — distribution talaria.school)
+**Méthode** : Baby-step DDD/TDD/BDD (unit → functional → cucumber), RED → GREEN → REFACTOR
+**Baseline** : 742 unit + 52 functional + 3 cucumber dédiés (S-096)
+**Statut** : US-0 TERMINÉ (cadrage uniquement, zéro code modifié)
+
+== Vision
+
+WebM seul actuellement. LMS (Moodle, Canvas), YouTube, plateformes OF
+(talaria.school) consomment majoritairement MP4/H.264/AAC. Post-capture
+transcode FFmpeg WebM→MP4 (`-c:v libx264 -c:a aac -movflags +faststart`).
+`DistributeCapsuleVideoTask` (S-087) étendu pour copier le format actif.
+
+== Audit code (US-0)
+
+- `OutputConfig` (`CapsuleConfig.kt:122-126`) — 3 champs
+  (`videoDestinationDir`/`versioning`/`versionPrefix`), pas de `format`.
+- `DistributeCapsuleVideoTask` (`DistributeCapsuleVideoTask.kt:56`) — filtre
+  `*.webm` hardcodé (ne copie que le WebM).
+- `CapsuleVideoTask.captureDeckSequential` (`CapsuleVideoTask.kt:489`) —
+  WebM final `${deckName}.webm` dans `outDir` post-burnIn.
+- `CapsuleVideoTask.captureDeckParallel` (`CapsuleVideoTask.kt:519`) —
+  même pattern post-burnIn.
+- `CapsuleConfigMerger.mergeOutputConfig` (L267-273) + `mergeVersioning`
+  (L288-298) — pattern à suivre pour `mergeOutputFormat` (helper enum dédié).
+- `CapsuleExtension` (`CapsuleModels.kt:8`) — pas de `outputFormat` Property.
+- `CapsuleConventions` (`CapsuleModels.kt:182`) — pas de `outputFormat`.
+- `pushConfigIntoExtension` (`CapsulePlugin.kt:68`) — pas de push format.
+- `CapsuleMessages` — pas de clé `task.*.format`.
+- 8 `CucumberTaskSpec` existants (`cucumberTestArchBoundary`,
+  `cucumberTestContentAndVideos`, `cucumberTestContext`, `cucumberTestDistrib`,
+  `cucumberTestDocContext`, `cucumberTestScenarioContext`,
+  `cucumberTestStrictMode`, `cucumberTestCaptureStrategy`).
+- `MediaProbeUtil.probeDuration` (`MediaProbeUtil.kt:17`) — réutilisable
+  (économie d'encre MP4 : skip transcode si `.mp4` existe ET probe > 0).
+- `StrictModeGuard.requireAvailable` (`StrictModeGuard.kt:31`) — réutilisable
+  (ffmpeg absent → fail si strict, pattern `resolveSubtitleBurnInService`).
+- `CaptureResolver` (`CaptureResolver.kt`) — pattern factory `when(strategy)`
+  injectant lambdas (testable sans I/O), référence pour `resolveFormatConverter`.
+- `CaptureStrategy`/`VersioningStrategy` enums — pattern `fromString`
+  case-insensitive + fallback par défaut, à suivre pour `OutputFormat`.
+
+== Décisions architecturales (10)
+
+. *`OutputFormat` enum (pas string)* — type-safe, 3 valeurs `WEBM`/`MP4`/`BOTH`,
+  défaut `WEBM` (backward compat — configs existantes sans `output.format`
+  gardent le comportement WebM seul). Companion `fromString` case-insensitive,
+  fallback `WEBM` pour null/blank/unknown. Pattern `CaptureStrategy` (S-096) /
+  `VersioningStrategy` (S-087).
+
+. *Section `output` étendue (pas de nouvelle section)* — `OutputConfig` (3
+  champs) étendu avec 4ème champ `format: OutputFormat = OutputFormat.WEBM`.
+  Pas de nouvelle section config. Pattern `CaptureConfig.strategy` (15ème
+  champ ajouté en S-096).
+
+. *`mergeOutputFormat` helper dédié (pattern `mergeVersioning`)* — le merger a
+  déjà 2 helpers enum dédiés (`mergeVersioning`, `mergeCaptureStrategy`).
+  `mergeOutputFormat` suit le même pattern : CLI > YAML > props, fallback
+  `WEBM` pour null/blank. Pas de helper générique (3 enum ont chacun leur
+  fallback distinct — `PLAYWRIGHT`/`TIMESTAMP`/`WEBM`).
+
+. *4 sources pattern respecté* — ENV `CAPSULE_OUTPUT_FORMAT` < props
+  `capsule.output.format` < YAML `output.format` < CLI
+  `-Pcapsule.output.format`. `loadFromEnvironment` + `buildConfigFromProperties`
+  étendus.
+
+. *`VideoFormatConverter` (object pur, domaine `capsule`)* —
+  `convertToMp4(webmFile, mp4File, ffmpegPath): Boolean` lance FFmpeg transcode
+  `-c:v libx264 -c:a aac -movflags +faststart -y`. NoOp fallback (retourne
+  `false`, log warn). `isAvailable(ffmpegPath): Boolean` (pattern
+  `MediaProbeUtil.isFfprobeAvailable`). Factory `resolveFormatConverter`
+  + `StrictModeGuard.requireAvailable` (ffmpeg absent → fail si strict, comme
+  `resolveSubtitleBurnInService`).
+
+. *Wiring `CapsuleVideoTask` post-burnIn* — étape `convertFormatIfEnabled(
+  finalVideo)` après `burnInSubtitlesIfEnabled` dans `captureDeckSequential`
+  (L492) + `captureDeckParallel` (L522). Si `output.format == MP4` : transcode
+  + supprime le WebM final, garde `.mp4`. Si `BOTH` : transcode + garde WebM
+  + `.mp4`. Si `WEBM` : no-op (backward compat). `CapsuleExtension.outputFormat:
+  Property<OutputFormat>` + helper Groovy `outputFormat(String)`
+  (case-insensitive, pattern `captureStrategy(String)`).
+
+. *`DistributeCapsuleVideoTask` étendu* — filtre actuellement `*.webm` seul
+  (L56). Étendu pour filtrer selon `output.format` : `.webm` si WEBM, `.mp4`
+  si MP4, `.webm` + `.mp4` si BOTH. `task.format: Property<OutputFormat>`
+  ajoutée, résolu depuis le merger. Économie d'encre préservée (skip si
+  destination existe + non-vide, déjà implémenté S-087).
+
+. *`CapsuleConventions.outputFormat` étendu* — convention `WEBM` ajoutée
+  (pattern `captureStrategy`). `pushConfigIntoExtension` push format (guard
+  convention, pattern `captureStrategy` avec `isPresent`).
+
+. *Économie d'encre (AGENT.adoc)* — skip transcode MP4 si `.mp4` existe ET
+  `MediaProbeUtil.probeDuration(mp4) > 0` (mp4 valide). Skip WebM→MP4 si
+  format == WEBM (no-op). Skip distrib si fichier destination existe +
+  non-vide (déjà implémenté S-087).
+
+. *Cucumber runner dédié* `CapsuleFormatCucumberRunner` (pattern S-082
+  `@SelectClasspathResource("features/capsule_format.feature")` + filter
+  `@distrib and @format and not @wip and not @integration`). Steps
+  `CapsuleFormatSteps` préfixés "format distribution" (bug S-088 glue
+  `capsule.scenarios` partagée — step texts doivent être uniques).
+  `CucumberTaskSpec("cucumberTestFormat")` câblé `build.gradle.kts`.
+
+== Découpage US (4 US, ~5 pts)
+
+. **CAP-MP4-0** Cadrage EPIC (1 pt) — ✅ TERMINÉ (S-097)
+. **CAP-MP4-1** `OutputFormat` enum + `OutputConfig.format` + merger 4 sources
+  (1 pt) — TODO. Baby-step TDD : ~8 unit.
+. **CAP-MP4-2** `VideoFormatConverter` (object pur) + wiring post-burnIn +
+  `DistributeCapsuleVideoTask` étendu (2 pts) — TODO. Baby-step TDD : ~8 unit
+  + 2 functional.
+. **CAP-MP4-3** Cucumber BDD `capsule_format.feature` (1 pt) — TODO. 3
+  scénarios `@distrib @format` + runner dédié (pattern S-082).
+
+== Livrables session
+
+- BACKLOG.adoc mis à jour (section EPIC CAP-MP4 étendue avec 10 décisions +
+  audit code + découpage US détaillé).
+- INDEX.adoc mis à jour (session 097 + roadmap EPIC CAP-MP4 EN COURS).
+- PROMPT_REPRISE.adoc mis à jour (contexte reprise session 098).
+- Rapport de session créé (ce fichier).
+- Zéro code modifié (cadrage uniquement).
+- `compileKotlin` VERT (baseline préservée).
+
+== Vérifications
+
+- git status : modifications gouvernance uniquement (BACKLOG, INDEX,
+  PROMPT_REPRISE, rapport session).
+- Zéro secret en dur.
+- Baseline 742 unit + 52 functional + 3 cucumber préservée (zéro code modifié).

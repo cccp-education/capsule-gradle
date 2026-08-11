@@ -1,40 +1,54 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 096 — CAP-CR3-3 Branchement ScreenshotCapture (EPIC TERMINÉ 5/5 US). `CaptureStrategy` enum (PLAYWRIGHT/SCREENSHOT, défaut PLAYWRIGHT backward compat) + `CaptureConfig.strategy` 15ème champ + `mergeCaptureConfig` 4 sources (ENV `CAPSULE_CAPTURE_STRATEGY` < props `capsule.capture.strategy` < YAML < CLI). `CaptureResolver` object pur (factory dispatch `when(strategy)` avec `PlaywrightFactory`/`ScreenshotFactory` fun interfaces, `StrictModeGuard` réutilisé). `ScreenshotPlanner` object pur (`ScreenshotCapturePlan` + `ScreenshotSlideEntry` + `renderConcatList` + `ffmpegPngToWebmArgs` + `ffmpegConcatArgs`). `ScreenshotCaptureImpl.capture()` étendu multi-slide (boucle screenshot PNG par slide + navigate Reveal.next() + ffmpeg png→webm par slide durée exacte + concat webm concat demuxer). `CapsuleExtension.captureStrategy: Property<CaptureStrategy>` + helper Groovy `captureStrategy(String)`. `CapsuleVideoTask.resolvePlaywrightCapture` refactorisé → `CaptureResolver.resolve` (log "Capture: X strategy"). Cucumber `capsule_capture_strategy.feature` 3 scénarios `@capture @strategy` + runner dédié `CapsuleCaptureStrategyCucumberRunner` (pattern S-082) + `CucumberTaskSpec("cucumberTestCaptureStrategy")`. Baby-step TDD/BDD 3 niveaux : 29 unit (7 CaptureStrategy + 8 merger + 6 CaptureResolver + 8 ScreenshotPlanner) → 3 functional → 3 cucumber. 742 unit + 52 functional + 3 cucumber dédiés GREEN, 0 FAIL. Zéro régression.
-_Prochaine session_ : 097 — Prochain EPIC séquence MVP0 : CAP-MP4 (Export MP4/H.264, 4 US ~4 pts, P1 — distribution talaria.school). Alternative : CAP-AUDIO (P1 — qualité perçue). Vérifier séquence backlog : CAP-MP4 (P1) > CAP-AUDIO (P1) > CAP-GLOSSARY (P1) > CAP-PROVENANCE (P1).
+_Session terminee_ : 097 — CAP-MP4 US-0 Cadrage EPIC Export MP4/H.264. 10 décisions architecturales documentées (`OutputFormat` enum type-safe WEBM/MP4/BOTH défaut WEBM backward compat, section `output` étendue 4ème champ `format` pas nouvelle section, `mergeOutputFormat` helper dédié pattern `mergeVersioning`, 4 sources ENV<props<YAML<CLI, `VideoFormatConverter` object pur + NoOp + `resolveFormatConverter` factory + StrictModeGuard, wiring post-burnIn `convertFormatIfEnabled`, `DistributeCapsuleVideoTask` filtre selon format, `CapsuleExtension.outputFormat` + helper Groovy, `CapsuleConventions.outputFormat`, économie d'encre skip MP4 si existe + probe>0, runner dédié `CapsuleFormatCucumberRunner` + steps préfixés "format distribution"). Audit code : `OutputConfig` 3 champs pas de format, `DistributeCapsuleVideoTask` filtre `*.webm` hardcodé L56, `CapsuleVideoTask.captureDeckSequential/Parallel` WebM final post-burnIn L489/L519, `mergeVersioning` pattern à suivre, 8 `CucumberTaskSpec` existants, `MediaProbeUtil.probeDuration` + `StrictModeGuard` réutilisables. 4 US ~5 pts (US-0 ✅, US-1 enum+merger, US-2 converter+wiring, US-3 cucumber). Zéro code modifié, `compileKotlin` VERT.
+_Prochaine session_ : 098 — CAP-MP4 US-1 `OutputFormat` enum + `OutputConfig.format` 4ème champ + merger 4 sources + `CapsuleExtension.outputFormat` + `CapsuleConventions.outputFormat` + `pushConfigIntoExtension` (baby-step TDD ~8 unit). EPIC CAP-MP4 EN COURS.
 
-== Contexte reprise session 097 (post CAP-CR3-3 TERMINÉ)
+== Contexte reprise session 098 (post CAP-MP4 US-0 TERMINÉ)
 
-- EPIC CAP-CR3-3 TERMINÉ 5/5 US (S-096) — `ScreenshotCaptureImpl` désormais câblé
-  comme alternative configurable via `capture.strategy: playwright|screenshot`.
-- `CaptureStrategy` enum (`CapsuleConfig.kt`) — 2 valeurs `PLAYWRIGHT`/`SCREENSHOT`,
-  défaut `PLAYWRIGHT` (backward compat). Companion `fromString` case-insensitive.
-- `CaptureResolver` object pur (`CaptureResolver.kt`) — factory dispatch
-  `when(strategy)` avec `PlaywrightFactory`/`ScreenshotFactory` fun interfaces.
-- `ScreenshotPlanner` object pur (`ScreenshotPlanner.kt`) — produit
-  `ScreenshotCapturePlan` (entries + concatListFile + finalWebm) + argv builders.
-- `ScreenshotCaptureImpl` multi-slide (`PlaywrightManager.kt`) — boucle screenshot
-  PNG par slide + ffmpeg png→webm + concat webm.
-- `CapsuleExtension.captureStrategy: Property<CaptureStrategy>` + helper Groovy
-  `captureStrategy(String)` (case-insensitive).
-- `CaptureConfig.strategy` 4 sources (ENV<props<YAML<CLI, ENV
-  `CAPSULE_CAPTURE_STRATEGY`, props `capsule.capture.strategy`).
-- Cucumber `capsule_capture_strategy.feature` 3 scénarios `@capture @strategy`,
-  runner dédié `CapsuleCaptureStrategyCucumberRunner` (pattern S-082),
-  `CucumberTaskSpec("cucumberTestCaptureStrategy")` câblé.
-- 742 unit + 52 functional + 3 cucumber dédiés VERT (baseline S-096).
+- EPIC CAP-MP4 EN COURS — US-0 cadrage TERMINÉ (S-097), US-1/2/3 TODO.
+- `OutputConfig` (`CapsuleConfig.kt:122-126`) — 3 champs
+  (`videoDestinationDir`/`versioning`/`versionPrefix`), pas de `format`.
+  Étendre avec 4ème champ `format: OutputFormat = OutputFormat.WEBM`.
+- `DistributeCapsuleVideoTask` (`DistributeCapsuleVideoTask.kt:56`) — filtre
+  `*.webm` hardcodé. Étendre filtre selon `output.format`.
+- `CapsuleVideoTask.captureDeckSequential` (L489) + `captureDeckParallel`
+  (L519) — WebM final `${deckName}.webm` dans `outDir` post-burnIn.
+  Étape `convertFormatIfEnabled(finalVideo)` à ajouter post-burnIn.
+- `CapsuleConfigMerger.mergeOutputConfig` (L267-273) + `mergeVersioning`
+  (L288-298) — pattern à suivre pour `mergeOutputFormat` (helper enum dédié,
+  CLI > YAML > props, fallback `WEBM` pour null/blank).
+- `CapsuleExtension` (`CapsuleModels.kt:8`) — pas de `outputFormat` Property.
+  Ajouter `outputFormat: Property<OutputFormat>` (convention `WEBM`) + helper
+  Groovy `outputFormat(String)` (case-insensitive, pattern `captureStrategy(String)`).
+- `CapsuleConventions` (`CapsuleModels.kt:182`) — pas de `outputFormat`.
+  Ajouter `outputFormat: OutputFormat = OutputFormat.WEBM`.
+- `pushConfigIntoExtension` (`CapsulePlugin.kt:68`) — pas de push format.
+  Ajouter push format (guard convention + `isPresent`, pattern `captureStrategy`).
+- `loadFromEnvironment` + `buildConfigFromProperties` (merger) — étendre avec
+  `output.format` (ENV `CAPSULE_OUTPUT_FORMAT`, props `capsule.output.format`).
+- `CapsuleMessages` — pas de clé `task.*.format`. Ajouter si besoin.
+- 8 `CucumberTaskSpec` existants. US-3 ajoutera `cucumberTestFormat`.
+- `MediaProbeUtil.probeDuration` (`MediaProbeUtil.kt:17`) — réutilisable
+  (économie d'encre MP4 : skip transcode si `.mp4` existe ET probe > 0).
+- `StrictModeGuard.requireAvailable` (`StrictModeGuard.kt:31`) — réutilisable
+  (ffmpeg absent → fail si strict, pattern `resolveSubtitleBurnInService`).
+- `CaptureResolver` (`CaptureResolver.kt`) — pattern factory `when(strategy)`
+  injectant lambdas (testable sans I/O), référence pour `resolveFormatConverter`.
+- `CaptureStrategy`/`VersioningStrategy` enums — pattern `fromString`
+  case-insensitive + fallback par défaut, à suivre pour `OutputFormat`.
+- 742 unit + 52 functional + 3 cucumber dédiés VERT (baseline S-096, préservée S-097).
 - Domaines DDD capsule (8) : `capsule.feed` + `capsule.ci` +
   `capsule.multilang` + `capsule.ai` + `capsule.context` +
   `capsule.pipeline` + `capsule.support` + `capsule.i18n`.
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider
   0.0.16 (compileOnly, 0 import réel — décision CAP-ARCH-4).
-- Modifications S-096 non committées (code + gouvernance).
+- Modifications S-097 gouvernance uniquement (BACKLOG, INDEX, PROMPT_REPRISE,
+  rapport session) — non committées.
 
 == EPICs restants (séquence MVP0)
 
-* CAP-CR3-3 (P0) — branchement ScreenshotCapture, 5 US ~13 pts
+* CAP-MP4 (P1, EN COURS) — export MP4/H.264, 4 US ~5 pts (US-0 ✅, US-1/2/3 TODO)
 * CAP-CR3-1 (P0, maintenance) — CI `full` avec vrais binaires + probe durée
-* CAP-MP4 (P1) — export MP4/H.264, 4 US ~4 pts
 * CAP-AUDIO (P1) — post-production audio, 5 US ~10 pts
 * CAP-GLOSSARY (P1) — injection terminologique, 4 US ~6 pts
 * CAP-PROVENANCE (P1) — audit context, 3 US ~5 pts
@@ -49,18 +63,19 @@ _Prochaine session_ : 097 — Prochain EPIC séquence MVP0 : CAP-MP4 (Export MP4
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 713 unit + 49 functional VERT (S-095 baseline)
+* 742 unit + 52 functional + 3 cucumber VERT (S-096 baseline, préservée S-097)
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082 :
   `@ConfigurationParameter(FEATURES_PROPERTY_NAME)` du CucumberTestRunner
   écrase la system property cucumber.features) — pattern
   `CapsuleContextCucumberRunner` / `CapsuleDocContextCucumberRunner` /
-  `CapsuleScenarioContextCucumberRunner` (NEW S-095)
+  `CapsuleScenarioContextCucumberRunner` / `CapsuleCaptureStrategyCucumberRunner`
 * Glue `capsule.scenarios` partagé : tous les steps doivent avoir des
   signatures uniques (bug S-088 `DuplicateStepDefinitionException`) —
-  préfixer par feature (ex. "scenario context")
+  préfixer par feature (ex. "format distribution")
 * English only : code, Gherkin, commentaires
-* Économie d'encre = skip WebM existant + probe > 0 (ffprobe durée > 0)
+* Économie d'encre = skip WebM existant + probe > 0 (ffprobe durée > 0) +
+  skip MP4 si `.mp4` existe ET `MediaProbeUtil.probeDuration(mp4) > 0`
 * Ports Ollama : 11437-11465 rotation (11434-11436 INTERDITS)
 * `CapsuleMessages` object (domaine `capsule.i18n`) — 11
   `Messages*.properties` 10 langues, `resolveLanguage(project)` cascade
@@ -69,25 +84,20 @@ _Prochaine session_ : 097 — Prochain EPIC séquence MVP0 : CAP-MP4 (Export MP4
   `CapsuleContentAndVideosCucumberRunner`, `CapsuleDistribCucumberRunner`,
   `CapsuleArchBoundaryCucumberRunner`, `CapsuleStrictModeCucumberRunner`,
   `CapsuleDocContextCucumberRunner`, `CapsuleScenarioContextCucumberRunner`,
-  `CucumberIntegrationTestRunner` (pattern S-082)
+  `CapsuleCaptureStrategyCucumberRunner`, `CucumberIntegrationTestRunner`
+  (pattern S-082)
 * `StrictModeGuard` (domaine `capsule.config`) — 6 resolve* branchés,
-  `noop` explicite non concerné
+  `noop` explicite non concerné. US-2 ajoutera `resolveFormatConverter`.
 * DSL 4 sources pattern : ENV (`CAPSULE_*`) < gradle.properties
   (`capsule.*`) < YAML (`capsule-context.yml`) < CLI (`-P*`). Merger
   `CapsuleConfigMerger` + helpers `mergeStr/mergeInt/mergeDouble/mergeBoolean`
-  + `mergeStrList` (List<String> comma-separated).
+  + `mergeStrList` (List<String> comma-separated) + `mergeVersioning`/
+  `mergeCaptureStrategy` (enum dédiés). US-1 ajoutera `mergeOutputFormat`.
 * `CompositeContext` (codebase-contracts 0.1.0) — canaux EAGER/RAG/Graphify/
   Docs + `ChannelBudget`. `CapsuleContextBuilder` (domaine `capsule.context`).
-  `DocContextLoader` (S-093) — résout fichiers pré-matchés, concatène trié par
-  nom, tronque `budget.docsTokens` (10%). `PedagogicalScenarioLoader` (S-094/095,
-  mirror `DocContextLoader`) — valide metadata.json + extrait AsciiDoc scenario.
 * `CapsulePipelineGraph` (koog 1.0.0, domaine `capsule.pipeline`) — 3 nœuds
-  propose/validate/generate, `CapsulePromptBuilder` port pédagogique,
-  `DefaultCapsulePromptBuilder` (étendu S-095 instruction line scenario
-  conditionnelle `contains("Pedagogical Scenario")`).
+  propose/validate/generate, `CapsulePromptBuilder` port pédagogique.
 * `ContextChannel` sealed N0 (5 variants) — PAS de canal `spd` N0.
   Extension capsule-local `CapsuleContext.scenarioSection` (pas de bump N0).
 * `CapsuleContext` (S-095) — 3 champs `channels`/`rendered`/`scenarioSection`,
   invariant `rendered.isBlank() == (channels.isEmpty() && scenarioSection.isBlank())`.
-  `CapsuleContextBuilder.build(composite, budget, scenarioSection="")` — append
-  scenario section après channels, trim sur scenarioSection.
