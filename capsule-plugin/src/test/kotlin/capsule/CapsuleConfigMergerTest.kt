@@ -1178,4 +1178,59 @@ class CapsuleConfigMergerTest {
         val config = CapsuleConfigMerger.loadFromEnvironment()
         assertEquals(OutputFormat.WEBM, config.output.format, "env default output.format should be WEBM")
     }
+
+    // ─── ValidationConfig (CAP-CR3-1) ─────────────────────────────
+
+    @Test
+    fun `default merge has validation disabled with default tolerance`() {
+        val projectDir = File(tempDir, "validation-default").also { it.mkdirs() }
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
+        assertEquals(false, merged.validation.durationEnabled, "validation.durationEnabled should default to false")
+        assertEquals(2.0, merged.validation.toleranceSecs, 0.001, "validation.toleranceSecs should default to 2.0")
+    }
+
+    @Test
+    fun `validation durationEnabled is read from YAML`() {
+        val projectDir = File(tempDir, "validation-yaml").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(validation = ValidationConfig(durationEnabled = true, toleranceSecs = 1.5))
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+        assertEquals(true, merged.validation.durationEnabled, "YAML validation.durationEnabled should be honored")
+        assertEquals(1.5, merged.validation.toleranceSecs, 0.001, "YAML validation.toleranceSecs should be honored")
+    }
+
+    @Test
+    fun `validation CLI overrides YAML`() {
+        val projectDir = File(tempDir, "validation-cli-over-yaml").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(validation = ValidationConfig(durationEnabled = true, toleranceSecs = 1.5))
+        val merged = CapsuleConfigMerger.merge(
+            projectDir, yamlConfig, mapOf(
+                "validation.durationEnabled" to "false",
+                "validation.toleranceSecs" to "3.0"
+            )
+        )
+        assertEquals(false, merged.validation.durationEnabled, "CLI false should override YAML true")
+        assertEquals(3.0, merged.validation.toleranceSecs, 0.001, "CLI toleranceSecs should override YAML")
+    }
+
+    @Test
+    fun `validation is read from gradle properties`() {
+        val projectDir = File(tempDir, "validation-props").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText(
+            """
+            capsule.validation.durationEnabled=true
+            capsule.validation.toleranceSecs=0.5
+            """.trimIndent()
+        )
+        // No YAML file → yamlLoaded=false so props can take effect
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
+        assertEquals(true, merged.validation.durationEnabled, "props validation.durationEnabled should be honored")
+        assertEquals(0.5, merged.validation.toleranceSecs, 0.001, "props validation.toleranceSecs should be honored")
+    }
+
+    @Test
+    fun `loadFromEnvironment default validation is disabled`() {
+        val config = CapsuleConfigMerger.loadFromEnvironment()
+        assertEquals(false, config.validation.durationEnabled, "env default validation.durationEnabled should be false")
+        assertEquals(2.0, config.validation.toleranceSecs, 0.001, "env default validation.toleranceSecs should be 2.0")
+    }
 }

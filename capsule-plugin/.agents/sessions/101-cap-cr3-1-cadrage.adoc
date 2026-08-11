@@ -1,0 +1,120 @@
+= Session 101 — CAP-CR3-1 TERMINÉ 5/5 US — CI `full` + probe durée
+
+_Date_ : 2026-08-11
+_Borough_ : Détroit (capsule-gradle)
+_Type_ : feat + ddd + tdd + bdd + ci + clôture
+_Score_ : 9/10
+
+== Objectif
+
+Cadrer et implémenter l'EPIC CAP-CR3-1 (P0 maintenance) : CI `full` avec
+vrais binaires + probe de durée. C'est LE contrat de solidité vidéo :
+`check` vert ≠ vidéo exploitable sans ça.
+
+== Livrables 5/5 US
+
+=== US-0 Cadrage EPIC (1 pt) ✅
+
+Audit code complet + 10 décisions architecturales documentées BACKLOG.
+Nouveau domaine `capsule.validation` (9ème).
+
+=== US-1 VideoDurationValidator (2 pts) ✅
+
+* `capsule.validation.VideoDurationValidator` — object pur,
+  `validate(videoDurationSecs, audioDurationsSecs, toleranceSecs):
+  ValidationResult`. Somme audio = `sum()`, delta =
+  `abs(video - sumAudio)`, `delta <= tolerance` → Valid, sinon Invalid.
+* `capsule.validation.ValidationResult` sealed — `Valid(delta)` +
+  `Invalid(delta, videoDuration, sumAudio, toleranceSecs)` +
+  `message()`. Pattern `DeckContextValidator` slider SLD-8.3.
+  `message()` utilise `Locale.US` pour point décimal (fix test
+  `12,30s` vs `12.30s`).
+* 10 unit tests GREEN : valid within tolerance, valid at tolerance,
+  invalid out of tolerance, exact match delta 0, empty audio list
+  (positive video → Invalid, zero video → Valid), single audio,
+  tolerance 0 strict, negative video duration, message format.
+
+=== US-2 ValidationConfig + merger + tâche (3 pts) ✅
+
+* `ValidationConfig(durationEnabled: Boolean = false, toleranceSecs:
+  Double = 2.0)` — 9ème section `CapsuleConfig`. Pattern
+  `StrictModeConfig`.
+* `mergeValidationConfig` (pattern `mergeStrictModeConfig`) +
+  `loadFromEnvironment` (`CAPSULE_VALIDATION_DURATION_ENABLED` +
+  `CAPSULE_VALIDATION_TOLERANCE_SECS`) + `buildConfigFromProperties`
+  (`capsule.validation.durationEnabled` +
+  `capsule.validation.toleranceSecs`). 4 sources ENV < props < YAML <
+  CLI.
+* `CapsuleExtension.durationValidationEnabled` (convention false) +
+  `durationValidationToleranceSecs` (convention 2.0).
+  `CapsuleConventions` étendu (2 champs). `pushConfigIntoExtension`
+  push validation.
+* `ValidateCapsuleVideoDurationTask` — groupe `verification`.
+  `@Internal videoFile` (existence checked at runtime — Gradle ne
+  requiert pas le fichier présent), `@InputFiles @PathSensitive(RELATIVE)
+  audioFiles`, `@Input toleranceSecs`, `@Input durationEnabled`. Skip si
+  `!durationEnabled` (log "skipped"), skip si vidéo manquante (log
+  "not found"), skip si audio vide. Sinon
+  `VideoDurationValidator.validate()` + `throw GradleException` si
+  Invalid.
+* Wiring `CapsuleManager.registerValidateCapsuleVideoDurationTask()` +
+  `CapsuleMessages` clé `task.validateCapsuleVideoDuration.description`
+  + groupe `task.group.verification`.
+* 5 unit tests merger GREEN (defaults, YAML, CLI override, props,
+  env defaults) + 3 functional tests GREEN (registration, disabled
+  no-op skip, enabled no video graceful skip).
+* Fix `validatePlugins` : `@PathSensitive(PathSensitivity.RELATIVE)`
+  sur `audioFiles` (missing normalization strategy).
+
+=== US-3 Cucumber BDD (2 pts) ✅
+
+* `capsule_duration_validation.feature` `@validation @duration` —
+  3 scénarios : disabled default skip, enabled no video skip, enabled
+  valid video + audio OK.
+* Runner dédié `CapsuleDurationValidationCucumberRunner` (pattern
+  S-082 `@SelectClasspathResource` + filter `@validation and @duration
+  and not @wip and not @integration`).
+* Steps `CapsuleDurationValidationSteps` préfixés "duration validation"
+  (bug S-088 glue `capsule.scenarios` partagée — step texts uniques).
+* `CucumberTaskSpec("cucumberTestDurationValidation")` câblé
+  `build.gradle.kts` (10ème cucumber dédié, 11ème `CucumberTaskSpec`).
+* NoOp probe (fake text files → `MediaProbeUtil.probeDuration` retourne
+  0.0 → delta=0.0 → Valid). 3/3 scénarios GREEN.
+
+=== US-4 Workflow CI (3 pts) ✅
+
+* `.github/workflows/full-tests.yml` — job `full-tests` (main only,
+  timeout 30 min) : checkout + JDK 24 + install ffmpeg + espeak +
+  Playwright Chromium + `./gradlew test functionalTest` +
+  `validateCapsuleVideoDuration -Pcapsule.validation.durationEnabled=true`
+  + upload rapports.
+* 2ème workflow (ne remplace pas `test.yml` qui garde le job `test` PR
+  gate). Pattern codebase `test.yml` (fast + full).
+* YAML validé.
+
+== Totaux tests
+
+* 782 unit VERT (+10 net : 10 `VideoDurationValidatorTest` + 5 merger
+  validation)
+* 57 functional VERT (+3 `ValidateCapsuleVideoDurationFunctionalTest`)
+* 11 cucumber dédiés GREEN (+1 `cucumberTestDurationValidation`)
+* `check` BUILD SUCCESSFUL (validatePlugins `@PathSensitive` fix)
+
+== Vérification fin de session
+
+* `git status` : modifications BACKLOG/PROMPT_REPRISE/INDEX/
+  SESSIONS_HISTORY + nouveaux fichiers (domaine `capsule.validation`,
+  feature, runner, steps, functional test, workflow CI, rapport
+  session).
+* `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin`
+  : VERT.
+* `check` : BUILD SUCCESSFUL.
+* Zéro secret/token dans les fichiers modifiés.
+* Aucun commit effectué (Règle 1).
+
+== Prochaine session (102)
+
+CAP-AUDIO (P1) — post-production audio (BGM + normalisation EBU R128 +
+ducking), 5 US ~10 pts. Nouveau domaine `capsule.audio`. Cadrage US-0
+d'abord (audit code post-`burnInSubtitlesIfEnabled`, BGM source,
+loudness target).

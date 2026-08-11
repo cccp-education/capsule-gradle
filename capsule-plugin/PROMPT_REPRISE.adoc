@@ -1,49 +1,49 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 100 — CAP-MP4 US-3 Cucumber BDD `capsule_format.feature` 3 scénarios `@distrib @format` + runner dédié `CapsuleFormatCucumberRunner` (pattern S-082) + steps `CapsuleFormatSteps` préfixés "format distribution" (bug S-088) + `CucumberTaskSpec("cucumberTestFormat")` câblé `build.gradle.kts`. NoOp converter. Baby-step BDD RED (6 undefined steps) → GREEN (3/3 PASSED) → REFACTOR (`check` BUILD SUCCESSFUL 15m38s). EPIC CAP-MP4 TERMINÉ 4/4 US.
-_Prochaine session_ : 101 — CAP-CR3-1 (P0) CI `full` avec vrais binaires Playwright + ffmpeg + probe durée WebM (`MediaProbeUtil.probeDuration`) comparé à somme durées audio TTS. Nouveau job CI `.github/workflows/full-tests.yml` installant les binaires. Tolérance |durée vidéo - somme audio| > seuil → FAIL. C'est LE contrat de solidité vidéo : `check` vert ≠ vidéo exploitable sans ça.
+_Session terminee_ : 101 — CAP-CR3-1 TERMINÉ 5/5 US. Nouveau domaine `capsule.validation` (9ème) — `VideoDurationValidator` object pur + `ValidationResult` sealed (Valid/Invalid). `ValidationConfig` 2 champs (`durationEnabled` défaut false, `toleranceSecs` défaut 2.0) + `mergeValidationConfig` 4 sources. Tâche `validateCapsuleVideoDuration` groupe `verification`. Cucumber `capsule_duration_validation.feature` 3 scénarios + runner dédié `CapsuleDurationValidationCucumberRunner`. Workflow CI `full-tests.yml` (installe Playwright + ffmpeg + espeak, invoque validation). 782 unit (+10) + 57 functional (+3) + 11 cucumber dédiés (+1) GREEN. `check` BUILD SUCCESSFUL.
+_Prochaine session_ : 102 — CAP-AUDIO (P1) — post-production audio (BGM + normalisation EBU R128 + ducking), 5 US ~10 pts. Nouveau domaine `capsule.audio`. Cadrage US-0 d'abord (audit code post-`burnInSubtitlesIfEnabled`, BGM source, loudness target).
 
-== Contexte reprise session 101 (post CAP-MP4 TERMINÉ 4/4 US)
+== Contexte reprise session 102 (post CAP-CR3-1 TERMINÉ 5/5 US)
 
-- EPIC CAP-MP4 TERMINÉ — US-0 cadrage (S-097), US-1 enum+merger (S-098),
-  US-2 converter+wiring (S-099), US-3 cucumber (S-100).
-- `OutputFormat` enum (domaine `capsule`) — WEBM/MP4/BOTH, défaut WEBM
-  (backward compat). `fromString` case-insensitive, fallback WEBM.
-- `VideoFormatConverter` (interface) + `VideoFormatConverterImpl(ffmpegPath)`
-  (FFmpeg `-c:v libx264 -c:a aac -movflags +faststart -y`) +
-  `NoOpVideoFormatConverter` (returns `false`, `noop-format`).
-- `FormatConversion.convertIfNeeded(finalVideo, format, converter, probeDuration)`
-  (object pur) — WEBM → no-op, MP4 → transcode + supprime WebM (ou skip si
-  `.mp4` existe ET probe>0), BOTH → transcode + garde WebM, échec → garde WebM.
-- `CapsuleManager.resolveFormatConverter` (5ème factory `resolve*`, pattern
-  `resolveSubtitleBurnInService` + `StrictModeGuard`).
-- `DistributeCapsuleVideoTask.format: Property<String>` — filtre selon
-  `OutputFormat` (`.webm` / `.mp4` / both). CLI `-Poutput.format` override.
-- `CapsuleExtension.outputFormat: Property<OutputFormat>` (convention WEBM)
-  + helper Groovy `outputFormat(String)`.
-- `CapsuleConventions.outputFormat = OutputFormat.WEBM`.
-- 9 `CucumberTaskSpec` existants (dont `cucumberTestFormat` ajouté S-100).
-- 772 unit + 54 functional VERT (baseline S-100).
-- 10 cucumber dédiés GREEN (66 tests cucumber dédiés, 0 FAIL) :
-  `cucumberTestFormat` (S-100), `cucumberTestCaptureStrategy` (S-096),
-  `cucumberTestDistrib` (S-088), `cucumberTestArchBoundary` (S-090),
-  `cucumberTestContentAndVideos` (S-088), `cucumberTestContext` (S-085),
-  `cucumberTestStrictMode` (S-091), `cucumberTestDocContext` (S-093),
-  `cucumberTestScenarioContext` (S-095), `cucumberTestIntegration`.
-- 2 `NoTestsDiscoveredException` dans `cucumberTest` global préexistantes
-  (bug S-082 — runners dédiés ne découvrent pas via feature global). Non
-  bloquant : `cucumberTest` skippé en CI par CR-10 (`onlyIf { -PrunCucumber
-  || CI=true }`). Hors CAP-MP4.
-- Domaines DDD capsule (8) : `capsule.feed` + `capsule.ci` + `capsule.multilang`
+- EPIC CAP-CR3-1 TERMINÉ — US-0 cadrage, US-1 validator, US-2 config+merger+tâche,
+  US-3 cucumber, US-4 workflow CI (S-101).
+- Nouveau domaine DDD `capsule.validation` (9ème) — `VideoDurationValidator`
+  + `ValidationResult` sealed + `ValidateCapsuleVideoDurationTask`.
+- `VideoDurationValidator.validate(videoDurationSecs, audioDurationsSecs,
+  toleranceSecs): ValidationResult` — object pur, aucune I/O.
+- `ValidationResult` sealed — `Valid(delta)` + `Invalid(delta, videoDuration,
+  sumAudio, toleranceSecs)` + `message()` (Locale.US pour point décimal).
+- `ValidationConfig(durationEnabled: Boolean = false, toleranceSecs:
+  Double = 2.0)` — 9ème section `CapsuleConfig`. 4 sources ENV < props < YAML < CLI.
+- Tâche `validateCapsuleVideoDuration` — groupe `verification`. `@Internal
+  videoFile` (existence checked at runtime), `@InputFiles @PathSensitive(RELATIVE)
+  audioFiles`, `@Input toleranceSecs`, `@Input durationEnabled`. Skip si disabled
+  ou vidéo manquante. `throw GradleException` si Invalid.
+- `CapsuleExtension.durationValidationEnabled` + `durationValidationToleranceSecs`
+  (conventions false/2.0). `pushConfigIntoExtension` push validation.
+- Workflow CI `full-tests.yml` — job `full-tests` (main only, installe
+  Playwright+ffmpeg+espeak, `./gradlew test functionalTest`, `validateCapsuleVideoDuration`).
+- Cucumber runner dédié `CapsuleDurationValidationCucumberRunner` (pattern
+  S-082) + `CucumberTaskSpec("cucumberTestDurationValidation")` (10ème cucumber
+  dédié, 11ème `CucumberTaskSpec`).
+- EPIC CAP-MP4 TERMINÉ (S-097→S-100).
+- 782 unit + 57 functional VERT (baseline S-101).
+- 11 cucumber dédiés GREEN (69 tests cucumber dédiés, 0 FAIL) :
+  `cucumberTestDurationValidation` (S-101), `cucumberTestFormat` (S-100),
+  `cucumberTestCaptureStrategy` (S-096), `cucumberTestDistrib` (S-088),
+  `cucumberTestArchBoundary` (S-090), `cucumberTestContentAndVideos` (S-088),
+  `cucumberTestContext` (S-085), `cucumberTestStrictMode` (S-091),
+  `cucumberTestDocContext` (S-093), `cucumberTestScenarioContext` (S-095),
+  `cucumberTestIntegration`.
+- Domaines DDD capsule (9) : `capsule.feed` + `capsule.ci` + `capsule.multilang`
   + `capsule.ai` + `capsule.context` + `capsule.pipeline` + `capsule.support`
-  + `capsule.i18n`.
+  + `capsule.i18n` + `capsule.validation`.
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider
   0.0.16 (compileOnly, 0 import réel — décision CAP-ARCH-4).
 
 == EPICs restants (séquence MVP0)
 
-* CAP-CR3-1 (P0, maintenance) — CI `full` avec vrais binaires + probe durée. PROCHAIN.
-* CAP-AUDIO (P1) — post-production audio, 5 US ~10 pts
+* CAP-AUDIO (P1) — post-production audio, 5 US ~10 pts. PROCHAIN.
 * CAP-GLOSSARY (P1) — injection terminologique, 4 US ~6 pts
 * CAP-PROVENANCE (P1) — audit context, 3 US ~5 pts
 * CAP-CHAPITRE (P2) — intro/outro + chapter markers, 5 US ~10 pts

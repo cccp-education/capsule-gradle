@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-11 (Session 100 — CAP-MP4 US-3 Cucumber BDD `capsule_format.feature` 3 scénarios + runner dédié + steps. EPIC CAP-MP4 TERMINÉ 4/4 US. 772 unit + 54 functional + 10 cucumber dédiés GREEN. Séquence MVP0 : DOCCONTEXT ✅ > SPD ✅ > CR3-3 ✅ > MP4 ✅ > CR3-1 PROCHAIN)
+:last_update: 2026-08-11 (Session 101 — CAP-CR3-1 TERMINÉ 5/5 US. Nouveau domaine `capsule.validation` 9ème. `VideoDurationValidator` + `ValidationResult` sealed. `ValidationConfig` 2 champs. Tâche `validateCapsuleVideoDuration`. Workflow `full-tests.yml`. 782 unit + 57 functional + 11 cucumber dédiés GREEN. `check` BUILD SUCCESSFUL.)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -339,7 +339,7 @@ Re-rend un deck démo, probe la durée du WebM final (`MediaProbeUtil.probeDurat
 Si |durée vidéo - somme audio| > tolérance → FAIL.
 C'est LE contrat de solidité vidéo : `check` vert ≠ vidéo exploitable sans ça.
 | 🔴 P0
-| ⬜ TODO
+| ✅ TERMINÉ (S-101)
 
 | CAP-CR3-2
 | **Mode strict anti-NoOp** — `noop` engine path → *erreur* (pas fallback) quand un flag `strict`/`failOnMissingTool` est activé.
@@ -1467,7 +1467,251 @@ Runner dédié (pattern S-082).
 
 _Total_ : 3 US, ~4 pts.
 
-=== 🖼️ EPIC CAP-PREVIEW — Mode dry-run (PNGs sans mux)
+=== 🎯 EPIC CAP-CR3-1 — CI `full` avec vrais binaires + probe de durée
+
+_Vision_ : `check` vert ≠ vidéo exploitable. Les tests NoOp valident la
+*wiring* mais pas la *solidité vidéo* : un WebM tronqué, une somme audio
+incohérente avec la durée vidéo, un ffmpeg silencieusement absent — tout
+ça passe `check` aujourd'hui. CAP-CR3-1 introduit le *contrat de solidité
+vidéo* : une tâche Gradle `validateCapsuleVideoDuration` qui probe la
+durée du WebM final (`MediaProbeUtil.probeDuration`) et la compare à la
+somme des durées audio TTS (`slide-XX.mp3`), puis un workflow CI
+`full-tests.yml` qui installe les vrais binaires (Playwright, ffmpeg,
+espeak) et exécute la validation sur un deck démo.
+
+_Source_ : `GLOBAL_CODE_REVIEW.adoc` CR-GLOBALE-003 (2026-08-04).
+_Domaine_ : `capsule.validation` (nouveau domaine DDD, 9ème).
+_Dépendances_ : `MediaProbeUtil` ✅ (probe duration), `CapsuleVideoTask`
+✅ (audioDir `slide-XX.mp3`), `CapsuleConfigMerger` ✅ (4 sources), CI
+`test.yml` ✅ (job fast existant).
+
+_Audit code (S-101)_ :
+- `MediaProbeUtil.probeDuration(file)` (L23) — retourne secondes `Double`,
+  0.0 si ffprobe absent/fichier manquant. Déjà utilisé par
+  `computeSlideDurationsWithManim` (L325), `FormatConversion` (S-099),
+  `CapsuleVideoAllLanguagesRunner.shouldRender` (S-079).
+- `CapsuleVideoTask.captureDeckSequential` (L461-498) — WebM final
+  `${deckName}.webm` dans `outDir` post-`convertFormatIfEnabled`,
+  `audioDir = outDir.resolve(parsed.deckName)` (L570), MP3 par slide
+  `slide-XX.mp3` (L336).
+- `computeSlideDurationsWithManim` (L313-330) — priority manim > TTS MP3
+  > default. La somme des `slideDurations` = durée vidéo attendue.
+- `CapsuleConfig` (8 sections) — pas de section `validation`.
+- `CapsuleConfigMerger` — 8 `mergeXxxConfig`, helpers
+  `mergeStr/mergeInt/mergeDouble/mergeBoolean/mergeStrList` + 3 helpers
+  enum (`mergeVersioning`/`mergeCaptureStrategy`/`mergeOutputFormat`).
+- `CapsuleExtension` — pas de `durationValidation`/`toleranceSecs`.
+- `CapsulePlugin.pushConfigIntoExtension` — 8 sections poussées.
+- `CapsuleConventions` — 32 champs, pas de validation.
+- `CapsuleManager` — 13 tâches enregistrées, pas de
+  `validateCapsuleVideoDuration`.
+- Workflow CI `test.yml` (L1-29) — 1 job `test` (`./gradlew check`), JDK
+  24, timeout 15 min. Pas de job `full-tests`.
+- Pattern codebase `test.yml` (S-161) — 3 jobs : `fast-tests` (PR gate)
+  → `full-tests` (main only, Ollama Docker) → `publish` (tags).
+- `CucumberTaskSpec` — 10 specs existantes (dont `cucumberTestIntegration`).
+- `StrictModeGuard.requireAvailable` — 7 resolve* branchés.
+
+_Décisions architecturales (US-0, Session 101)_ :
+
+. *Nouveau domaine `capsule.validation` (9ème)* — `VideoDurationValidator`
+  object pur + `ValidationResult` sealed (Valid/Invalid). Pas étendre
+  `capsule.config` (responsabilité différente : validation post-build,
+  pas config build). Pattern `DeckContextValidator` slider SLD-8.3
+  (`ValidationResult` sealed Valid/Invalid).
+
+. *`VideoDurationValidator` object pur* —
+  `validate(videoDurationSecs: Double, audioDurationsSecs: List<Double>,
+  toleranceSecs: Double): ValidationResult`. Somme audio =
+  `audioDurations.sum()`. Delta = `|videoDuration - sumAudio|`. Si
+  `delta <= toleranceSecs` → `Valid(delta)`. Sinon →
+  `Invalid(delta, videoDuration, sumAudio, toleranceSecs)`. Aucune I/O
+  (pas de File, pas de ffprobe) — lambda probe injectée par la tâche.
+
+. *`ValidationResult` sealed* — `Valid(delta: Double)` +
+  `Invalid(delta: Double, videoDuration: Double, sumAudio: Double,
+  toleranceSecs: Double)`. Pattern `DeckContextValidator.ValidationResult`
+  slider. `Invalid.message()` retourne un message actionable :
+  `"Duration mismatch: video=12.3s, audio=15.7s, delta=3.4s, tolerance=
+  2.0s"`.
+
+. *Nouvelle section `validation` dans `CapsuleConfig`* —
+  `ValidationConfig(durationEnabled: Boolean = false, toleranceSecs:
+  Double = 2.0)`. Pattern `StrictModeConfig` (section la plus simple,
+  1-2 champs). Défaut `durationEnabled = false` (backward compat —
+  configs existantes sans `validation.durationEnabled` n'ajoutent pas
+  de validation automatique). `toleranceSecs = 2.0` (tolérance
+  réaliste : ffmpeg mux peut ajouter ~0.5-1s de silence, Playwright
+  capture peut drift).
+
+. *4 sources pattern respecté* — ENV
+  `CAPSULE_VALIDATION_DURATION_ENABLED` <
+  `CAPSULE_VALIDATION_TOLERANCE_SECS` < props
+  `capsule.validation.durationEnabled` < `capsule.validation.toleranceSecs`
+  < YAML `validation.durationEnabled` < `validation.toleranceSecs` < CLI
+  `-Pcapsule.validation.durationEnabled` <
+  `-Pcapsule.validation.toleranceSecs`. `mergeValidationConfig` (pattern
+  `mergeStrictModeConfig`), `loadFromEnvironment` +
+  `buildConfigFromProperties` étendus.
+
+. *Tâche Gradle `validateCapsuleVideoDuration`* — groupe `verification`
+  (pas `generate` — c'est un check, pas une production). `@InputFile
+  videoFile: RegularFileProperty` (le WebM final), `@InputFiles
+  audioFiles: ConfigurableFileCollection` (les `slide-XX.mp3`),
+  `@Input toleranceSecs: Property<Double>`, `@Input durationEnabled:
+  Property<Boolean>`. `probeDuration` lambda = `MediaProbeUtil::
+  probeDuration`. Si `!durationEnabled` → no-op + log "skipped". Si
+  `videoFile` n'existe pas → `logger.warn` + skip (non-bloquant — la
+  vidéo peut ne pas être générée en NoOp). Si `audioFiles` vide →
+  `logger.warn` + skip. Sinon → `VideoDurationValidator.validate()` et
+  si `Invalid` → `throw GradleException(result.message())`.
+
+. *`CapsuleExtension` étendu* — `durationValidationEnabled: Property
+  <Boolean>` (convention `false`) + `durationValidationToleranceSecs:
+  Property<Double>` (convention `2.0`). `CapsuleConventions` étendu
+  (2 champs). `pushConfigIntoExtension` push validation (pattern
+  `strictMode`). Pas de helper Groovy (Boolean/Double simples).
+
+. *Workflow CI `.github/workflows/full-tests.yml`* — 2 jobs : `fast-tests`
+  (existant `test.yml` renommé, PR gate, `./gradlew check`) + `full-tests`
+  (main only, installe Playwright + ffmpeg + espeak, rend deck démo
+  NoOp TTS, invoque `validateCapsuleVideoDuration -Pcapsule.validation.
+  durationEnabled=true`, upload rapports). Pattern codebase `test.yml`
+  (fast + full + publish). Le job `full-tests` ne remplace pas `test.yml`
+  — il s'ajoute (2ème workflow). `test.yml` garde le job `test` (renommé
+  `fast-tests`), `full-tests.yml` ajoute le job `full-tests`.
+
+. *Cucumber runner dédié* `CapsuleDurationValidationCucumberRunner`
+  (pattern S-082 `@SelectClasspathResource` + filter
+  `@validation and @duration and not @wip and not @integration`). Steps
+  `CapsuleDurationValidationSteps` préfixés "duration validation" (bug
+  S-088 glue `capsule.scenarios` partagée — step texts uniques).
+  `CucumberTaskSpec("cucumberTestDurationValidation")` câblé
+  `build.gradle.kts` (10ème cucumber dédié, 11ème `CucumberTaskSpec`).
+  NoOp probe (pas de vrai ffprobe — lambda mock retournant durées
+  fixes).
+
+. *Économie d'encre (AGENT.adoc)* — la tâche ne probe que si
+  `durationEnabled = true` (défaut false). Skip si vidéo manquante ou
+  audio vide (non-bloquant). Le job CI `full-tests` active
+  explicitement `durationEnabled` via CLI
+  `-Pcapsule.validation.durationEnabled=true`. Le probe `ffprobe` est
+  cheap (< 1s par fichier) mais la validation n'a de sens que post-
+  capture — pas de re-probe inutile.
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-CR3-1-0
+| *Cadrage EPIC* — audit code (`MediaProbeUtil.probeDuration` L23,
+  `CapsuleVideoTask.captureDeckSequential` L461-498, `audioDir` L570,
+  `slide-XX.mp3` L336, `computeSlideDurationsWithManim` L313-330,
+  `CapsuleConfig` 8 sections pas de `validation`, `CapsuleConfigMerger`
+  8 mergeXxxConfig + helpers, `CapsuleExtension`/`CapsuleConventions`/
+  `pushConfigIntoExtension` pas de validation, `CapsuleManager` 13
+  tâches, workflow `test.yml` 1 job, pattern codebase 3 jobs fast/full/
+  publish, 10 `CucumberTaskSpec`), 10 décisions architecturales
+  (domaine `capsule.validation` 9ème, `VideoDurationValidator` object
+  pur + `ValidationResult` sealed, section `validation` dans
+  `CapsuleConfig` + `ValidationConfig` 2 champs, 4 sources
+  `mergeValidationConfig`, tâche `validateCapsuleVideoDuration` groupe
+  `verification`, `CapsuleExtension` 2 properties + conventions + push,
+  workflow `full-tests.yml` 2 jobs, runner dédié
+  `CapsuleDurationValidationCucumberRunner`, économie d'encre défaut
+  false). MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+| 1
+| ✅ TERMINÉ (S-101)
+
+| CAP-CR3-1-1
+| *`VideoDurationValidator` (object pur, domaine `capsule.validation`)* —
+  `ValidationResult` sealed (`Valid(delta)` + `Invalid(delta,
+  videoDuration, sumAudio, toleranceSecs)` + `message()`). `VideoDuration
+  Validator.validate(videoDurationSecs, audioDurationsSecs,
+  toleranceSecs): ValidationResult`. Somme audio = `sum()`, delta =
+  `abs(video - sumAudio)`, `delta <= tolerance` → Valid, sinon Invalid.
+  Aucune I/O. Baby-step TDD : ~8 unit (valid within tolerance, invalid
+  out of tolerance, exact match delta 0, empty audio list → Invalid,
+  single audio, tolerance 0 strict, negative duration edge, message
+  format).
+| 2
+| ✅ TERMINÉ (S-101, 10 unit GREEN)
+
+| CAP-CR3-1-2
+| *`ValidationConfig` + merger 4 sources + tâche
+  `validateCapsuleVideoDuration`* — `ValidationConfig(durationEnabled:
+  Boolean = false, toleranceSecs: Double = 2.0)` dans `CapsuleConfig`
+  (9ème section). `mergeValidationConfig` (pattern
+  `mergeStrictModeConfig`). `loadFromEnvironment`
+  (`CAPSULE_VALIDATION_DURATION_ENABLED` +
+  `CAPSULE_VALIDATION_TOLERANCE_SECS`) + `buildConfigFromProperties`
+  (`capsule.validation.durationEnabled` +
+  `capsule.validation.toleranceSecs`). `CapsuleExtension.
+  durationValidationEnabled: Property<Boolean>` (convention `false`) +
+  `durationValidationToleranceSecs: Property<Double>` (convention `2.0`).
+  `CapsuleConventions` étendu (2 champs). `pushConfigIntoExtension`
+  push validation. Tâche `validateCapsuleVideoDuration` (groupe
+  `verification`, `@InputFile videoFile`, `@InputFiles audioFiles`,
+  `@Input toleranceSecs`, `@Input durationEnabled`, probe lambda =
+  `MediaProbeUtil::probeDuration`, skip si `!durationEnabled` ou
+  vidéo manquante, `throw GradleException` si Invalid). Wiring
+  `CapsuleManager.registerValidateCapsuleVideoDurationTask()`. Baby-step
+  TDD : ~4 unit (merger defaults, YAML override, CLI override,
+  toleranceSecs) + ~2 functional (registration + description, NoOp
+  skip disabled, enabled + valid video → PASS, enabled + invalid →
+  FAIL).
+| 3
+| ✅ TERMINÉ (S-101, 5 unit + 3 functional GREEN)
+
+| CAP-CR3-1-3
+| *Cucumber BDD* — `capsule_duration_validation.feature`
+  `@validation @duration` (3 scénarios : disabled default → skipped
+  no-op, enabled + valid duration within tolerance → PASS, enabled +
+  duration mismatch > tolerance → FAIL with actionable message).
+  Runner dédié `CapsuleDurationValidationCucumberRunner` (pattern
+  S-082 `@SelectClasspathResource` + filter `@validation and @duration
+  and not @wip and not @integration`). Steps
+  `CapsuleDurationValidationSteps` préfixés "duration validation" (bug
+  S-088 glue partagée — step texts uniques). `CucumberTaskSpec
+  ("cucumberTestDurationValidation")` câblé `build.gradle.kts` (10ème
+  cucumber dédié, 11ème `CucumberTaskSpec`). NoOp probe (lambda mock
+  retournant durées fixes, pas de vrai ffprobe). Baby-step BDD : RED
+  (undefined steps) → GREEN (3/3 scénarios PASSED) → REFACTOR.
+| 2
+| ✅ TERMINÉ (S-101, 3 cucumber scénarios GREEN)
+
+| CAP-CR3-1-4
+| *Workflow CI `.github/workflows/full-tests.yml`* — 2 jobs. (1)
+  `fast-tests` : rename du job `test` existant dans `test.yml`, PR
+  gate, `./gradlew check`, JDK 24, timeout 15 min, `CI=true`. (2)
+  `full-tests` : `if github.ref == 'refs/heads/main'`, `needs:
+  [fast-tests]`, installe Playwright (`npx playwright install
+  chromium`) + ffmpeg (`sudo apt-get install ffmpeg`) + espeak
+  (`sudo apt-get install espeak`), rend deck démo via
+  `generateCapsuleVideo` (NoOp TTS, capture screenshot NoOp WebM),
+  invoque `validateCapsuleVideoDuration -Pcapsule.validation.
+  durationEnabled=true -Pcapsule.validation.toleranceSecs=2.0`, upload
+  rapports (`actions/upload-artifact@v4`). Timeout 30 min. Le job ne
+  remplace pas `test.yml` — `full-tests.yml` est un 2ème workflow
+  (déclencheur `push` sur `main` uniquement).
+| 3
+| ✅ TERMINÉ (S-101, workflow YAML 2 jobs, YAML validé)
+|===
+
+_Total_ : 5 US (US-0 cadrage + US-1→4 exécution), ~11 pts. _Méthode_ :
+baby-step DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber),
+English only code/Gherkin. _Pattern de référence_ : CAP-CR3-2 S-091
+(`StrictModeConfig` + `StrictModeGuard`), CAP-CR3-3 S-096
+(`CaptureResolver` + `CaptureStrategy`), slider SLD-8.3
+(`DeckContextValidator` + `ValidationResult` sealed), codebase `test.yml`
+(fast/full/publish 3 jobs). _Statut_ : ✅ TERMINÉ (CAP-CR3-1-0 ✅ S-101,
+CAP-CR3-1-1 ✅ S-101 10 unit, CAP-CR3-1-2 ✅ S-101 5 unit + 3 functional,
+CAP-CR3-1-3 ✅ S-101 3 cucumber, CAP-CR3-1-4 ✅ S-101 workflow). 5/5 US
+livrées. EPIC CAP-CR3-1 TERMINÉ — le borough Détroit dispose désormais du
+*contrat de solidité vidéo* : `validateCapsuleVideoDuration` probe le
+WebM final et le compare à la somme des durées audio TTS, et le workflow
+CI `full-tests.yml` installe les vrais binaires (Playwright + ffmpeg +
+espeak) et invoque la validation.
 
 _Vision_ : Avant de committer 30 min de capture, valider le contenu visuel.
 `ScreenshotCaptureImpl` (CAP-CR3-3 branchement) produit déjà des PNG par
@@ -1550,6 +1794,13 @@ _Total_ : 3 US, ~4 pts.
 | ⬜ TODO
 
 | Post-prod
+| CAP-CR3-1
+| 5
+| 11
+| 🔴 P0
+| ✅ TERMINÉ (S-101, 5/5 US, 782 unit + 57 functional + 11 cucumber dédiés)
+
+| Post-prod
 | CAP-CR3-3
 | 5
 | 13
@@ -1593,10 +1844,11 @@ _Total_ : 3 US, ~4 pts.
 |===
 
 _Total_ : 11 EPICs, 47 US, ~88 pts. _Séquence MVP0 recommandée_ :
-. CAP-DOCCONTEXT (P0 — contenu ancré corpus)
-. CAP-SPD (P0 — contenu ancré objectifs pédagogiques)
-. CAP-CR3-3 (P0 — branchement screenshot, débloque CAP-PREVIEW + CAP-CR3-1)
-. CAP-MP4 (P1 — distribution talaria.school)
+. CAP-DOCCONTEXT (P0 — contenu ancré corpus) ✅
+. CAP-SPD (P0 — contenu ancré objectifs pédagogiques) ✅
+. CAP-CR3-3 (P0 — branchement screenshot, débloque CAP-PREVIEW + CAP-CR3-1) ✅
+. CAP-MP4 (P1 — distribution talaria.school) ✅
+. CAP-CR3-1 (P0 — CI full + probe durée, contrat solidité vidéo) ✅
 . CAP-AUDIO (P1 — qualité perçue)
 . CAP-GLOSSARY (P1 — vocabulaire référentiel)
 . CAP-PROVENANCE (P1 — anti-hallucination)

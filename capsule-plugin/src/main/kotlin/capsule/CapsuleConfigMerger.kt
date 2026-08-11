@@ -35,7 +35,8 @@ object CapsuleConfigMerger {
             manim = mergeManimConfig(envConfig.manim, propertiesConfig.manim, yaml?.manim, cliParams),
             output = mergeOutputConfig(envConfig.output, propertiesConfig.output, yaml?.output, cliParams),
             strictMode = mergeStrictModeConfig(envConfig.strictMode, propertiesConfig.strictMode, yaml?.strictMode, cliParams),
-            context = mergeContextConfig(envConfig.context, propertiesConfig.context, yaml?.context, cliParams)
+            context = mergeContextConfig(envConfig.context, propertiesConfig.context, yaml?.context, cliParams),
+            validation = mergeValidationConfig(envConfig.validation, propertiesConfig.validation, yaml?.validation, cliParams)
         )
     }
 
@@ -130,6 +131,10 @@ object CapsuleConfigMerger {
             context = ContextConfig(
                 docsGlobs = env["CAPSULE_CONTEXT_DOCS_GLOBS"]?.let { splitCommaList(it) } ?: emptyList(),
                 scenarioFile = env["CAPSULE_CONTEXT_SCENARIO_FILE"]?.takeIf { it.isNotBlank() }
+            ),
+            validation = ValidationConfig(
+                durationEnabled = env["CAPSULE_VALIDATION_DURATION_ENABLED"]?.toBoolean() ?: false,
+                toleranceSecs = env["CAPSULE_VALIDATION_TOLERANCE_SECS"]?.toDoubleOrNull() ?: 2.0
             )
         )
     }
@@ -193,6 +198,10 @@ object CapsuleConfigMerger {
             context = ContextConfig(
                 docsGlobs = props["capsule.context.docsGlobs"]?.let { splitCommaList(it) } ?: emptyList(),
                 scenarioFile = props["capsule.context.scenarioFile"]?.takeIf { it.isNotBlank() }
+            ),
+            validation = ValidationConfig(
+                durationEnabled = props["capsule.validation.durationEnabled"]?.toBoolean() ?: false,
+                toleranceSecs = props["capsule.validation.toleranceSecs"]?.toDoubleOrNull() ?: 2.0
             )
         )
     }
@@ -278,6 +287,13 @@ object CapsuleConfigMerger {
     private fun mergeStrictModeConfig(env: StrictModeConfig, props: StrictModeConfig, yaml: StrictModeConfig?, cli: Map<String, Any?>): StrictModeConfig {
         return StrictModeConfig(
             enabled = mergeBoolean(cli, "strictMode.enabled", yaml?.enabled, props.enabled)
+        )
+    }
+
+    private fun mergeValidationConfig(env: ValidationConfig, props: ValidationConfig, yaml: ValidationConfig?, cli: Map<String, Any?>): ValidationConfig {
+        return ValidationConfig(
+            durationEnabled = mergeBoolean(cli, "validation.durationEnabled", yaml?.durationEnabled, props.durationEnabled),
+            toleranceSecs = mergeDouble(cli, "validation.toleranceSecs", yaml?.toleranceSecs, props.toleranceSecs)
         )
     }
 

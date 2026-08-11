@@ -149,6 +149,14 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         outputFormat.set(OutputFormat.fromString(value))
     }
 
+    /** CAP-CR3-1 — duration validation: probe video duration and compare to audio sum. Defaults to false. */
+    val durationValidationEnabled: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
+    /** CAP-CR3-1 — tolerance in seconds for duration validation. Defaults to 2.0. */
+    val durationValidationToleranceSecs: Property<Double> = objects.property(Double::class.java)
+        .convention(2.0)
+
     internal val conventions: CapsuleConventions = CapsuleConventions(
         outputDir = "capsule",
         sliderScriptDir = "capsule",
@@ -185,7 +193,9 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         manimScriptsDir = "src/manim",
         manimOutputDir = "build/capsule/manim",
         manimParallelRender = false,
-        manimParallelRenderThreads = 4
+        manimParallelRenderThreads = 4,
+        durationValidationEnabled = false,
+        durationValidationToleranceSecs = 2.0
     )
 }
 
@@ -225,5 +235,7 @@ data class CapsuleConventions(
     val manimScriptsDir: String,
     val manimOutputDir: String,
     val manimParallelRender: Boolean,
-    val manimParallelRenderThreads: Int
+    val manimParallelRenderThreads: Int,
+    val durationValidationEnabled: Boolean,
+    val durationValidationToleranceSecs: Double
 )

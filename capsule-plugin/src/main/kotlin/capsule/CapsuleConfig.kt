@@ -16,7 +16,8 @@ data class CapsuleConfig(
     val manim: ManimConfig = ManimConfig(),
     val output: OutputConfig = OutputConfig(),
     val strictMode: StrictModeConfig = StrictModeConfig(),
-    val context: ContextConfig = ContextConfig()
+    val context: ContextConfig = ContextConfig(),
+    val validation: ValidationConfig = ValidationConfig()
 )
 
 data class InputConfig(
@@ -199,3 +200,28 @@ data class ManimConfig(
         return errors
     }
 }
+
+/**
+ * Configuration section for video duration validation (CAP-CR3-1 US-2).
+ *
+ * When [durationEnabled] is true, the `validateCapsuleVideoDuration`
+ * task probes the final video duration and compares it against the sum
+ * of the per-slide TTS audio durations. A delta exceeding
+ * [toleranceSecs] fails the build — preventing the "false positive"
+ * where `check` is green but the produced video is truncated or
+ * misaligned.
+ *
+ * Default is disabled to preserve backward compatibility — existing
+ * configs without a `validation` section keep the no-validation
+ * behavior.
+ *
+ * @param durationEnabled  `true` to enable duration validation
+ *        (default `false` — backward compat).
+ * @param toleranceSecs    the tolerance threshold in seconds
+ *        (default `2.0` — realistic for ffmpeg mux drift and
+ *        Playwright capture latency).
+ */
+data class ValidationConfig(
+    val durationEnabled: Boolean = false,
+    val toleranceSecs: Double = 2.0
+)

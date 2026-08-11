@@ -22,6 +22,7 @@ class CapsuleManager(private val project: Project) {
         project.registerCollectAugmentedContextTask()
         project.registerGenerateCapsuleContentTask()
         project.registerDistributeCapsuleVideoTask()
+        project.registerValidateCapsuleVideoDurationTask()
     }
 
     private fun Project.registerExtractSpeakerNotesTask() {
@@ -89,6 +90,50 @@ class CapsuleManager(private val project: Project) {
             task.versioning.set(merged.output.versioning.name)
             task.versionPrefix.set(merged.output.versionPrefix)
             task.format.set(merged.output.format.name)
+        }
+    }
+
+    private fun Project.registerValidateCapsuleVideoDurationTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
+        val capsuleExt = project.extensions.findByType(CapsuleExtension::class.java)
+        tasks.register(
+            "validateCapsuleVideoDuration",
+            capsule.validation.ValidateCapsuleVideoDurationTask::class.java,
+        ) { task ->
+            task.group = CapsuleMessages.get("task.group.verification", lang)
+            task.description = CapsuleMessages.get("task.validateCapsuleVideoDuration.description", lang)
+            task.durationEnabled.set(project.provider {
+                capsuleExt?.durationValidationEnabled?.get()
+                    ?: project.findProperty("capsule.validation.durationEnabled")?.toString()?.toBoolean()
+                    ?: false
+            })
+            task.toleranceSecs.set(project.provider {
+                capsuleExt?.durationValidationToleranceSecs?.get()
+                    ?: project.findProperty("capsule.validation.toleranceSecs")?.toString()?.toDoubleOrNull()
+                    ?: 2.0
+            })
+            task.videoFile.convention(
+                project.layout.buildDirectory.file(
+                    project.provider {
+                        val capDir = project.layout.buildDirectory.dir(
+                            capsuleExt?.outputDir?.get() ?: "capsule"
+                        ).get().asFile
+                        capDir.listFiles { f -> f.name.endsWith(".webm") || f.name.endsWith(".mp4") }
+                            ?.firstOrNull()
+                            ?.let { it.absolutePath }
+                            ?: (capsuleExt?.outputDir?.get() ?: "capsule") + "/video-not-found"
+                    }
+                )
+            )
+            task.audioFiles.from(project.provider {
+                val capDir = project.layout.buildDirectory.dir(
+                    capsuleExt?.outputDir?.get() ?: "capsule"
+                ).get().asFile
+                val audioDirs = capDir.listFiles { f -> f.isDirectory }?.toList() ?: emptyList()
+                audioDirs.flatMap { dir ->
+                    dir.listFiles { f -> f.name.endsWith(".mp3") }?.toList() ?: emptyList()
+                }
+            })
         }
     }
 

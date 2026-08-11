@@ -124,5 +124,13 @@ class CapsulePlugin : Plugin<Project> {
         if (!ext.scenarioFile.isPresent || ext.scenarioFile.get().isBlank()) {
             config.context.scenarioFile?.let { ext.scenarioFile.set(it) }
         }
+
+        // Validation section (CAP-CR3-1)
+        if (!ext.durationValidationEnabled.isPresent || ext.durationValidationEnabled.get() == conventions.durationValidationEnabled) {
+            ext.durationValidationEnabled.set(config.validation.durationEnabled)
+        }
+        if (!ext.durationValidationToleranceSecs.isPresent || ext.durationValidationToleranceSecs.get() == conventions.durationValidationToleranceSecs) {
+            ext.durationValidationToleranceSecs.set(config.validation.toleranceSecs)
+        }
     }
 }

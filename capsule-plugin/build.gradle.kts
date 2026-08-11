@@ -109,6 +109,16 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleFormatCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // CAP-CR3-1 US-3 — duration validation (disabled default, enabled skip,
+        // enabled valid). Dedicated runner so it never runs the full Playwright
+        // suite (pattern S-082). Uses NoOp probe (no real ffprobe).
+        CucumberTaskSpec(
+            name = "cucumberTestDurationValidation",
+            features = listOf("src/test/features/capsule_duration_validation.feature"),
+            tags = listOf("@validation", "@duration"),
+            runnerClass = "capsule.scenarios.CapsuleDurationValidationCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task
