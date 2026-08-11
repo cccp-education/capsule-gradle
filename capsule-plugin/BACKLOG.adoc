@@ -927,44 +927,255 @@ _Total_ : 4 US, ~6 pts.
 === 🔍 EPIC CAP-PROVENANCE — Audit context anti-hallucination (contexte augmenté)
 
 _Vision_ : Le LLM génère des speaker notes à partir d'un contexte augmenté
-multi-canal. L'auteur doit vérifier l'ancrage : quel canal a nourri quelle
-partie ? Sans provenance, le LLM peut halluciner en s'appuyant sur un canal
-vide. `CapsulePipelineGraph` log "Context used: EAGER[INDEX.adoc:1200 chars],
-RAG[chunk-3:500 chars], Graphify[node-42]" → `build/capsule/context-provenance.json`.
-L'auteur inspecte l'ancrage avant de valider les notes.
+multi-canal (EAGER + RAG + Graphify + Docs + Scenario). L'auteur doit
+vérifier l'ancrage : quel canal a nourri quelle partie, avec combien de
+chars/tokens, depuis quels fichiers sources ? Sans provenance, le LLM peut
+halluciner en s'appuyant sur un canal vide et l'auteur n'a aucun moyen de
+diagnostiquer un contexte mal nourri. `collectCapsuleAugmentedContext` produit
+déjà `augmented-context.txt` (le rendu prompt-ready) mais aucun artefact
+d'audit. CAP-PROVENANCE ajoute un artefact compagnon
+`build/capsule/context-provenance.json` qui liste, par canal, les sources
+ayant contribué + leur chars/tokens. L'auteur inspecte l'ancrage avant de
+valider les notes — un canal vide ou sous-alimenté est immédiatement
+visible, pas masqué derrière un rendu flatté.
 
-_Domaine_ : `capsule.context` étendu (provenance tracker).
+_Domaine_ : `capsule.context` étendu (pas de nouveau domaine —
+`ContextProvenance` + `ProvenanceSource` + `ProvenanceTracker` rejoignent
+`CapsuleContextBuilder`/`DocContextLoader`/`PedagogicalScenarioLoader` dans
+le domaine existant).
 
-_Dépendances_ : CAP-ARCH-2 ✅, CAP-ARCH-3 ✅.
+_Dépendances_ : CAP-ARCH-2 ✅ (`CapsuleContextBuilder`/`CapsuleContext`/
+`CollectCapsuleAugmentedContextTask`), CAP-DOCCONTEXT ✅ (`DocContextLoader`),
+CAP-SPD ✅ (`PedagogicalScenarioLoader`), Jackson (déjà dépendance —
+`jacksonObjectMapper()` in `CapsuleCompositeContextTask`,
+`ObjectMapper` in `PedagogicalScenarioLoader`/`ContentPlanValidator`).
+
+_Audit code (S-107)_ :
+- `CapsuleContextBuilder.build(composite, budget, scenarioSection)` (L60-75)
+  — pure object, retourne `CapsuleContext(channels, rendered, scenarioSection)`.
+  Les `channels` sont les `ContextChannel` N0 budgetés + filtrés (non-empty).
+  Aucun tracking du *nom du fichier source* — le `composite.eagerSection` est
+  déjà flatté en un seul string `"--- INDEX.adoc ---\n...\n\n--- AGENT.adoc
+  ---\n..."`, le builder ne sait pas quels fichiers ont contribué.
+- `CollectCapsuleAugmentedContextTask.run()` (L98-132) — assemble le
+  `composite` (EAGER + RAG + Graphify + Docs + config), appelle
+  `CapsuleContextBuilder.build()`, écrit `context.rendered` dans
+  `outputFile` (`augmented-context.txt`). Aucun artefact de provenance.
+  *Le task connaît les sources* : `eagerFiles.files` (EAGER), `docsFiles.files`
+  (DOCS), `scenarioFile.files` (SCENARIO), `ragContent`/`graphifyContent` (RAG/
+  Graphify — single injected string, pas de fichier). Le task est donc le
+  lieu naturel pour tracker les sources — le builder reçoit les données déjà
+  flattées.
+- `ContextChannel` N0 sealed (5 variants : Eager/Rag/Graphify/Resource/Docs)
+  — `type: ChannelType`, `content: String`, `sectionHeader: String`,
+  `name: String`, `isNotEmpty()`, `truncateToTokens()`, `estimateTokens()`.
+  Aucun champ source file dans le contrat N0 — toucher au sealed = bump
+  codebase-contracts multi-borough. Décision : provenance est *capsule-local*,
+  pas N0 (pattern CAP-SPD-2 `scenarioSection`).
+- `ChannelBudget` N0 — `totalTokenBudget` + 5 fractions (0.40/0.30/0.20/0.10/0).
+  Pas de tracking per-source.
+- `ContextConfig` (2 champs `docsGlobs`/`scenarioFile`) — pas de config
+  provenance. Décision : pas de nouvelle config (provenance always-on, cheap).
+- `CapsuleConfigMerger` — pas de `mergeProvenanceConfig`.
+- `CapsuleExtension`/`CapsuleConventions`/`pushConfigIntoExtension` — pas de
+  properties provenance.
+- `CapsuleMessages` — 31 keys, pas de clé provenance (pas de nouvelle tâche).
+- Jackson déjà dépendance : `jacksonObjectMapper()` (`CapsuleCompositeContextTask` L88),
+  `ObjectMapper()` (`PedagogicalScenarioLoader` L36, `ContentPlanValidator` L37),
+  `YAMLFactory` (`CapsuleConfigLoader` L21). `jackson-module-kotlin` +
+  `jackson-databind` + `jackson-dataformat-yaml` en `implementation`.
+- 12 `CucumberTaskSpec` existants (11 cucumber dédiés + `cucumberTestIntegration`).
+  Pattern S-082 `@SelectClasspathResource` + filter tags.
+- `CapsuleContextCucumberRunner` (S-082) — runner de référence pour
+  `capsule_context.feature` `@context`. `CapsuleContextSteps` — steps de
+  référence (GradleRunner, `artefact()` lit `build/capsule/augmented-context.txt`).
+- `CapsuleScenarioContextCucumberRunner` — 2ème runner de référence
+  (`@context @scenario`, steps préfixés "scenario context", bug S-088 glue
+  partagée). `capsule_scenario_context.feature` 3 scénarios.
+
+_Décisions architecturales (US-0, Session 107)_ :
+
+. *Pas de nouveau domaine* — `ContextProvenance` + `ProvenanceSource` +
+  `ProvenanceTracker` rejoignent `capsule.context` (existant, 6 fichiers).
+  La provenance est un artefact compagnon du contexte augmenté, pas une
+  responsabilité distincte. Pattern CAP-SPD (extension capsule-local, pas N0).
+
+. *`ProvenanceSource` data class immutable* — `fileName: String`, `chars:
+  Int`, `tokens: Int`. Un canal peut avoir N sources (EAGER = N fichiers,
+  DOCS = N fichiers, RAG/Graphify = 1 source "injected", SCENARIO = 1
+  fichier). Invariant : `chars >= 0`, `tokens >= 0`. Pas de `init` fail-fast
+  (les valeurs sont calculées, pas user-input).
+
+. *`ContextProvenance` data class immutable* — `channels: List<ProvenanceChannel>`.
+  `ProvenanceChannel` data class — `channel: String` (EAGER/RAG/GRAPHIFY/DOCS/
+  SCENARIO), `sources: List<ProvenanceSource>`. Aggregate `totalChars(): Int`,
+  `totalTokens(): Int`. `toJson(): String` (Jackson `ObjectMapper` +
+  `INDENT_OUTPUT`, schema `{ "channels": [...], "totalChars": N, "totalTokens":
+  M }`). Pas d'invariant fail-fast (une provenance vide est légitime —
+  contexte vide).
+
+. *`ProvenanceTracker` mutable accumulator* — PAS un object pur (accumule
+  state pendant le build). `trackChannel(channel: String, sources:
+  List<ProvenanceSource>)`, `build(): ContextProvenance`. Construit par le
+  task, passé au builder. Pattern : tracker mutable + snapshot immutable
+  (`build()` gèle l'état). Le builder ne possède pas le tracker — il le
+  nourrit via callback/lambdas. Décision : le *task* construit le tracker
+  et le passe au builder, car le task connaît les sources (eagerFiles,
+  docsFiles, scenarioFile) que le builder a déjà flattées. Le builder
+  signale au tracker quels canaux sont non-empty (après budget+filter), le
+  task enregistre les sources par canal.
+
+. *`CapsuleContextBuilder.build()` étendu — tracker optional* — signature
+  `build(composite, budget, scenarioSection = "", tracker:
+  ProvenanceTracker? = null): CapsuleContext`. Quand `tracker != null`, le
+  builder signale les canaux non-empty après budget+filter (`tracker.
+  trackChannel("EAGER", ...)` etc.). Backward compat : `tracker = null`
+  (défaut) → aucun tracking, tests existants inchangés. Le builder ne
+  calcule PAS les sources — il valide quels canaux ont survécu au budget,
+  le task fournit les sources (le builder n'a pas accès aux File objects).
+
+. *Wiring `CollectCapsuleAugmentedContextTask`* — construct `ProvenanceTracker`
+  avant `build()`, passe au builder, récupère `tracker.build()`, écrit
+  `provenance.toJson()` dans nouveau `@OutputFile provenanceFile: RegularFileProperty`
+  (`build/capsule/context-provenance.json`). Tracking des sources par canal :
+  - EAGER : `eagerFiles.files.sortedBy { it.name }` → N `ProvenanceSource(
+    fileName = file.name, chars = file.readText().length, tokens =
+    ContextChannel.estimateTokens(file.readText()))`.
+  - RAG : 1 source `ProvenanceSource(fileName = "rag-injected", chars =
+    ragContent.length, tokens = estimateTokens(ragContent))` si non-blank.
+  - Graphify : 1 source `ProvenanceSource(fileName = "graphify-injected",
+    ...)` si non-blank.
+  - DOCS : `docsFiles.files` (ou `docsContent` legacy si pas de globs) → N
+    sources.
+  - SCENARIO : `scenarioFile.files.firstOrNull()` → 1 source si résolu.
+  Le task ne tracker QUE les canaux non-empty après build (le builder
+  signale quels canaux ont survécu). Un canal budget-tronqué à 0 est skippé.
+
+. *Pas de config, pas de DSL, pas de 4 sources* — provenance est *always-on*
+  (cheap : pas de LLM, pas de réseau, pas de FFmpeg, Jackson serialize <
+  1ms). Pas de `CapsuleExtension` property, pas de `CapsuleConventions`
+  champ, pas de `pushConfigIntoExtension` change, pas de `mergeProvenanceConfig`.
+  Pas de `ContextConfig` champ. Décision : la provenance est un artefact
+  *diagnostic*, pas une feature configurable. Toujours écrit compagnon de
+  `augmented-context.txt`. L'auteur peut l'ignorer, pas la désactiver.
+
+. *Économie d'encre (AGENT.adoc)* — `provenanceFile` est `@OutputFile`
+  déclaré, le task est UP-TO-DATE quand `augmented-context.txt` l'est (même
+  task, mêmes inputs). Pas de re-serialize inutile. Pas de probe (la
+  provenance est calculée pendant le build, pas re-probée après).
+
+. *JSON format* — Jackson `ObjectMapper` + `SerializationFeature.INDENT_OUTPUT`
+  (lisibilité pour l'auteur). Pas de YAML (JSON est le format d'audit
+  machine + humain). Schema :
+  `{ "channels": [{ "channel": "EAGER", "sources": [{ "fileName":
+  "INDEX.adoc", "chars": 1200, "tokens": 300 }] }], "totalChars": 4500,
+  "totalTokens": 1100 }`. Pas de timestamp (la provenance est régénérée à
+  chaque build, pas une archive historique).
+
+. *Cucumber runner dédié* `CapsuleProvenanceCucumberRunner` (pattern S-082
+  `@SelectClasspathResource("features/capsule_provenance.feature")` + filter
+  `@context and @provenance and not @wip and not @integration`). Steps
+  `CapsuleProvenanceSteps` préfixés "provenance" (bug S-088 glue
+  `capsule.scenarios` partagée — step texts uniques : "provenance JSON
+  contains channel" vs context "augmented context artefact contains").
+  `CucumberTaskSpec("cucumberTestProvenance")` 13ème câblé `build.gradle.kts`
+  (12ème cucumber dédié, 13ème `CucumberTaskSpec` avec integration).
+
+. *`CapsuleMessages` non étendu* — pas de nouvelle tâche Gradle (provenance
+  est un output de `collectCapsuleAugmentedContext` existant). Pas de clé
+  `task.*.provenance*` ni `task.group.provenance`. Le log `CAPSULE CONTEXT →`
+  existant (L125-128) est étendu d'une 2ème ligne `CAPSULE PROVENANCE →
+  N channels, M sources → <provenanceFile.absolutePath>` (pattern
+  `CAPSULE CONTEXT →`).
 
 [cols="1,3,2,2", options="header"]
 |===
 | US | Description | Pts | Statut
 
 | CAP-PROVENANCE-0
-| *Cadrage EPIC* — vision, format provenance (JSON), découpage US. MàJ
-INDEX/BACKLOG/PROMPT_REPRISE.
+| *Cadrage EPIC* — audit code (`CapsuleContextBuilder.build` L60-75,
+  `CollectCapsuleAugmentedContextTask.run` L98-132, `ContextChannel` N0
+  sealed pas de source file, `ContextConfig` 2 champs pas de provenance,
+  `CapsuleExtension`/`CapsuleConventions`/`pushConfigIntoExtension` pas de
+  provenance, Jackson déjà dépendance, 12 `CucumberTaskSpec` existants,
+  `CapsuleContextCucumberRunner`/`CapsuleScenarioContextCucumberRunner`
+  runners de référence), 11 décisions architecturales (pas de nouveau
+  domaine, `ProvenanceSource`/`ContextProvenance`/`ProvenanceChannel` data
+  classes immutable, `ProvenanceTracker` mutable accumulator, `CapsuleContextBuilder.
+  build()` tracker optional backward compat, wiring `CollectCapsuleAugmented
+  ContextTask` `@OutputFile provenanceFile`, pas de config/DSL/4 sources
+  always-on, économie d'encre `@OutputFile` UP-TO-DATE, JSON format Jackson
+  INDENT_OUTPUT, runner dédié `CapsuleProvenanceCucumberRunner` + steps
+  préfixés "provenance" + `CucumberTaskSpec("cucumberTestProvenance")` 13ème,
+  `CapsuleMessages` non étendu pas de nouvelle tâche). MàJ
+  INDEX/BACKLOG/PROMPT_REPRISE.
 | 1
-| ⬜ TODO
+| ✅ TERMINÉ (S-107)
 
 | CAP-PROVENANCE-1
-| *`ContextProvenance` data class + `ProvenanceTracker`* — tracker accumule
-pendant `CapsuleContextBuilder.build()` : canal, source file, chars, tokens.
-`@OutputFile` dans `collectCapsuleAugmentedContext`. Baby-step TDD : ~6 unit
-(track channel, accumulate chars, JSON serialize, empty context).
+| *`ProvenanceSource` + `ProvenanceChannel` + `ContextProvenance` +
+  `ProvenanceTracker` + `CapsuleContextBuilder.build()` étendu* — domaine
+  `capsule.context` étendu. `ProvenanceSource(fileName: String, chars: Int,
+  tokens: Int)` data class immutable. `ProvenanceChannel(channel: String,
+  sources: List<ProvenanceSource>)` data class immutable + `totalChars()` +
+  `totalTokens()`. `ContextProvenance(channels: List<ProvenanceChannel])`
+  data class immutable + `totalChars()` + `totalTokens()` + `toJson():
+  String` (Jackson `ObjectMapper` + `INDENT_OUTPUT`). `ProvenanceTracker`
+  mutable accumulator — `trackChannel(channel: String, sources:
+  List<ProvenanceSource>)` + `build(): ContextProvenance`. `CapsuleContextBuilder.
+  build(composite, budget, scenarioSection = "", tracker: ProvenanceTracker?
+  = null): CapsuleContext` — quand tracker non-null, signale les canaux
+  non-empty après budget+filter. Backward compat : tracker null (défaut) →
+  aucun tracking, tests existants inchangés. Baby-step TDD : ~10 unit
+  (ProvenanceSource defaults, ProvenanceChannel aggregate, ContextProvenance
+  empty + toJson `{"channels":[]}`, ContextProvenance non-empty toJson
+  structure, ProvenanceTracker track + build, ProvenanceTracker empty build,
+  CapsuleContextBuilder with null tracker backward compat, CapsuleContextBuilder
+  with non-null tracker tracks EAGER channel, CapsuleContextBuilder with
+  non-null tracker tracks scenario channel).
 | 2
-| ⬜ TODO
+| ✅ TERMINÉ (S-108)
 
 | CAP-PROVENANCE-2
-| *Wiring + Cucumber* — `collectCapsuleAugmentedContext` étendu +
-`capsule_provenance.feature` `@context @provenance` (3 scénarios : provenance
-JSON generated, channels tracked, empty context → empty provenance). Runner
-dédié (pattern S-082). 1 functional + 3 cucumber.
+| *Wiring `CollectCapsuleAugmentedContextTask` + Cucumber BDD* — nouveau
+  `@OutputFile provenanceFile: RegularFileProperty` (`build/capsule/context-
+  provenance.json`). `ProvenanceTracker` construit avant `build()`, passé
+  au builder, `tracker.build().toJson()` écrit dans `provenanceFile`. Tracking
+  des sources par canal (EAGER = eagerFiles, RAG/Graphify = single injected,
+  DOCS = docsFiles ou docsContent legacy, SCENARIO = scenarioFile). Log
+  `CAPSULE PROVENANCE → N channels, M sources → <path>` (2ème ligne après
+  `CAPSULE CONTEXT →`). 1 functional (`CollectProvenanceFunctionalTest` :
+  provenance JSON generated, channels tracked, empty context → empty
+  provenance). Cucumber `capsule_provenance.feature` `@context @provenance`
+  (3 scénarios : provenance JSON generated with EAGER+RAG+DOCS channels
+  tracked, channels tracked with file names + chars + tokens, empty
+  context → empty provenance JSON `{"channels":[]}`). Runner dédié
+  `CapsuleProvenanceCucumberRunner` (pattern S-082
+  `@SelectClasspathResource` + filter `@context and @provenance and not @wip
+  and not @integration`). Steps `CapsuleProvenanceSteps` préfixés
+  "provenance" (bug S-088 glue `capsule.scenarios` partagée — step texts
+  uniques). `CucumberTaskSpec("cucumberTestProvenance")` 13ème câblé
+  `build.gradle.kts` (12ème cucumber dédié). Baby-step TDD/BDD : 1
+  functional + 3 cucumber.
 | 2
-| ⬜ TODO
+| ✅ TERMINÉ (S-108)
 |===
 
-_Total_ : 3 US, ~5 pts.
+_Total_ : 3 US, ~5 pts. _Méthode_ : baby-step DDD/TDD/BDD, 3 niveaux
+tests/US (unit → functional → cucumber), English only code/Gherkin.
+_Pattern de référence_ : CAP-SPD S-094/095 (extension capsule-local
+`scenarioSection`, `PedagogicalScenarioLoader` mirror), CAP-DOCCONTEXT
+S-093 (`DocContextLoader`, `ContextConfig` 4 sources), CAP-ARCH-2 S-085
+(`CapsuleContextBuilder`, `CollectCapsuleAugmentedContextTask`).
+_Séquence_ : US-0 cadrage ✅ S-107 → US-1 data classes + builder étendu unit
+✅ S-108 → US-2 wiring + functional + cucumber ✅ S-108. **EPIC
+CAP-PROVENANCE TERMINÉ 3/3 US (S-108)** — domaine `capsule.context` clos
+(10 fichiers prod : `CapsuleContextBuilder`, `CapsuleContext`,
+`CollectCapsuleAugmentedContextTask`, `DocContextLoader`,
+`PedagogicalScenarioLoader`, `PedagogicalScenario`, `ProvenanceSource`,
+`ProvenanceChannel`, `ContextProvenance`, `ProvenanceTracker`). `check`
+BUILD SUCCESSFUL : 834 unit (+15) + 62 functional (+2) + 3 cucumber
+`capsule_provenance.feature` GREEN. Zéro régression, zéro secret.
 
 === 📝 EPIC CAP-TRANSCRIPT — Reverse pipeline capsule → article AsciiDoc (contexte augmenté)
 
@@ -2028,7 +2239,7 @@ _Total_ : 3 US, ~4 pts.
 | 3
 | 5
 | 🟠 P1
-| ⬜ TODO
+| ✅ TERMINÉ (S-108 3/3 US — US-0 cadrage S-107, US-1 unit S-108, US-2 wiring+functional+cucumber S-108)
 
 | Contexte
 | CAP-TRANSCRIPT
@@ -2093,9 +2304,9 @@ _Total_ : 11 EPICs, 47 US, ~88 pts. _Séquence MVP0 recommandée_ :
 . CAP-CR3-3 (P0 — branchement screenshot, débloque CAP-PREVIEW + CAP-CR3-1) ✅
 . CAP-MP4 (P1 — distribution talaria.school) ✅
 . CAP-CR3-1 (P0 — CI full + probe durée, contrat solidité vidéo) ✅
-. CAP-AUDIO (P1 — qualité perçue)
+. CAP-AUDIO (P1 — qualité perçue) ✅
 . CAP-GLOSSARY (P1 — vocabulaire référentiel)
-. CAP-PROVENANCE (P1 — anti-hallucination)
+. CAP-PROVENANCE (P1 — anti-hallucination) ✅
 . CAP-CHAPITRE (P2 — navigabilité 32 capsules)
 . CAP-TRANSCRIPT (P2 — livrable révision article)
 . CAP-PODCAST (P2 — mobilité)

@@ -130,6 +130,16 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleAudioPostCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // CAP-PROVENANCE US-2 — context provenance audit artefact.
+        // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
+        // Validates the context-provenance.json channels/sources/totals + log line.
+        CucumberTaskSpec(
+            name = "cucumberTestProvenance",
+            features = listOf("src/test/features/capsule_provenance.feature"),
+            tags = listOf("@context", "@provenance"),
+            runnerClass = "capsule.scenarios.CapsuleProvenanceCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task

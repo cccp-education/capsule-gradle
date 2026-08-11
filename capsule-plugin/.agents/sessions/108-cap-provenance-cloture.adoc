@@ -1,0 +1,186 @@
+= Session 108 — CAP-PROVENANCE US-1 + US-2 + Clôture EPIC CAP-PROVENANCE (3/3 US)
+
+_Date_ : 2026-08-11
+_Type_ : feat+ddd+tdd+bdd+cucumber+cloture
+_Score_ : 9/10
+
+== Mission
+
+Livrer les 2 US restantes du EPIC CAP-PROVENANCE : US-1 (data classes
+`ProvenanceSource`/`ProvenanceChannel`/`ContextProvenance` + `ProvenanceTracker`
++ `CapsuleContextBuilder.build()` étendu tracker optional) et US-2 (wiring
+`CollectCapsuleAugmentedContextTask` `@OutputFile provenanceFile` + tracking
+5 canaux + functional + Cucumber). Clôture EPIC CAP-PROVENANCE TERMINÉ 3/3 US.
+
+== Contexte d'ouverture
+
+- Session 107 terminée (CAP-PROVENANCE US-0 cadrage, zéro code modifié).
+- EPIC CAP-PROVENANCE 1/3 US (US-0 ✅ S-107). Reste US-1 + US-2.
+- 819 unit VERT + 60 functional VERT (baseline S-104/105, inchangé S-106/107).
+- 11 cucumber dédiés GREEN. `cucumberTestProvenance` 13ème `CucumberTaskSpec`
+  à câbler US-2.
+- Git : 4 fichiers gouvernance modifiés non commités (INDEX/BACKLOG/PROMPT_REPRISE/TODO).
+- Build compile (`compileKotlin` BUILD SUCCESSFUL 46s).
+
+== Ce qui a été fait
+
+. **US-1 — RED : 15 unit tests** — `ContextProvenanceTest` (12 unit :
+  `ProvenanceSource` defaults/preserves, `ProvenanceChannel` aggregate
+  empty/non-empty, `ContextProvenance` empty toJson `{"channels":[]}` /
+  non-empty toJson structure / totals aggregate, `ProvenanceTracker`
+  empty build / frozen snapshot / ignore empty source list / replace
+  repeated channel / retainOnly prune) + `CapsuleContextBuilderTest` étendu
+  (3 unit : null tracker backward compat, non-null tracker tracks EAGER
+  channel, non-null tracker tracks SCENARIO channel). RED confirmé :
+  `Unresolved reference 'ProvenanceSource'`.
+
+. **US-1 — GREEN : 4 fichiers prod + builder étendu** — `ProvenanceSource.kt`
+  (data class immutable fileName/chars/tokens, pas de fail-fast), `ProvenanceChannel.kt`
+  (data class channel/sources + `totalChars()`/`totalTokens()`), `ContextProvenance.kt`
+  (data class channels + `totalChars`/`totalTokens` `@get:JsonProperty` exposés
+  dans le JSON + `toJson()` Jackson `INDENT_OUTPUT`, `SCENARIO_CHANNEL` const),
+  `ProvenanceTracker.kt` (mutable accumulator `trackChannel` replace semantics +
+  ignore empty list + `retainOnly` prune + `build()` snapshot immutable).
+  `CapsuleContextBuilder.build()` étendu `tracker: ProvenanceTracker? = null`
+  (pattern CAP-SPD-2 mirror) — quand non-null, prunes le tracker aux canaux
+  qui ont survécu au budget (`it.type.name`) + SCENARIO si scenario non-blank.
+  Backward compat : null → aucun tracking, tests existants inchangés.
+
+. **US-1 — GREEN itération** — 2 tests échouaient : Jackson ne sérialise pas
+  les `fun totalChars()`/`totalTokens()` → converties en propriétés
+  `@get:JsonProperty("totalChars")`/`("totalTokens")`. 12/12 `ContextProvenanceTest`
+  + 3/3 builder GREEN.
+
+. **US-1 — REFACTOR** — `./gradlew test` BUILD SUCCESSFUL. **834 unit VERT**
+  (+15 net : 12 `ContextProvenanceTest` + 3 `CapsuleContextBuilderTest`),
+  0 failures. Zéro régression.
+
+. **US-2 — RED : `CollectProvenanceFunctionalTest`** (2 tests) : provenance
+  JSON generated avec EAGER (3 sources adoc) + RAG (`rag-injected`) +
+  Graphify (`graphify-injected`) channels, chars/tokens mesurés, log
+  `CAPSULE PROVENANCE →` ; empty context → provenance JSON
+  `{"channels":[]}`, totalChars/totalTokens 0.
+
+. **US-2 — GREEN : wiring** — `CollectCapsuleAugmentedContextTask` étendu :
+  `@OutputFile provenanceFile: RegularFileProperty` (`build/capsule/context-
+  provenance.json`) + `trackSources(tracker)` privé (EAGER = eagerFiles
+  filtrés existants → N sources nom de fichier + chars `readText().length`
+  + tokens `ContextChannel.estimateTokens` ; RAG/Graphify = 1 source
+  `rag-injected`/`graphify-injected` si non-blank ; DOCS = docsFiles ou
+  `docs-injected` legacy ; SCENARIO = compagnon `.adoc` résolu depuis
+  répertoire ou fichier direct) + `run()` construit le tracker avant
+  `build(composite, budget, scenarioSection, tracker)` + log 2ème ligne
+  `CAPSULE PROVENANCE → N channels, M sources → <path>`.
+  `CapsuleManager.registerCollectAugmentedContextTask` : `task.provenanceFile.set(
+  project.layout.buildDirectory.file("capsule/context-provenance.json"))`.
+
+. **US-2 — GREEN itération (bug fix)** — Le functional "empty context"
+  échouait `FileNotFoundException` sur AGENT.adoc absent : le KDoc disait
+  "missing files skipped" mais le code lisait sans vérifier. Fix TDD :
+  `.filter { it.exists() }` sur `eagerFiles` (dans `run()` et `trackSources`)
+  + `docsFiles` — aligné sémantique, nécessaire pour le cas contexte vide.
+
+. **US-2 — GREEN itération (bug fix)** — `check` révélait un crash
+  `ScenarioContextFunctionalTest` : `scenarioFile` peut être un *répertoire*
+  (CAP-SPD-3), `readText()` sur un dossier → `FileNotFoundException`. Fix :
+  résolution du compagnon `.adoc` (répertoire → premier `.adoc`, fichier →
+  direct) dans `trackSources` SCENARIO.
+
+. **US-2 — Cucumber BDD** — `capsule_provenance.feature` (3 scénarios
+  `@context @provenance` : provenance JSON generated with EAGER+RAG+Graphify
+  channels tracked, channels carry file names + chars + tokens, empty
+  context → empty provenance JSON) + `CapsuleProvenanceSteps` (14 step defs
+  préfixés "provenance" — bug S-088 glue `capsule.scenarios` partagée) +
+  `CapsuleProvenanceCucumberRunner` (pattern S-082 `@SelectClasspathResource`
+  + filter `@context and @provenance and not @wip and not @integration`) +
+  `CucumberTaskSpec("cucumberTestProvenance")` 13ème câblé `build.gradle.kts`
+  (12ème cucumber dédié, après `cucumberTestAudioPost`, avant
+  `cucumberTestIntegration`).
+
+. **US-2 — GREEN cucumber** — `./gradlew cucumberTestProvenance -PrunCucumber`
+  : **3/3 scénarios PASSED** (~1m55s).
+
+. **US-2 — REFACTOR — `./gradlew check`** — BUILD SUCCESSFUL in 15m52s.
+  **834 unit VERT** + **62 functional VERT** (+2 `CollectProvenanceFunctionalTest`)
+  + 3 cucumber `capsule_provenance.feature` GREEN. Zéro régression, zéro
+  secret (`rg "TOKEN|SECRET|PASSWORD|API_KEY|gho_|ghp_"` = clean, seul
+  match `DEFAULT_TOKEN_BUDGET` faux positif).
+
+== Statut EPIC CAP-PROVENANCE
+
+[cols="1,3,1,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-PROVENANCE-0 | Cadrage EPIC (11 décisions architecturales) | 1 | ✅ S-107
+
+| CAP-PROVENANCE-1 | `ProvenanceSource`/`ProvenanceChannel`/`ContextProvenance`/`ProvenanceTracker` + builder étendu | 2 | ✅ S-108
+
+| CAP-PROVENANCE-2 | Wiring `CollectCapsuleAugmentedContextTask` `provenanceFile` + tracking 5 canaux + functional + cucumber | 2 | ✅ S-108
+|===
+
+_Total_ : 3 US, ~5 pts. _Statut_ : ✅ TERMINÉ (3/3 US). EPIC clos.
+
+_Domaine `capsule.context` clos_ (10 fichiers prod :
+`CapsuleContextBuilder`, `CapsuleContext`, `CollectCapsuleAugmentedContextTask`,
+`DocContextLoader`, `PedagogicalScenarioLoader`, `PedagogicalScenario`,
+`ProvenanceSource`, `ProvenanceChannel`, `ContextProvenance`, `ProvenanceTracker`).
+
+== Totaux tests
+
+[cols="2,1,1,1", options="header"]
+|===
+| Niveau | Avant (S-107) | Après (S-108) | Delta
+| Unit | 819 | 834 | +15
+| Functional | 60 | 62 | +2
+| Cucumber `@context @provenance` | 0 | 3 | +3
+|===
+
+_13 `CucumberTaskSpec` total_ (12 cucumber dédiés + `cucumberTestIntegration`).
+
+== Fichiers créés (7)
+
+. `src/main/kotlin/capsule/context/ProvenanceSource.kt` — data class immutable.
+. `src/main/kotlin/capsule/context/ProvenanceChannel.kt` — data class + aggregates.
+. `src/main/kotlin/capsule/context/ContextProvenance.kt` — data class + `toJson()` Jackson INDENT_OUTPUT.
+. `src/main/kotlin/capsule/context/ProvenanceTracker.kt` — mutable accumulator + snapshot.
+. `src/test/kotlin/capsule/context/ContextProvenanceTest.kt` (12 unit).
+. `src/functionalTest/kotlin/capsule/context/CollectProvenanceFunctionalTest.kt` (2 tests).
+. `src/test/features/capsule_provenance.feature` (3 scénarios `@context @provenance`)
+  + `CapsuleProvenanceSteps.kt` (14 step defs) + `CapsuleProvenanceCucumberRunner.kt` (pattern S-082).
+
+== Fichiers modifiés (4)
+
+. `src/main/kotlin/capsule/context/CapsuleContextBuilder.kt` — `build()` étendu
+  tracker optional + KDoc (pattern CAP-SPD-2).
+. `src/main/kotlin/capsule/context/CollectCapsuleAugmentedContextTask.kt` —
+  `@OutputFile provenanceFile` + `trackSources(tracker)` + filtrage fichiers
+  existants + résolution SCENARIO `.adoc` compagnon + log `CAPSULE PROVENANCE →`.
+. `src/main/kotlin/capsule/CapsuleManager.kt` — `task.provenanceFile.set(...)`.
+. `src/test/kotlin/capsule/context/CapsuleContextBuilderTest.kt` — +3 unit tracker.
+. `build.gradle.kts` — `CucumberTaskSpec("cucumberTestProvenance")` 13ème.
+
+== Prochaine session (109)
+
+EPICs restants dans le BACKLOG (séquence MVP0) :
+- CAP-GLOSSARY (P1) — Injection terminologique, 4 US ~6 pts.
+- CAP-CHAPITRE (P2) — Intro/outro + chapter markers, 5 US ~10 pts.
+- CAP-TRANSCRIPT (P2) — Reverse pipeline capsule → AsciiDoc, 5 US ~10 pts.
+- CAP-PODCAST (P2) — Extraction audio-only, 3 US ~4 pts.
+- CAP-PREVIEW (P2) — Mode dry-run, 3 US ~4 pts.
+- CAP-CR3-4 (P2, maintenance) — convention Gradle explicite resolveScriptDir/resolveDeckDir.
+- CAP-27 (P2, maintenance) — VTT burn-in.
+- CAP-28 (P2, maintenance) — coverage gaps.
+
+_Candidat suggéré_ : CAP-GLOSSARY (P1, suivant dans la roadmap). Décision
+lors de la clôture.
+
+== Vérifications finales
+
+. `git status` : working tree non commité (Règle 1, demander permission de commit).
+. `rg "TOKEN|SECRET|PASSWORD|API_KEY|gho_|ghp_"` : zéro secret.
+. `./gradlew check` : BUILD SUCCESSFUL in 15m52s.
+. 834 unit + 62 functional + 3 cucumber GREEN, zéro régression.
+. Étape 7 sync backlog : BACKLOG (section détaillée US-1/US-2 ✅ S-108 +
+  table agrégée ✅ TERMINÉ + séquence roadmap ✅) + TODO (section EPIC
+  TERMINÉ 3/3 US + header session 108) synchronisés.

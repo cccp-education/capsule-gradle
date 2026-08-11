@@ -944,3 +944,55 @@ Domaine `capsule.audio` (10ème) clos (6 fichiers prod : `AudioPostConfig`,
 `NoOpAudioPostProcessor`, `AudioPostCommand`, `AudioPostException`).
 
 Rapport : `.agents/sessions/106-cap-audio-us4-cucumber-cloture.adoc`.
+
+== Session 108 — CAP-PROVENANCE US-1+US-2 + clôture EPIC CAP-PROVENANCE (3/3 US) ✅
+
+_Date_ : 2026-08-11
+_Type_ : feat+tdd+functional+cucumber+cloture
+
+EPIC CAP-PROVENANCE (P1, 3 US ~5 pts) TERMINÉ — l'artefact de provenance
+`build/capsule/context-provenance.json` liste par canal les sources ayant
+contribué au contexte augmenté + chars/tokens (ancrage anti-hallucination).
+
+US-1 (data classes + builder étendu) : `ProvenanceSource(fileName, chars,
+tokens)` + `ProvenanceChannel(channel, sources)` + `ContextProvenance`
+(`totalChars`/`totalTokens` exposés JSON via `@get:JsonProperty` — les `fun`
+ne sérialisent pas Jackson, `toJson()` INDENT_OUTPUT, `SCENARIO_CHANNEL`)
++ `ProvenanceTracker` mutable accumulator (`trackChannel` replace + ignore
+empty, `retainOnly` prune, `build()` snapshot) — 4 fichiers prod domaine
+`capsule.context`. `CapsuleContextBuilder.build()` étendu
+`tracker: ProvenanceTracker? = null` (prune aux canaux survivants
+`it.type.name` + SCENARIO conditionnel, backward compat null).
+
+US-2 (wiring + functional + cucumber) : `CollectCapsuleAugmentedContextTask`
+`@OutputFile provenanceFile` + `trackSources(tracker)` (EAGER = eagerFiles
+`.filter{it.exists()}` + estimateTokens ; RAG = `rag-injected` ; Graphify =
+`graphify-injected` ; DOCS = docsFiles ou `docs-injected` ; SCENARIO =
+compagnon `.adoc`) + log `CAPSULE PROVENANCE → N channels, M sources → <path>`.
+`CapsuleManager.registerCollectAugmentedContextTask` : `provenanceFile.set(...)`.
+
+2 fix TDD (itérations GREEN) : (a) FileNotFoundException sur AGENT.adoc
+absent → `.filter{it.exists()}` sur eagerFiles (run+trackSources) et
+docsFiles ; (b) `scenarioFile` répertoire CAP-SPD-3 → résolution compagnon
+`.adoc` (crash `ScenarioContextFunctionalTest`).
+
+Baby-step TDD/BDD : unit → functional → cucumber.
+. **RED** : 15 unit (12 `ContextProvenanceTest` + 3 builder) +
+   2 functional (`CollectProvenanceFunctionalTest`) + feature/steps/runner
+. **GREEN** : 4 fichiers prod + builder étendu + wiring task + fix (a)(b)
+. **REFACTOR** : `./gradlew check` BUILD SUCCESSFUL in 15m52s
+
+Totaux : 834 unit VERT (+15 net) + 62 functional VERT (+2) + 3 cucumber
+GREEN (`capsule_provenance.feature` via `cucumberTestProvenance`
+`CucumberTaskSpec` 13ème, ~1m55s). Zéro régression, zéro secret.
+
+EPIC CAP-PROVENANCE TERMINÉ 3/3 US :
+ . US-0 cadrage (S-107) — audit 6 points + 11 décisions architecturales
+ . US-1 data classes + builder (S-108) — 15 unit
+ . US-2 wiring + functional + cucumber (S-108) — 2 functional + 3 cucumber
+
+Domaine `capsule.context` clos (10 fichiers prod : CapsuleContext +
+CapsuleContextBuilder + DocContextLoader + SpdContext + SpdContextLoader +
+CollectCapsuleAugmentedContextTask + 4 Provenance*).
+
+Rapport : `.agents/sessions/108-cap-provenance-cloture.adoc`.

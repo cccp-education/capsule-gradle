@@ -1,0 +1,64 @@
+= Session 107 — CAP-PROVENANCE US-0 Cadrage EPIC audit context anti-hallucination
+
+_Date_ : 2026-08-11
+_Type_ : cadrage+gouvernance
+_Score_ : 9/10
+
+== Mission
+
+Cadrer le EPIC CAP-PROVENANCE (P1, 3 US ~5 pts) : audit du code réel du
+contexte augmenté pour ajouter un artefact de provenance
+(`build/capsule/context-provenance.json`) qui liste, par canal, les sources
+ayant contribué au contexte augmenté + leurs chars/tokens — l'ancrage
+anti-hallucination. Session de gouvernance pure : zéro code modifié.
+
+== Ce qui a été fait
+
+. **Audit code** — 6 points audités :
+  - `CapsuleContextBuilder.build(composite, budget, scenarioSection)` L60-75
+    — pure object, les `channels` sont les `ContextChannel` N0 budgetés +
+    filtrés, aucun tracking du nom de fichier source (le `composite.eagerSection`
+    est déjà flatté en un seul string).
+  - `CollectCapsuleAugmentedContextTask.run()` L98-132 — assemble le
+    `composite`, écrit `augmented-context.txt`, aucun artefact de provenance.
+    *Le task connaît les sources* (`eagerFiles.files`/`docsFiles.files`/
+    `scenarioFile.files`/`ragContent`/`graphifyContent`) — lieu naturel du tracking.
+  - `ContextChannel` N0 sealed 5 variants — aucun champ source file = bump
+    codebase-contracts multi-borough si touché → **extension capsule-local**
+    (pattern CAP-SPD-2 `scenarioSection`).
+  - `ChannelBudget` N0 (8000 tokens, 0.40/0.30/0.20/0.10/0) — pas de per-source.
+  - `ContextConfig` 2 champs, `CapsuleConfigMerger`/`CapsuleExtension`/
+    `CapsuleConventions`/`pushConfigIntoExtension` pas de provenance.
+  - Jackson déjà dépendance (`jacksonObjectMapper`/`ObjectMapper`/`YAMLFactory`),
+    12 `CucumberTaskSpec` existants, runners de référence
+    `CapsuleContextCucumberRunner` + `CapsuleScenarioContextCucumberRunner`.
+
+. **11 décisions architecturales** :
+  1. Pas de nouveau domaine — `ContextProvenance` + `ProvenanceSource` +
+     `ProvenanceTracker` rejoignent `capsule.context` existant.
+  2. `ProvenanceSource(fileName, chars, tokens)` data class immutable.
+  3. `ProvenanceChannel(channel, sources)` + `totalChars()`/`totalTokens()`.
+  4. `ContextProvenance(channels)` + `toJson()` Jackson INDENT_OUTPUT
+     (schema `{ "channels": [...], "totalChars": N, "totalTokens": M }`).
+  5. `ProvenanceTracker` mutable accumulator + `build()` snapshot immutable.
+  6. `CapsuleContextBuilder.build()` étendu `tracker: ProvenanceTracker? = null`
+     optional backward compat.
+  7. Wiring `CollectCapsuleAugmentedContextTask` `@OutputFile provenanceFile`.
+  8. Pas de config/DSL/4 sources — provenance always-on cheap.
+  9. Économie d'encre `@OutputFile` UP-TO-DATE.
+  10. JSON INDENT_OUTPUT (lisibilité auteur).
+  11. Runner dédié `CapsuleProvenanceCucumberRunner` + steps préfixés
+      "provenance" + `CucumberTaskSpec("cucumberTestProvenance")` 13ème.
+
+. **MàJ gouvernance** — INDEX/BACKLOG/PROMPT_REPRISE/TODO. Zéro code modifié
+  (`compileKotlin` VERT).
+
+== Prochaine session (108)
+
+CAP-PROVENANCE US-1 (data classes + builder étendu, ~10 unit TDD) puis
+US-2 (wiring + functional + cucumber). Livré en S-108 (voir rapport 108).
+
+== Vérifications finales
+
+. `git status` : 4 fichiers gouvernance modifiés (INDEX/BACKLOG/PROMPT_REPRISE/TODO).
+. Zéro code modifié, zéro secret.

@@ -241,6 +241,7 @@ class CapsuleManager(private val project: Project) {
                     ?: contracts.context.ContextChannel.DEFAULT_TOKEN_BUDGET
             )
             task.outputFile.set(project.layout.buildDirectory.file("capsule/augmented-context.txt"))
+            task.provenanceFile.set(project.layout.buildDirectory.file("capsule/context-provenance.json"))
         }
     }
 

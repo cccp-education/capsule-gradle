@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-08-11 (Session 106 — CAP-AUDIO US-4 ✅ Cucumber BDD + clôture EPIC CAP-AUDIO 5/5 US. Feature `capsule_audio_post.feature` 4 scénarios + `CapsuleAudioPostSteps` + `CapsuleAudioPostCucumberRunner` (pattern S-082) + `CucumberTaskSpec("cucumberTestAudioPost")` 12ème. 4/4 scénarios PASSED. `check` BUILD SUCCESSFUL. 819 unit + 60 functional + 4 cucumber GREEN. Domaine `capsule.audio` clos. EPIC CAP-AUDIO TERMINÉ 5/5 US.)
+:last_update: 2026-08-11 (Session 108 — CAP-PROVENANCE TERMINÉ 3/3 US. US-1 data classes + builder étendu (12 `ContextProvenanceTest` + 3 builder = 15 unit). US-2 wiring `@OutputFile provenanceFile` + tracking 5 canaux + log `CAPSULE PROVENANCE →` + 2 functional `CollectProvenanceFunctionalTest` + 3 cucumber `capsule_provenance.feature` + runner dédié + `CucumberTaskSpec("cucumberTestProvenance")` 13ème. `check` BUILD SUCCESSFUL : 834 unit + 62 functional + 3 cucumber GREEN. Zéro régression, zéro secret. EPIC CAP-PROVENANCE 3/3 US, domaine `capsule.context` clos (10 fichiers prod).)
 
 '''
 == ✅ EPIC CAP-MODEL — TERMINE (session 069)
@@ -273,3 +273,10 @@
 . [x] CAP-AUDIO-2 — `AudioPostProcessor` interface + `AudioPostProcessorImpl` (FFmpeg loudnorm + amix + sidechaincompress) + `NoOpAudioPostProcessor` + `AudioPostException` + `AudioPostCommand` (object pur) + factory `resolveAudioPostProcessor` 5ème ✅ S-104 (17 unit)
 . [x] CAP-AUDIO-3 — Wiring `CapsuleVideoTask.applyAudioPostIfEnabled` post-burnIn pre-convertFormat (L493/L524) ✅ S-105 (3 functional)
 . [x] CAP-AUDIO-4 — Cucumber BDD `capsule_audio_post.feature` 4 scénarios + runner dédié `CapsuleAudioPostCucumberRunner` + `CucumberTaskSpec("cucumberTestAudioPost")` 12ème ✅ S-106 (4 cucumber)
+
+'''
+== ✅ EPIC CAP-PROVENANCE — Audit context anti-hallucination (TERMINÉ 3/3 US)
+
+. [x] CAP-PROVENANCE-0 — Cadrage EPIC (audit `CapsuleContextBuilder.build`/`CollectCapsuleAugmentedContextTask`/`ContextChannel` N0 sealed, 11 décisions architecturales : pas de nouveau domaine, `ProvenanceSource`/`ProvenanceChannel`/`ContextProvenance` data classes immutable, `ProvenanceTracker` mutable accumulator, `CapsuleContextBuilder.build()` tracker optional backward compat, wiring `@OutputFile provenanceFile` always-on cheap, pas de config/DSL, économie d'encre, JSON Jackson INDENT_OUTPUT, runner dédié `CapsuleProvenanceCucumberRunner` + `CucumberTaskSpec("cucumberTestProvenance")` 13ème) ✅ S-107
+. [x] CAP-PROVENANCE-1 — `ProvenanceSource` + `ProvenanceChannel` + `ContextProvenance` + `ProvenanceTracker` + `CapsuleContextBuilder.build()` étendu tracker optional. Baby-step TDD 15 unit (12 `ContextProvenanceTest` + 3 builder étendu). Backward compat `tracker = null` (défaut) → aucun tracking, tests existants inchangés. ✅ S-108 (834 unit VERT)
+. [x] CAP-PROVENANCE-2 — Wiring `CollectCapsuleAugmentedContextTask` `@OutputFile provenanceFile` + `ProvenanceTracker` construit avant `build()` + tracking EAGER/RAG/Graphify/DOCS/SCENARIO sources + log `CAPSULE PROVENANCE →` 2ème ligne + 2 functional `CollectProvenanceFunctionalTest` + 3 cucumber `capsule_provenance.feature` `@context @provenance` + runner dédié `CapsuleProvenanceCucumberRunner` (pattern S-082) + `CucumberTaskSpec("cucumberTestProvenance")` 13ème. ✅ S-108

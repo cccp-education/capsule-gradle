@@ -1,146 +1,80 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 105 — CAP-AUDIO US-3 Wiring
-`CapsuleVideoTask.applyAudioPostIfEnabled(finalVideo: File)` + câblage
-`captureDeckSequential` (L493 post-burnIn, pre-convertFormat) +
-`captureDeckParallel` (L524 même position). Pattern
-`burnInSubtitlesIfEnabled` : skip si `!bgmEnabled && !duckingEnabled`
-(économie d'encre défaut false → no-op backward compat), skip si
-`finalVideo` n'existe pas, factory
-`CapsuleManager.resolveAudioPostProcessor(ffmpegPath, strict)`,
-`processor.process(finalVideo, tmpFile, config)` retourne Boolean, si
-succès rename tmpFile → finalVideo + log "Audio post: BGM + loudness
-+ ducking applied", si échec (`false`) warn + garde original (degraded).
-`catch (AudioPostException)` warn + garde original (pattern
-`BurnInException`). `finally` delete tmpFile. Log lifecycle si processor
-disponible (non-NoOp), pattern `convertFormatIfEnabled`. Construction
-`AudioPostConfig` depuis `capsuleExtension.audioPost*` (5 champs).
-Baby-step TDD RED → GREEN → REFACTOR : +3 functional
-(`AudioPostFunctionalTest`). 819 unit VERT (inchangé baseline S-104),
-60 functional VERT (+3), zéro régression, zéro secret.
-_Prochaine session_ : 106 — CAP-AUDIO US-4 Cucumber BDD. Feature
-`capsule_audio_post.feature` `@audio @post` (4 scénarios : default
-NoOp preserved, BGM enabled NoOp → degraded, loudness only NoOp →
-degraded, ducking enabled + BGM enabled NoOp → degraded). Runner
-dédié `CapsuleAudioPostCucumberRunner` (pattern S-082
-`@SelectClasspathResource` + filter `@audio and @post and not @wip
-and not @integration`). Steps `CapsuleAudioPostSteps` préfixés
-"audio post" (bug S-088). `CucumberTaskSpec("cucumberTestAudioPost")`
-11ème cucumber dédié (12ème `CucumberTaskSpec`). Clôture EPIC
-CAP-AUDIO TERMINÉ 5/5 US.
+_Session terminee_ : 108 — CAP-PROVENANCE US-1 + US-2 + Clôture EPIC
+CAP-PROVENANCE TERMINÉ 3/3 US. US-1 : `ProvenanceSource`/`ProvenanceChannel`/
+`ContextProvenance`/`ProvenanceTracker` (4 fichiers prod, domaine
+`capsule.context`) + `CapsuleContextBuilder.build()` étendu `tracker:
+ProvenanceTracker? = null` (prune aux canaux survivants, backward compat
+null). Jackson `totalChars`/`totalTokens` exposés `@get:JsonProperty`.
+15 unit GREEN. US-2 : `CollectCapsuleAugmentedContextTask` `@OutputFile
+provenanceFile` + `trackSources` 5 canaux + log `CAPSULE PROVENANCE →` +
+2 functional + 3 cucumber `capsule_provenance.feature` + runner dédié +
+`CucumberTaskSpec("cucumberTestProvenance")` 13ème. 2 fix TDD : missing
+files skipped réel + scenarioFile répertoire. `check` BUILD SUCCESSFUL in
+15m52s : 834 unit + 62 functional + 3 cucumber GREEN. Zéro régression,
+zéro secret.
+_Prochaine session_ : 109 — CAP-GLOSSARY US-0 Cadrage EPIC Injection
+terminologique (P1, 4 US ~6 pts).
 
-== Contexte reprise session 106 (post CAP-AUDIO US-3 wiring)
+== Contexte reprise session 109 (post CAP-PROVENANCE 3/3)
 
-- EPIC CAP-AUDIO (P1) — post-production audio, 5 US ~12 pts.
-  US-0 ✅ S-102 (cadrage), US-1 ✅ S-103 (config+merger), US-2 ✅
-  S-104 (processor+factory), US-3 ✅ S-105 (wiring).
-- Domaine `capsule.audio` (10ème) : 5 fichiers prod
-  (`AudioPostConfig` S-103 + `AudioPostProcessor` + `AudioPostProcessorImpl`
-  + `AudioPostCommand` + `AudioPostException` S-104).
-- `CapsuleVideoTask.applyAudioPostIfEnabled(finalVideo: File)` (S-105)
-  — méthode `internal` 20 lignes, pattern `burnInSubtitlesIfEnabled`
-  + `convertFormatIfEnabled` :
-  * Skip si `!bgmEnabled && !duckingEnabled` (économie d'encre).
-  * Skip si `finalVideo` n'existe pas → warn + return.
-  * Factory `resolveAudioPostProcessor(ffmpegPath, strict)`.
-  * Log lifecycle si non-NoOp (pattern `convertFormatIfEnabled`).
-  * `AudioPostConfig` construit depuis `capsuleExtension.audioPost*`.
-  * `processor.process(finalVideo, tmpFile, config)` → si succès
-    rename tmpFile → finalVideo + log, si échec warn + garde
-    original.
-  * `catch (AudioPostException)` warn + garde original.
-  * `finally` delete tmpFile.
-- Câblage `captureDeckSequential` L493 (après
-  `burnInSubtitlesIfEnabled`, avant `convertFormatIfEnabled`) +
-  `captureDeckParallel` L524 (même position).
-- `CapsuleExtension` — 5 properties `audioPost*` (S-103) :
-  `audioPostBgmEnabled`/`audioPostBgmFile`/`audioPostBgmLevel`/
-  `audioPostLoudnessTarget`/`audioPostDuckingEnabled` avec
-  conventions backward compat (`false`/`""`/`-18.0`/`-16.0`/`false`).
-- 5 factories `resolve*` dans `CapsuleManager` :
-  `resolveManimVideoMixer`, `resolveManimEngine`,
-  `resolveSubtitleBurnInService`, `resolveFormatConverter`,
-  `resolveAudioPostProcessor`.
-- `StrictModeGuard.requireAvailable` — 8 resolve* branchés
-  (5ème = `resolveAudioPostProcessor` S-104).
-- 819 unit VERT (S-104 baseline, inchangé S-105). 60 functional
-  VERT (S-105 baseline, +3 `AudioPostFunctionalTest`).
-- 11 cucumber dédiés (inchangés — 10 `CucumberTaskSpec` existants
-  + `cucumberTestIntegration` ; `cucumberTestAudioPost` à créer US-4).
-- `CapsuleMessages` — 31 keys, pas de clé audioPost (CAP-AUDIO est
-  une étape, pas une tâche).
-- Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme
-  slider 0.0.16 (compileOnly, 0 import réel — décision CAP-ARCH-4).
+- EPIC CAP-GLOSSARY (P1) — Injection terminologique, 4 US ~6 pts. US-0
+  cadrage à faire (vision déjà dans BACKLOG : vocabulaire AFNOR/REAC que le
+  LLM généricise, glossaire terme→définition injecté dans le contexte +
+  instruction prompt "Use official terminology"). Reste US-0 cadrage →
+  US-1 `GlossaryContext`+`GlossaryLoader` (6 unit) → US-2
+  `CapsulePromptBuilder` étendu (4 unit) → US-3 wiring+functional+cucumber.
+- Domaine `capsule.context` étendu (canal `glossary`). Dépendances :
+  CAP-ARCH-2 ✅ (`CapsuleContextBuilder`/`CollectCapsuleAugmentedContextTask`),
+  CAP-ARCH-3 ✅ (`DefaultCapsulePromptBuilder`), CAP-PROVENANCE ✅ (le
+  tracking des sources provenance doit être étendu au canal glossary —
+  pattern `trackSources` S-108).
+- 834 unit VERT (S-108 baseline, inchangé depuis). 62 functional VERT.
+  12 cucumber dédiés GREEN (`cucumberTestProvenance` 13ème `CucumberTaskSpec`
+  câblé). `check` BUILD SUCCESSFUL in 15m52s (S-108).
+- Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider
+  0.0.16 (compileOnly, 0 import réel — décision CAP-ARCH-4).
+- Patterns de référence : CAP-PROVENANCE S-107/108 (extension capsule-local
+  pas N0, `tracker` optional backward compat, runner dédié S-082, steps
+  préfixés S-088), CAP-DOCCONTEXT S-093 (`ContextConfig` 4 sources +
+  `mergeStrList` + `DocContextLoader` mirror), CAP-SPD S-094/095
+  (`PedagogicalScenarioLoader` mirror, `scenarioFile` 4 sources).
 
-== Cible US-4 cucumber (détails)
+== Cible US-0 cadrage (détails BACKLOG)
 
-- Feature `capsule_audio_post.feature` `@audio @post` (4 scénarios) :
-  * Default NoOp preserved (no audio post step) — `bgmEnabled=false`
-    + `duckingEnabled=false` → étape skippée, pas de log "Audio
-    post:", WebM produit.
-  * BGM enabled NoOp → degraded — `audioPostBgmEnabled=true` +
-    `ffmpegExecutablePath="noop"` → étape déclenchée, NoOp
-    `process()` retourne `false` → degraded garde original, WebM
-    produit.
-  * Loudness only NoOp → degraded — `audioPostBgmEnabled=false` +
-    `audioPostDuckingEnabled=true` + `ffmpegExecutablePath="noop"`
-    → étape déclenchée, NoOp `false` → degraded.
-  * Ducking enabled + BGM enabled NoOp → degraded —
-    `audioPostBgmEnabled=true` + `audioPostDuckingEnabled=true`
-    + `ffmpegExecutablePath="noop"` → étape déclenchée, NoOp
-    `false` → degraded.
-- Runner dédié `CapsuleAudioPostCucumberRunner` (pattern S-082
-  `@SelectClasspathResource("features/capsule_audio_post.feature")`
-  + filter `@audio and @post and not @wip and not @integration`).
-- Steps `CapsuleAudioPostSteps` préfixés "audio post" (bug S-088
-  glue `capsule.scenarios` partagée — step texts uniques, pattern
-  `CapsuleFormatSteps` mirror).
-- `CucumberTaskSpec("cucumberTestAudioPost")` câblé
-  `build.gradle.kts` (11ème cucumber dédié, 12ème
-  `CucumberTaskSpec`).
-- NoOp processor (pas de vrai FFmpeg — valide le wiring + factory
-  dispatch, pas le rendu audio).
-- Baby-step BDD : RED (undefined steps) → GREEN (4/4 scénarios
-  PASSED) → REFACTOR (`check` BUILD SUCCESSFUL).
-- Pattern de référence : `CapsuleFormatCucumberRunner` S-100
-  (`capsule_format.feature` `@distrib @format` 3 scénarios +
-  `CapsuleFormatSteps` "format distribution" + `CucumberTaskSpec
-  ("cucumberTestFormat")` 9ème).
-- Functional tests `AudioPostFunctionalTest` (S-105) couvrent déjà
-  le wiring en GradleRunner — cucumber valide le contrat BDD
-  end-to-end (3 niveaux tests/US : unit S-104 → functional S-105 →
-  cucumber US-4).
-
-== EPICs restants (séquence MVP0)
-
-* CAP-AUDIO (P1) — post-production audio, 5 US ~12 pts. EN COURS
-  (US-0/1/2/3 ✅, reste US-4 cucumber).
-* CAP-GLOSSARY (P1) — injection terminologique, 4 US ~6 pts
-* CAP-PROVENANCE (P1) — audit context, 3 US ~5 pts
-* CAP-CHAPITRE (P2) — intro/outro + chapter markers, 5 US ~10 pts
-* CAP-TRANSCRIPT (P2) — reverse pipeline article AsciiDoc, 5 US ~10 pts
-* CAP-PODCAST (P2) — extraction audio-only, 3 US ~4 pts
-* CAP-PREVIEW (P2) — mode dry-run, 3 US ~4 pts
-* CAP-CR3-4 (P2, maintenance) — convention Gradle explicite
-  resolveScriptDir/resolveDeckDir
-* CAP-27 (P2, maintenance) — VTT burn-in
-* CAP-28 (P2, maintenance) — coverage gaps
+- Cadrage EPIC CAP-GLOSSARY : vision, format glossaire (AsciiDoc/CSV/JSON),
+  découpage US. MàJ INDEX/BACKLOG/PROMPT_REPRISE. Zéro code modifié —
+  session de gouvernance pure (pattern S-057/S-063/S-076/S-083/S-092/S-094/
+  S-097/S-102/S-107).
+- Points à auditer (extrapolés du pattern CAP-SPD/CAP-DOCCONTEXT) :
+  `CompositeContext` N0 (5 canaux EAGER/RAG/Graphify/Docs/Resource — le
+  glossaire est-il un 6ème canal N0 ou une extension capsule-local comme
+  `scenarioSection` CAP-SPD-2 ?), `CapsuleContextBuilder.merge` (rend les
+  canaux N0 seulement — le glossaire suit-il le pattern `scenarioSection`
+  append ou un canal réel ?), `DefaultCapsulePromptBuilder.buildGeneratePrompt`
+  (instruction "Use official terminology" conditionnelle), `ContextConfig`
+  (2 champs `docsGlobs`/`scenarioFile` — ajout `glossaryFile` ?),
+  `CapsuleConfigMerger` (`mergeStr` pour `glossaryFile`, 4 sources
+  ENV < props < YAML < CLI), `CollectCapsuleAugmentedContextTask`
+  (`glossaryFile` `@InputFiles @Optional` + `resolveGlossarySection` +
+  provenance tracking `trackSources`), 13 `CucumberTaskSpec` existants
+  (`cucumberTestGlossary` 14ème à câbler US-3).
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 819 unit VERT (S-104 baseline), 60 functional VERT (S-105 baseline)
+* 834 unit VERT (S-108 baseline), 62 functional VERT, 12 cucumber dédiés GREEN
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082) +
   steps préfixés par feature (bug S-088 glue `capsule.scenarios` partagée)
 * English only : code, Gherkin, commentaires
-* Économie d'encre = skip si `!bgmEnabled && !duckingEnabled` (défaut
-  false → no-op backward compat), skip si BGM enabled mais bgmFile
-  blank/missing → degraded (garde original)
+* Économie d'encre = skip si artefact existe et valide (AGENT.adoc Loi)
 * Ports Ollama : 11437-11465 rotation (11434-11436 INTERDITS)
 * `CapsuleMessages` object (domaine `capsule.i18n`) — 11
   `Messages*.properties` 10 langues
-* Runners cucumber dédiés (11) — `cucumberTestAudioPost` à créer US-4
+* Runners cucumber dédiés (12) — `cucumberTestGlossary` à créer US-3
 * DSL 4 sources pattern : ENV < props < YAML < CLI. Merger helpers
   `mergeStr/mergeInt/mergeDouble/mergeBoolean/mergeStrList` +
   `mergeVersioning`/`mergeCaptureStrategy`/`mergeOutputFormat` (enums)
+* CAP-GLOSSARY = canal contexte supplémentaire (pas de LLM/réseau/FFmpeg
+  — load fichier glossaire + troncation budget + prompt instruction)

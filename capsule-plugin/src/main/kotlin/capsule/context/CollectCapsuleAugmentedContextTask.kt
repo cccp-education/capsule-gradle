@@ -95,9 +95,20 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
     @get:OutputFile
     abstract val outputFile: RegularFileProperty
 
+    /**
+     * Provenance artefact (CAP-PROVENANCE): `build/capsule/context-provenance.json`.
+     *
+     * A serialized [ContextProvenance] snapshot describing which sources fed
+     * the channels that survived the token budget — the anti-hallucination
+     * audit trail of the augmented context.
+     */
+    @get:OutputFile
+    abstract val provenanceFile: RegularFileProperty
+
     @TaskAction
     fun run() {
         val eager = eagerFiles.files
+            .filter { it.exists() }
             .sortedBy { it.name }
             .joinToString("\n\n") { file ->
                 "--- ${file.name} ---\n${file.readText().trim()}"
@@ -116,18 +127,120 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
             docsSection = docsSection,
             config = CompositeContextConfig(),
         )
-        val context = CapsuleContextBuilder.build(composite, budget, scenarioSection)
+        val tracker = ProvenanceTracker()
+        trackSources(tracker)
+        val context = CapsuleContextBuilder.build(composite, budget, scenarioSection, tracker)
 
         val output = outputFile.asFile.get()
         output.parentFile.mkdirs()
         output.writeText(context.rendered)
 
+        val provenance = tracker.build()
+        val provenanceOut = provenanceFile.asFile.get()
+        provenanceOut.parentFile.mkdirs()
+        provenanceOut.writeText(provenance.toJson())
+
         logger.lifecycle(
             "CAPSULE CONTEXT → ${context.nonEmptyCount} non-empty channels, " +
                 "~${context.tokenEstimate} tokens → ${output.absolutePath}",
         )
+        logger.lifecycle(
+            "CAPSULE PROVENANCE → ${provenance.channels.size} channels, " +
+                "${provenance.channels.sumOf { it.sources.size }} sources → ${provenanceOut.absolutePath}",
+        )
         if (context.isEmpty && context.scenarioSection.isBlank()) {
             logger.warn("CAPSULE CONTEXT → no EAGER/RAG/Graphify/Docs/scenario content collected (empty augmented context)")
+        }
+    }
+
+    /**
+     * Tracks the per-channel sources into [tracker] (CAP-PROVENANCE US-2).
+     *
+     * The builder prunes the tracker to the channels that survived the token
+     * budget via [ProvenanceTracker.retainOnly] — a channel truncated to zero
+     * content is dropped from the provenance. Source measurement: raw chars
+     * via `readText().length` and token estimate via the N0
+     * [ContextChannel.estimateTokens] heuristic.
+     */
+    private fun trackSources(tracker: ProvenanceTracker) {
+        val eagerSources = eagerFiles.files.filter { it.exists() }.sortedBy { it.name }.map { file ->
+            ProvenanceSource(
+                fileName = file.name,
+                chars = file.readText().length,
+                tokens = ContextChannel.estimateTokens(file.readText()),
+            )
+        }
+        tracker.trackChannel("EAGER", eagerSources)
+
+        val rag = ragContent.orNull.orEmpty()
+        if (rag.isNotBlank()) {
+            tracker.trackChannel(
+                "RAG",
+                listOf(
+                    ProvenanceSource(
+                        fileName = "rag-injected",
+                        chars = rag.length,
+                        tokens = ContextChannel.estimateTokens(rag),
+                    ),
+                ),
+            )
+        }
+
+        val graphify = graphifyContent.orNull.orEmpty()
+        if (graphify.isNotBlank()) {
+            tracker.trackChannel(
+                "GRAPHIFY",
+                listOf(
+                    ProvenanceSource(
+                        fileName = "graphify-injected",
+                        chars = graphify.length,
+                        tokens = ContextChannel.estimateTokens(graphify),
+                    ),
+                ),
+            )
+        }
+
+        val docsFilesResolved = docsFiles.files.filter { it.exists() }.sortedBy { it.name }
+        val docsSources = if (docsFilesResolved.isNotEmpty()) {
+            docsFilesResolved.map { file ->
+                ProvenanceSource(
+                    fileName = file.name,
+                    chars = file.readText().length,
+                    tokens = ContextChannel.estimateTokens(file.readText()),
+                )
+            }
+        } else {
+            val legacy = docsContent.orNull.orEmpty()
+            if (legacy.isBlank()) emptyList()
+            else listOf(
+                ProvenanceSource(
+                    fileName = "docs-injected",
+                    chars = legacy.length,
+                    tokens = ContextChannel.estimateTokens(legacy),
+                ),
+            )
+        }
+        tracker.trackChannel("DOCS", docsSources)
+
+        val scenarioTarget = scenarioFile.files.firstOrNull()
+        if (scenarioTarget != null && scenarioTarget.exists()) {
+            val resolved = if (scenarioTarget.isDirectory) {
+                scenarioTarget.listFiles()?.firstOrNull { it.extension.equals("adoc", ignoreCase = true) }
+            } else {
+                scenarioTarget
+            }
+            if (resolved != null && resolved.exists()) {
+                tracker.trackChannel(
+                    ContextProvenance.SCENARIO_CHANNEL,
+                    listOf(
+                        ProvenanceSource(
+                            fileName = resolved.name,
+                            chars = resolved.readText().length,
+                            tokens = ContextChannel.estimateTokens(resolved.readText()),
+                        ),
+                    ),
+                )
+            }
         }
     }
 

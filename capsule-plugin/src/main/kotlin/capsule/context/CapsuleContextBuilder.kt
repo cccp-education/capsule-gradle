@@ -56,11 +56,21 @@ object CapsuleContextBuilder {
      * non-blank, it is appended after the channel blocks (CAP-SPD-2 — the
      * pedagogical scenario payload is capsule-local and does not extend the
      * sealed N0 [ContextChannel] contract).
+     *
+     * When [tracker] is non-null (CAP-PROVENANCE), it is pruned to the
+     * channels that survived the budget + the scenario section: the collector
+     * tracks the sources per channel before calling this method, and the
+     * builder signals which channel names are still alive via
+     * [ProvenanceTracker.retainOnly]. The builder does NOT compute sources —
+     * it only validates the surviving channel names (the collector owns the
+     * source [File] objects). Backward compatible: a null [tracker] (default)
+     * performs no tracking.
      */
     fun build(
         composite: CompositeContext,
         budget: ChannelBudget = defaultBudget(),
         scenarioSection: String = "",
+        tracker: ProvenanceTracker? = null,
     ): CapsuleContext {
         val channels = composite.channelsWithBudget(budget).filter { it.isNotEmpty() }
         val channelBlock = merge(channels)
@@ -70,6 +80,13 @@ object CapsuleContextBuilder {
             channelBlock.isBlank() -> trimmedScenario
             trimmedScenario.isBlank() -> channelBlock
             else -> "$channelBlock\n\n$trimmedScenario"
+        }
+        if (tracker != null) {
+            val survivingChannels = channels.map { it.type.name }.toMutableSet()
+            if (trimmedScenario.isNotBlank()) {
+                survivingChannels += ContextProvenance.SCENARIO_CHANNEL
+            }
+            tracker.retainOnly(survivingChannels)
         }
         return CapsuleContext(channels = channels, rendered = rendered, scenarioSection = trimmedScenario)
     }

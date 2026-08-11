@@ -253,4 +253,43 @@ class CapsuleContextBuilderTest {
         assertTrue(ctx.rendered.contains("RAG snippet"))
         assertTrue(ctx.rendered.contains("Pedagogical Scenario"))
     }
+
+    // ─── CAP-PROVENANCE: tracker extension ─────────────────────────────
+
+    @Test
+    fun `build with null tracker performs no provenance tracking`() {
+        val ctx = CapsuleContextBuilder.build(composite(eager = "EAGER governance"))
+        assertEquals(1, ctx.nonEmptyCount)
+        assertTrue(ctx.rendered.contains("EAGER governance"))
+    }
+
+    @Test
+    fun `build with tracker tracks the EAGER channel that survived the budget`() {
+        val tracker = ProvenanceTracker()
+        tracker.trackChannel(
+            "EAGER",
+            listOf(ProvenanceSource(fileName = "INDEX.adoc", chars = 120, tokens = 30)),
+        )
+        val ctx = CapsuleContextBuilder.build(composite(eager = "EAGER governance"), tracker = tracker)
+        assertEquals(1, ctx.nonEmptyCount)
+        val provenance = tracker.build()
+        assertEquals(listOf("EAGER"), provenance.channels.map { it.channel })
+    }
+
+    @Test
+    fun `build with tracker tracks the scenario channel when scenarioSection is non-blank`() {
+        val tracker = ProvenanceTracker()
+        tracker.trackChannel(
+            "SCENARIO",
+            listOf(ProvenanceSource(fileName = "session.adoc", chars = 200, tokens = 40)),
+        )
+        val ctx = CapsuleContextBuilder.build(
+            composite(),
+            scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Solo scenario",
+            tracker = tracker,
+        )
+        assertTrue(ctx.isEmpty)
+        val provenance = tracker.build()
+        assertEquals(listOf("SCENARIO"), provenance.channels.map { it.channel })
+    }
 }

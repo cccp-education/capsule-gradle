@@ -1,6 +1,44 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-08-11
-:session: 106 CAP-AUDIO US-4 Cucumber BDD + clôture EPIC CAP-AUDIO
+:session: 108 CAP-PROVENANCE US-1+US-2 + clôture EPIC CAP-PROVENANCE
+
+== Couverture — 11 août 2026 (après session 108 CAP-PROVENANCE US-1+US-2)
+
+.Modifications session 107+108 — CAP-PROVENANCE (EPIC TERMINÉ 3/3 US)
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/context/ProvenanceSource.kt` (nouveau) | Data class immutable 3 champs `(fileName, chars = 0, tokens = 0)` — origine d'une source de contexte (perso/corpus/IA). | +12 unit `ContextProvenanceTest` (5 : defaults/preserve ProvenanceSource + channel aggregates + toJson)
+| `capsule/context/ProvenanceChannel.kt` (nouveau) | Data class immutable `(channel, sources = emptyList())` + `totalChars()`/`totalTokens()` somme. | couvert par `ContextProvenanceTest`
+| `capsule/context/ContextProvenance.kt` (nouveau) | `totalChars`/`totalTokens` exposés JSON via `@get:JsonProperty` (les `fun` ne sérialisent pas Jackson), `toJson()` Jackson INDENT_OUTPUT, `SCENARIO_CHANNEL = "SCENARIO"` const. | +12 unit `ContextProvenanceTest` (toJson vide/non-vide/totals)
+| `capsule/context/ProvenanceTracker.kt` (nouveau) | Mutable accumulator — `trackChannel` replace semantics + ignore empty list, `retainOnly` prune, `build()` snapshot immutable. | +12 unit `ContextProvenanceTest` (3 : snapshot/ignore empty/replace/retainOnly)
+| `capsule/context/CapsuleContextBuilder.kt` (modifié) | `build(composite, budget, scenarioSection="", tracker: ProvenanceTracker? = null)` — quand tracker non-null, prune aux canaux survivants (`it.type.name` + SCENARIO si scenario non-blank) ; backward compat null. | +3 unit `CapsuleContextBuilderTest` (prune canaux survivants, SCENARIO conditionnel, null no-op)
+| `capsule/context/CollectCapsuleAugmentedContextTask.kt` (modifié) | `@OutputFile provenanceFile` (`build/capsule/context-provenance.json`) + `trackSources(tracker)` privé — EAGER = eagerFiles `.filter{it.exists()}` (fix : le KDoc disait « missing files skipped » mais le code lisait sans vérifier — FileNotFoundException sur AGENT.adoc absent) + `ContextChannel.estimateTokens` par fichier ; RAG = `rag-injected` ; Graphify = `graphify-injected` ; DOCS = docsFiles (fix même `.filter{it.exists()}`) ou `docs-injected` legacy ; SCENARIO = compagnon `.adoc` résolu depuis répertoire ou fichier direct (fix : `scenarioFile` peut être un répertoire CAP-SPD-3 → crash `ScenarioContextFunctionalTest`). Log 2ème ligne `CAPSULE PROVENANCE → N channels, M sources → <path>`. | +2 functional `CollectProvenanceFunctionalTest` (provenance JSON avec EAGER+RAG+Graphify ; context vide → provenance vide)
+| `capsule/CapsuleManager.kt` (modifié) | L243 area — `task.provenanceFile.set(project.layout.buildDirectory.file("capsule/context-provenance.json"))`. | 0 régression
+| `test/features/capsule_provenance.feature` (nouveau) | 3 scénarios `@context @provenance` (provenance générée via task, contenu JSON, contexte vide → provenance vide). | +3 cucumber
+| `test/kotlin/capsule/scenarios/CapsuleProvenanceSteps.kt` (nouveau) | 14 step defs préfixés "provenance" (bug S-088 glue `capsule.scenarios` partagée). | +3 cucumber
+| `test/kotlin/capsule/scenarios/CapsuleProvenanceCucumberRunner.kt` (nouveau) | Runner dédié pattern S-082 + filter `@context and @provenance and not @wip and not @integration`. | +3 cucumber
+| `build.gradle.kts` (modifié) | `CucumberTaskSpec("cucumberTestProvenance")` 13ème câblé (12ème cucumber dédié, après `cucumberTestAudioPost`, avant `cucumberTestIntegration`). | —
+|===
+
+*Totaux* : 834 unit VERT (+15 net : 12 `ContextProvenanceTest` + 3
+`CapsuleContextBuilderTest`), 62 functional VERT (+2
+`CollectProvenanceFunctionalTest`), 13 cucumber dédiés (+3 provenance, 13
+`CucumberTaskSpec` total). `./gradlew check` BUILD SUCCESSFUL in 15m52s.
+Cucumber SKIPPED par défaut (CR-10) — `cucumberTestProvenance` exécuté via
+`-PrunCucumber` (3/3 PASSED en ~1m55s). Zéro régression, zéro secret.
+
+.2 fix TDD découverts en GREEN (itérations US-2) :
+- `FileNotFoundException` sur AGENT.adoc absent → `.filter { it.exists() }`
+  ajouté sur eagerFiles (run + trackSources) et docsFiles.
+- `scenarioFile` répertoire (CAP-SPD-3) → résolution du compagnon `.adoc`
+  (crash `ScenarioContextFunctionalTest`).
+
+.Session 107 (cadrage, zéro code) : CAP-PROVENANCE US-0 — 6 points audités
+  (`CapsuleContextBuilder.build` L60-75 / `CollectCapsuleAugmentedContextTask.run`
+  L98-132 / `ContextChannel` N0 5 variants / `ChannelBudget` / `ContextConfig` /
+  Jackson + runners) + 11 décisions architecturales (extension capsule-local
+  pattern CAP-SPD-2, pas de bump N0, `tracker` optional backward compat,
+  runner dédié + steps préfixés). Aucun test ajouté.
 
 == Couverture — 11 août 2026 (après session 106 CAP-AUDIO US-4)
 
