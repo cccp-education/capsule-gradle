@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-11 (Session 099 — CAP-MP4 US-2 `VideoFormatConverter` + `FormatConversion` + wiring. EPIC CAP-MP4 EN COURS 3/4 US. 772 unit + 54 functional + 3 cucumber dédiés GREEN. Séquence MVP0 : DOCCONTEXT ✅ > SPD ✅ > CR3-3 ✅ > MP4 (EN COURS) > AUDIO)
+:last_update: 2026-08-11 (Session 100 — CAP-MP4 US-3 Cucumber BDD `capsule_format.feature` 3 scénarios + runner dédié + steps. EPIC CAP-MP4 TERMINÉ 4/4 US. 772 unit + 54 functional + 10 cucumber dédiés GREEN. Séquence MVP0 : DOCCONTEXT ✅ > SPD ✅ > CR3-3 ✅ > MP4 ✅ > CR3-1 PROCHAIN)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -1353,18 +1353,22 @@ _Audit code (S-097)_ :
   (pattern S-082 `@SelectClasspathResource("features/capsule_format.feature")`
   + filter `@distrib and @format and not @wip and not @integration`). Steps
   `CapsuleFormatSteps` préfixés "format distribution" (bug S-088 glue
-  `capsule.scenarios` partagée — step texts doivent être uniques).
-  `CucumberTaskSpec("cucumberTestFormat")` câblé `build.gradle.kts`. NoOp
-  converter (pas de vrai FFmpeg en test). Baby-step BDD : RED (undefined
-  steps) → GREEN → REFACTOR.
+  `capsule.scenarios` partagée — step texts uniques). `CucumberTaskSpec("cucumberTestFormat")`
+  câblé `build.gradle.kts` (9ème CucumberTaskSpec). NoOp converter (pas de
+  vrai FFmpeg en test). Baby-step BDD : RED (6 undefined steps) → GREEN
+  (3/3 scénarios PASSED, 12 steps) → REFACTOR (`check` BUILD SUCCESSFUL
+  15m38s).
 | 1
-| ⬜ TODO
+| ✅ TERMINÉ (S-100, 3 cucumber scénarios GREEN)
 |===
 
 _Total_ : 4 US, ~5 pts. _Séquence baby-step_ : US-0 cadrage → US-1 unit tests
 RED→GREEN → US-2 unit+functional → US-3 cucumber. _Pattern de référence_ :
 CAP-CR3-3 S-096 (`CaptureStrategy` enum + `CaptureResolver` factory +
-StrictModeGuard + runner dédié).
+StrictModeGuard + runner dédié). _Statut_ : ✅ TERMINÉ (CAP-MP4-0 ✅ S-097,
+CAP-MP4-1 ✅ S-098, CAP-MP4-2 ✅ S-099, CAP-MP4-3 ✅ S-100). 4/4 US livrées.
+EPIC CAP-MP4 TERMINÉ — le borough Détroit produit désormais des capsules
+MP4/H.264/AAC (distribution LMS/YouTube/OF) en plus du WebM natif Playwright.
 
 === 📑 EPIC CAP-CHAPITRE — Intro/outro + chapter markers depuis métadonnées SPD
 
@@ -1557,7 +1561,7 @@ _Total_ : 3 US, ~4 pts.
 | 4
 | 5
 | 🟠 P1
-| 🟡 EN COURS (S-097 US-0 cadrage, S-098 US-1 enum+merger, S-099 US-2 converter+wiring, US-3 TODO cucumber)
+| ✅ TERMINÉ (S-097 US-0 cadrage, S-098 US-1 enum+merger 17 unit, S-099 US-2 converter+wiring 13 unit + 2 functional, S-100 US-3 cucumber 3 scénarios)
 
 | Post-prod
 | CAP-AUDIO

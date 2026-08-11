@@ -99,6 +99,16 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleCaptureStrategyCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // CAP-MP4 US-3 — output format distribution (WEBM default, MP4, BOTH).
+        // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
+        // Uses a NoOp converter (no real FFmpeg); validates DistributeCapsuleVideoTask filter.
+        CucumberTaskSpec(
+            name = "cucumberTestFormat",
+            features = listOf("src/test/features/capsule_format.feature"),
+            tags = listOf("@distrib", "@format"),
+            runnerClass = "capsule.scenarios.CapsuleFormatCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task

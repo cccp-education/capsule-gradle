@@ -822,3 +822,45 @@ Métriques : 713 unit VERT (inchangé) + 49 functional VERT (+2) + 3 cucumber
 dédiés GREEN. `./gradlew test functionalTest` BUILD SUCCESSFUL (1m31s).
 
 Rapport : `.agents/sessions/095-cap-spd-us3-us4-rename.adoc`.
+
+== Session 100 — CAP-MP4 US-3 Cucumber BDD + clôture EPIC CAP-MP4 (2026-08-11)
+
+EPIC : CAP-MP4 — Export MP4/H.264 + format distribution
+US : US-3 (4ème et dernière — clôture EPIC 4/4 US)
+Méthode : Baby-step BDD RED → GREEN → REFACTOR (niveau cucumber après
+unit S-098 + functional S-099)
+
+Livrables :
+ . `src/test/features/capsule_format.feature` (NEW) — 3 scénarios
+   `@distrib @format` (WEBM default, MP4 only, BOTH)
+ . `src/test/kotlin/capsule/scenarios/CapsuleFormatCucumberRunner.kt` (NEW) —
+   runner dédié pattern S-082
+ . `src/test/kotlin/capsule/scenarios/CapsuleFormatSteps.kt` (NEW) — 6 step
+   defs self-contained GradleRunner, préfixés "format distribution" (bug S-088)
+ . `build.gradle.kts` — `CucumberTaskSpec("cucumberTestFormat")` câblé
+   (9ème CucumberTaskSpec, 10 cucumber dédiés total)
+
+Tâches terminées :
+ . Cucumber BDD `capsule_format.feature` 3 scénarios (Default WEBM, MP4 only,
+   BOTH) — NoOp converter, validate DistributeCapsuleVideoTask filter
+ . Runner dédié `CapsuleFormatCucumberRunner` (pattern S-082
+   `@SelectClasspathResource` + filter `@distrib and @format and not @wip
+   and not @integration`)
+ . Steps `CapsuleFormatSteps` (6 step defs, pattern `CapsuleDistribSteps`
+   mirror, préfixés "format distribution" — bug S-088 glue partagée)
+ . `CucumberTaskSpec("cucumberTestFormat")` câblé `build.gradle.kts`
+
+Métriques : 772 unit VERT (baseline S-099 préservée) + 54 functional VERT
+(baseline préservée) + 10 cucumber dédiés GREEN (66 tests, 0 FAIL dont
+`cucumberTestFormat` 6 tests / 3 scénarios). `./gradlew check` BUILD
+SUCCESSFUL 15m38s. 2 `NoTestsDiscoveredException` dans `cucumberTest`
+global préexistantes (bug S-082, hors CAP-MP4, `cucumberTest` skippé CI
+par CR-10). Zéro régression, zéro secret.
+
+EPIC CAP-MP4 TERMINÉ 4/4 US :
+ . US-0 cadrage (S-097) — 10 décisions architecturales
+ . US-1 enum+merger (S-098) — 17 unit
+ . US-2 converter+wiring (S-099) — 13 unit + 2 functional
+ . US-3 cucumber (S-100) — 3 scénarios cucumber GREEN
+
+Rapport : `.agents/sessions/100-cap-mp4-us3-cucumber-cloture.adoc`.

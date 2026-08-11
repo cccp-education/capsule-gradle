@@ -1,46 +1,48 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 099 — CAP-MP4 US-2 `VideoFormatConverter` (interface + `VideoFormatConverterImpl` FFmpeg libx264+aac+faststart + `NoOpVideoFormatConverter`) + `FormatConversion.convertIfNeeded` (object pur dispatch WEBM/MP4/BOTH + économie d'encre skip si `.mp4` existe ET probe>0) + factory `CapsuleManager.resolveFormatConverter` (pattern `resolveSubtitleBurnInService` — "noop"→NoOp, unavailable+non-strict→NoOp, unavailable+strict→throw via `StrictModeGuard`) + `CapsuleVideoTask.convertFormatIfEnabled` post-burnIn (câblé `captureDeckSequential` L493 + `captureDeckParallel` L523) + `DistributeCapsuleVideoTask.format` Property + filtre `.webm`/`.mp4`/both selon `OutputFormat` + `registerDistributeCapsuleVideoTask` push format. Baby-step TDD RED → GREEN → REFACTOR (unit → functional), 13 unit (7 `VideoFormatConverterTest` + 6 `FormatConversionTest`) + 2 functional (`FormatConversionFunctionalTest`). 772 unit VERT (+13), 54 functional VERT (+2), zéro régression.
-_Prochaine session_ : 100 — CAP-MP4 US-3 Cucumber BDD `capsule_format.feature` 3 scénarios `@distrib @format` + runner dédié `CapsuleFormatCucumberRunner` (pattern S-082) + steps `CapsuleFormatSteps` préfixés "format distribution" (bug S-088) + `CucumberTaskSpec("cucumberTestFormat")` câblé `build.gradle.kts`. NoOp converter. EPIC CAP-MP4 clôture 4/4 US.
+_Session terminee_ : 100 — CAP-MP4 US-3 Cucumber BDD `capsule_format.feature` 3 scénarios `@distrib @format` + runner dédié `CapsuleFormatCucumberRunner` (pattern S-082) + steps `CapsuleFormatSteps` préfixés "format distribution" (bug S-088) + `CucumberTaskSpec("cucumberTestFormat")` câblé `build.gradle.kts`. NoOp converter. Baby-step BDD RED (6 undefined steps) → GREEN (3/3 PASSED) → REFACTOR (`check` BUILD SUCCESSFUL 15m38s). EPIC CAP-MP4 TERMINÉ 4/4 US.
+_Prochaine session_ : 101 — CAP-CR3-1 (P0) CI `full` avec vrais binaires Playwright + ffmpeg + probe durée WebM (`MediaProbeUtil.probeDuration`) comparé à somme durées audio TTS. Nouveau job CI `.github/workflows/full-tests.yml` installant les binaires. Tolérance |durée vidéo - somme audio| > seuil → FAIL. C'est LE contrat de solidité vidéo : `check` vert ≠ vidéo exploitable sans ça.
 
-== Contexte reprise session 100 (post CAP-MP4 US-2 TERMINÉ)
+== Contexte reprise session 101 (post CAP-MP4 TERMINÉ 4/4 US)
 
-- EPIC CAP-MP4 EN COURS — US-0 cadrage TERMINÉ (S-097), US-1 TERMINÉ
-  (S-098), US-2 TERMINÉ (S-099), US-3 TODO.
-- `VideoFormatConverter.kt` (domaine `capsule`) — interface +
-  `VideoFormatConverterImpl(ffmpegPath)` (`convertToMp4` FFmpeg
-  `-c:v libx264 -c:a aac -movflags +faststart -y`, `isAvailable`, `name`)
-  + `NoOpVideoFormatConverter` (returns `false`, `noop-format`).
-  Pattern `SubtitleBurnInService`.
-- `FormatConversion.kt` (object pur, domaine `capsule`) —
-  `convertIfNeeded(finalVideo, format, converter, probeDuration): File` :
-  WEBM → no-op, MP4 → transcode + supprime WebM (ou skip si `.mp4` existe
-  ET probe>0, supprime WebM), BOTH → transcode + garde WebM (ou skip si
-  `.mp4` existe ET probe>0), échec transcode → garde WebM (degraded).
-- `CapsuleManager.resolveFormatConverter(ffmpegPath, strict)` (L344-355) —
-  factory pattern `resolveSubtitleBurnInService` (4ème factory `resolve*`).
-- `CapsuleVideoTask.convertFormatIfEnabled(finalVideo)` (L693-712) —
-  post-burnIn, résolu via `CapsuleManager.resolveFormatConverter` +
-  `FormatConversion.convertIfNeeded` + `MediaProbeUtil.probeDuration`.
-  Câblé dans `captureDeckSequential` L493 + `captureDeckParallel` L523.
-  Log `CAPSULE →` pointe vers le fichier produit.
-- `DistributeCapsuleVideoTask.format: Property<String>` (L42-43) —
-  filtre selon `OutputFormat` (L60-69 : `.webm` / `.mp4` / both).
-  CLI `-Poutput.format` override.
-- `CapsuleManager.registerDistributeCapsuleVideoTask` (L91) —
-  push `merged.output.format.name`.
-- 8 `CucumberTaskSpec` existants. US-3 ajoutera `cucumberTestFormat`.
-- 772 unit + 54 functional VERT (baseline S-099).
-- Domaines DDD capsule (8) : `capsule.feed` + `capsule.ci` +
-  `capsule.multilang` + `capsule.ai` + `capsule.context` +
-  `capsule.pipeline` + `capsule.support` + `capsule.i18n`.
+- EPIC CAP-MP4 TERMINÉ — US-0 cadrage (S-097), US-1 enum+merger (S-098),
+  US-2 converter+wiring (S-099), US-3 cucumber (S-100).
+- `OutputFormat` enum (domaine `capsule`) — WEBM/MP4/BOTH, défaut WEBM
+  (backward compat). `fromString` case-insensitive, fallback WEBM.
+- `VideoFormatConverter` (interface) + `VideoFormatConverterImpl(ffmpegPath)`
+  (FFmpeg `-c:v libx264 -c:a aac -movflags +faststart -y`) +
+  `NoOpVideoFormatConverter` (returns `false`, `noop-format`).
+- `FormatConversion.convertIfNeeded(finalVideo, format, converter, probeDuration)`
+  (object pur) — WEBM → no-op, MP4 → transcode + supprime WebM (ou skip si
+  `.mp4` existe ET probe>0), BOTH → transcode + garde WebM, échec → garde WebM.
+- `CapsuleManager.resolveFormatConverter` (5ème factory `resolve*`, pattern
+  `resolveSubtitleBurnInService` + `StrictModeGuard`).
+- `DistributeCapsuleVideoTask.format: Property<String>` — filtre selon
+  `OutputFormat` (`.webm` / `.mp4` / both). CLI `-Poutput.format` override.
+- `CapsuleExtension.outputFormat: Property<OutputFormat>` (convention WEBM)
+  + helper Groovy `outputFormat(String)`.
+- `CapsuleConventions.outputFormat = OutputFormat.WEBM`.
+- 9 `CucumberTaskSpec` existants (dont `cucumberTestFormat` ajouté S-100).
+- 772 unit + 54 functional VERT (baseline S-100).
+- 10 cucumber dédiés GREEN (66 tests cucumber dédiés, 0 FAIL) :
+  `cucumberTestFormat` (S-100), `cucumberTestCaptureStrategy` (S-096),
+  `cucumberTestDistrib` (S-088), `cucumberTestArchBoundary` (S-090),
+  `cucumberTestContentAndVideos` (S-088), `cucumberTestContext` (S-085),
+  `cucumberTestStrictMode` (S-091), `cucumberTestDocContext` (S-093),
+  `cucumberTestScenarioContext` (S-095), `cucumberTestIntegration`.
+- 2 `NoTestsDiscoveredException` dans `cucumberTest` global préexistantes
+  (bug S-082 — runners dédiés ne découvrent pas via feature global). Non
+  bloquant : `cucumberTest` skippé en CI par CR-10 (`onlyIf { -PrunCucumber
+  || CI=true }`). Hors CAP-MP4.
+- Domaines DDD capsule (8) : `capsule.feed` + `capsule.ci` + `capsule.multilang`
+  + `capsule.ai` + `capsule.context` + `capsule.pipeline` + `capsule.support`
+  + `capsule.i18n`.
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider
   0.0.16 (compileOnly, 0 import réel — décision CAP-ARCH-4).
 
 == EPICs restants (séquence MVP0)
 
-* CAP-MP4 (P1, EN COURS) — export MP4/H.264, 4 US ~5 pts (US-0 ✅, US-1 ✅, US-2 ✅, US-3 TODO)
-* CAP-CR3-1 (P0, maintenance) — CI `full` avec vrais binaires + probe durée
+* CAP-CR3-1 (P0, maintenance) — CI `full` avec vrais binaires + probe durée. PROCHAIN.
 * CAP-AUDIO (P1) — post-production audio, 5 US ~10 pts
 * CAP-GLOSSARY (P1) — injection terminologique, 4 US ~6 pts
 * CAP-PROVENANCE (P1) — audit context, 3 US ~5 pts
@@ -55,16 +57,16 @@ _Prochaine session_ : 100 — CAP-MP4 US-3 Cucumber BDD `capsule_format.feature`
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 772 unit + 54 functional VERT (S-099 baseline)
+* 772 unit + 54 functional VERT (S-100 baseline)
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082 :
   `@ConfigurationParameter(FEATURES_PROPERTY_NAME)` du CucumberTaskRunner
   écrase la system property cucumber.features) — pattern
-  `CapsuleContextCucumberRunner` / `CapsuleDocContextCucumberRunner` /
-  `CapsuleScenarioContextCucumberRunner` / `CapsuleCaptureStrategyCucumberRunner`
+  `CapsuleFormatCucumberRunner` (S-100) / `CapsuleCaptureStrategyCucumberRunner`
+  (S-096) / `CapsuleDistribCucumberRunner` (S-088) / etc.
 * Glue `capsule.scenarios` partagé : tous les steps doivent avoir des
   signatures uniques (bug S-088 `DuplicateStepDefinitionException`) —
-  préfixer par feature (ex. "format distribution")
+  préfixer par feature (ex. "format distribution", "capture strategy")
 * English only : code, Gherkin, commentaires
 * Économie d'encre = skip WebM existant + probe > 0 (ffprobe durée > 0) +
   skip MP4 si `.mp4` existe ET `MediaProbeUtil.probeDuration(mp4) > 0`
@@ -72,12 +74,12 @@ _Prochaine session_ : 100 — CAP-MP4 US-3 Cucumber BDD `capsule_format.feature`
 * `CapsuleMessages` object (domaine `capsule.i18n`) — 11
   `Messages*.properties` 10 langues, `resolveLanguage(project)` cascade
   `-Pcapsule.language` > DSL > `"en"`
-* Runners cucumber dédiés : `CapsuleContextCucumberRunner`,
-  `CapsuleContentAndVideosCucumberRunner`, `CapsuleDistribCucumberRunner`,
-  `CapsuleArchBoundaryCucumberRunner`, `CapsuleStrictModeCucumberRunner`,
-  `CapsuleDocContextCucumberRunner`, `CapsuleScenarioContextCucumberRunner`,
-  `CapsuleCaptureStrategyCucumberRunner`, `CucumberIntegrationTestRunner`
-  (pattern S-082)
+* Runners cucumber dédiés (10) : `CapsuleFormatCucumberRunner` (S-100),
+  `CapsuleContextCucumberRunner`, `CapsuleContentAndVideosCucumberRunner`,
+  `CapsuleDistribCucumberRunner`, `CapsuleArchBoundaryCucumberRunner`,
+  `CapsuleStrictModeCucumberRunner`, `CapsuleDocContextCucumberRunner`,
+  `CapsuleScenarioContextCucumberRunner`, `CapsuleCaptureStrategyCucumberRunner`,
+  `CucumberIntegrationTestRunner` (pattern S-082)
 * `StrictModeGuard` (domaine `capsule.config`) — 7 resolve* branchés,
   `noop` explicite non concerné.
 * DSL 4 sources pattern : ENV (`CAPSULE_*`) < gradle.properties

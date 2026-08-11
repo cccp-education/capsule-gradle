@@ -1,0 +1,158 @@
+= Session 100 — CAP-MP4 US-3 Cucumber BDD + clôture EPIC CAP-MP4
+
+**Date** : 2026-08-11
+**EPIC** : CAP-MP4 — Export MP4/H.264 + format distribution
+**US** : US-3 (4ème et dernière US — clôture EPIC 4/4)
+**Score** : 9/10
+**Baseline** : S-099 (772 unit + 54 functional + 9 cucumber dédiés GREEN)
+**Final** : 772 unit + 54 functional + 10 cucumber dédiés (66 tests cucumber dédiés, 0 FAIL) — EPIC CAP-MP4 TERMINÉ 4/4 US
+
+== Objectif
+
+Clôturer l'EPIC CAP-MP4 avec le 3e niveau de tests baby-step : Cucumber BDD
+`capsule_format.feature` 3 scénarios `@distrib @format` + runner dédié
+`CapsuleFormatCucumberRunner` (pattern S-082) + steps `CapsuleFormatSteps`
+préfixés "format distribution" (bug S-088 glue `capsule.scenarios` partagée) +
+`CucumberTaskSpec("cucumberTestFormat")` câblé `build.gradle.kts`. NoOp converter
+(pas de vrai FFmpeg en test — la distribution est validée, pas le transcode).
+
+== Méthode
+
+Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (niveau cucumber après unit
+S-098 + functional S-099).
+
+. **RED** — Écriture `capsule_format.feature` (3 scénarios : WEBM default,
+  MP4 only, BOTH) + `CapsuleFormatCucumberRunner` (pattern S-082
+  `@SelectClasspathResource("features/capsule_format.feature")` + filter
+  `@distrib and @format and not @wip and not @integration`) + câblage
+  `CucumberTaskSpec("cucumberTestFormat")` dans `build.gradle.kts`.
+  Vérification RED : `./gradlew cucumberTestFormat` → 6 tests completed,
+  6 failed (undefined steps — scénarios sans step defs).
+. **GREEN** — Écriture `CapsuleFormatSteps` (self-contained GradleRunner,
+  pattern `CapsuleDistribSteps` mirror). Steps préfixés "format distribution"
+  (bug S-088 — glue `capsule.scenarios` partagée classpath-wide, step texts
+  doivent être uniques). Deux `@Given` variants (WebM only, WebM+MP4), un
+  `@When` (`-Poutput.format=<webm|mp4|both>`), deux `@And` (only video file
+  vs video file). Vérification GREEN : `./gradlew cucumberTestFormat` →
+  BUILD SUCCESSFUL, 3/3 scénarios PASSED (12 steps cucumber).
+. **REFACTOR** — `./gradlew check` BUILD SUCCESSFUL 15m38s. 772 unit 0 FAIL
+  (baseline S-099 préservée) + 54 functional 0 FAIL + 10 cucumber dédiés
+  (66 tests, 0 FAIL dont `cucumberTestFormat` 6 tests). 2 `NoTestsDiscoveredException`
+  dans `cucumberTest` global (ContentAndVideos, Context runners dédiés ne
+  découvrent pas via feature global — bug S-082 préexistant, hors CAP-MP4,
+  `cucumberTest` skippé en CI par CR-10). Zéro régression.
+
+== Livrables
+
+=== Nouveaux fichiers (3)
+
+. `src/test/features/capsule_format.feature` — 3 scénarios `@distrib @format` :
+  **Default WEBM format distributes only the WebM file** (fake WebM + format
+  `webm` → only `demo.webm` copied), **MP4 format distributes only the MP4
+  file** (fake WebM + fake MP4 + format `mp4` → only `demo.mp4` copied),
+  **BOTH format distributes WebM and MP4 files** (fake WebM + fake MP4 + format
+  `both` → both copied). NoOp converter (no real FFmpeg). English only Gherkin.
+. `src/test/kotlin/capsule/scenarios/CapsuleFormatCucumberRunner.kt` — runner
+  dédié pattern S-082 `@Suite @IncludeEngines("cucumber")
+  @SelectClasspathResource("features/capsule_format.feature")
+  @ConfigurationParameter(GLUE = "capsule.scenarios")
+  @ConfigurationParameter(PLUGIN = "pretty, html:build/reports/cucumber-format.html, json:build/reports/cucumber-format.json")
+  @ConfigurationParameter(FILTER_TAGS = "@distrib and @format and not @wip and not @integration")`.
+. `src/test/kotlin/capsule/scenarios/CapsuleFormatSteps.kt` — 6 step defs
+  self-contained GradleRunner (pattern `CapsuleDistribSteps` mirror) :
+  `aCapsuleFormatProjectWithAFakeWebM(String)`,
+  `aCapsuleFormatProjectWithAFakeWebMAndMp4(String, String)`,
+  `theDistributeCapsuleVideoTaskIsRunWithFormat(String)` (CLI
+  `-Poutput.format=<webm|mp4|both>` + `-Poutput.videoDestinationDir` +
+  `-Poutput.versioning=timestamp`),
+  `theFormatDistributionBuildOutputContains(String)`,
+  `theFormatDistributionCopiesOnlyVideoFileToVersionedDestination(String)`
+  (assert count == 1, filtered format),
+  `theFormatDistributionCopiesVideoFileToVersionedDestination(String)`.
+
+=== Fichiers modifiés (1)
+
+. `build.gradle.kts` — ajout `CucumberTaskSpec(name = "cucumberTestFormat",
+  features = listOf("src/test/features/capsule_format.feature"),
+  tags = listOf("@distrib", "@format"),
+  runnerClass = "capsule.scenarios.CapsuleFormatCucumberRunner",
+  timeoutMinutes = 30)` dans `cucumberConventions.additionalTasks`. 9ème
+  `CucumberTaskSpec` (8 existants + 1 integration). Commentaire KDoc
+  CAP-MP4 US-3 + NoOp converter note.
+
+== Vérification
+
+[source,shell]
+----
+./gradlew compileKotlin                         # UP-TO-DATE
+./gradlew cucumberTestFormat                    # 3/3 scénarios PASSED
+./gradlew check                                 # BUILD SUCCESSFUL 15m38s
+# 772 unit + 54 functional + 66 cucumber dédiés (10 runners), 0 FAIL
+# 2 NoTestsDiscoveredException dans cucumberTest global (bug S-082 préexistant)
+grep -r "TOKEN\|SECRET\|PASSWORD\|API_KEY\|gho_\|ghp_" --include="*.kts" --include="*.properties" --include="*.yml" src
+# (no output) — zéro secret
+----
+
+== Bugs / Découvertes
+
+. **Bug S-088 confirmé** — glue `capsule.scenarios` partagée classpath-wide.
+  Step text "the video file {string} is copied to the versioned destination"
+  déjà défini dans `CapsuleDistribSteps.kt:132`. Fix : préfixe "format
+  distribution" + sentence shape unique ("the format distribution copies
+  video file {string} to the versioned destination"). Aucune collision.
+. **Bug S-082 préexistant** — `cucumberTest` global collecte tous les runners
+  dédiés `@Suite` du classpath, dont certains (`CapsuleContentAndVideosCucumberRunner`,
+  `CapsuleContextCucumberRunner`) ne découvrent pas de tests via le feature
+  global → `NoTestsDiscoveredException` (2 failures). Préexistant à CAP-MP4
+  (présent depuis S-093 minimum), hors périmètre US-3. `cucumberTest` est
+  skippé en CI par CR-10 (`onlyIf { -PrunCucumber || CI=true }`). Les runners
+  dédiés (`cucumberTestFormat`, etc.) sont GREEN en isolation.
+
+== Score 9/10
+
+Justification : exécution baby-step RED → GREEN → REFACTOR sans accroc, 3/3
+scénarios GREEN du premier coup après fix S-088, zéro régression, clôture
+EPIC 4/4 US. -1 point : 2 failures préexistants dans `cucumberTest` global
+(non-bloquant mais visible dans le rapport `check`).
+
+== Clôture EPIC CAP-MP4 (4/4 US)
+
+|===
+| US | Description | Pts | Session | Statut
+
+| CAP-MP4-0
+| Cadrage EPIC — audit code + 10 décisions architecturales
+| 1
+| S-097
+| ✅ TERMINÉ
+
+| CAP-MP4-1
+| `OutputFormat` enum + `OutputConfig.format` + merger 4 sources
+| 1
+| S-098
+| ✅ TERMINÉ (17 unit)
+
+| CAP-MP4-2
+| `VideoFormatConverter` + `FormatConversion` + wiring + `DistributeCapsuleVideoTask` filtre
+| 2
+| S-099
+| ✅ TERMINÉ (13 unit + 2 functional)
+
+| CAP-MP4-3
+| Cucumber BDD `capsule_format.feature` + runner dédié + steps + câblage
+| 1
+| S-100
+| ✅ TERMINÉ (3 scénarios cucumber GREEN)
+|===
+
+_Total_ : 4 US, ~5 pts. EPIC CAP-MP4 TERMINÉ — le borough Détroit produit
+désormais des capsules MP4/H.264/AAC (distribution LMS/YouTube/OF) en plus
+du WebM natif Playwright. `OutputFormat` enum type-safe (WEBM/MP4/BOTH,
+défaut WEBM backward compat), `VideoFormatConverter` FFmpeg libx264+aac+
+faststart, `FormatConversion.convertIfNeeded` dispatch pur avec économie
+d'encre (skip si `.mp4` existe ET probe>0), `DistributeCapsuleVideoTask`
+filtre selon `output.format` (`.webm` / `.mp4` / both). DSL 4 sources
+(ENV < props < YAML < CLI), `StrictModeGuard` sur `resolveFormatConverter`.
+
+_Prochain EPIC séquence MVP0_ : CAP-CR3-1 (P0 — CI `full` avec vrais binaires
++ probe durée), puis CAP-AUDIO (P1 — post-production audio).
