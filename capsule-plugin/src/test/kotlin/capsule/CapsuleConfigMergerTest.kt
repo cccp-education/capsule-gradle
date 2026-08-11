@@ -1,5 +1,6 @@
 package capsule
 
+import capsule.audio.AudioPostConfig
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -1232,5 +1233,219 @@ class CapsuleConfigMergerTest {
         val config = CapsuleConfigMerger.loadFromEnvironment()
         assertEquals(false, config.validation.durationEnabled, "env default validation.durationEnabled should be false")
         assertEquals(2.0, config.validation.toleranceSecs, 0.001, "env default validation.toleranceSecs should be 2.0")
+    }
+
+    // ─── AudioPostConfig (CAP-AUDIO US-1) ─────────────────────────
+    //
+    // 5 fields: bgmEnabled (Bool=false), bgmFile (Str=""),
+    // bgmLevel (Double=-18.0), loudnessTarget (Double=-16.0),
+    // duckingEnabled (Bool=false). All default disabled to preserve
+    // backward compat — existing configs without an `audioPost`
+    // section keep the no-audio-post behavior.
+
+    @Test
+    fun `default merge has audioPost disabled with default levels`() {
+        val projectDir = File(tempDir, "audio-default").also { it.mkdirs() }
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
+        assertEquals(false, merged.audioPost.bgmEnabled, "audioPost.bgmEnabled should default to false")
+        assertEquals("", merged.audioPost.bgmFile, "audioPost.bgmFile should default to empty")
+        assertEquals(-18.0, merged.audioPost.bgmLevel, 0.001, "audioPost.bgmLevel should default to -18.0")
+        assertEquals(-16.0, merged.audioPost.loudnessTarget, 0.001, "audioPost.loudnessTarget should default to -16.0")
+        assertEquals(false, merged.audioPost.duckingEnabled, "audioPost.duckingEnabled should default to false")
+    }
+
+    @Test
+    fun `audioPost is read from YAML`() {
+        val projectDir = File(tempDir, "audio-yaml").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(
+            audioPost = AudioPostConfig(
+                bgmEnabled = true,
+                bgmFile = "/music/loop.mp3",
+                bgmLevel = -20.0,
+                loudnessTarget = -14.0,
+                duckingEnabled = true
+            )
+        )
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+        assertEquals(true, merged.audioPost.bgmEnabled, "YAML audioPost.bgmEnabled should be honored")
+        assertEquals("/music/loop.mp3", merged.audioPost.bgmFile, "YAML audioPost.bgmFile should be honored")
+        assertEquals(-20.0, merged.audioPost.bgmLevel, 0.001, "YAML audioPost.bgmLevel should be honored")
+        assertEquals(-14.0, merged.audioPost.loudnessTarget, 0.001, "YAML audioPost.loudnessTarget should be honored")
+        assertEquals(true, merged.audioPost.duckingEnabled, "YAML audioPost.duckingEnabled should be honored")
+    }
+
+    @Test
+    fun `audioPost CLI overrides YAML`() {
+        val projectDir = File(tempDir, "audio-cli-over-yaml").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(
+            audioPost = AudioPostConfig(
+                bgmEnabled = true,
+                bgmFile = "/yaml/music.mp3",
+                bgmLevel = -20.0,
+                loudnessTarget = -14.0,
+                duckingEnabled = true
+            )
+        )
+        val merged = CapsuleConfigMerger.merge(
+            projectDir, yamlConfig, mapOf(
+                "audioPost.bgmEnabled" to "false",
+                "audioPost.bgmFile" to "/cli/music.mp3",
+                "audioPost.bgmLevel" to "-22.0",
+                "audioPost.loudnessTarget" to "-18.0",
+                "audioPost.duckingEnabled" to "false"
+            )
+        )
+        assertEquals(false, merged.audioPost.bgmEnabled, "CLI false should override YAML true")
+        assertEquals("/cli/music.mp3", merged.audioPost.bgmFile, "CLI bgmFile should override YAML")
+        assertEquals(-22.0, merged.audioPost.bgmLevel, 0.001, "CLI bgmLevel should override YAML")
+        assertEquals(-18.0, merged.audioPost.loudnessTarget, 0.001, "CLI loudnessTarget should override YAML")
+        assertEquals(false, merged.audioPost.duckingEnabled, "CLI duckingEnabled false should override YAML true")
+    }
+
+    @Test
+    fun `audioPost is read from gradle properties`() {
+        val projectDir = File(tempDir, "audio-props").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText(
+            """
+            capsule.audioPost.bgmEnabled=true
+            capsule.audioPost.bgmFile=/props/music.mp3
+            capsule.audioPost.bgmLevel=-19.0
+            capsule.audioPost.loudnessTarget=-15.0
+            capsule.audioPost.duckingEnabled=true
+            """.trimIndent()
+        )
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
+        assertEquals(true, merged.audioPost.bgmEnabled, "props audioPost.bgmEnabled should be honored")
+        assertEquals("/props/music.mp3", merged.audioPost.bgmFile, "props audioPost.bgmFile should be honored")
+        assertEquals(-19.0, merged.audioPost.bgmLevel, 0.001, "props audioPost.bgmLevel should be honored")
+        assertEquals(-15.0, merged.audioPost.loudnessTarget, 0.001, "props audioPost.loudnessTarget should be honored")
+        assertEquals(true, merged.audioPost.duckingEnabled, "props audioPost.duckingEnabled should be honored")
+    }
+
+    @Test
+    fun `audioPost YAML overrides gradle properties`() {
+        val projectDir = File(tempDir, "audio-yaml-over-props").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText(
+            """
+            capsule.audioPost.bgmEnabled=false
+            capsule.audioPost.bgmFile=/props/music.mp3
+            capsule.audioPost.bgmLevel=-19.0
+            """.trimIndent()
+        )
+        val yamlConfig = CapsuleConfig(
+            audioPost = AudioPostConfig(
+                bgmEnabled = true,
+                bgmFile = "/yaml/music.mp3",
+                bgmLevel = -20.0
+            )
+        )
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+        assertEquals(true, merged.audioPost.bgmEnabled, "YAML should override props")
+        assertEquals("/yaml/music.mp3", merged.audioPost.bgmFile, "YAML should override props")
+        assertEquals(-20.0, merged.audioPost.bgmLevel, 0.001, "YAML should override props")
+    }
+
+    @Test
+    fun `audioPost CLI overrides gradle properties when no YAML`() {
+        val projectDir = File(tempDir, "audio-cli-over-props").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText(
+            """
+            capsule.audioPost.bgmEnabled=false
+            capsule.audioPost.bgmLevel=-19.0
+            """.trimIndent()
+        )
+        val merged = CapsuleConfigMerger.merge(
+            projectDir, CapsuleConfig(), mapOf(
+                "audioPost.bgmEnabled" to "true",
+                "audioPost.bgmLevel" to "-22.0"
+            ),
+            yamlLoaded = false
+        )
+        assertEquals(true, merged.audioPost.bgmEnabled, "CLI should override props when no YAML")
+        assertEquals(-22.0, merged.audioPost.bgmLevel, 0.001, "CLI should override props when no YAML")
+    }
+
+    @Test
+    fun `audioPost blank bgmFile YAML falls back to props`() {
+        val projectDir = File(tempDir, "audio-blank-yaml").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText(
+            """
+            capsule.audioPost.bgmFile=/props/music.mp3
+            """.trimIndent()
+        )
+        val yamlConfig = CapsuleConfig(audioPost = AudioPostConfig(bgmFile = ""))
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+        assertEquals("/props/music.mp3", merged.audioPost.bgmFile, "Blank YAML bgmFile should fall back to props")
+    }
+
+    @Test
+    fun `audioPost 5-field round-trip via CLI`() {
+        val projectDir = File(tempDir, "audio-roundtrip").also { it.mkdirs() }
+        val merged = CapsuleConfigMerger.merge(
+            projectDir, CapsuleConfig(), mapOf(
+                "audioPost.bgmEnabled" to "true",
+                "audioPost.bgmFile" to "/rt/music.mp3",
+                "audioPost.bgmLevel" to "-21.0",
+                "audioPost.loudnessTarget" to "-13.0",
+                "audioPost.duckingEnabled" to "true"
+            )
+        )
+        assertEquals(true, merged.audioPost.bgmEnabled)
+        assertEquals("/rt/music.mp3", merged.audioPost.bgmFile)
+        assertEquals(-21.0, merged.audioPost.bgmLevel, 0.001)
+        assertEquals(-13.0, merged.audioPost.loudnessTarget, 0.001)
+        assertEquals(true, merged.audioPost.duckingEnabled)
+    }
+
+    @Test
+    fun `loadFromEnvironment default audioPost is disabled`() {
+        val config = CapsuleConfigMerger.loadFromEnvironment()
+        assertEquals(false, config.audioPost.bgmEnabled, "env default audioPost.bgmEnabled should be false")
+        assertEquals("", config.audioPost.bgmFile, "env default audioPost.bgmFile should be empty")
+        assertEquals(-18.0, config.audioPost.bgmLevel, 0.001, "env default audioPost.bgmLevel should be -18.0")
+        assertEquals(-16.0, config.audioPost.loudnessTarget, 0.001, "env default audioPost.loudnessTarget should be -16.0")
+        assertEquals(false, config.audioPost.duckingEnabled, "env default audioPost.duckingEnabled should be false")
+    }
+
+    @Test
+    fun `loadFromGradleProperties reads capsule audioPost section`() {
+        val projectDir = File(tempDir, "audio-props-load").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText(
+            """
+            capsule.audioPost.bgmEnabled=true
+            capsule.audioPost.bgmFile=/props/music.mp3
+            capsule.audioPost.bgmLevel=-19.0
+            capsule.audioPost.loudnessTarget=-15.0
+            capsule.audioPost.duckingEnabled=true
+            """.trimIndent()
+        )
+        val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
+        assertEquals(true, config.audioPost.bgmEnabled, "loadFromGradleProperties should read audioPost.bgmEnabled")
+        assertEquals("/props/music.mp3", config.audioPost.bgmFile)
+        assertEquals(-19.0, config.audioPost.bgmLevel, 0.001)
+        assertEquals(-15.0, config.audioPost.loudnessTarget, 0.001)
+        assertEquals(true, config.audioPost.duckingEnabled)
+    }
+
+    @Test
+    fun `audioPost partial CLI override preserves non-overridden YAML fields`() {
+        val projectDir = File(tempDir, "audio-partial-cli").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(
+            audioPost = AudioPostConfig(
+                bgmEnabled = true,
+                bgmFile = "/yaml/music.mp3",
+                bgmLevel = -20.0,
+                loudnessTarget = -14.0,
+                duckingEnabled = true
+            )
+        )
+        val merged = CapsuleConfigMerger.merge(
+            projectDir, yamlConfig, mapOf("audioPost.bgmEnabled" to "false")
+        )
+        assertEquals(false, merged.audioPost.bgmEnabled, "CLI overrides bgmEnabled only")
+        assertEquals("/yaml/music.mp3", merged.audioPost.bgmFile, "YAML bgmFile preserved when CLI absent")
+        assertEquals(-20.0, merged.audioPost.bgmLevel, 0.001, "YAML bgmLevel preserved")
+        assertEquals(-14.0, merged.audioPost.loudnessTarget, 0.001, "YAML loudnessTarget preserved")
+        assertEquals(true, merged.audioPost.duckingEnabled, "YAML duckingEnabled preserved")
     }
 }

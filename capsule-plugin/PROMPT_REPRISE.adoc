@@ -1,97 +1,97 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 101 — CAP-CR3-1 TERMINÉ 5/5 US. Nouveau domaine `capsule.validation` (9ème) — `VideoDurationValidator` object pur + `ValidationResult` sealed (Valid/Invalid). `ValidationConfig` 2 champs (`durationEnabled` défaut false, `toleranceSecs` défaut 2.0) + `mergeValidationConfig` 4 sources. Tâche `validateCapsuleVideoDuration` groupe `verification`. Cucumber `capsule_duration_validation.feature` 3 scénarios + runner dédié `CapsuleDurationValidationCucumberRunner`. Workflow CI `full-tests.yml` (installe Playwright + ffmpeg + espeak, invoque validation). 782 unit (+10) + 57 functional (+3) + 11 cucumber dédiés (+1) GREEN. `check` BUILD SUCCESSFUL.
-_Prochaine session_ : 102 — CAP-AUDIO (P1) — post-production audio (BGM + normalisation EBU R128 + ducking), 5 US ~10 pts. Nouveau domaine `capsule.audio`. Cadrage US-0 d'abord (audit code post-`burnInSubtitlesIfEnabled`, BGM source, loudness target).
+_Session terminee_ : 103 — CAP-AUDIO US-1 `AudioPostConfig` + merger 4
+sources. Nouveau domaine `capsule.audio` créé (10ème) avec
+`AudioPostConfig` data class 5 champs (`bgmEnabled: Boolean = false`,
+`bgmFile: String = ""`, `bgmLevel: Double = -18.0`, `loudnessTarget:
+Double = -16.0`, `duckingEnabled: Boolean = false`). Section `audioPost`
+10ème dans `CapsuleConfig`. `mergeAudioPostConfig` (pattern
+`mergeValidationConfig` — `mergeBoolean` bgmEnabled/duckingEnabled,
+`mergeStr` bgmFile, `mergeDouble` bgmLevel/loudnessTarget) + 5 ENV vars
+`CAPSULE_AUDIO_POST_*` + 5 props `capsule.audioPost.*`. `CapsuleExtension`
++5 properties + `CapsuleConventions` +5 champs + `pushConfigIntoExtension`
+section AudioPost (5 guards convention). Baby-step TDD RED → GREEN →
+REFACTOR : +20 unit (4 `AudioPostConfigTest` + 12 merger `audioPost` + 4
+defaults/equals/copy). 802 unit VERT (782 baseline + 20),
+`CapsulePluginFunctionalTest` VERT. Zéro régression, zéro secret.
+_Prochaine session_ : 104 — CAP-AUDIO US-2 `AudioPostProcessor` interface +
+Impl + NoOp + factory + `AudioPostCommand` object pur, ~4 pts, ~14 unit.
 
-== Contexte reprise session 102 (post CAP-CR3-1 TERMINÉ 5/5 US)
+== Contexte reprise session 104 (post CAP-AUDIO US-1 config+merger)
 
-- EPIC CAP-CR3-1 TERMINÉ — US-0 cadrage, US-1 validator, US-2 config+merger+tâche,
-  US-3 cucumber, US-4 workflow CI (S-101).
-- Nouveau domaine DDD `capsule.validation` (9ème) — `VideoDurationValidator`
-  + `ValidationResult` sealed + `ValidateCapsuleVideoDurationTask`.
-- `VideoDurationValidator.validate(videoDurationSecs, audioDurationsSecs,
-  toleranceSecs): ValidationResult` — object pur, aucune I/O.
-- `ValidationResult` sealed — `Valid(delta)` + `Invalid(delta, videoDuration,
-  sumAudio, toleranceSecs)` + `message()` (Locale.US pour point décimal).
-- `ValidationConfig(durationEnabled: Boolean = false, toleranceSecs:
-  Double = 2.0)` — 9ème section `CapsuleConfig`. 4 sources ENV < props < YAML < CLI.
-- Tâche `validateCapsuleVideoDuration` — groupe `verification`. `@Internal
-  videoFile` (existence checked at runtime), `@InputFiles @PathSensitive(RELATIVE)
-  audioFiles`, `@Input toleranceSecs`, `@Input durationEnabled`. Skip si disabled
-  ou vidéo manquante. `throw GradleException` si Invalid.
-- `CapsuleExtension.durationValidationEnabled` + `durationValidationToleranceSecs`
-  (conventions false/2.0). `pushConfigIntoExtension` push validation.
-- Workflow CI `full-tests.yml` — job `full-tests` (main only, installe
-  Playwright+ffmpeg+espeak, `./gradlew test functionalTest`, `validateCapsuleVideoDuration`).
-- Cucumber runner dédié `CapsuleDurationValidationCucumberRunner` (pattern
-  S-082) + `CucumberTaskSpec("cucumberTestDurationValidation")` (10ème cucumber
-  dédié, 11ème `CucumberTaskSpec`).
-- EPIC CAP-MP4 TERMINÉ (S-097→S-100).
-- 782 unit + 57 functional VERT (baseline S-101).
-- 11 cucumber dédiés GREEN (69 tests cucumber dédiés, 0 FAIL) :
-  `cucumberTestDurationValidation` (S-101), `cucumberTestFormat` (S-100),
-  `cucumberTestCaptureStrategy` (S-096), `cucumberTestDistrib` (S-088),
-  `cucumberTestArchBoundary` (S-090), `cucumberTestContentAndVideos` (S-088),
-  `cucumberTestContext` (S-085), `cucumberTestStrictMode` (S-091),
-  `cucumberTestDocContext` (S-093), `cucumberTestScenarioContext` (S-095),
-  `cucumberTestIntegration`.
-- Domaines DDD capsule (9) : `capsule.feed` + `capsule.ci` + `capsule.multilang`
-  + `capsule.ai` + `capsule.context` + `capsule.pipeline` + `capsule.support`
-  + `capsule.i18n` + `capsule.validation`.
+- EPIC CAP-AUDIO (P1) — post-production audio, 5 US ~12 pts.
+  US-0 ✅ S-102 (cadrage), US-1 ✅ S-103 (config+merger).
+- Domaine `capsule.audio` (10ème) ouvert : `AudioPostConfig` créé (1
+  fichier), `AudioPostProcessor` + Impl + NoOp + factory + Exception
+  + `AudioPostCommand` à créer US-2.
+- `AudioPostConfig` data class 5 champs, defaults backward compat
+  (bgmEnabled=false, bgmFile="", bgmLevel=-18.0 dB, loudnessTarget=-16.0
+  LUFS EBU R128, duckingEnabled=false).
+- 4 sources câblées : ENV `CAPSULE_AUDIO_POST_*` < props
+  `capsule.audioPost.*` < YAML `audioPost.*` < CLI
+  `-Pcapsule.audioPost.*`. `mergeAudioPostConfig` utilise
+  `mergeBoolean`/`mergeStr`/`mergeDouble` helpers existants.
+- `CapsuleExtension` : 5 properties (`audioPostBgmEnabled/File/Level`,
+  `audioPostLoudnessTarget`, `audioPostDuckingEnabled`) avec
+  conventions. `pushConfigIntoExtension` pousse les 5 (guard
+  `isPresent` + convention, pattern `durationValidation`).
+- `CapsuleConventions` étendu 5 champs (même defaults).
+- 802 unit VERT (S-103 baseline). 11 cucumber dédiés GREEN (inchangés).
+- 4 factories `resolve*` dans `CapsuleManager` :
+  `resolveManimVideoMixer`, `resolveManimEngine`,
+  `resolveSubtitleBurnInService`, `resolveFormatConverter`. 5ème cible
+  US-2 : `resolveAudioPostProcessor`.
+- `StrictModeGuard.requireAvailable` — 7 resolve* branchés. 8ème =
+  `resolveAudioPostProcessor` (cible US-2).
+- `SubtitleBurnInService` (interface + Impl + NoOp + factory +
+  `BurnInException`) — pattern de référence US-2.
+- `VideoFormatConverter` (interface + Impl + NoOp + factory, retourne
+  Boolean degraded) — 2ème pattern US-2.
+- `FormatConversion.convertIfNeeded` (object pur dispatch) — pattern
+  pour `AudioPostCommand` (object pur, argv builder).
+- `CapsuleMessages` — 31 keys, pas de clé audioPost (CAP-AUDIO est une
+  étape, pas une tâche).
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider
   0.0.16 (compileOnly, 0 import réel — décision CAP-ARCH-4).
 
 == EPICs restants (séquence MVP0)
 
-* CAP-AUDIO (P1) — post-production audio, 5 US ~10 pts. PROCHAIN.
+* CAP-AUDIO (P1) — post-production audio, 5 US ~12 pts. EN COURS (US-0/1 ✅,
+  reste US-2 processor+factory, US-3 wiring, US-4 cucumber).
 * CAP-GLOSSARY (P1) — injection terminologique, 4 US ~6 pts
 * CAP-PROVENANCE (P1) — audit context, 3 US ~5 pts
 * CAP-CHAPITRE (P2) — intro/outro + chapter markers, 5 US ~10 pts
 * CAP-TRANSCRIPT (P2) — reverse pipeline article AsciiDoc, 5 US ~10 pts
 * CAP-PODCAST (P2) — extraction audio-only, 3 US ~4 pts
 * CAP-PREVIEW (P2) — mode dry-run, 3 US ~4 pts
-* CAP-CR3-4 (P2, maintenance) — convention Gradle explicite resolveScriptDir/resolveDeckDir
+* CAP-CR3-4 (P2, maintenance) — convention Gradle explicite
+  resolveScriptDir/resolveDeckDir
 * CAP-27 (P2, maintenance) — VTT burn-in
 * CAP-28 (P2, maintenance) — coverage gaps
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 772 unit + 54 functional VERT (S-100 baseline)
+* 802 unit VERT (S-103 baseline), 57 functional VERT (S-101 baseline)
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
-* Tout nouveau feature cucumber nécessite un runner dédié (bug S-082 :
-  `@ConfigurationParameter(FEATURES_PROPERTY_NAME)` du CucumberTaskRunner
-  écrase la system property cucumber.features) — pattern
-  `CapsuleFormatCucumberRunner` (S-100) / `CapsuleCaptureStrategyCucumberRunner`
-  (S-096) / `CapsuleDistribCucumberRunner` (S-088) / etc.
-* Glue `capsule.scenarios` partagé : tous les steps doivent avoir des
-  signatures uniques (bug S-088 `DuplicateStepDefinitionException`) —
-  préfixer par feature (ex. "format distribution", "capture strategy")
+* Tout nouveau feature cucumber nécessite un runner dédié (bug S-082) +
+  steps préfixés par feature (bug S-088 glue `capsule.scenarios` partagée)
 * English only : code, Gherkin, commentaires
-* Économie d'encre = skip WebM existant + probe > 0 (ffprobe durée > 0) +
-  skip MP4 si `.mp4` existe ET `MediaProbeUtil.probeDuration(mp4) > 0`
+* Économie d'encre = skip si `!bgmEnabled && !duckingEnabled` (défaut
+  false → no-op backward compat), skip si BGM enabled mais bgmFile
+  blank/missing → degraded (garde original)
 * Ports Ollama : 11437-11465 rotation (11434-11436 INTERDITS)
 * `CapsuleMessages` object (domaine `capsule.i18n`) — 11
-  `Messages*.properties` 10 langues, `resolveLanguage(project)` cascade
-  `-Pcapsule.language` > DSL > `"en"`
-* Runners cucumber dédiés (10) : `CapsuleFormatCucumberRunner` (S-100),
-  `CapsuleContextCucumberRunner`, `CapsuleContentAndVideosCucumberRunner`,
-  `CapsuleDistribCucumberRunner`, `CapsuleArchBoundaryCucumberRunner`,
-  `CapsuleStrictModeCucumberRunner`, `CapsuleDocContextCucumberRunner`,
-  `CapsuleScenarioContextCucumberRunner`, `CapsuleCaptureStrategyCucumberRunner`,
-  `CucumberIntegrationTestRunner` (pattern S-082)
-* `StrictModeGuard` (domaine `capsule.config`) — 7 resolve* branchés,
-  `noop` explicite non concerné.
-* DSL 4 sources pattern : ENV (`CAPSULE_*`) < gradle.properties
-  (`capsule.*`) < YAML (`capsule-context.yml`) < CLI (`-P*`). Merger
-  `CapsuleConfigMerger` + helpers `mergeStr/mergeInt/mergeDouble/mergeBoolean`
-  + `mergeStrList` (List<String> comma-separated) + `mergeVersioning`/
-  `mergeCaptureStrategy`/`mergeOutputFormat` (enum dédiés).
-* `CompositeContext` (codebase-contracts 0.1.0) — canaux EAGER/RAG/Graphify/
-  Docs + `ChannelBudget`. `CapsuleContextBuilder` (domaine `capsule.context`).
-* `CapsulePipelineGraph` (koog 1.0.0, domaine `capsule.pipeline`) — 3 nœuds
-  propose/validate/generate, `CapsulePromptBuilder` port pédagogique.
-* `ContextChannel` sealed N0 (5 variants) — PAS de canal `spd` N0.
-  Extension capsule-local `CapsuleContext.scenarioSection` (pas de bump N0).
-* `CapsuleContext` (S-095) — 3 champs `channels`/`rendered`/`scenarioSection`,
-  invariant `rendered.isBlank() == (channels.isEmpty() && scenarioSection.isBlank())`.
+  `Messages*.properties` 10 langues
+* Runners cucumber dédiés (11) — pas de cucumber audioPost encore
+* DSL 4 sources pattern : ENV < props < YAML < CLI. Merger helpers
+  `mergeStr/mergeInt/mergeDouble/mergeBoolean/mergeStrList` +
+  `mergeVersioning`/`mergeCaptureStrategy`/`mergeOutputFormat` (enums)
+* `AudioPostProcessor.process()` retourne Boolean (degraded mode garde
+  original, pattern `VideoFormatConverter`) + `AudioPostException`
+  (erreurs critiques, pattern `BurnInException`)
+* `AudioPostProcessorImpl` FFmpeg : `loudnorm=I=-16:TP=-1.5:LRA=11` +
+  `amix` si bgmEnabled + `sidechaincompress` si duckingEnabled
+* Factory `resolveAudioPostProcessor(ffmpegPath, strict)` 5ème — pattern
+  `resolveFormatConverter` : noop→NoOp, unavailable+non-strict→NoOp,
+  unavailable+strict→throw, available→Impl

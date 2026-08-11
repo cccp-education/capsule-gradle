@@ -1,5 +1,6 @@
 package capsule
 
+import capsule.audio.AudioPostConfig
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -157,6 +158,26 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val durationValidationToleranceSecs: Property<Double> = objects.property(Double::class.java)
         .convention(2.0)
 
+    /** CAP-AUDIO — `true` to mix background music under the voice track. Defaults to false (opt-in). */
+    val audioPostBgmEnabled: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
+    /** CAP-AUDIO — path to the BGM audio file. Defaults to empty (no BGM). */
+    val audioPostBgmFile: Property<String> = objects.property(String::class.java)
+        .convention("")
+
+    /** CAP-AUDIO — BGM level in dB. Defaults to -18.0 (music bed under voice). */
+    val audioPostBgmLevel: Property<Double> = objects.property(Double::class.java)
+        .convention(-18.0)
+
+    /** CAP-AUDIO — target loudness in LUFS (EBU R128). Defaults to -16.0 (streaming web). */
+    val audioPostLoudnessTarget: Property<Double> = objects.property(Double::class.java)
+        .convention(-16.0)
+
+    /** CAP-AUDIO — `true` to lower BGM when voice speaks (sidechain compression). Defaults to false. */
+    val audioPostDuckingEnabled: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
     internal val conventions: CapsuleConventions = CapsuleConventions(
         outputDir = "capsule",
         sliderScriptDir = "capsule",
@@ -195,7 +216,12 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         manimParallelRender = false,
         manimParallelRenderThreads = 4,
         durationValidationEnabled = false,
-        durationValidationToleranceSecs = 2.0
+        durationValidationToleranceSecs = 2.0,
+        audioPostBgmEnabled = false,
+        audioPostBgmFile = "",
+        audioPostBgmLevel = -18.0,
+        audioPostLoudnessTarget = -16.0,
+        audioPostDuckingEnabled = false
     )
 }
 
@@ -237,5 +263,10 @@ data class CapsuleConventions(
     val manimParallelRender: Boolean,
     val manimParallelRenderThreads: Int,
     val durationValidationEnabled: Boolean,
-    val durationValidationToleranceSecs: Double
+    val durationValidationToleranceSecs: Double,
+    val audioPostBgmEnabled: Boolean,
+    val audioPostBgmFile: String,
+    val audioPostBgmLevel: Double,
+    val audioPostLoudnessTarget: Double,
+    val audioPostDuckingEnabled: Boolean
 )

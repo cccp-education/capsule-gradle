@@ -1,0 +1,133 @@
+= Session 103 — CAP-AUDIO US-1 AudioPostConfig + merger 4 sources
+
+_Date_ : 2026-08-11
+_Type_ : feat+ddd+tdd
+_Score_ : 9/10
+
+== Objectif
+
+Implémenter CAP-AUDIO US-1 : `AudioPostConfig` data class (5 champs) +
+section `audioPost` 10ème dans `CapsuleConfig` + `mergeAudioPostConfig`
+4 sources (ENV < props < YAML < CLI) + `CapsuleExtension` 5 properties +
+`CapsuleConventions` 5 champs + `pushConfigIntoExtension`. Baby-step
+TDD RED → GREEN → REFACTOR. ~3 pts.
+
+== Méthode
+
+Baby-step DDD/TDD : RED d'abord (tests unitaires échouent —
+`Unresolved reference: AudioPostConfig`), puis GREEN (implémentation
+minimale), puis REFACTOR (vérification non-régression).
+
+*Pattern de référence* : `ValidationConfig` (S-101, 2 champs Boolean +
+Double) étendu à 5 champs (2 Boolean + 1 String + 2 Double). Helper
+`mergeValidationConfig` (Boolean via `mergeBoolean`, Double via
+`mergeDouble`) étendu avec `mergeStr` pour `bgmFile` (String blank
+heuristic).
+
+== TDD RED — Tests écrits avant l'implémentation
+
+. `AudioPostConfigTest` (4 unit) — `src/test/kotlin/capsule/AudioPostConfigTest.kt` :
+  defaults backward-compat disabled, valeurs explicites, equals by
+  value (data class), copy preserves unmodified fields.
+. `CapsuleConfigMergerTest` +12 unit — section `AudioPostConfig
+  (CAP-AUDIO US-1)` :
+  - default merge disabled with default levels
+  - YAML override (5 champs)
+  - CLI overrides YAML (5 champs)
+  - gradle properties honored (yamlLoaded=false)
+  - YAML overrides gradle properties
+  - CLI overrides gradle properties when no YAML
+  - blank bgmFile YAML falls back to props (isNotBlank heuristic)
+  - 5-field round-trip via CLI
+  - loadFromEnvironment defaults disabled
+  - loadFromGradleProperties reads capsule audioPost section
+  - partial CLI override preserves non-overridden YAML fields
+
+*Total RED* : +16 unit tests (4 AudioPostConfig + 12 merger).
+
+== TDD GREEN — Implémentation
+
+. `AudioPostConfig.kt` (nouveau, domaine `capsule.audio`) —
+  `src/main/kotlin/capsule/audio/AudioPostConfig.kt` : data class 5
+  champs (`bgmEnabled: Boolean = false`, `bgmFile: String = ""`,
+  `bgmLevel: Double = -18.0`, `loudnessTarget: Double = -16.0`,
+  `duckingEnabled: Boolean = false`). KDoc EBU R128 + backward compat.
+. `CapsuleConfig.kt` — import `capsule.audio.AudioPostConfig` + 10ème
+  champ `val audioPost: AudioPostConfig = AudioPostConfig()`.
+. `CapsuleConfigMerger.kt` :
+  - import `AudioPostConfig`
+  - `merge()` étendu `audioPost = mergeAudioPostConfig(...)`
+  - `loadFromEnvironment()` étendu (5 ENV vars
+    `CAPSULE_AUDIO_POST_*`)
+  - `buildConfigFromProperties()` étendu (5 props keys
+    `capsule.audioPost.*`)
+  - `mergeAudioPostConfig` (pattern `mergeValidationConfig` —
+    `mergeBoolean` pour bgmEnabled/duckingEnabled, `mergeStr` pour
+    bgmFile avec env fallback, `mergeDouble` pour bgmLevel/
+    loudnessTarget)
+. `CapsuleModels.kt` :
+  - import `AudioPostConfig`
+  - `CapsuleExtension` +5 properties (`audioPostBgmEnabled` convention
+    `false`, `audioPostBgmFile` convention `""`, `audioPostBgmLevel`
+    convention `-18.0`, `audioPostLoudnessTarget` convention `-16.0`,
+    `audioPostDuckingEnabled` convention `false`)
+  - `CapsuleConventions` +5 champs ( mêmes défauts)
+  - `conventions` instance initialisée avec les 5 nouveaux champs
+. `CapsulePlugin.kt` `pushConfigIntoExtension` — section AudioPost
+  (5 guards `isPresent` + convention, pattern `durationValidation`).
+
+== TDD REFACTOR — Vérifications
+
+. `./gradlew compileKotlin compileTestKotlin` : VERT (zéro warning
+  nouveau, 1 warning préexistant `project.properties` deprecated).
+. `./gradlew test` : BUILD SUCCESSFUL en 5m25s, **802 unit VERT** (782
+  baseline S-101 + 20 nouveaux : 4 `AudioPostConfigTest` + 12 merger
+  audioPost + 4 AudioPostConfig defaults/equals/copy). Zéro FAIL.
+. `./gradlew functionalTest --tests "capsule.CapsulePluginFunctionalTest"` :
+  BUILD SUCCESSFUL en 1m42s. `can run collectCapsuleContext task` PASSED
+  — wiring extension/afterEvaluate non cassé par les 5 nouvelles
+  properties.
+. `rg "TOKEN|SECRET|PASSWORD|API_KEY|gho_|ghp_"` : 0 match (zéro
+  secret).
+. `rg "println" src/main/kotlin/capsule/audio/ CapsuleConfig.kt
+  CapsuleConfigMerger.kt CapsuleModels.kt CapsulePlugin.kt` : 0 match
+  (zéro println, logging via `logger.lifecycle` uniquement).
+
+== Fichiers modifiés
+
+. `src/main/kotlin/capsule/audio/AudioPostConfig.kt` — nouveau (32
+  lignes, data class 5 champs + KDoc).
+. `src/main/kotlin/capsule/CapsuleConfig.kt` — import + 10ème champ
+  `audioPost`.
+. `src/main/kotlin/capsule/CapsuleConfigMerger.kt` — import + `merge()`
+  + `loadFromEnvironment` + `buildConfigFromProperties` +
+  `mergeAudioPostConfig`.
+. `src/main/kotlin/capsule/CapsuleModels.kt` — import + 5 properties +
+  5 conventions champs + instance.
+. `src/main/kotlin/capsule/CapsulePlugin.kt` —
+  `pushConfigIntoExtension` section AudioPost (5 guards).
+. `src/test/kotlin/capsule/AudioPostConfigTest.kt` — nouveau (4 unit).
+. `src/test/kotlin/capsule/CapsuleConfigMergerTest.kt` — import + 12
+  tests `audioPost` (section CAP-AUDIO US-1).
+
+== Ce qui reste (CAP-AUDIO)
+
+. US-2 — `AudioPostProcessor` interface + `AudioPostProcessorImpl`
+  (FFmpeg loudnorm + amix + sidechaincompress) + `NoOpAudioPostProcessor`
+  + `AudioPostException` + `AudioPostCommand` object pur + factory
+  `resolveAudioPostProcessor` 5ème. ~14 unit.
+. US-3 — Wiring `CapsuleVideoTask.applyAudioPostIfEnabled` post-burnIn
+  pre-convertFormat. 3 functional.
+. US-4 — Cucumber BDD `capsule_audio_post.feature` 4 scénarios + runner
+  dédié `CapsuleAudioPostCucumberRunner` + `CucumberTaskSpec
+  ("cucumberTestAudioPost")` 12ème.
+
+== Prochaine session (104)
+
+CAP-AUDIO US-2 `AudioPostProcessor` interface + Impl + NoOp + factory +
+`AudioPostCommand` object pur, ~4 pts, ~14 unit. Baby-step TDD :
+`AudioPostCommand.buildFilterGraph` (loudness-only, loudness+BGM,
+loudness+BGM+ducking, no-BGM-no-ducking blank filter, ducking without
+BGM ignored) + `AudioPostProcessorImpl.isAvailable/process` + `NoOp` +
+`resolveAudioPostProcessor` factory dispatch. Domaine `capsule.audio`
+(réutilise `AudioPostConfig` US-1). RED → GREEN → REFACTOR.

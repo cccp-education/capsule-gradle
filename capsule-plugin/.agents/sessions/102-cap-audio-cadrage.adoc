@@ -1,0 +1,158 @@
+= Session 102 — CAP-AUDIO US-0 Cadrage EPIC post-production audio
+
+_Date_ : 2026-08-11
+_Type_ : cadrage+gouvernance
+_Score_ : 9/10
+
+== Objectif
+
+Cadrer l'EPIC CAP-AUDIO (P1 — post-production audio, BGM + normalisation
+EBU R128 + ducking) : audit code, 12 décisions architecturales, découpage 5 US,
+MàJ gouvernance. Zéro code modifié.
+
+== Audit code
+
+*Point d'insertion* : `CapsuleVideoTask.captureDeckSequential` (L461-498) +
+`captureDeckParallel` (L500-529) — entre `burnInSubtitlesIfEnabled` (L492/523)
+et `convertFormatIfEnabled` (L493/524). Nouvelle étape
+`applyAudioPostIfEnabled(finalVideo)` câblée aux deux branches.
+
+*Patterns de référence audités* :
+- `SubtitleBurnInService` (interface + `SubtitleBurnInServiceImpl` ffmpeg +
+  `NoOpSubtitleBurnInService` + factory `resolveSubtitleBurnInService` +
+  `BurnInException`) — pattern de référence pour `AudioPostProcessor`.
+- `VideoFormatConverter` (interface + `VideoFormatConverterImpl` ffmpeg +
+  `NoOpVideoFormatConverter` + factory `resolveFormatConverter` + retourne
+  `Boolean` degraded) — 2ème pattern, décision : `process()` retourne
+  `Boolean` (degraded mode garde original).
+- `FormatConversion.convertIfNeeded` (object pur dispatch) — pattern pour
+  `AudioPostCommand` (object pur, argv builder).
+
+*Inventaire code* :
+- `CapsuleConfig` — 9 sections, pas de `audioPost`.
+- `CapsuleConfigMerger` — 9 `mergeXxxConfig` + 5 helpers scalaires
+  (`mergeStr/mergeInt/mergeDouble/mergeBoolean/mergeStrList`) + 3 helpers
+  enum (`mergeVersioning/mergeCaptureStrategy/mergeOutputFormat`).
+- `CapsuleExtension`/`CapsuleConventions`/`pushConfigIntoExtension` — pas
+  de `audioPost*`.
+- `CapsuleManager` — 4 factories `resolve*`
+  (`resolveManimVideoMixer`/`resolveManimEngine`/`resolveSubtitleBurnInService`/
+  `resolveFormatConverter`).
+- `StrictModeGuard.requireAvailable` — 7 resolve* branchés (S-091).
+- `MediaProbeUtil.probeDuration` (L23) — réutilisable pour économie d'encre.
+- 11 `CucumberTaskSpec` existants (dont `cucumberTestIntegration`).
+- `CapsuleMessages` — 31 keys (6 task groups + 25 task descriptions), pas
+  de clé `audioPost`.
+- `mixAudioWithVideo` (L891-932) — TTS brut mixé dans le WebM. CAP-AUDIO
+  intervient *après* cette étape + après burn-in, ne remplace pas.
+
+== 12 Décisions architecturales
+
+. *Nouveau domaine `capsule.audio` (10ème)* — `AudioPostProcessor`
+  interface + `AudioPostProcessorImpl` (ffmpeg) + `NoOpAudioPostProcessor`
+  (test fallback) + `AudioPostException`. Pas étendre `capsule` racine
+  (responsabilité distincte : post-production audio).
+
+. *`AudioPostConfig` data class (5 champs)* — `bgmEnabled: Boolean = false`,
+  `bgmFile: String = ""`, `bgmLevel: Double = -18.0` (dB), `loudnessTarget:
+  Double = -16.0` (LUFS EBU R128), `duckingEnabled: Boolean = false`.
+  Defaults backward compat.
+
+. *Section `audioPost` 10ème dans `CapsuleConfig`* — pattern
+  `ValidationConfig`/`StrictModeConfig`.
+
+. *4 sources pattern respecté* — ENV `CAPSULE_AUDIO_POST_*` < props
+  `capsule.audioPost.*` < YAML `audioPost.*` < CLI
+  `-Pcapsule.audioPost.*`. `mergeAudioPostConfig` (pattern
+  `mergeValidationConfig` — `mergeBoolean` bgmEnabled/duckingEnabled,
+  `mergeStr` bgmFile, `mergeDouble` bgmLevel/loudnessTarget).
+
+. *`AudioPostProcessor` interface* — `process(videoFile, outputFile,
+  config): Boolean` (retourne `false` si NoOp/échec — degraded mode garde
+  original, pattern `VideoFormatConverter`). `isAvailable(): Boolean`,
+  `name(): String`. `AudioPostException` pour erreurs critiques.
+
+. *`AudioPostProcessorImpl` (FFmpeg)* — pipeline 3 étapes : (1)
+  `loudnorm=I=-16:TP=-1.5:LRA=11` (EBU R128 single-pass, target -16 LUFS),
+  (2) `amix` si `bgmEnabled && bgmFile exists`, (3) `sidechaincompress`
+  si `duckingEnabled` (threshold -20dB, ratio 4:1, attack 5ms, release
+  300ms).
+
+. *`NoOpAudioPostProcessor` (test fallback)* — `process()` retourne `false`
+  (caller garde original, degraded backward compat).
+
+. *Factory `CapsuleManager.resolveAudioPostProcessor` (5ème)* — pattern
+  `resolveFormatConverter` : `ffmpegPath = "noop"` → NoOp, unavailable +
+  non-strict → NoOp, unavailable + strict → throw via `StrictModeGuard`,
+  available → `AudioPostProcessorImpl`.
+
+. *Wiring `CapsuleVideoTask.applyAudioPostIfEnabled`* — pattern
+  `burnInSubtitlesIfEnabled` + `convertFormatIfEnabled` : si
+  `!bgmEnabled && !duckingEnabled` → return (no-op), factory
+  `resolveAudioPostProcessor`, `process(finalVideo, tmpFile, config)`,
+  si succès rename tmpFile → finalVideo, si échec warn + garde original.
+  Câblée `captureDeckSequential` (L492.5) + `captureDeckParallel` (L523.5).
+
+. *`CapsuleExtension` étendu (5 properties)* — `audioPostBgmEnabled` +
+  `audioPostBgmFile` + `audioPostBgmLevel` + `audioPostLoudnessTarget` +
+  `audioPostDuckingEnabled`. `CapsuleConventions` étendu (5 champs).
+  `pushConfigIntoExtension` push audioPost (pattern `validation`).
+
+. *Économie d'encre (AGENT.adoc)* — skip si `!bgmEnabled && 
+  !duckingEnabled` (défaut false → no-op), skip si BGM enabled mais
+  `bgmFile` blank/missing → warn + degraded, skip si ffmpeg unavailable
+  + non-strict → NoOp.
+
+. *Cucumber runner dédié* `CapsuleAudioPostCucumberRunner` (pattern
+  S-082 `@SelectClasspathResource` + filter `@audio and @post and not
+  @wip and not @integration`). Steps `CapsuleAudioPostSteps` préfixés
+  "audio post" (bug S-088 glue `capsule.scenarios` partagée).
+  `CucumberTaskSpec("cucumberTestAudioPost")` (11ème cucumber dédié,
+  12ème `CucumberTaskSpec`). *Pas de nouvelle tâche Gradle* — CAP-AUDIO
+  est une étape de `CapsuleVideoTask`, pas une tâche séparée. Pas de
+  clé `CapsuleMessages` ajoutée.
+
+== Découpage US (5 US ~12 pts)
+
+- US-0 ✅ — Cadrage EPIC (cette session).
+- US-1 — `AudioPostConfig` + merger 4 sources, ~3 pts, ~12 unit.
+- US-2 — `AudioPostProcessor` interface + Impl + NoOp + factory +
+  `AudioPostCommand` object pur, ~4 pts, ~14 unit.
+- US-3 — Wiring `applyAudioPostIfEnabled` + functional, ~2 pts, 3
+  functional.
+- US-4 — Cucumber BDD `capsule_audio_post.feature` 4 scénarios + runner
+  dédié, ~2 pts.
+
+== Méthode
+
+Baby-step DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber),
+English only code/Gherkin. Pattern de référence : CAP-MP4 S-097→S-100
+(`VideoFormatConverter` + `FormatConversion` + factory + wiring + cucumber),
+CAP-CR3-1 S-101 (`ValidationConfig` + `mergeValidationConfig` 4 sources),
+`SubtitleBurnInService` (interface + Impl + NoOp + factory + Exception).
+
+== Fichiers modifiés
+
+. `BACKLOG.adoc` — section CAP-AUDIO refondue (audit + 12 décisions + 5 US
+  détaillées), table synthèse mise à jour, `:last_update:`.
+. `PROMPT_REPRISE.adoc` — réécrit (contexte session 103 post US-0, EPICs
+  restants, rappels enrichis 4 factories + 5ème cible).
+. `.agents/INDEX.adoc` — header session 102/103 + entrée table sessions.
+. `.agents/SESSIONS_HISTORY.adoc` — entrée session 102.
+. `TODO.adoc` — `:last_update:` + cocher CAP-CR3-1 ✅ + section CAP-MP4
+  TERMINÉ + nouvelle section CAP-AUDIO EN COURS 1/5 US.
+
+== Vérifications
+
+- `./gradlew compileKotlin --offline` : VERT (zéro code modifié, build
+  inchangé).
+- `rg "TOKEN|SECRET|PASSWORD|API_KEY|gho_|ghp_"` : 0 match (zéro secret).
+- `rg "🟡|⏳|À FAIRE|À PLANIFIER|EN PAUSE|à planifier|à faire" BACKLOG.adoc` :
+  aucun faux positif pour EPIC terminé (les `🟡` sont des sévérités MOYEN/P2
+  ou des EPICs réellement TODO).
+
+== Prochaine session (103)
+
+CAP-AUDIO US-1 `AudioPostConfig` + merger 4 sources, ~3 pts. Baby-step TDD :
+~12 unit (AudioPostConfig defaults, merger defaults, YAML/props/ENV/CLI
+overrides, 5-field round-trip). RED → GREEN → REFACTOR.

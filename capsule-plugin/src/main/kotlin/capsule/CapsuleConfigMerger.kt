@@ -1,5 +1,6 @@
 package capsule
 
+import capsule.audio.AudioPostConfig
 import java.io.File
 
 /**
@@ -36,7 +37,8 @@ object CapsuleConfigMerger {
             output = mergeOutputConfig(envConfig.output, propertiesConfig.output, yaml?.output, cliParams),
             strictMode = mergeStrictModeConfig(envConfig.strictMode, propertiesConfig.strictMode, yaml?.strictMode, cliParams),
             context = mergeContextConfig(envConfig.context, propertiesConfig.context, yaml?.context, cliParams),
-            validation = mergeValidationConfig(envConfig.validation, propertiesConfig.validation, yaml?.validation, cliParams)
+            validation = mergeValidationConfig(envConfig.validation, propertiesConfig.validation, yaml?.validation, cliParams),
+            audioPost = mergeAudioPostConfig(envConfig.audioPost, propertiesConfig.audioPost, yaml?.audioPost, cliParams)
         )
     }
 
@@ -135,6 +137,13 @@ object CapsuleConfigMerger {
             validation = ValidationConfig(
                 durationEnabled = env["CAPSULE_VALIDATION_DURATION_ENABLED"]?.toBoolean() ?: false,
                 toleranceSecs = env["CAPSULE_VALIDATION_TOLERANCE_SECS"]?.toDoubleOrNull() ?: 2.0
+            ),
+            audioPost = AudioPostConfig(
+                bgmEnabled = env["CAPSULE_AUDIO_POST_BGM_ENABLED"]?.toBoolean() ?: false,
+                bgmFile = env["CAPSULE_AUDIO_POST_BGM_FILE"] ?: "",
+                bgmLevel = env["CAPSULE_AUDIO_POST_BGM_LEVEL"]?.toDoubleOrNull() ?: -18.0,
+                loudnessTarget = env["CAPSULE_AUDIO_POST_LOUDNESS_TARGET"]?.toDoubleOrNull() ?: -16.0,
+                duckingEnabled = env["CAPSULE_AUDIO_POST_DUCKING_ENABLED"]?.toBoolean() ?: false
             )
         )
     }
@@ -202,6 +211,13 @@ object CapsuleConfigMerger {
             validation = ValidationConfig(
                 durationEnabled = props["capsule.validation.durationEnabled"]?.toBoolean() ?: false,
                 toleranceSecs = props["capsule.validation.toleranceSecs"]?.toDoubleOrNull() ?: 2.0
+            ),
+            audioPost = AudioPostConfig(
+                bgmEnabled = props["capsule.audioPost.bgmEnabled"]?.toBoolean() ?: false,
+                bgmFile = props["capsule.audioPost.bgmFile"] ?: "",
+                bgmLevel = props["capsule.audioPost.bgmLevel"]?.toDoubleOrNull() ?: -18.0,
+                loudnessTarget = props["capsule.audioPost.loudnessTarget"]?.toDoubleOrNull() ?: -16.0,
+                duckingEnabled = props["capsule.audioPost.duckingEnabled"]?.toBoolean() ?: false
             )
         )
     }
@@ -294,6 +310,16 @@ object CapsuleConfigMerger {
         return ValidationConfig(
             durationEnabled = mergeBoolean(cli, "validation.durationEnabled", yaml?.durationEnabled, props.durationEnabled),
             toleranceSecs = mergeDouble(cli, "validation.toleranceSecs", yaml?.toleranceSecs, props.toleranceSecs)
+        )
+    }
+
+    private fun mergeAudioPostConfig(env: AudioPostConfig, props: AudioPostConfig, yaml: AudioPostConfig?, cli: Map<String, Any?>): AudioPostConfig {
+        return AudioPostConfig(
+            bgmEnabled = mergeBoolean(cli, "audioPost.bgmEnabled", yaml?.bgmEnabled, props.bgmEnabled),
+            bgmFile = mergeStr(cli, "audioPost.bgmFile", yaml?.bgmFile, props.bgmFile, env.bgmFile),
+            bgmLevel = mergeDouble(cli, "audioPost.bgmLevel", yaml?.bgmLevel, props.bgmLevel),
+            loudnessTarget = mergeDouble(cli, "audioPost.loudnessTarget", yaml?.loudnessTarget, props.loudnessTarget),
+            duckingEnabled = mergeBoolean(cli, "audioPost.duckingEnabled", yaml?.duckingEnabled, props.duckingEnabled)
         )
     }
 

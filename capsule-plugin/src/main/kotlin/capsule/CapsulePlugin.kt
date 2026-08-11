@@ -132,5 +132,22 @@ class CapsulePlugin : Plugin<Project> {
         if (!ext.durationValidationToleranceSecs.isPresent || ext.durationValidationToleranceSecs.get() == conventions.durationValidationToleranceSecs) {
             ext.durationValidationToleranceSecs.set(config.validation.toleranceSecs)
         }
+
+        // AudioPost section (CAP-AUDIO)
+        if (!ext.audioPostBgmEnabled.isPresent || ext.audioPostBgmEnabled.get() == conventions.audioPostBgmEnabled) {
+            ext.audioPostBgmEnabled.set(config.audioPost.bgmEnabled)
+        }
+        if (!ext.audioPostBgmFile.isPresent || ext.audioPostBgmFile.get() == conventions.audioPostBgmFile) {
+            ext.audioPostBgmFile.set(config.audioPost.bgmFile)
+        }
+        if (!ext.audioPostBgmLevel.isPresent || ext.audioPostBgmLevel.get() == conventions.audioPostBgmLevel) {
+            ext.audioPostBgmLevel.set(config.audioPost.bgmLevel)
+        }
+        if (!ext.audioPostLoudnessTarget.isPresent || ext.audioPostLoudnessTarget.get() == conventions.audioPostLoudnessTarget) {
+            ext.audioPostLoudnessTarget.set(config.audioPost.loudnessTarget)
+        }
+        if (!ext.audioPostDuckingEnabled.isPresent || ext.audioPostDuckingEnabled.get() == conventions.audioPostDuckingEnabled) {
+            ext.audioPostDuckingEnabled.set(config.audioPost.duckingEnabled)
+        }
     }
 }

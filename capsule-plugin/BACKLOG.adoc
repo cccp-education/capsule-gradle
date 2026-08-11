@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-11 (Session 101 — CAP-CR3-1 TERMINÉ 5/5 US. Nouveau domaine `capsule.validation` 9ème. `VideoDurationValidator` + `ValidationResult` sealed. `ValidationConfig` 2 champs. Tâche `validateCapsuleVideoDuration`. Workflow `full-tests.yml`. 782 unit + 57 functional + 11 cucumber dédiés GREEN. `check` BUILD SUCCESSFUL.)
+:last_update: 2026-08-11 (Session 103 — CAP-AUDIO US-1 `AudioPostConfig` + merger 4 sources. Domaine `capsule.audio` (10ème) créé avec `AudioPostConfig` data class 5 champs defaults backward compat. Section `audioPost` 10ème `CapsuleConfig`. `mergeAudioPostConfig` 4 sources (pattern `mergeValidationConfig` — `mergeBoolean`/`mergeStr`/`mergeDouble`). `CapsuleExtension` +5 properties + `CapsuleConventions` +5 champs + `pushConfigIntoExtension` 5 guards. Baby-step TDD RED → GREEN → REFACTOR : +20 unit (4 `AudioPostConfigTest` + 12 merger `audioPost` + 4 defaults/equals/copy). 802 unit VERT (+20), `CapsulePluginFunctionalTest` VERT. Zéro régression, zéro secret.)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -1137,60 +1137,304 @@ câblé `build.gradle.kts`. Baby-step BDD : RED (undefined steps) → GREEN → 
 _Total_ : 5 US, ~13 pts. _Séquence baby-step_ : US-0 cadrage → US-1/2/3 unit
 tests RED→GREEN → US-4 functional → US-5 cucumber. _EPIC TERMINÉ (S-096)_.
 
-=== 🎵 EPIC CAP-AUDIO — Post-production audio (BGM + normalisation + ducking)
+=== 🎵 EPIC CAP-AUDIO — Post-production audio (BGM + normalisation EBU R128 + ducking)
 
 _Vision_ : Le WebM produit est TTS brut, sans lit musical ni normalisation.
 Une capsule pédagogique sans audio bed sonne amateur ; les volumes Piper/espeak
 sur 10 langues sont inégaux. FFmpeg `loudnorm` (EBU R128) + mix BGM + sidechain
-ducking (baisser le BGM quand la voix parle). Post-`burnInSubtitlesIfEnabled`.
+ducking (baisser le BGM quand la voix parle). Post-`burnInSubtitlesIfEnabled`,
+avant `convertFormatIfEnabled`.
 
-_Domaine_ : `capsule.audio` (nouveau domaine DDD).
+_Domaine_ : `capsule.audio` (nouveau domaine DDD, 10ème après `capsule.feed`,
+`capsule.ci`, `capsule.multilang`, `capsule.ai`, `capsule.context`,
+`capsule.pipeline`, `capsule.support`, `capsule.i18n`, `capsule.validation`).
 
-_Dépendances_ : FFmpeg (déjà dépendance), media-use (borough bakery pour
-assets BGM, optionnel).
+_Dépendances_ : FFmpeg (déjà dépendance), `MediaProbeUtil.probeDuration`
+(économie d'encre), `StrictModeGuard.requireAvailable` (ffmpeg strict), CAP-MP4
+✅ (`convertFormatIfEnabled` post-burnIn — CAP-AUDIO s'insère avant).
+
+_Point d'insertion_ : `CapsuleVideoTask.captureDeckSequential` L492 + 
+`captureDeckParallel` L523 — entre `burnInSubtitlesIfEnabled(finalVideo, subtitleFile)`
+et `val produced = convertFormatIfEnabled(finalVideo)`. Nouvelle étape 
+`applyAudioPostIfEnabled(finalVideo)` câblée aux deux branches (sequential + 
+parallel), pattern `burnInSubtitlesIfEnabled` + `convertFormatIfEnabled`.
+
+_Audit code (S-102)_ :
+- `CapsuleVideoTask.captureDeckSequential` (L461-498) — WebM final 
+  `${parsed.deckName}.webm` dans `outDir`, étapes : `mixAudioWithVideo` → 
+  `burnInSubtitlesIfEnabled` → `convertFormatIfEnabled` → log `CAPSULE →`.
+- `CapsuleVideoTask.captureDeckParallel` (L500-529) — même séquence 
+  (`mixAudioWithVideo` → `burnInSubtitlesIfEnabled` → `convertFormatIfEnabled`).
+- `burnInSubtitlesIfEnabled` (L658-680) — pattern de référence : si 
+  `!capsuleExtension.subtitleBurnIn.get()` → return (no-op), si 
+  `subtitleFile == null || !exists()` → warn + skip, sinon service.burnIn + 
+  rename tmpFile → videoFile.
+- `convertFormatIfEnabled` (L694-714) — pattern de référence : si 
+  `format == OutputFormat.WEBM` → return finalVideo (no-op), sinon factory 
+  `resolveFormatConverter` + `FormatConversion.convertIfNeeded`.
+- `CapsuleConfig` (9 sections) — pas de section `audioPost`.
+- `CapsuleConfigMerger` — 9 `mergeXxxConfig`, 5 helpers scalaires 
+  (`mergeStr/mergeInt/mergeDouble/mergeBoolean/mergeStrList`) + 3 helpers enum 
+  (`mergeVersioning`/`mergeCaptureStrategy`/`mergeOutputFormat`).
+- `CapsuleExtension` — pas de properties `audioPost*`.
+- `CapsuleConventions` — 36 champs, pas de `audioPost*`.
+- `pushConfigIntoExtension` — 9 sections poussées, pas de `audioPost`.
+- `CapsuleManager` — 4 factories `resolve*` 
+  (`resolveManimVideoMixer`/`resolveManimEngine`/`resolveSubtitleBurnInService`/
+  `resolveFormatConverter`), pattern à suivre pour `resolveAudioPostProcessor`.
+- `StrictModeGuard.requireAvailable` — 7 resolve* branchés (S-091).
+- `MediaProbeUtil.probeDuration` (L23) — réutilisable pour économie d'encre 
+  (skip si vidéo post-prodédée existe et probe > 0).
+- `SubtitleBurnInService` (interface + Impl + NoOp + factory + 
+  `BurnInException`) — pattern de référence pour `AudioPostProcessor` 
+  (interface + `AudioPostProcessorImpl` ffmpeg + `NoOpAudioPostProcessor` + 
+  factory `resolveAudioPostProcessor` + `AudioPostException`).
+- `VideoFormatConverter` (interface + Impl + NoOp + factory) — 2ème pattern 
+  de référence (retourne `Boolean` au lieu de throw — choix à faire pour 
+  CAP-AUDIO : throw `AudioPostException` comme burn-in, ou retourne Boolean 
+  comme format conversion. Décision : throw comme burn-in car l'audio est 
+  critique pour une capsule pédagogique).
+- `mixAudioWithVideo` (L891-932) — TTS brut mixé dans le WebM. CAP-AUDIO 
+  intervient *après* cette étape + après burn-in, sur le WebM final audio+ 
+  vidéo+subtitles. Ne remplace pas `mixAudioWithVideo` — ajoute une couche 
+  de post-production (BGM + normalisation + ducking).
+- 11 `CucumberTaskSpec` existants (dont `cucumberTestIntegration`).
+- `CapsuleMessages` — 31 keys (6 task groups + 25 task descriptions), pas de 
+  clé `task.*.audioPost*` ni `task.group.audioPost`.
+
+_Décisions architecturales (US-0, Session 102)_ :
+
+. *Nouveau domaine `capsule.audio` (10ème)* — `AudioPostProcessor` interface + 
+  `AudioPostProcessorImpl` (ffmpeg) + `NoOpAudioPostProcessor` (test fallback) 
+  + `AudioPostException`. Pas étendre `capsule` racine (responsabilité 
+  distincte : post-production audio, pas capture ni TTS). Pattern 
+  `SubtitleBurnInService` (interface + Impl + NoOp + factory + Exception).
+
+. *`AudioPostConfig` data class (5 champs)* — `bgmEnabled: Boolean = false`, 
+  `bgmFile: String = ""`, `bgmLevel: Double = -18.0` (dB, lit musical sous la 
+  voix), `loudnessTarget: Double = -16.0` (LUFS EBU R128), `duckingEnabled: 
+  Boolean = false`. Défaut `bgmEnabled = false` (backward compat — configs 
+  existantes sans `audioPost.bgmEnabled` n'ajoutent pas de BGM). Défaut 
+  `loudnessTarget = -16.0` (EBU R128 standard pour streaming web). Défaut 
+  `duckingEnabled = false` (backward compat — ducking opt-in, nécessite 
+  `bgmEnabled = true` pour avoir du sens).
+
+. *Nouvelle section `audioPost` dans `CapsuleConfig` (10ème)* — pattern 
+  `ValidationConfig` (section la plus simple, 2 champs) étendue à 5 champs. 
+  `CapsuleConfig` étendu `val audioPost: AudioPostConfig = AudioPostConfig()`.
+
+. *4 sources pattern respecté* — ENV `CAPSULE_AUDIO_POST_BGM_ENABLED` < 
+  `CAPSULE_AUDIO_POST_BGM_FILE` < `CAPSULE_AUDIO_POST_BGM_LEVEL` < 
+  `CAPSULE_AUDIO_POST_LOUDNESS_TARGET` < `CAPSULE_AUDIO_POST_DUCKING_ENABLED` 
+  < props `capsule.audioPost.bgmEnabled` < `capsule.audioPost.bgmFile` < 
+  `capsule.audioPost.bgmLevel` < `capsule.audioPost.loudnessTarget` < 
+  `capsule.audioPost.duckingEnabled` < YAML `audioPost.bgmEnabled` < 
+  `audioPost.bgmFile` < `audioPost.bgmLevel` < `audioPost.loudnessTarget` < 
+  `audioPost.duckingEnabled` < CLI `-Pcapsule.audioPost.bgmEnabled` < 
+  `-Pcapsule.audioPost.bgmFile` < `-Pcapsule.audioPost.bgmLevel` < 
+  `-Pcapsule.audioPost.loudnessTarget` < `-Pcapsule.audioPost.duckingEnabled`. 
+  `mergeAudioPostConfig` (pattern `mergeValidationConfig` + 
+  `mergeStrictModeConfig`), `loadFromEnvironment` + 
+  `buildConfigFromProperties` étendus.
+
+. *`AudioPostProcessor` interface (domaine `capsule.audio`)* — 
+  `process(videoFile: File, outputFile: File, config: AudioPostConfig): 
+  Boolean` (FFmpeg loudnorm + BGM mix + ducking, retourne `true` si succès, 
+  `false` si NoOp/échec — degraded mode garde la vidéo originale). 
+  `isAvailable(): Boolean` (ffmpeg found), `name(): String` (logging). 
+  `AudioPostException(message: String)` pour erreurs critiques (pattern 
+  `BurnInException`). Décision : `process` retourne Boolean (pattern 
+  `VideoFormatConverter`) plutôt que throw (pattern `SubtitleBurnInService`) 
+  — si BGM file missing, degraded mode (garde original) plutôt que fail. 
+  Si ffmpeg missing + strict → throw via `StrictModeGuard`.
+
+. *`AudioPostProcessorImpl` (FFmpeg)* — pipeline 3 étapes en une commande 
+  ffmpeg complex filter : (1) `loudnorm` I=-16:TP=-1.5:LRA=11 (EBU R128 
+  single-pass, target -16 LUFS, true peak -1.5 dB, LRA 11 — standard EBU 
+  R128 streaming web), (2) BGM mix `[voice][bgm]amix=inputs=2:duration=first
+  :dropout_transition=0` si `bgmEnabled && bgmFile exists`, (3) sidechain 
+  ducking `sidechaincompress` si `duckingEnabled` (threshold -20dB, ratio 4:1, 
+  attack 5ms, release 300ms — baisse BGM quand voix parle). Commande 
+  ffmpeg : `ffmpeg -y -i <video> [-i <bgm>] -filter_complex "[0:a]loudnorm=...
+  [voice];[1:a][voice]sidechaincompress=...[ducked];[voice][ducked]amix=..." 
+  -map 0:v -map "[aout]" -c:v copy -c:a libvorbis -shortest <output>`. 
+  `isAvailable()` check ffmpeg `-version`.
+
+. *`NoOpAudioPostProcessor` (test fallback)* — `isAvailable() = true`, 
+  `name() = "noop-audio-post"`, `process()` retourne `false` (caller garde 
+  original, degraded mode backward compat). Pattern `NoOpVideoFormatConverter`.
+
+. *Factory `CapsuleManager.resolveAudioPostProcessor` (5ème factory)* — 
+  pattern `resolveFormatConverter` : `ffmpegPath = "noop"` → NoOp, unavailable 
+  + non-strict → NoOp, unavailable + strict → throw via `StrictModeGuard`, 
+  available → `AudioPostProcessorImpl`. 5ème factory `resolve*` (après 
+  `resolveManimVideoMixer`, `resolveManimEngine`, `resolveSubtitleBurnInService`, 
+  `resolveFormatConverter`).
+
+. *Wiring `CapsuleVideoTask.applyAudioPostIfEnabled`* — nouvelle méthode 
+  `internal fun applyAudioPostIfEnabled(finalVideo: File)` (pattern 
+  `burnInSubtitlesIfEnabled` + `convertFormatIfEnabled`) : si 
+  `!capsuleExtension.audioPostBgmEnabled.get() && !capsuleExtension.
+  audioPostDuckingEnabled.get()` → return (no-op, backward compat). Sinon : 
+  factory `resolveAudioPostProcessor`, `process(finalVideo, tmpFile, config)`, 
+  si succès rename tmpFile → finalVideo, log "Audio post: BGM + loudness + 
+  ducking applied", si échec warn + garde original. Câblée dans 
+  `captureDeckSequential` (L492.5, après `burnInSubtitlesIfEnabled`, avant 
+  `convertFormatIfEnabled`) + `captureDeckParallel` (L523.5, même position).
+
+. *`CapsuleExtension` étendu (5 properties)* — `audioPostBgmEnabled: 
+  Property<Boolean>` (convention `false`), `audioPostBgmFile: Property<String>` 
+  (convention `""`), `audioPostBgmLevel: Property<Double>` (convention 
+  `-18.0`), `audioPostLoudnessTarget: Property<Double>` (convention 
+  `-16.0`), `audioPostDuckingEnabled: Property<Boolean>` (convention 
+  `false`). `CapsuleConventions` étendu (5 champs). 
+  `pushConfigIntoExtension` push audioPost (pattern `validation`).
+
+. *Économie d'encre (AGENT.adoc)* — skip si `!bgmEnabled && !duckingEnabled` 
+  (défaut false → no-op, backward compat). Skip si BGM enabled mais 
+  `bgmFile` blank/missing → warn + degraded (garde original). Skip si ffmpeg 
+  unavailable + non-strict → NoOp. Le probe `ffprobe` n'est pas nécessaire 
+  ici (l'audio post-prodédée n'a pas de probe de validation — la sortie 
+  ffmpeg est binaire, pas de checksum). Skip si `finalVideo` n'existe pas 
+  (capture échouée) → warn + return.
+
+. *Cucumber runner dédié* `CapsuleAudioPostCucumberRunner` (pattern S-082 
+  `@SelectClasspathResource("features/capsule_audio_post.feature")` + filter 
+  `@audio and @post and not @wip and not @integration`). Steps 
+  `CapsuleAudioPostSteps` préfixés "audio post" (bug S-088 glue 
+  `capsule.scenarios` partagée — step texts uniques). `CucumberTaskSpec
+  ("cucumberTestAudioPost")` câblé `build.gradle.kts` (11ème cucumber dédié, 
+  12ème `CucumberTaskSpec`). NoOp processor (pas de vrai FFmpeg — valide 
+  le wiring + factory dispatch, pas le rendu audio).
+
+. *`CapsuleMessages` étendu* — clé `task.group.audioPost` = `audioPost` 
+  (nouveau groupe, si tâche standalone — sinon pas de tâche standalone, 
+  CAP-AUDIO est une étape du pipeline `generateCapsuleVideo`, pas une tâche 
+  séparée. Décision : pas de nouveau task group, pas de nouvelle tâche — 
+  CAP-AUDIO est une *étape* de `CapsuleVideoTask`, pas une tâche Gradle. Pas 
+  de clé `CapsuleMessages` ajoutée (pas de nouvelle tâche à décrire).
 
 [cols="1,3,2,2", options="header"]
 |===
 | US | Description | Pts | Statut
 
 | CAP-AUDIO-0
-| *Cadrage EPIC* — vision, BGM source (file glob vs media-use), loudness EBU
-R128, découpage US. MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+| *Cadrage EPIC* — audit code (`CapsuleVideoTask.captureDeckSequential` 
+  L461-498 + `captureDeckParallel` L500-529, point d'insertion entre 
+  `burnInSubtitlesIfEnabled` L492/523 et `convertFormatIfEnabled` L493/524, 
+  `SubtitleBurnInService` pattern interface+Impl+NoOp+factory+Exception, 
+  `VideoFormatConverter` 2ème pattern, `CapsuleConfig` 9 sections pas de 
+  `audioPost`, `CapsuleConfigMerger` 9 mergeXxxConfig + 5 helpers scalaires + 
+  3 helpers enum, `CapsuleExtension`/`CapsuleConventions`/ 
+  `pushConfigIntoExtension` pas de audioPost, `CapsuleManager` 4 factories 
+  resolve*, `StrictModeGuard.requireAvailable` 7 branchés, 
+  `MediaProbeUtil.probeDuration` réutilisable, 11 `CucumberTaskSpec`, 
+  `CapsuleMessages` 31 keys pas de audioPost), 12 décisions architecturales 
+  (domaine `capsule.audio` 10ème, `AudioPostConfig` 5 champs defaults 
+  backward compat, section `audioPost` 10ème dans `CapsuleConfig`, 4 sources 
+  `mergeAudioPostConfig`, `AudioPostProcessor` interface + `process` retourne 
+  Boolean degraded mode, `AudioPostProcessorImpl` FFmpeg loudnorm EBU R128 
+  + amix BGM + sidechaincompress ducking, `NoOpAudioPostProcessor` test 
+  fallback, factory `resolveAudioPostProcessor` 5ème pattern 
+  `resolveFormatConverter`, wiring `applyAudioPostIfEnabled` post-burnIn 
+  pre-convertFormat, `CapsuleExtension` 5 properties + conventions + push, 
+  économie d'encre skip si disabled/missing, runner dédié 
+  `CapsuleAudioPostCucumberRunner` + `CucumberTaskSpec("cucumberTestAudioPost")` 
+  12ème, pas de nouvelle tâche Gradle ni clé CapsuleMessages — CAP-AUDIO est 
+  une étape de `CapsuleVideoTask`). MàJ INDEX/BACKLOG/PROMPT_REPRISE.
 | 1
-| ⬜ TODO
+| ✅ TERMINÉ (S-102)
 
 | CAP-AUDIO-1
-| *`AudioPostConfig` + merger 4 sources* — `audioPost { bgmEnabled, bgmFile,
-bgmLevel, loudnessTarget, duckingEnabled }` (4 sources). `CapsuleConfig.audioPost`
-section. `CapsuleExtension` properties. Baby-step TDD : ~8 unit.
-| 2
-| ⬜ TODO
+| *`AudioPostConfig` + merger 4 sources* — `AudioPostConfig(bgmEnabled:
+  Boolean = false, bgmFile: String = "", bgmLevel: Double = -18.0,
+  loudnessTarget: Double = -16.0, duckingEnabled: Boolean = false)` dans
+  `CapsuleConfig` (10ème section). `mergeAudioPostConfig` (pattern
+  `mergeValidationConfig` + `mergeStrictModeConfig` — utilise `mergeBoolean`
+  pour bgmEnabled/duckingEnabled, `mergeStr` pour bgmFile, `mergeDouble`
+  pour bgmLevel/loudnessTarget). `loadFromEnvironment`
+  (`CAPSULE_AUDIO_POST_BGM_ENABLED` + `CAPSULE_AUDIO_POST_BGM_FILE` +
+  `CAPSULE_AUDIO_POST_BGM_LEVEL` + `CAPSULE_AUDIO_POST_LOUDNESS_TARGET` +
+  `CAPSULE_AUDIO_POST_DUCKING_ENABLED`) + `buildConfigFromProperties`
+  (`capsule.audioPost.bgmEnabled` + `capsule.audioPost.bgmFile` +
+  `capsule.audioPost.bgmLevel` + `capsule.audioPost.loudnessTarget` +
+  `capsule.audioPost.duckingEnabled`). `CapsuleExtension` 5 properties
+  (`audioPostBgmEnabled` + `audioPostBgmFile` + `audioPostBgmLevel` +
+  `audioPostLoudnessTarget` + `audioPostDuckingEnabled`) + conventions
+  (5 champs). `pushConfigIntoExtension` push audioPost (pattern `validation`).
+  Baby-step TDD : ~12 unit (AudioPostConfig defaults, merger defaults,
+  YAML override bgmEnabled, props override bgmFile, ENV override bgmLevel,
+  CLI override loudnessTarget, CLI override duckingEnabled, blank bgmFile
+  fallback, disabled defaults backward compat, 5-field round-trip).
+| 3
+| ✅ TERMINÉ (S-103)
 
 | CAP-AUDIO-2
-| *`LoudnessNormalizer` (object pur)* — FFmpeg `loudnorm` filter (EBU R128
-target -16 LUFS, mode single-pass). `AudioPostProcessor` (object pur) orchestre
-loudnorm → BGM mix → ducking. Baby-step TDD : ~6 unit (command builder,
-loudness target, BGM level, ducking threshold, NoOp fallback).
-| 2
+| *`AudioPostProcessor` (interface + Impl + NoOp + factory)* — domaine 
+  `capsule.audio`. `AudioPostProcessor` interface : `process(videoFile: 
+  File, outputFile: File, config: AudioPostConfig): Boolean`, `isAvailable(): 
+  Boolean`, `name(): String`. `AudioPostProcessorImpl(ffmpegPath: String)` 
+  — FFmpeg complex filter : `loudnorm=I=${loudnessTarget}:TP=-1.5:LRA=11` 
+  (EBU R128) + `amix` si `bgmEnabled && bgmFile exists` + 
+  `sidechaincompress` si `duckingEnabled` (threshold -20dB, ratio 4:1). 
+  `NoOpAudioPostProcessor` — `process` retourne `false` (degraded). 
+  `AudioPostException(message: String)`. `CapsuleManager.
+  resolveAudioPostProcessor(ffmpegPath, strict: Boolean = false)` (5ème 
+  factory, pattern `resolveFormatConverter` — noop→NoOp, unavailable+non-
+  strict→NoOp, unavailable+strict→throw, available→Impl). `AudioPostCommand` 
+  object pur (domaine `capsule.audio`) — `buildFilterGraph(config, 
+  hasBgmInput): String` (pure, teste sans I/O), `buildArgv(videoFile, 
+  bgmFile, outputFile, config, ffmpegPath): List<String>` (pure). Baby-step 
+  TDD : ~14 unit (AudioPostCommand.buildFilterGraph loudness-only, 
+  loudness+BGM, loudness+BGM+ducking, no-BGM-no-ducking blank filter, 
+  ducking without BGM ignored ; AudioPostProcessorImpl.isAvailable, 
+  process success, process ffmpeg fail, process BGM missing degraded ; 
+  NoOpAudioPostProcessor.returns false ; resolveAudioPostProcessor noop 
+  path, unavailable non-strict, unavailable strict, available).
+| 4
 | ⬜ TODO
 
 | CAP-AUDIO-3
-| *Wiring `CapsuleVideoTask`* — post-`burnInSubtitlesIfEnabled` dans
-`captureDeckSequential`/`captureDeckParallel`. `resolveAudioPostProcessor`
-factory + StrictModeGuard. 2 functional (NoOp default, BGM enabled → ffmpeg
-invoked mocké).
+| *Wiring `CapsuleVideoTask.applyAudioPostIfEnabled`* — nouvelle méthode 
+  `internal fun applyAudioPostIfEnabled(finalVideo: File)` (pattern 
+  `burnInSubtitlesIfEnabled`) : si `!capsuleExtension.audioPostBgmEnabled.
+  get() && !capsuleExtension.audioPostDuckingEnabled.get()` → return 
+  (no-op backward compat). Factory `resolveAudioPostProcessor(ffmpegPath, 
+  strict)`. Si `bgmEnabled && bgmFile blank/missing` → warn + return 
+  (degraded). `processor.process(finalVideo, tmpFile, config)` : si 
+  succès rename tmpFile → finalVideo + log "Audio post: ..." ; si échec 
+  (`false`) warn + garde original. Câblée `captureDeckSequential` (après 
+  `burnInSubtitlesIfEnabled` L492, avant `convertFormatIfEnabled` L493) + 
+  `captureDeckParallel` (après L523, avant L524). Functional test : 3 
+  scénarios (default NoOp preserved — pas d'appel ffmpeg, BGM enabled + 
+  NoOp processor → degraded garde original, loudness enabled + NoOp → 
+  degraded).
 | 2
 | ⬜ TODO
 
 | CAP-AUDIO-4
-| *Cucumber BDD* — `capsule_audio_post.feature` `@audio @post` (4 scénarios :
-default NoOp, BGM enabled, loudness only, ducking). Runner dédié
-(pattern S-082).
-| 3
+| *Cucumber BDD* — `capsule_audio_post.feature` `@audio @post` (4 scénarios 
+  : default NoOp preserved (no audio post step), BGM enabled NoOp → 
+  degraded, loudness only NoOp → degraded, ducking enabled + BGM enabled 
+  NoOp → degraded). Runner dédié `CapsuleAudioPostCucumberRunner` (pattern 
+  S-082 `@SelectClasspathResource` + filter `@audio and @post and not @wip 
+  and not @integration`). Steps `CapsuleAudioPostSteps` préfixés "audio 
+  post" (bug S-088 glue `capsule.scenarios` partagée — step texts uniques). 
+  `CucumberTaskSpec("cucumberTestAudioPost")` câblé `build.gradle.kts` (11ème 
+  cucumber dédié, 12ème `CucumberTaskSpec`). NoOp processor (pas de vrai 
+  FFmpeg — valide le wiring + factory dispatch, pas le rendu audio).
+| 2
 | ⬜ TODO
 |===
 
-_Total_ : 5 US, ~10 pts.
+_Total_ : 5 US, ~12 pts. _Méthode_ : baby-step DDD/TDD/BDD, 3 niveaux tests/US 
+(unit → functional → cucumber), English only code/Gherkin. _Pattern de 
+référence_ : CAP-MP4 S-097→S-100 (`VideoFormatConverter` + 
+`FormatConversion` + factory + wiring + cucumber), CAP-CR3-1 S-101 
+(`ValidationConfig` + `mergeValidationConfig` 4 sources), 
+`SubtitleBurnInService` (interface + Impl + NoOp + factory + Exception). 
+_Séquence_ : US-0 cadrage ✅ → US-1 config+merger → US-2 processor+factory → 
+US-3 wiring → US-4 cucumber.
 
 === 📼 EPIC CAP-MP4 — Export MP4/H.264 + format distribution
 
@@ -1817,9 +2061,9 @@ _Total_ : 3 US, ~4 pts.
 | Post-prod
 | CAP-AUDIO
 | 5
-| 10
+| 12
 | 🟠 P1
-| ⬜ TODO
+| 🟡 US-0 ✅ S-102 (cadrage), US-1→4 TODO
 
 | Post-prod
 | CAP-CHAPITRE
