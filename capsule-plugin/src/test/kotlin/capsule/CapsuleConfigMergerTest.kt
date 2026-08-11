@@ -1097,4 +1097,85 @@ class CapsuleConfigMergerTest {
         val config = CapsuleConfigMerger.loadFromEnvironment()
         assertEquals(CaptureStrategy.PLAYWRIGHT, config.capture.strategy, "env default capture strategy should be PLAYWRIGHT")
     }
+
+    // ─── output.format (CAP-MP4 US-1) ────────────────────────────────
+
+    @Test
+    fun `output format defaults to WEBM when no source provides it`() {
+        val projectDir = File(tempDir, "fmt-default").also { it.mkdirs() }
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
+        assertEquals(OutputFormat.WEBM, merged.output.format, "default output.format should be WEBM")
+    }
+
+    @Test
+    fun `OutputConfig has format field with WEBM default`() {
+        val config = OutputConfig()
+        assertEquals(OutputFormat.WEBM, config.format, "OutputConfig.format default should be WEBM")
+    }
+
+    @Test
+    fun `loadFromGradleProperties reads capsule output format mp4`() {
+        val projectDir = File(tempDir, "fmt-props-mp4").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.output.format=mp4
+        """.trimIndent())
+        val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
+        assertEquals(OutputFormat.MP4, config.output.format, "props should set format=MP4")
+    }
+
+    @Test
+    fun `loadFromGradleProperties reads capsule output format both`() {
+        val projectDir = File(tempDir, "fmt-props-both").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.output.format=both
+        """.trimIndent())
+        val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
+        assertEquals(OutputFormat.BOTH, config.output.format, "props should set format=BOTH")
+    }
+
+    @Test
+    fun `loadFromGradleProperties invalid output format falls back to WEBM`() {
+        val projectDir = File(tempDir, "fmt-props-invalid").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.output.format=avi
+        """.trimIndent())
+        val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
+        assertEquals(OutputFormat.WEBM, config.output.format, "invalid format should fall back to WEBM")
+    }
+
+    @Test
+    fun `merge YAML output format overrides gradle properties`() {
+        val projectDir = File(tempDir, "fmt-yaml-override").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.output.format=webm
+        """.trimIndent())
+        val yamlConfig = CapsuleConfig(output = OutputConfig(format = OutputFormat.MP4))
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+        assertEquals(OutputFormat.MP4, merged.output.format, "YAML should override props")
+    }
+
+    @Test
+    fun `merge CLI output format overrides YAML and gradle properties`() {
+        val projectDir = File(tempDir, "fmt-cli-override").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.output.format=webm
+        """.trimIndent())
+        val yamlConfig = CapsuleConfig(output = OutputConfig(format = OutputFormat.WEBM))
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, mapOf("output.format" to "mp4"))
+        assertEquals(OutputFormat.MP4, merged.output.format, "CLI should override YAML and props")
+    }
+
+    @Test
+    fun `merge CLI blank output format falls back to YAML`() {
+        val projectDir = File(tempDir, "fmt-cli-blank").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(output = OutputConfig(format = OutputFormat.MP4))
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, mapOf("output.format" to "  "))
+        assertEquals(OutputFormat.MP4, merged.output.format, "blank CLI should fall back to YAML")
+    }
+
+    @Test
+    fun `loadFromEnvironment default output format is WEBM`() {
+        val config = CapsuleConfigMerger.loadFromEnvironment()
+        assertEquals(OutputFormat.WEBM, config.output.format, "env default output.format should be WEBM")
+    }
 }

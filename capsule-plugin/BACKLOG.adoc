@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-11 (Session 095 — CAP-SPD US-3 Wiring + US-4 Cucumber + renommage SPD→PedagogicalScenario. EPIC CAP-SPD TERMINÉ 5/5 US. 713 unit + 49 functional + 3 cucumber dédiés GREEN. Séquence MVP0 : DOCCONTEXT ✅ > SPD ✅ > CR3-3 > MP4 > AUDIO)
+:last_update: 2026-08-11 (Session 098 — CAP-MP4 US-1 `OutputFormat` enum + `OutputConfig.format` + merger 4 sources. EPIC CAP-MP4 EN COURS 2/4 US. 759 unit + 52 functional + 3 cucumber dédiés GREEN. Séquence MVP0 : DOCCONTEXT ✅ > SPD ✅ > CR3-3 ✅ > MP4 (EN COURS) > AUDIO)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -1323,7 +1323,7 @@ _Audit code (S-097)_ :
   fallback WEBM ; merger defaults WEBM, YAML override, props override, ENV
   override, CLI override, blank fallback).
 | 1
-| ⬜ TODO
+| ✅ TERMINÉ (S-098, 17 unit : 8 `OutputFormatTest` + 9 merger `output.format`)
 
 | CAP-MP4-2
 | *`VideoFormatConverter` (object pur) + wiring* — `VideoFormatConverter`
@@ -1559,7 +1559,7 @@ _Total_ : 3 US, ~4 pts.
 | 4
 | 5
 | 🟠 P1
-| 🟡 EN COURS (S-097 US-0 cadrage)
+| 🟡 EN COURS (S-097 US-0 cadrage, S-098 US-1 enum+merger, US-2/3 TODO)
 
 | Post-prod
 | CAP-AUDIO

@@ -1,6 +1,44 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-11
 
+== Session 098 — CAP-MP4 US-1 OutputFormat enum + OutputConfig.format + merger 4 sources ✅
+
+EPIC CAP-MP4 US-1 terminé (P1, 2ème US sur 4, config pure 1 pt).
+`OutputFormat` enum type-safe 3 valeurs `WEBM`/`MP4`/`BOTH` (companion
+`fromString` case-insensitive fallback `WEBM` backward compat). `OutputConfig`
+étendu 4ème champ `format`. `mergeOutputFormat` helper dédié (pattern
+`mergeVersioning`/`mergeCaptureStrategy`). 4 sources ENV `CAPSULE_OUTPUT_FORMAT`
+< props `capsule.output.format` < YAML < CLI. `CapsuleExtension.outputFormat`
++ helper Groovy. `CapsuleConventions.outputFormat = WEBM`.
+`pushConfigIntoExtension` push format. Baby-step TDD RED → GREEN → REFACTOR.
+759 unit VERT (+17 : 8 `OutputFormatTest` + 9 merger `output.format`).
+
+Tâches terminées :
+ . `src/main/kotlin/capsule/CapsuleConfig.kt` (MODIFIED) — `OutputFormat` enum + `OutputConfig.format` 4ème champ
+ . `src/main/kotlin/capsule/CapsuleConfigMerger.kt` (MODIFIED) — `mergeOutputFormat` helper + `loadFromEnvironment`/`buildConfigFromProperties` étendus + `mergeOutputConfig` étendu
+ . `src/main/kotlin/capsule/CapsuleModels.kt` (MODIFIED) — `CapsuleExtension.outputFormat` + helper Groovy + `CapsuleConventions.outputFormat`
+ . `src/main/kotlin/capsule/CapsulePlugin.kt` (MODIFIED) — `pushConfigIntoExtension` push format
+ . `src/test/kotlin/capsule/OutputFormatTest.kt` (NEW) — 8 unit tests enum
+ . `src/test/kotlin/capsule/CapsuleConfigMergerTest.kt` (MODIFIED) — +9 unit tests merger `output.format`
+ . `BACKLOG.adoc` — section EPIC CAP-MP4 US-1 statut mis à jour
+ . `.agents/INDEX.adoc` — header session 098, table sessions (ligne 098), roadmap CAP-MP4
+ . `PROMPT_REPRISE.adoc` — mission session 099 (US-2), contexte reprise
+ . `TODO.adoc` — CAP-MP4 US-1 coché
+ . `.agents/sessions/098-cap-mp4-us1.adoc` (NEW) — rapport session 098
+ . `.agents/SESSIONS_HISTORY.adoc` — ligne 098 ajoutée
+
+== Session 097 — CAP-MP4 US-0 Cadrage EPIC Export MP4/H.264 ✅
+
+EPIC CAP-MP4 démarré (P1, 4 US ~5 pts). Session 097 : US-0 cadrage
+uniquement (10 décisions architecturales, zéro code modifié). `OutputFormat`
+enum type-safe WEBM/MP4/BOTH défaut WEBM backward compat. Section `output`
+étendue 4ème champ `format` (pas nouvelle section). `mergeOutputFormat`
+helper dédié pattern `mergeVersioning`. 4 sources ENV<props<YAML<CLI.
+`VideoFormatConverter` object pur + NoOp + factory + StrictModeGuard.
+Wiring post-burnIn `convertFormatIfEnabled`. `DistributeCapsuleVideoTask`
+filtre selon format. Cucumber runner dédié `CapsuleFormatCucumberRunner`.
+Baseline 742 unit + 52 functional + 3 cucumber préservée.
+
 == Session 096 — CAP-CR3-3 Branchement ScreenshotCapture (EPIC TERMINÉ 5/5 US) ✅
 
 EPIC CAP-CR3-3 terminé (P0, 3ème EPIC axe post-prod, 5 US ~13 pts).

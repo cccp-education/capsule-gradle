@@ -100,6 +100,9 @@ class CapsulePlugin : Plugin<Project> {
         if (ext.subtitleBurnInPosition.get() == conventions.subtitleBurnInPosition) ext.subtitleBurnInPosition.set(config.capture.subtitleBurnInPosition)
         if (!ext.captureStrategy.isPresent || ext.captureStrategy.get() == conventions.captureStrategy) ext.captureStrategy.set(config.capture.strategy)
 
+        // Output format (CAP-MP4)
+        if (!ext.outputFormat.isPresent || ext.outputFormat.get() == conventions.outputFormat) ext.outputFormat.set(config.output.format)
+
         // Distrib section
         if (ext.ffmpegExecutablePath.get() == conventions.ffmpegExecutablePath) ext.ffmpegExecutablePath.set(config.distrib.ffmpegExecutablePath)
         if (ext.distribOutputWidth.get() == conventions.distribOutputWidth) ext.distribOutputWidth.set(config.distrib.outputWidth)

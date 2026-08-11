@@ -121,7 +121,8 @@ object CapsuleConfigMerger {
             output = OutputConfig(
                 videoDestinationDir = env["CAPSULE_OUTPUT_VIDEO_DESTINATION_DIR"] ?: "office/videos",
                 versioning = VersioningStrategy.fromString(env["CAPSULE_OUTPUT_VERSIONING"]),
-                versionPrefix = env["CAPSULE_OUTPUT_VERSION_PREFIX"] ?: "v"
+                versionPrefix = env["CAPSULE_OUTPUT_VERSION_PREFIX"] ?: "v",
+                format = OutputFormat.fromString(env["CAPSULE_OUTPUT_FORMAT"])
             ),
             strictMode = StrictModeConfig(
                 enabled = env["CAPSULE_STRICT_MODE_ENABLED"]?.toBoolean() ?: false
@@ -183,7 +184,8 @@ object CapsuleConfigMerger {
             output = OutputConfig(
                 videoDestinationDir = props["capsule.output.videoDestinationDir"] ?: "office/videos",
                 versioning = VersioningStrategy.fromString(props["capsule.output.versioning"]),
-                versionPrefix = props["capsule.output.versionPrefix"] ?: "v"
+                versionPrefix = props["capsule.output.versionPrefix"] ?: "v",
+                format = OutputFormat.fromString(props["capsule.output.format"])
             ),
             strictMode = StrictModeConfig(
                 enabled = props["capsule.strictMode.enabled"]?.toBoolean() ?: false
@@ -268,7 +270,8 @@ object CapsuleConfigMerger {
         return OutputConfig(
             videoDestinationDir = mergeStr(cli, "output.videoDestinationDir", yaml?.videoDestinationDir, props.videoDestinationDir, env.videoDestinationDir),
             versioning = mergeVersioning(cli, "output.versioning", yaml?.versioning, props.versioning),
-            versionPrefix = mergeStr(cli, "output.versionPrefix", yaml?.versionPrefix, props.versionPrefix, env.versionPrefix)
+            versionPrefix = mergeStr(cli, "output.versionPrefix", yaml?.versionPrefix, props.versionPrefix, env.versionPrefix),
+            format = mergeOutputFormat(cli, "output.format", yaml?.format, props.format)
         )
     }
 
@@ -305,6 +308,18 @@ object CapsuleConfigMerger {
     ): CaptureStrategy {
         val cliValue = cli[key]?.toString()
         if (!cliValue.isNullOrBlank()) return CaptureStrategy.fromString(cliValue)
+        yaml?.let { return it }
+        return props
+    }
+
+    private fun mergeOutputFormat(
+        cli: Map<String, Any?>,
+        key: String,
+        yaml: OutputFormat?,
+        props: OutputFormat
+    ): OutputFormat {
+        val cliValue = cli[key]?.toString()
+        if (!cliValue.isNullOrBlank()) return OutputFormat.fromString(cliValue)
         yaml?.let { return it }
         return props
     }

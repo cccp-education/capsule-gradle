@@ -1,53 +1,52 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 097 — CAP-MP4 US-0 Cadrage EPIC Export MP4/H.264. 10 décisions architecturales documentées (`OutputFormat` enum type-safe WEBM/MP4/BOTH défaut WEBM backward compat, section `output` étendue 4ème champ `format` pas nouvelle section, `mergeOutputFormat` helper dédié pattern `mergeVersioning`, 4 sources ENV<props<YAML<CLI, `VideoFormatConverter` object pur + NoOp + `resolveFormatConverter` factory + StrictModeGuard, wiring post-burnIn `convertFormatIfEnabled`, `DistributeCapsuleVideoTask` filtre selon format, `CapsuleExtension.outputFormat` + helper Groovy, `CapsuleConventions.outputFormat`, économie d'encre skip MP4 si existe + probe>0, runner dédié `CapsuleFormatCucumberRunner` + steps préfixés "format distribution"). Audit code : `OutputConfig` 3 champs pas de format, `DistributeCapsuleVideoTask` filtre `*.webm` hardcodé L56, `CapsuleVideoTask.captureDeckSequential/Parallel` WebM final post-burnIn L489/L519, `mergeVersioning` pattern à suivre, 8 `CucumberTaskSpec` existants, `MediaProbeUtil.probeDuration` + `StrictModeGuard` réutilisables. 4 US ~5 pts (US-0 ✅, US-1 enum+merger, US-2 converter+wiring, US-3 cucumber). Zéro code modifié, `compileKotlin` VERT.
-_Prochaine session_ : 098 — CAP-MP4 US-1 `OutputFormat` enum + `OutputConfig.format` 4ème champ + merger 4 sources + `CapsuleExtension.outputFormat` + `CapsuleConventions.outputFormat` + `pushConfigIntoExtension` (baby-step TDD ~8 unit). EPIC CAP-MP4 EN COURS.
+_Session terminee_ : 098 — CAP-MP4 US-1 `OutputFormat` enum + `OutputConfig.format` 4ème champ + merger 4 sources + `CapsuleExtension.outputFormat` + `CapsuleConventions.outputFormat` + `pushConfigIntoExtension` (baby-step TDD RED → GREEN → REFACTOR, 17 unit tests : 8 `OutputFormatTest` + 9 merger `output.format`). `OutputFormat` enum type-safe 3 valeurs `WEBM`/`MP4`/`BOTH` (companion `fromString` case-insensitive fallback `WEBM` backward compat, pattern `CaptureStrategy`/`VersioningStrategy`). `OutputConfig` étendu 4ème champ `format: OutputFormat = OutputFormat.WEBM`. `mergeOutputFormat` helper dédié (pattern `mergeVersioning`/`mergeCaptureStrategy`, CLI > YAML > props, fallback `WEBM`). `loadFromEnvironment` (`CAPSULE_OUTPUT_FORMAT`) + `buildConfigFromProperties` (`capsule.output.format`) étendus. `CapsuleExtension.outputFormat: Property<OutputFormat>` + helper Groovy `outputFormat(String)`. `CapsuleConventions.outputFormat = WEBM`. `pushConfigIntoExtension` push format (guard `isPresent` + convention). 759 unit VERT (+17), zéro régression, `compileKotlin` + `compileTestKotlin` VERT.
+_Prochaine session_ : 099 — CAP-MP4 US-2 `VideoFormatConverter` (object pur) + wiring post-burnIn `convertFormatIfEnabled` + `DistributeCapsuleVideoTask` étendu + factory `resolveFormatConverter` + StrictModeGuard + NoOpVideoFormatConverter (baby-step TDD ~8 unit + 2 functional). EPIC CAP-MP4 EN COURS.
 
-== Contexte reprise session 098 (post CAP-MP4 US-0 TERMINÉ)
+== Contexte reprise session 099 (post CAP-MP4 US-1 TERMINÉ)
 
-- EPIC CAP-MP4 EN COURS — US-0 cadrage TERMINÉ (S-097), US-1/2/3 TODO.
-- `OutputConfig` (`CapsuleConfig.kt:122-126`) — 3 champs
-  (`videoDestinationDir`/`versioning`/`versionPrefix`), pas de `format`.
-  Étendre avec 4ème champ `format: OutputFormat = OutputFormat.WEBM`.
-- `DistributeCapsuleVideoTask` (`DistributeCapsuleVideoTask.kt:56`) — filtre
-  `*.webm` hardcodé. Étendre filtre selon `output.format`.
+- EPIC CAP-MP4 EN COURS — US-0 cadrage TERMINÉ (S-097), US-1 TERMINÉ
+  (S-098), US-2/3 TODO.
+- `OutputFormat` enum (`CapsuleConfig.kt:108-134`) — 3 valeurs
+  `WEBM`/`MP4`/`BOTH`, companion `fromString` case-insensitive fallback
+  `WEBM`. Pattern `CaptureStrategy`/`VersioningStrategy`.
+- `OutputConfig.format` (`CapsuleConfig.kt:148`) — 4ème champ
+  `format: OutputFormat = OutputFormat.WEBM` (backward compat).
+- `mergeOutputFormat` helper (`CapsuleConfigMerger.kt:312-320`) —
+  CLI > YAML > props, fallback `WEBM`. Pattern `mergeVersioning`/
+  `mergeCaptureStrategy`.
+- `loadFromEnvironment` (`CAPSULE_OUTPUT_FORMAT`) +
+  `buildConfigFromProperties` (`capsule.output.format`) — étendus.
+- `CapsuleExtension.outputFormat: Property<OutputFormat>` +
+  helper Groovy `outputFormat(String)` — `CapsuleModels.kt:143-149`.
+- `CapsuleConventions.outputFormat = OutputFormat.WEBM` —
+  `CapsuleModels.kt:175,214`.
+- `pushConfigIntoExtension` push format (guard `isPresent` + convention) —
+  `CapsulePlugin.kt:102`.
+- `DistributeCapsuleVideoTask` (`DistributeCapsuleVideoTask.kt:56`) —
+  filtre `*.webm` hardcodé. US-2 étendra filtre selon `output.format`.
 - `CapsuleVideoTask.captureDeckSequential` (L489) + `captureDeckParallel`
   (L519) — WebM final `${deckName}.webm` dans `outDir` post-burnIn.
-  Étape `convertFormatIfEnabled(finalVideo)` à ajouter post-burnIn.
-- `CapsuleConfigMerger.mergeOutputConfig` (L267-273) + `mergeVersioning`
-  (L288-298) — pattern à suivre pour `mergeOutputFormat` (helper enum dédié,
-  CLI > YAML > props, fallback `WEBM` pour null/blank).
-- `CapsuleExtension` (`CapsuleModels.kt:8`) — pas de `outputFormat` Property.
-  Ajouter `outputFormat: Property<OutputFormat>` (convention `WEBM`) + helper
-  Groovy `outputFormat(String)` (case-insensitive, pattern `captureStrategy(String)`).
-- `CapsuleConventions` (`CapsuleModels.kt:182`) — pas de `outputFormat`.
-  Ajouter `outputFormat: OutputFormat = OutputFormat.WEBM`.
-- `pushConfigIntoExtension` (`CapsulePlugin.kt:68`) — pas de push format.
-  Ajouter push format (guard convention + `isPresent`, pattern `captureStrategy`).
-- `loadFromEnvironment` + `buildConfigFromProperties` (merger) — étendre avec
-  `output.format` (ENV `CAPSULE_OUTPUT_FORMAT`, props `capsule.output.format`).
-- `CapsuleMessages` — pas de clé `task.*.format`. Ajouter si besoin.
-- 8 `CucumberTaskSpec` existants. US-3 ajoutera `cucumberTestFormat`.
+  US-2 ajoutera `convertFormatIfEnabled(finalVideo)` post-burnIn.
 - `MediaProbeUtil.probeDuration` (`MediaProbeUtil.kt:17`) — réutilisable
   (économie d'encre MP4 : skip transcode si `.mp4` existe ET probe > 0).
-- `StrictModeGuard.requireAvailable` (`StrictModeGuard.kt:31`) — réutilisable
-  (ffmpeg absent → fail si strict, pattern `resolveSubtitleBurnInService`).
-- `CaptureResolver` (`CaptureResolver.kt`) — pattern factory `when(strategy)`
-  injectant lambdas (testable sans I/O), référence pour `resolveFormatConverter`.
-- `CaptureStrategy`/`VersioningStrategy` enums — pattern `fromString`
-  case-insensitive + fallback par défaut, à suivre pour `OutputFormat`.
-- 742 unit + 52 functional + 3 cucumber dédiés VERT (baseline S-096, préservée S-097).
+- `StrictModeGuard.requireAvailable` (`StrictModeGuard.kt:31`) —
+  réutilisable (ffmpeg absent → fail si strict, pattern
+  `resolveSubtitleBurnInService`).
+- `CaptureResolver` (`CaptureResolver.kt`) — pattern factory
+  `when(strategy)` injectant lambdas (testable sans I/O), référence pour
+  `resolveFormatConverter`.
+- 8 `CucumberTaskSpec` existants. US-3 ajoutera `cucumberTestFormat`.
+- 759 unit + 52 functional + 3 cucumber dédiés VERT (baseline S-098).
 - Domaines DDD capsule (8) : `capsule.feed` + `capsule.ci` +
   `capsule.multilang` + `capsule.ai` + `capsule.context` +
   `capsule.pipeline` + `capsule.support` + `capsule.i18n`.
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider
   0.0.16 (compileOnly, 0 import réel — décision CAP-ARCH-4).
-- Modifications S-097 gouvernance uniquement (BACKLOG, INDEX, PROMPT_REPRISE,
-  rapport session) — non committées.
 
 == EPICs restants (séquence MVP0)
 
-* CAP-MP4 (P1, EN COURS) — export MP4/H.264, 4 US ~5 pts (US-0 ✅, US-1/2/3 TODO)
+* CAP-MP4 (P1, EN COURS) — export MP4/H.264, 4 US ~5 pts (US-0 ✅, US-1 ✅, US-2/3 TODO)
 * CAP-CR3-1 (P0, maintenance) — CI `full` avec vrais binaires + probe durée
 * CAP-AUDIO (P1) — post-production audio, 5 US ~10 pts
 * CAP-GLOSSARY (P1) — injection terminologique, 4 US ~6 pts
@@ -63,7 +62,7 @@ _Prochaine session_ : 098 — CAP-MP4 US-1 `OutputFormat` enum + `OutputConfig.f
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 742 unit + 52 functional + 3 cucumber VERT (S-096 baseline, préservée S-097)
+* 759 unit + 52 functional + 3 cucumber VERT (S-098 baseline)
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082 :
   `@ConfigurationParameter(FEATURES_PROPERTY_NAME)` du CucumberTestRunner
@@ -92,7 +91,7 @@ _Prochaine session_ : 098 — CAP-MP4 US-1 `OutputFormat` enum + `OutputConfig.f
   (`capsule.*`) < YAML (`capsule-context.yml`) < CLI (`-P*`). Merger
   `CapsuleConfigMerger` + helpers `mergeStr/mergeInt/mergeDouble/mergeBoolean`
   + `mergeStrList` (List<String> comma-separated) + `mergeVersioning`/
-  `mergeCaptureStrategy` (enum dédiés). US-1 ajoutera `mergeOutputFormat`.
+  `mergeCaptureStrategy`/`mergeOutputFormat` (enum dédiés).
 * `CompositeContext` (codebase-contracts 0.1.0) — canaux EAGER/RAG/Graphify/
   Docs + `ChannelBudget`. `CapsuleContextBuilder` (domaine `capsule.context`).
 * `CapsulePipelineGraph` (koog 1.0.0, domaine `capsule.pipeline`) — 3 nœuds

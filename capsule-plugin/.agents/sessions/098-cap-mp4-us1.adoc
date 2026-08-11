@@ -1,0 +1,105 @@
+= Session 098 — CAP-MP4 US-1 OutputFormat enum + OutputConfig.format + merger 4 sources
+
+== Cadrage
+
+**EPIC** : CAP-MP4 — Export MP4/H.264 + format distribution
+**US** : US-1 — `OutputFormat` enum + `OutputConfig.format` + merger 4 sources + Extension + Conventions + push
+**Priorité** : P1 (séquence MVP0 — distribution talaria.school)
+**Méthode** : Baby-step DDD/TDD/BDD (unit → functional → cucumber), RED → GREEN → REFACTOR
+**Baseline** : 742 unit + 52 functional + 3 cucumber dédiés (S-096, préservée S-097)
+**Statut** : US-1 TERMINÉ (17 unit tests GREEN)
+
+== Vision US-1
+
+Étendre la section `output` de `CapsuleConfig` avec un 4ème champ `format`
+type-safe (`OutputFormat` enum), respectant le pattern des 3 enums
+existants (`CaptureStrategy`, `VersioningStrategy`). Couvre toute la
+chaîne config : data class → merger 4 sources → Extension Gradle →
+Conventions → push plugin. Aucune logique de transcode (US-2) ni cucumber
+(US-3) — US-1 est la fondation config uniquement.
+
+== Baby-step TDD : RED → GREEN → REFACTOR
+
+=== RED
+
+. `OutputFormatTest.kt` (NEW, 8 tests) — `fromString` returns WEBM pour
+   null/blank/unknown, MP4/BOTH pour known values, case-insensitive, enum
+   has exactly 3 values. Compilation échoue : `Unresolved reference
+   'OutputFormat'`.
+. `CapsuleConfigMergerTest.kt` (MODIFIED, +9 tests) — output format
+   defaults WEBM, OutputConfig.format field default WEBM, props reads
+   mp4/both/invalid-fallback, YAML overrides props, CLI overrides YAML+
+   props, blank CLI fallback YAML, env default WEBM.
+
+=== GREEN
+
+. `OutputFormat` enum (3 valeurs `WEBM`/`MP4`/`BOTH`, companion
+   `fromString` case-insensitive fallback `WEBM`) — `CapsuleConfig.kt:108-134`.
+   Pattern `CaptureStrategy` (S-096) / `VersioningStrategy` (S-087).
+. `OutputConfig.format` 4ème champ (défaut `OutputFormat.WEBM` backward
+   compat) — `CapsuleConfig.kt:148`. KDoc étendu documente le 4ème param.
+. `mergeOutputFormat` helper dédié (pattern `mergeVersioning`/
+   `mergeCaptureStrategy` — CLI > YAML > props, fallback enum default) —
+   `CapsuleConfigMerger.kt:312-320`.
+. `loadFromEnvironment` (`CAPSULE_OUTPUT_FORMAT`) +
+   `buildConfigFromProperties` (`capsule.output.format`) étendus —
+   `CapsuleConfigMerger.kt:124,186`.
+. `mergeOutputConfig` étendu avec `format = mergeOutputFormat(...)` —
+   `CapsuleConfigMerger.kt:272`.
+. `CapsuleExtension.outputFormat: Property<OutputFormat>` (convention
+   `WEBM`) + helper Groovy `outputFormat(String)` (case-insensitive) —
+   `CapsuleModels.kt:143-149`.
+. `CapsuleConventions.outputFormat = OutputFormat.WEBM` (champ data class
+   + instance conventions) — `CapsuleModels.kt:175,214`.
+. `pushConfigIntoExtension` push format (guard `isPresent` + convention,
+   pattern `captureStrategy`) — `CapsulePlugin.kt:102`.
+
+=== REFACTOR
+
+Aucun refactor nécessaire — le code suit exactement les patterns établis
+(`CaptureStrategy`/`VersioningStrategy`). Cohérence vérifiée :
+. 3 enums avec companion `fromString` case-insensitive + fallback default.
+. 3 helpers merger dédiés (`mergeVersioning`/`mergeCaptureStrategy`/
+   `mergeOutputFormat`) — pas de helper générique (fallbacks distincts).
+. 3 `Property<Enum>` dans Extension avec helper Groovy case-insensitive.
+. 3 push dans `pushConfigIntoExtension` avec guard `isPresent` +
+   convention.
+
+== Vérifications
+
+. `compileKotlin` + `compileTestKotlin` VERT.
+. `./gradlew test --rerun-tasks` : 759 unit tests VERT (was 742, +17 = 8
+   `OutputFormatTest` + 9 merger `output.format`). BUILD SUCCESSFUL in 1m22s.
+. Zéro régression (tous les tests préexistants VERT).
+. Zéro secret en dur.
+. 5 fichiers modifiés + 1 nouveau fichier :
+   - `src/main/kotlin/capsule/CapsuleConfig.kt` (MODIFIED — +39 lignes)
+   - `src/main/kotlin/capsule/CapsuleConfigMerger.kt` (MODIFIED — +21 lignes)
+   - `src/main/kotlin/capsule/CapsuleModels.kt` (MODIFIED — +11 lignes)
+   - `src/main/kotlin/capsule/CapsulePlugin.kt` (MODIFIED — +3 lignes)
+   - `src/test/kotlin/capsule/CapsuleConfigMergerTest.kt` (MODIFIED — +81 lignes)
+   - `src/test/kotlin/capsule/OutputFormatTest.kt` (NEW — 57 lignes)
+
+== Totaux post-session
+
+- 759 unit tests VERT (+17 : 8 `OutputFormatTest` + 9 merger `output.format`)
+- 52 functional VERT (inchangé — US-1 est config uniquement, pas de tâche Gradle)
+- 3 cucumber dédiés VERT (inchangé — US-3 est le cucumber EPIC)
+- Baseline S-096 préservée +17 net.
+
+== Prochaine session (099)
+
+**CAP-MP4 US-2** — `VideoFormatConverter` (object pur, domaine `capsule`) +
+wiring post-burnIn `convertFormatIfEnabled` + `DistributeCapsuleVideoTask`
+étendu (filtre selon format) + factory `resolveFormatConverter` +
+`StrictModeGuard.requireAvailable` + NoOpVideoFormatConverter. Baby-step
+TDD : ~8 unit (converter success/failure, NoOp, isAvailable,
+convertFormatIfEnabled MP4/BOTH/WEBM dispatch, skip existing MP4) + 2
+functional (MP4 produced NoOp fallback, strict + ffmpeg absent → FAIL).
+
+== Score
+
+9/10 — US-1 livrée proprement, baby-step TDD strict (RED → GREEN →
+REFACTOR), patterns respectés, zéro régression, tests couvrent enum +
+merger 4 sources + defaults + fallbacks. 1 pt seulement (config pure),
+mais fondation solide pour US-2 (converter + wiring) et US-3 (cucumber).

@@ -106,23 +106,54 @@ enum class VersioningStrategy {
 }
 
 /**
- * Configuration for the versioned video destination (CAP-ARCH-7).
+ * Output format selector for capsule videos (CAP-MP4 US-1).
+ *
+ * - [WEBM] — WebM only (default, backward compat — existing configs without
+ *   `output.format` keep the WebM-only behavior).
+ * - [MP4] — transcode to MP4/H.264 via FFmpeg post-capture, then remove the
+ *   WebM intermediate. LMS (Moodle, Canvas), YouTube, and OF platforms
+ *   consume MP4/H.264/AAC natively.
+ * - [BOTH] — keep the WebM intermediate and produce the MP4 alongside.
+ */
+enum class OutputFormat {
+    WEBM,
+    MP4,
+    BOTH;
+
+    companion object {
+        /**
+         * Case-insensitive parse. Falls back to [WEBM] for
+         * null/blank/unknown values (backward compat — existing configs
+         * without `output.format` keep the WebM-only behavior).
+         */
+        fun fromString(value: String?): OutputFormat =
+            entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: WEBM
+    }
+}
+
+/**
+ * Configuration for the versioned video destination (CAP-ARCH-7) and output
+ * format (CAP-MP4 US-1).
  *
  * The capsule pipeline writes videos to `build/<outputDir>/` during the
  * build. This config drives a *post-capture distribution* step that copies
- * the final WebM to a versioned subdirectory under [videoDestinationDir],
- * enabling the user to compare capsule versions side-by-side.
+ * the final video to a versioned subdirectory under [videoDestinationDir],
+ * enabling the user to compare capsule versions side-by-side. The [format]
+ * field selects the output container (WebM, MP4, or both).
  *
  * @param videoDestinationDir absolute or relative path to the destination
  *        root (default `office/videos`, relative to the workspace root).
  * @param versioning           the versioning strategy (default [TIMESTAMP]).
  * @param versionPrefix        prefix prepended to the version label
  *        (default `v`).
+ * @param format               the output container format
+ *        (default [OutputFormat.WEBM] — backward compat).
  */
 data class OutputConfig(
     val videoDestinationDir: String = "office/videos",
     val versioning: VersioningStrategy = VersioningStrategy.TIMESTAMP,
-    val versionPrefix: String = "v"
+    val versionPrefix: String = "v",
+    val format: OutputFormat = OutputFormat.WEBM
 )
 
 data class ManimConfig(

@@ -140,6 +140,15 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         captureStrategy.set(CaptureStrategy.fromString(value))
     }
 
+    /** CAP-MP4 — output format: WEBM (default), MP4 (H.264 transcode), or BOTH. Defaults to WEBM. */
+    val outputFormat: Property<OutputFormat> = objects.property(OutputFormat::class.java)
+        .convention(OutputFormat.WEBM)
+
+    /** Groovy DSL helper: accepts a case-insensitive string ("webm" / "mp4" / "both"). */
+    fun outputFormat(value: String) {
+        outputFormat.set(OutputFormat.fromString(value))
+    }
+
     internal val conventions: CapsuleConventions = CapsuleConventions(
         outputDir = "capsule",
         sliderScriptDir = "capsule",
@@ -167,6 +176,7 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         subtitleBurnInOutlineColor = "&H00000000",
         subtitleBurnInPosition = "bottom",
         captureStrategy = CaptureStrategy.PLAYWRIGHT,
+        outputFormat = OutputFormat.WEBM,
         ffmpegExecutablePath = "ffmpeg",
         distribOutputWidth = 1080,
         distribOutputHeight = 1920,
@@ -206,6 +216,7 @@ data class CapsuleConventions(
     val subtitleBurnInOutlineColor: String,
     val subtitleBurnInPosition: String,
     val captureStrategy: CaptureStrategy,
+    val outputFormat: OutputFormat,
     val ffmpegExecutablePath: String,
     val distribOutputWidth: Int,
     val distribOutputHeight: Int,
