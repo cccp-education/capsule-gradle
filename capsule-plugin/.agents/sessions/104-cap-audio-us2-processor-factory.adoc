@@ -1,0 +1,135 @@
+= Session 104 — CAP-AUDIO US-2 AudioPostProcessor + Impl + NoOp + AudioPostCommand + factory
+
+_Date_ : 2026-08-11
+_Borough_ : Détroit (capsule-gradle)
+_Type_ : feat+ddd+tdd
+_Score_ : 9/10
+_EPIC_ : CAP-AUDIO (P1) — post-production audio, 5 US ~12 pts
+
+== Objectif
+
+Livrer US-2 du EPIC CAP-AUDIO : `AudioPostProcessor` (interface + Impl
+FFmpeg + NoOp + Exception) + `AudioPostCommand` (object pur) + factory
+`resolveAudioPostProcessor` 5ème dans `CapsuleManager`. Baby-step TDD
+strict RED → GREEN → REFACTOR.
+
+== Contexte pré-session
+
+- US-0 ✅ S-102 (cadrage 12 décisions architecturales)
+- US-1 ✅ S-103 (`AudioPostConfig` + merger 4 sources, domaine
+  `capsule.audio` 10ème ouvert, 802 unit VERT)
+- Patterns de référence inventoriés : `SubtitleBurnInService`
+  (interface + Impl + NoOp + factory + `BurnInException`),
+  `VideoFormatConverter` (interface + Impl + NoOp + factory, retourne
+  Boolean degraded), `FormatConversion` (object pur dispatch),
+  `resolveFormatConverter` (4ème factory, pattern pour 5ème).
+- Point d'insertion wiring identifié : `CapsuleVideoTask.
+  captureDeckSequential` L492 + `captureDeckParallel` L523 (post-
+  burnIn, pre-convertFormat).
+
+== Livrables
+
+=== Domaine `capsule.audio` enrichi (4 fichiers prod + 1 exception)
+
+1. `src/main/kotlin/capsule/audio/AudioPostProcessor.kt` — interface
+   `process(videoFile: File, outputFile: File, config: AudioPostConfig):
+   Boolean` (degraded mode retourne `false`, pattern
+   `VideoFormatConverter`), `isAvailable(): Boolean`, `name(): String`.
+   KDoc documente le pipeline 3 étapes (loudnorm EBU R128 + amix BGM +
+   sidechaincompress ducking) et le pattern factory
+   `resolveAudioPostProcessor`.
+
+2. `src/main/kotlin/capsule/audio/AudioPostProcessorImpl.kt` — impl
+   FFmpeg `loudnorm=I=${loudnessTarget}:TP=-1.5:LRA=11` EBU R128 +
+   `volume=${bgmLevel}dB + amix=inputs=2:duration=first:dropout_transition=0`
+   BGM (si `bgmEnabled && bgmFile exists`) +
+   `sidechaincompress=threshold=0.1:ratio=4:attack=5:release=300`
+   ducking (si `duckingEnabled && bgmEnabled` — ducking sans BGM
+   ignoré, meaningless). `NoOpAudioPostProcessor` (returns `false` —
+   degraded garde original, pattern `NoOpVideoFormatConverter`).
+   BGM file blank/missing → degraded `false` (warn + garde original,
+   économie d'encre).
+
+3. `src/main/kotlin/capsule/audio/AudioPostCommand.kt` — object pur
+   (pattern `FormatConversion`) — `buildFilterGraph(config, hasBgmInput):
+   String` (loudness-only / loudness+BGM `[0:a]loudnorm[voice];[1:a]
+   volume[bgm];[voice][bgm]amix[aout]` / loudness+BGM+ducking `...
+   sidechaincompress[ducked];[voice][ducked]amix[aout]` / ducking-
+   without-BGM ignored → loudness-only fallback) + `buildArgv(videoFile,
+   bgmFile, outputFile, config, ffmpegPath): List<String>` (BGM =
+   2ème `-i` + `-filter_complex` + `-map 0:v -map [aout]`, no-BGM =
+   `-af` loudnorm only, `-c:v copy -c:a libvorbis -shortest`).
+
+4. `src/main/kotlin/capsule/audio/AudioPostException.kt` — RuntimeException
+   pour erreurs critiques (pattern `BurnInException`).
+
+=== Factory `resolveAudioPostProcessor` (5ème factory `resolve*`)
+
+`CapsuleManager.resolveAudioPostProcessor(ffmpegPath: String = "ffmpeg",
+strict: Boolean = false): AudioPostProcessor` — pattern
+`resolveFormatConverter` : `noop`→NoOp, unavailable+non-strict→NoOp,
+unavailable+strict→throw via `StrictModeGuard.requireAvailable`, available
+→Impl. 5ème factory `resolve*` (après `resolveManimVideoMixer`,
+`resolveManimEngine`, `resolveSubtitleBurnInService`,
+`resolveFormatConverter`). `StrictModeGuard.requireAvailable` 8ème
+branche.
+
+== Méthode — Baby-step TDD RED → GREEN → REFACTOR
+
+=== RED
+
+Création `src/test/kotlin/capsule/AudioPostProcessorTest.kt` — 17 tests
+unitaires : 5 `buildFilterGraph` (loudness-only, loudness+BGM,
+loudness+BGM+ducking, no-BGM-no-ducking, ducking-without-BGM ignored)
++ 2 `buildArgv` (BGM = 2ème `-i` + `-filter_complex`, no-BGM = `-af`)
++ 4 Impl (bogus path unavailable, name, process returns false when
+unavailable, process returns false when BGM blank) + 2 NoOp (isAvailable
++ name, process returns false) + 4 factory (noop→NoOp, unavailable+
+non-strict→NoOp, unavailable+strict→throw, named ffmpeg-audio-post).
+Échec compilation attendu : `Unresolved reference
+'AudioPostProcessorImpl'`/`'NoOpAudioPostProcessor'`/
+`'resolveAudioPostProcessor'`.
+
+=== GREEN
+
+Création 4 fichiers prod + factory dans `CapsuleManager` :
+`AudioPostProcessor.kt` (interface), `AudioPostProcessorImpl.kt` (Impl
+FFmpeg + NoOp), `AudioPostCommand.kt` (object pur),
+`AudioPostException.kt` (exception). 15/17 tests GREEN après 1ère
+itération ; 2 tests failed (test `buildArgv` no-BGM attendait 2 `-i`
+flags mais seul le video est en entrée = 1 `-i` ; test `buildArgv` BGM
+vérifiait `bgmFile.exists()` dans `buildArgv` mais la pure command ne
+doit pas vérifier l'existence — laissé à Impl).
+
+=== REFACTOR
+
+2 itérations :
+- `buildArgv` pure ne vérifie pas existence BGM — `hasBgm = config.
+  bgmEnabled && bgmFile != null` (sans `.exists()`, laissé à Impl qui
+  vérifie avant d'invoquer).
+- Test `assertEquals(2, argv.count { it == "-i" })` corrigé →
+  `assertEquals(1, ...)` (no-BGM = 1 `-i` flag pour la vidéo seule).
+
+17/17 tests GREEN. `./gradlew test` BUILD SUCCESSFUL en 2m18s. 819
+unit VERT (802 baseline + 17 net), zéro régression, zéro secret.
+
+== Vérifications
+
+- `./gradlew test` : BUILD SUCCESSFUL, 819 unit VERT (+17 net), 0 FAIL.
+- Absence secrets : aucun token/password/api key dans le code (les
+  `DEFAULT_TOKEN_BUDGET` détectés sont des constantes de domaine RAG
+  codebase-contracts, pas des secrets).
+- `git status` : 4 fichiers modifiés (INDEX, BACKLOG, PROMPT_REPRISE,
+  CapsuleManager) + 5 nouveaux (4 prod `capsule.audio` + 1 test).
+
+== Synthèse EPIC CAP-AUDIO
+
+- US-0 ✅ S-102 (cadrage 12 décisions)
+- US-1 ✅ S-103 (config + merger, 802 unit +20)
+- US-2 ✅ S-104 (processor + factory, 819 unit +17)
+- US-3 TODO (wiring `applyAudioPostIfEnabled` + 3 functional)
+- US-4 TODO (cucumber `capsule_audio_post.feature` + runner dédié)
+
+_Prochaine session_ : 105 — CAP-AUDIO US-3 wiring `applyAudioPostIfEnabled`
++ câblage `captureDeckSequential`/`captureDeckParallel` + 3 functional
+tests.

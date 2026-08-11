@@ -410,6 +410,28 @@ class CapsuleManager(private val project: Project) {
             }
         }
 
+        /**
+         * Resolves the appropriate [capsule.audio.AudioPostProcessor]
+         * based on ffmpeg availability (CAP-AUDIO US-2). 5ème factory
+         * `resolve*`, pattern mirrors [resolveFormatConverter]:
+         * - If ffmpegPath is "noop", returns [capsule.audio.NoOpAudioPostProcessor]
+         * - Otherwise, returns [capsule.audio.AudioPostProcessorImpl] if ffmpeg is available
+         * - If unavailable and strict, [StrictModeGuard] throws
+         * - If unavailable and non-strict, returns [capsule.audio.NoOpAudioPostProcessor]
+         *   (degraded mode — original video kept, backward compat)
+         */
+        @JvmStatic
+        fun resolveAudioPostProcessor(ffmpegPath: String = "ffmpeg", strict: Boolean = false): capsule.audio.AudioPostProcessor {
+            if (ffmpegPath == "noop") return capsule.audio.NoOpAudioPostProcessor()
+            val processor = capsule.audio.AudioPostProcessorImpl(ffmpegPath)
+            return if (processor.isAvailable()) {
+                processor
+            } else {
+                StrictModeGuard.requireAvailable(strict, "ffmpeg (audio post)", false, ffmpegPath)
+                capsule.audio.NoOpAudioPostProcessor()
+            }
+        }
+
         fun readScriptFiles(dir: File): List<File> {
             return dir.listFiles { f ->
                 f.name.endsWith("-script.txt") &&
