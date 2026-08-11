@@ -131,6 +131,15 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val subtitleBurnInPosition: Property<String> = objects.property(String::class.java)
         .convention("bottom")
 
+    /** CAP-CR3-3 — capture strategy: PLAYWRIGHT (real-time recording) or SCREENSHOT (PNG+FFmpeg per slide). Defaults to PLAYWRIGHT. */
+    val captureStrategy: Property<CaptureStrategy> = objects.property(CaptureStrategy::class.java)
+        .convention(CaptureStrategy.PLAYWRIGHT)
+
+    /** Groovy DSL helper: accepts a case-insensitive string ("playwright" / "screenshot"). */
+    fun captureStrategy(value: String) {
+        captureStrategy.set(CaptureStrategy.fromString(value))
+    }
+
     internal val conventions: CapsuleConventions = CapsuleConventions(
         outputDir = "capsule",
         sliderScriptDir = "capsule",
@@ -157,6 +166,7 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         subtitleBurnInFontColor = "&H00FFFFFF",
         subtitleBurnInOutlineColor = "&H00000000",
         subtitleBurnInPosition = "bottom",
+        captureStrategy = CaptureStrategy.PLAYWRIGHT,
         ffmpegExecutablePath = "ffmpeg",
         distribOutputWidth = 1080,
         distribOutputHeight = 1920,
@@ -195,6 +205,7 @@ data class CapsuleConventions(
     val subtitleBurnInFontColor: String,
     val subtitleBurnInOutlineColor: String,
     val subtitleBurnInPosition: String,
+    val captureStrategy: CaptureStrategy,
     val ffmpegExecutablePath: String,
     val distribOutputWidth: Int,
     val distribOutputHeight: Int,

@@ -90,6 +90,15 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleScenarioContextCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // CAP-CR3-3-5 — capture strategy selection (PLAYWRIGHT default, SCREENSHOT alt).
+        // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
+        CucumberTaskSpec(
+            name = "cucumberTestCaptureStrategy",
+            features = listOf("src/test/features/capsule_capture_strategy.feature"),
+            tags = listOf("@capture", "@strategy"),
+            runnerClass = "capsule.scenarios.CapsuleCaptureStrategyCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task

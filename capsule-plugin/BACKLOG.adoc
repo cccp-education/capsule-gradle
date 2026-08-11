@@ -352,8 +352,8 @@ Fix : `capsule.strictMode` DSL (defaut false) ; si true, `resolve*` lève au lie
 | **Décision capture : `ScreenshotCaptureImpl` vs `PlaywrightCaptureImpl`** — Le premier (PNG→ffmpeg, annoncé « faster »)
 n'est jamais câblé dans `CapsuleVideoTask`. Soit le brancher comme alternative configurable, soit l'expulser.
 Réduit le double chemin de capture et le coût de maintenance.
-| 🟠 P1
-| ⬜ TODO
+| 🔴 P0
+| ✅ TERMINÉ (S-096, 5/5 US, 742 unit + 52 functional + 3 cucumber — section dédiée ci-dessous)
 
 | CAP-CR3-4
 | **Convention Gradle explicite pour resolveScriptDir/resolveDeckDir** — `CapsuleManager.kt:234-254` navigue en dur
@@ -1023,6 +1023,120 @@ valid). Runner dédié (pattern S-082).
 
 _Total_ : 5 US, ~10 pts.
 
+=== 📸 EPIC CAP-CR3-3 — Branchement ScreenshotCapture (alternative configurable) — TERMINÉ 5/5 US (S-096)
+
+_Vision_ : `ScreenshotCaptureImpl` (`PlaywrightManager.kt:135`) existe déjà et
+implémente `PlaywrightCapture`, mais n'est **jamais câblé** dans
+`CapsuleVideoTask.resolvePlaywrightCapture()` (`CapsuleVideoTask.kt:176`) — qui ne
+construit que `PlaywrightCaptureImpl` ou `NoOpPlaywrightCapture`. De plus
+`ScreenshotCaptureImpl.capture()` ne gère qu'**une slide**
+(`slideDurations.firstOrNull()`), pas un deck multi-slides.
+
+Le but : brancher `ScreenshotCaptureImpl` comme **alternative configurable** au
+`PlaywrightCaptureImpl` (recording temps réel), via `capture.strategy: playwright|screenshot`
+4 sources. `PLAYWRIGHT` reste défaut (backward compat, économie d'encre).
+`SCREENSHOT` = PNG par slide + ffmpeg png→webm par slide + concat webm — plus rapide
+et plus fiable que recording Playwright (annoncé "faster" dans le KDoc).
+
+_Source_ : `GLOBAL_CODE_REVIEW.adoc` CR-GLOBALE-003 (2026-08-04).
+
+_Domaine_ : `capsule` (pas de nouveau domaine — étend `CaptureConfig` +
+`PlaywrightManager` + `CapsuleVideoTask` existants).
+
+_Dépendances_ : `StrictModeGuard` (CAP-CR3-2 S-091), FFmpeg (déjà dépendance),
+Playwright (déjà dépendance).
+
+_Décisions architecturales_ :
+
+. `CaptureStrategy` enum (pas string) — type-safe, 2 valeurs
+  `PLAYWRIGHT`/`SCREENSHOT`, défaut `PLAYWRIGHT` (backward compat).
+. `ScreenshotCaptureImpl` étendu **multi-slide** — boucle screenshot/png par slide
+  + ffmpeg png→webm par slide + concat webm via ffmpeg concat demuxer. Pas une 2ème
+  interface : étend `PlaywrightCapture` existant (contrat
+  `capture(deckHtmlPath, outputDir, viewportW, viewportH, slideDurations)` inchangé).
+. `resolveCapture` factory dispatche sur `CaptureStrategy` —
+  `StrictModeGuard.requireAvailable` étendu (screenshot absent → fail si strict,
+  comme Playwright).
+. `capture.strategy` 4 sources (pattern CapsuleConfigMerger) —
+  ENV `CAPSULE_CAPTURE_STRATEGY` < props `capsule.capture.strategy` < YAML
+  `capture.strategy` < CLI `-Pcapsule.capture.strategy`.
+. `ScreenshotCaptureImpl` = alternative **configurable**, pas remplacement —
+  `PLAYWRIGHT` reste défaut.
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-CR3-3-0
+| *Cadrage EPIC* — audit code, vision, découpage 5 US, décisions architecturales.
+MàJ INDEX/BACKLOG/PROMPT_REPRISE. Zéro code.
+| 1
+| ✅ TERMINÉ (S-096)
+
+| CAP-CR3-3-1
+* `CaptureStrategy` enum + `CaptureConfig.strategy` + merger 4 sources —
+`enum class CaptureStrategy { PLAYWRIGHT, SCREENSHOT }` (companion `fromString`
+case-insensitive, défaut `PLAYWRIGHT`). `CaptureConfig` étendu
+`strategy: CaptureStrategy = CaptureStrategy.PLAYWRIGHT` (15ème champ section
+capture). `mergeCaptureConfig` étendu (`mergeCaptureStrategy` helper,
+`capture.strategy` 4 sources ENV<props<YAML<CLI, ENV `CAPSULE_CAPTURE_STRATEGY`,
+props `capsule.capture.strategy`). Baby-step TDD unit : ~8 tests (defaults,
+YAML, props, env, CLI override, invalid fallback PLAYWRIGHT, round-trip).
+| 3
+| ✅ TERMINÉ (S-096, 15 unit : 7 CaptureStrategyTest + 8 merger)
+
+| CAP-CR3-3-2
+* `resolveCapture` factory + `StrictModeGuard` —
+`CapsuleVideoTask.resolvePlaywrightCapture` renommé `resolveCapture(slideDurations,
+strategy: CaptureStrategy)`. Dispatch `when(strategy)` :
+`PLAYWRIGHT` → `PlaywrightCaptureImpl` (existant), `SCREENSHOT` →
+`ScreenshotCaptureImpl` (étendu US-3). `StrictModeGuard.requireAvailable` étendu
+(screenshot absent → fail si strict, comme Playwright). Baby-step TDD unit : ~6
+tests (factory dispatch, strategy=playwright returns PlaywrightCaptureImpl,
+strategy=screenshot returns ScreenshotCaptureImpl, screenshot absent + non-strict
+→ NoOp, screenshot absent + strict → IllegalStateException, capture field memo).
+| 3
+| ✅ TERMINÉ (S-096, 6 unit CaptureResolverTest)
+
+| CAP-CR3-3-3
+* `ScreenshotCaptureImpl` multi-slide — `capture()` étendu : boucle par slide
+(navigate Reveal.next(), screenshot PNG par slide `slide-N.png`, ffmpeg png→webm
+par slide `slide-N.webm` avec durée exacte), puis concat webm via ffmpeg concat
+demuxer (`concat-list.txt` → `capsule.webm`). Contrat `PlaywrightCapture.capture()`
+inchangé (même signature). Baby-step TDD unit : ~6 tests (single slide, multi
+slide, concat list ordre, ffmpeg appelé par slide, ffmpeg concat appelé, close
+nettoie browser/playwright).
+| 3
+| ✅ TERMINÉ (S-096, 8 unit ScreenshotPlannerTest)
+
+| CAP-CR3-3-4
+* Wiring `CapsuleExtension.captureStrategy` + `pushConfigIntoExtension` +
+`CapsuleVideoTask` résout via `resolveCapture` — `CapsuleExtension.captureStrategy:
+Property<CaptureStrategy>` (convention `PLAYWRIGHT`), `pushConfigIntoExtension`
+push strategy, `CapsuleVideoTask` lit `capsuleExtension.captureStrategy.get()` et
+appelle `resolveCapture(slideDurations, strategy)`. `GenerateCapsuleVideoAllLanguagesTask`
+aligné si pertinent. Baby-step TDD functional : ~3 tests (strategy=playwright
+default → PlaywrightCaptureImpl, strategy=screenshot + NoOp fallback → WebM,
+strict + screenshot absent → FAIL).
+| 2
+| ✅ TERMINÉ (S-096, 3 functional CaptureStrategyFunctionalTest)
+
+| CAP-CR3-3-5
+* Cucumber `@capture @strategy` — feature `capsule_capture_strategy.feature`
+(3 scénarios : strategy=playwright default, strategy=screenshot NoOp → WebM,
+strict + screenshot absent → FAIL). Runner dédié
+`CapsuleCaptureStrategyCucumberRunner` (pattern S-082
+`@SelectClasspathResource` + filter `@capture and not @wip and not @integration`).
+`CapsuleCaptureStrategySteps` préfixés "capture strategy" (bug S-088
+`DuplicateStepDefinitionException`). `CucumberTaskSpec("cucumberTestCaptureStrategy")`
+câblé `build.gradle.kts`. Baby-step BDD : RED (undefined steps) → GREEN → REFACTOR.
+| 1
+| ✅ TERMINÉ (S-096, 3 cucumber scénarios GREEN)
+|===
+
+_Total_ : 5 US, ~13 pts. _Séquence baby-step_ : US-0 cadrage → US-1/2/3 unit
+tests RED→GREEN → US-4 functional → US-5 cucumber. _EPIC TERMINÉ (S-096)_.
+
 === 🎵 EPIC CAP-AUDIO — Post-production audio (BGM + normalisation + ducking)
 
 _Vision_ : Le WebM produit est TTS brut, sans lit musical ni normalisation.
@@ -1307,7 +1421,7 @@ _Total_ : 3 US, ~4 pts.
 | 5
 | 13
 | 🔴 P0
-| ⬜ TODO
+| ✅ TERMINÉ (S-096, 5/5 US, 742 unit + 52 functional + 3 cucumber)
 
 | Post-prod
 | CAP-MP4

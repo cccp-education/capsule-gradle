@@ -1,27 +1,34 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 095 — CAP-SPD US-3 Wiring `collectCapsuleAugmentedContext -Pcapsule.context.scenarioFile` + US-4 Cucumber `capsule_scenario_context.feature` (3/3 scénarios GREEN). Renommage SPD→PedagogicalScenario (`SpdContext`→`PedagogicalScenario`, `SpdContextLoader`→`PedagogicalScenarioLoader`, `spdSection`→`scenarioSection`, header `"==== Pedagogical Scenario (scenario)"`, instruction line `contains("Pedagogical Scenario")`). US-3 : `ContextConfig.scenarioFile: String?`, `mergeContextConfig` étendu `mergeStr`, `CapsuleExtension.scenarioFile: Property<String>`, `pushConfigIntoExtension`, `CollectCapsuleAugmentedContextTask.scenarioFile: ConfigurableFileCollection @Optional`, `resolveScenarioSection()` (5% budget, directory→metadata.json+first.adoc, file→direct adoc), `CapsuleManager` wiring lazy provider. 2 functional tests `ScenarioContextFunctionalTest` GREEN. US-4 : feature `capsule_scenario_context.feature` 3 scénarios, `CapsuleScenarioContextSteps`, runner dédié `CapsuleScenarioContextCucumberRunner` (pattern S-082), `CucumberTaskSpec("cucumberTestScenarioContext")` câblé. 713 unit + 49 functional + 3 cucumber dédiés GREEN, 0 FAIL.
-_Prochaine session_ : 096 — Prochain EPIC de la séquence MVP0 : CAP-CR3-3 (Branchement ScreenshotCapture, 5 US ~13 pts). Alternative : EPIC CAP-SPD TERMINÉ, borough Détroit repasse en maintenance/actif selon priorités MVP0. Vérifier séquence backlog : CAP-CR3-3 (P0) > CAP-MP4 (P1) > CAP-AUDIO (P1) > CAP-GLOSSARY (P1).
+_Session terminee_ : 096 — CAP-CR3-3 Branchement ScreenshotCapture (EPIC TERMINÉ 5/5 US). `CaptureStrategy` enum (PLAYWRIGHT/SCREENSHOT, défaut PLAYWRIGHT backward compat) + `CaptureConfig.strategy` 15ème champ + `mergeCaptureConfig` 4 sources (ENV `CAPSULE_CAPTURE_STRATEGY` < props `capsule.capture.strategy` < YAML < CLI). `CaptureResolver` object pur (factory dispatch `when(strategy)` avec `PlaywrightFactory`/`ScreenshotFactory` fun interfaces, `StrictModeGuard` réutilisé). `ScreenshotPlanner` object pur (`ScreenshotCapturePlan` + `ScreenshotSlideEntry` + `renderConcatList` + `ffmpegPngToWebmArgs` + `ffmpegConcatArgs`). `ScreenshotCaptureImpl.capture()` étendu multi-slide (boucle screenshot PNG par slide + navigate Reveal.next() + ffmpeg png→webm par slide durée exacte + concat webm concat demuxer). `CapsuleExtension.captureStrategy: Property<CaptureStrategy>` + helper Groovy `captureStrategy(String)`. `CapsuleVideoTask.resolvePlaywrightCapture` refactorisé → `CaptureResolver.resolve` (log "Capture: X strategy"). Cucumber `capsule_capture_strategy.feature` 3 scénarios `@capture @strategy` + runner dédié `CapsuleCaptureStrategyCucumberRunner` (pattern S-082) + `CucumberTaskSpec("cucumberTestCaptureStrategy")`. Baby-step TDD/BDD 3 niveaux : 29 unit (7 CaptureStrategy + 8 merger + 6 CaptureResolver + 8 ScreenshotPlanner) → 3 functional → 3 cucumber. 742 unit + 52 functional + 3 cucumber dédiés GREEN, 0 FAIL. Zéro régression.
+_Prochaine session_ : 097 — Prochain EPIC séquence MVP0 : CAP-MP4 (Export MP4/H.264, 4 US ~4 pts, P1 — distribution talaria.school). Alternative : CAP-AUDIO (P1 — qualité perçue). Vérifier séquence backlog : CAP-MP4 (P1) > CAP-AUDIO (P1) > CAP-GLOSSARY (P1) > CAP-PROVENANCE (P1).
 
-== Contexte reprise session 096 (post CAP-SPD)
+== Contexte reprise session 097 (post CAP-CR3-3 TERMINÉ)
 
-- EPIC CAP-SPD TERMINÉ 5/5 US (S-094 US-0/1/2, S-095 US-3/4 + renommage).
-  Capsule public OSS format-agnostic : valide `type=="SPD"` (format K-2)
-  uniquement, jamais `source` (pas de couplage borough producteur).
-- Sémantique "SPD" n'appartient pas à capsule — renommage en
-  `PedagogicalScenario`/`PedagogicalScenarioLoader`/`scenarioSection`.
-  Header rendu `"==== Pedagogical Scenario (scenario)"` (pas "SPD Pedagogical Context (spd)").
-- `DefaultCapsulePromptBuilder` détection textuelle `contains("Pedagogical Scenario")`.
-- N0 `ContextChannel` sealed (5 variants) — pas de canal `spd` N0 ;
-  extension capsule-local `CapsuleContext.scenarioSection`.
-- DSL 4 sources: ENV (`CAPSULE_CONTEXT_*`) < gradle.properties (`capsule.context.*`) < YAML < CLI (`-Pcapsule.context.*`).
-- 713 unit + 49 functional + 3 cucumber dédiés VERT (baseline S-095).
+- EPIC CAP-CR3-3 TERMINÉ 5/5 US (S-096) — `ScreenshotCaptureImpl` désormais câblé
+  comme alternative configurable via `capture.strategy: playwright|screenshot`.
+- `CaptureStrategy` enum (`CapsuleConfig.kt`) — 2 valeurs `PLAYWRIGHT`/`SCREENSHOT`,
+  défaut `PLAYWRIGHT` (backward compat). Companion `fromString` case-insensitive.
+- `CaptureResolver` object pur (`CaptureResolver.kt`) — factory dispatch
+  `when(strategy)` avec `PlaywrightFactory`/`ScreenshotFactory` fun interfaces.
+- `ScreenshotPlanner` object pur (`ScreenshotPlanner.kt`) — produit
+  `ScreenshotCapturePlan` (entries + concatListFile + finalWebm) + argv builders.
+- `ScreenshotCaptureImpl` multi-slide (`PlaywrightManager.kt`) — boucle screenshot
+  PNG par slide + ffmpeg png→webm + concat webm.
+- `CapsuleExtension.captureStrategy: Property<CaptureStrategy>` + helper Groovy
+  `captureStrategy(String)` (case-insensitive).
+- `CaptureConfig.strategy` 4 sources (ENV<props<YAML<CLI, ENV
+  `CAPSULE_CAPTURE_STRATEGY`, props `capsule.capture.strategy`).
+- Cucumber `capsule_capture_strategy.feature` 3 scénarios `@capture @strategy`,
+  runner dédié `CapsuleCaptureStrategyCucumberRunner` (pattern S-082),
+  `CucumberTaskSpec("cucumberTestCaptureStrategy")` câblé.
+- 742 unit + 52 functional + 3 cucumber dédiés VERT (baseline S-096).
 - Domaines DDD capsule (8) : `capsule.feed` + `capsule.ci` +
   `capsule.multilang` + `capsule.ai` + `capsule.context` +
   `capsule.pipeline` + `capsule.support` + `capsule.i18n`.
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider
   0.0.16 (compileOnly, 0 import réel — décision CAP-ARCH-4).
-- Modifications S-095 committées (à pousser).
+- Modifications S-096 non committées (code + gouvernance).
 
 == EPICs restants (séquence MVP0)
 

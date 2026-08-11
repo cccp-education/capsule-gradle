@@ -1,6 +1,33 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-08-11
-:session: 094 CAP-SPD US-2 CapsuleContext.spdSection + Builder + PromptBuilder étendus
+:session: 096 CAP-CR3-3 Branchement ScreenshotCapture (EPIC TERMINÉ 5/5 US)
+
+== Couverture — 11 août 2026 (après session 096 CAP-CR3-3)
+
+.Modifications session 096 — CAP-CR3-3 Branchement ScreenshotCapture
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/CapsuleConfig.kt` (modifié) | `CaptureStrategy` enum (2 valeurs PLAYWRIGHT/SCREENSHOT, companion `fromString` case-insensitive, fallback PLAYWRIGHT). `CaptureConfig.strategy: CaptureStrategy = PLAYWRIGHT` 15ème champ. | +7 unit `CaptureStrategyTest` (null/blank/known/case-insensitive/unknown fallback/2 values)
+| `capsule/CapsuleConfigMerger.kt` (modifié) | `loadFromEnvironment` (`CAPSULE_CAPTURE_STRATEGY`) + `buildConfigFromProperties` (`capsule.capture.strategy`) + `mergeCaptureConfig` étendu + helper `mergeCaptureStrategy` (4 sources ENV<props<YAML<CLI) | +8 unit `CapsuleConfigMergerTest` (default PLAYWRIGHT, props playwright/screenshot, invalid fallback, YAML override, CLI override, blank CLI fallback, env default)
+| `capsule/CaptureResolver.kt` (nouveau) | Object pur factory `resolve(strategy, strict, playwrightFactory, screenshotFactory, noOpCapture, enginePath)` dispatch `when(strategy)`, `StrictModeGuard.requireAvailable` réutilisé. `PlaywrightFactory`/`ScreenshotFactory` fun interfaces. | +6 unit `CaptureResolverTest` (PLAYWRIGHT/SCREENSHOT returns impl, unavailable + non-strict → NoOp, unavailable + strict → IllegalStateException with engine name + path)
+| `capsule/ScreenshotPlanner.kt` (nouveau) | Object pur `plan(outputDir, slideDurations)` → `ScreenshotCapturePlan` (entries + concatListFile + finalWebm). `renderConcatList`, `ffmpegPngToWebmArgs`, `ffmpegConcatArgs` (argv builders). `ScreenshotCapturePlan`/`ScreenshotSlideEntry` data classes. | +8 unit `ScreenshotPlannerTest` (single/multi slide, concat list ordre, ffmpeg argv png→webm + concat, empty throws, paths under outputDir, isEmpty)
+| `capsule/PlaywrightManager.kt` (modifié) | `ScreenshotCaptureImpl.capture()` étendu multi-slide — boucle screenshot PNG par slide + navigate Reveal.next() + ffmpeg png→webm par slide durée exacte + concat webm via ffmpeg concat demuxer (`concat-list.txt` → `capsule.webm`). Utilise `ScreenshotPlanner`. | couvert par `ScreenshotPlannerTest` (plan) + functional/cucumber (I/O)
+| `capsule/CapsuleModels.kt` (modifié) | `CapsuleExtension.captureStrategy: Property<CaptureStrategy>` (convention PLAYWRIGHT) + helper Groovy `captureStrategy(String)`. `CapsuleConventions.captureStrategy = PLAYWRIGHT`. | couvert par functional `CaptureStrategyFunctionalTest`
+| `capsule/CapsulePlugin.kt` (modifié) | `pushConfigIntoExtension` push strategy (guard convention) | couvert par functional `CaptureStrategyFunctionalTest`
+| `capsule/CapsuleVideoTask.kt` (modifié) | `resolvePlaywrightCapture` refactorisé → `CaptureResolver.resolve` avec lambdas `playwrightFactory`/`screenshotFactory`, log "Capture: X strategy (N slides, M s total)" | couvert par functional `CaptureStrategyFunctionalTest`
+| `functionalTest/kotlin/capsule/CaptureStrategyFunctionalTest.kt` (nouveau) | 3 tests GradleRunner (PLAYWRIGHT default → WebM, SCREENSHOT → WebM, SCREENSHOT + strict + noop manim/ffmpeg → WebM) | +3 functional
+| `test/features/capsule_capture_strategy.feature` (nouveau) | 3 scénarios `@capture @strategy` (PLAYWRIGHT default, SCREENSHOT, SCREENSHOT + strict) | +3 cucumber
+| `test/kotlin/capsule/scenarios/CapsuleCaptureStrategySteps.kt` (nouveau) | Steps préfixés "capture strategy" (bug S-088), `writeBuildGradle` helper (fix parsing Groovy) | +3 cucumber
+| `test/kotlin/capsule/scenarios/CapsuleCaptureStrategyCucumberRunner.kt` (nouveau) | Runner dédié pattern S-082 `@SelectClasspathResource` + filter `@capture and @strategy` | +3 cucumber
+| `build.gradle.kts` (modifié) | `CucumberTaskSpec("cucumberTestCaptureStrategy")` câblé | —
+|===
+
+- Unitaires : 742 VERT (+29 net, 0 FAIL) — dont 7 `CaptureStrategyTest` + 8 merger + 6 `CaptureResolverTest` + 8 `ScreenshotPlannerTest`
+- Functional : 52 VERT (+3, 0 FAIL) — 3 `CaptureStrategyFunctionalTest`
+- Cucumber dédiés : 3 scénarios GREEN (`capsule_capture_strategy.feature`)
+- `./gradlew test functionalTest cucumberTestCaptureStrategy -PrunCucumber` BUILD SUCCESSFUL — zéro régression
+- Secrets : 0 trouvé
+
 
 == Couverture — 11 août 2026 (après session 094 US-2)
 

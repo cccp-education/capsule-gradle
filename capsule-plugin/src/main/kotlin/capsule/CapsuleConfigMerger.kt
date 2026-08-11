@@ -102,7 +102,8 @@ object CapsuleConfigMerger {
                 subtitleBurnInFontSize = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_FONT_SIZE"]?.toIntOrNull() ?: 24,
                 subtitleBurnInFontColor = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_FONT_COLOR"] ?: "&H00FFFFFF",
                 subtitleBurnInOutlineColor = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_OUTLINE_COLOR"] ?: "&H00000000",
-                subtitleBurnInPosition = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_POSITION"] ?: "bottom"
+                subtitleBurnInPosition = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_POSITION"] ?: "bottom",
+                strategy = CaptureStrategy.fromString(env["CAPSULE_CAPTURE_STRATEGY"])
             ),
             distrib = DistribConfig(
                 ffmpegExecutablePath = env["CAPSULE_DISTRIB_FFMPEG_EXECUTABLE_PATH"] ?: "ffmpeg",
@@ -163,7 +164,8 @@ object CapsuleConfigMerger {
                 subtitleBurnInFontSize = props["capsule.capture.subtitleBurnInFontSize"]?.toIntOrNull() ?: 24,
                 subtitleBurnInFontColor = props["capsule.capture.subtitleBurnInFontColor"] ?: "&H00FFFFFF",
                 subtitleBurnInOutlineColor = props["capsule.capture.subtitleBurnInOutlineColor"] ?: "&H00000000",
-                subtitleBurnInPosition = props["capsule.capture.subtitleBurnInPosition"] ?: "bottom"
+                subtitleBurnInPosition = props["capsule.capture.subtitleBurnInPosition"] ?: "bottom",
+                strategy = CaptureStrategy.fromString(props["capsule.capture.strategy"])
             ),
             distrib = DistribConfig(
                 ffmpegExecutablePath = props["capsule.distrib.ffmpegExecutablePath"] ?: "ffmpeg",
@@ -238,7 +240,8 @@ object CapsuleConfigMerger {
             subtitleBurnInFontSize = mergeInt(cli, "capture.subtitleBurnInFontSize", yaml?.subtitleBurnInFontSize, props.subtitleBurnInFontSize),
             subtitleBurnInFontColor = mergeStr(cli, "capture.subtitleBurnInFontColor", yaml?.subtitleBurnInFontColor, props.subtitleBurnInFontColor, env.subtitleBurnInFontColor),
             subtitleBurnInOutlineColor = mergeStr(cli, "capture.subtitleBurnInOutlineColor", yaml?.subtitleBurnInOutlineColor, props.subtitleBurnInOutlineColor, env.subtitleBurnInOutlineColor),
-            subtitleBurnInPosition = mergeStr(cli, "capture.subtitleBurnInPosition", yaml?.subtitleBurnInPosition, props.subtitleBurnInPosition, env.subtitleBurnInPosition)
+            subtitleBurnInPosition = mergeStr(cli, "capture.subtitleBurnInPosition", yaml?.subtitleBurnInPosition, props.subtitleBurnInPosition, env.subtitleBurnInPosition),
+            strategy = mergeCaptureStrategy(cli, "capture.strategy", yaml?.strategy, props.strategy)
         )
     }
 
@@ -290,6 +293,18 @@ object CapsuleConfigMerger {
     ): VersioningStrategy {
         val cliValue = cli[key]?.toString()
         if (!cliValue.isNullOrBlank()) return VersioningStrategy.fromString(cliValue)
+        yaml?.let { return it }
+        return props
+    }
+
+    private fun mergeCaptureStrategy(
+        cli: Map<String, Any?>,
+        key: String,
+        yaml: CaptureStrategy?,
+        props: CaptureStrategy
+    ): CaptureStrategy {
+        val cliValue = cli[key]?.toString()
+        if (!cliValue.isNullOrBlank()) return CaptureStrategy.fromString(cliValue)
         yaml?.let { return it }
         return props
     }

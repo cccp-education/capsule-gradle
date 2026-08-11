@@ -128,13 +128,21 @@ class NoOpPlaywrightCapture : PlaywrightCapture {
 class CapturingException(message: String) : RuntimeException(message)
 
 /**
- * Screenshot-based capture: takes a PNG screenshot of a single slide then uses FFmpeg
- * to produce a WebM of the exact audio duration. No real-time recording — orders of
- * magnitude faster and more reliable than Playwright video recording.
+ * Screenshot-based capture: takes a PNG screenshot of each slide then uses FFmpeg
+ * to produce a WebM of the exact audio duration per slide, and concatenates the
+ * per-slide WebMs into a single `capsule.webm`. No real-time recording — orders
+ * of magnitude faster and more reliable than Playwright video recording.
+ *
+ * Multi-slide support (CAP-CR3-3 US-3): iterates over [slideDurations], capturing
+ * `slide-N.png` per slide, navigating with `Reveal.next()` between slides, then
+ * converts each PNG to a `slide-N.webm` of the exact slide duration, and finally
+ * concatenates all per-slide WebMs via the FFmpeg concat demuxer.
  */
 class ScreenshotCaptureImpl(
     private val timeout: Double = 120_000.0
 ) : PlaywrightCapture {
+
+    private val logger = Logging.getLogger(ScreenshotCaptureImpl::class.java)
 
     private var playwright: Playwright? = null
     private var browser: Browser? = null
@@ -155,7 +163,10 @@ class ScreenshotCaptureImpl(
         viewportHeight: Int,
         slideDurations: List<Double>
     ) {
-        val duration = slideDurations.firstOrNull() ?: 5.0
+        require(slideDurations.isNotEmpty()) { "slideDurations must not be empty" }
+        val plan = ScreenshotPlanner.plan(outputDir, slideDurations)
+        outputDir.mkdirs()
+
         val absolutePath = File(deckHtmlPath).absolutePath
 
         playwright = Playwright.create()
@@ -171,31 +182,34 @@ class ScreenshotCaptureImpl(
             Page.WaitForSelectorOptions().setTimeout(timeout))
         page.waitForTimeout(800.0)
 
-        val png = outputDir.resolve("slide.png")
-        page.screenshot(Page.ScreenshotOptions().setPath(png.toPath()))
+        for (entry in plan.slides) {
+            page.screenshot(Page.ScreenshotOptions().setPath(entry.pngFile.toPath()))
+            if (entry.index < plan.slides.lastIndex) {
+                page.evaluate("typeof Reveal !== 'undefined' && Reveal.next()")
+                page.waitForTimeout(300.0)
+            }
+        }
         page.close()
 
-        // FFmpeg: PNG → WebM of exact duration (1 static frame)
-        val webm = outputDir.resolve("slide.webm")
-        val proc = ProcessBuilder(
-            "ffmpeg", "-y",
-            "-loop", "1",
-            "-framerate", "1",
-            "-i", png.absolutePath,
-            "-t", duration.toString(),
-            "-c:v", "libvpx",
-            "-b:v", "500k",
-            "-vf", "scale=$viewportWidth:$viewportHeight",
-            "-pix_fmt", "yuv420p",
-            "-auto-alt-ref", "0",
-            webm.absolutePath
-        ).redirectErrorStream(true).start()
-
-        val exitCode = proc.waitFor()
-        if (exitCode != 0) {
-            val err = proc.inputStream.bufferedReader().readText()
-            throw CapturingException("FFmpeg PNG→WebM failed (slide): $err")
+        for (entry in plan.slides) {
+            val argv = ScreenshotPlanner.ffmpegPngToWebmArgs(entry, viewportWidth, viewportHeight)
+            val proc = ProcessBuilder(argv).redirectErrorStream(true).start()
+            val exitCode = proc.waitFor()
+            if (exitCode != 0) {
+                val err = proc.inputStream.bufferedReader().readText()
+                throw CapturingException("FFmpeg PNG→WebM failed (slide ${entry.index}): $err")
+            }
         }
+
+        plan.concatListFile.writeText(ScreenshotPlanner.renderConcatList(plan))
+        val concatArgv = ScreenshotPlanner.ffmpegConcatArgs(plan)
+        val concatProc = ProcessBuilder(concatArgv).redirectErrorStream(true).start()
+        val concatExit = concatProc.waitFor()
+        if (concatExit != 0) {
+            val err = concatProc.inputStream.bufferedReader().readText()
+            throw CapturingException("FFmpeg concat failed: $err")
+        }
+        logger.lifecycle("  ScreenshotCapture: {} slides → {}", plan.size, plan.finalWebm.name)
     }
 
     override fun close() {

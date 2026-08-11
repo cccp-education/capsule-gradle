@@ -1,6 +1,18 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-11
 
+== Session 096 — CAP-CR3-3 Branchement ScreenshotCapture (EPIC TERMINÉ 5/5 US) ✅
+
+EPIC CAP-CR3-3 terminé (P0, 3ème EPIC axe post-prod, 5 US ~13 pts).
+`ScreenshotCaptureImpl` était jamais câblé dans `CapsuleVideoTask` — désormais
+alternative configurable via `capture.strategy: playwright|screenshot` 4 sources.
+`CaptureStrategy` enum type-safe (PLAYWRIGHT/SCREENSHOT, défaut PLAYWRIGHT backward
+compat). `CaptureResolver` object pur factory dispatch `when(strategy)` avec
+fun interfaces (testable sans I/O). `ScreenshotPlanner` object pur (plan + argv
+builders). `ScreenshotCaptureImpl` étendu multi-slide (boucle screenshot PNG +
+ffmpeg png→webm + concat webm). Cucumber `@capture @strategy` runner dédié
+(pattern S-082). 742 unit (+29) + 52 functional (+3) + 3 cucumber dédiés GREEN.
+
 == Session 094 — CAP-SPD US-0 Cadrage + US-1 SpdContext/SpdContextLoader + US-2 CapsuleContext/Builder/PromptBuilder étendus ✅
 
 EPIC CAP-SPD démarré (P0, 2ème EPIC axe contexte augmenté, 5 US ~10 pts).

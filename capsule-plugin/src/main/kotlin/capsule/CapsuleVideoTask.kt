@@ -177,24 +177,34 @@ open class CapsuleVideoTask : DefaultTask() {
         if (playwrightCapture != null) return playwrightCapture!!
 
         val defaultDur = capsuleExtension.slideDurationSeconds.get()
-        val impl = PlaywrightCaptureImpl(
-            timeout = capsuleExtension.playwrightTimeout.get(),
-            defaultSlideDuration = defaultDur
+        val strategy = capsuleExtension.captureStrategy.get()
+        val resolved = CaptureResolver.resolve(
+            strategy = strategy,
+            strict = capsuleExtension.strictMode.get(),
+            playwrightFactory = {
+                PlaywrightCaptureImpl(
+                    timeout = capsuleExtension.playwrightTimeout.get(),
+                    defaultSlideDuration = defaultDur
+                )
+            },
+            screenshotFactory = {
+                ScreenshotCaptureImpl(timeout = capsuleExtension.playwrightTimeout.get())
+            },
+            noOpCapture = NoOpPlaywrightCapture(),
+            enginePath = capsuleExtension.chromiumExecutablePath.get()
         )
-        return if (impl.isAvailable()) {
+        if (resolved.isAvailable()) {
             val totalSecs = slideDurations.sum()
-            logger.lifecycle("Playwright capture: available ({} slides, {}s total)", slideDurations.size, String.format("%.1f", totalSecs))
-            impl
-        } else {
-            logger.warn("Playwright not available, falling back to noop capture")
-            StrictModeGuard.requireAvailable(
-                strict = capsuleExtension.strictMode.get(),
-                engineName = "playwright",
-                isAvailable = false,
-                path = capsuleExtension.chromiumExecutablePath.get()
+            logger.lifecycle(
+                "Capture: {} strategy ({} slides, {}s total)",
+                strategy.name.lowercase(),
+                slideDurations.size,
+                String.format("%.1f", totalSecs)
             )
-            NoOpPlaywrightCapture()
+        } else {
+            logger.warn("{} not available, falling back to noop capture", strategy.name.lowercase())
         }
+        return resolved
     }
 
     internal fun resolveTtsEngine(): TtsEngine {

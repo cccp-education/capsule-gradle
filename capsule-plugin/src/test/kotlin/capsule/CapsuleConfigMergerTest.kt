@@ -1022,4 +1022,79 @@ class CapsuleConfigMergerTest {
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(listOf("docs/afnor/**/*.adoc"), config.context.docsGlobs, "loadFromGradleProperties should read docsGlobs")
     }
+
+    // ─── capture.strategy (CAP-CR3-3 US-1) ──────────────────────────
+
+    @Test
+    fun `capture strategy defaults to PLAYWRIGHT when no source provides it`() {
+        val projectDir = File(tempDir, "strat-default").also { it.mkdirs() }
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
+        assertEquals(CaptureStrategy.PLAYWRIGHT, merged.capture.strategy, "default capture strategy should be PLAYWRIGHT")
+    }
+
+    @Test
+    fun `loadFromGradleProperties reads capsule capture strategy playwright`() {
+        val projectDir = File(tempDir, "strat-props-pw").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.capture.strategy=playwright
+        """.trimIndent())
+        val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
+        assertEquals(CaptureStrategy.PLAYWRIGHT, config.capture.strategy, "props should set strategy=PLAYWRIGHT")
+    }
+
+    @Test
+    fun `loadFromGradleProperties reads capsule capture strategy screenshot`() {
+        val projectDir = File(tempDir, "strat-props-ss").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.capture.strategy=screenshot
+        """.trimIndent())
+        val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
+        assertEquals(CaptureStrategy.SCREENSHOT, config.capture.strategy, "props should set strategy=SCREENSHOT")
+    }
+
+    @Test
+    fun `loadFromGradleProperties invalid capture strategy falls back to PLAYWRIGHT`() {
+        val projectDir = File(tempDir, "strat-props-invalid").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.capture.strategy=manim
+        """.trimIndent())
+        val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
+        assertEquals(CaptureStrategy.PLAYWRIGHT, config.capture.strategy, "invalid strategy should fall back to PLAYWRIGHT")
+    }
+
+    @Test
+    fun `merge YAML capture strategy overrides gradle properties`() {
+        val projectDir = File(tempDir, "strat-yaml-override").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.capture.strategy=playwright
+        """.trimIndent())
+        val yamlConfig = CapsuleConfig(capture = CaptureConfig(strategy = CaptureStrategy.SCREENSHOT))
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+        assertEquals(CaptureStrategy.SCREENSHOT, merged.capture.strategy, "YAML should override props")
+    }
+
+    @Test
+    fun `merge CLI capture strategy overrides YAML and gradle properties`() {
+        val projectDir = File(tempDir, "strat-cli-override").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.capture.strategy=playwright
+        """.trimIndent())
+        val yamlConfig = CapsuleConfig(capture = CaptureConfig(strategy = CaptureStrategy.PLAYWRIGHT))
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, mapOf("capture.strategy" to "screenshot"))
+        assertEquals(CaptureStrategy.SCREENSHOT, merged.capture.strategy, "CLI should override YAML and props")
+    }
+
+    @Test
+    fun `merge CLI blank capture strategy falls back to YAML`() {
+        val projectDir = File(tempDir, "strat-cli-blank").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(capture = CaptureConfig(strategy = CaptureStrategy.SCREENSHOT))
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, mapOf("capture.strategy" to "  "))
+        assertEquals(CaptureStrategy.SCREENSHOT, merged.capture.strategy, "blank CLI should fall back to YAML")
+    }
+
+    @Test
+    fun `loadFromEnvironment default capture strategy is PLAYWRIGHT`() {
+        val config = CapsuleConfigMerger.loadFromEnvironment()
+        assertEquals(CaptureStrategy.PLAYWRIGHT, config.capture.strategy, "env default capture strategy should be PLAYWRIGHT")
+    }
 }

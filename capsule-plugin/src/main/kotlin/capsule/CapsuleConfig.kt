@@ -50,7 +50,8 @@ data class CaptureConfig(
     val subtitleBurnInFontSize: Int = 24,
     val subtitleBurnInFontColor: String = "&H00FFFFFF",
     val subtitleBurnInOutlineColor: String = "&H00000000",
-    val subtitleBurnInPosition: String = "bottom"
+    val subtitleBurnInPosition: String = "bottom",
+    val strategy: CaptureStrategy = CaptureStrategy.PLAYWRIGHT
 )
 
 data class DistribConfig(
@@ -58,6 +59,32 @@ data class DistribConfig(
     val outputWidth: Int = 1080,
     val outputHeight: Int = 1920
 )
+
+/**
+ * Capture strategy selector (CAP-CR3-3 US-1).
+ *
+ * - [PLAYWRIGHT] — Playwright real-time video recording (default, backward compat).
+ *   Records the deck navigation as a single WebM via Playwright's
+ *   `recordVideoDir` API.
+ * - [SCREENSHOT] — Screenshot-based capture: takes a PNG screenshot of each
+ *   slide then uses FFmpeg to produce a WebM of the exact audio duration per
+ *   slide, followed by a concat. Orders of magnitude faster and more reliable
+ *   than Playwright real-time recording.
+ */
+enum class CaptureStrategy {
+    PLAYWRIGHT,
+    SCREENSHOT;
+
+    companion object {
+        /**
+         * Case-insensitive parse. Falls back to [PLAYWRIGHT] for
+         * null/blank/unknown values (backward compat — existing configs
+         * without `capture.strategy` keep the Playwright behavior).
+         */
+        fun fromString(value: String?): CaptureStrategy =
+            entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: PLAYWRIGHT
+    }
+}
 
 /**
  * Versioning strategy for video destination copies (CAP-ARCH-7).

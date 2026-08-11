@@ -252,7 +252,7 @@
 . [ ] 🟢 CAP-28 — Coverage gaps (PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%)
 . [ ] 🔴 CAP-CR3-1 — CI `full` avec vrais binaires + probe de durée vidéo
 . [x] 🔴 CAP-CR3-2 — Mode strict anti-NoOp (`capsule.strictMode`) ✅ S-091
-. [ ] 🟠 CAP-CR3-3 — Décision `ScreenshotCaptureImpl` vs `PlaywrightCaptureImpl`
+. [x] 🔴 CAP-CR3-3 — Décision `ScreenshotCaptureImpl` vs `PlaywrightCaptureImpl` ✅ S-096 (branché comme alternative configurable `capture.strategy: playwright|screenshot`, 5/5 US, 742 unit + 52 functional + 3 cucumber)
 . [ ] 🟡 CAP-CR3-4 — Convention Gradle `resolveScriptDir/resolveDeckDir`
 . [x] 🟢 CAP-29 — Pipeline Traduction Vidéo Multi-Langue (7 US ~20 pts, TERMINÉ 7/7 US : CAP-29.0 ✅ S-076, CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, CAP-29.4 ✅ S-080, CAP-29.5 ✅ S-081, CAP-29.6 ✅ S-082)
 . [x] 🟢 CAP-ARCH — Collaboration cross-borough slider+codebase (8 US ~25 pts, refondu S-083 LLM-driven via codebase — CAP-ARCH-0 ✅ S-083, CAP-ARCH-1 ✅ S-084, CAP-ARCH-2 ✅ S-085, CAP-ARCH-3 ✅ S-086, CAP-ARCH-4 ✅ S-088, CAP-ARCH-7 ✅ S-087+S-088, reste CAP-ARCH-5→6)
