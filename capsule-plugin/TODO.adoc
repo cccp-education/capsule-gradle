@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-08-11 (Session 108 — CAP-PROVENANCE TERMINÉ 3/3 US. US-1 data classes + builder étendu (12 `ContextProvenanceTest` + 3 builder = 15 unit). US-2 wiring `@OutputFile provenanceFile` + tracking 5 canaux + log `CAPSULE PROVENANCE →` + 2 functional `CollectProvenanceFunctionalTest` + 3 cucumber `capsule_provenance.feature` + runner dédié + `CucumberTaskSpec("cucumberTestProvenance")` 13ème. `check` BUILD SUCCESSFUL : 834 unit + 62 functional + 3 cucumber GREEN. Zéro régression, zéro secret. EPIC CAP-PROVENANCE 3/3 US, domaine `capsule.context` clos (10 fichiers prod).)
+:last_update: 2026-08-12 (Session 109 — CAP-GLOSSARY US-0 Cadrage EPIC Injection terminologique. Audit code 16 constats + 12 décisions architecturales (extension capsule-local `glossarySection` pas 6ème canal N0 pattern CAP-SPD-2, `GlossaryEntry`/`GlossaryContext` data classes immutable, `GlossaryLoader` object pur mirror `PedagogicalScenarioLoader` format AsciiDoc `== Glossary` + bullets, budget 5% = 400 tokens, `CapsuleContextBuilder.build()` 4ème paramètre `glossarySection`, `DefaultCapsulePromptBuilder` instruction `Official Glossary` conditionnelle, provenance `GLOSSARY_CHANNEL` const, 4 sources `context.glossaryFile`, pas de nouvelle tâche Gradle ni clé CapsuleMessages, runner dédié `CapsuleGlossaryContextCucumberRunner` + `CucumberTaskSpec("cucumberTestGlossaryContext")` 14ème). 4 US ~6 pts (US-0 ✅, US-1 data classes + loader + builder + prompt builder ~10 unit, US-2 wiring + 2 functional, US-3 cucumber 3 scénarios). Zéro code modifié — gouvernance pure.)
 
 '''
 == ✅ EPIC CAP-MODEL — TERMINE (session 069)
@@ -233,7 +233,15 @@
 . [x] Bug préexistant découvert : `CucumberTestRunner` ne lance que `capsule.feature` (à investiguer session future)
 
 '''
-== 🟡 Prochaine session — Backlog capsule restant (CAP-CR3, CAP-ARCH)
+== 🟡 EPIC CAP-GLOSSARY — Injection terminologique (contexte augmenté) — EN COURS (US-0 ✅ S-109)
+
+. [x] CAP-GLOSSARY-0 — Cadrage EPIC (audit code 16 constats + 12 décisions architecturales : extension capsule-local `glossarySection` pas 6ème canal N0, `GlossaryEntry`/`GlossaryContext` data classes immutable, `GlossaryLoader` object pur mirror `PedagogicalScenarioLoader`, format AsciiDoc `== Glossary` + bullets, budget 5% = 400 tokens, `CapsuleContextBuilder.build()` 4ème paramètre, `DefaultCapsulePromptBuilder` instruction `Official Glossary`, provenance `GLOSSARY_CHANNEL`, 4 sources `context.glossaryFile`, pas de nouvelle tâche Gradle, runner dédié `CapsuleGlossaryContextCucumberRunner` + `CucumberTaskSpec("cucumberTestGlossaryContext")` 14ème) ✅ S-109
+. [ ] CAP-GLOSSARY-1 — `GlossaryEntry` + `GlossaryContext` + `GlossaryLoader` (object pur) + `CapsuleContext.glossarySection` + `CapsuleContextBuilder.build()` étendu + `DefaultCapsulePromptBuilder` étendu. Baby-step TDD ~10 unit (RED → GREEN → REFACTOR).
+. [ ] CAP-GLOSSARY-2 — Wiring `CollectCapsuleAugmentedContextTask` + `ContextConfig` 3ème champ `glossaryFile` + merger 4 sources + `CapsuleExtension.glossaryFile` + `pushConfigIntoExtension` + `CapsuleManager` provider + provenance tracking `GLOSSARY` channel. Baby-step TDD 2 functional.
+. [ ] CAP-GLOSSARY-3 — Cucumber BDD `capsule_glossary_context.feature` `@context @glossary` (3 scénarios) + runner dédié `CapsuleGlossaryContextCucumberRunner` (pattern S-082) + steps préfixés "glossary context" (bug S-088) + `CucumberTaskSpec("cucumberTestGlossaryContext")` 14ème. Baby-step BDD RED → GREEN → REFACTOR.
+
+'''
+== 🟡 Prochaine session — Backlog capsule restant (CAP-GLOSSARY, CAP-CR3, CAP-ARCH)
 
 '''
 == Backlog priorisé (ordre d'attaque)
@@ -256,6 +264,7 @@
 . [ ] 🟡 CAP-CR3-4 — Convention Gradle `resolveScriptDir/resolveDeckDir`
 . [x] 🟢 CAP-29 — Pipeline Traduction Vidéo Multi-Langue (7 US ~20 pts, TERMINÉ 7/7 US : CAP-29.0 ✅ S-076, CAP-29.1 ✅ S-077, CAP-29.2 ✅ S-078, CAP-29.3 ✅ S-079, CAP-29.4 ✅ S-080, CAP-29.5 ✅ S-081, CAP-29.6 ✅ S-082)
 . [x] 🟢 CAP-ARCH — Collaboration cross-borough slider+codebase (8 US ~25 pts, refondu S-083 LLM-driven via codebase — CAP-ARCH-0 ✅ S-083, CAP-ARCH-1 ✅ S-084, CAP-ARCH-2 ✅ S-085, CAP-ARCH-3 ✅ S-086, CAP-ARCH-4 ✅ S-088, CAP-ARCH-7 ✅ S-087+S-088, reste CAP-ARCH-5→6)
+. [ ] 🟠 CAP-GLOSSARY — Injection terminologique (4 US ~6 pts, US-0 ✅ S-109 cadrage, US-1/2/3 TODO — `GlossaryLoader` mirror `PedagogicalScenarioLoader`, extension capsule-local `glossarySection` pattern CAP-SPD-2, prompt "Use official terminology")
 
 '''
 == ✅ EPIC CAP-MP4 — Export MP4/H.264 + format distribution (TERMINÉ 4/4 US)

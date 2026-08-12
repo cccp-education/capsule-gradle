@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-11 (Session 106 — CAP-AUDIO US-4 Cucumber BDD + clôture EPIC CAP-AUDIO 5/5 US. Feature `capsule_audio_post.feature` `@audio @post` (4 scénarios : default NoOp skip économie d'encre, BGM enabled NoOp → degraded, ducking only NoOp → degraded, ducking + BGM NoOp → degraded) + `CapsuleAudioPostSteps` (13 step defs préfixés "audio post", pattern `CapsuleCaptureStrategySteps`) + `CapsuleAudioPostCucumberRunner` (pattern S-082) + `CucumberTaskSpec("cucumberTestAudioPost")` 12ème câblé `build.gradle.kts` (11ème cucumber dédié). 4/4 scénarios PASSED en 7m21s (NoOp processor — valide wiring + économie d'encre + factory dispatch). `./gradlew check` BUILD SUCCESSFUL in 24m12s. 819 unit VERT + 60 functional VERT + 4 cucumber audio post GREEN. Zéro régression, zéro secret. EPIC CAP-AUDIO TERMINÉ 5/5 US. Domaine `capsule.audio` (10ème) clos.)
+:last_update: 2026-08-12 (Session 109 — CAP-GLOSSARY US-0 Cadrage EPIC Injection terminologique. Audit code : `CapsuleContextBuilder.build` 3 params optionnels, `CapsuleContext` 3 champs invariant, `CollectCapsuleAugmentedContextTask` `scenarioFile`/`resolveScenarioSection`/`trackSources` 5 canaux, `ContextConfig` 2 champs, `CapsuleConfigMerger.mergeContextConfig` `mergeStr`, `DefaultCapsulePromptBuilder` instruction conditionnelle `Pedagogical Scenario`, `ContextProvenance.SCENARIO_CHANNEL`, `ProvenanceTracker.retainOnly`, `CapsuleExtension.scenarioFile`, `pushConfigIntoExtension` scenarioFile push, `CapsuleManager` scenarioFile provider, 13 `CucumberTaskSpec`, 20 features, 11 `Messages*.properties`. 12 décisions architecturales : extension capsule-local `glossarySection` pas 6ème canal N0 (pattern CAP-SPD-2), `GlossaryEntry`/`GlossaryContext` data classes immutable, `GlossaryLoader` object pur mirror `PedagogicalScenarioLoader`, format AsciiDoc `== Glossary` + bullets `- term: definition`, budget 5% = 400 tokens, `CapsuleContextBuilder.build()` 4ème paramètre `glossarySection`, `DefaultCapsulePromptBuilder` instruction `Official Glossary` conditionnelle, provenance `GLOSSARY_CHANNEL` const, 4 sources `context.glossaryFile`, pas de nouvelle tâche Gradle ni clé CapsuleMessages, économie d'encre `@InputFiles @Optional` UP-TO-DATE, runner dédié `CapsuleGlossaryContextCucumberRunner` + `CucumberTaskSpec("cucumberTestGlossaryContext")` 14ème. 4 US ~6 pts (US-0 ✅, US-1 data classes + loader + builder + prompt builder ~10 unit, US-2 wiring + 2 functional, US-3 cucumber 3 scénarios). Zéro code modifié — gouvernance pure pattern S-057/S-063/S-076/S-083/S-092/S-094/S-097/S-102/S-107.)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -877,52 +877,331 @@ header `"==== Pedagogical Scenario (scenario)"`). Sémantique "SPD" n'appartient
 à capsule (borough public OSS format-agnostic). `metadata.json` validation
 `type=="SPD"` inchangé (format externe K-2).
 
-=== 🗂️ EPIC CAP-GLOSSARY — Injection terminologique (contexte augmenté)
+=== 🗂️ EPIC CAP-GLOSSARY — Injection terminologique (contexte augmenté) — US-0 Cadrage (Session 109)
 
-_Vision_ : FPA a un vocabulaire AFNOR/REAC que le LLM genericise (ex :
+_Vision_ : FPA a un vocabulaire AFNOR/REAC que le LLM génériqueise (ex :
 "compétence" au lieu de "compétence transversale", "évaluation" au lieu
-"évaluation formative"). Injecter un glossaire (fichier AsciiDoc/CSV/JSON
-terme→définition) dans le contexte + instruction prompt "Use official
-terminology from glossary". Le LLM aligne son vocabulaire sur le référentiel.
+"évaluation formative"). Injecter un glossaire (fichier AsciiDoc
+terme→définition) dans le contexte augmenté + instruction prompt "Use
+official terminology from glossary". Le LLM aligne son vocabulaire sur le
+référentiel AFNOR/REAC au lieu de génériques approximatifs.
 
-_Domaine_ : `capsule.context` étendu (canal `glossary`).
+_Domaine_ : `capsule.context` étendu (pas de nouveau domaine —
+`GlossaryContext` + `GlossaryLoader` rejoignent `DocContextLoader`/
+`PedagogicalScenarioLoader`/`ProvenanceTracker` dans le domaine existant).
+Le glossaire est une *extension capsule-local* (pattern CAP-SPD-2
+`scenarioSection`), pas un 6ème canal N0 — toucher au sealed
+`ContextChannel` = bump codebase-contracts multi-borough.
 
-_Dépendances_ : CAP-ARCH-2 ✅, CAP-ARCH-3 ✅ (`CapsulePromptBuilder`).
+_Dépendances_ : CAP-ARCH-2 ✅ (`CapsuleContextBuilder`/`CapsuleContext`/
+`CollectCapsuleAugmentedContextTask`), CAP-ARCH-3 ✅
+(`DefaultCapsulePromptBuilder`), CAP-SPD ✅ (pattern `scenarioSection`
+mirror), CAP-DOCCONTEXT ✅ (pattern `ContextConfig` 4 sources),
+CAP-PROVENANCE ✅ (`ProvenanceTracker` étendu — tracking `GLOSSARY` channel,
+pattern `trackSources` S-108), Jackson (déjà dépendance —
+`ObjectMapper` `PedagogicalScenarioLoader`/`ContentPlanValidator`).
+
+_Audit code (S-109)_ :
+
+- `CapsuleContextBuilder.build(composite, budget, scenarioSection="",
+  tracker=null)` (`capsule/context/CapsuleContextBuilder.kt:69`) — pure
+  object, 3 paramètres optionnels. `scenarioSection` est une extension
+  capsule-local (pattern CAP-SPD-2), pas un canal N0. `tracker.retainOnly
+  (survivingChannels)` prunage après budget+filter. `survivingChannels +=
+  SCENARIO_CHANNEL` si `trimmedScenario.isNotBlank()`. → CAP-GLOSSARY suit
+  le même pattern : 4ème paramètre `glossarySection: String = ""`, ajouté
+  au rendered après `scenarioSection`. `survivingChannels += GLOSSARY_CHANNEL`
+  si `trimmedGlossary.isNotBlank()`. Backward compat : `glossarySection = ""`
+  (défaut).
+
+- `CapsuleContext` (`capsule/context/CapsuleContext.kt:26`) — 3 champs
+  `channels`/`rendered`/`scenarioSection`, invariant `rendered.isBlank() ==
+  (channels.isEmpty() && scenarioSection.isBlank())`. → 4ème champ
+  `glossarySection: String = ""`, invariant ajusté `rendered.isBlank() ==
+  (channels.isEmpty() && scenarioSection.isBlank() && glossarySection.isBlank())`.
+
+- `CollectCapsuleAugmentedContextTask` (`capsule/context/CollectCapsule
+  AugmentedContextTask.kt:49`) — tâche existante. `scenarioFile:
+  ConfigurableFileCollection @Optional` (L89-92). `resolveScenarioSection
+  (budget)` (L276-291) résout compagnon `.adoc`. `trackSources(tracker)`
+  (L165-245) tracking EAGER/RAG/Graphify/DOCS/SCENARIO. → Étendre :
+  `glossaryFile: ConfigurableFileCollection @Optional` +
+  `resolveGlossarySection(budget)` + `trackSources` étendu tracking
+  `GLOSSARY` channel (1 source si résolu, pattern SCENARIO L225-244).
+
+- `ContextConfig` (`capsule/ContextConfig.kt:31`) — 2 champs `docsGlobs`/
+  `scenarioFile`. → 3ème champ `glossaryFile: String? = null` (pattern
+  `scenarioFile`).
+
+- `CapsuleConfigMerger.mergeContextConfig` (L326-331) — `mergeStr` pour
+  `scenarioFile`. → Étendre avec `mergeStr` pour `glossaryFile`.
+  `loadFromEnvironment` (L75-148) — `CAPSULE_CONTEXT_SCENARIO_FILE` →
+  ajouter `CAPSULE_CONTEXT_GLOSSARY_FILE`. `buildConfigFromProperties`
+  (L151-223) — `capsule.context.scenarioFile` → ajouter
+  `capsule.context.glossaryFile`.
+
+- `DefaultCapsulePromptBuilder` (`capsule/pipeline/DefaultCapsulePromptBuilder.kt:34`)
+  — instruction line conditionnelle `if (state.augmentedContext.contains
+  ("Pedagogical Scenario"))` (L50-55). → Ajouter `if (state.augmentedContext
+  .contains("Official Glossary"))` → instruction "Use the official
+  terminology defined in the Official Glossary section. Prefer glossary
+  terms over generic synonyms." (texte référentiel, le glossaire est déjà
+  dans le contexte rendu — pattern `Pedagogical Scenario`).
+
+- `ContextProvenance` (`capsule/context/ContextProvenance.kt:41`) —
+  `SCENARIO_CHANNEL = "SCENARIO"` const. → Ajouter `GLOSSARY_CHANNEL =
+  "GLOSSARY"` const. `ProvenanceTracker` (`capsule/context/ProvenanceTracker.kt:19`)
+  — `trackChannel`/`retainOnly`/`build`. → `trackSources` étendu (task
+  layer) tracking GLOSSARY channel, `retainOnly` étendu `+= GLOSSARY_CHANNEL`
+  (builder layer).
+
+- `CapsuleExtension` (`capsule/CapsuleModels.kt:27`) — `scenarioFile:
+  Property<String>` convention `""`. → Ajouter `glossaryFile:
+  Property<String>` convention `""`. `CapsuleConventions` (L228) — pas de
+  convention `glossaryFile` (scenarioFile n'en a pas non plus — le guard
+  `isPresent` est utilisé). `pushConfigIntoExtension` (`capsule/CapsulePlugin.kt:124`)
+  — `if (!ext.scenarioFile.isPresent || ext.scenarioFile.get().isBlank())`.
+  → Ajouter `glossaryFile` push identique.
+
+- `CapsuleManager.registerCollectAugmentedContextTask` (L194-246) —
+  `scenarioFile.from(project.provider {...})` (L229-237). → Ajouter
+  `glossaryFile.from(project.provider {...})` identique.
+
+- 13 `CucumberTaskSpec` existants (12 cucumber dédiés +
+  `cucumberTestIntegration`) dans `build.gradle.kts:29-154`. →
+  `cucumberTestGlossaryContext` 14ème `CucumberTaskSpec` (13ème cucumber
+  dédié).
+
+- 20 features existantes dans `src/test/features/`. →
+  `capsule_glossary_context.feature` `@context @glossary` 3 scénarios.
+
+- 11 `Messages*.properties` (base + en + 9 langues). Pas de nouvelle tâche
+  (le glossaire est un input de `collectCapsuleAugmentedContext` existant).
+  → `CapsuleMessages` non étendu (pattern CAP-PROVENANCE — pas de nouvelle
+  tâche, pas de nouvelle clé).
+
+_Décisions architecturales (US-0, Session 109)_ :
+
+. *Glossaire = extension capsule-local* (pattern `scenarioSection` CAP-SPD-2),
+  pas 6ème canal N0. `CapsuleContext` 4ème champ `glossarySection: String =
+  ""`. Invariant ajusté `rendered.isBlank() == (channels.isEmpty() &&
+  scenarioSection.isBlank() && glossarySection.isBlank())`. Pas de bump
+  codebase-contracts (le sealed `ContextChannel` N0 reste intact — 5
+  variants Eager/Rag/Graphify/Resource/Docs). Pattern CAP-SPD-2 mirror.
+
+. *`GlossaryContext` data class immutable* — `terms: List<GlossaryEntry>`,
+  `GlossaryEntry(term: String, definition: String)` (invariant fail-fast si
+  `term` ou `definition` blank). Un glossaire est une liste de définitions
+  terme→définition, pas une map (l'ordre des termes a une valeur
+  pédagogique — le premier terme est le plus important).
+
+. *`GlossaryLoader` object pur* (mirror `PedagogicalScenarioLoader`) —
+  `load(glossaryFile: File, maxTokens: Int): String`. Parse le fichier
+  glossaire AsciiDoc (format `== Glossary` section + liste de bullets
+  `- term: definition`), rend `==== Official Glossary (glossary)\n<term>:
+  <definition>\n...`, tronque via `ContextChannel.Docs.truncateToTokens
+  (maxTokens)` (réutilise le variant Docs, pattern `PedagogicalScenarioLoader`
+  L67 — le glossaire est sémantiquement proche du corpus documentaire).
+  Missing file gracefully skipped (empty string). Glossary absent → vidéo
+  non bloquée (fallback no-op, backward compat strict).
+
+. *Format glossaire = AsciiDoc* (format natif du workspace, pas de nouvelle
+  dépendance parsing). Format : fichier `.adoc` avec `== Glossary` section
+  contenant une liste de bullets `- term: definition` (un par ligne). Parsing
+  trivial : split sur `== Glossary`, extraire les lignes `- term: definition`,
+  split sur le premier `:`. Pas de dépendance AsciiDoctorJ (le parsing est
+  purement textuel, pattern `PedagogicalScenarioLoader.extractBulletSection`).
+  Format alternatif (futur) : CSV/JSON si besoin — l'API `GlossaryLoader.load
+  (file, maxTokens)` est format-agnostic (détecte l'extension `.adoc`/`.csv`/
+  `.json`), US-1 implémente uniquement `.adoc` (MVP0 — le workspace est
+  AsciiDoc-native).
+
+. *Budget glossaire* : 5% du total (8000 × 0.05 = 400 tokens), pattern
+  `scenarioSection` (5% aussi, `CollectCapsuleAugmentedContextTask.
+  resolveScenarioSection` L282). Le glossaire est léger — un vocabulaire
+  référentiel, pas un corpus. Un glossaire AFNOR/REAC typique = 30-50
+  termes × 10-20 tokens/définition = 300-1000 tokens. 400 tokens budget =
+  ~30 termes retenus (troncation aux plus importants, ordre préservé).
+
+. *`CapsuleContextBuilder.build()` étendu* — signature `build(composite,
+  budget=8000, scenarioSection="", glossarySection="", tracker=null)`.
+  Rendered : `channelBlock` + `trimmedScenario` + `trimmedGlossary`
+  (concaténation conditionnelle, pattern existant L78-83 étendu à 3
+  sections). `tracker.retainOnly(survivingChannels)` étendu `+=
+  GLOSSARY_CHANNEL` si `trimmedGlossary.isNotBlank()` (pattern
+  `SCENARIO_CHANNEL` L86-88). Backward compat : `glossarySection = ""`
+  (défaut) → aucun changement pour les appelants existants
+  (`CollectCapsuleAugmentedContextTask` US-2 étendra l'appel).
+
+. *`DefaultCapsulePromptBuilder` étendu* — instruction line conditionnelle
+  `if (state.augmentedContext.contains("Official Glossary"))` (pattern
+  `Pedagogical Scenario` L50-55) → appendLine "Use the official terminology
+  defined in the Official Glossary section. Prefer glossary terms over
+  generic synonyms." (texte référentiel, le glossaire est déjà dans le
+  contexte rendu — pas d'accès structuré au `GlossaryContext` dans le
+  prompt builder, pattern CAP-SPD-2).
+
+. *Provenance tracking étendu* — `ContextProvenance.GLOSSARY_CHANNEL =
+  "GLOSSARY"` const (pattern `SCENARIO_CHANNEL` L41). `trackSources(tracker)`
+  étendu (task layer) : GLOSSARY = `glossaryFile.files.firstOrNull()` → 1
+  `ProvenanceSource(fileName = resolved.name, chars = readText().length,
+  tokens = ContextChannel.estimateTokens(readText()))` si résolu (pattern
+  SCENARIO L225-244). `tracker.retainOnly` étendu `+= GLOSSARY_CHANNEL`
+  (builder layer, pattern `SCENARIO_CHANNEL` L86-88).
+
+. *`context.glossaryFile` 4 sources* (pattern `scenarioFile` CAP-SPD-3) —
+  ENV `CAPSULE_CONTEXT_GLOSSARY_FILE` < props `capsule.context.glossaryFile`
+  < YAML `context.glossaryFile` < CLI `-Pcapsule.context.glossaryFile`.
+  `ContextConfig` 3ème champ `glossaryFile: String? = null`. `mergeContextConfig`
+  étendu `mergeStr` pour `glossaryFile` (pattern `scenarioFile` L329).
+  `loadFromEnvironment` + `buildConfigFromProperties` étendus.
+  `CapsuleExtension.glossaryFile: Property<String>` convention `""`.
+  `pushConfigIntoExtension` push `glossaryFile` (pattern `scenarioFile`
+  L124-126). `CapsuleManager` wiring lazy provider (pattern `scenarioFile`
+  L229-237).
+
+. *Pas de nouvelle tâche Gradle* — le glossaire est un input de
+  `collectCapsuleAugmentedContext` existant (pattern CAP-PROVENANCE —
+  pas de nouvelle tâche, pas de `CapsuleMessages` clé, pas de
+  `CapsuleExtension` task group). Pas de clé `task.*.glossary*` ni
+  `task.group.glossary`. Le log `CAPSULE CONTEXT →` existant (L143-146)
+  reste inchangé (le glossaire est un canal胶囊-local, pas un canal N0 —
+  le compteur `nonEmptyCount` ne change pas). Le log `CAPSULE PROVENANCE
+  →` (L147-150) reflète automatiquement le nouveau channel GLOSSARY via
+  `tracker.build().channels.size`.
+
+. *Économie d'encre (AGENT.adoc)* — `glossaryFile` est `@InputFiles
+  @PathSensitive(RELATIVE) @Optional`, le task est UP-TO-DATE quand
+  `augmented-context.txt` l'est (même task, mêmes inputs — `provenanceFile`
+  aussi). Pas de probe (le glossaire est calculé pendant le build, pas
+  re-probé après). Pas de re-serialize inutile.
+
+. *Cucumber runner dédié* `CapsuleGlossaryContextCucumberRunner` (pattern
+  S-082 `@SelectClasspathResource("features/capsule_glossary_context.feature")`
+  + filter `@context and @glossary and not @wip and not @integration`).
+  Steps `CapsuleGlossaryContextSteps` préfixés "glossary context" (bug
+  S-088 glue `capsule.scenarios` partagée — step texts uniques : "glossary
+  context artefact contains" vs scenario "scenario context artefact
+  contains" vs doc "doc context artefact contains"). `CucumberTaskSpec
+  ("cucumberTestGlossaryContext")` 14ème câblé `build.gradle.kts` (13ème
+  cucumber dédié, 14ème `CucumberTaskSpec` avec integration).
 
 [cols="1,3,2,2", options="header"]
 |===
 | US | Description | Pts | Statut
 
 | CAP-GLOSSARY-0
-| *Cadrage EPIC* — vision, format glossaire (AsciiDoc/CSV/JSON), découpage US.
-MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+| *Cadrage EPIC* — audit code (`CapsuleContextBuilder.build` L69-92,
+  `CapsuleContext` 3 champs invariant, `CollectCapsuleAugmentedContextTask`
+  `scenarioFile`/`resolveScenarioSection`/`trackSources`, `ContextConfig`
+  2 champs, `CapsuleConfigMerger.mergeContextConfig` `mergeStr`,
+  `DefaultCapsulePromptBuilder` instruction conditionnelle
+  `Pedagogical Scenario`, `ContextProvenance.SCENARIO_CHANNEL`,
+  `ProvenanceTracker.retainOnly`, `CapsuleExtension.scenarioFile`,
+  `pushConfigIntoExtension` scenarioFile push, `CapsuleManager.
+  registerCollectAugmentedContextTask` scenarioFile provider, 13
+  `CucumberTaskSpec` existants, 20 features existantes, 11 `Messages*.
+  properties`), 12 décisions architecturales (extension capsule-local
+  pas 6ème canal N0, `GlossaryContext`/`GlossaryEntry` data classes
+  immutable, `GlossaryLoader` object pur mirror `PedagogicalScenarioLoader`,
+  format AsciiDoc `== Glossary` + bullets `- term: definition`, budget 5%
+  = 400 tokens, `CapsuleContextBuilder.build()` 4ème paramètre
+  `glossarySection`, `DefaultCapsulePromptBuilder` instruction
+  conditionnelle `Official Glossary`, provenance tracking `GLOSSARY_CHANNEL`,
+  4 sources `context.glossaryFile`, pas de nouvelle tâche Gradle ni clé
+  `CapsuleMessages`, économie d'encre `@InputFiles @Optional` UP-TO-DATE,
+  runner dédié `CapsuleGlossaryContextCucumberRunner` + `CucumberTaskSpec
+  ("cucumberTestGlossaryContext")` 14ème). MàJ
+  INDEX/BACKLOG/PROMPT_REPRISE/TODO.
 | 1
-| ⬜ TODO
+| ✅ TERMINÉ (S-109)
 
 | CAP-GLOSSARY-1
-| *`GlossaryContext` + `GlossaryLoader`* — parse glossaire (terme→définition),
-canal `glossary` dans `CompositeContext`. `context.glossaryFile` 4 sources.
-Baby-step TDD : ~6 unit (parse terms, missing file skipped, empty glossary
-fallback, budget truncation).
+| *`GlossaryContext` + `GlossaryEntry` + `GlossaryLoader` (object pur) +
+  `CapsuleContext` étendu + `CapsuleContextBuilder.build()` étendu +
+  `DefaultCapsulePromptBuilder` étendu* — domaine `capsule.context` étendu.
+  `GlossaryEntry(term: String, definition: String)` data class immutable
+  (invariant fail-fast si `term` ou `definition` blank). `GlossaryContext(
+  terms: List<GlossaryEntry>)` data class immutable (invariant `terms`
+  non-empty si non-blank). `GlossaryLoader` (object pur, mirror
+  `PedagogicalScenarioLoader`) — `load(glossaryFile: File, maxTokens: Int):
+  String`. Parse AsciiDoc `== Glossary` section + bullets `- term:
+  definition`, rend `==== Official Glossary (glossary)\n<term>: <definition>
+  \n...`, tronque via `ContextChannel.Docs.truncateToTokens(maxTokens)`.
+  Missing file gracefully skipped (empty string). `CapsuleContext` 4ème
+  champ `glossarySection: String = ""`, invariant ajusté `rendered.isBlank()
+  == (channels.isEmpty() && scenarioSection.isBlank() && glossarySection.
+  isBlank())`. `CapsuleContextBuilder.build(composite, budget,
+  scenarioSection="", glossarySection="", tracker=null)` étendu — append
+  `glossarySection` après `scenarioSection` dans rendered, `tracker.
+  retainOnly` étendu `+= GLOSSARY_CHANNEL` si `trimmedGlossary.isNotBlank()`.
+  Backward compat : `glossarySection = ""` (défaut) → tests existants
+  inchangés. `DefaultCapsulePromptBuilder.buildGeneratePrompt` étendu —
+  instruction line conditionnelle `if (state.augmentedContext.contains
+  ("Official Glossary"))` → "Use the official terminology defined in the
+  Official Glossary section. Prefer glossary terms over generic synonyms."
+  Baby-step TDD : RED (tests → `Unresolved reference 'GlossaryLoader'`/
+  `'GlossaryContext'`/`'glossarySection'`) → GREEN → REFACTOR. ~10 unit
+  (GlossaryLoader parse bullets, missing file skipped, empty glossary
+  fallback, budget truncation, multi-term, malformed bullet skipped,
+  non-Glossary section ignored ; CapsuleContext invariant glossarySection ;
+  CapsuleContextBuilder renders glossary section after scenario, drops
+  blank glossary, tracker tracks GLOSSARY channel ; DefaultCapsulePrompt
+  Builder instruction conditionnelle contains, empty glossary fallback).
 | 2
 | ⬜ TODO
 
 | CAP-GLOSSARY-2
-| *`CapsulePromptBuilder` étendu* — prompt : "Use official terminology:
-{glossary.terms}". `DefaultCapsulePromptBuilder` étendu. Baby-step TDD :
-~4 unit (prompt contains terms, empty glossary fallback).
-| 1
+| *Wiring `CollectCapsuleAugmentedContextTask` + `ContextConfig` +
+  merger 4 sources + `CapsuleExtension` + `pushConfigIntoExtension` +
+  `CapsuleManager` + provenance tracking* — `ContextConfig` 3ème champ
+  `glossaryFile: String? = null` (pattern `scenarioFile`). `mergeContextConfig`
+  étendu `mergeStr` pour `glossaryFile` (pattern `scenarioFile` L329).
+  `loadFromEnvironment` (`CAPSULE_CONTEXT_GLOSSARY_FILE`) +
+  `buildConfigFromProperties` (`capsule.context.glossaryFile`) étendus.
+  `CapsuleExtension.glossaryFile: Property<String>` convention `""`.
+  `pushConfigIntoExtension` push `glossaryFile` (pattern `scenarioFile`
+  L124-126). `CollectCapsuleAugmentedContextTask.glossaryFile:
+  ConfigurableFileCollection @InputFiles @PathSensitive(RELATIVE) @Optional`
+  + `resolveGlossarySection(budget)` (5% budget = 400 tokens/8000, pattern
+  `resolveScenarioSection` L276-291) + `trackSources` étendu tracking
+  GLOSSARY channel (1 source si résolu, pattern SCENARIO L225-244).
+  `CapsuleManager.registerCollectAugmentedContextTask` wiring lazy provider
+  `glossaryFile.from(project.provider {...})` (pattern `scenarioFile`
+  L229-237). `CapsuleContextBuilder.build()` appel étendu `glossarySection
+  = resolveGlossarySection(budget)`. Baby-step TDD : 2 functional
+  (GlossaryContextFunctionalTest : glossary fourni → contexte enrichi
+  section `==== Official Glossary (glossary)` ~M tokens, absent → fallback
+  no-op `glossarySection = ""`).
+| 2
 | ⬜ TODO
 
 | CAP-GLOSSARY-3
-| *Wiring + Cucumber* — `collectCapsuleAugmentedContext` étendu +
-`capsule_glossary_context.feature` `@context @glossary` (3 scénarios).
-Runner dédié (pattern S-082). Baby-step TDD/BDD : 1 functional + 3 cucumber.
-| 2
+| *Cucumber BDD* — `capsule_glossary_context.feature` `@context @glossary`
+  (3 scénarios : glossary injecté → section `==== Official Glossary
+  (glossary)` dans `augmented-context.txt` + instruction prompt "Use
+  official terminology", absent → fallback no-op pas de section glossary,
+  malformed glossary → gracefully skipped fallback no-op). Runner dédié
+  `CapsuleGlossaryContextCucumberRunner` (pattern S-082
+  `@SelectClasspathResource("features/capsule_glossary_context.feature")`
+  + filter `@context and @glossary and not @wip and not @integration`).
+  Steps `CapsuleGlossaryContextSteps` préfixés "glossary context" (bug
+  S-088 glue `capsule.scenarios` partagée — step texts uniques).
+  `CucumberTaskSpec("cucumberTestGlossaryContext")` 14ème câblé
+  `build.gradle.kts` (13ème cucumber dédié). Baby-step BDD : RED (3
+  `UndefinedStepException`) → GREEN (3/3 scénarios PASSED) → REFACTOR.
+| 1
 | ⬜ TODO
 |===
 
-_Total_ : 4 US, ~6 pts.
+_Total_ : 4 US, ~6 pts. _Méthode_ : baby-step DDD/TDD/BDD, 3 niveaux
+tests/US (unit → functional → cucumber), English only code/Gherkin.
+_Pattern de référence_ : CAP-SPD S-094/095 (extension capsule-local
+`scenarioSection`, `PedagogicalScenarioLoader` mirror), CAP-DOCCONTEXT
+S-093 (`DocContextLoader`, `ContextConfig` 4 sources), CAP-PROVENANCE
+S-107/108 (`ProvenanceTracker` étendu, `GLOSSARY_CHANNEL` const).
+_Séquence_ : US-0 cadrage ✅ S-109 → US-1 data classes + loader + builder
++ prompt builder étendus unit → US-2 wiring + functional → US-3 cucumber.
 
 === 🔍 EPIC CAP-PROVENANCE — Audit context anti-hallucination (contexte augmenté)
 
@@ -2232,7 +2511,7 @@ _Total_ : 3 US, ~4 pts.
 | 4
 | 6
 | 🟠 P1
-| ⬜ TODO
+| 🟡 EN COURS (US-0 ✅ S-109, US-1/2/3 TODO)
 
 | Contexte
 | CAP-PROVENANCE
