@@ -129,7 +129,12 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
         )
         val tracker = ProvenanceTracker()
         trackSources(tracker)
-        val context = CapsuleContextBuilder.build(composite, budget, scenarioSection, tracker)
+        val context = CapsuleContextBuilder.build(
+            composite = composite,
+            budget = budget,
+            scenarioSection = scenarioSection,
+            tracker = tracker,
+        )
 
         val output = outputFile.asFile.get()
         output.parentFile.mkdirs()

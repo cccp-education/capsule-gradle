@@ -53,6 +53,12 @@ class DefaultCapsulePromptBuilder : CapsulePromptBuilder {
                     "Speaker notes must address the pedagogical scenario objectives. Target duration and prerequisites are specified in the Pedagogical Scenario section.",
                 )
             }
+            if (state.augmentedContext.contains("Official Glossary")) {
+                appendLine()
+                appendLine(
+                    "Use the official terminology defined in the Official Glossary section. Prefer glossary terms over generic synonyms.",
+                )
+            }
         }
         appendLine()
         appendLine("Rules: keep one `== ` level-2 heading per slide; after each heading add a speaker note block:")

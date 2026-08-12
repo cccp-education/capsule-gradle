@@ -40,6 +40,9 @@ data class ContextProvenance(
         /** Capsule-local provenance label of the pedagogical scenario section (CAP-SPD). */
         const val SCENARIO_CHANNEL: String = "SCENARIO"
 
+        /** Capsule-local provenance label of the official glossary section (CAP-GLOSSARY). */
+        const val GLOSSARY_CHANNEL: String = "GLOSSARY"
+
         private val mapper: ObjectMapper =
             jacksonObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
     }

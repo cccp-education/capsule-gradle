@@ -996,3 +996,35 @@ CapsuleContextBuilder + DocContextLoader + SpdContext + SpdContextLoader +
 CollectCapsuleAugmentedContextTask + 4 Provenance*).
 
 Rapport : `.agents/sessions/108-cap-provenance-cloture.adoc`.
+
+== Session 110 — CAP-GLOSSARY US-1 GlossaryEntry + GlossaryContext + GlossaryLoader + CapsuleContext.glossarySection + Builder + PromptBuilder étendus ✅
+
+EPIC CAP-GLOSSARY US-1 terminé (P1, 2ème US sur 4, data classes + loader +
+builder + prompt builder étendus 2 pts).
+
+Domaine `capsule.context` étendu (3 nouveaux fichiers prod : `GlossaryEntry.kt`
+data class immutable invariant fail-fast blank term/definition,
+`GlossaryContext.kt` data class immutable liste ordonnée, `GlossaryLoader.kt`
+object pur mirror `PedagogicalScenarioLoader` — `load(glossaryFile: File,
+maxTokens: Int): String` parse AsciiDoc `== Glossary` + bullets `- term:
+definition` split premier `:`, rend `==== Official Glossary (glossary)`,
+tronque via `ContextChannel.Docs.truncateToTokens(maxTokens)`, missing file →
+empty, malformed bullet skipped, non-Glossary section ignored, zero budget →
+empty). `CapsuleContext` 4ème champ `glossarySection: String = ""` invariant
+ajusté backward compat. `CapsuleContextBuilder.build()` 4ème paramètre
+`glossarySection` + `buildRendered` refactor `when` 4 cas → `listOf(...).
+filter { isNotBlank }.joinToString("\n\n")` 3 sections conditionnelles +
+`tracker.retainOnly` étendu `+= GLOSSARY_CHANNEL`. `DefaultCapsulePromptBuilder`
+instruction "Use the official terminology" conditionnelle `contains("Official
+Glossary")` pattern `Pedagogical Scenario`. `ContextProvenance.GLOSSARY_CHANNEL`
+const. `CollectCapsuleAugmentedContextTask` appel `build()` migré arguments
+nommés.
+
+Baby-step TDD strict RED (23 tests → `Unresolved reference`) → GREEN
+(857 unit VERT +23 net : 15 `GlossaryLoaderTest` + 7 `CapsuleContextBuilderTest`
+glossarySection + 2 `DefaultCapsulePromptBuilderTest` glossary) → REFACTOR
+(`check` BUILD SUCCESSFUL in 18m48s, Kover VERT, validatePlugins VERT,
+62 functional VERT inchangé, zéro régression, zéro secret). Backward compat
+strict (`glossarySection = ""` défaut → tests existants inchangés).
+
+Rapport : `.agents/sessions/110-cap-glossary-us1.adoc`.

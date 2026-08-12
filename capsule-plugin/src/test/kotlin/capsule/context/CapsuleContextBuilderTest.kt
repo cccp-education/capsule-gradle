@@ -8,6 +8,7 @@ import contracts.context.ContextChannel
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -291,5 +292,94 @@ class CapsuleContextBuilderTest {
         assertTrue(ctx.isEmpty)
         val provenance = tracker.build()
         assertEquals(listOf("SCENARIO"), provenance.channels.map { it.channel })
+    }
+
+    // ─── CAP-GLOSSARY: glossarySection extension ────────────────────────
+
+    @Test
+    fun `build with non-blank glossarySection renders the glossary section after scenario section`() {
+        val ctx = CapsuleContextBuilder.build(
+            composite(eager = "EAGER governance"),
+            scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Bienvenue",
+            glossarySection = "==== Official Glossary (glossary)\ncompétence: savoir-faire",
+        )
+        assertTrue(ctx.rendered.contains("EAGER governance"), "channels must still be rendered")
+        assertTrue(ctx.rendered.contains("Pedagogical Scenario"), "scenario section must be rendered")
+        assertTrue(ctx.rendered.contains("Official Glossary"), "glossary section must be rendered")
+        assertTrue(ctx.rendered.contains("compétence"), "glossary content must be present")
+        val scenarioIdx = ctx.rendered.indexOf("Pedagogical Scenario")
+        val glossaryIdx = ctx.rendered.indexOf("Official Glossary")
+        assertTrue(glossaryIdx > scenarioIdx, "Glossary section must appear after scenario section")
+    }
+
+    @Test
+    fun `build with blank glossarySection drops the glossary section`() {
+        val ctx = CapsuleContextBuilder.build(
+            composite(eager = "EAGER only"),
+            glossarySection = "",
+        )
+        assertTrue(ctx.rendered.contains("EAGER only"))
+        assertFalse(ctx.rendered.contains("Official Glossary"), "blank glossarySection must not add a glossary header")
+    }
+
+    @Test
+    fun `build with empty channels and non-blank glossarySection renders only the glossary section`() {
+        val ctx = CapsuleContextBuilder.build(
+            composite(),
+            glossarySection = "==== Official Glossary (glossary)\ncompétence: savoir-faire",
+        )
+        assertTrue(ctx.isEmpty, "channels list must be empty")
+        assertTrue(ctx.rendered.isNotBlank(), "rendered must carry the glossary section")
+        assertTrue(ctx.rendered.contains("Official Glossary"))
+    }
+
+    @Test
+    fun `CapsuleContext with no channels but non-blank glossarySection accepts non-blank rendered`() {
+        val ctx = CapsuleContext(
+            channels = emptyList(),
+            rendered = "==== Official Glossary (glossary)\ncompétence: savoir-faire",
+            scenarioSection = "",
+            glossarySection = "==== Official Glossary (glossary)\ncompétence: savoir-faire",
+        )
+        assertTrue(ctx.isEmpty)
+        assertTrue(ctx.rendered.isNotBlank())
+    }
+
+    @Test
+    fun `CapsuleContext invariant rejects non-blank rendered with no channels, blank scenario and blank glossary`() {
+        assertFailsWith<IllegalArgumentException> {
+            CapsuleContext(channels = emptyList(), rendered = "orphan text", scenarioSection = "", glossarySection = "")
+        }
+    }
+
+    @Test
+    fun `build with channels, scenario and glossary all coexisting in rendered`() {
+        val ctx = CapsuleContextBuilder.build(
+            composite(eager = "EAGER content", rag = "RAG snippet"),
+            scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Combined",
+            glossarySection = "==== Official Glossary (glossary)\nterm: definition",
+        )
+        assertEquals(2, ctx.nonEmptyCount)
+        assertTrue(ctx.rendered.contains("EAGER content"))
+        assertTrue(ctx.rendered.contains("RAG snippet"))
+        assertTrue(ctx.rendered.contains("Pedagogical Scenario"))
+        assertTrue(ctx.rendered.contains("Official Glossary"))
+    }
+
+    @Test
+    fun `build with tracker tracks the glossary channel when glossarySection is non-blank`() {
+        val tracker = ProvenanceTracker()
+        tracker.trackChannel(
+            "GLOSSARY",
+            listOf(ProvenanceSource(fileName = "glossary.adoc", chars = 300, tokens = 60)),
+        )
+        val ctx = CapsuleContextBuilder.build(
+            composite(),
+            glossarySection = "==== Official Glossary (glossary)\nterm: definition",
+            tracker = tracker,
+        )
+        assertTrue(ctx.isEmpty)
+        val provenance = tracker.build()
+        assertEquals(listOf("GLOSSARY"), provenance.channels.map { it.channel })
     }
 }

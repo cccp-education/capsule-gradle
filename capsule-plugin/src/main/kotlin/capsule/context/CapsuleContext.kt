@@ -14,23 +14,27 @@ import contracts.context.ContextChannel
  * (CAP-ARCH-3) — content generation feeds on `rendered`, never on the raw
  * contract directly.
  *
- * Invariant: the rendered block is blank iff there are no channels AND the
- * [scenarioSection] is blank — an empty channel list alone does not imply an
- * empty rendered block when the scenario section is present.
+ * * Invariant: the rendered block is blank iff there are no channels AND the
+ * [scenarioSection] is blank AND the [glossarySection] is blank — an empty
+ * channel list alone does not imply an empty rendered block when a capsule-local
+ * section is present.
  *
  * @property channels         non-empty channels after budget truncation + filtering.
- * @property rendered         prompt-ready sectioned text of [channels] + [scenarioSection].
+ * @property rendered         prompt-ready sectioned text of [channels] + [scenarioSection] + [glossarySection].
  * @property scenarioSection  the capsule-local pedagogical scenario section
  *                            (CAP-SPD-2), blank when no scenario payload was provided.
+ * @property glossarySection  the capsule-local official glossary section
+ *                            (CAP-GLOSSARY-2), blank when no glossary payload was provided.
  */
 data class CapsuleContext(
     val channels: List<ContextChannel>,
     val rendered: String,
     val scenarioSection: String = "",
+    val glossarySection: String = "",
 ) {
     init {
-        require(rendered.isBlank() == (channels.isEmpty() && scenarioSection.isBlank())) {
-            "CapsuleContext rendered block must be blank iff there are no channels and no scenarioSection"
+        require(rendered.isBlank() == (channels.isEmpty() && scenarioSection.isBlank() && glossarySection.isBlank())) {
+            "CapsuleContext rendered block must be blank iff there are no channels and no scenarioSection and no glossarySection"
         }
     }
 

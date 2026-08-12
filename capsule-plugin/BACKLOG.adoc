@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-12 (Session 109 — CAP-GLOSSARY US-0 Cadrage EPIC Injection terminologique. Audit code : `CapsuleContextBuilder.build` 3 params optionnels, `CapsuleContext` 3 champs invariant, `CollectCapsuleAugmentedContextTask` `scenarioFile`/`resolveScenarioSection`/`trackSources` 5 canaux, `ContextConfig` 2 champs, `CapsuleConfigMerger.mergeContextConfig` `mergeStr`, `DefaultCapsulePromptBuilder` instruction conditionnelle `Pedagogical Scenario`, `ContextProvenance.SCENARIO_CHANNEL`, `ProvenanceTracker.retainOnly`, `CapsuleExtension.scenarioFile`, `pushConfigIntoExtension` scenarioFile push, `CapsuleManager` scenarioFile provider, 13 `CucumberTaskSpec`, 20 features, 11 `Messages*.properties`. 12 décisions architecturales : extension capsule-local `glossarySection` pas 6ème canal N0 (pattern CAP-SPD-2), `GlossaryEntry`/`GlossaryContext` data classes immutable, `GlossaryLoader` object pur mirror `PedagogicalScenarioLoader`, format AsciiDoc `== Glossary` + bullets `- term: definition`, budget 5% = 400 tokens, `CapsuleContextBuilder.build()` 4ème paramètre `glossarySection`, `DefaultCapsulePromptBuilder` instruction `Official Glossary` conditionnelle, provenance `GLOSSARY_CHANNEL` const, 4 sources `context.glossaryFile`, pas de nouvelle tâche Gradle ni clé CapsuleMessages, économie d'encre `@InputFiles @Optional` UP-TO-DATE, runner dédié `CapsuleGlossaryContextCucumberRunner` + `CucumberTaskSpec("cucumberTestGlossaryContext")` 14ème. 4 US ~6 pts (US-0 ✅, US-1 data classes + loader + builder + prompt builder ~10 unit, US-2 wiring + 2 functional, US-3 cucumber 3 scénarios). Zéro code modifié — gouvernance pure pattern S-057/S-063/S-076/S-083/S-092/S-094/S-097/S-102/S-107.)
+:last_update: 2026-08-12 (Session 110 — CAP-GLOSSARY US-1 `GlossaryEntry` + `GlossaryContext` + `GlossaryLoader` (object pur) + `CapsuleContext.glossarySection` + `CapsuleContextBuilder.build()` étendu + `DefaultCapsulePromptBuilder` étendu + `ContextProvenance.GLOSSARY_CHANNEL` const. Domaine `capsule.context` étendu 3 nouveaux fichiers prod. Baby-step TDD strict RED (23 tests → `Unresolved reference`) → GREEN (857 unit VERT +23 net : 15 `GlossaryLoaderTest` + 7 `CapsuleContextBuilderTest` glossarySection + 2 `DefaultCapsulePromptBuilderTest` glossary) → REFACTOR (`check` BUILD SUCCESSFUL in 18m48s, Kover VERT, validatePlugins VERT, 62 functional VERT inchangé, zéro régression, zéro secret). Backward compat strict. EPIC CAP-GLOSSARY 2/4 US.)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -1148,8 +1148,8 @@ _Décisions architecturales (US-0, Session 109)_ :
   CapsuleContextBuilder renders glossary section after scenario, drops
   blank glossary, tracker tracks GLOSSARY channel ; DefaultCapsulePrompt
   Builder instruction conditionnelle contains, empty glossary fallback).
-| 2
-| ⬜ TODO
+  | 2
+  | ✅ TERMINÉ (S-110)
 
 | CAP-GLOSSARY-2
 | *Wiring `CollectCapsuleAugmentedContextTask` + `ContextConfig` +
@@ -2511,7 +2511,7 @@ _Total_ : 3 US, ~4 pts.
 | 4
 | 6
 | 🟠 P1
-| 🟡 EN COURS (US-0 ✅ S-109, US-1/2/3 TODO)
+| 🟡 EN COURS (US-0 ✅ S-109, US-1 ✅ S-110, US-2/3 TODO)
 
 | Contexte
 | CAP-PROVENANCE

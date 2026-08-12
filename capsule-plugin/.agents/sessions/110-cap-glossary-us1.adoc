@@ -1,0 +1,171 @@
+= Session 110 — CAP-GLOSSARY US-1 GlossaryEntry + GlossaryContext + GlossaryLoader + CapsuleContext.glossarySection + Builder + PromptBuilder étendus
+
+_Date_ : 2026-08-12
+_Type_ : feat+ddd+tdd
+_Score_ : 9/10
+
+== Mission
+
+Implémenter CAP-GLOSSARY US-1 (domaine `capsule.context` étendu) : data
+classes immutables (`GlossaryEntry`, `GlossaryContext`), loader object pur
+(`GlossaryLoader` mirror `PedagogicalScenarioLoader`), extension
+`CapsuleContext.glossarySection` (4ème champ, invariant ajusté),
+`CapsuleContextBuilder.build()` 4ème paramètre `glossarySection` (rendered
+3 sections conditionnelles + `tracker.retainOnly` étendu `+=
+GLOSSARY_CHANNEL`), `DefaultCapsulePromptBuilder` instruction conditionnelle
+"Use the official terminology" (pattern `Pedagogical Scenario` L50-55),
+`ContextProvenance.GLOSSARY_CHANNEL` const (pattern `SCENARIO_CHANNEL`).
+Baby-step TDD strict RED → GREEN → REFACTOR, unit tests uniquement (US-2 =
+functional, US-3 = cucumber).
+
+== Ce qui a été fait
+
+. **RED — tests écrits avant implémentation** (3 fichiers test, 23 tests) :
+  - `GlossaryLoaderTest` (15 tests) `src/test/kotlin/capsule/context/
+    GlossaryLoaderTest.kt` — `GlossaryEntry` invariant fail-fast (blank
+    term/definition), `GlossaryContext` empty list + ordre préservé,
+    `GlossaryLoader.load` : missing file → blank, parse bullets `- term:
+    definition` → `==== Official Glossary (glossary)`, no Glossary section →
+    blank, zero budget → blank, truncation budget, multi-term order,
+    malformed bullet skipped, non-Glossary section ignored, empty Glossary
+    section → blank, blank adoc → blank.
+  - `CapsuleContextBuilderTest` étendu (+7 tests glossarySection) — `build`
+    with non-blank glossarySection renders after scenario section, blank
+    glossarySection dropped, empty channels + non-blank glossarySection →
+    only glossary, `CapsuleContext` invariant glossarySection accept non-blank
+    rendered, invariant rejects orphan with blank scenario+glossary,
+    channels+scenario+glossary coexist, tracker tracks GLOSSARY channel.
+  - `DefaultCapsulePromptBuilderTest` étendu (+2 tests Official Glossary) —
+    glossary-augmented context → "official terminology" + "glossary terms"
+    instruction, augmented context without Official Glossary → generic
+    prompt.
+  - RED vérifié : `compileTestKotlin` FAIL → `Unresolved reference
+    'GlossaryLoader'` / `'GlossaryEntry'` / `'GlossaryContext'` / 14 sites.
+
+. **GREEN — implémentation** (5 fichiers prod créés/étendus) :
+  - `GlossaryEntry.kt` créé — `data class GlossaryEntry(term: String,
+    definition: String)`, invariants fail-fast `require(term.isNotBlank())`
+    + `require(definition.isNotBlank())`. Domaine `capsule.context`.
+  - `GlossaryContext.kt` créé — `data class GlossaryContext(terms:
+    List<GlossaryEntry>)`, liste ordonnée (l'ordre a une valeur
+    pédagogique), empty list légitime.
+  - `GlossaryLoader.kt` créé — `object GlossaryLoader` mirror
+    `PedagogicalScenarioLoader`. `load(glossaryFile: File, maxTokens: Int):
+    String`. Parse AsciiDoc `== Glossary` section + bullets `- term:
+    definition` (split sur premier `:`), rend `==== Official Glossary
+    (glossary)\n<term>: <definition>\n...`, tronque via
+    `ContextChannel.Docs.truncateToTokens(maxTokens)` (variant Docs
+    sémantiquement proche, pattern `PedagogicalScenarioLoader` L67).
+    Missing file → empty string. Malformed bullet (pas `- term: definition`)
+    skipped. Non-Glossary section ignored. Zero budget → empty string.
+  - `CapsuleContext.kt` étendu — 4ème champ `glossarySection: String = ""`,
+    invariant ajusté `rendered.isBlank() == (channels.isEmpty() &&
+    scenarioSection.isBlank() && glossarySection.isBlank())`. Backward
+    compat : `glossarySection = ""` (défaut) → tests existants inchangés.
+  - `CapsuleContextBuilder.kt` étendu — `build(composite, budget,
+    scenarioSection="", glossarySection="", tracker=null)` 4ème paramètre.
+    `buildRendered(channelBlock, trimmedScenario, trimmedGlossary)` private
+    helper : `parts = listOf(channelBlock, trimmedScenario,
+    trimmedGlossary).filter { it.isNotBlank() }.joinToString("\n\n")`
+    (3 sections conditionnelles, refactor du `when` existant en liste
+    filtrée — plus idiomatique, élimine la duplication des 4 cas `when`).
+    `tracker.retainOnly` étendu `+= GLOSSARY_CHANNEL` si
+    `trimmedGlossary.isNotBlank()` (pattern `SCENARIO_CHANNEL` L86-88).
+    `CapsuleContext` retour étendu `glossarySection = trimmedGlossary`.
+  - `DefaultCapsulePromptBuilder.kt` étendu — `buildGeneratePrompt`
+    instruction line conditionnelle `if (state.augmentedContext.contains
+    ("Official Glossary"))` → appendLine "Use the official terminology
+    defined in the Official Glossary section. Prefer glossary terms over
+    generic synonyms." (pattern `Pedagogical Scenario` L50-55, appendLine
+    après le block scenario instruction).
+  - `ContextProvenance.kt` étendu — `GLOSSARY_CHANNEL = "GLOSSARY"` const
+    (pattern `SCENARIO_CHANNEL` L41).
+  - `CollectCapsuleAugmentedContextTask.kt` L132 — appel `build()` migré en
+    arguments nommés (`composite = `, `budget = `, `scenarioSection = `,
+    `tracker = `) pour robustesse (le wiring US-2 étendra avec
+    `glossarySection = ` plus tard).
+
+. **REFACTOR — `./gradlew check` BUILD SUCCESSFUL in 18m48s** :
+  - 857 unit VERT (baseline 834 → +23 net : 15 `GlossaryLoaderTest` + 7
+    `CapsuleContextBuilderTest` glossarySection + 2
+    `DefaultCapsulePromptBuilderTest` glossary - 1 doublon `KTest` corrigé).
+  - 62 functional VERT (inchangé baseline S-108).
+  - Kover VERT, validatePlugins VERT. Zéro régression, zéro secret.
+  - Cucumber SKIPPED par CR-10 (préexistant — `cucumberTest` global skip CI).
+
+== Décisions architecturales (US-1)
+
+. *GlossaryEntry/GlossaryContext immutables* — data classes invariant
+  fail-fast. GlossaryContext liste ordonnée (pas map — l'ordre a une valeur
+  pédagogique, pattern BACKLOG US-0 décision 2).
+
+. *GlossaryLoader object pur* — mirror `PedagogicalScenarioLoader` (3ème
+  loader du domaine `capsule.context` après `DocContextLoader` et
+  `PedagogicalScenarioLoader`). `load(file, maxTokens): String` — pure, no
+  I/O wiring, no Gradle. Format AsciiDoc natif (`== Glossary` + bullets
+  `- term: definition`), parsing purement textuel (split sur `== Glossary`,
+  extract bullets, split sur premier `:`). Pas de dépendance AsciidoctorJ.
+
+. *Truncation via `ContextChannel.Docs.truncateToTokens`* — le variant
+  Docs est sémantiquement proche (corpus documentaire), réutilise le N0
+  sans bump codebase-contracts (pattern `PedagogicalScenarioLoader` L67).
+  Budget 5% = 400 tokens (décision US-0).
+
+. *`CapsuleContextBuilder.buildRendered` refactor* — le `when` existant
+  (4 cas channelBlock/trimmedScenario) a été refactoré en
+  `listOf(...).filter { isNotBlank }.joinToString("\n\n")` pour supporter
+  3 sections conditionnelles sans duplication. Le comportement est
+  identique pour les 2 sections existantes (tests scenarioSection
+  préservés 100% — 7 tests VERT).
+
+. *Backward compat strict* — `glossarySection = ""` (défaut) → tous les
+  appelants existants (`CollectCapsuleAugmentedContextTask` L132) inchangés.
+  Tests existants `CapsuleContextBuilderTest` (scenarioSection L196-255)
+  préservés sans modification (seuls les tests d'invariant
+  `CapsuleContext` reject orphan ont été ajustés pour le nouveau 4ème
+  paramètre `glossarySection = ""`).
+
+. *Arguments nommés sur `build()`* — l'appel existant
+  `CapsuleContextBuilder.build(composite, budget, scenarioSection, tracker)`
+  positionnel a été migré en arguments nommés pour éviter la fragilité
+  lors de l'insertion du nouveau paramètre `glossarySection` entre
+  `scenarioSection` et `tracker`. Le wiring US-2 étendra avec
+  `glossarySection = resolveGlossarySection(budget)`.
+
+== Fichiers modifiés/créés
+
+[cols="2,3,1"]
+|===
+| Fichier | Rôle | Action
+
+| `src/main/kotlin/capsule/context/GlossaryEntry.kt` | data class immutable | créé
+| `src/main/kotlin/capsule/context/GlossaryContext.kt` | data class immutable liste ordonnée | créé
+| `src/main/kotlin/capsule/context/GlossaryLoader.kt` | object pur mirror PedagogicalScenarioLoader | créé
+| `src/main/kotlin/capsule/context/CapsuleContext.kt` | 4ème champ glossarySection + invariant | étendu
+| `src/main/kotlin/capsule/context/CapsuleContextBuilder.kt` | build() 4ème param + buildRendered refactor + tracker GLOSSARY | étendu
+| `src/main/kotlin/capsule/context/ContextProvenance.kt` | GLOSSARY_CHANNEL const | étendu
+| `src/main/kotlin/capsule/pipeline/DefaultCapsulePromptBuilder.kt` | instruction Official Glossary conditionnelle | étendu
+| `src/main/kotlin/capsule/context/CollectCapsuleAugmentedContextTask.kt` | appel build() arguments nommés | étendu
+| `src/test/kotlin/capsule/context/GlossaryLoaderTest.kt` | 15 unit tests RED→GREEN | créé
+| `src/test/kotlin/capsule/context/CapsuleContextBuilderTest.kt` | +7 glossarySection tests | étendu
+| `src/test/kotlin/capsule/pipeline/DefaultCapsulePromptBuilderTest.kt` | +2 Official Glossary tests | étendu
+|===
+
+== Tests
+
+- 857 unit VERT (+23 net : 15 `GlossaryLoaderTest` + 7
+  `CapsuleContextBuilderTest` glossarySection + 2
+  `DefaultCapsulePromptBuilderTest` glossary)
+- 62 functional VERT (inchangé)
+- `./gradlew check` BUILD SUCCESSFUL in 18m48s
+- Kover VERT, validatePlugins VERT, zéro régression, zéro secret
+
+== Prochaine session
+
+CAP-GLOSSARY US-2 — Wiring `CollectCapsuleAugmentedContextTask` +
+`ContextConfig` 3ème champ `glossaryFile` + merger 4 sources +
+`CapsuleExtension.glossaryFile` + `pushConfigIntoExtension` +
+`CapsuleManager` provider + provenance tracking `GLOSSARY` channel. Baby-step
+TDD 2 functional (GlossaryContextFunctionalTest : glossary fourni → contexte
+enrichi section `==== Official Glossary (glossary)` ~M tokens, absent →
+fallback no-op `glossarySection = ""`).

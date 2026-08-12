@@ -72,4 +72,34 @@ class DefaultCapsulePromptBuilderTest {
             "Augmented context without scenario section must not reference the scenario",
         )
     }
+
+    // ─── CAP-GLOSSARY: Official Glossary instruction line ──────────────
+
+    @Test
+    fun `buildGeneratePrompt with glossary-augmented context contains the official terminology instruction line`() {
+        val prompt = builder.buildGeneratePrompt(
+            state(
+                augmentedContext = "==== Official Glossary (glossary)\ncompétence: savoir-faire",
+            ),
+        )
+        assertTrue(
+            prompt.contains("official terminology"),
+            "Generate prompt must reference official terminology when glossary context is present",
+        )
+        assertTrue(
+            prompt.contains("glossary terms"),
+            "Generate prompt must reference glossary terms",
+        )
+    }
+
+    @Test
+    fun `buildGeneratePrompt with augmented context without Official Glossary section keeps generic prompt`() {
+        val prompt = builder.buildGeneratePrompt(
+            state(augmentedContext = "==== EAGER Context (EAGER/LAZY)\nINDEX.adoc content only"),
+        )
+        assertTrue(
+            !prompt.contains("official terminology"),
+            "Augmented context without Official Glossary section must not emit the glossary instruction line",
+        )
+    }
 }
