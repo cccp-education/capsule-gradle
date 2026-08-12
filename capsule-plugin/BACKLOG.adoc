@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-12 (Session 110 — CAP-GLOSSARY US-1 `GlossaryEntry` + `GlossaryContext` + `GlossaryLoader` (object pur) + `CapsuleContext.glossarySection` + `CapsuleContextBuilder.build()` étendu + `DefaultCapsulePromptBuilder` étendu + `ContextProvenance.GLOSSARY_CHANNEL` const. Domaine `capsule.context` étendu 3 nouveaux fichiers prod. Baby-step TDD strict RED (23 tests → `Unresolved reference`) → GREEN (857 unit VERT +23 net : 15 `GlossaryLoaderTest` + 7 `CapsuleContextBuilderTest` glossarySection + 2 `DefaultCapsulePromptBuilderTest` glossary) → REFACTOR (`check` BUILD SUCCESSFUL in 18m48s, Kover VERT, validatePlugins VERT, 62 functional VERT inchangé, zéro régression, zéro secret). Backward compat strict. EPIC CAP-GLOSSARY 2/4 US.)
+:last_update: 2026-08-12 (Session 111 — CAP-GLOSSARY US-2 Wiring `CollectCapsuleAugmentedContextTask` + `ContextConfig` 3ème champ `glossaryFile` + merger 4 sources + `CapsuleExtension.glossaryFile` + `pushConfigIntoExtension` + `CapsuleManager` lazy provider + provenance tracking GLOSSARY + `resolveGlossarySection(budget)` 5% + appel `build()` étendu. Baby-step TDD strict RED (1 FAIL + 1 passed par accident) → GREEN (2/2 `GlossaryContextFunctionalTest` PASSED) → REFACTOR (`check` BUILD SUCCESSFUL in 26m25s, 857 unit VERT inchangé baseline S-110, 64 functional VERT +2 net, Kover VERT, validatePlugins VERT, zéro régression, zéro secret). Backward compat strict. EPIC CAP-GLOSSARY 3/4 US.)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -1153,28 +1153,28 @@ _Décisions architecturales (US-0, Session 109)_ :
 
 | CAP-GLOSSARY-2
 | *Wiring `CollectCapsuleAugmentedContextTask` + `ContextConfig` +
-  merger 4 sources + `CapsuleExtension` + `pushConfigIntoExtension` +
-  `CapsuleManager` + provenance tracking* — `ContextConfig` 3ème champ
-  `glossaryFile: String? = null` (pattern `scenarioFile`). `mergeContextConfig`
-  étendu `mergeStr` pour `glossaryFile` (pattern `scenarioFile` L329).
-  `loadFromEnvironment` (`CAPSULE_CONTEXT_GLOSSARY_FILE`) +
-  `buildConfigFromProperties` (`capsule.context.glossaryFile`) étendus.
-  `CapsuleExtension.glossaryFile: Property<String>` convention `""`.
-  `pushConfigIntoExtension` push `glossaryFile` (pattern `scenarioFile`
-  L124-126). `CollectCapsuleAugmentedContextTask.glossaryFile:
-  ConfigurableFileCollection @InputFiles @PathSensitive(RELATIVE) @Optional`
-  + `resolveGlossarySection(budget)` (5% budget = 400 tokens/8000, pattern
-  `resolveScenarioSection` L276-291) + `trackSources` étendu tracking
-  GLOSSARY channel (1 source si résolu, pattern SCENARIO L225-244).
-  `CapsuleManager.registerCollectAugmentedContextTask` wiring lazy provider
-  `glossaryFile.from(project.provider {...})` (pattern `scenarioFile`
-  L229-237). `CapsuleContextBuilder.build()` appel étendu `glossarySection
-  = resolveGlossarySection(budget)`. Baby-step TDD : 2 functional
-  (GlossaryContextFunctionalTest : glossary fourni → contexte enrichi
-  section `==== Official Glossary (glossary)` ~M tokens, absent → fallback
-  no-op `glossarySection = ""`).
+   merger 4 sources + `CapsuleExtension` + `pushConfigIntoExtension` +
+   `CapsuleManager` + provenance tracking* — `ContextConfig` 3ème champ
+   `glossaryFile: String? = null` (pattern `scenarioFile`). `mergeContextConfig`
+   étendu `mergeStr` pour `glossaryFile` (pattern `scenarioFile` L329).
+   `loadFromEnvironment` (`CAPSULE_CONTEXT_GLOSSARY_FILE`) +
+   `buildConfigFromProperties` (`capsule.context.glossaryFile`) étendus.
+   `CapsuleExtension.glossaryFile: Property<String>` convention `""`.
+   `pushConfigIntoExtension` push `glossaryFile` (pattern `scenarioFile`
+   L124-126). `CollectCapsuleAugmentedContextTask.glossaryFile:
+   ConfigurableFileCollection @InputFiles @PathSensitive(RELATIVE) @Optional`
+   + `resolveGlossarySection(budget)` (5% budget = 400 tokens/8000, pattern
+   `resolveScenarioSection` L276-291) + `trackSources` étendu tracking
+   GLOSSARY channel (1 source si résolu, pattern SCENARIO L225-244).
+   `CapsuleManager.registerCollectAugmentedContextTask` wiring lazy provider
+   `glossaryFile.from(project.provider {...})` (pattern `scenarioFile`
+   L229-237). `CapsuleContextBuilder.build()` appel étendu `glossarySection
+   = resolveGlossarySection(budget)`. Baby-step TDD : 2 functional
+   (GlossaryContextFunctionalTest : glossary fourni → contexte enrichi
+   section `==== Official Glossary (glossary)` ~M tokens, absent → fallback
+   no-op `glossarySection = ""`).
 | 2
-| ⬜ TODO
+| ✅ TERMINÉ (S-111)
 
 | CAP-GLOSSARY-3
 | *Cucumber BDD* — `capsule_glossary_context.feature` `@context @glossary`
@@ -2511,7 +2511,7 @@ _Total_ : 3 US, ~4 pts.
 | 4
 | 6
 | 🟠 P1
-| 🟡 EN COURS (US-0 ✅ S-109, US-1 ✅ S-110, US-2/3 TODO)
+| 🟡 EN COURS (US-0 ✅ S-109, US-1 ✅ S-110, US-2 ✅ S-111, US-3 TODO)
 
 | Contexte
 | CAP-PROVENANCE

@@ -236,6 +236,17 @@ class CapsuleManager(private val project: Project) {
                 else listOf(project.file(path))
             })
 
+            // CAP-GLOSSARY-2 — resolve glossaryFile lazily (extension afterEvaluate > CLI).
+            task.glossaryFile.from(project.provider {
+                val extPath = capsuleExt?.glossaryFile?.orNull
+                val path = when {
+                    !extPath.isNullOrBlank() -> extPath
+                    else -> project.findProperty("capsule.context.glossaryFile")?.toString().orEmpty()
+                }
+                if (path.isBlank()) emptyList<Any>()
+                else listOf(project.file(path))
+            })
+
             task.tokenBudget.set(
                 project.findProperty("context.tokenBudget")?.toString()?.toIntOrNull()
                     ?: contracts.context.ContextChannel.DEFAULT_TOKEN_BUDGET

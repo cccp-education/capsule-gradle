@@ -132,7 +132,8 @@ object CapsuleConfigMerger {
             ),
             context = ContextConfig(
                 docsGlobs = env["CAPSULE_CONTEXT_DOCS_GLOBS"]?.let { splitCommaList(it) } ?: emptyList(),
-                scenarioFile = env["CAPSULE_CONTEXT_SCENARIO_FILE"]?.takeIf { it.isNotBlank() }
+                scenarioFile = env["CAPSULE_CONTEXT_SCENARIO_FILE"]?.takeIf { it.isNotBlank() },
+                glossaryFile = env["CAPSULE_CONTEXT_GLOSSARY_FILE"]?.takeIf { it.isNotBlank() }
             ),
             validation = ValidationConfig(
                 durationEnabled = env["CAPSULE_VALIDATION_DURATION_ENABLED"]?.toBoolean() ?: false,
@@ -206,7 +207,8 @@ object CapsuleConfigMerger {
             ),
             context = ContextConfig(
                 docsGlobs = props["capsule.context.docsGlobs"]?.let { splitCommaList(it) } ?: emptyList(),
-                scenarioFile = props["capsule.context.scenarioFile"]?.takeIf { it.isNotBlank() }
+                scenarioFile = props["capsule.context.scenarioFile"]?.takeIf { it.isNotBlank() },
+                glossaryFile = props["capsule.context.glossaryFile"]?.takeIf { it.isNotBlank() }
             ),
             validation = ValidationConfig(
                 durationEnabled = props["capsule.validation.durationEnabled"]?.toBoolean() ?: false,
@@ -326,7 +328,8 @@ object CapsuleConfigMerger {
     private fun mergeContextConfig(env: ContextConfig, props: ContextConfig, yaml: ContextConfig?, cli: Map<String, Any?>): ContextConfig {
         return ContextConfig(
             docsGlobs = mergeStrList(cli, "context.docsGlobs", yaml?.docsGlobs, props.docsGlobs, env.docsGlobs),
-            scenarioFile = mergeStr(cli, "context.scenarioFile", yaml?.scenarioFile, props.scenarioFile ?: "", env.scenarioFile ?: "").takeIf { it.isNotBlank() }
+            scenarioFile = mergeStr(cli, "context.scenarioFile", yaml?.scenarioFile, props.scenarioFile ?: "", env.scenarioFile ?: "").takeIf { it.isNotBlank() },
+            glossaryFile = mergeStr(cli, "context.glossaryFile", yaml?.glossaryFile, props.glossaryFile ?: "", env.glossaryFile ?: "").takeIf { it.isNotBlank() }
         )
     }
 

@@ -16,10 +16,19 @@ package capsule
  * `scenarioSection` of `CapsuleContext` (CAP-SPD-2), anchoring the LLM
  * speaker notes in the session objectives, duration and prerequisites.
  *
+ * The [glossaryFile] path drives the `GlossaryLoader` (CAP-GLOSSARY-2) to
+ * resolve a training referential glossary (AsciiDoc `== Glossary` section +
+ * `- term: definition` bullets). The rendered section feeds the
+ * capsule-local `glossarySection` of `CapsuleContext` (CAP-GLOSSARY-1),
+ * anchoring the LLM vocabulary on the AFNOR/REAC referential instead of
+ * generic approximations.
+ *
  * Resolution follows the 4-source precedence:
- * ENV (`CAPSULE_CONTEXT_DOCS_GLOBS`, `CAPSULE_CONTEXT_SCENARIO_FILE`) <
- * gradle.properties (`capsule.context.docsGlobs`, `capsule.context.scenarioFile`)
- * < YAML (`context.docsGlobs`, `context.scenarioFile`) < CLI
+ * ENV (`CAPSULE_CONTEXT_DOCS_GLOBS`, `CAPSULE_CONTEXT_SCENARIO_FILE`,
+ * `CAPSULE_CONTEXT_GLOSSARY_FILE`) < gradle.properties
+ * (`capsule.context.docsGlobs`, `capsule.context.scenarioFile`,
+ * `capsule.context.glossaryFile`) < YAML (`context.docsGlobs`,
+ * `context.scenarioFile`, `context.glossaryFile`) < CLI
  * (`-Pcapsule.context.*`). List values are comma-separated.
  *
  * @param docsGlobs    Ant-style glob patterns to resolve documentary files.
@@ -27,8 +36,12 @@ package capsule
  * @param scenarioFile path to a pedagogical scenario directory (containing
  *                    `metadata.json` + `.adoc`) or a direct `.adoc` file.
  *                    Defaults to null (no scenario — backward compatible).
+ * @param glossaryFile path to a glossary AsciiDoc file (`== Glossary`
+ *                    section + `- term: definition` bullets). Defaults to
+ *                    null (no glossary — backward compatible).
  */
 data class ContextConfig(
     val docsGlobs: List<String> = emptyList(),
     val scenarioFile: String? = null,
+    val glossaryFile: String? = null,
 )

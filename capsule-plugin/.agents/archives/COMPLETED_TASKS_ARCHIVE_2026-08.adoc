@@ -1,5 +1,40 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
-:date: 2026-08-11
+:date: 2026-08-12
+
+== Session 111 — CAP-GLOSSARY US-2 Wiring CollectCapsuleAugmentedContextTask + ContextConfig + merger 4 sources + CapsuleExtension + CapsuleManager + provenance tracking ✅
+
+EPIC CAP-GLOSSARY US-2 terminé (P1, 3ème US sur 4, wiring 2 pts).
+
+`ContextConfig` 3ème champ `glossaryFile: String? = null` (pattern
+`scenarioFile`). `CapsuleConfigMerger.mergeContextConfig` étendu `mergeStr`
+pour `glossaryFile` + `loadFromEnvironment` (`CAPSULE_CONTEXT_GLOSSARY_FILE`)
++ `buildConfigFromProperties` (`capsule.context.glossaryFile`).
+`CapsuleExtension.glossaryFile: Property<String>` convention `""`.
+`pushConfigIntoExtension` push `glossaryFile` (guard `isPresent || blank`,
+pattern `scenarioFile` L124-126). `CollectCapsuleAugmentedContextTask.
+glossaryFile: ConfigurableFileCollection @InputFiles @PathSensitive(RELATIVE)
+@Optional` + `resolveGlossarySection(budget)` (5% budget = 400 tokens/8000,
+`GlossaryLoader.load(target, glossaryBudget)`, pattern `resolveScenarioSection`
+L281-296) + `trackSources` étendu tracking GLOSSARY (1 `ProvenanceSource` si
+`glossaryTarget` existe, pattern SCENARIO L230-249) + appel
+`CapsuleContextBuilder.build()` étendu `glossarySection =
+resolveGlossarySection(budget)`. `CapsuleManager` wiring lazy provider
+`glossaryFile.from(project.provider {...})` (extension afterEvaluate > CLI,
+pattern `scenarioFile` L229-237).
+
+Baby-step TDD strict RED → GREEN → REFACTOR (functional uniquement) :
+. **RED** : 1 fichier test (2 `GlossaryContextFunctionalTest`) → 1 FAIL
+   (glossary fourni mais pas de section — wiring `glossaryFile` inexistant),
+   1 PASSED par accident (absent → fallback actuel).
+. **GREEN** : 6 fichiers prod étendus (ContextConfig + Merger + Models +
+   Plugin + Task + Manager) + 2/2 functional PASSED.
+. **REFACTOR** : `./gradlew check` BUILD SUCCESSFUL in 26m25s, 857 unit
+   VERT inchangé baseline S-110, 64 functional VERT +2 net, Kover VERT,
+   validatePlugins VERT, zéro régression, zéro secret.
+
+Backward compat strict (`glossaryFile = null` défaut →
+`resolveGlossarySection` retourne `""` → tests existants inchangés).
+EPIC CAP-GLOSSARY 3/4 US (reste US-3 cucumber 3 scénarios).
 
 == Session 099 — CAP-MP4 US-2 VideoFormatConverter + FormatConversion + wiring ✅
 

@@ -1,8 +1,30 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
-:date: 2026-08-11
-:session: 108 CAP-PROVENANCE US-1+US-2 + clôture EPIC CAP-PROVENANCE
+:date: 2026-08-12
+:session: 111 CAP-GLOSSARY US-2 Wiring
 
-== Couverture — 11 août 2026 (après session 108 CAP-PROVENANCE US-1+US-2)
+== Couverture — 12 août 2026 (après session 111 CAP-GLOSSARY US-2)
+
+.Modifications session 111 — CAP-GLOSSARY US-2 Wiring
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/ContextConfig.kt` (modifié) | 3ème champ `glossaryFile: String? = null` (pattern `scenarioFile`), KDoc étendu (4-source precedence `CAPSULE_CONTEXT_GLOSSARY_FILE` < `capsule.context.glossaryFile` < YAML < CLI). | 0 (wiring pur — couvert par functional)
+| `capsule/CapsuleConfigMerger.kt` (modifié) | `loadFromEnvironment` (`CAPSULE_CONTEXT_GLOSSARY_FILE`) + `buildConfigFromProperties` (`capsule.context.glossaryFile`) + `mergeContextConfig` étendu `mergeStr` pour `glossaryFile` (pattern `scenarioFile` L329). | 0 (wiring pur — couvert par functional)
+| `capsule/CapsuleModels.kt` (modifié) | `CapsuleExtension.glossaryFile: Property<String>` convention `""` (pattern `scenarioFile`). | 0 (wiring pur — couvert par functional)
+| `capsule/CapsulePlugin.kt` (modifié) | `pushConfigIntoExtension` push `glossaryFile` (guard `isPresent || blank`, pattern `scenarioFile` L124-126). | 0 (wiring pur — couvert par functional)
+| `capsule/context/CollectCapsuleAugmentedContextTask.kt` (modifié) | `glossaryFile: ConfigurableFileCollection @InputFiles @PathSensitive(RELATIVE) @Optional` + `resolveGlossarySection(budget)` (5% budget = 400 tokens/8000, `GlossaryLoader.load(target, glossaryBudget)`, pattern `resolveScenarioSection` L281-296) + `trackSources` étendu tracking GLOSSARY (1 `ProvenanceSource` si `glossaryTarget` existe, pattern SCENARIO L230-249) + appel `CapsuleContextBuilder.build()` étendu `glossarySection = resolveGlossarySection(budget)`. | +2 functional `GlossaryContextFunctionalTest` (glossary fourni → `==== Official Glossary (glossary)` + termes présents + bullet non-Glossary ignoré ; absent → pas de section glossary backward compat)
+| `capsule/CapsuleManager.kt` (modifié) | Wiring lazy provider `task.glossaryFile.from(project.provider {...})` (extension afterEvaluate > CLI `capsule.context.glossaryFile`, pattern `scenarioFile` L229-237). | 0 (wiring pur — couvert par functional)
+| `src/functionalTest/kotlin/capsule/context/GlossaryContextFunctionalTest.kt` (nouveau) | 2 functional tests RED → GREEN — pattern `ScenarioContextFunctionalTest` mirror : `writeBuildFile` + `writeEagerFiles` + `writeGlossaryFile` (AsciiDoc `== Glossary` + 3 bullets `- term: definition` + `== Other Section` bullet ignoré) + `GradleRunner` CLI `-Pcapsule.context.glossaryFile`. | +2 functional
+|===
+
+*Totaux* : 857 unit VERT (inchangé baseline S-110 — US-2 = wiring pur,
+zéro test unit nouveau), 64 functional VERT (+2 net
+`GlossaryContextFunctionalTest`), 12 cucumber dédiés (inchangé — US-3 =
+cucumber à venir). `./gradlew check` BUILD SUCCESSFUL in 26m25s. Kover
+VERT, validatePlugins VERT. Zéro régression, zéro secret. Backward
+compat strict (`glossaryFile = null` défaut → `resolveGlossarySection`
+retourne `""` → tests existants inchangés).
+
+== Couverture — 12 août 2026 (après session 110 CAP-GLOSSARY US-1)
 
 .Modifications session 107+108 — CAP-PROVENANCE (EPIC TERMINÉ 3/3 US)
 |===

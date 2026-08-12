@@ -91,6 +91,17 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
     @get:Optional
     abstract val scenarioFile: ConfigurableFileCollection
 
+    /**
+     * Glossary AsciiDoc file (CAP-GLOSSARY-2). When present, the
+     * [GlossaryLoader] parses the `== Glossary` section + `- term: definition`
+     * bullets and renders the glossary section appended after the scenario
+     * section. Missing file gracefully skipped (backward compatible no-op).
+     */
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:Optional
+    abstract val glossaryFile: ConfigurableFileCollection
+
     /** Rendered augmented context artefact. */
     @get:OutputFile
     abstract val outputFile: RegularFileProperty
@@ -120,6 +131,8 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
 
         val scenarioSection = resolveScenarioSection(budget)
 
+        val glossarySection = resolveGlossarySection(budget)
+
         val composite = CompositeContext(
             eagerSection = eager,
             ragSection = ragContent.orNull.orEmpty(),
@@ -133,6 +146,7 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
             composite = composite,
             budget = budget,
             scenarioSection = scenarioSection,
+            glossarySection = glossarySection,
             tracker = tracker,
         )
 
@@ -247,6 +261,20 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
                 )
             }
         }
+
+        val glossaryTarget = glossaryFile.files.firstOrNull()
+        if (glossaryTarget != null && glossaryTarget.exists()) {
+            tracker.trackChannel(
+                ContextProvenance.GLOSSARY_CHANNEL,
+                listOf(
+                    ProvenanceSource(
+                        fileName = glossaryTarget.name,
+                        chars = glossaryTarget.readText().length,
+                        tokens = ContextChannel.estimateTokens(glossaryTarget.readText()),
+                    ),
+                ),
+            )
+        }
     }
 
     /**
@@ -293,5 +321,26 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
         } else {
             PedagogicalScenarioLoader.load(null, target, scenarioBudget)
         }
+    }
+
+    /**
+     * Resolves the official glossary section content (CAP-GLOSSARY-2).
+     *
+     * The [glossaryFile] collection is fed by the wiring layer from the
+     * 4-source config (ENV < props < YAML < CLI). When it contains a file,
+     * the [GlossaryLoader] parses the `== Glossary` section + bullets and
+     * truncates to the glossary budget. When empty or missing, the glossary
+     * section is blank (backward compatible no-op).
+     *
+     * Token budget: 5% of the total budget (the glossary is a lightweight
+     * terminological payload, not a corpus — pattern `scenarioSection`).
+     */
+    private fun resolveGlossarySection(budget: ChannelBudget): String {
+        val files = glossaryFile.files.toList()
+        if (files.isEmpty()) return ""
+        val target = files.first()
+        if (!target.exists()) return ""
+        val glossaryBudget = (budget.totalTokenBudget * 0.05).toInt().coerceAtLeast(50)
+        return GlossaryLoader.load(target, glossaryBudget)
     }
 }

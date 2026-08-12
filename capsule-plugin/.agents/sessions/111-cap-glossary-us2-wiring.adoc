@@ -1,0 +1,149 @@
+= Session 111 — CAP-GLOSSARY US-2 Wiring CollectCapsuleAugmentedContextTask + ContextConfig + merger 4 sources + CapsuleExtension + CapsuleManager + provenance tracking
+
+_Date_ : 2026-08-12
+_Type_ : feat+ddd+tdd
+_Score_ : 9/10
+
+== Mission
+
+Implémenter CAP-GLOSSARY US-2 (wiring layer) : connecter le
+`GlossaryLoader` (US-1) au task `collectCapsuleAugmentedContext` via
+`ContextConfig` 3ème champ `glossaryFile`, merger 4 sources
+(ENV < props < YAML < CLI), `CapsuleExtension.glossaryFile`,
+`pushConfigIntoExtension`, `CollectCapsuleAugmentedContextTask.
+glossaryFile` + `resolveGlossarySection(budget)` (5% budget, pattern
+`resolveScenarioSection`), `trackSources` étendu tracking GLOSSARY
+channel (1 source si résolu), `CapsuleManager` lazy provider, et
+`CapsuleContextBuilder.build()` appel étendu `glossarySection =
+resolveGlossarySection(budget)`. Baby-step TDD strict RED → GREEN →
+REFACTOR, 2 functional tests (glossary fourni → contexte enrichi
+section `==== Official Glossary (glossary)`, absent → fallback no-op).
+
+== Ce qui a été fait
+
+. **RED — test fonctionnel écrit avant implémentation** (1 fichier test,
+  2 tests) :
+  - `GlossaryContextFunctionalTest` `src/functionalTest/kotlin/capsule/
+    context/GlossaryContextFunctionalTest.kt` — 2 tests : (a)
+    `glossaryFile CLI param resolves glossary adoc and feeds the glossary
+    section` (glossary fourni → `==== Official Glossary (glossary)` +
+    termes `compétence transversale`/`évaluation formative` présents +
+    bullet `unrelated` de section non-Glossary ignoré) ; (b)
+    `no glossaryFile configured produces no glossary section` (absent →
+    pas de section glossary, backward compat).
+  - RED vérifié : `./gradlew functionalTest --tests
+    "capsule.context.GlossaryContextFunctionalTest"` → 1 FAIL (glossary
+    fourni mais pas de section — wiring `glossaryFile` inexistant), 1
+    PASSED par accident (absent → fallback actuel).
+
+. **GREEN — implémentation** (6 fichiers prod étendus + 1 test créé) :
+  - `ContextConfig.kt` étendu — 3ème champ `glossaryFile: String? = null`
+    (pattern `scenarioFile`), KDoc étendu (4-source precedence
+    `CAPSULE_CONTEXT_GLOSSARY_FILE` < `capsule.context.glossaryFile` <
+    YAML < CLI).
+  - `CapsuleConfigMerger.kt` étendu — `loadFromEnvironment`
+    (`CAPSULE_CONTEXT_GLOSSARY_FILE`) + `buildConfigFromProperties`
+    (`capsule.context.glossaryFile`) + `mergeContextConfig` étendu
+    `mergeStr` pour `glossaryFile` (pattern `scenarioFile` L329).
+  - `CapsuleModels.kt` étendu — `CapsuleExtension.glossaryFile:
+    Property<String>` convention `""` (pattern `scenarioFile`).
+  - `CapsulePlugin.kt` étendu — `pushConfigIntoExtension` push
+    `glossaryFile` (guard `isPresent` + blank, pattern `scenarioFile`
+    L124-126).
+  - `CollectCapsuleAugmentedContextTask.kt` étendu —
+    `glossaryFile: ConfigurableFileCollection @InputFiles
+    @PathSensitive(RELATIVE) @Optional` + `resolveGlossarySection(budget)`
+    (5% budget = 400 tokens/8000, `GlossaryLoader.load(target,
+    glossaryBudget)`, pattern `resolveScenarioSection` L281-296) +
+    `trackSources` étendu tracking GLOSSARY (1 `ProvenanceSource` si
+    `glossaryTarget` existe, pattern SCENARIO L230-249) + appel
+    `CapsuleContextBuilder.build()` étendu `glossarySection =
+    resolveGlossarySection(budget)`.
+  - `CapsuleManager.kt` étendu — wiring lazy provider
+    `task.glossaryFile.from(project.provider {...})` (extension
+    afterEvaluate > CLI `capsule.context.glossaryFile`, pattern
+    `scenarioFile` L229-237).
+  - `GlossaryContextFunctionalTest.kt` créé — 2 functional tests
+    RED → GREEN.
+
+. **REFACTOR — `./gradlew check` BUILD SUCCESSFUL in 26m25s** :
+  - 857 unit VERT (baseline S-110 préservée — US-2 = wiring pur, zéro
+    test unit nouveau).
+  - 64 functional VERT (+2 net : 2 `GlossaryContextFunctionalTest`).
+  - Kover VERT, validatePlugins VERT. Zéro régression, zéro secret.
+  - Cucumber SKIPPED par CR-10 (préexistant — `cucumberTest` global skip
+    CI, US-3 = cucumber à venir).
+
+== Décisions architecturales (US-2)
+
+. *Wiring mirror `scenarioFile` CAP-SPD-3* — tous les sites étendus
+  suivent le pattern `scenarioFile` à l'identique : `ContextConfig` 3ème
+  champ `String? = null`, `mergeStr` dans `mergeContextConfig`,
+  `CapsuleExtension.glossaryFile: Property<String>` convention `""`,
+  `pushConfigIntoExtension` guard `isPresent || blank`,
+  `ConfigurableFileCollection @InputFiles @Optional`, lazy provider
+  `project.provider { extension > CLI }`, `resolveGlossarySection(budget)`
+  5% budget pattern `resolveScenarioSection`. Aucune innovation
+  architecturale — pure application du pattern établi.
+
+. *Provenance tracking GLOSSARY* — `trackSources` étendu après SCENARIO :
+  `glossaryFile.files.firstOrNull()` → 1 `ProvenanceSource(fileName =
+  target.name, chars = readText().length, tokens =
+  ContextChannel.estimateTokens(readText()))` si existe. Le
+  `ProvenanceTracker.retainOnly` étendu `+= GLOSSARY_CHANNEL` est déjà
+  en place côté builder (US-1 S-110). Le log `CAPSULE PROVENANCE →`
+  reflète automatiquement le nouveau channel GLOSSARY via
+  `tracker.build().channels.size`.
+
+. *Budget 5% pattern `scenarioSection`* — `(budget.totalTokenBudget *
+  0.05).toInt().coerceAtLeast(50)` = 400 tokens/8000. Le glossaire est
+  un payload terminologique léger, pas un corpus (décision US-0 S-109).
+
+. *Économie d'encre* — `glossaryFile` est `@InputFiles @PathSensitive
+  (RELATIVE) @Optional`, le task est UP-TO-DATE quand
+  `augmented-context.txt` l'est (même task, mêmes inputs —
+  `provenanceFile` aussi). Pas de probe (le glossaire est calculé
+  pendant le build, pas re-probé après).
+
+. *Backward compat strict* — `glossaryFile = null` (défaut) →
+  `resolveGlossarySection` retourne `""` → `CapsuleContextBuilder.build
+  (glossarySection = "")` → tests existants inchangés. Aucun appelant
+  existant cassé.
+
+== Fichiers modifiés/créés
+
+[cols="2,3,1"]
+|===
+| Fichier | Rôle | Action
+
+| `src/main/kotlin/capsule/ContextConfig.kt` | 3ème champ `glossaryFile: String? = null` + KDoc | étendu
+| `src/main/kotlin/capsule/CapsuleConfigMerger.kt` | `mergeContextConfig` étendu + ENV + props | étendu
+| `src/main/kotlin/capsule/CapsuleModels.kt` | `CapsuleExtension.glossaryFile` convention `""` | étendu
+| `src/main/kotlin/capsule/CapsulePlugin.kt` | `pushConfigIntoExtension` push `glossaryFile` | étendu
+| `src/main/kotlin/capsule/context/CollectCapsuleAugmentedContextTask.kt` | `glossaryFile` + `resolveGlossarySection` + `trackSources` GLOSSARY + appel `build()` étendu | étendu
+| `src/main/kotlin/capsule/CapsuleManager.kt` | wiring lazy provider `glossaryFile` | étendu
+| `src/functionalTest/kotlin/capsule/context/GlossaryContextFunctionalTest.kt` | 2 functional tests RED→GREEN | créé
+|===
+
+== Tests
+
+- 857 unit VERT (inchangé baseline S-110 — US-2 = wiring pur)
+- 64 functional VERT (+2 net : 2 `GlossaryContextFunctionalTest`)
+- `./gradlew check` BUILD SUCCESSFUL in 26m25s
+- Kover VERT, validatePlugins VERT, zéro régression, zéro secret
+
+== Prochaine session
+
+CAP-GLOSSARY US-3 — Cucumber BDD `capsule_glossary_context.feature`
+`@context @glossary` (3 scénarios : glossary injecté → section `====
+Official Glossary (glossary)` dans `augmented-context.txt` +
+instruction prompt "Use official terminology", absent → fallback no-op
+pas de section glossary, malformed glossary → gracefully skipped
+fallback no-op). Runner dédié `CapsuleGlossaryContextCucumberRunner`
+(pattern S-082 `@SelectClasspathResource` + filter `@context and
+@glossary and not @wip and not @integration`). Steps
+`CapsuleGlossaryContextSteps` préfixés "glossary context" (bug S-088
+glue `capsule.scenarios` partagée — step texts uniques).
+`CucumberTaskSpec("cucumberTestGlossaryContext")` 14ème câblé
+`build.gradle.kts` (13ème cucumber dédié). Baby-step BDD : RED (3
+`UndefinedStepException`) → GREEN (3/3 scénarios PASSED) → REFACTOR.

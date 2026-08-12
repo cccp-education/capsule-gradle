@@ -27,6 +27,10 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val scenarioFile: Property<String> = objects.property(String::class.java)
         .convention("")
 
+    /** CAP-GLOSSARY-2 — path to a glossary AsciiDoc file (`== Glossary` section + `- term: definition` bullets). Defaults to empty. */
+    val glossaryFile: Property<String> = objects.property(String::class.java)
+        .convention("")
+
     val ttsEngine: Property<String> = objects.property(String::class.java)
         .convention("piper")
 
