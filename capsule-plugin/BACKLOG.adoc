@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-13 (Session 113 — **EPIC CAP-27 VTT burn-in TERMINÉ 3/3 US**. Constat prémisse caduque : compat VTT **déjà fonctionnelle** (test réel ffmpeg 6.1.1). US-0 cadrage (8 décisions). US-1 `SubtitleBurnInCommand` object pur (pattern `AudioPostCommand`) + refactor `burnIn` (argv identique backward compat) + 13 unit tests SRT/VTT (866 unit VERT 0 FAIL +9 net). US-2 Cucumber BDD 2 scénarios `@subtitles @burnin @vtt` dans `capsule.feature` (feature existante → pas de nouveau runner S-082) + 2 step defs VTT (S-088) : non-integration PASSED (32s) + E2E `@integration` real ffmpeg PASSED (32s, WebM valide EBML + `.vtt` + burn-in success). `cucumberTestIntegration` 256 tests 0 failures. `check` BUILD SUCCESSFUL, Kover VERT, 64 functional VERT, zéro régression, zéro secret, zéro bump BOM, zéro changement DSL. EPIC clos en 1 session.)
+:last_update: 2026-08-14 (Session 118 — **CAP-TRANSCRIPT US-4 tâche `generateCapsuleTranscript` + wiring**. Tâche Gradle `@DisableCachingByDefault` : groupe `generate`, `@InputFile speakerNotesFile` `@PathSensitive(RELATIVE)`, `@Input language`, `@Input strategy: Property<TranscriptStrategy>`, `@OutputFile transcriptOutput` (`build/capsule/<deckName>-transcript.adoc`), `@Optional @ServiceReference llmService` (strategy=LLM → `project.aiProvider` + `resolveModel` + `ChatModelTranscriptEnhancer`). Économie d'encre skip si output existe ET non-blank. Wiring `CapsuleManager.registerGenerateTranscriptTask` + `dependsOn("generateCapsuleContent")` (tests `-x generateCapsuleContent` standalone). Clé `task.generateCapsuleTranscript.description` 24ème 11 `Messages*.properties`. 3 functional `GenerateCapsuleTranscriptFunctionalTest` (registration, TEMPLATE déterministe, LLM mock `/api/chat`). Baby-step TDD RED → GREEN → REFACTOR. 917 unit VERT baseline S-117, 67 functional VERT +3 net, cucumber dédiés GREEN, `check` BUILD SUCCESSFUL 26m03s, Kover VERT, validatePlugins VERT, zéro régression, zéro secret, zéro bump BOM. EPIC CAP-TRANSCRIPT 5/6 US.)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -1484,7 +1484,7 @@ CAP-PROVENANCE TERMINÉ 3/3 US (S-108)** — domaine `capsule.context` clos
 BUILD SUCCESSFUL : 834 unit (+15) + 62 functional (+2) + 3 cucumber
 `capsule_provenance.feature` GREEN. Zéro régression, zéro secret.
 
-=== 🟡 EPIC CAP-TRANSCRIPT — Reverse pipeline capsule → article AsciiDoc (Session 114 — Cadrage US-0, EN COURS 4/6 US)
+=== 🟡 EPIC CAP-TRANSCRIPT — Reverse pipeline capsule → article AsciiDoc (Session 114 — Cadrage US-0, EN COURS 5/6 US)
 
 _Vision_ : Le stagiaire révisionne en lecture, pas vidéo. `generateCapsuleTranscript`
 produit un article AsciiDoc depuis les speaker notes + slide titles + metadata
@@ -1700,7 +1700,7 @@ _Décisions architecturales (12)_ :
   Baby-step TDD : ~3 functional (registration, output artefact TEMPLATE,
   output artefact LLM mock).
 | 2
-| ⬜ TODO
+| ✅ TERMINÉ (S-118, 3 functional : registration groupe generate, TEMPLATE déterministe `build/capsule/demo-transcript.adoc`, LLM mock `/api/chat` enrichi + ≥1 appel. `dependsOn("generateCapsuleContent")` préservé en prod — décision GREEN tests `-x generateCapsuleContent` standalone. 917 unit VERT baseline S-117, 67 functional VERT +3 net, `check` BUILD SUCCESSFUL 26m03s, zéro régression, zéro secret, zéro bump BOM)
 
 | CAP-TRANSCRIPT-5
 | *Cucumber BDD* — `capsule_transcript.feature` `@transcript` (4 scénarios :
@@ -1720,7 +1720,7 @@ code/Gherkin. _Pattern de référence_ : `capsule.audio` (AudioPostConfig +
 AudioPostProcessor port/adapter + factory + wiring + cucumber), `capsule.validation`
 (ValidationConfig + merger 2 champs + cucumber runner dédié). _Statut_ :
 US-0 ✅ TERMINÉ (S-114), US-1 ✅ TERMINÉ (S-115), US-2 ✅ TERMINÉ (S-116),
-US-3→5 TODO.
+US-3 ✅ TERMINÉ (S-117), US-4 ✅ TERMINÉ (S-118), US-5 TODO.
 
 === 📸 EPIC CAP-CR3-3 — Branchement ScreenshotCapture (alternative configurable) — TERMINÉ 5/5 US (S-096)
 
@@ -2734,7 +2734,7 @@ _Total_ : 3 US, ~4 pts.
 | 6
 | 12
 | 🟡 P2
-| 🟡 US-0 ✅ (S-114), US-1 ✅ (S-115), US-2 ✅ (S-116), US-3 ✅ (S-117), US-4→5 TODO
+| 🟡 US-0 ✅ (S-114), US-1 ✅ (S-115), US-2 ✅ (S-116), US-3 ✅ (S-117), US-4 ✅ (S-118), US-5 TODO
 
 | Post-prod
 | CAP-CR3-1
@@ -2796,6 +2796,6 @@ _Total_ : 11 EPICs, 48 US, ~90 pts. _Séquence MVP0 recommandée_ :
 . CAP-GLOSSARY (P1 — vocabulaire référentiel)
 . CAP-PROVENANCE (P1 — anti-hallucination) ✅
 . CAP-CHAPITRE (P2 — navigabilité 32 capsules)
-. CAP-TRANSCRIPT (P2 — livrable révision article)
+. CAP-TRANSCRIPT (P2 — livrable révision article) 🟡 5/6 US (US-5 cucumber en cours)
 . CAP-PODCAST (P2 — mobilité)
 . CAP-PREVIEW (P2 — itération contenu)

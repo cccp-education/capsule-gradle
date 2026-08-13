@@ -1,6 +1,26 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
-:date: 2026-08-13
-:session: 113 EPIC CAP-27 VTT burn-in TERMINÉ 3/3 US
+:date: 2026-08-14
+:session: 118 CAP-TRANSCRIPT US-4 tâche generateCapsuleTranscript + wiring
+
+== Couverture — 14 août 2026 (après session 118 CAP-TRANSCRIPT US-4 tâche generateCapsuleTranscript)
+
+.Modifications session 118 — CAP-TRANSCRIPT US-4 (tâche + wiring, 3 functional)
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/transcript/GenerateCapsuleTranscriptTask.kt` (nouveau) | Tâche Gradle `@DisableCachingByDefault` : `@InputFile speakerNotesFile` `@PathSensitive(RELATIVE)` + `@Input language` + `@Input strategy: Property<TranscriptStrategy>` + `@OutputFile transcriptOutput` + `@Optional @ServiceReference llmService: Property<LlmBuildService>`. TaskAction : skip si output existe ET non-blank (économie d'encre) ; check speakerNotesFile.exists() ; deckName = removeSuffix("-speaker-notes") ; parse `AsciidocSpeakerNoteParser` → `CapsuleScript` → `TranscriptPlan` ; TEMPLATE → `TranscriptBuilder.build` ; LLM → `project.aiProvider` + `resolveModel` + `ChatModelTranscriptEnhancer.enhance` ; write + log `CAPSULE TRANSCRIPT →`. | +3 functional `GenerateCapsuleTranscriptFunctionalTest` (registration groupe generate ; TEMPLATE déterministe `build/capsule/demo-transcript.adoc` ; LLM mock `/api/chat` enrichi + ≥1 appel)
+| `capsule/CapsuleManager.kt` (modifié +44) | `registerGenerateTranscriptTask` après `registerGenerateCapsuleContentTask` — groupe generate, description i18n, `dependsOn("generateCapsuleContent")`, conventions language `deck.language`?:`fr`, strategy extension?:CLI, speakerNotesFile 1er `*-speaker-notes.adoc` dans build/capsule/, transcriptOutput map `capsule/<deckName>-transcript.adoc`, llmService + usesService. | 0 (wiring pur — couvert par functional)
+| `src/main/resources/i18n/Messages*.properties` (11 modifiés) | Clé `task.generateCapsuleTranscript.description` (24ème) base + en + fr/zh/hi/es/ar/bn/pt/ru/ur. | 0 (i18n — couvert par `CapsuleMessagesTest` 23×10 langues existant)
+| `src/functionalTest/kotlin/capsule/transcript/GenerateCapsuleTranscriptFunctionalTest.kt` (nouveau) | 3 functional tests RED → GREEN — pattern `GenerateCapsuleContentFunctionalTest` mirror : mock HTTP `/api/chat` (réponse enrichie, compteur calls) + `-Pollama.baseUrl` + `-x generateCapsuleContent` (speaker notes pré-écrits, standalone) + vérifs output AsciiDoc. | +3 functional
+|===
+
+*Totaux* : 917 unit VERT (inchangé baseline S-117 — US-4 = tâche +
+wiring, zéro unit nouveau), 67 functional VERT (+3 net
+`GenerateCapsuleTranscriptFunctionalTest`), cucumber dédiés GREEN
+(baseline préservée — US-5 = cucumber à venir). `./gradlew check`
+BUILD SUCCESSFUL in 26m03s. Kover VERT, validatePlugins VERT. Zéro
+régression, zéro secret, zéro bump BOM. Backward compat : transcript
+`enabled=false` défaut → tâche pas de skip forcé (skip économie d'encre
+uniquement si output existe ET non-blank).
 
 == Couverture — 13 août 2026 (après session 113 EPIC CAP-27 VTT burn-in)
 

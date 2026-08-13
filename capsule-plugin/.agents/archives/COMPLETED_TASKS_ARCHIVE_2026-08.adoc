@@ -1,5 +1,61 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
-:date: 2026-08-13
+:date: 2026-08-14
+
+== Session 118 — CAP-TRANSCRIPT US-4 tâche generateCapsuleTranscript + wiring ✅
+
+EPIC CAP-TRANSCRIPT US-4 terminé (P2, 4ème US sur 6, tâche + wiring 2 pts).
+
+Tâche `generateCapsuleTranscript` (`capsule/transcript/GenerateCapsuleTranscriptTask.kt`) :
+groupe `generate`, `@InputFile speakerNotesFile` `@PathSensitive(RELATIVE)`
++ `@Input language` + `@Input strategy: Property<TranscriptStrategy>` +
+`@OutputFile transcriptOutput` (`build/capsule/<deckName>-transcript.adoc`)
++ `@Optional @ServiceReference llmService: Property<LlmBuildService>`.
+TaskAction : skip si output existe ET non-blank (économie d'encre) ; check
+`speakerNotesFile.exists()` (message actionable "Run generateCapsuleContent
+first") ; `deckName` = filename `removeSuffix("-speaker-notes")` ; parse
+`AsciidocSpeakerNoteParser` → `CapsuleScript` → `TranscriptPlan(deckName,
+segments, language, outputPath)` ; TEMPLATE → `TranscriptBuilder.build(plan)` ;
+LLM → `project.aiProvider` + `project.resolveModel(provider, llmService)` +
+`ChatModelTranscriptEnhancer(model).enhance(template, plan)` ; write + log
+`CAPSULE TRANSCRIPT → <file> (N chars, strategy=X)`.
+
+Wiring `CapsuleManager.registerGenerateTranscriptTask` (après
+`registerGenerateCapsuleContentTask`) : groupe generate, description i18n,
+`dependsOn("generateCapsuleContent")`, conventions language `deck.language`?:`fr`,
+strategy extension `transcriptStrategy` ?: CLI `-Pcapsule.transcript.strategy`,
+speakerNotesFile 1er fichier `*-speaker-notes.adoc` dans `build/capsule/`,
+transcriptOutput map `capsule/<deckName>-transcript.adoc`, llmService +
+usesService. Décision GREEN : dependsOn préservé en prod (conforme cadrage
+S-114) ; tests utilisent `-x generateCapsuleContent` car la tâche ne dépend
+pas du deck mais seulement des speaker notes (pré-écrits dans les tests,
+standalone + zéro LLM involontaire + évite erreur de config `deckFile` sans
+deck).
+
+Clé `task.generateCapsuleTranscript.description` (24ème) ajoutée dans les 11
+`Messages*.properties` (base + en + fr/zh/hi/es/ar/bn/pt/ru/ur).
+
+3 functional tests `GenerateCapsuleTranscriptFunctionalTest` : registration
+groupe generate ; TEMPLATE déterministe → `build/capsule/demo-transcript.adoc`
+(`= demo`, `:language:`, `== Introduction`, speaker note body, outro) ; LLM
+mock HTTP `/api/chat` + `-Pollama.baseUrl` → article enrichi + ≥1 appel.
+Baby-step TDD strict RED (3/3 FAILED — task not found) → GREEN (3/3 PASSED)
+→ REFACTOR (`check` BUILD SUCCESSFUL in 26m03s).
+
+917 unit VERT (baseline S-117 préservée — US-4 zéro unit nouveau), 67
+functional VERT (+3 net baseline 64 → 67), cucumber dédiés GREEN (baseline
+préservée — US-5 cucumber à venir, cucumberTest global SKIPPED par CR-10),
+Kover VERT, validatePlugins VERT, zéro régression, zéro secret, zéro bump
+BOM. Backward compat : transcript `enabled=false` défaut.
+
+1 fichier prod créé + 1 wiring modifié + 1 test créé + 11 i18n modifiés.
+EPIC CAP-TRANSCRIPT 5/6 US (US-5 Cucumber BDD TODO).
+
+Le borough Détroit produit désormais l'article AsciiDoc de révision
+(`generateCapsuleTranscript`) en plus de la capsule vidéo — double livrable
+MVP0. L'article est publiable par document-gradle (WRITE + PUBLISH
+multi-format) ou bakery-gradle (site statique).
+
+Rapport : `.agents/sessions/118-cap-transcript-us4-task-wiring.adoc`.
 
 == Session 113 — EPIC CAP-27 VTT burn-in TERMINÉ 3/3 US ✅
 

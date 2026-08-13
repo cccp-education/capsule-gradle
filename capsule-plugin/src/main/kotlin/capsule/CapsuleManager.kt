@@ -21,6 +21,7 @@ class CapsuleManager(private val project: Project) {
         project.registerAiSmokeTestTask()
         project.registerCollectAugmentedContextTask()
         project.registerGenerateCapsuleContentTask()
+        project.registerGenerateTranscriptTask()
         project.registerDistributeCapsuleVideoTask()
         project.registerValidateCapsuleVideoDurationTask()
     }
@@ -315,6 +316,49 @@ class CapsuleManager(private val project: Project) {
                 project.layout.buildDirectory.file(
                     task.deckFile.map { deck ->
                         "capsule/${deck.asFile.nameWithoutExtension}-script.txt"
+                    }
+                )
+            )
+            task.llmService.set(llmServiceProvider)
+            task.usesService(llmServiceProvider)
+        }
+    }
+
+    private fun Project.registerGenerateTranscriptTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
+        val capsuleExt = project.extensions.findByType(CapsuleExtension::class.java)
+        val llmServiceProvider = registerLlmBuildService()
+        tasks.register(
+            "generateCapsuleTranscript",
+            capsule.transcript.GenerateCapsuleTranscriptTask::class.java,
+        ) { task ->
+            task.group = CapsuleMessages.get("task.group.generate", lang)
+            task.description = CapsuleMessages.get("task.generateCapsuleTranscript.description", lang)
+            task.dependsOn("generateCapsuleContent")
+            task.language.convention(findProperty("deck.language")?.toString() ?: "fr")
+            task.strategy.convention(project.provider {
+                capsuleExt?.transcriptStrategy?.orNull
+                    ?: capsule.transcript.TranscriptStrategy.fromString(
+                        findProperty("capsule.transcript.strategy")?.toString()
+                    )
+            })
+            task.speakerNotesFile.convention(
+                project.layout.buildDirectory.file(
+                    project.provider {
+                        val capDir = project.layout.buildDirectory.dir("capsule").get().asFile
+                        capDir.listFiles { f -> f.name.endsWith("-speaker-notes.adoc") }
+                            ?.firstOrNull()
+                            ?.let { it.absolutePath }
+                            ?: "capsule/no-speaker-notes.adoc"
+                    }
+                )
+            )
+            task.transcriptOutput.convention(
+                project.layout.buildDirectory.file(
+                    task.speakerNotesFile.map { notes ->
+                        val deckName = notes.asFile.nameWithoutExtension
+                            .removeSuffix("-speaker-notes")
+                        "capsule/$deckName-transcript.adoc"
                     }
                 )
             )

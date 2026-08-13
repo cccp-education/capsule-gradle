@@ -1,0 +1,200 @@
+= Session 118 — CAP-TRANSCRIPT US-4 tâche generateCapsuleTranscript + wiring
+
+_Date_ : 2026-08-14
+_Type_ : feat+ddd+tdd
+_Score_ : 9/10
+_Borough_ : Détroit (capsule-gradle)
+
+== Objectif
+
+CAP-TRANSCRIPT US-4 — tâche `generateCapsuleTranscript` + wiring. Groupe
+`generate`, `@OutputFile transcriptOutput`
+(`build/capsule/<deckName>-transcript.adoc`), `@InputFile speakerNotesFile`
+(dependsOn `generateCapsuleContent`), `@Input language`/`strategy`, `@Optional
+@ServiceReference LlmBuildService` (si strategy=LLM). Baby-step TDD strict
+RED → GREEN → REFACTOR. ~3 functional attendus, 3 functional livrés.
+
+== Contexte
+
+EPIC CAP-TRANSCRIPT (P2) — cadré US-0 S-114, US-1 ✅ S-115 (`TranscriptConfig`
++ `TranscriptStrategy` enum + merger 4 sources), US-2 ✅ S-116 (`TranscriptPlan`
++ `TranscriptBuilder` + `TranscriptPromptBuilder`), US-3 ✅ S-117
+(`TranscriptLlmEnhancer` port + `ChatModelTranscriptEnhancer` adapter, 917 unit
+VERT baseline). US-4 cible : la tâche Gradle qui consomme les speaker notes
+produits par `generateCapsuleContent` et assemble l'article AsciiDoc de
+révision, via `TranscriptBuilder` (TEMPLATE) ou `TranscriptLlmEnhancer` (LLM).
+
+Pattern de référence : `GenerateCapsuleContentTask` (`GenerateCapsuleContentTask.kt:45`)
+— `@OutputFile speakerNotesOutput` = `build/capsule/<deckName>-speaker-notes.adoc`
+(source du transcript). `generateCapsuleTranscript` dependsOn
+`generateCapsuleContent`. Économie d'encre skip si output existe ET non-blank
+(pattern `GenerateCapsuleContentTask` `@DisableCachingByDefault` mais
+`@OutputFile` déclaré).
+
+`CapsuleMessages` clé `task.generateCapsuleTranscript.description` (24ème key,
+11 `Messages_*.properties`). Wiring `CapsuleManager.registerGenerateTranscriptTask`.
+
+== RED — Tests fonctionnels (1 fichier, 3 functional)
+
+. *`GenerateCapsuleTranscriptFunctionalTest.kt`* (3 functional) — la tâche
+  n'existe pas → échec build TestKit. Tests :
+  - `generateCapsuleTranscript task is registered in the generate group` —
+    `tasks --group generate` → la tâche apparaît
+  - `TEMPLATE strategy produces a deterministic AsciiDoc article from
+    speaker notes` — speaker notes pré-écrits dans `build/capsule/`, run
+    `generateCapsuleTranscript -x generateCapsuleContent
+    -Pcapsule.transcript.enabled=true -Pcapsule.transcript.strategy=template`
+    → `build/capsule/demo-transcript.adoc` contient `= demo`, `:language:`,
+    `== Introduction`, speaker note body, outro boilerplate
+  - `LLM strategy enriches the template article via a mock Ollama server` —
+    mock HTTP `/api/chat` + `-Pollama.baseUrl`, strategy `llm` → output
+    contient la réponse enrichie du mock + ≥1 appel LLM
+
+Compilation `compileFunctionalTestKotlin` : BUILD SUCCESSFUL (tests compilent,
+la tâche n'existe pas). Run `:functionalTest --tests
+capsule.transcript.GenerateCapsuleTranscriptFunctionalTest` : 3/3 FAILED
+(UnexpectedBuildFailure — task not found). RED confirmé.
+
+== GREEN — 1 fichier prod créé + wiring
+
+. *`GenerateCapsuleTranscriptTask.kt`* (domaine `capsule.transcript`) —
+  `@DisableCachingByDefault`. Propriétés :
+  - `@InputFile speakerNotesFile` (`@PathSensitive(RELATIVE)`)
+  - `@Input language` (`Property<String>`)
+  - `@Input strategy` (`Property<TranscriptStrategy>`)
+  - `@OutputFile transcriptOutput`
+  - `@Optional @ServiceReference llmService` (`Property<LlmBuildService>`)
+  TaskAction :
+  - skip si `transcriptOutput` existe ET non-blank (économie d'encre)
+  - check `speakerNotesFile.exists()` (message actionable "Run
+    generateCapsuleContent first")
+  - `deckName` = filename `removeSuffix("-speaker-notes")`
+  - parse `AsciidocSpeakerNoteParser.parse(notesContent, deckName)` →
+    `CapsuleScript` → `TranscriptPlan(deckName, segments, language, outputPath)`
+  - TEMPLATE → `TranscriptBuilder.build(plan)`
+  - LLM → `project.aiProvider` + `project.resolveModel(provider, llmService)`
+    + `ChatModelTranscriptEnhancer(model).enhance(template, plan)`
+  - write output + log `CAPSULE TRANSCRIPT → <file> (N chars, strategy=X)`
+
+. *`CapsuleManager.registerGenerateTranscriptTask`* — wiring après
+  `registerGenerateCapsuleContentTask` (L272-324) :
+  - groupe `generate`, description i18n
+  - `dependsOn("generateCapsuleContent")`
+  - `language.convention(findProperty("deck.language") ?: "fr")`
+  - `strategy.convention(provider { extension.transcriptStrategy ?: fromString(CLI) })`
+  - `speakerNotesFile.convention(provider { 1er fichier `*-speaker-notes.adoc`
+    dans build/capsule/ })`
+  - `transcriptOutput.convention(map { "capsule/<deckName>-transcript.adoc" })`
+  - `llmService.set(registerLlmBuildService())` + `usesService`
+
+. *Tests* — ajout `-x generateCapsuleContent` aux 2 tests d'artefact (le
+  dependsOn est préservé en prod, les tests pré-écrivent les speaker notes et
+  excluent la dépendance pour rester standalone + économie d'encre).
+
+Compilation `compileKotlin` : BUILD SUCCESSFUL. Run `:functionalTest --tests
+capsule.transcript.GenerateCapsuleTranscriptFunctionalTest` : 3/3 PASSED.
+GREEN confirmé.
+
+== Décision de conception (durant GREEN)
+
+Le cadrage (US-0 S-114) prévoyait `dependsOn("generateCapsuleContent")`. En
+l'implémentant tel quel, les functional tests échouaient à la résolution du
+task graph : `generateCapsuleContent` configure `deckFile` avec un provider qui
+`error("No deck found")` en l'absence de deck. Deux options :
+(a) fournir un deck dans les tests — inutile, la tâche transcript n'a pas
+    besoin du deck, seulement des speaker notes ;
+(b) garder le dependsOn en prod + `-x generateCapsuleContent` dans les tests
+    qui pré-écrivent les speaker notes.
+
+Option (b) retenue : le dependsOn reste conforme au cadrage (en prod,
+`generateCapsuleContent` tourne d'abord), les tests restent standalone et
+déterministes (zéro LLM involontaire, économie d'encre).
+
+== Tests fonctionnels — verdict
+
+----
+GenerateCapsuleTranscriptFunctionalTest : 3 tests, 0 fail, 0 skip
+  - registration groupe generate
+  - TEMPLATE → build/capsule/demo-transcript.adoc déterministe
+  - LLM mock → article enrichi + ≥1 appel
+----
+
+== REFACTOR — `./gradlew check` BUILD SUCCESSFUL
+
+[source,shell]
+----
+./gradlew :functionalTest
+# BUILD SUCCESSFUL in 4m 38s (67 functional, 0 fail)
+./gradlew check
+# BUILD SUCCESSFUL in 26m 3s
+# 917 unit VERT (baseline S-117 préservée)
+# 67 functional VERT (+3 net : baseline 64 → 67)
+# cucumber dédiés GREEN (baseline préservée, 0 fail — cucumberTest global
+#   SKIPPED par CR-10, les 13 FAIL du rapport global = artefact NoTestsDiscovered
+#   bug S-082 hors périmètre)
+# Kover VERT, validatePlugins VERT
+# zéro régression, zéro secret, zéro bump BOM
+----
+
+Vérification secrets : `grep -rn "TOKEN\|SECRET\|PASSWORD\|API_KEY\|gho_\|ghp_"
+src/main/kotlin/capsule/transcript/GenerateCapsuleTranscriptTask.kt
+src/functionalTest/kotlin/capsule/transcript/` → zéro match. Zéro secret.
+
+== Statut EPIC CAP-TRANSCRIPT post-session
+
+[cols="1,3,1,1", options="header"]
+|===
+| US | Livrable | Pts | Statut
+
+| CAP-TRANSCRIPT-0 | Cadrage EPIC | 1 | ✅ TERMINÉ (S-114)
+| CAP-TRANSCRIPT-1 | TranscriptConfig + TranscriptStrategy enum + merger 4 sources | 2 | ✅ TERMINÉ (S-115)
+| CAP-TRANSCRIPT-2 | TranscriptPlan + TranscriptBuilder + TranscriptPromptBuilder | 3 | ✅ TERMINÉ (S-116)
+| CAP-TRANSCRIPT-3 | TranscriptLlmEnhancer port + ChatModelTranscriptEnhancer adapter | 2 | ✅ TERMINÉ (S-117)
+| CAP-TRANSCRIPT-4 | Tâche generateCapsuleTranscript + wiring | 2 | ✅ TERMINÉ (S-118)
+| CAP-TRANSCRIPT-5 | Cucumber BDD | 2 | ⬜ TODO
+|===
+
+EPIC CAP-TRANSCRIPT 5/6 US (US-0 ✅ S-114, US-1 ✅ S-115, US-2 ✅ S-116,
+US-3 ✅ S-117, US-4 ✅ S-118, US-5 TODO). Domaine `capsule.transcript`
+(11ème) enrichi : 1 nouveau fichier prod (GenerateCapsuleTranscriptTask) +
+wiring CapsuleManager. 8 fichiers prod total domaine (TranscriptConfig S-115 +
+TranscriptStrategy dans TranscriptConfig.kt + TranscriptPlan/TranscriptBuilder/
+TranscriptPromptBuilder S-116 + TranscriptLlmEnhancer/ChatModelTranscriptEnhancer
+S-117 + GenerateCapsuleTranscriptTask S-118).
+
+== Livrables
+
+. *Prod* (1 fichier créé + 1 modifié) :
+  - `src/main/kotlin/capsule/transcript/GenerateCapsuleTranscriptTask.kt`
+    (tâche Gradle, TEMPLATE/LLM, skip économie d'encre)
+  - `src/main/kotlin/capsule/CapsuleManager.kt` (registerGenerateTranscriptTask
+    + registerTasks)
+
+. *Tests* (1 fichier créé, 3 functional) :
+  - `src/functionalTest/kotlin/capsule/transcript/GenerateCapsuleTranscriptFunctionalTest.kt`
+
+. *i18n* (11 fichiers modifiés) :
+  - `src/main/resources/i18n/Messages*.properties` (base + en + 9 langues) —
+    clé `task.generateCapsuleTranscript.description` (24ème key)
+
+== Vérifications
+
+- `git status` : branche main, fichiers modifiés/créés (1 prod + 1 manager +
+  1 test + 11 i18n).
+- `./gradlew check` : BUILD SUCCESSFUL in 26m 3s.
+- Secrets : zéro.
+- `rg -n "🟡\|⏳\|À FAIRE\|À PLANIFIER\|EN PAUSE\|à planifier\|à faire"
+  BACKLOG.adoc` : marqueurs restants = US-5 TODO (légitime, EPIC en cours) +
+  EPICs P2 non démarrés (CAP-CHAPITRE, CAP-PODCAST, CAP-PREVIEW). Aucun
+  marqueur périmé pour US terminée.
+
+== Prochaine session (119)
+
+CAP-TRANSCRIPT US-5 Cucumber BDD — `capsule_transcript.feature` `@transcript`
+(4 scénarios : template strategy produces AsciiDoc article, LLM strategy mock
+enriches article, disabled default skips task, output AsciiDoc valid structure).
+Runner dédié `CapsuleTranscriptCucumberRunner` (pattern S-082) +
+`CapsuleTranscriptSteps` préfixés "transcript" (bug S-088) +
+`CucumberTaskSpec("cucumberTestTranscript")` 15ème câblé `build.gradle.kts`
+(après `cucumberTestGlossaryContext` L153, avant `cucumberTestIntegration`
+L159). Baby-step BDD RED → GREEN → REFACTOR.

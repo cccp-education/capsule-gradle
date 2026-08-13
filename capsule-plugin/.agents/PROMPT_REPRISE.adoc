@@ -1,55 +1,51 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 117 — **CAP-TRANSCRIPT US-3 TranscriptLlmEnhancer
-port + ChatModelTranscriptEnhancer adapter** (baby-step TDD strict
-RED → GREEN → REFACTOR). Domaine `capsule.transcript` (11ème) enrichi
-avec `TranscriptLlmEnhancer.kt` (interface port sync `fun
-enhance(template: String, plan: TranscriptPlan): String`, pattern
-`CapsuleLlm` — le domaine reste Gradle-free/coroutine-free,
-unit-testable avec un plain fake) + `ChatModelTranscriptEnhancer.kt`
-(adapter `ChatModel` langchain4j pattern `ChatModelCapsuleLlm` —
-`model.chat(UserMessage.from(prompt)).aiMessage().text()`, prompt
-construit via `TranscriptPromptBuilder.buildEnhancePrompt`). Fallback
-degraded pattern `AudioPostProcessor.process` : LLM blank/whitespace
-→ template original (économie d'encre). Short-circuit si template
-blank (no LLM call). 6 unit tests créés (`TranscriptLlmEnhancerTest`
-+ FakeChatModel minimal override `doChat`). 917 unit VERT (+6 net :
-baseline 911 → 917), 64 functional VERT, 13 cucumber dédiés GREEN.
-`check` BUILD SUCCESSFUL 23m33s, Kover VERT, validatePlugins VERT,
-zéro régression, zéro secret, zéro bump BOM. EPIC CAP-TRANSCRIPT 4/6
-US (US-0 ✅ S-114, US-1 ✅ S-115, US-2 ✅ S-116, US-3 ✅ S-117,
-US-4→5 TODO).
-_Prochaine session_ : 118 — CAP-TRANSCRIPT US-4 tâche
-`generateCapsuleTranscript` + wiring. Groupe `generate`, `@OutputFile
-transcriptOutput`, `@InputFile speakerNotesFile` (dependsOn
-`generateCapsuleContent`), strategy TEMPLATE → `TranscriptBuilder`
-directly, strategy LLM → `TranscriptLlmEnhancer.enhance`. Baby-step
-TDD ~3 functional.
+_Session terminee_ : 118 — **CAP-TRANSCRIPT US-4 tâche
+`generateCapsuleTranscript` + wiring** (baby-step TDD strict RED → GREEN →
+REFACTOR). Domaine `capsule.transcript` (11ème) enrichi avec
+`GenerateCapsuleTranscriptTask.kt` — groupe `generate`, `@InputFile
+speakerNotesFile` (dependsOn `generateCapsuleContent`), `@Input language`/
+`strategy`, `@OutputFile transcriptOutput`
+(`build/capsule/<deckName>-transcript.adoc`), `@Optional @ServiceReference
+LlmBuildService` (si strategy=LLM). Parse `AsciidocSpeakerNoteParser` →
+`CapsuleScript` → `TranscriptPlan`. TEMPLATE → `TranscriptBuilder.build`
+directly. LLM → `project.aiProvider` + `project.resolveModel` +
+`ChatModelTranscriptEnhancer.enhance`. Économie d'encre skip si output existe
+ET non-blank. Wiring `CapsuleManager.registerGenerateTranscriptTask` +
+`dependsOn("generateCapsuleContent")` (décision GREEN : tests utilisent
+`-x generateCapsuleContent` pour rester standalone, dependsOn préservé en
+prod). Clé `task.generateCapsuleTranscript.description` (24ème, 11
+`Messages_*.properties`). 3 functional tests créés. 917 unit VERT (baseline
+S-117 préservée), 67 functional VERT (+3 net : baseline 64 → 67), cucumber
+dédiés GREEN, `check` BUILD SUCCESSFUL 26m03s, Kover VERT, validatePlugins
+VERT, zéro régression, zéro secret, zéro bump BOM. EPIC CAP-TRANSCRIPT 5/6 US
+(US-0 ✅ S-114, US-1 ✅ S-115, US-2 ✅ S-116, US-3 ✅ S-117, US-4 ✅ S-118,
+US-5 TODO).
+_Prochaine session_ : 119 — CAP-TRANSCRIPT US-5 Cucumber BDD
+`capsule_transcript.feature` `@transcript` (4 scénarios) + runner dédié
+`CapsuleTranscriptCucumberRunner` + `CucumberTaskSpec("cucumberTestTranscript")`
+15ème. Baby-step BDD RED → GREEN → REFACTOR.
 
-== Contexte reprise session 118 (post CAP-TRANSCRIPT US-3 S-117)
+== Contexte reprise session 119 (post CAP-TRANSCRIPT US-4 S-118)
 
 - EPIC CAP-TRANSCRIPT (P2) — cadré US-0 S-114, US-1 ✅ S-115, US-2 ✅
-  S-116, US-3 ✅ S-117. 6 US ~12 pts. Domaine `capsule.transcript`
-  (11ème) enrichi US-3 avec `TranscriptLlmEnhancer` (port) +
-  `ChatModelTranscriptEnhancer` (adapter). US-4→5 TODO. US-4 cible :
-  tâche `generateCapsuleTranscript` groupe `generate` `@OutputFile
-  transcriptOutput` (`build/capsule/<deckName>-transcript.adoc`),
-  `@InputFile speakerNotesFile` (dependsOn `generateCapsuleContent`),
-  `@Input language`/`strategy`, `@Optional @ServiceReference
-  LlmBuildService` (si strategy=LLM). Parse speaker notes via
-  `AsciidocSpeakerNoteParser` → `CapsuleScript` → `TranscriptPlan`.
-  Strategy TEMPLATE → `TranscriptBuilder.build` directly. Strategy
-  LLM → `TranscriptBuilder.build` then
-  `TranscriptLlmEnhancer.enhance`. Économie d'encre skip si output
-  existe ET non-blank. `CapsuleMessages` clé
-  `task.generateCapsuleTranscript.description` (24ème key, 11
-  `Messages_*.properties`). Wiring
-  `CapsuleManager.registerGenerateTranscriptTask`.
-- Pattern de référence US-4 : `GenerateCapsuleContentTask`
-  (`GenerateCapsuleContentTask.kt:45`) — `@OutputFile
-  speakerNotesOutput` = `build/capsule/<deckName>-speaker-notes.adoc`
-  (source du transcript). `generateCapsuleTranscript` dependsOn
-  `generateCapsuleContent`.
+  S-116, US-3 ✅ S-117, US-4 ✅ S-118. 6 US ~12 pts. Domaine
+  `capsule.transcript` (11ème) : 8 fichiers prod. US-5 TODO (dernière US).
+  US-5 cible : Cucumber BDD `capsule_transcript.feature` `@transcript`
+  (4 scénarios : template strategy produces AsciiDoc article, LLM strategy
+  mock enriches article, disabled default skips task, output AsciiDoc valid
+  structure). Runner dédié `CapsuleTranscriptCucumberRunner` (pattern
+  S-082 `@SelectClasspathResource("features/capsule_transcript.feature")` +
+  filter `@transcript and not @wip and not @integration` + glue
+  `capsule.scenarios` + plugin pretty/html/json reports) +
+  `CapsuleTranscriptSteps` préfixés "transcript" (bug S-088 glue partagée) +
+  `CucumberTaskSpec("cucumberTestTranscript")` 15ème câblé `build.gradle.kts`
+  dans `cucumberConventions.additionalTasks` (après
+  `cucumberTestGlossaryContext` L153, avant `cucumberTestIntegration` L159).
+- `capsule.transcript.GenerateCapsuleTranscriptTask`
+  (`GenerateCapsuleTranscriptTask.kt`) — tâche S-118. Skip si output existe
+  ET non-blank. TEMPLATE/LLM dispatch. `-Pcapsule.transcript.enabled=true`
+  nécessaire (défaut `false`). Log `CAPSULE TRANSCRIPT →`.
 - `capsule.transcript.TranscriptLlmEnhancer`
   (`TranscriptLlmEnhancer.kt`) — interface port `enhance(template,
   plan): String`. Pattern `CapsuleLlm`. Consommé par
@@ -75,15 +71,15 @@ TDD ~3 functional.
   0.0.16 (compileOnly), codebase-plugin 0.0.5 (implementation),
   koog-agents 1.0.0, BOM 0.0.16, codebase-contracts 0.1.0,
   i18n-contracts 0.0.2.
-- 917 unit VERT (S-117 baseline), 64 functional VERT, 13 cucumber dédiés
-  GREEN + 2 scénarios VTT. Borough Détroit en maintenance. Tous les EPICs
-  P0/P1 terminés. Reste P2 : CAP-TRANSCRIPT (US-4→5), CAP-CHAPITRE,
+- 917 unit VERT (S-118 baseline), 67 functional VERT (+3 S-118), cucumber
+  dédiés GREEN. Borough Détroit en maintenance. Tous les EPICs P0/P1
+  terminés. Reste P2 : CAP-TRANSCRIPT (US-5), CAP-CHAPITRE,
   CAP-PODCAST, CAP-PREVIEW, CAP-CR3-4, CAP-28.
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 917 unit VERT (S-117 baseline), 64 functional VERT, 13 cucumber dédiés GREEN
+* 917 unit VERT (S-118 baseline), 67 functional VERT, cucumber dédiés GREEN
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082) +
   steps préfixés par feature (bug S-088 glue `capsule.scenarios` partagée)
@@ -91,7 +87,7 @@ TDD ~3 functional.
 * Économie d'encre = skip si artefact existe et valide (AGENT.adoc Loi)
 * Ports Ollama : 11437-11465 rotation (11434-11436 INTERDITS)
 * `CapsuleMessages` object (domaine `capsule.i18n`) — 11
-  `Messages*.properties` 10 langues, 23 keys (24ème à ajouter US-4)
+  `Messages*.properties` 10 langues, 24 keys (23 + transcript S-118)
 * DSL 4 sources pattern : ENV < props < YAML < CLI. Merger helpers
   `mergeStr/mergeInt/mergeDouble/mergeBoolean/mergeStrList` +
   `mergeVersioning`/`mergeCaptureStrategy`/`mergeOutputFormat`/
@@ -113,9 +109,9 @@ TDD ~3 functional.
 * 14 `CucumberTaskSpec` (`build.gradle.kts:29-166`). 15ème
   `cucumberTestTranscript` (US-5) après `cucumberTestGlossaryContext` (L153)
   avant `cucumberTestIntegration` (L159).
-* Domaine `capsule.transcript` (11ème) : 7 fichiers prod (TranscriptConfig
+* Domaine `capsule.transcript` (11ème) : 8 fichiers prod (TranscriptConfig
   + TranscriptStrategy enum S-115, TranscriptPlan + TranscriptBuilder +
   TranscriptPromptBuilder S-116, TranscriptLlmEnhancer +
-  ChatModelTranscriptEnhancer S-117). 3 objets purs (Builder +
-  PromptBuilder + Plan data class), 1 port + 1 adapter, 0 I/O dans le
-  domaine, fully testable.
+  ChatModelTranscriptEnhancer S-117, GenerateCapsuleTranscriptTask S-118).
+  4 objets purs (Builder + PromptBuilder + Plan data class + Task),
+  1 port + 1 adapter, 0 I/O dans le domaine, fully testable.
