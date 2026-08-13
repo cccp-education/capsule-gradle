@@ -8,7 +8,7 @@ import java.io.File
  * capsule-local [glossarySection][CapsuleContext.glossarySection] of
  * [CapsuleContext] (CAP-GLOSSARY-1).
  *
- * Mirrors [PedagogicalScenarioLoader]: pure object (no Gradle, no I/O wiring)
+ * Mirrors [CapsuleScenarioLoader]: pure object (no Gradle, no I/O wiring)
  * that consumes a pre-resolved file. The glossary is an AsciiDoc `== Glossary`
  * section containing a list of bullets `- term: definition` (one per line).
  * The parsing is purely textual (no AsciidoctorJ dependency — the workspace is

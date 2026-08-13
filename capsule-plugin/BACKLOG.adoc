@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-12 (Session 111 — CAP-GLOSSARY US-2 Wiring `CollectCapsuleAugmentedContextTask` + `ContextConfig` 3ème champ `glossaryFile` + merger 4 sources + `CapsuleExtension.glossaryFile` + `pushConfigIntoExtension` + `CapsuleManager` lazy provider + provenance tracking GLOSSARY + `resolveGlossarySection(budget)` 5% + appel `build()` étendu. Baby-step TDD strict RED (1 FAIL + 1 passed par accident) → GREEN (2/2 `GlossaryContextFunctionalTest` PASSED) → REFACTOR (`check` BUILD SUCCESSFUL in 26m25s, 857 unit VERT inchangé baseline S-110, 64 functional VERT +2 net, Kover VERT, validatePlugins VERT, zéro régression, zéro secret). Backward compat strict. EPIC CAP-GLOSSARY 3/4 US.)
+:last_update: 2026-08-13 (Session 112 — CAP-GLOSSARY US-3 Cucumber BDD `capsule_glossary_context.feature` `@context @glossary` 3 scénarios + runner dédié `CapsuleGlossaryContextCucumberRunner` (pattern S-082) + `CapsuleGlossaryContextSteps` 10 step defs préfixés "glossary context" (bug S-088) + `CucumberTaskSpec("cucumberTestGlossaryContext")` 14ème câblé `build.gradle.kts` (13ème cucumber dédié). Baby-step BDD RED → GREEN (3/3 scénarios PASSED en 55s) → REFACTOR (`check` BUILD SUCCESSFUL in 28m52s, 857 unit VERT baseline S-111 préservée — pure BDD zéro production modifié, 64 functional VERT baseline préservée, cucumberTest global SKIPPED par CR-10, Kover VERT, zéro régression, zéro secret). EPIC CAP-GLOSSARY TERMINÉ 4/4 US, domaine `capsule.context` clos 13 fichiers prod.)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -1191,7 +1191,7 @@ _Décisions architecturales (US-0, Session 109)_ :
   `build.gradle.kts` (13ème cucumber dédié). Baby-step BDD : RED (3
   `UndefinedStepException`) → GREEN (3/3 scénarios PASSED) → REFACTOR.
 | 1
-| ⬜ TODO
+| ✅ TERMINÉ (S-112)
 |===
 
 _Total_ : 4 US, ~6 pts. _Méthode_ : baby-step DDD/TDD/BDD, 3 niveaux
@@ -1201,7 +1201,16 @@ _Pattern de référence_ : CAP-SPD S-094/095 (extension capsule-local
 S-093 (`DocContextLoader`, `ContextConfig` 4 sources), CAP-PROVENANCE
 S-107/108 (`ProvenanceTracker` étendu, `GLOSSARY_CHANNEL` const).
 _Séquence_ : US-0 cadrage ✅ S-109 → US-1 data classes + loader + builder
-+ prompt builder étendus unit → US-2 wiring + functional → US-3 cucumber.
++ prompt builder étendus unit ✅ S-110 → US-2 wiring + functional ✅ S-111
+→ US-3 cucumber ✅ S-112. **EPIC CAP-GLOSSARY TERMINÉ 4/4 US (S-112)** —
+domaine `capsule.context` clos (13 fichiers prod : `CapsuleContextBuilder`,
+`CapsuleContext`, `CollectCapsuleAugmentedContextTask`, `DocContextLoader`,
+`PedagogicalScenarioLoader`, `PedagogicalScenario`, `ProvenanceSource`,
+`ProvenanceChannel`, `ContextProvenance`, `ProvenanceTracker`, `GlossaryEntry`,
+`GlossaryContext`, `GlossaryLoader` — 3 loaders : `DocContextLoader`/
+`PedagogicalScenarioLoader`/`GlossaryLoader`). 857 unit VERT + 64 functional
+VERT + 13 cucumber dédiés GREEN (3 scénarios `capsule_glossary_context.feature`).
+`check` BUILD SUCCESSFUL. Zéro régression, zéro secret.
 
 === 🔍 EPIC CAP-PROVENANCE — Audit context anti-hallucination (contexte augmenté)
 

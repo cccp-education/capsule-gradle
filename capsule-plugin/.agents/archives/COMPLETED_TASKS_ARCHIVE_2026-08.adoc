@@ -1,5 +1,31 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
-:date: 2026-08-12
+:date: 2026-08-13
+
+== Session 112 — CAP-GLOSSARY US-3 Cucumber BDD + clôture EPIC CAP-GLOSSARY TERMINÉ 4/4 US ✅
+
+EPIC CAP-GLOSSARY US-3 terminé (P1, 4ème US sur 4, cucumber BDD 1 pt).
+EPIC CAP-GLOSSARY TERMINÉ 4/4 US.
+
+Feature `capsule_glossary_context.feature` `@context @glossary` (3
+scénarios : glossary injecté → section `==== Official Glossary (glossary)`
++ termes `competence transversale`/`evaluation formative` présents +
+bullet `unrelated` de section non-Glossary ignoré ; absent → fallback
+no-op pas de section glossary backward compat ; malformed sans
+`== Glossary` section → gracefully skipped no-op fallback). Runner
+dédié `CapsuleGlossaryContextCucumberRunner` (pattern S-082
+`@SelectClasspathResource` + filter `@context and @glossary and not @wip
+and not @integration`). `CapsuleGlossaryContextSteps` (10 step defs
+préfixés "glossary context", pattern `CapsuleScenarioContextSteps` mirror
+— bug S-088 glue `capsule.scenarios` partagée, step texts uniques).
+`CucumberTaskSpec("cucumberTestGlossaryContext")` 14ème câblé
+`build.gradle.kts` (13ème cucumber dédié, 14ème `CucumberTaskSpec` total
+avec integration). Baby-step BDD RED → GREEN (3/3 scénarios PASSED en
+55s) → REFACTOR (`check` BUILD SUCCESSFUL in 28m52s, 857 unit VERT
+baseline S-111 préservée — pure BDD zéro production modifié, 64 functional
+VERT baseline préservée, cucumberTest global SKIPPED par CR-10, Kover VERT,
+zéro régression, zéro secret). Domaine `capsule.context` clos (13 fichiers
+prod : 3 loaders `DocContextLoader`/`PedagogicalScenarioLoader`/
+`GlossaryLoader`).
 
 == Session 111 — CAP-GLOSSARY US-2 Wiring CollectCapsuleAugmentedContextTask + ContextConfig + merger 4 sources + CapsuleExtension + CapsuleManager + provenance tracking ✅
 
@@ -817,7 +843,7 @@ EPIC CAP-SPD TERMINÉ 5/5 US (S-094 US-0/1/2, S-095 US-3/4 + renommage).
 borough public OSS format-agnostic) :
 - `SpdContext` → `PedagogicalScenario` (data class)
 - `SpdContextLoader` → `PedagogicalScenarioLoader` (object pur)
-- `SpdContextLoaderTest` → `PedagogicalScenarioLoaderTest`
+- `SpdContextLoaderTest` → `CapsuleScenarioLoaderTest`
 - `CapsuleContext.spdSection` → `scenarioSection`
 - Header `"==== SPD Pedagogical Context (spd)"` → `"==== Pedagogical Scenario (scenario)"`
 - Instruction line `contains("SPD Pedagogical Context")` → `contains("Pedagogical Scenario")`

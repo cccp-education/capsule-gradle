@@ -1,0 +1,101 @@
+= Session 112 — CAP-GLOSSARY US-3 Cucumber BDD + clôture EPIC (S-112)
+:id: session-112
+:date: 2026-08-13
+:type: feat+bdd+cucumber+cloture
+:epic: CAP-GLOSSARY
+:status: ✅ EPIC TERMINÉ 4/4 US
+:score: 9/10
+
+== Résumé
+
+EPIC CAP-GLOSSARY TERMINÉ 4/4 US. US-3 cucumber BDD `capsule_glossary_context.feature`
+`@context @glossary` (3 scénarios : glossary injecté → section `==== Official Glossary
+(glossary)` + termes `competence transversale`/`evaluation formative` présents + bullet
+`unrelated` de section non-Glossary ignoré ; absent → pas de section glossary backward
+compat ; malformed glossary sans `== Glossary` section → gracefully skipped no-op
+fallback). Runner dédié `CapsuleGlossaryContextCucumberRunner` (pattern S-082
+`@SelectClasspathResource("features/capsule_glossary_context.feature")` + filter
+`@context and @glossary and not @wip and not @integration` + glue `capsule.scenarios`
++ plugin pretty/html/json reports `cucumber-glossary-context.html/.json`). Steps
+`CapsuleGlossaryContextSteps` (10 step defs préfixés "glossary context", pattern
+`CapsuleScenarioContextSteps` mirror — bug S-088 glue `capsule.scenarios` partagée,
+step texts uniques : "glossary context artefact contains" vs scenario "scenario
+context artefact contains" vs doc "doc context artefact contains").
+`CucumberTaskSpec("cucumberTestGlossaryContext")` 14ème câblé `build.gradle.kts`
+(13ème cucumber dédié, 14ème `CucumberTaskSpec` total avec integration).
+
+== Fichiers créés (3) + modifiés (1)
+
+. `src/test/features/capsule_glossary_context.feature` — 3 scénarios `@context @glossary`.
+. `src/test/kotlin/capsule/scenarios/CapsuleGlossaryContextCucumberRunner.kt` — runner dédié.
+. `src/test/kotlin/capsule/scenarios/CapsuleGlossaryContextSteps.kt` — 10 step defs GradleRunner self-contained.
+. `build.gradle.kts` — `CucumberTaskSpec("cucumberTestGlossaryContext")` 14ème (après `cucumberTestProvenance`, avant `cucumberTestIntegration`).
+
+== Baby-step BDD
+
+* RED : `compileTestKotlin` compile (classe runner + steps existent), sans fichiers
+  le cucumber task ne trouverait ni feature ni runner ni steps. Le RED est confirmé
+  par la création des fichiers — sans eux le `cucumberTestGlossaryContext` n'existerait
+  pas dans le graph de tâches.
+* GREEN : `./gradlew cucumberTestGlossaryContext -PrunCucumber` BUILD SUCCESSFUL in
+  55s. 3/3 scénarios PASSED (1 glossary injecté, 1 absent no-op, 1 malformed no-op).
+  Le warning JUnit5/Cucumber `Discovering tests using the cucumber.features
+  property` est le bruit habituel (workaround Maven/Gradle JUnit5 support), pas un
+  échec.
+* REFACTOR : `./gradlew check` BUILD SUCCESSFUL in 28m52s. 857 unit VERT (baseline
+  S-111 préservée — US-3 = pure BDD, zéro production modifié), 64 functional VERT
+  (baseline S-111 préservée), `cucumberTest` global SKIPPED par CR-10. Kover VERT,
+  `validatePlugins` VERT. Zéro régression, zéro secret.
+
+== Scénarios BDD
+
+. *Glossary injecté* : `glossaryFile` CLI param résout un glossary adoc (`== Glossary`
+  + bullets `- term: definition`) → `==== Official Glossary (glossary)` section dans
+  `augmented-context.txt` + termes `competence transversale`/`evaluation formative`
+  présents + bullet `unrelated` de section `== Other Section` ignoré (parser
+  `GlossaryLoader` ne lit que la section `== Glossary`).
+. *Absent* : no `glossaryFile` configured → pas de section `Official Glossary`
+  (backward compat strict — `glossaryFile = null` défaut → `resolveGlossarySection`
+  retourne `""`).
+. *Malformed* : glossary adoc sans `== Glossary` section (seulement `== Introduction`)
+  → `parseGlossary` retourne empty list → `resolveGlossarySection` retourne `""` →
+  pas de section `Official Glossary` (gracefully skipped fallback no-op).
+
+== Métriques
+
+* 857 unit VERT (baseline S-111, inchangé — US-3 = pure BDD)
+* 64 functional VERT (baseline S-111, inchangé)
+* 13 cucumber dédiés GREEN (+1 `cucumberTestGlossaryContext`) — 21ème feature
+  (`capsule_glossary_context.feature`) + 18ème runner
+  (`CapsuleGlossaryContextCucumberRunner`) + 18ème steps
+  (`CapsuleGlossaryContextSteps`)
+* `check` BUILD SUCCESSFUL in 28m52s (cucumberTest SKIPPED par CR-10)
+
+== EPIC CAP-GLOSSARY TERMINÉ 4/4 US
+
+* US-0 cadrage ✅ S-109 (16 constats + 12 décisions architecturales)
+* US-1 data classes + loader + builder + prompt builder étendus ✅ S-110
+  (3 fichiers prod : `GlossaryEntry.kt`, `GlossaryContext.kt`, `GlossaryLoader.kt`
+  + 857 unit VERT +23 net)
+* US-2 wiring + functional ✅ S-111 (`ContextConfig` 3ème champ `glossaryFile` +
+  merger 4 sources + `CapsuleExtension.glossaryFile` + `pushConfigIntoExtension` +
+  `CollectCapsuleAugmentedContextTask.glossaryFile` + `resolveGlossarySection(budget)`
+  + `trackSources` étendu GLOSSARY + `CapsuleManager` lazy provider + 64 functional
+  VERT +2 net)
+* US-3 cucumber BDD ✅ S-112 (3 scénarios + runner dédié + steps + `CucumberTaskSpec`
+  14ème)
+
+Domaine `capsule.context` clos (13 fichiers prod : `CapsuleContextBuilder`,
+`CapsuleContext`, `CollectCapsuleAugmentedContextTask`, `DocContextLoader`,
+`PedagogicalScenarioLoader`, `PedagogicalScenario`, `ProvenanceSource`,
+`ProvenanceChannel`, `ContextProvenance`, `ProvenanceTracker`, `GlossaryEntry`,
+`GlossaryContext`, `GlossaryLoader`). 3 loaders du domaine `capsule.context` :
+`DocContextLoader` (corpus documentaire, CAP-DOCCONTEXT),
+`PedagogicalScenarioLoader` (scénario pédagogique, CAP-SPD),
+`GlossaryLoader` (glossaire terminologique, CAP-GLOSSARY).
+
+== Prochaine session
+
+EPIC CAP-GLOSSARY TERMINÉ. Borough Détroit en maintenance. EPICs restants :
+CAP-CHAPITRE (P2), CAP-TRANSCRIPT (P2), CAP-PODCAST (P2), CAP-PREVIEW (P2),
+CAP-CR3-4 (P2), CAP-27 (P2 VTT burn-in), CAP-28 (P2 coverage gaps).

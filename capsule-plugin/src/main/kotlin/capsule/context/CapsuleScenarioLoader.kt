@@ -31,7 +31,7 @@ import java.io.File
  * AsciiDoc yields an empty string (backward compatible, no error). A
  * metadata.json whose `type` is not `"SPD"` is also skipped (graceful no-op).
  */
-object PedagogicalScenarioLoader {
+object CapsuleScenarioLoader {
 
     private val mapper: ObjectMapper = ObjectMapper()
 
@@ -93,7 +93,7 @@ object PedagogicalScenarioLoader {
      * - `modalities` = text block under `== Modalités d'évaluation`
      * - `duration` = first line under `== Durée estimée` (when present)
      */
-    private fun parseAdoc(filename: String, text: String): PedagogicalScenario {
+    private fun parseAdoc(filename: String, text: String): CapsuleScenario {
         val lines = text.lines()
         val title = extractTitle(lines) ?: filenameWithoutExtension(filename)
         val module = extractAttribute(lines, "module")
@@ -105,7 +105,7 @@ object PedagogicalScenarioLoader {
         val duration = extractTextSection(lines, "Durée estimée").ifBlank {
             extractTextSection(lines, "Durée")
         }
-        return PedagogicalScenario(
+        return CapsuleScenario(
             objectives = objectives,
             duration = duration,
             prerequisites = prerequisites,
@@ -182,8 +182,8 @@ object PedagogicalScenarioLoader {
         return builder.toString().trim()
     }
 
-    /** Renders the [PedagogicalScenario] as the prompt-ready scenario section block. */
-    private fun renderSection(scenario: PedagogicalScenario): String {
+    /** Renders the [CapsuleScenario] as the prompt-ready scenario section block. */
+    private fun renderSection(scenario: CapsuleScenario): String {
         val builder = StringBuilder()
         builder.append("==== Pedagogical Scenario (scenario)\n")
         builder.append("Session: ${scenario.sessionTitle}\n")

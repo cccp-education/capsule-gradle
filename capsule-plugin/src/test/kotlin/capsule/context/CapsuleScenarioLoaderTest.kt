@@ -1,17 +1,15 @@
 package capsule.context
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import contracts.context.ChannelBudget
 import contracts.context.ContextChannel
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * TDD unit tests for [PedagogicalScenarioLoader] (CAP-SPD-1).
+ * TDD unit tests for [CapsuleScenarioLoader] (CAP-SPD-1).
  *
  * The loader is an object pur mirroring [DocContextLoader]: it validates an
  * optional `metadata.json` K-2 envelope (type == "SPD" — the format, not the
@@ -26,7 +24,7 @@ import kotlin.test.assertTrue
  * Missing files are skipped silently — a null metadata file or a missing
  * AsciiDoc yields an empty string (backward compatible, no error).
  */
-class PedagogicalScenarioLoaderTest {
+class CapsuleScenarioLoaderTest {
 
     @TempDir
     lateinit var tempDir: File
@@ -35,7 +33,7 @@ class PedagogicalScenarioLoaderTest {
 
     @Test
     fun `load with null metadata and missing adoc returns blank string`() {
-        val result = PedagogicalScenarioLoader.load(null, File(tempDir, "missing.adoc"), 400)
+        val result = CapsuleScenarioLoader.load(null, File(tempDir, "missing.adoc"), 400)
         assertTrue(result.isBlank(), "Missing scenario files should yield a blank string")
     }
 
@@ -61,7 +59,7 @@ class PedagogicalScenarioLoaderTest {
                 """.trimIndent()
             )
         }
-        val result = PedagogicalScenarioLoader.load(metadata, adoc, 400)
+        val result = CapsuleScenarioLoader.load(metadata, adoc, 400)
         assertTrue(result.contains("Pedagogical Scenario"), "Expected scenario section header")
         assertTrue(result.contains("Objectives:"), "Expected objectives label")
         assertTrue(result.contains("Comprendre le cadre de la formation"), "Expected objective content")
@@ -81,7 +79,7 @@ class PedagogicalScenarioLoaderTest {
                 """.trimIndent()
             )
         }
-        val result = PedagogicalScenarioLoader.load(File(tempDir, "missing-metadata.json"), adoc, 400)
+        val result = CapsuleScenarioLoader.load(File(tempDir, "missing-metadata.json"), adoc, 400)
         assertTrue(result.isNotBlank(), "Adoc should still be parsed when metadata is missing")
         assertTrue(result.contains("Analyser un problème algorithmique"), "Expected objective from adoc")
     }
@@ -90,7 +88,7 @@ class PedagogicalScenarioLoaderTest {
     fun `load with metadata type not SPD skips the SPD entirely`() {
         val metadata = writeMetadata(type = "SPG", source = "producer", version = "1.0")
         val adoc = File(tempDir, "spg.adoc").also { it.writeText("= SPG\n\n== Objectifs\n- Global") }
-        val result = PedagogicalScenarioLoader.load(metadata, adoc, 400)
+        val result = CapsuleScenarioLoader.load(metadata, adoc, 400)
         assertTrue(result.isBlank(), "metadata type != 'SPD' should yield a blank string (graceful skip)")
     }
 
@@ -100,7 +98,7 @@ class PedagogicalScenarioLoaderTest {
         val adoc = File(tempDir, "minimal.adoc").also {
             it.writeText("= Minimal Session\n:module: core\n\n== Déroulement\nStep by step.")
         }
-        val result = PedagogicalScenarioLoader.load(metadata, adoc, 400)
+        val result = CapsuleScenarioLoader.load(metadata, adoc, 400)
         assertTrue(result.contains("Session:"), "Expected session title label even without objectives")
         assertTrue(result.contains("Module: core"), "Expected module from adoc attribute")
     }
@@ -113,7 +111,7 @@ class PedagogicalScenarioLoaderTest {
             it.writeText("= Long Session\n:module: core\n\n== Objectifs\n$longObjectives")
         }
         val maxTokens = 50
-        val result = PedagogicalScenarioLoader.load(metadata, adoc, maxTokens)
+        val result = CapsuleScenarioLoader.load(metadata, adoc, maxTokens)
         val estimated = ContextChannel.estimateTokens(result)
         assertTrue(estimated <= maxTokens + 50, "Result ($estimated tokens) should be truncated near budget ($maxTokens)")
         assertFalse(result.contains("Objectif 80"), "Truncated result should not contain the last objective")
@@ -123,7 +121,7 @@ class PedagogicalScenarioLoaderTest {
     fun `load with malformed metadata json gracefully skipped and still parses adoc`() {
         val metadata = File(tempDir, "bad.json").also { it.writeText("{not valid json") }
         val adoc = File(tempDir, "spd.adoc").also { it.writeText("= SPD\n:module: core\n\n== Objectifs\n- Goal") }
-        val result = PedagogicalScenarioLoader.load(metadata, adoc, 400)
+        val result = CapsuleScenarioLoader.load(metadata, adoc, 400)
         assertTrue(result.isNotBlank(), "Malformed metadata.json should be skipped (no throw) but adoc still parsed")
         assertTrue(result.contains("Goal"), "Expected objective from adoc when metadata is malformed")
     }
@@ -144,7 +142,7 @@ class PedagogicalScenarioLoaderTest {
                 """.trimIndent()
             )
         }
-        val result = PedagogicalScenarioLoader.load(metadata, adoc, 400)
+        val result = CapsuleScenarioLoader.load(metadata, adoc, 400)
         assertTrue(result.contains("Premier objectif"), "Expected first objective")
         assertTrue(result.contains("Deuxième objectif"), "Expected second objective")
         assertTrue(result.contains("Troisième objectif"), "Expected third objective")
@@ -154,7 +152,7 @@ class PedagogicalScenarioLoaderTest {
     fun `load with zero token budget returns blank string`() {
         val metadata = writeMetadata(type = "SPD", source = "producer", version = "1.0")
         val adoc = File(tempDir, "spd.adoc").also { it.writeText("= SPD\n:module: core\n\n== Objectifs\n- Goal") }
-        val result = PedagogicalScenarioLoader.load(metadata, adoc, 0)
+        val result = CapsuleScenarioLoader.load(metadata, adoc, 0)
         assertTrue(result.isBlank(), "Zero token budget should yield a blank string")
     }
 
@@ -162,7 +160,7 @@ class PedagogicalScenarioLoaderTest {
     fun `load with empty adoc file returns blank string`() {
         val metadata = writeMetadata(type = "SPD", source = "producer", version = "1.0")
         val adoc = File(tempDir, "empty.adoc").also { it.writeText("") }
-        val result = PedagogicalScenarioLoader.load(metadata, adoc, 400)
+        val result = CapsuleScenarioLoader.load(metadata, adoc, 400)
         assertTrue(result.isBlank(), "Empty adoc should yield a blank string")
     }
 

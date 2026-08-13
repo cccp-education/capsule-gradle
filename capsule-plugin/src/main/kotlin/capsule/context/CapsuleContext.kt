@@ -9,7 +9,7 @@ import contracts.context.ContextChannel
  * [contracts.context.CompositeContext] together with their prompt-ready
  * [rendered] block (produced by [CapsuleContextBuilder.merge]) and the
  * capsule-local [scenarioSection] (CAP-SPD-2 — a pedagogical scenario
- * payload rendered by [PedagogicalScenarioLoader] and appended after the N0
+ * payload rendered by [CapsuleScenarioLoader] and appended after the N0
  * channels). This is the consumption contract of the `capsule.pipeline`
  * (CAP-ARCH-3) — content generation feeds on `rendered`, never on the raw
  * contract directly.

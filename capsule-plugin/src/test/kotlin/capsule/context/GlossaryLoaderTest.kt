@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
  * TDD unit tests for [GlossaryLoader] and the [GlossaryEntry] / [GlossaryContext]
  * immutable models (CAP-GLOSSARY-1).
  *
- * The loader is a pure object mirroring [PedagogicalScenarioLoader]: it parses
+ * The loader is a pure object mirroring [CapsuleScenarioLoader]: it parses
  * an AsciiDoc `== Glossary` section (bullets `- term: definition`), renders a
  * prompt-ready `==== Official Glossary (glossary)` block, and truncates it to
  * the supplied token budget via the N0 [ContextChannel.Docs.truncateToTokens]

@@ -11,7 +11,7 @@ import kotlin.test.assertTrue
  * The scenario section is already part of [CapsuleState.augmentedContext]
  * (rendered by [capsule.context.CapsuleContextBuilder] with the
  * `scenarioSection` extension) — the builder only references it textually,
- * it never accesses [capsule.context.PedagogicalScenario] directly.
+ * it never accesses [capsule.context.CapsuleScenario] directly.
  */
 class DefaultCapsulePromptBuilderTest {
 

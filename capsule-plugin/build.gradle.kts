@@ -140,6 +140,17 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleProvenanceCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // CAP-GLOSSARY US-3 — glossary terminology injection (context augmenté).
+        // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
+        // Validates the ==== Official Glossary (glossary) section + no-op fallback
+        // + malformed glossary gracefully skipped via collectCapsuleAugmentedContext.
+        CucumberTaskSpec(
+            name = "cucumberTestGlossaryContext",
+            features = listOf("src/test/features/capsule_glossary_context.feature"),
+            tags = listOf("@context", "@glossary"),
+            runnerClass = "capsule.scenarios.CapsuleGlossaryContextCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task

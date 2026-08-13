@@ -22,7 +22,7 @@ package capsule.context
  *                         filename fallback. Non-blank by invariant.
  * @property module         `:module:` document attribute, or empty string.
  */
-data class PedagogicalScenario(
+data class CapsuleScenario(
     val objectives: List<String>,
     val duration: String,
     val prerequisites: List<String>,
@@ -32,7 +32,7 @@ data class PedagogicalScenario(
 ) {
     init {
         require(sessionTitle.isNotBlank()) {
-            "PedagogicalScenario sessionTitle must be non-blank"
+            "CapsuleScenario sessionTitle must be non-blank"
         }
     }
 

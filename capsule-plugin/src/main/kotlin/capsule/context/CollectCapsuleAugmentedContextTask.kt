@@ -83,7 +83,7 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
 
     /**
      * Pedagogical scenario file/directory (CAP-SPD-3). When present, the
-     * [PedagogicalScenarioLoader] resolves `metadata.json` + companion AsciiDoc
+     * [CapsuleScenarioLoader] resolves `metadata.json` + companion AsciiDoc
      * and renders the scenario section appended after the N0 channels.
      */
     @get:InputFiles
@@ -298,7 +298,7 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
      *
      * The [scenarioFile] collection is fed by the wiring layer from the
      * 4-source config (ENV < props < YAML < CLI). When it contains a
-     * directory, the [PedagogicalScenarioLoader] resolves `metadata.json` +
+     * directory, the [CapsuleScenarioLoader] resolves `metadata.json` +
      * the first `.adoc` companion. When it contains a direct `.adoc` file,
      * the metadata is skipped. When empty, the scenario section is blank
      * (backward compatible no-op).
@@ -317,9 +317,9 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
             val metadata = target.listFiles()?.firstOrNull { it.name == "metadata.json" }
             val adoc = target.listFiles()?.firstOrNull { it.extension.equals("adoc", ignoreCase = true) }
             if (adoc == null) return ""
-            PedagogicalScenarioLoader.load(metadata, adoc, scenarioBudget)
+            CapsuleScenarioLoader.load(metadata, adoc, scenarioBudget)
         } else {
-            PedagogicalScenarioLoader.load(null, target, scenarioBudget)
+            CapsuleScenarioLoader.load(null, target, scenarioBudget)
         }
     }
 

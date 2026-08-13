@@ -25,7 +25,7 @@ pas appartenir au vocabulaire capsule.
 *Renommage appliqué* :
 - `SpdContext` → `PedagogicalScenario` (data class, 6 champs)
 - `SpdContextLoader` → `PedagogicalScenarioLoader` (object pur)
-- `SpdContextLoaderTest` → `PedagogicalScenarioLoaderTest` (10 unit tests)
+- `SpdContextLoaderTest` → `CapsuleScenarioLoaderTest` (10 unit tests)
 - `CapsuleContext.spdSection` → `CapsuleContext.scenarioSection`
 - Header rendu : `"==== SPD Pedagogical Context (spd)"` → `"==== Pedagogical Scenario (scenario)"`
 - `DefaultCapsulePromptBuilder` détection textuelle :
@@ -38,9 +38,9 @@ pas appartenir au vocabulaire capsule.
 externe K-2, pas le concept capsule). Pas de renommage du format externe.
 
 *Fichiers renommés* (3, via `git mv`) :
-- `src/main/kotlin/capsule/context/SpdContext.kt` → `PedagogicalScenario.kt`
-- `src/main/kotlin/capsule/context/SpdContextLoader.kt` → `PedagogicalScenarioLoader.kt`
-- `src/test/kotlin/capsule/context/SpdContextLoaderTest.kt` → `PedagogicalScenarioLoaderTest.kt`
+- `src/main/kotlin/capsule/context/SpdContext.kt` → `CapsuleScenario.kt`
+- `src/main/kotlin/capsule/context/SpdContextLoader.kt` → `CapsuleScenarioLoader.kt`
+- `src/test/kotlin/capsule/context/SpdContextLoaderTest.kt` → `CapsuleScenarioLoaderTest.kt`
 
 == CAP-SPD US-3 — Wiring `collectCapsuleAugmentedContext`
 
@@ -173,9 +173,9 @@ cucumber.features).
 == Fichiers modifiés (S-095)
 
 *Renommés* (3) :
-- `src/main/kotlin/capsule/context/SpdContext.kt` → `PedagogicalScenario.kt`
-- `src/main/kotlin/capsule/context/SpdContextLoader.kt` → `PedagogicalScenarioLoader.kt`
-- `src/test/kotlin/capsule/context/SpdContextLoaderTest.kt` → `PedagogicalScenarioLoaderTest.kt`
+- `src/main/kotlin/capsule/context/SpdContext.kt` → `CapsuleScenario.kt`
+- `src/main/kotlin/capsule/context/SpdContextLoader.kt` → `CapsuleScenarioLoader.kt`
+- `src/test/kotlin/capsule/context/SpdContextLoaderTest.kt` → `CapsuleScenarioLoaderTest.kt`
 
 *Modifiés* (15) :
 - `build.gradle.kts` — `CucumberTaskSpec("cucumberTestScenarioContext")`.

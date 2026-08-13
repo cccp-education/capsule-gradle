@@ -1,108 +1,59 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 111 — CAP-GLOSSARY US-2 Wiring
-`CollectCapsuleAugmentedContextTask` + `ContextConfig` 3ème champ
-`glossaryFile` + merger 4 sources (ENV `CAPSULE_CONTEXT_GLOSSARY_FILE`
-< props `capsule.context.glossaryFile` < YAML < CLI) +
-`CapsuleExtension.glossaryFile` convention `""` + `pushConfigIntoExtension`
-+ `CollectCapsuleAugmentedContextTask.glossaryFile:
-ConfigurableFileCollection @InputFiles @Optional` +
-`resolveGlossarySection(budget)` (5% = 400 tokens/8000, pattern
-`resolveScenarioSection`) + `trackSources` étendu tracking GLOSSARY (1
-source si résolu) + `CapsuleManager` lazy provider + appel `build()`
-étendu `glossarySection = resolveGlossarySection(budget)`. Baby-step TDD
-strict RED (1 FAIL + 1 passed par accident) → GREEN (2/2
-`GlossaryContextFunctionalTest` PASSED) → REFACTOR (`check` BUILD
-SUCCESSFUL in 26m25s, 857 unit VERT inchangé baseline S-110, 64
-functional VERT +2 net, Kover VERT, validatePlugins VERT, zéro
-régression, zéro secret). Backward compat strict (`glossaryFile = null`
-défaut → `resolveGlossarySection` retourne `""` → tests existants
-inchangés). EPIC CAP-GLOSSARY 3/4 US.
-_Prochaine session_ : 112 — CAP-GLOSSARY US-3 Cucumber BDD
-`capsule_glossary_context.feature` `@context @glossary` (3 scénarios :
-glossary injecté → section `==== Official Glossary (glossary)` dans
-`augmented-context.txt` + instruction prompt "Use official terminology",
-absent → fallback no-op, malformed glossary → gracefully skipped).
-Runner dédié `CapsuleGlossaryContextCucumberRunner` (pattern S-082) +
-steps `CapsuleGlossaryContextSteps` préfixés "glossary context" (bug
-S-088) + `CucumberTaskSpec("cucumberTestGlossaryContext")` 14ème (13ème
-cucumber dédié). Baby-step BDD RED → GREEN → REFACTOR.
+_Session terminee_ : 112 — CAP-GLOSSARY US-3 Cucumber BDD + clôture EPIC
+CAP-GLOSSARY TERMINÉ 4/4 US. Feature `capsule_glossary_context.feature`
+`@context @glossary` (3 scénarios : glossary injecté → section
+`==== Official Glossary (glossary)` + termes `competence transversale`/
+`evaluation formative` présents + bullet `unrelated` ignoré ; absent →
+fallback no-op ; malformed sans `== Glossary` → gracefully skipped).
+Runner dédié `CapsuleGlossaryContextCucumberRunner` (pattern S-082
+`@SelectClasspathResource` + filter `@context and @glossary and not @wip
+and not @integration`). `CapsuleGlossaryContextSteps` (10 step defs
+préfixés "glossary context", pattern `CapsuleScenarioContextSteps` mirror
+— bug S-088 glue `capsule.scenarios` partagée). `CucumberTaskSpec
+("cucumberTestGlossaryContext")` 14ème câblé `build.gradle.kts` (13ème
+cucumber dédié). Baby-step BDD RED → GREEN (3/3 scénarios PASSED en 55s)
+→ REFACTOR (`check` BUILD SUCCESSFUL in 28m52s, 857 unit VERT baseline
+S-111 préservée — pure BDD zéro production modifié, 64 functional VERT
+baseline préservée, cucumberTest global SKIPPED par CR-10, Kover VERT,
+zéro régression, zéro secret). Domaine `capsule.context` clos (13 fichiers
+prod, 3 loaders). EPIC CAP-GLOSSARY TERMINÉ 4/4 US.
+_Prochaine session_ : 113 — Borough Détroit en maintenance. EPICs
+restants : CAP-CHAPITRE (P2), CAP-TRANSCRIPT (P2), CAP-PODCAST (P2),
+CAP-PREVIEW (P2), CAP-CR3-4 (P2), CAP-27 (P2 VTT burn-in), CAP-28 (P2
+coverage gaps).
 
-== Contexte reprise session 112 (post CAP-GLOSSARY US-2 S-111)
+== Contexte reprise session 113 (post CAP-GLOSSARY US-3 S-112)
 
-- EPIC CAP-GLOSSARY (P1) — Injection terminologique, 4 US ~6 pts. US-0
-  cadrage ✅ S-109. US-1 data classes + loader + builder + prompt
-  builder étendus ✅ S-110 (857 unit VERT +23). US-2 wiring +
-  `ContextConfig` + merger + `CapsuleExtension` + `pushConfigIntoExtension`
-  + `CollectCapsuleAugmentedContextTask` + `CapsuleManager` + provenance
-  tracking ✅ S-111 (64 functional VERT +2). Reste US-3 cucumber 3
-  scénarios.
-- Domaine `capsule.context` étendu (pas de nouveau domaine —
-  `GlossaryEntry`/`GlossaryContext`/`GlossaryLoader` rejoignent
-  `DocContextLoader`/`PedagogicalScenarioLoader`/`ProvenanceTracker`/
-  `CapsuleContextBuilder`/`CapsuleContext`/`ContextProvenance` dans le
-  domaine existant 13 fichiers prod après US-2).
-- US-2 livré (S-111) :
-  * `ContextConfig` 3ème champ `glossaryFile: String? = null` (pattern
-    `scenarioFile`).
-  * `CapsuleConfigMerger.mergeContextConfig` étendu `mergeStr` pour
-    `glossaryFile`. `loadFromEnvironment` (`CAPSULE_CONTEXT_GLOSSARY_FILE`)
-    + `buildConfigFromProperties` (`capsule.context.glossaryFile`).
-  * `CapsuleExtension.glossaryFile: Property<String>` convention `""`.
-  * `pushConfigIntoExtension` push `glossaryFile` (guard `isPresent ||
-    blank`, pattern `scenarioFile`).
-  * `CollectCapsuleAugmentedContextTask.glossaryFile:
-    ConfigurableFileCollection @InputFiles @PathSensitive(RELATIVE)
-    @Optional` + `resolveGlossarySection(budget)` (5% budget = 400
-    tokens/8000, `GlossaryLoader.load(target, glossaryBudget)`, pattern
-    `resolveScenarioSection`) + `trackSources` étendu tracking GLOSSARY
-    (1 `ProvenanceSource` si `glossaryTarget` existe, pattern SCENARIO) +
-    appel `build()` étendu `glossarySection = resolveGlossarySection
-    (budget)`.
-  * `CapsuleManager` wiring lazy provider `glossaryFile.from(project.
-    provider {...})` (extension afterEvaluate > CLI, pattern
-    `scenarioFile`).
-- 857 unit VERT (S-111 baseline, inchangé — US-2 = wiring pur). 64
-  functional VERT (+2 net : 2 `GlossaryContextFunctionalTest`). `check`
-  BUILD SUCCESSFUL in 26m25s (S-111).
+- EPIC CAP-GLOSSARY (P1) — Injection terminologique, 4 US ~6 pts.
+  TERMINÉ 4/4 US : US-0 cadrage ✅ S-109, US-1 data classes + loader +
+  builder + prompt builder étendus ✅ S-110 (857 unit VERT +23), US-2
+  wiring + functional ✅ S-111 (64 functional VERT +2), US-3 cucumber
+  BDD ✅ S-112 (3 scénarios `capsule_glossary_context.feature`).
+- Domaine `capsule.context` clos (13 fichiers prod : 3 loaders
+  `DocContextLoader`/`PedagogicalScenarioLoader`/`GlossaryLoader` +
+  `CapsuleContextBuilder`/`CapsuleContext`/`CollectCapsuleAugmented
+  ContextTask`/`PedagogicalScenario`/`ProvenanceSource`/`ProvenanceChannel`/
+  `ContextProvenance`/`ProvenanceTracker`/`GlossaryEntry`/`GlossaryContext`).
+- 857 unit VERT (S-112 baseline, inchangé — US-3 = pure BDD). 64
+  functional VERT (inchangé). `check` BUILD SUCCESSFUL in 28m52s (S-112).
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider
-  0.0.16 (compileOnly, 0 import réel — décision CAP-ARCH-4), codebase-plugin
-  0.0.5 (implementation), koog-agents 1.0.0, BOM 0.0.16, codebase-contracts
-  0.1.0, i18n-contracts 0.0.2.
-- Patterns de référence : CAP-SPD S-094/095 (extension capsule-local
-  `scenarioSection`, `PedagogicalScenarioLoader` mirror — `GlossaryLoader`
-  est le 3ème loader du domaine `capsule.context`, `resolveGlossarySection`
-  mirror `resolveScenarioSection` L281-296, `trackSources` GLOSSARY mirror
-  SCENARIO L230-249, `CapsuleManager` lazy provider mirror `scenarioFile`
-  L229-237), CAP-DOCCONTEXT S-093 (`DocContextLoader` 1er loader,
-  `ContextConfig` 4 sources), CAP-PROVENANCE S-107/108
-  (`ProvenanceTracker` étendu, `GLOSSARY_CHANNEL` const pattern
-  `SCENARIO_CHANNEL`).
-
-== Cible US-3 (détails BACKLOG)
-
-- `capsule_glossary_context.feature` `@context @glossary` 3 scénarios :
-  (a) glossary injecté → section `==== Official Glossary (glossary)` dans
-  `augmented-context.txt` + instruction prompt "Use official terminology" ;
-  (b) absent → fallback no-op pas de section glossary ; (c) malformed
-  glossary → gracefully skipped fallback no-op.
-- Runner dédié `CapsuleGlossaryContextCucumberRunner` (pattern S-082
-  `@SelectClasspathResource("features/capsule_glossary_context.feature")`
-  + filter `@context and @glossary and not @wip and not @integration`).
-- Steps `CapsuleGlossaryContextSteps` préfixés "glossary context" (bug
-  S-088 glue `capsule.scenarios` partagée — step texts uniques : "glossary
-  context artefact contains" vs scenario "scenario context artefact
-  contains" vs doc "doc context artefact contains").
-- `CucumberTaskSpec("cucumberTestGlossaryContext")` 14ème câblé
-  `build.gradle.kts` (13ème cucumber dédié, 14ème `CucumberTaskSpec` avec
-  integration).
-- Baby-step BDD : RED (3 `UndefinedStepException`) → GREEN (3/3 scénarios
-  PASSED) → REFACTOR.
+  0.0.16 (compileOnly), codebase-plugin 0.0.5 (implementation),
+  koog-agents 1.0.0, BOM 0.0.16, codebase-contracts 0.1.0,
+  i18n-contracts 0.0.2.
+- 13 cucumber dédiés GREEN (12 runners + `cucumberTestGlossaryContext`
+  13ème cucumber dédié, 14ème `CucumberTaskSpec` total avec integration).
+  21 features, 18 runners, 18 steps.
+- Borough Détroit en maintenance. Tous les EPICs P0/P1 terminés
+  (CAP-29, CAP-ARCH, CAP-CR3-1/2/3, CAP-DOCCONTEXT, CAP-SPD,
+  CAP-PROVENANCE, CAP-MP4, CAP-AUDIO, CAP-GLOSSARY). Reste P2 :
+  CAP-CHAPITRE, CAP-TRANSCRIPT, CAP-PODCAST, CAP-PREVIEW, CAP-CR3-4,
+  CAP-27, CAP-28.
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 857 unit VERT (S-111 baseline), 64 functional VERT, 12 cucumber dédiés GREEN
+* 857 unit VERT (S-112 baseline), 64 functional VERT, 13 cucumber dédiés GREEN
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082) +
   steps préfixés par feature (bug S-088 glue `capsule.scenarios` partagée)
@@ -111,15 +62,9 @@ cucumber dédié). Baby-step BDD RED → GREEN → REFACTOR.
 * Ports Ollama : 11437-11465 rotation (11434-11436 INTERDITS)
 * `CapsuleMessages` object (domaine `capsule.i18n`) — 11
   `Messages*.properties` 10 langues
-* Runners cucumber dédiés (12) — `cucumberTestGlossaryContext` à créer US-3
-  (14ème `CucumberTaskSpec`, 13ème cucumber dédié)
 * DSL 4 sources pattern : ENV < props < YAML < CLI. Merger helpers
   `mergeStr/mergeInt/mergeDouble/mergeBoolean/mergeStrList` +
   `mergeVersioning`/`mergeCaptureStrategy`/`mergeOutputFormat` (enums)
-* CAP-GLOSSARY = extension capsule-local `glossarySection` (pas de LLM/réseau/
-  FFmpeg — load fichier glossaire AsciiDoc + troncation budget + prompt
-  instruction). Pattern CAP-SPD mirror (`scenarioSection` 3ème extension
-  capsule-local après `scenarioSection`).
 * 3 loaders domaine `capsule.context` : `DocContextLoader` (corpus
   documentaire, CAP-DOCCONTEXT), `PedagogicalScenarioLoader` (scénario
   pédagogique, CAP-SPD), `GlossaryLoader` (glossaire terminologique,
