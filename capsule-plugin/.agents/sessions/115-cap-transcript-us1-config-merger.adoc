@@ -1,0 +1,170 @@
+= Session 115 — CAP-TRANSCRIPT US-1 TranscriptConfig + TranscriptStrategy enum + merger 4 sources
+
+_Date_ : 2026-08-13
+_Type_ : feat+ddd+tdd
+_Score_ : 9/10
+
+== Mission
+
+CAP-TRANSCRIPT US-1 — `TranscriptConfig` data class 2 champs +
+`TranscriptStrategy` enum type-safe 2 valeurs + `mergeTranscriptConfig`
+4 sources (ENV < props < YAML < CLI) + `CapsuleExtension` 2 properties +
+`CapsuleConventions` 2 champs + `pushConfigIntoExtension` transcript
+block. Baby-step TDD strict RED → GREEN → REFACTOR.
+
+== Constat de départ
+
+EPIC CAP-TRANSCRIPT (P2) cadré US-0 S-114 (gouvernance pure, zéro code).
+6 US ~12 pts. US-0 ✅ (12 décisions architecturales). Domaine cible
+`capsule.transcript` (11ème). Pattern de référence US-1 :
+`ValidationConfig` (2 champs defaults backward compat) +
+`mergeValidationConfig` (`mergeBoolean` + `mergeDouble`) + `OutputFormat`
+enum companion `fromString` case-insensitive fallback.
+
+== Réalisation
+
+=== RED — Tests écrits avant le code (22 unit)
+
+. `TranscriptStrategyTest.kt` (7 unit, pattern `OutputFormatTest`) —
+   `fromString` null/blank/known/case-insensitive/unknown fallback
+   TEMPLATE, enum 2 valeurs exact.
+. `TranscriptConfigTest.kt` (5 unit, pattern `AudioPostConfigTest`) —
+   defaults backward-compat disabled, explicit LLM strategy, TEMPLATE
+   strategy, data class equals by value, copy preserves unmodified.
+. `CapsuleConfigMergerTest.kt` +10 tests (pattern validation/audioPost) —
+   default merge disabled TEMPLATE, YAML read, CLI overrides YAML, props
+   read, YAML overrides props, CLI overrides props no YAML, unknown
+   strategy fallback TEMPLATE, partial CLI override preserves YAML,
+   `loadFromEnvironment` default, `loadFromGradleProperties` reads section.
+. Compilation échec : `Unresolved reference 'TranscriptStrategy'` +
+  `Unresolved reference 'TranscriptConfig'` (14 errors).
+
+=== GREEN — Code de production (4 fichiers prod + 1 fichier test modifié)
+
+. `src/main/kotlin/capsule/transcript/TranscriptConfig.kt` (nouveau
+   domaine `capsule.transcript` 11ème) — `TranscriptConfig` data class
+   2 champs (`enabled: Boolean = false` + `strategy: TranscriptStrategy =
+   TranscriptStrategy.TEMPLATE`, defaults backward compat) +
+   `TranscriptStrategy` enum 2 valeurs `TEMPLATE`/`LLM` + companion
+   `fromString` case-insensitive fallback `TEMPLATE` (pattern
+   `OutputFormat`/`CaptureStrategy`).
+. `CapsuleConfig.kt` — import `TranscriptConfig` + 11ème section
+   `transcript: TranscriptConfig = TranscriptConfig()`.
+. `CapsuleConfigMerger.kt` — import `TranscriptConfig`/`TranscriptStrategy`
+   + `merge()` étendu `transcript = mergeTranscriptConfig(...)` +
+   `loadFromEnvironment` `CAPSULE_TRANSCRIPT_ENABLED`/`_STRATEGY` +
+   `buildConfigFromProperties` `capsule.transcript.enabled`/`.strategy` +
+   `mergeTranscriptConfig` (pattern `mergeValidationConfig` —
+   `mergeBoolean` enabled, `mergeTranscriptStrategy` strategy) +
+   `mergeTranscriptStrategy` helper enum (pattern `mergeVersioning`/
+   `mergeOutputFormat` — CLI > YAML > props).
+. `CapsuleModels.kt` — import `TranscriptStrategy` + 2 properties
+   `transcriptEnabled: Property<Boolean>` convention `false` +
+   `transcriptStrategy: Property<TranscriptStrategy>` convention
+   `TEMPLATE` + helper Groovy `transcriptStrategy(String)` (case-
+   insensitive) + `conventions` instance étendue 2 champs +
+   `CapsuleConventions` data class étendue 2 champs.
+. `CapsulePlugin.kt` — import `TranscriptStrategy` + block transcript
+   Variant B (`isPresent` + equality) après AudioPost block.
+. `CapsuleConfigMergerTest.kt` — import `TranscriptConfig`/
+   `TranscriptStrategy` + 10 tests merger transcript.
+
+=== REFACTOR — Vérification
+
+. `compileKotlin` + `compileTestKotlin` BUILD SUCCESSFUL.
+. `test` 888 unit VERT 0 FAIL (baseline S-113 866 → +22 net : 7
+   `TranscriptStrategyTest` + 5 `TranscriptConfigTest` + 10 merger
+   transcript).
+. `check` BUILD SUCCESSFUL in 18m53s — 888 unit + functional VERT +
+   cucumber dédiés GREEN (baseline préservée), Kover VERT,
+   validatePlugins VERT, zéro régression, zéro secret, zéro bump BOM.
+
+== Décisions architecturales
+
+. **Domaine `capsule.transcript` 11ème** — fichier `TranscriptConfig.kt`
+  dans `src/main/kotlin/capsule/transcript/`, pattern `capsule.audio`/
+  `capsule.validation`.
+. **`TranscriptConfig` 11ème section `CapsuleConfig`** — 2 champs
+  `enabled: Boolean = false` (opt-in backward compat) +
+  `strategy: TranscriptStrategy = TEMPLATE` (défaut safe, pas de LLM
+  requis). Pattern `ValidationConfig` (2 champs defaults backward compat).
+. **`TranscriptStrategy` enum type-safe 2 valeurs** — `TEMPLATE`
+  (assemble AsciiDoc depuis segments, zéro LLM, déterministe) + `LLM`
+  (enrichit via `TranscriptLlmEnhancer`, requiert `LlmBuildService`).
+  Défaut `TEMPLATE` (backward compat + économie d'encre + pas de
+  dépendance LLM pour usage basique). Companion `fromString`
+  case-insensitive fallback `TEMPLATE` (pattern `OutputFormat`/
+  `CaptureStrategy`).
+. **4 sources DSL** — `transcriptEnabled` + `transcriptStrategy` 4
+  sources (ENV `CAPSULE_TRANSCRIPT_ENABLED`/`_STRATEGY` < props
+  `capsule.transcript.enabled`/`.strategy` < YAML < CLI
+  `-Pcapsule.transcript.*`). `mergeTranscriptConfig` pattern
+  `mergeValidationConfig` (`mergeBoolean` + `mergeTranscriptStrategy`).
+. **`CapsuleExtension` 2 properties** + helper Groovy
+  `transcriptStrategy(String)` (pattern `captureStrategy`/
+  `outputFormat`). `CapsuleConventions` 2 champs mirror.
+  `pushConfigIntoExtension` transcript block Variant B (`isPresent` +
+  equality) après AudioPost block.
+
+== Fichiers modifiés
+
+=== Production (4 fichiers)
+
+. `src/main/kotlin/capsule/transcript/TranscriptConfig.kt` (nouveau, 55
+   lignes — data class 2 champs + enum 2 valeurs + companion fromString)
+. `src/main/kotlin/capsule/CapsuleConfig.kt` (+2 lignes — import + 11ème
+   section)
+. `src/main/kotlin/capsule/CapsuleConfigMerger.kt` (+30 lignes — import
+   + merge + ENV + props + mergeTranscriptConfig + mergeTranscriptStrategy)
+. `src/main/kotlin/capsule/CapsuleModels.kt` (+15 lignes — import + 2
+   properties + helper + conventions + data class)
+. `src/main/kotlin/capsule/CapsulePlugin.kt` (+9 lignes — import + block
+   transcript Variant B)
+
+=== Tests (3 fichiers)
+
+. `src/test/kotlin/capsule/transcript/TranscriptStrategyTest.kt`
+   (nouveau, 7 unit)
+. `src/test/kotlin/capsule/transcript/TranscriptConfigTest.kt`
+   (nouveau, 5 unit)
+. `src/test/kotlin/capsule/CapsuleConfigMergerTest.kt` (+10 tests merger
+   transcript, +3 imports)
+
+== Vérification
+
+. `compileKotlin` + `compileTestKotlin` BUILD SUCCESSFUL
+. `test` 888 unit VERT 0 FAIL (baseline 866 → +22 net)
+. `check` BUILD SUCCESSFUL 18m53s (Kover VERT, validatePlugins VERT,
+   cucumber dédiés GREEN baseline préservée)
+. `grep -r "TOKEN\|SECRET\|PASSWORD\|API_KEY\|gho_\|ghp_"` — zéro secret
+. `git status` — 5 fichiers code + 2 fichiers test + 1 domaine nouveau
+
+== Économie d'encre
+
+US-1 est pure config (pas de tâche Gradle, pas de cucumber — US-2→5
+restantes). Backward compat strict : `transcript` absent → `enabled=false`
+→ `generateCapsuleTranscript` skip (US-4). Aucun changement comportemental.
+
+== EPIC CAP-TRANSCRIPT — Statut post-session
+
+[cols="1,3,2,2", options="header"]
+|===
+| US | Description | Pts | Statut
+
+| CAP-TRANSCRIPT-0 | Cadrage EPIC | 1 | ✅ TERMINÉ (S-114)
+| CAP-TRANSCRIPT-1 | TranscriptConfig + TranscriptStrategy enum + merger 4 sources | 2 | ✅ TERMINÉ (S-115)
+| CAP-TRANSCRIPT-2 | TranscriptPlan + TranscriptBuilder + TranscriptPromptBuilder | 3 | ⬜ TODO
+| CAP-TRANSCRIPT-3 | TranscriptLlmEnhancer port + ChatModelTranscriptEnhancer adapter | 2 | ⬜ TODO
+| CAP-TRANSCRIPT-4 | Tâche generateCapsuleTranscript + wiring | 2 | ⬜ TODO
+| CAP-TRANSCRIPT-5 | Cucumber BDD | 2 | ⬜ TODO
+|===
+
+_Total_ : 6 US ~12 pts. _Statut_ : US-0 ✅, US-1 ✅ (S-115), US-2→5 TODO.
+
+== Prochaine session
+
+116 — CAP-TRANSCRIPT US-2 `TranscriptPlan` + `TranscriptBuilder` +
+`TranscriptPromptBuilder`. Baby-step TDD ~12 unit (plan invariants,
+builder template structure, empty segments, MANIM segment skipped in
+article, prompt builder content, language attribute, intro/outro
+present). Domaine `capsule.transcript` enrichi (3 nouveaux fichiers prod).

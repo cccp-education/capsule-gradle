@@ -1,5 +1,6 @@
 package capsule
 
+import capsule.transcript.TranscriptStrategy
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.UnknownPluginException
@@ -151,6 +152,14 @@ class CapsulePlugin : Plugin<Project> {
         }
         if (!ext.audioPostDuckingEnabled.isPresent || ext.audioPostDuckingEnabled.get() == conventions.audioPostDuckingEnabled) {
             ext.audioPostDuckingEnabled.set(config.audioPost.duckingEnabled)
+        }
+
+        // Transcript section (CAP-TRANSCRIPT)
+        if (!ext.transcriptEnabled.isPresent || ext.transcriptEnabled.get() == conventions.transcriptEnabled) {
+            ext.transcriptEnabled.set(config.transcript.enabled)
+        }
+        if (!ext.transcriptStrategy.isPresent || ext.transcriptStrategy.get() == conventions.transcriptStrategy) {
+            ext.transcriptStrategy.set(config.transcript.strategy)
         }
     }
 }

@@ -1,6 +1,8 @@
 package capsule
 
 import capsule.audio.AudioPostConfig
+import capsule.transcript.TranscriptConfig
+import capsule.transcript.TranscriptStrategy
 import java.io.File
 
 /**
@@ -38,7 +40,8 @@ object CapsuleConfigMerger {
             strictMode = mergeStrictModeConfig(envConfig.strictMode, propertiesConfig.strictMode, yaml?.strictMode, cliParams),
             context = mergeContextConfig(envConfig.context, propertiesConfig.context, yaml?.context, cliParams),
             validation = mergeValidationConfig(envConfig.validation, propertiesConfig.validation, yaml?.validation, cliParams),
-            audioPost = mergeAudioPostConfig(envConfig.audioPost, propertiesConfig.audioPost, yaml?.audioPost, cliParams)
+            audioPost = mergeAudioPostConfig(envConfig.audioPost, propertiesConfig.audioPost, yaml?.audioPost, cliParams),
+            transcript = mergeTranscriptConfig(envConfig.transcript, propertiesConfig.transcript, yaml?.transcript, cliParams)
         )
     }
 
@@ -145,6 +148,10 @@ object CapsuleConfigMerger {
                 bgmLevel = env["CAPSULE_AUDIO_POST_BGM_LEVEL"]?.toDoubleOrNull() ?: -18.0,
                 loudnessTarget = env["CAPSULE_AUDIO_POST_LOUDNESS_TARGET"]?.toDoubleOrNull() ?: -16.0,
                 duckingEnabled = env["CAPSULE_AUDIO_POST_DUCKING_ENABLED"]?.toBoolean() ?: false
+            ),
+            transcript = TranscriptConfig(
+                enabled = env["CAPSULE_TRANSCRIPT_ENABLED"]?.toBoolean() ?: false,
+                strategy = TranscriptStrategy.fromString(env["CAPSULE_TRANSCRIPT_STRATEGY"])
             )
         )
     }
@@ -220,6 +227,10 @@ object CapsuleConfigMerger {
                 bgmLevel = props["capsule.audioPost.bgmLevel"]?.toDoubleOrNull() ?: -18.0,
                 loudnessTarget = props["capsule.audioPost.loudnessTarget"]?.toDoubleOrNull() ?: -16.0,
                 duckingEnabled = props["capsule.audioPost.duckingEnabled"]?.toBoolean() ?: false
+            ),
+            transcript = TranscriptConfig(
+                enabled = props["capsule.transcript.enabled"]?.toBoolean() ?: false,
+                strategy = TranscriptStrategy.fromString(props["capsule.transcript.strategy"])
             )
         )
     }
@@ -325,6 +336,13 @@ object CapsuleConfigMerger {
         )
     }
 
+    private fun mergeTranscriptConfig(env: TranscriptConfig, props: TranscriptConfig, yaml: TranscriptConfig?, cli: Map<String, Any?>): TranscriptConfig {
+        return TranscriptConfig(
+            enabled = mergeBoolean(cli, "transcript.enabled", yaml?.enabled, props.enabled),
+            strategy = mergeTranscriptStrategy(cli, "transcript.strategy", yaml?.strategy, props.strategy)
+        )
+    }
+
     private fun mergeContextConfig(env: ContextConfig, props: ContextConfig, yaml: ContextConfig?, cli: Map<String, Any?>): ContextConfig {
         return ContextConfig(
             docsGlobs = mergeStrList(cli, "context.docsGlobs", yaml?.docsGlobs, props.docsGlobs, env.docsGlobs),
@@ -365,6 +383,18 @@ object CapsuleConfigMerger {
     ): OutputFormat {
         val cliValue = cli[key]?.toString()
         if (!cliValue.isNullOrBlank()) return OutputFormat.fromString(cliValue)
+        yaml?.let { return it }
+        return props
+    }
+
+    private fun mergeTranscriptStrategy(
+        cli: Map<String, Any?>,
+        key: String,
+        yaml: TranscriptStrategy?,
+        props: TranscriptStrategy
+    ): TranscriptStrategy {
+        val cliValue = cli[key]?.toString()
+        if (!cliValue.isNullOrBlank()) return TranscriptStrategy.fromString(cliValue)
         yaml?.let { return it }
         return props
     }

@@ -1,6 +1,7 @@
 package capsule
 
 import capsule.audio.AudioPostConfig
+import capsule.transcript.TranscriptStrategy
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -182,6 +183,19 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val audioPostDuckingEnabled: Property<Boolean> = objects.property(Boolean::class.java)
         .convention(false)
 
+    /** CAP-TRANSCRIPT — `true` to generate an AsciiDoc transcript article from the capsule. Defaults to false (opt-in). */
+    val transcriptEnabled: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
+    /** CAP-TRANSCRIPT — generation strategy: TEMPLATE (default, deterministic, no LLM) or LLM (enrichment via LlmBuildService). */
+    val transcriptStrategy: Property<TranscriptStrategy> = objects.property(TranscriptStrategy::class.java)
+        .convention(TranscriptStrategy.TEMPLATE)
+
+    /** Groovy DSL helper: accepts a case-insensitive string ("template" / "llm"). */
+    fun transcriptStrategy(value: String) {
+        transcriptStrategy.set(TranscriptStrategy.fromString(value))
+    }
+
     internal val conventions: CapsuleConventions = CapsuleConventions(
         outputDir = "capsule",
         sliderScriptDir = "capsule",
@@ -225,7 +239,9 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         audioPostBgmFile = "",
         audioPostBgmLevel = -18.0,
         audioPostLoudnessTarget = -16.0,
-        audioPostDuckingEnabled = false
+        audioPostDuckingEnabled = false,
+        transcriptEnabled = false,
+        transcriptStrategy = TranscriptStrategy.TEMPLATE
     )
 }
 
@@ -272,5 +288,7 @@ data class CapsuleConventions(
     val audioPostBgmFile: String,
     val audioPostBgmLevel: Double,
     val audioPostLoudnessTarget: Double,
-    val audioPostDuckingEnabled: Boolean
+    val audioPostDuckingEnabled: Boolean,
+    val transcriptEnabled: Boolean,
+    val transcriptStrategy: TranscriptStrategy
 )

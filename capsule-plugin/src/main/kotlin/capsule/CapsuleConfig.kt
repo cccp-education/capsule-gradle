@@ -1,6 +1,7 @@
 package capsule
 
 import capsule.audio.AudioPostConfig
+import capsule.transcript.TranscriptConfig
 
 /**
  * Immutable configuration model for capsule-gradle.
@@ -20,7 +21,8 @@ data class CapsuleConfig(
     val strictMode: StrictModeConfig = StrictModeConfig(),
     val context: ContextConfig = ContextConfig(),
     val validation: ValidationConfig = ValidationConfig(),
-    val audioPost: AudioPostConfig = AudioPostConfig()
+    val audioPost: AudioPostConfig = AudioPostConfig(),
+    val transcript: TranscriptConfig = TranscriptConfig()
 )
 
 data class InputConfig(

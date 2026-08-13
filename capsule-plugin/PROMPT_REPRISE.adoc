@@ -1,52 +1,87 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 113 — **EPIC CAP-27 VTT burn-in TERMINÉ 3/3 US**.
-Constat de prémisse caduque : compatibilité VTT **déjà fonctionnelle**
-(test réel ffmpeg 6.1.1, filtre `subtitles=` auto-détecte `.vtt` par
-extension, exit 0 WebM valide). US-0 cadrage (8 décisions). US-1
-`SubtitleBurnInCommand` object pur (pattern `AudioPostCommand`) + refactor
-`SubtitleBurnInServiceImpl.burnIn` (argv identique backward compat) + 13
-unit tests SRT/VTT (866 unit VERT 0 FAIL +9 net). US-2 Cucumber BDD 2
-scénarios `@subtitles @burnin @vtt` dans `capsule.feature` (feature
-existante → pas de nouveau runner S-082) + 2 step defs VTT uniques
-(S-088) : non-integration PASSED (32s) + E2E `@integration` real ffmpeg
-PASSED (32s, WebM valide EBML + `.vtt` + burn-in success).
-`cucumberTestIntegration -PrunCucumber` 256 tests 0 failures. `check`
-BUILD SUCCESSFUL, Kover VERT, 64 functional VERT baseline préservée,
-zéro régression (13 failures cucumberTest préexistantes
-NoTestsDiscoveredException dedicated runners bug S-082), zéro secret,
-zéro bump BOM, zéro changement DSL. EPIC clos en 1 session.
-_Prochaine session_ : 114 — Borough Détroit en maintenance. EPICs
-restants : CAP-CHAPITRE (P2), CAP-TRANSCRIPT (P2), CAP-PODCAST (P2),
-CAP-PREVIEW (P2), CAP-CR3-4 (P2), CAP-28 (P2 coverage gaps).
+_Session terminee_ : 115 — **CAP-TRANSCRIPT US-1 TranscriptConfig +
+TranscriptStrategy enum + merger 4 sources** (baby-step TDD strict RED →
+GREEN → REFACTOR). Domaine `capsule.transcript` (11ème) créé avec
+`TranscriptConfig.kt` (data class 2 champs `enabled: Boolean = false` +
+`strategy: TranscriptStrategy = TEMPLATE`, defaults backward compat) +
+`TranscriptStrategy` enum type-safe 2 valeurs `TEMPLATE`/`LLM` companion
+`fromString` case-insensitive fallback `TEMPLATE` (pattern `OutputFormat`/
+`CaptureStrategy`). `CapsuleConfig` 11ème section `transcript`.
+`CapsuleConfigMerger` `mergeTranscriptConfig` (pattern
+`mergeValidationConfig` — `mergeBoolean` enabled + `mergeTranscriptStrategy`
+strategy) + `loadFromEnvironment` `CAPSULE_TRANSCRIPT_ENABLED`/`_STRATEGY`
++ `buildConfigFromProperties` `capsule.transcript.enabled`/`.strategy` +
+`mergeTranscriptStrategy` helper enum (pattern `mergeVersioning`).
+`CapsuleExtension` 2 properties (`transcriptEnabled` convention `false` +
+`transcriptStrategy` convention `TEMPLATE` + helper Groovy) +
+`CapsuleConventions` 2 champs + `pushConfigIntoExtension` transcript
+block (Variant B `isPresent` + equality). 22 unit tests créés (7
+`TranscriptStrategyTest` + 5 `TranscriptConfigTest` + 10 merger transcript).
+888 unit VERT (+22 net : baseline 866 → 888), 64 functional VERT, 13
+cucumber dédiés GREEN. `check` BUILD SUCCESSFUL 18m53s, Kover VERT,
+validatePlugins VERT, zéro régression, zéro secret, zéro bump BOM. EPIC
+CAP-TRANSCRIPT 2/6 US (US-0 ✅ S-114, US-1 ✅ S-115, US-2→5 TODO).
+_Prochaine session_ : 116 — CAP-TRANSCRIPT US-2 `TranscriptPlan` +
+`TranscriptBuilder` + `TranscriptPromptBuilder`. Baby-step TDD ~12 unit
+(plan invariants, builder template structure, empty segments, MANIM
+segment skipped in article, prompt builder content, language attribute,
+intro/outro present).
 
-== Contexte reprise session 114 (post CAP-27 S-113)
+== Contexte reprise session 116 (post CAP-TRANSCRIPT US-1 S-115)
 
-- EPIC CAP-27 (P2) — VTT burn-in, TERMINÉ 3/3 US S-113 (US-0 cadrage,
-  US-1 `SubtitleBurnInCommand` + 13 unit, US-2 Cucumber 2 scénarios).
-  Compat VTT était déjà fonctionnelle (test réel ffmpeg 6.1.1) — CAP-27
-  = couverture test, pas un fix.
-- `SubtitleBurnInCommand.kt` (object pur, pattern `AudioPostCommand`) —
-  `buildArgv(videoFile, subtitleFile, outputFile, style, ffmpegPath):
-  List<String>`. `SubtitleBurnInServiceImpl.burnIn` L66-72 refactoré pour
-  le consommer (argv identique, backward compat).
-- 866 unit VERT (S-113 baseline, +9 net vs 857 S-112). 64 functional VERT.
-  13 cucumber dédiés GREEN + 2 scénarios VTT (non-integration +
-  @integration E2E) PASSED.
+- EPIC CAP-TRANSCRIPT (P2) — cadré US-0 S-114, US-1 ✅ S-115. 6 US ~12
+  pts. Domaine `capsule.transcript` (11ème) créé US-1 avec
+  `TranscriptConfig.kt` (data class 2 champs + enum 2 valeurs).
+  US-2→5 TODO. US-2 cible : `TranscriptPlan` data class immutable
+  (`deckName`, `segments: List<SlideSegment>`, `language`, `outputPath`,
+  invariants non-blank) + `TranscriptBuilder` object pur `build(plan):
+  String` (template AsciiDoc : titre level 0 + attribute language + intro
+  + sections `== title` par segment avec speakerNote body + outro) +
+  `TranscriptPromptBuilder` object pur `buildEnhancePrompt(plan): String`
+  (prompt pédagogique enrichissement).
+- Pattern de référence US-2 : `CapsuleVideoPlan`/`CapsuleVideoPlanner`
+  (CAP-29.2 `capsule.multilang`, `CapsuleVideoEntry` data class immutable
+  + invariants fail-fast + `CapsuleVideoPlanner` object pur) +
+  `CapsuleScriptWriter` (object pur `write(script): String`) +
+  `DefaultCapsulePromptBuilder` (`buildProposePrompt`/`buildGeneratePrompt`
+  depuis `CapsuleState`, prompts pédagogiques avec instructions
+  conditionnelles).
+- `capsule.feed.SlideSegment` (`CapsuleFeedModels.kt:22-33`) — `index`,
+  `title`, `speakerNote`, `type: SlideType`, `manimScene: String?`.
+  Invariants title/speakerNote non-blank. `TranscriptPlan` consomme
+  `List<SlideSegment>` (pas nouveau modèle — réutilise l'existant).
+- `capsule.feed.CapsuleScript` (`CapsuleFeedModels.kt:46-55`) —
+  `deckName` + `segments: List<SlideSegment>`, invariant
+  `deckName.isNotBlank()`. Source de vérité contenu pédagogique.
+- `capsule.pipeline.CapsuleLlm` (`CapsuleLlm.kt:17`) — port sync
+  `propose`/`generate`. `ChatModelCapsuleLlm` adapter bridge langchain4j
+  `ChatModel`. Pattern de référence pour `TranscriptLlmEnhancer` (US-3).
+- `GenerateCapsuleContentTask` (`GenerateCapsuleContentTask.kt:45`) —
+  `@OutputFile speakerNotesOutput` = `build/capsule/<deckName>-speaker-notes.adoc`.
+  Source du transcript : `generateCapsuleTranscript` dependsOn
+  `generateCapsuleContent` (US-4).
+- `TranscriptStrategy` enum (US-1) — `TEMPLATE` (défaut, assemble AsciiDoc
+  depuis segments, zéro LLM, déterministe) + `LLM` (enrichit via
+  `TranscriptLlmEnhancer`, requiert `LlmBuildService`). `TranscriptConfig`
+  11ème section `CapsuleConfig` (`enabled: Boolean = false` +
+  `strategy: TranscriptStrategy = TEMPLATE`).
+- 4 sources DSL `transcriptEnabled`/`transcriptStrategy` : ENV
+  `CAPSULE_TRANSCRIPT_ENABLED`/`_STRATEGY` < props
+  `capsule.transcript.enabled`/`.strategy` < YAML < CLI.
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider
   0.0.16 (compileOnly), codebase-plugin 0.0.5 (implementation),
   koog-agents 1.0.0, BOM 0.0.16, codebase-contracts 0.1.0,
   i18n-contracts 0.0.2.
-- Borough Détroit en maintenance. Tous les EPICs P0/P1 terminés
-  (CAP-29, CAP-ARCH, CAP-CR3-1/2/3, CAP-DOCCONTEXT, CAP-SPD,
-  CAP-PROVENANCE, CAP-MP4, CAP-AUDIO, CAP-GLOSSARY, CAP-27). Reste P2 :
-  CAP-CHAPITRE, CAP-TRANSCRIPT, CAP-PODCAST, CAP-PREVIEW, CAP-CR3-4,
-  CAP-28.
+- 888 unit VERT (S-115 baseline), 64 functional VERT, 13 cucumber dédiés
+  GREEN + 2 scénarios VTT. Borough Détroit en maintenance. Tous les EPICs
+  P0/P1 terminés. Reste P2 : CAP-TRANSCRIPT (US-2→5), CAP-CHAPITRE,
+  CAP-PODCAST, CAP-PREVIEW, CAP-CR3-4, CAP-28.
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 866 unit VERT (S-113 baseline), 64 functional VERT, 13 cucumber dédiés GREEN
+* 888 unit VERT (S-115 baseline), 64 functional VERT, 13 cucumber dédiés GREEN
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082) +
   steps préfixés par feature (bug S-088 glue `capsule.scenarios` partagée)
@@ -54,10 +89,11 @@ CAP-PREVIEW (P2), CAP-CR3-4 (P2), CAP-28 (P2 coverage gaps).
 * Économie d'encre = skip si artefact existe et valide (AGENT.adoc Loi)
 * Ports Ollama : 11437-11465 rotation (11434-11436 INTERDITS)
 * `CapsuleMessages` object (domaine `capsule.i18n`) — 11
-  `Messages*.properties` 10 langues
+  `Messages*.properties` 10 langues, 23 keys (24ème à ajouter US-4)
 * DSL 4 sources pattern : ENV < props < YAML < CLI. Merger helpers
   `mergeStr/mergeInt/mergeDouble/mergeBoolean/mergeStrList` +
-  `mergeVersioning`/`mergeCaptureStrategy`/`mergeOutputFormat` (enums)
+  `mergeVersioning`/`mergeCaptureStrategy`/`mergeOutputFormat`/
+  `mergeTranscriptStrategy` (enums)
 * 3 loaders domaine `capsule.context` : `DocContextLoader` (corpus
   documentaire, CAP-DOCCONTEXT), `PedagogicalScenarioLoader` (scénario
   pédagogique, CAP-SPD), `GlossaryLoader` (glossaire terminologique,
@@ -67,3 +103,11 @@ CAP-PREVIEW (P2), CAP-CR3-4 (P2), CAP-28 (P2 coverage gaps).
   (`capsule.audio`), `SubtitleBurnInCommand` (`capsule`, CAP-27),
   `FormatConversion` (`capsule`, CAP-MP4). `buildArgv(...)` sans I/O,
   fully testable.
+* `capsule.feed.SlideSegment` (`CapsuleFeedModels.kt:22-33`) — `index`,
+  `title`, `speakerNote`, `type: SlideType`, `manimScene: String?`.
+  Invariants title/speakerNote non-blank. Source de vérité contenu
+  pédagogique. `TranscriptPlan` consomme `List<SlideSegment>` (pas
+  nouveau modèle).
+* 14 `CucumberTaskSpec` (`build.gradle.kts:29-166`). 15ème
+  `cucumberTestTranscript` (US-5) après `cucumberTestGlossaryContext` (L153)
+  avant `cucumberTestIntegration` (L159).

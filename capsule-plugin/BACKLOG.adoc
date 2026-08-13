@@ -1484,7 +1484,7 @@ CAP-PROVENANCE TERMINÉ 3/3 US (S-108)** — domaine `capsule.context` clos
 BUILD SUCCESSFUL : 834 unit (+15) + 62 functional (+2) + 3 cucumber
 `capsule_provenance.feature` GREEN. Zéro régression, zéro secret.
 
-=== 📝 EPIC CAP-TRANSCRIPT — Reverse pipeline capsule → article AsciiDoc (contexte augmenté)
+=== ✅ EPIC CAP-TRANSCRIPT — Reverse pipeline capsule → article AsciiDoc (Session 114 — Cadrage US-0)
 
 _Vision_ : Le stagiaire révisionne en lecture, pas vidéo. `generateCapsuleTranscript`
 produit un article AsciiDoc depuis les speaker notes + slide titles + metadata
@@ -1492,54 +1492,233 @@ produit un article AsciiDoc depuis les speaker notes + slide titles + metadata
 PUBLISH multi-format) ou bakery-gradle (site statique). Cross-borough document
 + bakery. Double le livrable MVP0 : capsule vidéo + article de révision.
 
-_Domaine_ : `capsule.transcript` (nouveau domaine DDD).
+_Domaine_ : `capsule.transcript` (nouveau domaine DDD, 11ème).
 
-_Dépendances_ : CAP-ARCH-3 ✅ (`CapsulePipelineGraph`/`CapsuleLlm`),
+_Dépendances_ : CAP-ARCH-3 ✅ (`CapsulePipelineGraph`/`CapsuleLlm` port +
+`ChatModelCapsuleLlm` adapter + `DefaultCapsulePromptBuilder` port pattern),
+`capsule.feed` ✅ (`SlideSegment`/`CapsuleScript` + `AsciidocSpeakerNoteParser`
++ `CapsuleScriptReader`), `GenerateCapsuleContentTask` ✅ (`@OutputFile
+speakerNotesOutput` = `build/capsule/<deckName>-speaker-notes.adoc`),
 document-gradle (publish), bakery-gradle (site).
+
+_Audit code (S-114)_ :
+
+* `capsule.feed.CapsuleScript` (`CapsuleFeedModels.kt:46-55`) — `deckName` +
+  `segments: List<SlideSegment>`, invariant `deckName.isNotBlank()`. Source
+  de vérité du contenu pédagogique : titres + speaker notes + type
+  (HTML/MANIM) + manimScene.
+* `capsule.feed.SlideSegment` (`CapsuleFeedModels.kt:22-33`) — `index`,
+  `title`, `speakerNote`, `type`, `manimScene`. Invariants title/speakerNote
+  non-blank.
+* `capsule.feed.AsciidocSpeakerNoteParser` (`AsciidocSpeakerNoteParser.kt:21`)
+  — `parse(adocContent, deckName): CapsuleScript`. Reconnait `== ` headings +
+  `[NOTE.speaker]` open blocks. Réutilisable pour parser les speaker notes
+  générés par `generateCapsuleContent`.
+* `capsule.feed.CapsuleScriptReader` (`CapsuleFeedModels.kt:124`) —
+  `read(file): CapsuleScript`. Parse `-script.txt` round-trip.
+* `capsule.pipeline.CapsuleLlm` (`CapsuleLlm.kt:17`) — port sync
+  `propose(prompt)`/`generate(prompt)`. Adapter `ChatModelCapsuleLlm`
+  (`ChatModelCapsuleLlm.kt:17`) bridge langchain4j `ChatModel`. Pattern de
+  référence pour `TranscriptLlmEnhancer` (port sync + adapter ChatModel).
+* `capsule.pipeline.DefaultCapsulePromptBuilder` (`DefaultCapsulePromptBuilder.kt:13`)
+  — `buildProposePrompt`/`buildGeneratePrompt` depuis `CapsuleState`. Prompts
+  pédagogiques avec instructions conditionnelles (scenario/glossary). Pattern
+  pour `TranscriptPromptBuilder`.
+* `GenerateCapsuleContentTask` (`GenerateCapsuleContentTask.kt:45`) —
+  `@OutputFile speakerNotesOutput` (`build/capsule/<deckName>-speaker-notes.adoc`)
+  + `@OutputFile ttsScriptOutput` (`build/capsule/<deckName>-script.txt`).
+  Source du transcript : speaker notes AsciiDoc générés par LLM.
+* `CapsuleConfig` 10 sections (`CapsuleConfig.kt:13-24`) — `InputConfig`,
+  `TtsConfig`, `CaptureConfig`, `DistribConfig`, `ManimConfig`, `OutputConfig`,
+  `StrictModeConfig`, `ContextConfig`, `ValidationConfig`, `AudioPostConfig`.
+  `TranscriptConfig` = 11ème section (pattern `ValidationConfig` 2 champs).
+* `CapsuleConfigMerger.merge()` 10 `mergeXxxConfig` (`CapsuleConfigMerger.kt:25-43`)
+  + 5 helpers scalaires (`mergeStr/mergeBoolean/mergeInt/mergeDouble/mergeStrList`)
+  + 3 helpers enum (`mergeVersioning/mergeCaptureStrategy/mergeOutputFormat`).
+  `mergeTranscriptConfig` pattern `mergeValidationConfig` (311-316).
+* `CapsuleExtension` 48 properties (`CapsuleModels.kt:9-230`) +
+  `CapsuleConventions` data class mirror (`CapsuleModels.kt:232-276`).
+  `transcriptEnabled`/`transcriptStrategy` après `audioPostDuckingEnabled`
+  (L183) pattern AudioPost block (Variant B isPresent + equality).
+* `CapsulePlugin.pushConfigIntoExtension` (`CapsulePlugin.kt:68-155`) — 10
+  blocks section guards. Transcript block après AudioPost (L154).
+* `CapsuleManager.registerTasks()` 14 registrations (`CapsuleManager.kt:11-26`)
+  + 5 `resolve*` factories (companion L326-486). `registerGenerateTranscriptTask`
+  après `registerGenerateCapsuleContentTask` (L272-324) — dépend
+  `generateCapsuleContent` (speaker notes source).
+* `CapsuleMessages` 23 keys (`Messages.properties` 31 lines) + 10
+  `Messages_*.properties`. `task.generateCapsuleTranscript.description` après
+  `task.validateCapsuleVideoDuration.description` (L31). Groupe
+  `task.group.generate` réutilisé (transcript = génération contenu).
+* 14 `CucumberTaskSpec` (`build.gradle.kts:29-166`). 15ème
+  `cucumberTestTranscript` après `cucumberTestGlossaryContext` (L153) avant
+  `cucumberTestIntegration` (L159). Runner dédié `CapsuleTranscriptCucumberRunner`
+  (pattern S-082) + steps préfixés "transcript" (bug S-088 glue partagée).
+
+_Décisions architecturales (12)_ :
+
+. **Domaine `capsule.transcript` 11ème** — nouveau domaine DDD pur (data
+  classes immutable + object pur builder + port/adapter LLM), pattern
+  `capsule.audio`/`capsule.validation`/`capsule.context`. Fichiers prod dans
+  `src/main/kotlin/capsule/transcript/`.
+. **`TranscriptConfig` 11ème section `CapsuleConfig`** — 2 champs
+  `enabled: Boolean = false` (défaut backward compat — transcript opt-in) +
+  `strategy: TranscriptStrategy = TranscriptStrategy.TEMPLATE` (défaut safe,
+  pas de LLM requis). Pattern `ValidationConfig` (2 champs, defaults
+  backward compat).
+. **`TranscriptStrategy` enum type-safe 2 valeurs** — `TEMPLATE` (assemble
+  AsciiDoc depuis segments, zéro LLM, déterministe) + `LLM` (enrichit via
+  `TranscriptLlmEnhancer`, requiert `LlmBuildService`). Défaut `TEMPLATE`
+  (backward compat + économie d'encre + pas de dépendance LLM pour usage
+  basique). Companion `fromString` case-insensitive fallback `TEMPLATE`
+  (pattern `OutputFormat`/`CaptureStrategy`).
+. **`TranscriptPlan` data class immutable** — `deckName: String`,
+  `segments: List<SlideSegment>` (consomme `capsule.feed.SlideSegment` — pas
+  de nouveau modèle, réutilise l'existant), `language: String`,
+  `outputPath: String`. Invariants `deckName.isNotBlank()` +
+  `language.isNotBlank()` + `outputPath.isNotBlank()`. Pattern `CapsuleVideoPlan`
+  (CAP-29.2 `capsule.multilang`).
+. **`TranscriptBuilder` object pur** — `build(plan): String` assemble
+  template AsciiDoc : `= <deckName>` (titre level 0) + `:language: <lang>`
+  (attribute) + intro boilerplate + une section `== <title>` par segment
+  avec `speakerNote` body + outro boilerplate. Zéro I/O, zéro LLM, fully
+  testable. Pattern `CapsuleScriptWriter` (object pur `write(script): String`).
+. **`TranscriptLlmEnhancer` port + adapter** — port `fun
+  enhance(template: String, plan: TranscriptPlan): String` (sync, pattern
+  `CapsuleLlm.propose/generate`). Adapter `ChatModelTranscriptEnhancer`
+  bridge `ChatModel` langchain4j (pattern `ChatModelCapsuleLlm`). Enrichit :
+  transitions entre sections, introductions engageantes, reformulations
+  pédagogiques, garde le structure AsciiDoc (`== ` headings préservés).
+  Fallback : si LLM retourne blank/invalide → template original (degraded,
+  pattern `AudioPostProcessor.process` retourne Boolean).
+. **`TranscriptPromptBuilder` object pur** — `buildEnhancePrompt(plan):
+  String` prompt pédagogique (pattern `DefaultCapsulePromptBuilder`).
+  Instructions : "enrich the AsciiDoc article with pedagogical transitions,
+  keep `== ` headings, keep speaker notes content, add introductory and
+  concluding paragraphs, respond with AsciiDoc only".
+. **Tâche `generateCapsuleTranscript`** — groupe `generate` (réutilise
+  `task.group.generate`), `@OutputFile transcriptOutput` =
+  `build/capsule/<deckName>-transcript.adoc`. Inputs : `@InputFile
+  speakerNotesFile` (dépend `generateCapsuleContent` output) +
+  `@Input language` + `@Input strategy` + `@Optional @ServiceReference
+  LlmBuildService` (si strategy=LLM). Économie d'encre : skip si
+  `transcriptOutput` existe ET non-blank (pattern `GenerateCapsuleContentTask`
+  `@DisableCachingByDefault` mais `@OutputFile` déclaré). `dependsOn
+  GENERATE_CAPSULE_CONTENT`. Wiring `CapsuleManager.registerGenerateTranscriptTask`.
+. **4 sources DSL** — `transcriptEnabled` + `transcriptStrategy` 4 sources
+  (ENV `CAPSULE_TRANSCRIPT_ENABLED`/`CAPSULE_TRANSCRIPT_STRATEGY` < props
+  `capsule.transcript.enabled`/`capsule.transcript.strategy` < YAML < CLI
+  `-Pcapsule.transcript.enabled`/`-Pcapsule.transcript.strategy`).
+  `mergeTranscriptConfig` pattern `mergeValidationConfig` (`mergeBoolean` +
+  `mergeStr` pour strategy → `TranscriptStrategy.fromString`). `CapsuleExtension`
+  2 properties + `CapsuleConventions` 2 champs + `pushConfigIntoExtension`
+  transcript block (Variant B isPresent + equality).
+. **Pas de nouvelle factory `resolve*`** — `TranscriptBuilder` est object pur
+  (pas d'I/O, pas de ffmpeg, pas de Playwright). `TranscriptLlmEnhancer`
+  adapter construit in-task depuis `resolveModel` (pattern
+  `GenerateCapsuleContentTask` L88-93 — `project.aiProvider` +
+  `project.resolveModel(provider, llmService)` + `ChatModelTranscriptEnhancer(model)`).
+  Zéro factory `resolve*` supplémentaire.
+. **Runner dédié `CapsuleTranscriptCucumberRunner`** (pattern S-082) +
+  `CapsuleTranscriptSteps` préfixés "transcript" (bug S-088 glue
+  `capsule.scenarios` partagée) + `CucumberTaskSpec("cucumberTestTranscript")`
+  15ème câblé `build.gradle.kts` (après `cucumberTestGlossaryContext` L153,
+  avant `cucumberTestIntegration` L159). Tags `@transcript`.
+. **`CapsuleMessages` clé `task.generateCapsuleTranscript.description`** —
+  11 `Messages*.properties` (base + en + 9 langues) étendus. Groupe
+  `task.group.generate` réutilisé (transcript = génération contenu, pas
+  nouveau groupe). 24ème key (23 existantes + 1).
 
 [cols="1,3,2,2", options="header"]
 |===
 | US | Description | Pts | Statut
 
 | CAP-TRANSCRIPT-0
-| *Cadrage EPIC* — vision, format article AsciiDoc, LLM vs template, découpage
-US. MàJ INDEX/BACKLOG/PROMPT_REPRISE.
+| *Cadrage EPIC* — audit code (12 constats), 12 décisions architecturales,
+  format article AsciiDoc, LLM vs template (défaut TEMPLATE backward compat),
+  découpage US. MàJ INDEX/BACKLOG/PROMPT_REPRISE/AGENTS racine. Zéro code
+  modifié — gouvernance pure (pattern S-057/S-063).
 | 1
-| ⬜ TODO
+| ✅ TERMINÉ (S-114)
 
 | CAP-TRANSCRIPT-1
-| *`TranscriptPlan` + `TranscriptBuilder`* — data class immutable (deckName,
-segments, metadata, outputPath). `TranscriptBuilder` (object pur) assemble
-template AsciiDoc (titre, intro, sections par slide, speaker notes, outro).
-Baby-step TDD : ~8 unit (plan, template, empty segments, metadata injection).
+| *`TranscriptConfig` + `TranscriptStrategy` enum + merger 4 sources* —
+  `TranscriptConfig` data class 2 champs (`enabled: Boolean = false` +
+  `strategy: TranscriptStrategy = TEMPLATE`, defaults backward compat) 11ème
+  section `CapsuleConfig`. `TranscriptStrategy` enum type-safe 2 valeurs
+  (`TEMPLATE`/`LLM`, companion `fromString` case-insensitive fallback
+  `TEMPLATE`). `mergeTranscriptConfig` (pattern `mergeValidationConfig` —
+  `mergeBoolean` enabled, `mergeStr` strategy → `fromString`). `loadFromEnvironment`
+  (`CAPSULE_TRANSCRIPT_ENABLED`/`_STRATEGY`) + `buildConfigFromProperties`
+  (`capsule.transcript.enabled`/`.strategy`). `CapsuleExtension` 2 properties
+  (`transcriptEnabled` convention `false`, `transcriptStrategy` convention
+  `TEMPLATE`) + `CapsuleConventions` 2 champs + `pushConfigIntoExtension`
+  transcript block (Variant B). Baby-step TDD : ~10 unit (config defaults,
+  enum fromString, merger 4 sources, ENV/props/YAML/CLI override, fallback
+  TEMPLATE).
+| 2
+| ✅ TERMINÉ (S-115, 22 unit : 7 TranscriptStrategyTest + 5 TranscriptConfigTest + 10 merger transcript, 888 unit VERT +22 net baseline 866 → 888, `check` BUILD SUCCESSFUL 18m53s)
+
+| CAP-TRANSCRIPT-2
+| *`TranscriptPlan` + `TranscriptBuilder` + `TranscriptPromptBuilder`* —
+  `TranscriptPlan` data class immutable (`deckName`, `segments:
+  List<SlideSegment>`, `language`, `outputPath`, invariants non-blank).
+  `TranscriptBuilder` object pur `build(plan): String` assemble template
+  AsciiDoc (titre level 0 + attribute language + intro + sections `== title`
+  par segment avec speakerNote body + outro). `TranscriptPromptBuilder`
+  object pur `buildEnhancePrompt(plan): String` (prompt pédagogique
+  enrichissement). Baby-step TDD : ~12 unit (plan invariants, builder
+  template structure, empty segments, MANIM segment skipped in article,
+  prompt builder content, language attribute, intro/outro present).
 | 3
 | ⬜ TODO
 
-| CAP-TRANSCRIPT-2
-| *`TranscriptLlmEnhancer`* — port + adapter LLM (pattern `CapsuleLlm`).
-Enrichit le template : transitions, introductions, reformulations pédagogiques.
-`TranscriptStrategy` enum (TEMPLATE, LLM). Baby-step TDD : ~6 unit (strategy
-dispatch, LLM mock, template fallback, empty output).
-| 2
-| ⬜ TODO
-
 | CAP-TRANSCRIPT-3
-| *Tâche `generateCapsuleTranscript`* — groupe `generate`, `@OutputFile`,
-dépend de `generateCapsuleContent` (speaker notes source). DSL
-`transcriptEnabled` + `transcriptStrategy` (4 sources). Wiring `CapsuleManager`.
-Baby-step TDD : 2 functional (registration, output artefact).
+| *`TranscriptLlmEnhancer` port + `ChatModelTranscriptEnhancer` adapter* —
+  port `fun enhance(template: String, plan: TranscriptPlan): String` (sync,
+  pattern `CapsuleLlm`). Adapter bridge `ChatModel` langchain4j (pattern
+  `ChatModelCapsuleLlm`). Enrichit template : transitions, introductions,
+  reformulations. Fallback degraded : si LLM blank/invalide → template
+  original (pattern `AudioPostProcessor.process` Boolean). Baby-step TDD :
+  ~6 unit (enhance mock LLM, blank fallback, preserve headings, strategy
+  dispatch TEMPLATE no-op / LLM enhance).
 | 2
 | ⬜ TODO
 
 | CAP-TRANSCRIPT-4
+| *Tâche `generateCapsuleTranscript` + wiring* — groupe `generate`,
+  `@OutputFile transcriptOutput` (`build/capsule/<deckName>-transcript.adoc`),
+  `@InputFile speakerNotesFile` (dependsOn `generateCapsuleContent`),
+  `@Input language`/`strategy`, `@Optional @ServiceReference LlmBuildService`
+  (si strategy=LLM). Parse speaker notes via `AsciidocSpeakerNoteParser` →
+  `CapsuleScript` → `TranscriptPlan`. Strategy TEMPLATE → `TranscriptBuilder.build`
+  directly. Strategy LLM → `TranscriptBuilder.build` then
+  `TranscriptLlmEnhancer.enhance`. Économie d'encre skip si output existe
+  ET non-blank. `CapsuleMessages` clé `task.generateCapsuleTranscript.description`
+  (11 `Messages_*.properties`). Wiring `CapsuleManager.registerGenerateTranscriptTask`.
+  Baby-step TDD : ~3 functional (registration, output artefact TEMPLATE,
+  output artefact LLM mock).
+| 2
+| ⬜ TODO
+
+| CAP-TRANSCRIPT-5
 | *Cucumber BDD* — `capsule_transcript.feature` `@transcript` (4 scénarios :
-template strategy, LLM strategy mock, disabled default, output AsciiDoc
-valid). Runner dédié (pattern S-082).
+  template strategy produces AsciiDoc article, LLM strategy mock enriches
+  article, disabled default skips task, output AsciiDoc valid structure).
+  Runner dédié `CapsuleTranscriptCucumberRunner` (pattern S-082) +
+  `CapsuleTranscriptSteps` préfixés "transcript" (bug S-088) +
+  `CucumberTaskSpec("cucumberTestTranscript")` 15ème câblé `build.gradle.kts`.
+  Baby-step BDD RED → GREEN → REFACTOR.
 | 2
 | ⬜ TODO
 |===
 
-_Total_ : 5 US, ~10 pts.
+_Total_ : 6 US (US-0 cadrage + US-1→5), ~12 pts. _Méthode_ : baby-step
+DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber), English only
+code/Gherkin. _Pattern de référence_ : `capsule.audio` (AudioPostConfig +
+AudioPostProcessor port/adapter + factory + wiring + cucumber), `capsule.validation`
+(ValidationConfig + merger 2 champs + cucumber runner dédié). _Statut_ :
+US-0 ✅ TERMINÉ (S-114), US-1 ✅ TERMINÉ (S-115), US-2→5 TODO.
 
 === 📸 EPIC CAP-CR3-3 — Branchement ScreenshotCapture (alternative configurable) — TERMINÉ 5/5 US (S-096)
 
@@ -2550,10 +2729,10 @@ _Total_ : 3 US, ~4 pts.
 
 | Contexte
 | CAP-TRANSCRIPT
-| 5
-| 10
+| 6
+| 12
 | 🟡 P2
-| ⬜ TODO
+| 🟡 US-0 ✅ (S-114), US-1 ✅ (S-115), US-2→5 TODO
 
 | Post-prod
 | CAP-CR3-1
@@ -2605,7 +2784,7 @@ _Total_ : 3 US, ~4 pts.
 | ⬜ TODO
 |===
 
-_Total_ : 11 EPICs, 47 US, ~88 pts. _Séquence MVP0 recommandée_ :
+_Total_ : 11 EPICs, 48 US, ~90 pts. _Séquence MVP0 recommandée_ :
 . CAP-DOCCONTEXT (P0 — contenu ancré corpus) ✅
 . CAP-SPD (P0 — contenu ancré objectifs pédagogiques) ✅
 . CAP-CR3-3 (P0 — branchement screenshot, débloque CAP-PREVIEW + CAP-CR3-1) ✅

@@ -1,6 +1,8 @@
 package capsule
 
 import capsule.audio.AudioPostConfig
+import capsule.transcript.TranscriptConfig
+import capsule.transcript.TranscriptStrategy
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -1447,5 +1449,136 @@ class CapsuleConfigMergerTest {
         assertEquals(-20.0, merged.audioPost.bgmLevel, 0.001, "YAML bgmLevel preserved")
         assertEquals(-14.0, merged.audioPost.loudnessTarget, 0.001, "YAML loudnessTarget preserved")
         assertEquals(true, merged.audioPost.duckingEnabled, "YAML duckingEnabled preserved")
+    }
+
+    // ─── TranscriptConfig (CAP-TRANSCRIPT US-1) ──────────────────
+    //
+    // 2 fields: enabled (Bool=false), strategy (TranscriptStrategy=TEMPLATE).
+    // All default disabled to preserve backward compat — existing configs
+    // without a `transcript` section keep the no-transcript behavior.
+
+    @Test
+    fun `default merge has transcript disabled with TEMPLATE strategy`() {
+        val projectDir = File(tempDir, "transcript-default").also { it.mkdirs() }
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
+        assertEquals(false, merged.transcript.enabled, "transcript.enabled should default to false")
+        assertEquals(TranscriptStrategy.TEMPLATE, merged.transcript.strategy, "transcript.strategy should default to TEMPLATE")
+    }
+
+    @Test
+    fun `transcript enabled and strategy are read from YAML`() {
+        val projectDir = File(tempDir, "transcript-yaml").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(transcript = TranscriptConfig(enabled = true, strategy = TranscriptStrategy.LLM))
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+        assertEquals(true, merged.transcript.enabled, "YAML transcript.enabled should be honored")
+        assertEquals(TranscriptStrategy.LLM, merged.transcript.strategy, "YAML transcript.strategy should be honored")
+    }
+
+    @Test
+    fun `transcript CLI overrides YAML`() {
+        val projectDir = File(tempDir, "transcript-cli-over-yaml").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(transcript = TranscriptConfig(enabled = true, strategy = TranscriptStrategy.LLM))
+        val merged = CapsuleConfigMerger.merge(
+            projectDir, yamlConfig, mapOf(
+                "transcript.enabled" to "false",
+                "transcript.strategy" to "template"
+            )
+        )
+        assertEquals(false, merged.transcript.enabled, "CLI false should override YAML true")
+        assertEquals(TranscriptStrategy.TEMPLATE, merged.transcript.strategy, "CLI strategy should override YAML")
+    }
+
+    @Test
+    fun `transcript is read from gradle properties`() {
+        val projectDir = File(tempDir, "transcript-props").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText(
+            """
+            capsule.transcript.enabled=true
+            capsule.transcript.strategy=llm
+            """.trimIndent()
+        )
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
+        assertEquals(true, merged.transcript.enabled, "props transcript.enabled should be honored")
+        assertEquals(TranscriptStrategy.LLM, merged.transcript.strategy, "props transcript.strategy should be honored")
+    }
+
+    @Test
+    fun `transcript YAML overrides gradle properties`() {
+        val projectDir = File(tempDir, "transcript-yaml-over-props").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText(
+            """
+            capsule.transcript.enabled=false
+            capsule.transcript.strategy=template
+            """.trimIndent()
+        )
+        val yamlConfig = CapsuleConfig(transcript = TranscriptConfig(enabled = true, strategy = TranscriptStrategy.LLM))
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+        assertEquals(true, merged.transcript.enabled, "YAML should override props")
+        assertEquals(TranscriptStrategy.LLM, merged.transcript.strategy, "YAML should override props")
+    }
+
+    @Test
+    fun `transcript CLI overrides gradle properties when no YAML`() {
+        val projectDir = File(tempDir, "transcript-cli-over-props").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText(
+            """
+            capsule.transcript.enabled=false
+            capsule.transcript.strategy=template
+            """.trimIndent()
+        )
+        val merged = CapsuleConfigMerger.merge(
+            projectDir, CapsuleConfig(), mapOf(
+                "transcript.enabled" to "true",
+                "transcript.strategy" to "llm"
+            ),
+            yamlLoaded = false
+        )
+        assertEquals(true, merged.transcript.enabled, "CLI should override props when no YAML")
+        assertEquals(TranscriptStrategy.LLM, merged.transcript.strategy, "CLI strategy should override props when no YAML")
+    }
+
+    @Test
+    fun `transcript unknown strategy string falls back to TEMPLATE`() {
+        val projectDir = File(tempDir, "transcript-unknown-strategy").also { it.mkdirs() }
+        val merged = CapsuleConfigMerger.merge(
+            projectDir, CapsuleConfig(), mapOf(
+                "transcript.enabled" to "true",
+                "transcript.strategy" to "foobar"
+            )
+        )
+        assertEquals(true, merged.transcript.enabled, "enabled honored")
+        assertEquals(TranscriptStrategy.TEMPLATE, merged.transcript.strategy, "Unknown strategy should fall back to TEMPLATE")
+    }
+
+    @Test
+    fun `transcript partial CLI override preserves non-overridden YAML fields`() {
+        val projectDir = File(tempDir, "transcript-partial-cli").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(transcript = TranscriptConfig(enabled = true, strategy = TranscriptStrategy.LLM))
+        val merged = CapsuleConfigMerger.merge(
+            projectDir, yamlConfig, mapOf("transcript.enabled" to "false")
+        )
+        assertEquals(false, merged.transcript.enabled, "CLI overrides enabled only")
+        assertEquals(TranscriptStrategy.LLM, merged.transcript.strategy, "YAML strategy preserved when CLI absent")
+    }
+
+    @Test
+    fun `loadFromEnvironment default transcript is disabled with TEMPLATE strategy`() {
+        val config = CapsuleConfigMerger.loadFromEnvironment()
+        assertEquals(false, config.transcript.enabled, "env default transcript.enabled should be false")
+        assertEquals(TranscriptStrategy.TEMPLATE, config.transcript.strategy, "env default transcript.strategy should be TEMPLATE")
+    }
+
+    @Test
+    fun `loadFromGradleProperties reads capsule transcript section`() {
+        val projectDir = File(tempDir, "transcript-props-load").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText(
+            """
+            capsule.transcript.enabled=true
+            capsule.transcript.strategy=llm
+            """.trimIndent()
+        )
+        val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
+        assertEquals(true, config.transcript.enabled, "loadFromGradleProperties should read transcript.enabled")
+        assertEquals(TranscriptStrategy.LLM, config.transcript.strategy, "loadFromGradleProperties should read transcript.strategy")
     }
 }
