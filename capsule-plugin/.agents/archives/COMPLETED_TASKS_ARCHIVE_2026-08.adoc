@@ -1,6 +1,63 @@
 = COMPLETED_TASKS_ARCHIVE — Août 2026
 :date: 2026-08-13
 
+== Session 113 — EPIC CAP-27 VTT burn-in TERMINÉ 3/3 US ✅
+
+EPIC CAP-27 (P2, 3 US, ~5 pts) terminé en 1 session. Constat de
+prémisse caduque : la compatibilité VTT **fonctionne déjà** (test réel
+ffmpeg 6.1.1, filtre `subtitles=` auto-détecte `.vtt` par extension,
+exit 0 WebM valide avec format exact `VttGenerator`). Le backlog
+présupposait « SRT seulement » — prémisse caduque. CAP-27 = cible de
+couverture test, pas un fix de compat.
+
+US-0 Cadrage : audit 10 points + 8 décisions architecturales
+(`SubtitleBurnInCommand` object pur pattern `AudioPostCommand`, refactor
+`SubtitleBurnInServiceImpl.burnIn` argv identique, 13 unit SRT/VTT,
+2 scénarios cucumber `@subtitles @burnin @vtt` dans `capsule.feature`
+feature existante → pas de nouveau runner S-082, step defs uniques S-088,
+zéro bump BOM, zéro changement DSL, économie d'encre).
+
+US-1 `SubtitleBurnInCommand` : object pur `buildArgv(videoFile,
+subtitleFile, outputFile, style, ffmpegPath): List<String>` (mirror
+`AudioPostCommand` L74-106) + refactor `SubtitleBurnInServiceImpl.burnIn`
+L66-72 (argv identique, backward compat totale) + 13 unit tests
+`SubtitleBurnInCommandTest` (SRT path, VTT path CAP-27 core, SRT/VTT
+diff only by extension, ffmpegPath + `-y`, exactly one `-i`, `-c:a copy`,
+output last, 9-element structure, default style FontSize=24/white/
+Alignment=2, custom style fontSize=36/fontColor/outlineColor/top→8,
+top→8, middle→5, custom ffmpegPath). Baby-step TDD RED (13 `Unresolved
+reference 'SubtitleBurnInCommand'` + 1 illegal char `:` nom test corrigé
+→ `-c:a copy` renommé `preserves audio with copy codec`) → GREEN (13/13
+PASSED) → REFACTOR (refactor impl sans régression). 866 unit VERT 0 FAIL
+(+9 net vs 857 S-112).
+
+US-2 Cucumber BDD : 2 scénarios dans `capsule.feature` (mirror L284-290
+non-integration `@subtitles @burnin @vtt` : config VTT burn-in + deck/
+script NoOp capture → service invoqué + `.vtt` généré, PASSED 32.01s ;
+mirror L292-302 E2E `@subtitles @burnin @vtt @integration` : VTT + real
+ffmpeg → `.vtt` généré + valid WebM EBML header + burn-in success,
+PASSED 32.36s) + 2 step defs VTT uniques
+`aGradleProjectWithTheCapsulePluginConfiguredForVttSubtitlesWithBurnIn`
++ `...AndRealFfmpeg` dans `CapsuleStepDefinitions.kt` (textes uniques
+"VTT subtitles", bug S-088). `cucumberTest -PrunCucumber` : VTT
+non-integration PASSED (13 failures préexistantes
+NoTestsDiscoveredException dedicated runners bug S-082, hors CAP-27).
+`cucumberTestIntegration -PrunCucumber` : VTT E2E PASSED, 256 tests
+235 skipped 0 failures. `check` BUILD SUCCESSFUL in 12m44s, Kover VERT,
+64 functional VERT baseline préservée, zéro régression, zéro secret,
+zéro bump BOM, zéro changement DSL.
+
+5 fichiers code (2 nouveaux `SubtitleBurnInCommand.kt` 50 lignes +
+`SubtitleBurnInCommandTest.kt` 167 lignes, 3 modifiés
+`SubtitleBurnInService.kt` -7/+2 + `capsule.feature` +18 +
+`CapsuleStepDefinitions.kt` +38) + 5 fichiers gouvernance.
+
+Le borough Détroit produit désormais des capsules burn-in VTT testées
+(unit + cucumber E2E real ffmpeg) en plus du SRT. La compatibilité VTT
+— déjà fonctionnelle — est désormais garantie par régression.
+
+Rapport : `.agents/sessions/113-cap27-vtt-burnin-cadrage.adoc`.
+
 == Session 112 — CAP-GLOSSARY US-3 Cucumber BDD + clôture EPIC CAP-GLOSSARY TERMINÉ 4/4 US ✅
 
 EPIC CAP-GLOSSARY US-3 terminé (P1, 4ème US sur 4, cucumber BDD 1 pt).

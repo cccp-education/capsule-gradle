@@ -1102,6 +1102,50 @@ class $sceneName(Scene):
         )
     }
 
+    // ─── VTT subtitle burn-in steps (CAP-27) ──────────────────────
+
+    @Given("a Gradle project with the capsule plugin configured for VTT subtitles with burn-in")
+    fun aGradleProjectWithTheCapsulePluginConfiguredForVttSubtitlesWithBurnIn() {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-vtt-burnin-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('education.cccp.capsule')
+            }
+            capsule {
+                ttsEngine = "noop"
+                subtitleEnabled = true
+                subtitleFormat = "vtt"
+                subtitleBurnIn = true
+            }
+        """.trimIndent())
+    }
+
+    @Given("a Gradle project with the capsule plugin configured for VTT subtitles with burn-in and real ffmpeg")
+    fun aGradleProjectWithTheCapsulePluginConfiguredForVttSubtitlesWithBurnInAndRealFfmpeg() {
+        _projectDir = File(System.getProperty("java.io.tmpdir"))
+            .resolve("cucumber-capsule-vtt-burnin-e2e-${System.currentTimeMillis()}")
+            .also { it.mkdirs() }
+
+        projectDir.resolve("settings.gradle").writeText("")
+        projectDir.resolve("build.gradle").writeText("""
+            plugins {
+                id('education.cccp.capsule')
+            }
+            capsule {
+                ttsEngine = "noop"
+                subtitleEnabled = true
+                subtitleFormat = "vtt"
+                subtitleBurnIn = true
+                ffmpegExecutablePath = "ffmpeg"
+                outputDir = "capsules"
+            }
+        """.trimIndent())
+    }
+
     // ─── CR-8 Structured config logging steps ─────────────────────
 
     @Then("the build output contains 4 structured config log lines")

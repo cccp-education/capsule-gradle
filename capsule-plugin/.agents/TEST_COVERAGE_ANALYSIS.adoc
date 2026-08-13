@@ -1,6 +1,23 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
-:date: 2026-08-12
-:session: 111 CAP-GLOSSARY US-2 Wiring
+:date: 2026-08-13
+:session: 113 EPIC CAP-27 VTT burn-in TERMINÉ 3/3 US
+
+== Couverture — 13 août 2026 (après session 113 EPIC CAP-27 VTT burn-in)
+
+.Modifications session 113 — EPIC CAP-27 VTT burn-in (3/3 US)
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/SubtitleBurnInCommand.kt` (nouveau) | Object pur `buildArgv(videoFile, subtitleFile, outputFile, style, ffmpegPath): List<String>` (pattern `AudioPostCommand`). Produit l'argv exact de l'impl (L66-72). Zéro I/O, fully testable. | +13 unit `SubtitleBurnInCommandTest` (SRT path, VTT path CAP-27 core, SRT/VTT diff only by extension, ffmpegPath + `-y`, exactly one `-i`, `-c:a copy`, output last, 9-element structure, default style, custom style, positions top→8/middle→5, custom ffmpegPath)
+| `capsule/SubtitleBurnInService.kt` (modifié -7/+2) | Refactor `SubtitleBurnInServiceImpl.burnIn` L66-72 → `SubtitleBurnInCommand.buildArgv(...)`. Argv identique, backward compat totale, mêmes gardes. | 0 (refactor pur — couvert par 13 unit + cucumber E2E)
+| `src/test/features/capsule.feature` (modifié +18) | 2 scénarios `@subtitles @burnin @vtt` : non-integration mirror L284-290 (config VTT burn-in + NoOp capture → service invoqué + `.vtt` généré) + E2E `@integration` mirror L292-302 (VTT + real ffmpeg → `.vtt` + valid WebM EBML + burn-in success). | +2 cucumber (non-integration PASSED 32s + E2E real ffmpeg PASSED 32s)
+| `capsule/scenarios/CapsuleStepDefinitions.kt` (modifié +38) | 2 step defs VTT uniques `aGradleProjectWithTheCapsulePluginConfiguredForVttSubtitlesWithBurnIn` + `...AndRealFfmpeg` (textes uniques "VTT subtitles", bug S-088). | 0 (step defs — couvert par 2 scénarios cucumber)
+|===
+
+*Totaux* : 866 unit VERT (+9 net vs 857 S-112 — 13 nouveaux
+`SubtitleBurnInCommandTest`), 64 functional VERT (inchangé baseline),
+2 scénarios cucumber VTT (non-integration + E2E `@integration` real
+ffmpeg) PASSED. `check` BUILD SUCCESSFUL 12m44s, Kover VERT. Zéro
+régression. EPIC CAP-27 TERMINÉ 3/3 US.
 
 == Couverture — 12 août 2026 (après session 111 CAP-GLOSSARY US-2)
 

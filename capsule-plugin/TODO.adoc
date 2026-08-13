@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-08-13 (Session 112 — CAP-GLOSSARY US-3 Cucumber BDD `capsule_glossary_context.feature` `@context @glossary` 3 scénarios + runner dédié `CapsuleGlossaryContextCucumberRunner` (pattern S-082) + `CapsuleGlossaryContextSteps` 10 step defs préfixés "glossary context" (bug S-088) + `CucumberTaskSpec("cucumberTestGlossaryContext")` 14ème câblé `build.gradle.kts`. Baby-step BDD RED → GREEN (3/3 PASSED en 55s) → REFACTOR (`check` BUILD SUCCESSFUL in 28m52s, 857 unit VERT baseline S-111 préservée — pure BDD zéro production modifié, 64 functional VERT baseline préservée, Kover VERT, zéro régression, zéro secret). EPIC CAP-GLOSSARY TERMINÉ 4/4 US, domaine `capsule.context` clos 13 fichiers prod.)
+:last_update: 2026-08-13 (Session 113 — **EPIC CAP-27 VTT burn-in TERMINÉ 3/3 US**. Constat prémisse caduque (compat VTT déjà fonctionnelle, test réel ffmpeg 6.1.1). US-1 `SubtitleBurnInCommand` object pur + refactor `burnIn` + 13 unit SRT/VTT (866 unit VERT). US-2 Cucumber BDD 2 scénarios `@subtitles @burnin @vtt` (non-integration + E2E `@integration` real ffmpeg) PASSED. `check` BUILD SUCCESSFUL, zéro régression, zéro secret, zéro bump BOM. EPIC clos en 1 session.)
 
 '''
 == ✅ EPIC CAP-MODEL — TERMINE (session 069)
@@ -241,9 +241,17 @@
 . [x] CAP-GLOSSARY-3 — Cucumber BDD `capsule_glossary_context.feature` `@context @glossary` (3 scénarios) + runner dédié `CapsuleGlossaryContextCucumberRunner` (pattern S-082) + steps préfixés "glossary context" (bug S-088) + `CucumberTaskSpec("cucumberTestGlossaryContext")` 14ème. Baby-step BDD RED → GREEN (3/3 PASSED en 55s) → REFACTOR. ✅ S-112
 
 '''
-== 🟡 Prochaine session — Backlog capsule restant (CAP-GLOSSARY, CAP-CR3, CAP-ARCH)
+== 🟡 Prochaine session — Backlog capsule restant (CAP-27, CAP-CR3, CAP-ARCH)
 
 '''
+== ✅ EPIC CAP-27 — VTT burn-in (3 US ~5 pts, TERMINÉ 3/3 US S-113)
+
+. [x] CAP-27-0 — Cadrage EPIC (constat prémisse caduque : compat VTT déjà fonctionnelle vérifiée par test réel ffmpeg 6.1.1 ; audit 10 constats + 8 décisions architecturales) ✅ S-113
+. [x] CAP-27-1 — `SubtitleBurnInCommand` object pur `buildArgv(...)` (mirror `AudioPostCommand`) + refactor `SubtitleBurnInServiceImpl.burnIn` + 13 unit tests SRT/VTT. Baby-step TDD RED → GREEN → REFACTOR. 866 unit VERT 0 FAIL. ✅ S-113
+. [x] CAP-27-2 — Cucumber BDD `@subtitles @burnin @vtt` — 2 scénarios dans `capsule.feature` (non-integration PASSED 32s + E2E `@integration` real ffmpeg PASSED 32s WebM valide EBML + `.vtt` + burn-in success) + step defs VTT uniques (S-088). `cucumberTestIntegration` 256 tests 0 failures. Baby-step BDD RED → GREEN → REFACTOR. ✅ S-113
+
+'''
+
 == Backlog priorisé (ordre d'attaque)
 
 . [x] 🔴 CR-1 — Refactor CapsuleVideoTask.execute() (218→76 lignes orchestration) ✅ S-040
@@ -256,7 +264,7 @@
 . [x] 🟡 CR-8 — Logging structuré CapsulePlugin ✅ S-073
 . [x] 🟡 CR-9 — Robust HTML parsing (HtmlSectionParser au lieu de regex raw) ✅ S-074
 . [x] 🟡 CR-10 — CI optimization cucumberTest onlyIf ✅ S-075
-. [ ] 🟢 CAP-27 — VTT burn-in
+. [x] 🟢 CAP-27 — VTT burn-in (TERMINÉ 3/3 US S-113 : US-0 cadrage, US-1 `SubtitleBurnInCommand` + 13 unit, US-2 Cucumber 2 scénarios `@subtitles @burnin @vtt` non-integration + E2E real ffmpeg)
 . [ ] 🟢 CAP-28 — Coverage gaps (PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl 26%)
 . [x] 🔴 CAP-CR3-1 — CI `full` avec vrais binaires + probe de durée vidéo ✅ S-101 (5/5 US, 782 unit + 57 functional + 11 cucumber dédiés)
 . [x] 🔴 CAP-CR3-2 — Mode strict anti-NoOp (`capsule.strictMode`) ✅ S-091

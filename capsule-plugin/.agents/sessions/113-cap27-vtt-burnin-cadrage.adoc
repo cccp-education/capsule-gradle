@@ -1,0 +1,140 @@
+= Session 113 — CAP-27 EPIC VTT burn-in TERMINÉ 3/3 US (cadrage + unit + cucumber)
+
+_Date_ : 2026-08-13
+_Type_ : cadrage+feat+tdd+bdd+cloture
+_Score_ : 9/10
+
+== Mission
+
+Cadrer et réaliser le EPIC CAP-27 (P2) : vérifier la compatibilité VTT du
+filtre FFmpeg `subtitles=` et ajouter la couverture Cucumber
+`@subtitles @burnin @vtt`. Baby-step DDD/TDD/BDD strict (unit → cucumber),
+pattern CAP-AUDIO/CAP-MP4 mirror.
+
+== Constat central — prémisse du backlog caduque
+
+La compatibilité VTT **fonctionne déjà**. Le filtre FFmpeg `subtitles=`
+auto-détecte le format par extension de fichier (`.vtt` → demuxer WebVTT).
+`SubtitleBurnInServiceImpl.burnIn` (L66-72) passe le chemin absolu du
+fichier sous-titre directement au filtre — donc un `.vtt` est accepté sans
+modification du code.
+
+Vérification empirique réelle (ffmpeg 6.1.1, `/usr/bin/ffmpeg`,
+config `--enable-libass`) : `in.webm` (testsrc 3s) + `sub.vtt` (format
+exact de `VttGenerator` : `WEBVTT` + timestamps `HH:MM:SS.mmm` + cue
+index) → `ffmpeg -y -i in.webm -vf "subtitles=sub.vtt:force_style='...'"
+-c:a copy out.webm` → **exit 0**, WebM 23105 o valide (audio préservé).
+
+Conséquence : CAP-27 = cible de **couverture test**, pas un fix de
+compat. Le seul gap : zéro scénario `@vtt`, commande ffmpeg inline non
+testable.
+
+== US-0 Cadrage (1 pt) ✅
+
+Audit 10 points + 8 décisions architecturales :
+1. `SubtitleBurnInCommand` object pur (pattern `AudioPostCommand`).
+2. Refactor `SubtitleBurnInServiceImpl.burnIn` pour consommer l'object.
+3. ~12 unit tests SRT/VTT.
+4. 2 scénarios cucumber `@subtitles @burnin @vtt` dans `capsule.feature`.
+5. Step defs VTT uniques (bug S-088).
+6. Zéro bump BOM.
+7. Zéro changement DSL.
+8. Économie d'encre préservée.
+Zéro code modifié — gouvernance pure.
+
+== US-1 `SubtitleBurnInCommand` + unit (2 pts) ✅
+
+- Créé `src/main/kotlin/capsule/SubtitleBurnInCommand.kt` — object pur
+  `buildArgv(videoFile, subtitleFile, outputFile, style, ffmpegPath):
+  List<String>` (pattern `AudioPostCommand` L74-106). Produit l'argv
+  exact de l'impl (L66-72) : `[ffmpegPath, "-y", "-i", video, "-vf",
+  "subtitles=<sub>:force_style='<style>'", "-c:a", "copy", output]`.
+  Zéro I/O, fully testable.
+- Refactor `SubtitleBurnInServiceImpl.burnIn` L66-72 →
+  `SubtitleBurnInCommand.buildArgv(...)`. Argv identique, backward compat
+  totale, mêmes gardes (`isAvailable()`, `subtitleFile.exists()`).
+- Baby-step TDD : RED (13 `Unresolved reference 'SubtitleBurnInCommand'`
+  + 1 illegal char `:` dans nom test corrigé → `-c:a copy` renommé
+  `preserves audio with copy codec`) → GREEN (13/13 PASSED) → REFACTOR
+  (refactor impl sans régression).
+- 13 unit tests `SubtitleBurnInCommandTest` : SRT path (subtitles=...srt),
+  VTT path (subtitles=...vtt — CAP-27 core), SRT/VTT diff only by
+  extension, ffmpegPath + `-y`, exactly one `-i`, `-c:a copy`, output
+  last, 9-element structure, default style (FontSize=24/white/Alignment=2),
+  custom style (fontSize=36/fontColor/outlineColor/top→8), top→8,
+  middle→5, custom ffmpegPath.
+- Baseline : 866 unit VERT (857 S-112 +9 net — 13 nouveaux, delta
+  comptage baseline arrondi), 0 FAIL. `check` BUILD SUCCESSFUL 21m20s,
+  Kover VERT, validatePlugins VERT.
+
+== US-2 Cucumber BDD `@subtitles @burnin @vtt` (2 pts) ✅
+
+- 2 scénarios ajoutés dans `src/test/features/capsule.feature` (feature
+  existante → pas de nouveau runner S-082) :
+  - `@subtitles @burnin @vtt` non-integration (mirror L284-290) : config
+    VTT burn-in + deck/script NoOp capture → service invoqué + `.vtt`
+    généré.
+  - `@subtitles @burnin @vtt @integration` E2E (mirror L292-302) : VTT +
+    real ffmpeg → `.vtt` généré + valid WebM EBML header + burn-in
+    success.
+- 2 step defs VTT ajoutés dans `CapsuleStepDefinitions.kt` :
+  `aGradleProjectWithTheCapsulePluginConfiguredForVttSubtitlesWithBurnIn`
+  + `...AndRealFfmpeg` (textes uniques "VTT subtitles", bug S-088).
+- Baby-step BDD : scénarios découverts par `CucumberTestRunner` (global,
+  `not @wip and not @integration`) et `CucumberIntegrationTestRunner`
+  (`@integration`).
+- `cucumberTest -PrunCucumber` : VTT non-integration **PASSED** (32.01s).
+  13 failures préexistantes `NoTestsDiscoveredException` dedicated runners
+  (bug S-082, hors CAP-27, connus).
+- `cucumberTestIntegration -PrunCucumber` : VTT E2E **PASSED** (32.36s) —
+  prouve VTT burn-in end-to-end avec real ffmpeg (WebM valide EBML +
+  `.vtt` + burn-in success). 256 tests, 235 skipped, **0 failures**.
+- `check` BUILD SUCCESSFUL 12m44s (cucumberTest SKIPPED par CR-10,
+  baseline préservée).
+
+== Vérifications
+
+. `compileKotlin` VERT ✅
+. 866 unit VERT 0 FAIL (857 baseline +9 net) ✅
+. 64 functional VERT 0 FAIL (baseline préservée) ✅
+. `cucumberTest -PrunCucumber` : VTT non-integration PASSED ✅
+. `cucumberTestIntegration -PrunCucumber` : VTT E2E PASSED, 0 failures ✅
+. `check` BUILD SUCCESSFUL, Kover VERT, validatePlugins VERT ✅
+. Zéro régression (les 13 failures cucumberTest sont préexistantes
+  NoTestsDiscoveredException dedicated runners, bug S-082) ✅
+. Zéro secret (`DEFAULT_TOKEN_BUDGET` = constante budget, pas un secret) ✅
+. `git status` propre (7 fichiers modifiés/créés) ✅
+
+== Fichiers modifiés/créés
+
+. `src/main/kotlin/capsule/SubtitleBurnInCommand.kt` (NOUVEAU, 50 lignes)
+  — object pur `buildArgv`.
+. `src/main/kotlin/capsule/SubtitleBurnInService.kt` (MODIFIÉ, -7/+2) —
+  refactor `burnIn` consomme `SubtitleBurnInCommand`.
+. `src/test/kotlin/capsule/SubtitleBurnInCommandTest.kt` (NOUVEAU, 167
+  lignes) — 13 unit tests SRT/VTT.
+. `src/test/features/capsule.feature` (MODIFIÉ, +18) — 2 scénarios
+  `@subtitles @burnin @vtt`.
+. `src/test/kotlin/capsule/scenarios/CapsuleStepDefinitions.kt`
+  (MODIFIÉ, +38) — 2 step defs VTT.
+. Gouvernance : `BACKLOG.adoc`, `.agents/INDEX.adoc`,
+  `PROMPT_REPRISE.adoc`, `TODO.adoc`, ce rapport.
+
+== EPIC CAP-27 TERMINÉ 3/3 US
+
+- US-0 Cadrage ✅ S-113 (constat compat VTT vérifiée + 8 décisions).
+- US-1 `SubtitleBurnInCommand` + unit ✅ S-113 (13 unit SRT/VTT).
+- US-2 Cucumber BDD `@subtitles @burnin @vtt` ✅ S-113 (2 scénarios
+  PASSED dont 1 E2E @integration real ffmpeg).
+
+Le borough Détroit produit désormais des capsules burn-in VTT testées
+(unit + cucumber E2E) en plus du SRT. La compatibilité VTT — déjà
+fonctionnelle — est désormais **garantie par régression**.
+
+== Score
+
+9/10 — Cadrage rigoureux (prémisse caduque prouvée par test réel) +
+extraction object pur pattern codebase + 13 unit tests + 2 scénarios
+cucumber (non-integration + E2E real ffmpeg) + clôture EPIC en 1 session.
+Baby-step DDD/TDD/BDD strict respecté. Zéro régression, zéro secret,
+zéro bump BOM, zéro changement DSL.

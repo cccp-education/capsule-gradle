@@ -318,6 +318,27 @@ Feature: Capsule video generation from a reveal.js deck
     And the resolved subtitle burn-in style has fontColor "&H000000FF"
     And the resolved subtitle burn-in style has position "top"
 
+  @subtitles @burnin @vtt
+  Scenario: VTT subtitle burn-in is applied to the final video when enabled
+    Given a Gradle project with the capsule plugin configured for VTT subtitles with burn-in
+    And a reveal.js deck "vtt-burnin-deck.html" with 2 slides and data-capsule-slide attributes
+    And a capsule script "vtt-burnin-script.txt" with 2 slide segments
+    When I run the task "generateCapsuleVideo" with NoOp capture
+    Then the subtitle burn-in service is invoked for the final video
+    And a subtitle file "vtt-burnin.vtt" is generated in the capsule output directory
+
+  @subtitles @burnin @vtt @integration
+  Scenario: VTT burn-in E2E pipeline — full pipeline with real ffmpeg subtitle burn-in produces valid WebM
+    Given a Gradle project with the capsule plugin configured for VTT subtitles with burn-in and real ffmpeg
+    And a reveal.js deck "vtt-burnin-e2e-deck.html" with 2 slides and data-capsule-slide attributes
+    And a capsule script "vtt-burnin-e2e-script.txt" with 2 slide segments
+    When I run the task "generateCapsuleVideo" with NoOp capture
+    Then the subtitle burn-in service is invoked for the final video
+    And a subtitle file "vtt-burnin-e2e.vtt" is generated in the capsule output directory
+    And a video file "vtt-burnin-e2e.webm" is generated
+    And the video file "vtt-burnin-e2e.webm" has a valid WebM EBML header
+    And the burn-in operation completed successfully on the final video
+
   @config @logging
   Scenario: Resolved config is logged as 4 structured section lines
     Given a Gradle project with the capsule plugin applied

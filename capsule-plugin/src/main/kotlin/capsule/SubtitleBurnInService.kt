@@ -63,13 +63,7 @@ class SubtitleBurnInServiceImpl(
 
         outputFile.parentFile.mkdirs()
 
-        val cmd = mutableListOf(
-            ffmpegPath, "-y",
-            "-i", videoFile.absolutePath,
-            "-vf", "subtitles=${subtitleFile.absolutePath}:force_style='${style.toForceStyle()}'",
-            "-c:a", "copy",
-            outputFile.absolutePath
-        )
+        val cmd = SubtitleBurnInCommand.buildArgv(videoFile, subtitleFile, outputFile, style, ffmpegPath)
 
         val proc = ProcessBuilder(cmd)
             .redirectErrorStream(true)

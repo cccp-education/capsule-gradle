@@ -1,59 +1,52 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 
-_Session terminee_ : 112 — CAP-GLOSSARY US-3 Cucumber BDD + clôture EPIC
-CAP-GLOSSARY TERMINÉ 4/4 US. Feature `capsule_glossary_context.feature`
-`@context @glossary` (3 scénarios : glossary injecté → section
-`==== Official Glossary (glossary)` + termes `competence transversale`/
-`evaluation formative` présents + bullet `unrelated` ignoré ; absent →
-fallback no-op ; malformed sans `== Glossary` → gracefully skipped).
-Runner dédié `CapsuleGlossaryContextCucumberRunner` (pattern S-082
-`@SelectClasspathResource` + filter `@context and @glossary and not @wip
-and not @integration`). `CapsuleGlossaryContextSteps` (10 step defs
-préfixés "glossary context", pattern `CapsuleScenarioContextSteps` mirror
-— bug S-088 glue `capsule.scenarios` partagée). `CucumberTaskSpec
-("cucumberTestGlossaryContext")` 14ème câblé `build.gradle.kts` (13ème
-cucumber dédié). Baby-step BDD RED → GREEN (3/3 scénarios PASSED en 55s)
-→ REFACTOR (`check` BUILD SUCCESSFUL in 28m52s, 857 unit VERT baseline
-S-111 préservée — pure BDD zéro production modifié, 64 functional VERT
-baseline préservée, cucumberTest global SKIPPED par CR-10, Kover VERT,
-zéro régression, zéro secret). Domaine `capsule.context` clos (13 fichiers
-prod, 3 loaders). EPIC CAP-GLOSSARY TERMINÉ 4/4 US.
-_Prochaine session_ : 113 — Borough Détroit en maintenance. EPICs
+_Session terminee_ : 113 — **EPIC CAP-27 VTT burn-in TERMINÉ 3/3 US**.
+Constat de prémisse caduque : compatibilité VTT **déjà fonctionnelle**
+(test réel ffmpeg 6.1.1, filtre `subtitles=` auto-détecte `.vtt` par
+extension, exit 0 WebM valide). US-0 cadrage (8 décisions). US-1
+`SubtitleBurnInCommand` object pur (pattern `AudioPostCommand`) + refactor
+`SubtitleBurnInServiceImpl.burnIn` (argv identique backward compat) + 13
+unit tests SRT/VTT (866 unit VERT 0 FAIL +9 net). US-2 Cucumber BDD 2
+scénarios `@subtitles @burnin @vtt` dans `capsule.feature` (feature
+existante → pas de nouveau runner S-082) + 2 step defs VTT uniques
+(S-088) : non-integration PASSED (32s) + E2E `@integration` real ffmpeg
+PASSED (32s, WebM valide EBML + `.vtt` + burn-in success).
+`cucumberTestIntegration -PrunCucumber` 256 tests 0 failures. `check`
+BUILD SUCCESSFUL, Kover VERT, 64 functional VERT baseline préservée,
+zéro régression (13 failures cucumberTest préexistantes
+NoTestsDiscoveredException dedicated runners bug S-082), zéro secret,
+zéro bump BOM, zéro changement DSL. EPIC clos en 1 session.
+_Prochaine session_ : 114 — Borough Détroit en maintenance. EPICs
 restants : CAP-CHAPITRE (P2), CAP-TRANSCRIPT (P2), CAP-PODCAST (P2),
-CAP-PREVIEW (P2), CAP-CR3-4 (P2), CAP-27 (P2 VTT burn-in), CAP-28 (P2
-coverage gaps).
+CAP-PREVIEW (P2), CAP-CR3-4 (P2), CAP-28 (P2 coverage gaps).
 
-== Contexte reprise session 113 (post CAP-GLOSSARY US-3 S-112)
+== Contexte reprise session 114 (post CAP-27 S-113)
 
-- EPIC CAP-GLOSSARY (P1) — Injection terminologique, 4 US ~6 pts.
-  TERMINÉ 4/4 US : US-0 cadrage ✅ S-109, US-1 data classes + loader +
-  builder + prompt builder étendus ✅ S-110 (857 unit VERT +23), US-2
-  wiring + functional ✅ S-111 (64 functional VERT +2), US-3 cucumber
-  BDD ✅ S-112 (3 scénarios `capsule_glossary_context.feature`).
-- Domaine `capsule.context` clos (13 fichiers prod : 3 loaders
-  `DocContextLoader`/`PedagogicalScenarioLoader`/`GlossaryLoader` +
-  `CapsuleContextBuilder`/`CapsuleContext`/`CollectCapsuleAugmented
-  ContextTask`/`PedagogicalScenario`/`ProvenanceSource`/`ProvenanceChannel`/
-  `ContextProvenance`/`ProvenanceTracker`/`GlossaryEntry`/`GlossaryContext`).
-- 857 unit VERT (S-112 baseline, inchangé — US-3 = pure BDD). 64
-  functional VERT (inchangé). `check` BUILD SUCCESSFUL in 28m52s (S-112).
+- EPIC CAP-27 (P2) — VTT burn-in, TERMINÉ 3/3 US S-113 (US-0 cadrage,
+  US-1 `SubtitleBurnInCommand` + 13 unit, US-2 Cucumber 2 scénarios).
+  Compat VTT était déjà fonctionnelle (test réel ffmpeg 6.1.1) — CAP-27
+  = couverture test, pas un fix.
+- `SubtitleBurnInCommand.kt` (object pur, pattern `AudioPostCommand`) —
+  `buildArgv(videoFile, subtitleFile, outputFile, style, ffmpegPath):
+  List<String>`. `SubtitleBurnInServiceImpl.burnIn` L66-72 refactoré pour
+  le consommer (argv identique, backward compat).
+- 866 unit VERT (S-113 baseline, +9 net vs 857 S-112). 64 functional VERT.
+  13 cucumber dédiés GREEN + 2 scénarios VTT (non-integration +
+  @integration E2E) PASSED.
 - Version capsule : 0.0.1-SNAPSHOT (non publié Central). Consomme slider
   0.0.16 (compileOnly), codebase-plugin 0.0.5 (implementation),
   koog-agents 1.0.0, BOM 0.0.16, codebase-contracts 0.1.0,
   i18n-contracts 0.0.2.
-- 13 cucumber dédiés GREEN (12 runners + `cucumberTestGlossaryContext`
-  13ème cucumber dédié, 14ème `CucumberTaskSpec` total avec integration).
-  21 features, 18 runners, 18 steps.
 - Borough Détroit en maintenance. Tous les EPICs P0/P1 terminés
   (CAP-29, CAP-ARCH, CAP-CR3-1/2/3, CAP-DOCCONTEXT, CAP-SPD,
-  CAP-PROVENANCE, CAP-MP4, CAP-AUDIO, CAP-GLOSSARY). Reste P2 :
+  CAP-PROVENANCE, CAP-MP4, CAP-AUDIO, CAP-GLOSSARY, CAP-27). Reste P2 :
   CAP-CHAPITRE, CAP-TRANSCRIPT, CAP-PODCAST, CAP-PREVIEW, CAP-CR3-4,
-  CAP-27, CAP-28.
+  CAP-28.
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 857 unit VERT (S-112 baseline), 64 functional VERT, 13 cucumber dédiés GREEN
+* 866 unit VERT (S-113 baseline), 64 functional VERT, 13 cucumber dédiés GREEN
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082) +
   steps préfixés par feature (bug S-088 glue `capsule.scenarios` partagée)
@@ -70,3 +63,7 @@ coverage gaps).
   pédagogique, CAP-SPD), `GlossaryLoader` (glossaire terminologique,
   CAP-GLOSSARY). Tous object pur, mirror pattern, `ContextChannel.Docs.
   truncateToTokens` pour la troncation budget.
+* Pattern object pur pour commande ffmpeg : `AudioPostCommand`
+  (`capsule.audio`), `SubtitleBurnInCommand` (`capsule`, CAP-27),
+  `FormatConversion` (`capsule`, CAP-MP4). `buildArgv(...)` sans I/O,
+  fully testable.
