@@ -1,0 +1,202 @@
+= Session 116 — CAP-TRANSCRIPT US-2 TranscriptPlan + TranscriptBuilder + TranscriptPromptBuilder
+
+_Date_ : 2026-08-13
+_Type_ : feat+ddd+tdd
+_Score_ : 9/10
+_Borough_ : Détroit (capsule-gradle)
+
+== Objectif
+
+CAP-TRANSCRIPT US-2 — `TranscriptPlan` data class immutable +
+`TranscriptBuilder` object pur + `TranscriptPromptBuilder` object pur.
+Baby-step TDD strict RED → GREEN → REFACTOR. ~12 unit attendus, 23
+unit livrés (redécoupage plus fin que prévu).
+
+== Contexte
+
+EPIC CAP-TRANSCRIPT (P2) — cadré US-0 S-114, US-1 ✅ S-115
+(`TranscriptConfig` + `TranscriptStrategy` enum + merger 4 sources,
+888 unit VERT baseline). US-2 cible : 3 objets purs du domaine
+`capsule.transcript` (11ème) — le plan, le builder template, le
+builder de prompt LLM. Pattern de référence : `CapsuleVideoPlan`/
+`CapsuleVideoPlanner` (CAP-29.2 `capsule.multilang`, data class
+immutable + invariants fail-fast + object pur) + `CapsuleScriptWriter`
+(object pur `write(script): String`) + `DefaultCapsulePromptBuilder`
+(prompt builder depuis state, instructions conditionnelles).
+
+`capsule.feed.SlideSegment` (`CapsuleFeedModels.kt:22-33`) — `index`,
+`title`, `speakerNote`, `type: SlideType`, `manimScene: String?`.
+Invariants title/speakerNote non-blank. `TranscriptPlan` consomme
+`List<SlideSegment>` (pas nouveau modèle — réutilise l'existant).
+
+== RED — Tests unitaires (3 fichiers, 23 unit)
+
+. *`TranscriptPlanTest.kt`* (7 unit) — `TranscriptPlan` n'existe pas
+  encore → `Unresolved reference 'TranscriptPlan'`. Tests :
+  preserve all fields with non-empty segments, empty segments valid,
+  blank deckName throws, blank language throws, blank outputPath
+  throws, data class equals by value, copy preserves unmodified
+  fields.
+
+. *`TranscriptBuilderTest.kt`* (11 unit) — `TranscriptBuilder` n'existe
+  pas → `Unresolved reference 'TranscriptBuilder'`. Tests :
+  level-0 title with deck name, language attribute, intro boilerplate
+  present, outro boilerplate present, one section per HTML segment
+  with title and speaker note, empty segments produces title +
+  language + intro + outro only, MANIM segments skipped, only MANIM
+  produces no sections, segment order preserved, output ends with
+  outro, deterministic (same plan → same output).
+
+. *`TranscriptPromptBuilderTest.kt`* (5 unit) —
+  `TranscriptPromptBuilder` n'existe pas → `Unresolved reference
+  'TranscriptPromptBuilder'`. Tests : prompt mentions deck name,
+  mentions language, includes template article for enrichment,
+  instructs to keep headings + transitions + AsciiDoc only, instructs
+  to preserve speaker note content.
+
+Compilation `compileTestKotlin` : ÉCHEC (15 `Unresolved reference` +
+erreurs de résolution `copy` sur type inexistant). RED confirmé.
+
+== GREEN — 3 fichiers prod créés (domaine `capsule.transcript`)
+
+. *`TranscriptPlan.kt`* — data class immutable 4 champs (`deckName`,
+  `segments: List<SlideSegment>`, `language`, `outputPath`). Invariants
+  `init` fail-fast : `deckName.isNotBlank()`, `language.isNotBlank()`,
+  `outputPath.isNotBlank()`. Segments vide autorisé (deck sans slides
+  narrées → intro+outro seulement). Pattern `CapsuleVideoPlan` (CAP-29.2
+  `capsule.multilang`). Consomme `capsule.feed.SlideSegment` (pas de
+  nouveau modèle — réutilise l'existant).
+
+. *`TranscriptBuilder.kt`* — object pur `build(plan): String`. Assemble
+  template AsciiDoc déterministe :
+  - `= <deckName>` (titre level 0)
+  - `:language: <lang>` (attribute)
+  - ligne vide
+  - `INTRO` (constante boilerplate "This article is the transcript of
+    the training capsule.")
+  - ligne vide
+  - une section `== <title>` par segment HTML avec `speakerNote` body
+    (MANIM segments skipped — `if (segment.type == SlideType.MANIM)
+    continue`)
+  - ligne vide
+  - `OUTRO` (constante boilerplate "End of the capsule transcript.")
+  - `trimEnd() + "\n"` final
+
+  Constantes `INTRO`/`OUTRO` publiques (`const val`) pour testabilité
+  (les tests vérifient la présence littérale). Pattern
+  `CapsuleScriptWriter` (object pur `write(script): String`).
+
+. *`TranscriptPromptBuilder.kt`* — object pur `buildEnhancePrompt(plan):
+  String`. Prompt pédagogique enrichissement LLM :
+  - "You are a pedagogical editor for a training capsule transcript."
+  - "Enrich the AsciiDoc article for deck '<deckName>' in language
+    '<language>'."
+  - "Template article (keep the structure, enrich the content):" +
+    `TranscriptBuilder.build(plan)` (embed le template)
+  - Rules : keep `== ` headings, preserve speaker note content, add
+    pedagogical transitions, add intro+outro paragraphs, respond
+    AsciiDoc only.
+
+  Pattern `DefaultCapsulePromptBuilder` (prompt builder pur, pas
+  d'I/O, pas d'appel LLM).
+
+Compilation `compileTestKotlin` : BUILD SUCCESSFUL (3 fichiers prod
+créés). GREEN confirmé.
+
+== Tests unitaires — verdict
+
+----
+TranscriptPlanTest         : 7 tests, 0 fail, 0 skip
+TranscriptBuilderTest     : 11 tests, 0 fail, 0 skip
+TranscriptPromptBuilderTest: 5 tests, 0 fail, 0 skip
+TranscriptConfigTest       : 5 tests (S-115, inchangé)
+TranscriptStrategyTest     : 7 tests (S-115, inchangé)
+----
+Total transcript : 35 unit (23 nouveaux + 12 préexistants S-115),
+0 FAIL, 0 SKIP.
+
+== REFACTOR — `./gradlew check` BUILD SUCCESSFUL
+
+[source,shell]
+----
+./gradlew check
+# BUILD SUCCESSFUL in 22m 49s
+# 911 unit VERT (+23 net : baseline 888 → 911)
+# 64 functional VERT (baseline préservée)
+# 13 cucumber dédiés GREEN (baseline préservée)
+# Kover VERT, validatePlugins VERT
+# zéro régression, zéro secret, zéro bump BOM
+----
+
+`publishToMavenLocal` : BUILD SUCCESSFUL.
+
+Vérification secrets : `grep -rn "TOKEN\|SECRET\|PASSWORD\|API_KEY\|
+gho_\|ghp_" --include="*.kt" --include="*.kts" --include="*.properties"
+--include="*.yml" src/` → uniquement `DEFAULT_TOKEN_BUDGET` (constante
+budget tokens N0, pas un secret). Zéro secret.
+
+== Statut EPIC CAP-TRANSCRIPT post-session
+
+[cols="1,3,1,1", options="header"]
+|===
+| US | Livrable | Pts | Statut
+
+| CAP-TRANSCRIPT-0 | Cadrage EPIC | 1 | ✅ TERMINÉ (S-114)
+| CAP-TRANSCRIPT-1 | TranscriptConfig + TranscriptStrategy enum + merger 4 sources | 2 | ✅ TERMINÉ (S-115)
+| CAP-TRANSCRIPT-2 | TranscriptPlan + TranscriptBuilder + TranscriptPromptBuilder | 3 | ✅ TERMINÉ (S-116)
+| CAP-TRANSCRIPT-3 | TranscriptLlmEnhancer port + ChatModelTranscriptEnhancer adapter | 2 | ⬜ TODO
+| CAP-TRANSCRIPT-4 | Tâche generateCapsuleTranscript + wiring | 2 | ⬜ TODO
+| CAP-TRANSCRIPT-5 | Cucumber BDD | 2 | ⬜ TODO
+|===
+
+EPIC CAP-TRANSCRIPT 3/6 US (US-0 ✅ S-114, US-1 ✅ S-115, US-2 ✅
+S-116, US-3→5 TODO). Domaine `capsule.transcript` (11ème) enrichi :
+3 nouveaux fichiers prod (TranscriptPlan + TranscriptBuilder +
+TranscriptPromptBuilder) + 3 nouveaux fichiers test (TranscriptPlanTest
++ TranscriptBuilderTest + TranscriptPromptBuilderTest). 5 fichiers prod
+total domaine (TranscriptConfig S-115 + 3 US-2 + TranscriptStrategy
+dans TranscriptConfig.kt).
+
+== Livrables
+
+. *Prod* (3 fichiers créés) :
+  - `src/main/kotlin/capsule/transcript/TranscriptPlan.kt` (data
+    class immutable 4 champs + invariants fail-fast)
+  - `src/main/kotlin/capsule/transcript/TranscriptBuilder.kt` (object
+    pur `build(plan): String` + constantes `INTRO`/`OUTRO`)
+  - `src/main/kotlin/capsule/transcript/TranscriptPromptBuilder.kt`
+    (object pur `buildEnhancePrompt(plan): String`)
+
+. *Tests* (3 fichiers créés, 23 unit) :
+  - `src/test/kotlin/capsule/transcript/TranscriptPlanTest.kt` (7 unit)
+  - `src/test/kotlin/capsule/transcript/TranscriptBuilderTest.kt`
+    (11 unit)
+  - `src/test/kotlin/capsule/transcript/TranscriptPromptBuilderTest.kt`
+    (5 unit)
+
+. *Gouvernance* (5 fichiers mis à jour) :
+  - BACKLOG.adoc — US-2 `⬜ TODO` → `✅ TERMINÉ (S-116)`, en-tête
+    section, synthèse
+  - .agents/INDEX.adoc — en-tête (session 116 + prochaine 117), table
+    sessions entrée 116
+  - PROMPT_REPRISE.adoc + .agents/PROMPT_REPRISE.adoc — rewrite
+    complet session 117 context
+  - AGENTS.adoc racine — table boroughs Détroit entrée 116, historique
+    mises à jour entrée 2026-08-13
+  - .agents/SESSIONS_HISTORY.adoc — entrée 116
+
+== Vérifications
+
+- `git status` : branche main, 6 fichiers modifiés/créés (3 prod + 3
+  test) + gouvernance.
+- `./gradlew check` : BUILD SUCCESSFUL in 22m 49s.
+- `./gradlew publishToMavenLocal` : BUILD SUCCESSFUL.
+- Secrets : zéro (uniquement `DEFAULT_TOKEN_BUDGET` N0 constante).
+- `rg -n "🟡\|⏳\|À FAIRE\|À PLANIFIER\|EN PAUSE\|à planifier\|à faire"
+  BACKLOG.adoc` : marqueurs restants = US-3→5 TODO (légitimes, EPIC en
+  cours) + EPICs P2 non démarrés (CAP-CHAPITRE, CAP-PODCAST,
+  CAP-PREVIEW). Aucun marqueur périmé pour US terminée.
+
+== Prochaine session (117)
+
+CAP-TRANSCRIPT US-3 `TranscriptLlmEnhancer` port + `ChatModelTranscriptEnhancer` adapter. Baby-step TDD ~6 unit (enhance mock LLM, blank fallback, preserve headings, strategy dispatch TEMPLATE no-op / LLM enhance). Pattern `CapsuleLlm` port + `ChatModelCapsuleLlm` adapter. Fallback degraded : si LLM blank/invalide → template original (pattern `AudioPostProcessor.process` Boolean).

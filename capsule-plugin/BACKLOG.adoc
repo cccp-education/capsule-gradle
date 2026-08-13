@@ -1484,7 +1484,7 @@ CAP-PROVENANCE TERMINÉ 3/3 US (S-108)** — domaine `capsule.context` clos
 BUILD SUCCESSFUL : 834 unit (+15) + 62 functional (+2) + 3 cucumber
 `capsule_provenance.feature` GREEN. Zéro régression, zéro secret.
 
-=== ✅ EPIC CAP-TRANSCRIPT — Reverse pipeline capsule → article AsciiDoc (Session 114 — Cadrage US-0)
+=== 🟡 EPIC CAP-TRANSCRIPT — Reverse pipeline capsule → article AsciiDoc (Session 114 — Cadrage US-0, EN COURS 4/6 US)
 
 _Vision_ : Le stagiaire révisionne en lecture, pas vidéo. `generateCapsuleTranscript`
 produit un article AsciiDoc depuis les speaker notes + slide titles + metadata
@@ -1671,7 +1671,7 @@ _Décisions architecturales (12)_ :
   template structure, empty segments, MANIM segment skipped in article,
   prompt builder content, language attribute, intro/outro present).
 | 3
-| ⬜ TODO
+| ✅ TERMINÉ (S-116, 23 unit : 7 TranscriptPlanTest + 11 TranscriptBuilderTest + 5 TranscriptPromptBuilderTest, 911 unit VERT +23 net baseline 888 → 911, `check` BUILD SUCCESSFUL 22m49s)
 
 | CAP-TRANSCRIPT-3
 | *`TranscriptLlmEnhancer` port + `ChatModelTranscriptEnhancer` adapter* —
@@ -1679,11 +1679,12 @@ _Décisions architecturales (12)_ :
   pattern `CapsuleLlm`). Adapter bridge `ChatModel` langchain4j (pattern
   `ChatModelCapsuleLlm`). Enrichit template : transitions, introductions,
   reformulations. Fallback degraded : si LLM blank/invalide → template
-  original (pattern `AudioPostProcessor.process` Boolean). Baby-step TDD :
-  ~6 unit (enhance mock LLM, blank fallback, preserve headings, strategy
-  dispatch TEMPLATE no-op / LLM enhance).
+  original (pattern `AudioPostProcessor.process` Boolean). Short-circuit si
+  template blank (no LLM call, économie d'encre). Baby-step TDD :
+  6 unit (enhance mock LLM, blank fallback, empty fallback, prompt
+  forwarding, blank template short-circuit, headings preserved).
 | 2
-| ⬜ TODO
+| ✅ TERMINÉ (S-117)
 
 | CAP-TRANSCRIPT-4
 | *Tâche `generateCapsuleTranscript` + wiring* — groupe `generate`,
@@ -1718,7 +1719,8 @@ DDD/TDD/BDD, 3 niveaux tests/US (unit → functional → cucumber), English only
 code/Gherkin. _Pattern de référence_ : `capsule.audio` (AudioPostConfig +
 AudioPostProcessor port/adapter + factory + wiring + cucumber), `capsule.validation`
 (ValidationConfig + merger 2 champs + cucumber runner dédié). _Statut_ :
-US-0 ✅ TERMINÉ (S-114), US-1 ✅ TERMINÉ (S-115), US-2→5 TODO.
+US-0 ✅ TERMINÉ (S-114), US-1 ✅ TERMINÉ (S-115), US-2 ✅ TERMINÉ (S-116),
+US-3→5 TODO.
 
 === 📸 EPIC CAP-CR3-3 — Branchement ScreenshotCapture (alternative configurable) — TERMINÉ 5/5 US (S-096)
 
@@ -2732,7 +2734,7 @@ _Total_ : 3 US, ~4 pts.
 | 6
 | 12
 | 🟡 P2
-| 🟡 US-0 ✅ (S-114), US-1 ✅ (S-115), US-2→5 TODO
+| 🟡 US-0 ✅ (S-114), US-1 ✅ (S-115), US-2 ✅ (S-116), US-3 ✅ (S-117), US-4→5 TODO
 
 | Post-prod
 | CAP-CR3-1

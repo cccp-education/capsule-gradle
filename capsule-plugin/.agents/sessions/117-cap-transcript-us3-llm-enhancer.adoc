@@ -1,0 +1,187 @@
+= Session 117 — CAP-TRANSCRIPT US-3 TranscriptLlmEnhancer port + ChatModelTranscriptEnhancer adapter
+
+_Date_ : 2026-08-14
+_Type_ : feat+ddd+tdd
+_Score_ : 9/10
+_Borough_ : Détroit (capsule-gradle)
+
+== Objectif
+
+CAP-TRANSCRIPT US-3 — `TranscriptLlmEnhancer` interface (port) +
+`ChatModelTranscriptEnhancer` adapter. Baby-step TDD strict RED → GREEN
+→ REFACTOR. ~6 unit attendus, 6 unit livrés.
+
+== Contexte
+
+EPIC CAP-TRANSCRIPT (P2) — cadré US-0 S-114, US-1 ✅ S-115
+(`TranscriptConfig` + `TranscriptStrategy` enum + merger 4 sources,
+888 unit VERT), US-2 ✅ S-116 (`TranscriptPlan` + `TranscriptBuilder`
++ `TranscriptPromptBuilder`, 911 unit VERT baseline). US-3 cible : le
+port LLM du domaine `capsule.transcript` (11ème) + l'adapter de
+production bridge langchain4j `ChatModel`. Pattern de référence :
+`CapsuleLlm` (`capsule.pipeline`) port sync `propose`/`generate` +
+`ChatModelCapsuleLlm` adapter (CAP-ARCH-1 `capsule.ai`) — le domaine
+reste Gradle-free, coroutine-free, unit-testable avec un plain fake.
+Fallback degraded pattern `AudioPostProcessor.process` (CAP-AUDIO US-2)
+— LLM blank/whitespace → template original (économie d'encre, le
+caller garde un AsciiDoc valide).
+
+`TranscriptLlmEnhancer.enhance(template, plan)` prend le template
+deterministe produit par `TranscriptBuilder.build(plan)` et retourne
+l'article enrichi (transitions pédagogiques, introductions engageantes,
+reformulations). Le prompt est construit par
+`TranscriptPromptBuilder.buildEnhancePrompt(plan)` (US-2).
+
+== RED — Tests unitaires (1 fichier, 6 unit)
+
+. *`TranscriptLlmEnhancerTest.kt`* (6 unit) —
+  `ChatModelTranscriptEnhancer` n'existe pas → `Unresolved reference
+  'ChatModelTranscriptEnhancer'`. Fake `ChatModel` minimal (override
+  `doChat` seul — single abstract entry point langchain4j 1.16.3,
+  retourne canned response, capture le dernier prompt). Tests :
+  - `enhance returns the enriched article when the LLM responds` —
+    response non-blank → égal à la réponse LLM
+  - `enhance falls back to the original template when the LLM returns
+    blank` — whitespace-only → template original (degraded)
+  - `enhance falls back to the original template when the LLM returns
+    empty` — empty string → template original (degraded)
+  - `enhance forwards the enrichment prompt built by
+    TranscriptPromptBuilder to the LLM` — callCount=1, lastPrompt
+    contient deckName + "AsciiDoc" (vérifie le forwarding du prompt
+    `TranscriptPromptBuilder.buildEnhancePrompt`)
+  - `enhance does not call the LLM when the template is already blank`
+    — template="" → result="", callCount=0 (short-circuit économie
+    d'encre)
+  - `enhance preserves the LLM response containing the template
+    headings` — response contient les headings originaux + nouveau
+    contenu LLM
+
+Compilation `compileTestKotlin` : ÉCHEC (`Unresolved reference
+'ChatModelTranscriptEnhancer'` × 5 sites). RED confirmé.
+
+== GREEN — 2 fichiers prod créés (domaine `capsule.transcript`)
+
+. *`TranscriptLlmEnhancer.kt`* — interface port `fun enhance(template:
+  String, plan: TranscriptPlan): String`. Pattern `CapsuleLlm` (port
+  sync, le domaine ne connaît pas langchain4j). KDoc documente le
+  fallback degraded (pattern `AudioPostProcessor.process` Boolean) —
+  implémentations retournent le template original si LLM blank.
+
+. *`ChatModelTranscriptEnhancer.kt`* — adapter `ChatModel`
+  langchain4j. Pattern `ChatModelCapsuleLlm` : `model.chat(UserMessage.
+  from(prompt)).aiMessage().text()`. Logique :
+  - short-circuit si `template.isBlank()` → return template (no LLM
+    call, économie d'encre)
+  - prompt = `TranscriptPromptBuilder.buildEnhancePrompt(plan)`
+  - response = `model.chat(UserMessage.from(prompt)).aiMessage().text()`
+  - fallback degraded : `response.takeUnless { it.isNullOrBlank() }
+    ?.trim()?.plus("\n") ?: template` — LLM blank/whitespace → template
+    original (degraded mode, backward compat — le caller garde un
+    AsciiDoc valide)
+
+Compilation `compileTestKotlin` : BUILD SUCCESSFUL (2 fichiers prod
+créés). GREEN confirmé.
+
+== Tests unitaires — verdict
+
+----
+TranscriptLlmEnhancerTest    : 6 tests, 0 fail, 0 skip
+TranscriptPlanTest           : 7 tests (S-116, inchangé)
+TranscriptBuilderTest        : 11 tests (S-116, inchangé)
+TranscriptPromptBuilderTest  : 5 tests (S-116, inchangé)
+TranscriptConfigTest         : 5 tests (S-115, inchangé)
+TranscriptStrategyTest       : 7 tests (S-115, inchangé)
+----
+Total transcript : 41 unit (6 nouveaux + 35 préexistants S-115/116),
+0 FAIL, 0 SKIP.
+
+== REFACTOR — `./gradlew check` BUILD SUCCESSFUL
+
+[source,shell]
+----
+./gradlew check
+# BUILD SUCCESSFUL in 23m 33s
+# 917 unit VERT (+6 net : baseline 911 → 917)
+# 64 functional VERT (baseline préservée)
+# 13 cucumber dédiés GREEN (baseline préservée)
+# Kover VERT, validatePlugins VERT
+# zéro régression, zéro secret, zéro bump BOM
+----
+
+Vérification secrets : `grep -rn "TOKEN\|SECRET\|PASSWORD\|API_KEY\|
+gho_\|ghp_" --include="*.kt" --include="*.kts" --include="*.properties"
+--include="*.yml" src/` → uniquement `DEFAULT_TOKEN_BUDGET` (constante
+budget tokens N0, pas un secret). Zéro secret.
+
+== Statut EPIC CAP-TRANSCRIPT post-session
+
+[cols="1,3,1,1", options="header"]
+|===
+| US | Livrable | Pts | Statut
+
+| CAP-TRANSCRIPT-0 | Cadrage EPIC | 1 | ✅ TERMINÉ (S-114)
+| CAP-TRANSCRIPT-1 | TranscriptConfig + TranscriptStrategy enum + merger 4 sources | 2 | ✅ TERMINÉ (S-115)
+| CAP-TRANSCRIPT-2 | TranscriptPlan + TranscriptBuilder + TranscriptPromptBuilder | 3 | ✅ TERMINÉ (S-116)
+| CAP-TRANSCRIPT-3 | TranscriptLlmEnhancer port + ChatModelTranscriptEnhancer adapter | 2 | ✅ TERMINÉ (S-117)
+| CAP-TRANSCRIPT-4 | Tâche generateCapsuleTranscript + wiring | 2 | ⬜ TODO
+| CAP-TRANSCRIPT-5 | Cucumber BDD | 2 | ⬜ TODO
+|===
+
+EPIC CAP-TRANSCRIPT 4/6 US (US-0 ✅ S-114, US-1 ✅ S-115, US-2 ✅
+S-116, US-3 ✅ S-117, US-4→5 TODO). Domaine `capsule.transcript`
+(11ème) enrichi : 2 nouveaux fichiers prod (TranscriptLlmEnhancer
+port + ChatModelTranscriptEnhancer adapter) + 1 nouveau fichier test
+(TranscriptLlmEnhancerTest). 7 fichiers prod total domaine
+(TranscriptConfig S-115 + TranscriptStrategy dans TranscriptConfig.kt
++ TranscriptPlan/TranscriptBuilder/TranscriptPromptBuilder S-116 +
+TranscriptLlmEnhancer/ChatModelTranscriptEnhancer S-117).
+
+== Livrables
+
+. *Prod* (2 fichiers créés) :
+  - `src/main/kotlin/capsule/transcript/TranscriptLlmEnhancer.kt`
+    (interface port `enhance(template, plan): String`)
+  - `src/main/kotlin/capsule/transcript/ChatModelTranscriptEnhancer.kt`
+    (adapter `ChatModel` langchain4j + fallback degraded)
+
+. *Tests* (1 fichier créé, 6 unit) :
+  - `src/test/kotlin/capsule/transcript/TranscriptLlmEnhancerTest.kt`
+    (6 unit + FakeChatModel minimal override `doChat`)
+
+. *Gouvernance* (7 fichiers mis à jour) :
+  - BACKLOG.adoc — US-3 `⬜ TODO` → `✅ TERMINÉ (S-117)`
+  - .agents/INDEX.adoc — en-tête (session 117 + prochaine 118), table
+    sessions entrée 117
+  - PROMPT_REPRISE.adoc + .agents/PROMPT_REPRISE.adoc — rewrite
+    complet session 118 context
+  - AGENTS.adoc racine — table boroughs Détroit entrée 117
+  - .agents/SESSIONS_HISTORY.adoc — entrée 117
+  - TODO.adoc — mise à jour last_update + US-3 coché
+
+== Vérifications
+
+- `git status` : branche main, fichiers modifiés/créés (2 prod + 1
+  test + gouvernance).
+- `./gradlew check` : BUILD SUCCESSFUL in 23m 33s.
+- Secrets : zéro (uniquement `DEFAULT_TOKEN_BUDGET` N0 constante).
+- `rg -n "🟡\|⏳\|À FAIRE\|À PLANIFIER\|EN PAUSE\|à planifier\|à faire"
+  BACKLOG.adoc` : marqueurs restants = US-4→5 TODO (légitimes, EPIC en
+  cours) + EPICs P2 non démarrés (CAP-CHAPITRE, CAP-PODCAST,
+  CAP-PREVIEW). Aucun marqueur périmé pour US terminée.
+
+== Prochaine session (118)
+
+CAP-TRANSCRIPT US-4 tâche `generateCapsuleTranscript` + wiring. Groupe
+`generate`, `@OutputFile transcriptOutput`
+(`build/capsule/<deckName>-transcript.adoc`), `@InputFile
+speakerNotesFile` (dependsOn `generateCapsuleContent`), `@Input
+language`/`strategy`, `@Optional @ServiceReference LlmBuildService`
+(si strategy=LLM). Parse speaker notes via `AsciidocSpeakerNoteParser`
+→ `CapsuleScript` → `TranscriptPlan`. Strategy TEMPLATE →
+`TranscriptBuilder.build` directly. Strategy LLM →
+`TranscriptBuilder.build` then `TranscriptLlmEnhancer.enhance`.
+Économie d'encre skip si output existe ET non-blank. `CapsuleMessages`
+clé `task.generateCapsuleTranscript.description`. Wiring
+`CapsuleManager.registerGenerateTranscriptTask`. Baby-step TDD ~3
+functional (registration, output artefact TEMPLATE, output artefact
+LLM mock).
