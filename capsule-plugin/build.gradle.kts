@@ -151,6 +151,15 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleGlossaryContextCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // CAP-TRANSCRIPT US-5 — transcript generation (TEMPLATE and LLM strategies).
+        // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
+        CucumberTaskSpec(
+            name = "cucumberTestTranscript",
+            features = listOf("src/test/features/capsule_transcript.feature"),
+            tags = listOf("@transcript"),
+            runnerClass = "capsule.scenarios.CapsuleTranscriptCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task
@@ -216,9 +225,11 @@ dependencies {
     testImplementation(kotlin("test-junit5"))
     testImplementation("org.assertj:assertj-core:3.27.7")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testImplementation("org.slf4j:slf4j-api:2.0.17")
     testRuntimeOnly("ch.qos.logback:logback-classic:1.5.26")
     testImplementation(libs.bundles.cucumber)
+    testImplementation("io.cucumber:cucumber-junit:7.34.3")
+    testImplementation("org.junit.vintage:junit-vintage-engine:5.10.0")
+    testImplementation(libs.slider)
 }
 
 afterEvaluate {

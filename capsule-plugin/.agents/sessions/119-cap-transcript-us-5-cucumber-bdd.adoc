@@ -1,0 +1,34 @@
+= Session 119 — CAP-TRANSCRIPT US-5 Cucumber BDD
+
+== Objectif
+Implémenter les scénarios Cucumber BDD pour la génération de transcriptions dans le domaine capsule.transcript (US-5 de l'EPIC CAP-TRANSCRIPT).
+
+== Travail réalisé
+- Création du fichier de fonctionnalité `src/test/features/capsule_transcript.feature` avec 4 scénarios :
+  1. Génération de transcription avec stratégie TEMPLATE (sans LLM)
+  2. Génération de transcription avec stratégie LLM (mockée)
+  3. Plan de transcription vide yielding une transcription vide
+  4. La génération de transcription saute quand la sortie existe déjà et n'est pas vide
+- Création du runner Cucumber dédié `src/test/kotlin/capsule/scenarios/CapsuleTranscriptCucumberRunner.kt`
+- Création des définitions d'étapes `src/test/kotlin/capsule/scenarios/CapsuleTranscriptSteps.kt`
+- Mise à jour de `build.gradle.kts` pour ajouter la tâche Cucumber dédiée
+- Les scénarios couvrent :
+  * Stratégie TEMPLATE : génération directe depuis TranscriptBuilder
+  * Stratégie LLM : amélioration via ChatModelTranscriptEnhancer (mocké dans les tests)
+  * Plan vide : gestion correcte des segments vides
+  * Économies d'encre : saut de la génération quand la sortie existe et n'est pas vide
+
+== Résultat
+Tous les scénarios Cucumber passent avec succès :
+- `./gradlew cucumberTestTranscript` → BUILD SUCCESSFUL
+- 4 scénarios exécutés, 0 échecs
+- L'EPIC CAP-TRANSCRIPT est maintenant à 5/6 US terminées (US-5 terminée)
+
+== Fichiers modifiés
+- `build.gradle.kts` : ajout de la tâche CucumberTestTranscript dans cucumberConventions
+- `src/test/features/capsule_transcript.feature` : nouveau fichier de fonctionnalité
+- `src/test/kotlin/capsule/scenarios/CapsuleTranscriptCucumberRunner.kt` : nouveau runner dédié
+- `src/test/kotlin/capsule/scenarios/CapsuleTranscriptSteps.kt` : nouvelles définitions d'étapes
+
+== Prochaine session
+Session 120 — CAP-TRANSCRIPT US-6 TODO (selon l'INDEX.adoc)

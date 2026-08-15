@@ -22,6 +22,20 @@ régression, zéro secret, zéro bump BOM. Backward compat : transcript
 `enabled=false` défaut → tâche pas de skip forcé (skip économie d'encre
 uniquement si output existe ET non-blank).
 
+
+== Couverture — 16 août 2026 (après session 119 CAP-TRANSCRIPT US-5)
+
+.Modifications session 119 — CAP-TRANSCRIPT US-5 Cucumber BDD
+|===
+| Fichier | Changement | Tests ajoutés
+| `src/test/features/capsule_transcript.feature` (nouveau) | Feature `@transcript` — 4 scénarios : TEMPLATE strategy, LLM strategy mocked, empty plan, skip-on-existing-output. | +4 cucumber
+| `test/kotlin/capsule/scenarios/CapsuleTranscriptSteps.kt` (nouveau) | Step defs — préfixés "transcript" (bug S-088), utilisation de TranscriptPlan, TranscriptBuilder, ChatModelTranscriptEnhancer (mock), génération et vérification du transcript AsciiDoc. | +4 scénarios couverts
+| `test/kotlin/capsule/scenarios/CapsuleTranscriptCucumberRunner.kt` (nouveau) | Runner dédié pattern S-082 + filter `@transcript and not @wip and not @integration`. | +4 scénarios
+| `build.gradle.kts` (modifié) | `CucumberTaskSpec("cucumberTestTranscript")` 15ème câblé dans `cucumberConventions.additionalTasks` (après `cucumberTestGlossaryContext`, avant `cucumberTestIntegration`). | —
+|===
+
+*Totaux* : 917 unit VERT (baseline S-118 préservée), 67 functional VERT (+3 net S-118), 4 scénarios cucumber dédiés GREEN (nouveaux). `./gradlew check` BUILD SUCCESSFUL. Cucumber SKIPPED par défaut (CR-10) — `cucumberTestTranscript` exécuté via `-PrunCucumber` (4/4 PASSED en ~8s). Zéro régression, zéro secret.
+
 == Couverture — 13 août 2026 (après session 113 EPIC CAP-27 VTT burn-in)
 
 .Modifications session 113 — EPIC CAP-27 VTT burn-in (3/3 US)
