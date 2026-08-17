@@ -8,11 +8,11 @@ playwright = "1.52.0"
 kover = "0.9.8"
 cucumber = "7.34.3"
 jackson = "2.18.3"
-codebase = "0.0.7"
+codebase = "0.0.8"
 koog = "1.0.0"
 workspace-bom = "0.0.16"
 i18n-contracts = "0.0.2"
-codebase-contracts = "0.1.0"
+codebase-contracts = "0.0.2"
 
 [libraries]
 kotlin-test-junit5 = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit5", version.ref = "kotlin" }
