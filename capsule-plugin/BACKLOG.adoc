@@ -57,6 +57,14 @@
   la sync image/voix SANS test JS (risque régression silencieux). 6 US ~10 pts.
 | P2
 | ⬜ TODO (S-132)
+
+| CAP-PR2-COV
+| **Couverture des 14 appelants Kotlin migrés PR #2** — `ProcessBuilder.waitFor()`
+  → `ProcessRunner` + `renameTo()` → `FileReplace.moveOver`, sans test dédié.
+  Guard d'intégrité + tests argv (binaire factice) + délégation FileReplace.
+  5 US ~9 pts. *Complète CAP-ANIM-TEST pour couvrir la totalité du PR #2.*
+| P2
+| ⬜ TODO (S-132)
 |===
 
 '''
@@ -132,6 +140,58 @@ baby-step DDD/TDD/BDD (RED → GREEN → REFACTOR)._
   `@remotion-anim` + runner dédié 20e `CucumberTaskSpec` + steps préfixés
   "remotion anim" (bug S-088). | ⬜ TODO | S-132
 |===
+
+'''
+== EPIC CAP-PR2-COV (TODO) — couverture des 14 appelants Kotlin migrés (PR #2)
+
+_PR #2 a migré 14 appelants de `ProcessBuilder.waitFor()` vers `ProcessRunner`
+et de `renameTo()` vers `FileReplace.moveOver`, **sans test dédié par
+appelant**. Le comportement est préservé mais non couvert : une régression de
+la migration (appelant oublié, argv tronqué, stdout perdu, `renameTo` qui
+reviendrait en silence) est invisible jusqu'au rendu. Avec CAP-ANIM-TEST
+(JS), cet EPIC couvre la **totalité** du code non testé livré par la PR #2.
+Méthodologie baby-step DDD/TDD/BDD (RED → GREEN → REFACTOR)._
+
+[cols="1,3,1,1"]
+|===
+| US | Description | Statut | Session
+
+| US-0 | **Cadrage** — audit des 14 appelants migrés + stratégie : (a) guard
+  d'intégrité de migration projet, (b) tests argv avec binaire factice pour
+  les appelants à effet ffmpeg, (c) tests de délégation `FileReplace` pour
+  les appelants fichier. 12 décisions. | ⬜ TODO | S-132
+| US-1 | **Guard d'intégrité migration** — `ProcessMigrationGuardTest` : scanne
+  `src/main/kotlin` et échoue si `ProcessBuilder(` non délégué à
+  `ProcessRunner` OU `.renameTo(` OU `.waitFor()` présent hors de
+  `ProcessRunner`/`FileReplace` eux-mêmes. Verrouille le pattern
+  anti-interblocage 64 Kio. +1 test projet. | ⬜ TODO | S-132
+| US-2 | **Appelants ffmpeg (argv + stdout)** — binaire factice injecté via
+  config test (pattern `ManimEngineTest`) pour : `AudioConversionUtil`,
+  `ManimVideoMixer`, `MediaProbeUtil`, `SubtitleBurnInService`,
+  `VideoFormatConverter`, `AudioPostProcessorImpl`, `RemotionCapture`,
+  `PlaywrightManager`. Chaque test affirme : `ProcessRunner` invoqué (pas
+  `ProcessBuilder` direct), argv exact (filtres loudnorm/concat/crossfade),
+  stdout redirigé vers journal (pas perdu), code sortie propagé. +~8 unit.
+  | ⬜ TODO | S-132
+| US-3 | **Appelants fichier (délégation FileReplace)** — `CapsuleBuildTask`,
+  `CapsuleDistribTask`, `GenerateCapsuleChaptersTask`,
+  `CollectCapsuleAugmentedContextTask`, `CapsuleVideoOutputRenamer`,
+  `PodcastConcatenatorImpl` : test affirme `FileReplace.moveOver` appelé (pas
+  `renameTo`), retour honnête géré (échec → exception, pas perte silencieuse),
+  cible écrasée proprement. +~6 unit. | ⬜ TODO | S-132
+| US-4 | **BDD Cucumber régression** — `capsule_pr2_coverage.feature` 2
+  scénarios `@pr2-coverage` : (1) capsule rendue après migration (aucun
+  interblocage tube 64 Kio sur sortie bavarde), (2) renommage sortie sans
+  perte. Runner dédié 20e `CucumberTaskSpec` + steps préfixés "pr2 coverage"
+  (bug S-088). | ⬜ TODO | S-132
+|===
+
+_Appelants concernés (14)_ : `AudioConversionUtil`, `CapsuleBuildTask`,
+`CapsuleDistribTask`, `ManimVideoMixer`, `MediaProbeUtil`, `PlaywrightManager`,
+`RemotionCapture`, `SubtitleBurnInService`, `VideoFormatConverter`,
+`AudioPostProcessorImpl`, `GenerateCapsuleChaptersTask`,
+`CollectCapsuleAugmentedContextTask`, `CapsuleVideoOutputRenamer`,
+`PodcastConcatenatorImpl`.
 
 '''
 == ✅ EPIC CAP-PODCAST TERMINÉ (S-127) — 3/3 US
@@ -213,6 +273,10 @@ _Total_ : 28 EPICs terminés + 1 EPIC TODO. _Baseline courante_ :
   correctif amont publié.
 * ⚠️ **CAP-ANIM-TEST (TODO S-132)** : `Capsule.jsx` (timing Remotion) livré S-131
   sans test automatisé. Couvrir en DDD/TDD/BDD (voir EPIC).
+* ⚠️ **CAP-PR2-COV (TODO S-132)** : les 14 appelants Kotlin migrés PR #2
+  (`ProcessBuilder`→`ProcessRunner`, `renameTo`→`FileReplace`) sans test
+  dédié. Guard d'intégrité + tests argv/délégation (voir EPIC). *Avec
+  CAP-ANIM-TEST, couvre la totalité du PR #2.*
 
 == Décisions d'architecture
 

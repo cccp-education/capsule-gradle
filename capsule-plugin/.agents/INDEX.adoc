@@ -7,7 +7,7 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 
 _Derniere mise a jour_ : 2026-08-29 (S-131 Merge PR #2 — maintenance pipeline + anim)
 _Session terminee_ : 131 — **Merge PR #2** — débloque pipeline processus + rendus Manim + sync image/voix Remotion. 1133 unit VERT (+62 net), 75 functional VERT. EPIC CAP-MAINT-PIPELINE TERMINÉ.
-_Prochaine session_ : 132 — **CAP-ANIM-TEST** — couverture tests timing JS Remotion (6 US ~10 pts).
+_Prochaine session_ : 132 — **CAP-ANIM-TEST + CAP-PR2-COV** (couverture tests PR #2) — couverture tests timing JS Remotion (6 US ~10 pts).
 _Session en cours_ : — (S-131 terminée).
 
 '''

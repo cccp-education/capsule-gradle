@@ -23,10 +23,12 @@ animation Remotion. EPIC CAP-MAINT-PIPELINE TERMINÉ 6/6 US, 1133 unit VERT
 (+62 net). Gouvernance synchronisée (BACKLOG/INDEX/SESSIONS_HISTORY/
 TEST_COVERAGE/PROMPT_REPRISE).
 
-== Mission Session 132 — EPIC CAP-ANIM-TEST (TODO)
+== Mission Session 132 — Couverture tests PR #2 (CAP-ANIM-TEST + CAP-PR2-COV)
 
-Couverture automatisée de la logique de timing `Capsule.jsx` livrée S-131 sans
-test JS. Baby-step DDD/TDD/BDD (RED → GREEN → REFACTOR) :
+Couverture de la **totalité** du code non testé livré par la PR #2
+(S-131). Baby-step DDD/TDD/BDD (RED → GREEN → REFACTOR).
+
+Partie JS — EPIC CAP-ANIM-TEST (`Capsule.jsx`) :
 
 . **US-0 Cadrage** — audit couverture `Capsule.jsx`, décisions extraction
   logique pure (`RemotionTiming` Kotlin OU JS testé node).
@@ -36,6 +38,15 @@ test JS. Baby-step DDD/TDD/BDD (RED → GREEN → REFACTOR) :
 . **US-4 Intégration rendu** — test node/jsdom 2 diapos (pixels transition).
 . **US-5 BDD Cucumber** — `capsule_remotion_anim.feature` + runner dédié
   20e + steps préfixés "remotion anim".
+
+Partie Kotlin — EPIC CAP-PR2-COV (14 appelants migrés PR #2) :
+
+. **US-0 Cadrage** — audit 14 appelants + stratégie (guard + argv + délégation).
+. **US-1 Guard d'intégrité** — `ProcessMigrationGuardTest` (scan
+  `ProcessBuilder`/`renameTo`/`waitFor` interdits hors `ProcessRunner`/`FileReplace`).
+. **US-2 Appelants ffmpeg** — tests argv binaire factice (8 appelants).
+. **US-3 Appelants fichier** — tests délégation `FileReplace.moveOver` (6 appelants).
+. **US-4 BDD Cucumber** — `capsule_pr2_coverage.feature` 2 scénarios + runner dédié 20e.
 
 == Méthodologie
 
