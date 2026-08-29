@@ -1,0 +1,114 @@
+= Rapport Session 132 — Capsule Gradle (Détroit)
+
+:session: 132
+:borough: Détroit
+:date: 2026-08-29
+:type: tdd+bdd+cloture
+
+== Mission
+
+Couverture de la **totalité** du code non testé livré par la PR #2 (S-131) :
+d'une part le timing JS Remotion (`Capsule.jsx`, EPIC **CAP-ANIM-TEST**),
+d'autre part les 14 appelants Kotlin migrés vers `ProcessRunner` /
+`FileReplace.moveOver` (EPIC **CAP-PR2-COV**). Baby-step DDD/TDD/BDD
+(RED → GREEN → REFACTOR), English only, zéro régression.
+
+== Travail effectué
+
+=== EPIC CAP-ANIM-TEST — TERMINÉ 6/6 US
+
+Portage de la logique de timing de `Capsule.jsx` en module Kotlin pur
+(`capsule.anim.RemotionTiming`), testé au niveau JVM puis en intégration et
+en Cucumber — sans dépendre de node/jsdom.
+
+* US-0 Cadrage — audit `Capsule.jsx`, 12 décisions : extraire la logique pure
+  en `RemotionTiming` (object pur Kotlin), pas de test JS.
+* US-1..4 — `RemotionTiming.kt` : `beatSeconds`, `applyCues`, `clipPlaybackRate`,
+  `contentAppear`, `backgroundAppear`, `sequenceDurationInFrames`,
+  `backgroundOpacityAt` + constantes (`REVEAL_SECS=0.55`, `CROSSFADE_FRAMES=20`,
+  `CONTENT_GATE=0.72`, `MAX_SPEEDUP=1.25`, `MIN_SLOWDOWN=0.8`,
+  `DEFAULT_BEAT_SECS=1.6`, `BEATS_SECS`, `CARRIED_BY_TRANSITION`,
+  `LAST_BEAT_SECS=5.55`). `RemotionTimingTest` (22 unit) + `RemotionTimingIntegrationTest`
+  (3 intégration : écran jamais noir, texte entrant après couverture, titres
+  superposés couverts).
+* US-5 — `capsule_remotion_anim.feature` 3 scénarios `@remotion-anim` +
+  runner dédié 20e `CucumberTaskSpec` (`cucumberTestRemotionAnim`) + steps
+  préfixés "remotion anim" (bug S-088). 3/3 PASSED.
+* US-6 — `publishToMavenLocal` VERT (régression publication).
+
+=== EPIC CAP-PR2-COV — TERMINÉ 5/5 US
+
+* US-0 Cadrage — audit 14 appelants + stratégie (guard + argv + délégation).
+* US-1 — `ProcessMigrationGuardTest` (package `capsule.ci`) : scanne
+  `src/main/kotlin`, échoue si `ProcessBuilder(` / `.renameTo(` / `.waitFor()`
+  hors `ProcessRunner.kt` / `FileReplace.kt`. 1 test GREEN.
+* US-2 — `ProcessRunnerCallerArgvTest` (9 tests) : binaire factice injecté via
+  `ProcessRunner.commandInterceptor`. Couvre `AudioPostProcessorImpl`,
+  `SubtitleBurnInServiceImpl`, `VideoFormatConverterImpl`,
+  `PodcastConcatenatorImpl`, `ManimVideoMixerImpl`, `MediaProbeUtil`,
+  `AudioConversionUtil`, `RemotionCaptureImpl`. Affirme argv binaire exact +
+  tokens filtres (loudnorm / subtitles / libx264 / concat / libmp3lame /
+  node) + propagation échec. 9/9 GREEN.
+* US-3 — `FileReplaceDelegationTest` (4 tests) : `FileReplace.moveOverInterceptor`
+  délégation prouvée à deux niveaux (seam + `CapsuleVideoOutputRenamer`),
+  honnêteté du résultat (false → pas de move silencieux), skip quand source
+  == cible. 4/4 GREEN.
+* US-4 — `capsule_pr2_coverage.feature` 2 scénarios `@pr2-cov` + runner dédié
+  21e `CucumberTaskSpec` (`cucumberTestPr2Coverage`) + steps préfixés
+  "pr2 coverage". 2/2 PASSED.
+* US-5 — `publishToMavenLocal` VERT.
+
+=== Migration corrective (découverte en US-1/US-2)
+
+`RemotionCapture.kt` et `RemotionTemplate.kt` utilisaient encore
+`ProcessBuilder` direct (non migrés par PR #2) — contredisant l'audit.
+Corrigé dans US-1 : `RemotionCapture.isAvailable()` →
+`ProcessRunner.probe(...)`, `capture()` → `ProcessRunner.run(...)` ;
+`RemotionTemplate.ensureDependencies()` → `ProcessRunner.run("npm","install",...)`.
+Ajout des seams de test `ProcessRunner.commandInterceptor` (refactor `run`→
+`realRun`) et `FileReplace.moveOverInterceptor`.
+
+== Seams de test ajoutés (anti-régression)
+
+* `ProcessRunner.commandInterceptor: ((command, workingDir, logFile, env, timeout) -> Result)?`
+* `FileReplace.moveOverInterceptor: ((File, File) -> Boolean)?`
+* `ProcessRunner.realRun(...)` — ancienne impl extraite, appelée quand interceptor null.
+
+== Fichiers
+
+Créés :
+* `src/main/kotlin/capsule/anim/RemotionTiming.kt`
+* `src/test/kotlin/capsule/anim/RemotionTimingTest.kt`
+* `src/test/kotlin/capsule/anim/RemotionTimingIntegrationTest.kt`
+* `src/test/kotlin/capsule/ci/ProcessMigrationGuardTest.kt`
+* `src/test/kotlin/capsule/ProcessRunnerCallerArgvTest.kt`
+* `src/test/kotlin/capsule/FileReplaceDelegationTest.kt`
+* `src/test/features/capsule_remotion_anim.feature`
+* `src/test/features/capsule_pr2_coverage.feature`
+* `src/test/kotlin/capsule/scenarios/CapsuleRemotionAnimCucumberRunner.kt`
+* `src/test/kotlin/capsule/scenarios/CapsuleRemotionAnimSteps.kt`
+* `src/test/kotlin/capsule/scenarios/CapsulePr2CoverageCucumberRunner.kt`
+* `src/test/kotlin/capsule/scenarios/CapsulePr2CoverageSteps.kt`
+
+Modifiés :
+* `src/main/kotlin/capsule/ProcessRunner.kt` — `commandInterceptor` + `realRun`
+* `src/main/kotlin/capsule/FileReplace.kt` — `moveOverInterceptor`
+* `src/main/kotlin/capsule/RemotionCapture.kt` — migration ProcessRunner
+* `src/main/kotlin/capsule/RemotionTemplate.kt` — migration ProcessRunner
+* `build.gradle.kts` — specs `cucumberTestRemotionAnim` (20e) +
+  `cucumberTestPr2Coverage` (21e)
+
+== Gates
+
+* `./gradlew test` : 1172 unit VERT 0 FAIL (baseline 1133 → +39).
+* `cucumberTestRemotionAnim` : 3/3 PASSED.
+* `cucumberTestPr2Coverage` : 2/2 PASSED.
+* `publishToMavenLocal` : BUILD SUCCESSFUL.
+* Zéro production modifié hors migration corrective (sémantique préservée).
+* Zéro secret, zéro bump BOM.
+
+== Statut
+
+Borough Détroit : **tous les EPICs sont terminés** (CAP-CHAPITRE S-129,
+CAP-CR3-4 S-130, CAP-ANIM-TEST + CAP-PR2-COV S-132). DORMANT — maintenance
+uniquement / prochain cadrage au besoin (ex. nouveau EPIC ou cross-borough).

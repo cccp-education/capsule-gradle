@@ -1,7 +1,7 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 131
+:session: 132
 :borough: Détroit
-:session_precedente: 130 — EPIC CAP-CR3-4 TERMINÉ 3/3 US (coverage gaps)
+:session_precedente: 131 — Merge PR #2 — EPIC CAP-MAINT-PIPELINE TERMINÉ
 
 == Contexte Hérité
 
@@ -23,7 +23,18 @@ animation Remotion. EPIC CAP-MAINT-PIPELINE TERMINÉ 6/6 US, 1133 unit VERT
 (+62 net). Gouvernance synchronisée (BACKLOG/INDEX/SESSIONS_HISTORY/
 TEST_COVERAGE/PROMPT_REPRISE).
 
-== Mission Session 132 — Couverture tests PR #2 (CAP-ANIM-TEST + CAP-PR2-COV)
+== Mission Session 132 (clôturée) — Prochaine : S-133
+
+S-132 = **CAP-ANIM-TEST + CAP-PR2-COV TERMINÉS** — couverture de la totalité
+du code non testé livré par PR #2. `RemotionTiming` (port pur `Capsule.jsx`,
+25 unit + 3 intégration) + Cucumber `capsule_remotion_anim.feature` (3
+scénarios). Guard `ProcessMigrationGuardTest` + `ProcessRunnerCallerArgvTest`
+(9) + `FileReplaceDelegationTest` (4) + Cucumber `capsule_pr2_coverage.feature`
+(2 scénarios). Migration corrective `RemotionCapture.kt`/`RemotionTemplate.kt`
+vers `ProcessRunner`. 1172 unit VERT (+39 net), 75 functional, 21 cucumber
+dédiés GREEN. Borough Détroit = **tous EPICs terminés** → DORMANT.
+
+== Mission Session 133 — DORMANT (maintenance / nouveau cadrage au besoin)
 
 Couverture de la **totalité** du code non testé livré par la PR #2
 (S-131). Baby-step DDD/TDD/BDD (RED → GREEN → REFACTOR).

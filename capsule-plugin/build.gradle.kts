@@ -205,6 +205,16 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleChaptersCucumberRunner",
             timeoutMinutes = 15,
         ),
+        // CAP-ANIM-TEST US-5 — Remotion timing model (beats, playback rate, overlap).
+        // Dedicated runner pattern S-082; steps prefixed "remotion anim" (bug S-088).
+        // Exercises the pure RemotionTiming model; no Node/FFmpeg/GradleRunner.
+        CucumberTaskSpec(
+            name = "cucumberTestRemotionAnim",
+            features = listOf("src/test/features/capsule_remotion_anim.feature"),
+            tags = listOf("@remotion-anim"),
+            runnerClass = "capsule.scenarios.CapsuleRemotionAnimCucumberRunner",
+            timeoutMinutes = 15,
+        ),
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task
@@ -216,6 +226,16 @@ cucumberConventions {
             tags = listOf("@integration"),
             runnerClass = "capsule.scenarios.CucumberIntegrationTestRunner",
             timeoutMinutes = 30,
+        ),
+        // CAP-PR2-COV US-4 — regression that the PR #2 migration sinks
+        // (ProcessRunner / FileReplace.moveOver) are the only process and file
+        // relocation entry points. Pure BDD, no real ffmpeg/node required.
+        CucumberTaskSpec(
+            name = "cucumberTestPr2Coverage",
+            features = listOf("src/test/features/capsule_pr2_coverage.feature"),
+            tags = listOf("@pr2-cov"),
+            runnerClass = "capsule.scenarios.CapsulePr2CoverageCucumberRunner",
+            timeoutMinutes = 10,
         ),
     )
 }

@@ -1,7 +1,8 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 129
+:session: 132
 :borough: Détroit
-:session_precedente: 128 — CAP-PREVIEW 3/3 US (EPIC TERMINÉ)
+:session_precedente: 131 — Merge PR #2 — EPIC CAP-MAINT-PIPELINE TERMINÉ
+_note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc` (S-132).
 
 == Contexte Hérité
 
@@ -18,21 +19,12 @@ Session 128 — **CAP-PREVIEW TERMINÉ 3/3 US** :
 - Domaine `capsule.preview` (14e) clos.
 - Rapport : `.agents/sessions/128-cap-preview-dry-run.adoc`
 
-== Mission Session 129
+== Mission Session 129 (clôturée) — CAP-CHAPITRE ✅ S-129
 
-=== CAP-CHAPITRE — Intro/outro + chapter markers (5 US ~10 pts)
-
-. `CardRenderer` PNG — intro/outro card rendering from deck metadata.
-. `ChapterMarkers` — Matroska/WebM chapter tags from `SlideSegment.titles`.
-. Tâche `generateCapsuleChapters` dependsOn `generateCapsuleVideo`.
-. DSL `chapters { enabled, introText, outroText, outputDir }`.
-. Cucumber BDD 2-3 scénarios `@chapters` + runner dédié 19e.
-
-Baby-step TDD/BDD : domaines `capsule.cards` (15e) + `capsule.chapters` (16e).
-
-=== Reste P2 (après CAP-CHAPITRE)
-
-* CAP-CR3-4 — Convention Gradle `resolveScriptDir/resolveDeckDir`. ~2 pts.
+Voir `.agents/PROMPT_REPRISE.adoc` (S-132) pour l'état courant. Résumé :
+S-129 CAP-CHAPITRE TERMINÉ, S-130 CAP-CR3-4 TERMINÉ, S-131 Merge PR #2
+(CAP-MAINT-PIPELINE TERMINÉ), S-132 CAP-ANIM-TEST + CAP-PR2-COV TERMINÉS
+(borough DORMANT — tous EPICs terminés).
 
 == Points d'attention
 

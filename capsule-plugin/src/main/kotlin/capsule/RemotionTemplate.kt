@@ -66,27 +66,22 @@ object RemotionTemplate {
 
         logger.lifecycle("  Remotion: installing the composition dependencies (first run)")
         val logFile = File(projectDir, "npm-install.log")
-        val exitCode = try {
-            ProcessBuilder("npm", "install", "--no-audit", "--no-fund", "--loglevel", "error")
-                .directory(projectDir)
-                .redirectErrorStream(true)
-                .redirectOutput(logFile)
-                .start()
-                .waitFor()
+        val result = try {
+            ProcessRunner.run(
+                listOf("npm", "install", "--no-audit", "--no-fund", "--loglevel", "error"),
+                workingDir = projectDir,
+                logFile = logFile,
+            )
         } catch (e: Exception) {
             throw CapturingException(
                 "Remotion needs npm to install its dependencies, and npm could not be run " +
                     "(${e.message}). Install Node/npm, or provide ${nodeModules.absolutePath} yourself."
             )
         }
-        if (exitCode != 0) {
-            val tail = logFile.takeIf { it.exists() }
-                ?.readLines()
-                ?.takeLast(15)
-                ?.joinToString(System.lineSeparator())
-                .orEmpty()
+        if (!result.isSuccess) {
+            val tail = result.tail(15)
             throw CapturingException(
-                "Remotion dependency install failed (npm exit $exitCode): $tail"
+                "Remotion dependency install failed (npm exit ${result.exitCode}): $tail"
             )
         }
         logFile.delete()

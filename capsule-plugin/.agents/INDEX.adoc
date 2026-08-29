@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
-_Derniere mise a jour_ : 2026-08-29 (S-131 Merge PR #2 — maintenance pipeline + anim)
-_Session terminee_ : 131 — **Merge PR #2** — débloque pipeline processus + rendus Manim + sync image/voix Remotion. 1133 unit VERT (+62 net), 75 functional VERT. EPIC CAP-MAINT-PIPELINE TERMINÉ.
-_Prochaine session_ : 132 — **CAP-ANIM-TEST + CAP-PR2-COV** (couverture tests PR #2) — couverture tests timing JS Remotion (6 US ~10 pts).
-_Session en cours_ : — (S-131 terminée).
+ _Derniere mise a jour_ : 2026-08-29 (S-132 CAP-ANIM-TEST + CAP-PR2-COV — couverture tests PR #2)
+_Session terminee_ : 132 — **CAP-ANIM-TEST + CAP-PR2-COV TERMINÉS** — `RemotionTiming` (port pur `Capsule.jsx`) + guard/délégation migration PR #2. 1172 unit VERT (+39 net), 75 functional VERT, 21 cucumber dédiés GREEN.
+_Prochaine session_ : 133 — **DORMANT** (tous EPICs terminés) — maintenance / nouveau cadrage au besoin.
+_Session en cours_ : — (S-132 terminée).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -60,8 +60,8 @@ _Sessions 000-117 archivées_ : rapports dans `.agents/sessions/`, résumé dans
 
 | CAP-PODCAST | Extraction audio-only — `PodcastConcatenator` FFmpeg concat MP3 slides, tâche `generateCapsulePodcast`. Domaine `capsule.podcast` 13ème. 3 US ~4 pts | ✅ TERMINÉ (S-127) | P2
 | CAP-PREVIEW | Mode dry-run — `capture.previewOnly` 4 sources, screenshot path s'arrête après PNG. 3 US ~4 pts | ✅ TERMINÉ (S-128) | P2
-| CAP-CHAPITRE | Intro/outro + chapter markers — `CardRenderer` PNG, `ChapterMarkers` Matroska tags. 5 US ~10 pts | ⬜ TODO | P2
-| CAP-CR3-4 | Convention Gradle `resolveScriptDir/resolveDeckDir` configurable. ~2 pts | ⬜ TODO | P2
+| CAP-CHAPITRE | Intro/outro + chapter markers — `CardRenderer` PNG, `ChapterMarkers` Matroska tags. 5 US ~10 pts | ✅ TERMINÉ (S-129) | P2
+| CAP-CR3-4 | Convention Gradle `resolveScriptDir/resolveDeckDir` configurable. ~2 pts | ✅ TERMINÉ (S-130) | P2
 
 | CAP-MODEL | Unification modèle capsule.feed — 7 US, 361 unit VERT | ✅ TERMINÉ (S-069) | P0
 | CAP-29 | Pipeline multi-langue 10 langues — 7 US, 464 unit + 25 functional + 6 cucumber | ✅ TERMINÉ (S-082) | P0
@@ -77,6 +77,8 @@ _Sessions 000-117 archivées_ : rapports dans `.agents/sessions/`, résumé dans
 | CAP-PROVENANCE | Audit context anti-hallucination — 3 US, 834 unit + 62 functional | ✅ TERMINÉ (S-108) | P1
 | CAP-TRANSCRIPT | Reverse pipeline article AsciiDoc — 6 US, 917 unit + 67 functional | ✅ TERMINÉ (S-119) | P2
 | CAP-ANIM | Remotion capture strategy — 3 US, 977 unit + 69 functional | ✅ TERMINÉ (S-122) | P2
+| CAP-ANIM-TEST | Couverture timing JS Remotion (`Capsule.jsx`) — 6 US, 1172 unit (+39) + 3 cucumber | ✅ TERMINÉ (S-132) | P2
+| CAP-PR2-COV | Couverture 14 appelants Kotlin migrés PR #2 (ProcessRunner/FileReplace) — 5 US, +14 tests + 2 cucumber | ✅ TERMINÉ (S-132) | P2
 | CAP-28 | Coverage gaps Kover — 4 US, 986 unit | ✅ TERMINÉ (S-124) | P2
 | CAP-27 | VTT burn-in — 3 US, 866 unit | ✅ TERMINÉ (S-113) | P2
 | CAP-26 | Style burn-in configurable | ✅ TERMINÉ (S-039) | P1
@@ -108,8 +110,8 @@ _Details EPICs terminés_ : rapports dans `.agents/sessions/`, détails archivé
 | `doc/CAPSULE_ARCHITECTURE.adoc` | Cadrage architecture pipeline capsule | LAZY
 |===
 
-_Total_ : 26 EPICs terminés + 1 EPIC TODO. _Baseline courante_ :
-1133 unit VERT, 75 functional VERT, 19 cucumber dédiés GREEN.
+_Total_ : 28 EPICs terminés (0 TODO). _Baseline courante_ :
+1172 unit VERT, 75 functional VERT, 21 cucumber dédiés GREEN.
 
 _Décision architecture_ : Docker FFmpeg reporté MVP1 (fausse bonne idée
 pour MVP0 — gain fonctionnel nul, complexité ajoutée). FFmpeg reste local

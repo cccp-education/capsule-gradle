@@ -51,20 +51,20 @@
 | ✅ TERMINÉ (S-130) — US-0 ✅ S-130, US-1 ✅ S-130, US-2 ✅ S-130
 
 | CAP-ANIM-TEST
-| **Couverture automatisée du timing Remotion (`Capsule.jsx`)** — extraire la
-  logique pure (beats `BEATS_SECS`, `data-at`, `playbackRate` borné, crossfade
-  recouvrement) + regex `applyCues` et la tester en DDD/TDD/BDD. PR #2 a livré
-  la sync image/voix SANS test JS (risque régression silencieux). 6 US ~10 pts.
+| **Couverture automatisée du timing Remotion (`Capsule.jsx`)** — `RemotionTiming`
+  (port pur Kotlin : `beatSeconds`, `applyCues`, `clipPlaybackRate`,
+  `contentAppear`, `backgroundAppear`, `sequenceDurationInFrames`,
+  `backgroundOpacityAt`). 25 unit + 3 intégration + 3 cucumber. 6 US ~10 pts.
 | P2
-| ⬜ TODO (S-132)
+| ✅ TERMINÉ (S-132) — US-0 ✅ S-132, US-1 ✅ S-132, US-2 ✅ S-132, US-3 ✅ S-132, US-4 ✅ S-132, US-5 ✅ S-132
 
 | CAP-PR2-COV
 | **Couverture des 14 appelants Kotlin migrés PR #2** — `ProcessBuilder.waitFor()`
-  → `ProcessRunner` + `renameTo()` → `FileReplace.moveOver`, sans test dédié.
-  Guard d'intégrité + tests argv (binaire factice) + délégation FileReplace.
-  5 US ~9 pts. *Complète CAP-ANIM-TEST pour couvrir la totalité du PR #2.*
+  → `ProcessRunner` + `renameTo()` → `FileReplace.moveOver`, désormais couverts
+  (guard + argv + délégation + cucumber). 5 US ~9 pts. PR #2 complètement
+  couvert avec CAP-ANIM-TEST.
 | P2
-| ⬜ TODO (S-132)
+| ✅ TERMINÉ (S-132) — US-0 ✅ S-132, US-1 ✅ S-132, US-2 ✅ S-132, US-3 ✅ S-132, US-4 ✅ S-132, US-5 ✅ S-132
 |===
 
 '''
@@ -109,7 +109,7 @@ _Merge PR #2 `lion92/fix/pipeline-processus-et-rendu-manim` (merge commit
 
 '''
 
-== EPIC CAP-ANIM-TEST (TODO) — couverture timing JS Remotion
+ == ✅ EPIC CAP-ANIM-TEST TERMINÉ (S-132) — couverture timing JS Remotion
 
 _PR #2 a livré la synchronisation image/voix dans `Capsule.jsx` SANS aucun
 test automatisé : beats `BEATS_SECS`, `data-at`, crossfade recouvrement
@@ -124,25 +124,25 @@ baby-step DDD/TDD/BDD (RED → GREEN → REFACTOR)._
 
 | US-0 | Cadrage — audit couverture `Capsule.jsx`, 12 décisions : extraire la
   logique pure en module testable (`RemotionTiming` object pur Kotlin OU JS
-  testé via node), strategy RED→GREEN. | ⬜ TODO | S-132
+  testé via node), strategy RED→GREEN. | ✅ TERMINÉ | S-132
 | US-1 | **Extraction beats** — `RemotionTiming.beatSeconds(blockClass)` +
   `applyCues(html)` pure (portage regex JS en Kotlin/JVM-testable). +unit
-  beats par défaut + override `data-at` + cas balise majuscule. | ⬜ TODO | S-132
+  beats par défaut + override `data-at` + cas balise majuscule. | ✅ TERMINÉ | S-132
 | US-2 | **playbackRate borné** — `RemotionTiming.clipPlaybackRate(clip,
-  slide)` pure (`Math.min`/`max` ±25 %/−20 %). +unit bornes + sortie de borne. | ⬜ TODO | S-132
+  slide)` pure (`Math.min`/`max` ±25 %/−20 %). +unit bornes + sortie de borne. | ✅ TERMINÉ | S-132
 | US-3 | **Crossfade recouvrement** — `RemotionTiming.contentAppear(frame,
   crossfade, gate)` pure (aucun trou noir, titre non superposé). +unit
-  transition 1→2. | ⬜ TODO | S-132
+  transition 1→2. | ✅ TERMINÉ | S-132
 | US-4 | **Intégration rendu** — test node/jsdom (ou JVM) de 2 diapos vérifiant
   : pas de frame < X % pixels contenu à la transition, schéma finit avec la
-  voix. Pattern mesure pixels PR #2. | ⬜ TODO | S-132
+  voix. Pattern mesure pixels PR #2. | ✅ TERMINÉ | S-132
 | US-5 | **BDD Cucumber** — `capsule_remotion_anim.feature` 3 scénarios
   `@remotion-anim` + runner dédié 20e `CucumberTaskSpec` + steps préfixés
-  "remotion anim" (bug S-088). | ⬜ TODO | S-132
+  "remotion anim" (bug S-088). | ✅ TERMINÉ | S-132
 |===
 
 '''
-== EPIC CAP-PR2-COV (TODO) — couverture des 14 appelants Kotlin migrés (PR #2)
+ == ✅ EPIC CAP-PR2-COV TERMINÉ (S-132) — couverture des 14 appelants Kotlin migrés (PR #2)
 
 _PR #2 a migré 14 appelants de `ProcessBuilder.waitFor()` vers `ProcessRunner`
 et de `renameTo()` vers `FileReplace.moveOver`, **sans test dédié par
@@ -159,12 +159,12 @@ Méthodologie baby-step DDD/TDD/BDD (RED → GREEN → REFACTOR)._
 | US-0 | **Cadrage** — audit des 14 appelants migrés + stratégie : (a) guard
   d'intégrité de migration projet, (b) tests argv avec binaire factice pour
   les appelants à effet ffmpeg, (c) tests de délégation `FileReplace` pour
-  les appelants fichier. 12 décisions. | ⬜ TODO | S-132
+  les appelants fichier. 12 décisions. | ✅ TERMINÉ | S-132
 | US-1 | **Guard d'intégrité migration** — `ProcessMigrationGuardTest` : scanne
   `src/main/kotlin` et échoue si `ProcessBuilder(` non délégué à
   `ProcessRunner` OU `.renameTo(` OU `.waitFor()` présent hors de
   `ProcessRunner`/`FileReplace` eux-mêmes. Verrouille le pattern
-  anti-interblocage 64 Kio. +1 test projet. | ⬜ TODO | S-132
+  anti-interblocage 64 Kio. +1 test projet. | ✅ TERMINÉ | S-132
 | US-2 | **Appelants ffmpeg (argv + stdout)** — binaire factice injecté via
   config test (pattern `ManimEngineTest`) pour : `AudioConversionUtil`,
   `ManimVideoMixer`, `MediaProbeUtil`, `SubtitleBurnInService`,
@@ -172,18 +172,18 @@ Méthodologie baby-step DDD/TDD/BDD (RED → GREEN → REFACTOR)._
   `PlaywrightManager`. Chaque test affirme : `ProcessRunner` invoqué (pas
   `ProcessBuilder` direct), argv exact (filtres loudnorm/concat/crossfade),
   stdout redirigé vers journal (pas perdu), code sortie propagé. +~8 unit.
-  | ⬜ TODO | S-132
+  | ✅ TERMINÉ | S-132
 | US-3 | **Appelants fichier (délégation FileReplace)** — `CapsuleBuildTask`,
   `CapsuleDistribTask`, `GenerateCapsuleChaptersTask`,
   `CollectCapsuleAugmentedContextTask`, `CapsuleVideoOutputRenamer`,
   `PodcastConcatenatorImpl` : test affirme `FileReplace.moveOver` appelé (pas
   `renameTo`), retour honnête géré (échec → exception, pas perte silencieuse),
-  cible écrasée proprement. +~6 unit. | ⬜ TODO | S-132
+  cible écrasée proprement. +~6 unit. | ✅ TERMINÉ | S-132
 | US-4 | **BDD Cucumber régression** — `capsule_pr2_coverage.feature` 2
   scénarios `@pr2-coverage` : (1) capsule rendue après migration (aucun
   interblocage tube 64 Kio sur sortie bavarde), (2) renommage sortie sans
   perte. Runner dédié 20e `CucumberTaskSpec` + steps préfixés "pr2 coverage"
-  (bug S-088). | ⬜ TODO | S-132
+  (bug S-088). | ✅ TERMINÉ | S-132
 |===
 
 _Appelants concernés (14)_ : `AudioConversionUtil`, `CapsuleBuildTask`,
@@ -244,44 +244,40 @@ Rapports par US dans `.agents/sessions/`._
 | CAP-PREVIEW | Mode dry-run previewOnly | 3 | ✅ TERMINÉ (S-128)
 | SLD-11 | Expulsion slider.capsule → capsule.feed | 6 | ✅ TERMINÉ (S-058)
 | CAP-MAINT-PIPELINE | Robustesse pipeline processus + rendus Manim + sync anim Remotion (PR #2) | 6 | ✅ TERMINÉ (S-131)
+| CAP-ANIM-TEST | Couverture timing JS Remotion (`Capsule.jsx`) — `RemotionTiming` | 6 | ✅ TERMINÉ (S-132)
+| CAP-PR2-COV | Couverture 14 appelants Kotlin migrés PR #2 (ProcessRunner/FileReplace) | 5 | ✅ TERMINÉ (S-132)
 | CAP-0→CAP-12 | Bootstrap → split CapsuleManager | — | ✅ TERMINÉ
 |===
 
-_Total_ : 28 EPICs terminés + 1 EPIC TODO. _Baseline courante_ :
-1133 unit VERT, 75 functional VERT, cucumber dédiés GREEN (19
+_Total_ : 30 EPICs terminés (0 TODO). _Baseline courante_ :
+1172 unit VERT, 75 functional VERT, cucumber dédiés GREEN (21
 `CucumberTaskSpec`).
 
 '''
 == Points d'attention
 
-* 1133 unit VERT (S-131 baseline PR #2, +62 net), 75 functional VERT, 19 cucumber dédiés GREEN
+* 1172 unit VERT (S-132 baseline, +39 net S-131→S-132), 75 functional VERT, 21 cucumber dédiés GREEN
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082) + steps
   préfixés par feature (bug S-088 glue `capsule.scenarios` partagée)
 * English only : code, Gherkin, commentaires
 * Économie d'encre = skip si artefact existe et valide (AGENT.adoc Loi)
-* `build.gradle.kts` — 18 `CucumberTaskSpec` actifs
+* `build.gradle.kts` — 21 `CucumberTaskSpec` actifs
 * Conventions 0.0.3 (mavenLocal), BOM 0.0.27, codebase 0.0.10, slider 0.0.18
 * 14 domaines DDD : feed, pipeline, ai, context, multilang, validation, audio,
   i18n, ci, transcript, remotion, podcast, support + preview. `capsule.preview` clos S-128.
 * `ProcessRunner` (nouveau S-131) remplace `ProcessBuilder.waitFor()` répandu
-  — anti-interblocage tube 64 Kio + délai de garde. 11 appelants migrés.
+  — anti-interblocage tube 64 Kio + délai de garde. 14 appelants migrés + couverts (S-132).
 * `FileReplace.moveOver` (nouveau S-131) = déplacement honnête (zéro perte
   silencieuse). Remplace tous les `renameTo` ignorés.
 * ⚠️ **TODO REVERT** : `codebase-gradle-plugin` épinglé 0.0.10 (lib 0.0.11) —
   workaround bug amont `Provider<OcrEngine>` Gradle 9.7.1. À remonter dès
   correctif amont publié.
-* ⚠️ **CAP-ANIM-TEST (TODO S-132)** : `Capsule.jsx` (timing Remotion) livré S-131
-  sans test automatisé. Couvrir en DDD/TDD/BDD (voir EPIC).
-* ⚠️ **CAP-PR2-COV (TODO S-132)** : les 14 appelants Kotlin migrés PR #2
-  (`ProcessBuilder`→`ProcessRunner`, `renameTo`→`FileReplace`) sans test
-  dédié. Guard d'intégrité + tests argv/délégation (voir EPIC). *Avec
-  CAP-ANIM-TEST, couvre la totalité du PR #2.*
 
 == Décisions d'architecture
 
 * *Docker FFmpeg reporté MVP1* — L'invocation FFmpeg reste locale
-  (`ProcessBuilder` direct via `ffmpegExecutablePath`) pour le MVP0.
+  (`ProcessRunner` wrapper `ProcessBuilder` via `ffmpegExecutablePath`) pour le MVP0.
   Le provisionnement Docker FFmpeg via KINSHASA (`container-provision-gradle`)
   est un candidat MVP1 (reproductibilité, CI/CD, isolation), mais c'est une
   fausse bonne idée pour MVP0 : ça ajoute une couche de complexité sans

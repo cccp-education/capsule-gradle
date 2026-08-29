@@ -23,6 +23,14 @@ import java.nio.file.StandardCopyOption
 object FileReplace {
 
     /**
+     * Test seam: when non-null, [moveOver] delegates to it instead of touching
+     * the filesystem. Lets caller tests assert delegation (a caller must call
+     * [moveOver], never `renameTo`) without performing a real replacement.
+     * Reset to null in test teardown.
+     */
+    internal var moveOverInterceptor: ((File, File) -> Boolean)? = null
+
+    /**
      * Met [source] à la place de [target].
      *
      * Tente d'abord le déplacement atomique, retombe sur un déplacement simple
@@ -32,6 +40,7 @@ object FileReplace {
      * @return vrai si [target] porte bien le contenu de [source] à la sortie.
      */
     fun moveOver(source: File, target: File): Boolean {
+        moveOverInterceptor?.let { intercept -> return intercept(source, target) }
         if (!source.isFile) return false
         return try {
             try {

@@ -43,8 +43,33 @@ par défaut (gate Playwright). Zéro régression, zéro secret.
 *Totaux PR #2* : 1133 unit VERT (+62 net S-130→S-131), 75 functional VERT,
 19 `CucumberTaskSpec`. Zéro régression, zéro secret.
 
-_Baseline courante (S-131)_ : 1133 unit VERT, 75 functional VERT, 19 cucumber
+ _Baseline courante (S-131)_ : 1133 unit VERT, 75 functional VERT, 19 cucumber
 dédiés GREEN. **Trou : `Capsule.jsx` non testé — EPIC CAP-ANIM-TEST (TODO S-132).**
+
+== Couverture — 29 août 2026 (après session 132, CAP-ANIM-TEST + CAP-PR2-COV)
+
+.Modifications session 132 — couverture PR #2 (tous EPICs terminés)
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/anim/RemotionTiming.kt` (nouveau) | Port pur Kotlin de la logique timing `Capsule.jsx` (`beatSeconds`, `applyCues`, `clipPlaybackRate`, `contentAppear`, `backgroundAppear`, `sequenceDurationInFrames`, `backgroundOpacityAt` + constantes). | +22 `RemotionTimingTest` + 3 `RemotionTimingIntegrationTest`
+| `capsule/ci/ProcessMigrationGuardTest.kt` (nouveau) | Guard : scan `src/main/kotlin`, échoue si `ProcessBuilder(`/`.renameTo(`/`.waitFor()` hors `ProcessRunner`/`FileReplace`. | +1
+| `capsule/ProcessRunnerCallerArgvTest.kt` (nouveau) | argv+filtres + propagation échec pour 8 appelants via `commandInterceptor`. | +9
+| `capsule/FileReplaceDelegationTest.kt` (nouveau) | Délégation `FileReplace.moveOverInterceptor` (seam + `CapsuleVideoOutputRenamer`). | +4
+| `capsule/RemotionCapture.kt` (modifié) | Migration `ProcessBuilder` → `ProcessRunner` (`isAvailable` probe + `capture` run). | 0 (couvert par argv test)
+| `capsule/RemotionTemplate.kt` (modifié) | Migration `ProcessBuilder` → `ProcessRunner` (`ensureDependencies` npm install). | 0 (couvert par argv test)
+| `capsule/ProcessRunner.kt` (modifié) | `commandInterceptor` seam + `realRun` extrait. | 0
+| `capsule/FileReplace.kt` (modifié) | `moveOverInterceptor` seam. | 0
+| `capsule_remotion_anim.feature` + runner 20e (nouveau) | Cucumber 3 scénarios `@remotion-anim`. | 3 scénarios PASSED
+| `capsule_pr2_coverage.feature` + runner 21e (nouveau) | Cucumber 2 scénarios `@pr2-cov` (guard + rename). | 2 scénarios PASSED
+|===
+
+*Totaux S-132* : 1172 unit VERT (+39 net S-131→S-132), 75 functional VERT,
+21 `CucumberTaskSpec`. **Trou `Capsule.jsx` comblé** (logique portée en
+`RemotionTiming`, 25 unit + 3 intégration). Migration PR #2 désormais couverte
+(guard + argv + délégation + cucumber). Zéro régression, zéro secret.
+
+_Baseline courante (S-132)_ : 1172 unit VERT, 75 functional VERT, 21 cucumber
+dédiés GREEN. Borough Détroit = **tous EPICs terminés** (DORMANT).
 
 _Baseline courante (S-126)_ : 1014 unit VERT (+28 net S-126 CAP-PODCAST
 US-1 + 40 net S-122 CAP-ANIM + 9 net S-124 CAP-28 + 28 net S-126), 69

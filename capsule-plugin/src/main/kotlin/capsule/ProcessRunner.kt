@@ -93,6 +93,26 @@ object ProcessRunner {
         logFile: File? = null,
         timeoutMinutes: Long = DEFAULT_TIMEOUT_MINUTES,
     ): Result {
+        commandInterceptor?.let { intercept ->
+            return intercept(command, workingDir, stdin, logFile, timeoutMinutes)
+        }
+        return realRun(command, workingDir, stdin, logFile, timeoutMinutes)
+    }
+
+    /**
+     * Test seam: when non-null, [run] delegates to it instead of launching a
+     * real process. Lets caller tests assert the exact argv and capture stdout
+     * without spawning ffmpeg/node. Reset to null in test teardown.
+     */
+    internal var commandInterceptor: ((List<String>, File?, String?, File?, Long) -> Result)? = null
+
+    private fun realRun(
+        command: List<String>,
+        workingDir: File?,
+        stdin: String?,
+        logFile: File?,
+        timeoutMinutes: Long,
+    ): Result {
         val ownLog = logFile == null
         val log = logFile ?: File.createTempFile("capsule-proc", ".log")
         log.parentFile?.mkdirs()

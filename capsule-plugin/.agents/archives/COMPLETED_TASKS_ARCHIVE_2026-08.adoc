@@ -1373,3 +1373,35 @@ Baby-step TDD strict RED → GREEN → REFACTOR. 1014 unit VERT 0 FAIL
 4 fichiers prod créés + 5 modifiés + 2 test créés + 1 modifié.
 
 Rapport : `.agents/sessions/126-cap-podcast-us1-config-concatenator.adoc`.
+
+---
+
+== Session 132 (2026-08-29) — CAP-ANIM-TEST + CAP-PR2-COV TERMINÉS
+
+EPIC : CAP-ANIM-TEST — Couverture timing JS Remotion (`Capsule.jsx`)
+Statut : ✅ TERMINÉ 6/6 US (US-0 ✅ S-132, US-1 ✅ S-132, US-2 ✅ S-132, US-3 ✅ S-132, US-4 ✅ S-132, US-5 ✅ S-132, US-6 ✅ publishToMavenLocal)
+
+Portage de la logique de timing `Capsule.jsx` en `capsule.anim.RemotionTiming`
+(object pur Kotlin) : `beatSeconds`, `applyCues`, `clipPlaybackRate`,
+`contentAppear`, `backgroundAppear`, `sequenceDurationInFrames`,
+`backgroundOpacityAt` + constantes (REVEAL_SECS, CROSSFADE_FRAMES,
+CONTENT_GATE, MAX_SPEEDUP, MIN_SLOWDOWN, DEFAULT_BEAT_SECS, BEATS_SECS,
+CARRIED_BY_TRANSITION, LAST_BEAT_SECS). `RemotionTimingTest` (22) +
+`RemotionTimingIntegrationTest` (3). Cucumber `capsule_remotion_anim.feature`
+3 scénarios `@remotion-anim` + runner dédié 20e.
+
+EPIC : CAP-PR2-COV — Couverture 14 appelants Kotlin migrés PR #2
+Statut : ✅ TERMINÉ 5/5 US (US-0 ✅ S-132, US-1 ✅ S-132, US-2 ✅ S-132, US-3 ✅ S-132, US-4 ✅ S-132, US-5 ✅ publishToMavenLocal)
+
+`ProcessMigrationGuardTest` (scan `ProcessBuilder`/`renameTo`/`waitFor`
+interdits hors `ProcessRunner`/`FileReplace`) + `ProcessRunnerCallerArgvTest`
+(9 — argv+filtres+propagation via `commandInterceptor`) +
+`FileReplaceDelegationTest` (4 — `moveOverInterceptor`) + Cucumber
+`capsule_pr2_coverage.feature` 2 scénarios `@pr2-cov` + runner dédié 21e.
+Migration corrective découverte : `RemotionCapture.kt`/`RemotionTemplate.kt`
+utilisaient encore `ProcessBuilder` → migrés vers `ProcessRunner`.
+
+Baby-step TDD/BDD strict. 1172 unit VERT (+39 net S-131→S-132), 75 functional,
+21 cucumber dédiés GREEN. Zéro régression, zéro secret, zéro bump BOM.
+
+Rapport : `.agents/sessions/132-capsule-anim-test-pr2-cov.adoc`.

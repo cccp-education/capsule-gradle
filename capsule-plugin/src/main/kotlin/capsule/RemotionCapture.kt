@@ -48,18 +48,9 @@ class RemotionCaptureImpl(
      * materialised — a missing `node_modules` is reported by the render itself
      * with a far more actionable message than a silent NoOp fallback.
      */
-    override fun isAvailable(): Boolean = availabilityProbe ?: (
-        try {
-            val process = ProcessBuilder(nodeExecutablePath, "--version")
-                .redirectErrorStream(true)
-                .redirectOutput(ProcessBuilder.Redirect.DISCARD)
-                .start()
-            process.waitFor() == 0
-        } catch (e: Exception) {
-            logger.info("Remotion capture unavailable: {}", e.message)
-            false
-        }
-        ).also { availabilityProbe = it }
+    override fun isAvailable(): Boolean = availabilityProbe
+        ?: ProcessRunner.probe(nodeExecutablePath, "--version")
+            .also { availabilityProbe = it }
 
     override fun capture(
         deckHtmlPath: String,
@@ -114,20 +105,10 @@ class RemotionCaptureImpl(
 
         val argv = RemotionPlanner.renderArgs(plan, projectDir, nodeExecutablePath, effectiveConcurrency, CODEC)
         val logFile = File(outputDir, "remotion-render.log")
-        val exitCode = ProcessBuilder(argv)
-            .directory(projectDir)
-            .redirectErrorStream(true)
-            .redirectOutput(logFile)
-            .start()
-            .waitFor()
-
-        if (exitCode != 0) {
-            val tail = logFile.takeIf { it.exists() }
-                ?.readLines()
-                ?.takeLast(20)
-                ?.joinToString(System.lineSeparator())
-                .orEmpty()
-            throw CapturingException("Remotion render failed (exit $exitCode): $tail")
+        val result = ProcessRunner.run(argv, workingDir = projectDir, logFile = logFile)
+        if (!result.isSuccess) {
+            val tail = result.tail(20)
+            throw CapturingException("Remotion render failed (exit ${result.exitCode}): $tail")
         }
         if (!plan.finalWebm.exists() || plan.finalWebm.length() == 0L) {
             throw CapturingException("Remotion render reported success but produced no video")
