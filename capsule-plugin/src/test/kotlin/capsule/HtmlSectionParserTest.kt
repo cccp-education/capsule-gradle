@@ -1,6 +1,8 @@
 package capsule
 
 import kotlin.test.Test
+import kotlin.test.assertNull
+import kotlin.test.assertNotNull
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -190,5 +192,75 @@ class HtmlSectionParserTest {
         assertEquals(2, tags.size)
         assertTrue(tags[0].value.contains("data-capsule-slide=\"1\""))
         assertTrue(tags[0].value.contains("class=\"intro\""))
+    }
+
+    // ─── slidesMarkup — régression « div imbriqué » ──────────────
+
+    /**
+     * Le deck réel : chaque diapo porte un `<div>` (colonnes, encadré).
+     * La forme paresseuse `<div class="slides">(.*?)</div>` s'arrêtait au
+     * premier `</div>` de la première diapo — une seule section survivait au
+     * comptage, et l'extraction d'une diapo par son index rendait le deck
+     * entier au lieu de la diapo demandée.
+     */
+    @Test
+    fun `slidesMarkup keeps every slide when slides contain nested divs`() {
+        val deck = """
+            <html><head><title>T</title></head><body>
+            <div class="reveal">
+            <div class="slides">
+            <section><div class="colonne"><h2>Un</h2></div></section>
+            <section><div class="colonne"><h2>Deux</h2></div></section>
+            <section><div class="colonne"><h2>Trois</h2></div></section>
+            </div>
+            </div>
+            </body></html>
+        """.trimIndent()
+
+        val markup = HtmlSectionParser.slidesMarkup(deck)
+
+        assertNotNull(markup)
+        assertEquals(3, HtmlSectionParser.extractTopLevelSections(markup).size)
+    }
+
+    @Test
+    fun `slidesMarkup returns null when the deck has no slides container`() {
+        assertNull(HtmlSectionParser.slidesMarkup("<html><body><p>rien</p></body></html>"))
+    }
+
+    @Test
+    fun `slidesMarkup extracts the container content of a flat deck`() {
+        val deck = """<div class="slides"><section><h2>Une</h2></section></div>"""
+        assertEquals("<section><h2>Une</h2></section>", HtmlSectionParser.slidesMarkup(deck))
+    }
+
+    // ─── headMarkup — brique partagée par trois appelants ───────
+
+    /**
+     * `headMarkup` est appelé par RemotionCaptureImpl ET par
+     * CapsuleVideoTask.createSingleSlideHtml : c'est ce qui garde à chaque diapo
+     * extraite sa feuille de style. Les trois appelants en avaient chacun leur
+     * copie, dont deux recompilaient l'expression à chaque diapo.
+     */
+    @Test
+    fun `headMarkup returns the whole head block`() {
+        val deck = "<html><head><title>T</title><style>body{color:red}</style></head><body>x</body></html>"
+        val head = HtmlSectionParser.headMarkup(deck)
+        assertTrue(head.startsWith("<head>"))
+        assertTrue(head.endsWith("</head>"))
+        assertTrue(head.contains("color:red"))
+        assertTrue(!head.contains("<body>"), "le corps ne doit pas suivre : $head")
+    }
+
+    @Test
+    fun `headMarkup is empty when the deck has no head`() {
+        assertEquals("", HtmlSectionParser.headMarkup("<section>sans tête</section>"))
+    }
+
+    @Test
+    fun `headMarkup stops at the first head, not at a later one`() {
+        val deck = "<head><style>a</style></head><body><head>b</head></body>"
+        assertTrue(HtmlSectionParser.headMarkup(deck).contains("<style>a</style>"))
+        assertTrue(!HtmlSectionParser.headMarkup(deck).contains("b"))
     }
 }

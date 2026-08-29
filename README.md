@@ -191,6 +191,39 @@ capsule {
 }
 ```
 
+### Slide rhythm (Remotion capture)
+
+With `captureStrategy = REMOTION`, the deck is animated rather than filmed: each
+block of a slide lands on a reading rhythm instead of the whole slide appearing
+at once. The default beats, in seconds from the start of the slide:
+
+| Block         | Lands at |
+|---------------|----------|
+| `.kicker`     | 0.0 s    |
+| `h1` / `h2`   | 0.15 s   |
+| `.rule`       | 0.5 s    |
+| `.lede`       | 1.0 s    |
+| `.stat`       | 4.5 s    |
+| `.statlabel`  | 5.0 s    |
+
+`.brand`, `.num` and `.grid` are chrome: they are present from the first frame
+and never re-animate.
+
+Any block can set its own beat with `data-at`, in seconds — use it when you know
+where the sentence falls in the narration:
+
+```html
+<p class="stat" data-at="8.5">542 076 km</p>
+```
+
+A slide shorter than the last beat compresses the whole rhythm rather than never
+showing its final blocks.
+
+Manim clips named by `data-manim` are fitted to the slide: mildly sped up when
+the clip overruns the narration (so the animation is never truncated), mildly
+stretched when it falls short. Beyond ±25 % / −20 % the correction would be
+visible, so the clip plays at its own speed and holds its last frame.
+
 ### Multi-source configuration
 
 Configuration is resolved from 4 sources (priority: CLI > YAML > gradle.properties > ENV):
@@ -205,7 +238,7 @@ Configuration is resolved from 4 sources (priority: CLI > YAML > gradle.properti
 - **Java** 25+ (Kotlin 2.4.10 toolchain)
 - **Gradle** 9.6.1+
 - **Piper** (TTS, local offline) — default engine
-- **espeak** (TTS fallback)
+- **espeak** (TTS fallback) — `espeak-ng` is picked up automatically when `espeak` itself is absent, as on current Debian/Ubuntu
 - **Chromium** (auto-downloaded by Playwright on first run)
 - **FFmpeg** (for `deployCapsule` 9:16 recrop and subtitle burn-in)
 - **Manim** (optional, for mathematical animation slides)

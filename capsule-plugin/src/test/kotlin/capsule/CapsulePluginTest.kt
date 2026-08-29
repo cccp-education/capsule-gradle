@@ -1315,6 +1315,29 @@ class AudioQualityConstraintTest {
         byteArrayOf(0xFF.toByte(), 0xFA.toByte())
     )
 
+    /**
+     * Debian et Ubuntu ne livrent plus `espeak` : le paquet installé est
+     * `espeak-ng`, dont les options sont les mêmes. Le repli n'existe QUE pour
+     * le nom par défaut — un chemin explicite doit être respecté à la lettre.
+     *
+     * Sans cette borne, un utilisateur qui désigne un binaire précis se
+     * retrouverait avec un autre, sans un mot dans le journal : exactement le
+     * genre de substitution silencieuse qui a déjà coûté une version publiée.
+     */
+    @Test
+    fun `an explicit espeak path never falls back to espeak-ng`() {
+        val engine = EspeakTtsEngine(executablePath = "/nonexistent/path/mon-espeak")
+        assertEquals(false, engine.isAvailable())
+
+        val failure = assertFailsWith<TtsException> {
+            engine.synthesize("bonjour", File.createTempFile("espeak-borne", ".mp3").apply { deleteOnExit() })
+        }
+        assertTrue(
+            failure.message!!.contains("/nonexistent/path/mon-espeak"),
+            "le diagnostic doit nommer le chemin demandé : ${failure.message}"
+        )
+    }
+
     @Test
     fun `real TTS engine must produce binary audio larger than placeholder`() {
         val espeak = EspeakTtsEngine()
@@ -1820,6 +1843,37 @@ class CreateSingleSlideHtmlTest {
             result.contains("display:block!important"),
             "The extracted slide must be forced visible whatever the deck CSS does: $result"
         )
+    }
+
+    /**
+     * Régression : la diapo réelle contient un `<div>`.
+     *
+     * L'extraction lisait le conteneur avec `<div class="slides">(.*?)</div>`,
+     * paresseux, qui s'arrête au premier `</div>` — celui de la première diapo.
+     * Une seule section était comptée : demander la deuxième tombait hors
+     * bornes et rendait le deck entier, si bien que la capture parallèle
+     * filmait tout le deck à la place de la diapo voulue, sans une ligne de
+     * journal.
+     */
+    @Test
+    fun `createSingleSlideHtml isolates a slide even when slides contain divs`() {
+        val deckWithDivs = """
+<html><head><style>body{margin:0}</style></head><body>
+<div class="reveal">
+  <div class="slides">
+    <section data-capsule-slide="1"><div class="colonne"><h2>Intro</h2></div></section>
+    <section data-capsule-slide="2"><div class="colonne"><h2>Topic</h2></div></section>
+    <section data-capsule-slide="3"><div class="colonne"><h2>End</h2></div></section>
+  </div>
+</div>
+</body></html>
+        """.trimIndent()
+
+        val result = CapsuleVideoTask.createSingleSlideHtml(deckWithDivs, 1)
+
+        assertTrue(result.contains("Topic"), "La diapo demandée doit être là : $result")
+        assertTrue(!result.contains("Intro"), "La diapo 1 ne doit pas suivre : $result")
+        assertTrue(!result.contains("End"), "La diapo 3 ne doit pas suivre : $result")
     }
 
     @Test
