@@ -1,6 +1,6 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
-:date: 2026-08-25
-:session: 121 Intégration PR #1 + fix ScreenshotCaptureImpl + gate Playwright
+:date: 2026-08-29
+:session: 131 Merge PR #2 (lion92) — maintenance pipeline + sync anim Remotion
 :rotation: 2026-08-25 (S-127) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
 
 == Couverture — 25 août 2026 (après session 121)
@@ -24,6 +24,27 @@ fix build/i18n/capture/TTS, feat CAP-ANIM (Remotion).
 sources, 930 main + 7 guard), 67 functional VERT (1 skipped Playwright par
 défaut, 66 actifs), cucumber dédiés GREEN. `cucumberTestIntegration` skippé
 par défaut (gate Playwright). Zéro régression, zéro secret.
+
+== Couverture — 29 août 2026 (après session 131, merge PR #2)
+
+.Modifications session 131 — Merge PR #2 (lion92, 3 commits)
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/ProcessRunner.kt` (nouveau) | Anti-interblocage tube 64 Kio + délai de garde + `Result`. Remplace `ProcessBuilder.waitFor()` répandu (11 appelants). | +11 `ProcessRunnerTest`
+| `capsule/FileReplace.kt` (nouveau) | `moveOver` déplacement honnête (zéro perte silencieuse). Remplace `renameTo` ignorés. | +5 `FileReplaceTest`
+| `capsule/ManimEngine.kt` (modifié) | `--media_dir` + CWD + recherche MP4 par résolution. Sondes mémorisées. | +6 `ManimEngineTest` (faux binaire manim)
+| `capsule/TtsManager.kt` (modifié) | espeak-ng auto (borné nom défaut). | +1 `CapsulePluginTest`
+| `capsule/HtmlSectionParser.kt` (modifié) | `slidesMarkup`/`headMarkup` greedy partagés. | +6 `HtmlSectionParserTest`
+| `capsule/RemotionPlanner.kt` (modifié) | `ManimAsset` + `manimDurationInFrames` propagé. | +3 `RemotionPlannerTest`
+| `capsule/CapsuleVideoTask.kt` (modifié) | `createSingleSlideHtml`/`injectAudio` greedy + lecture fichier unique. | +1 `CapsulePluginTest`
+| `capsule/remotion/src/Capsule.jsx` (modifié) | Sync image/voix (beats secondes, crossfade, playbackRate borné, masque 4 bords). | **0 — voir EPIC CAP-ANIM-TEST**
+|===
+
+*Totaux PR #2* : 1133 unit VERT (+62 net S-130→S-131), 75 functional VERT,
+19 `CucumberTaskSpec`. Zéro régression, zéro secret.
+
+_Baseline courante (S-131)_ : 1133 unit VERT, 75 functional VERT, 19 cucumber
+dédiés GREEN. **Trou : `Capsule.jsx` non testé — EPIC CAP-ANIM-TEST (TODO S-132).**
 
 _Baseline courante (S-126)_ : 1014 unit VERT (+28 net S-126 CAP-PODCAST
 US-1 + 40 net S-122 CAP-ANIM + 9 net S-124 CAP-28 + 28 net S-126), 69

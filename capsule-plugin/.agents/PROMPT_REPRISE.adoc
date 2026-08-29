@@ -1,7 +1,7 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 125
+:session: 131
 :borough: Détroit
-:session_precedente: 124 — EPIC CAP-28 TERMINÉ 4/4 US (coverage gaps)
+:session_precedente: 130 — EPIC CAP-CR3-4 TERMINÉ 3/3 US (coverage gaps)
 
 == Contexte Hérité
 
@@ -16,20 +16,26 @@ ffmpeg absent, close resets probe). Baby-step TDD strict RED → GREEN.
 couverture. Découverte : `LanguageCatalog` N0 ne contient pas "de" (10 langues :
 en/zh/hi/es/fr/ar/bn/pt/ru/ur). EPIC CAP-28 clos.
 
-== Mission Session 125
+== Mission Session 131 (clôturée) — Prochaine : S-132
 
-Maintenance P2 — EPICs restants (par priorité) :
+S-131 = **Merge PR #2 (lion92)** — maintenance pipeline + enrichissement
+animation Remotion. EPIC CAP-MAINT-PIPELINE TERMINÉ 6/6 US, 1133 unit VERT
+(+62 net). Gouvernance synchronisée (BACKLOG/INDEX/SESSIONS_HISTORY/
+TEST_COVERAGE/PROMPT_REPRISE).
 
-. **CAP-CR3-4** — Convention Gradle `resolveScriptDir/resolveDeckDir`
-  (`CapsuleManager.kt:234-254` navigue en dur vers
-  `rootProject.projectDir.parentFile/slider-plugin/...`). Remplacer par
-  convention configurable + validation. 🟡 P2, ⬜ TODO.
-. **CAP-CHAPITRE** — Intro/outro + chapter markers depuis métadonnées SPD.
-  5 US ~10 pts. 🟡 P2, ⬜ TODO.
-. **CAP-PODCAST** — Extraction audio-only (mode podcast). 3 US ~4 pts.
-  🟡 P2, ⬜ TODO.
-. **CAP-PREVIEW** — Aperçu rapide (previewOnly flag). 3 US ~4 pts.
-  🟡 P2, ⬜ TODO.
+== Mission Session 132 — EPIC CAP-ANIM-TEST (TODO)
+
+Couverture automatisée de la logique de timing `Capsule.jsx` livrée S-131 sans
+test JS. Baby-step DDD/TDD/BDD (RED → GREEN → REFACTOR) :
+
+. **US-0 Cadrage** — audit couverture `Capsule.jsx`, décisions extraction
+  logique pure (`RemotionTiming` Kotlin OU JS testé node).
+. **US-1 Extraction beats** — `beatSeconds` + `applyCues` purs, +unit.
+. **US-2 playbackRate borné** — `clipPlaybackRate`, +unit bornes.
+. **US-3 Crossfade recouvrement** — `contentAppear`, +unit transition.
+. **US-4 Intégration rendu** — test node/jsdom 2 diapos (pixels transition).
+. **US-5 BDD Cucumber** — `capsule_remotion_anim.feature` + runner dédié
+  20e + steps préfixés "remotion anim".
 
 == Méthodologie
 
@@ -65,4 +71,4 @@ Pas de subagent, pas de parallélisation.
   `capsule.subtitles`, `capsule.manim`, `capsule.config`, `capsule.multilang`,
   `capsule.ai`, `capsule.context`, `capsule.pipeline`, `capsule.i18n`,
   `capsule.validation`, `capsule.audio`, `capsule.transcript`, `capsule.remotion`.
-* Baseline : 986 unit VERT, 69 functional VERT, cucumber dédiés GREEN.
+* Baseline : 1133 unit VERT, 75 functional VERT, cucumber dédiés GREEN.

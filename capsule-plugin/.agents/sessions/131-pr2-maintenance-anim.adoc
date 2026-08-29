@@ -1,0 +1,50 @@
+= Session 131 — Merge PR #2 (lion92) — maintenance pipeline + anim Remotion
+
+:borough: Détroit (capsule-gradle)
+:date: 2026-08-29
+:type: merge + tdd + bdd + cloture
+:score: 9/10
+
+== Objectif
+
+Intégrer la PR #2 `lion92/fix/pipeline-processus-et-rendu-manim` (3 commits :
+`fe8e1d9` fix pipeline, `bdd100d` feat anim, `e2e13b1` test espeak-ng/head).
+La PR débloque un build figeable, des rendus Manim cassés, et synchronise
+l'image sur la voix dans la capture Remotion — le tout sans régression de
+couverture (1133 tests, 0 échec).
+
+== Constats (revue code)
+
+* Interblocage tube 64 Kio : motif `ProcessBuilder(...).redirectErrorStream(true)
+  .start().waitFor()` répandu sur 11 appelants. `ProcessRunner` (nouveau)
+  redirige la sortie fusionnée vers un journal + délai de garde.
+* Perte silencieuse : `renameTo` ignorait sa valeur de retour (burn-in, audio
+  post, mix, multilang renamer). `FileReplace.moveOver` rend un booléen honnête.
+* Manim complètement cassé : chemin `${quality}p60` (`lp60`) au lieu du dossier
+  de résolution (`480p15`) + pas de `--media_dir`. Corrigé + recherche par
+  parcours + CWD imposé + sondes mémorisées.
+* espeak-ng auto (Debian/Ubuntu) borné au nom par défaut.
+* `Capsule.jsx` : beats en secondes, crossfade recouvrement, `playbackRate`
+  Manim borné, masque 4 bords, barre segmentée.
+
+== Décisions
+
+* Merger (pas squash) — cohérent avec PR #1 (S-121).
+* Pin workaround `codebase-gradle-plugin 0.0.10` (lib 0.0.11) documenté comme
+  À REVERT dès correctif amont (`Provider<OcrEngine>` non décorable Gradle 9.7.1).
+* Greedy `HtmlSectionParser.slidesMarkup`/`headMarkup` partagés (régression
+  div imbriqué) — cohérent avec `RemotionCapture`.
+
+== Résultat
+
+* Merge commit `8d3bfda`. 30 fichiers, +1468 / -428.
+* 1133 unit VERT (+62 net S-130), 75 functional VERT, 19 cucumber dédiés GREEN.
+* EPIC CAP-MAINT-PIPELINE 6/6 US TERMINÉ.
+* Trou identifié : `Capsule.jsx` (timing) sans test automatisé → EPIC
+  CAP-ANIM-TEST (TODO S-132) créé dans le BACKLOG.
+
+== Gouvernance synchronisée
+
+INDEX.adoc (S-131, baseline 1133), BACKLOG.adoc (CAP-MAINT-PIPELINE ✅ +
+CAP-ANIM-TEST ⬜), SESSIONS_HISTORY.adoc (+S-131), TEST_COVERAGE_ANALYSIS.adoc
+(+S-131), PROMPT_REPRISE.adoc (mission S-132 = CAP-ANIM-TEST).

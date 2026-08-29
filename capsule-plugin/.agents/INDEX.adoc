@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
-_Derniere mise a jour_ : 2026-08-26 (S-130 clôture EPIC CAP-CR3-4)
-_Session terminee_ : 130 — **CAP-CR3-4 3/3 US** — `sliderBuildDir` property configurable + refactor `resolveScriptDir`/`resolveDeckDir` (fallback configurable au lieu du hardcode `slider-plugin/...`). 1071 unit VERT (+8 net). EPIC CAP-CR3-4 TERMINÉ.
-_Prochaine session_ : 131 — Maintenance (tous EPICs terminés).
-_Session en cours_ : — (S-130 terminée).
+_Derniere mise a jour_ : 2026-08-29 (S-131 Merge PR #2 — maintenance pipeline + anim)
+_Session terminee_ : 131 — **Merge PR #2** — débloque pipeline processus + rendus Manim + sync image/voix Remotion. 1133 unit VERT (+62 net), 75 functional VERT. EPIC CAP-MAINT-PIPELINE TERMINÉ.
+_Prochaine session_ : 132 — **CAP-ANIM-TEST** — couverture tests timing JS Remotion (6 US ~10 pts).
+_Session en cours_ : — (S-131 terminée).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -108,10 +108,10 @@ _Details EPICs terminés_ : rapports dans `.agents/sessions/`, détails archivé
 | `doc/CAPSULE_ARCHITECTURE.adoc` | Cadrage architecture pipeline capsule | LAZY
 |===
 
-_Total_ : 25 EPICs terminés + 2 EPICs TODO. _Baseline courante_ :
-1034 unit VERT, 75 functional VERT, 18 cucumber dédiés GREEN.
+_Total_ : 26 EPICs terminés + 1 EPIC TODO. _Baseline courante_ :
+1133 unit VERT, 75 functional VERT, 19 cucumber dédiés GREEN.
 
 _Décision architecture_ : Docker FFmpeg reporté MVP1 (fausse bonne idée
 pour MVP0 — gain fonctionnel nul, complexité ajoutée). FFmpeg reste local
-via `ProcessBuilder`. KINSHASA (`container-provision-gradle`) disponible
+via `ProcessRunner` (wrapper `ProcessBuilder`). KINSHASA (`container-provision-gradle`) disponible
 pour MVP1 si besoin.
