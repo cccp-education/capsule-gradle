@@ -1,7 +1,7 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 132
+:session: 133
 :borough: Détroit
-:session_precedente: 131 — Merge PR #2 — EPIC CAP-MAINT-PIPELINE TERMINÉ
+:session_precedente: 132 — CAP-ANIM-TEST + CAP-PR2-COV TERMINÉS
 
 == Contexte Hérité
 
@@ -34,35 +34,37 @@ scénarios). Guard `ProcessMigrationGuardTest` + `ProcessRunnerCallerArgvTest`
 vers `ProcessRunner`. 1172 unit VERT (+39 net), 75 functional, 21 cucumber
 dédiés GREEN. Borough Détroit = **tous EPICs terminés** → DORMANT.
 
-== Mission Session 133 — DORMANT (maintenance / nouveau cadrage au besoin)
+== Mission Session 133 — CAP-STEP-DIR CADUQUE (clôturée)
 
-Couverture de la **totalité** du code non testé livré par la PR #2
-(S-131). Baby-step DDD/TDD/BDD (RED → GREEN → REFACTOR).
+EPIC **CAP-STEP-DIR** cadrage (US-0 ✅) : migration `build/capsule/` hardcodé
+→ `CapsuleOutputDirResolver`. **Prémisse invalidée par RED** :
+`cucumberTestArchBoundary` 2 FAILED sur le step TTS script (artefact en
+`build/capsules/demo_fr/demo_fr-script.txt`, pas `build/capsules/...`).
+Le plugin écrit les artefacts *script* dans `build/capsule` quoique
+`outputDir` ; seul vidéo/audio/subtitle honore `outputDir` (S-087).
+Hardcoder `build/capsule` pour les steps script est **correct**.
 
-Partie JS — EPIC CAP-ANIM-TEST (`Capsule.jsx`) :
+Migration US-1→US-6 exécutée puis **revertée** (build recompile, suite
+arch boundary VERTE après revert). Aucun code modifié.
 
-. **US-0 Cadrage** — audit couverture `Capsule.jsx`, décisions extraction
-  logique pure (`RemotionTiming` Kotlin OU JS testé node).
-. **US-1 Extraction beats** — `beatSeconds` + `applyCues` purs, +unit.
-. **US-2 playbackRate borné** — `clipPlaybackRate`, +unit bornes.
-. **US-3 Crossfade recouvrement** — `contentAppear`, +unit transition.
-. **US-4 Intégration rendu** — test node/jsdom 2 diapos (pixels transition).
-. **US-5 BDD Cucumber** — `capsule_remotion_anim.feature` + runner dédié
-  20e + steps préfixés "remotion anim".
+== Mission Session 134 — DORMANT (maintenance / nouveau cadrage au besoin)
 
-Partie Kotlin — EPIC CAP-PR2-COV (14 appelants migrés PR #2) :
+Borough Détroit = tous EPICs terminés + CAP-STEP-DIR CADUQUE. Aucun EPIC
+actif. Prochaine session ne démarre que sur nouvelle demande ou cadrage.
 
-. **US-0 Cadrage** — audit 14 appelants + stratégie (guard + argv + délégation).
-. **US-1 Guard d'intégrité** — `ProcessMigrationGuardTest` (scan
-  `ProcessBuilder`/`renameTo`/`waitFor` interdits hors `ProcessRunner`/`FileReplace`).
-. **US-2 Appelants ffmpeg** — tests argv binaire factice (8 appelants).
-. **US-3 Appelants fichier** — tests délégation `FileReplace.moveOver` (6 appelants).
-. **US-4 BDD Cucumber** — `capsule_pr2_coverage.feature` 2 scénarios + runner dédié 20e.
+Dette résiduelle (`TODO.adoc:137`) close : l'item était fondé sur une
+prémisse fausse (scripts à `build/capsule` quoique `outputDir`).
 
 == Méthodologie
 
 Baby-step DDD/TDD/BDD : 1 fichier à la fois, compilation entre chaque étape.
 Pas de subagent, pas de parallélisation.
+
+== Rappel CADUQUE
+
+Si uniformisation `outputDir` pour les artefacts script un jour nécessaire
+(breaking change des emplacements), ce sera un EPIC `CAP-OUTDIR-UNIFY`
+dédié — hors scope maintenance S-133.
 
 == Rappels
 
@@ -89,8 +91,11 @@ Pas de subagent, pas de parallélisation.
   RETIRÉ S-120 (Groovy 3.x conflit ProjectBuilder).
 * Catalogue : `slider-plugin` (artifactId réel S-067), slider 0.0.18, codebase
   0.0.10, BOM 0.0.27.
-* 12 domaines DDD capsule : `capsule.feed`, `capsule.capture`, `capsule.tts`,
+* 14 domaines DDD capsule : `capsule.feed`, `capsule.capture`, `capsule.tts`,
   `capsule.subtitles`, `capsule.manim`, `capsule.config`, `capsule.multilang`,
   `capsule.ai`, `capsule.context`, `capsule.pipeline`, `capsule.i18n`,
   `capsule.validation`, `capsule.audio`, `capsule.transcript`, `capsule.remotion`.
-* Baseline : 1133 unit VERT, 75 functional VERT, cucumber dédiés GREEN.
+* `CapsuleOutputDirResolver` (package `capsule.support`) : lit `outputDir` du
+  `build.gradle` du projet de test → `build/<outputDir>/`. Défaut `"capsule"`.
+* Baseline : 1172 unit VERT, 75 functional VERT, 21 cucumber dédiés GREEN.
+* Java 25 requis (sdkman `25.0.4-tem`) — conventions-plugin 0.0.3 exige JVM 25.

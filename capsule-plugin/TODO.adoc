@@ -134,7 +134,7 @@
 . [x] CAP-ARCH-6 — Cucumber BDD boundary cross-borough (@i18n @cross-borough @architecture @ai) ✅ S-090
 
 . [x] **Code review S-087** — Bug burn-in fix : `CapsuleOutputDirResolver` (package `capsule.support`), 3 steps Cucumber migrés (résolution dynamique `outputDir` au lieu de hardcoder `build/capsule/`), runner `cucumberTestIntegration` câblé. Scénario E2E burn-in `@burnin @integration` VERT (était FAIL depuis S-069). ✅ S-087
-. [ ] **Dette technique** — 15+ steps Cucumber restants hardcodent `build/capsule/` (lignes 43, 171, 181, 192, 202, 212, 214, 226, 228, 535, 553, 575, 603, 663, 689, 715, 739, 768, 978). Migrer vers `CapsuleOutputDirResolver` progressivement.
+. [x] **Dette technique** — 15+ steps Cucumber restants hardcodent `build/capsule/` → **CADUQUE** (S-133). Prémisse invalidée : le plugin écrit les artefacts *script* (speaker notes, TTS script, parse-results, injected, replaced, augmented-context, chapters, podcast, provenance) dans `build/capsule` **quoique soit `outputDir`** ; hardcoder `build/capsule` est donc *correct* pour ces steps. Seul le chemin vidéo/audio/subtitle honore `outputDir` et est déjà couvert par `CapsuleOutputDirResolver` (S-087). Migration testée puis revertée (RED `cucumberTestArchBoundary`). Aucun code modifié.
 . [ ] **EPIC extraction pipeline-contracts (MEMPHIS)** — à cadrer si un 3e borough adopte le pattern pipeline koog. `CapsulePipelineGraph` (capsule) ≈ `DeckPipelineGraph` (slider) = duplication verbatim acceptée par boundary N2, extraction N0 future.
 
 '''

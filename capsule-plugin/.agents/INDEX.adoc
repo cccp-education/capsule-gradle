@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-08-29 (S-132 CAP-ANIM-TEST + CAP-PR2-COV — couverture tests PR #2)
-_Session terminee_ : 132 — **CAP-ANIM-TEST + CAP-PR2-COV TERMINÉS** — `RemotionTiming` (port pur `Capsule.jsx`) + guard/délégation migration PR #2. 1172 unit VERT (+39 net), 75 functional VERT, 21 cucumber dédiés GREEN.
-_Prochaine session_ : 133 — **DORMANT** (tous EPICs terminés) — maintenance / nouveau cadrage au besoin.
-_Session en cours_ : — (S-132 terminée).
+ _Derniere mise a jour_ : 2026-08-29 (S-133 CAP-STEP-DIR — CADUQUE : prémisse dette invalidée)
+_Derniere session terminee_ : 133 — **CAP-STEP-DIR CADUQUE** — audit dette `TODO.adoc:137` : migration `build/capsule/` → `CapsuleOutputDirResolver` invalidée par RED (`cucumberTestArchBoundary` 2 FAILED sur step TTS script). Le plugin écrit les artefacts script dans `build/capsule` quoique `outputDir`. Aucun code modifié — pure analyse de cadre. Borough DORMANT maintenu.
+_Prochaine session_ : 134 — **DORMANT** (tous EPICs terminés / CADUQUE) — maintenance ou nouveau cadrage au besoin.
+_Session en cours_ : — (S-133 terminée, CADUQUE).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -79,6 +79,7 @@ _Sessions 000-117 archivées_ : rapports dans `.agents/sessions/`, résumé dans
 | CAP-ANIM | Remotion capture strategy — 3 US, 977 unit + 69 functional | ✅ TERMINÉ (S-122) | P2
 | CAP-ANIM-TEST | Couverture timing JS Remotion (`Capsule.jsx`) — 6 US, 1172 unit (+39) + 3 cucumber | ✅ TERMINÉ (S-132) | P2
 | CAP-PR2-COV | Couverture 14 appelants Kotlin migrés PR #2 (ProcessRunner/FileReplace) — 5 US, +14 tests + 2 cucumber | ✅ TERMINÉ (S-132) | P2
+| CAP-STEP-DIR | Migration `build/capsule/` hardcodé → `CapsuleOutputDirResolver` — CADUQUE (S-133) : prémisse invalidée, scripts à `build/capsule` quoique `outputDir` | ✅ CADUQUE (S-133) | P2
 | CAP-28 | Coverage gaps Kover — 4 US, 986 unit | ✅ TERMINÉ (S-124) | P2
 | CAP-27 | VTT burn-in — 3 US, 866 unit | ✅ TERMINÉ (S-113) | P2
 | CAP-26 | Style burn-in configurable | ✅ TERMINÉ (S-039) | P1

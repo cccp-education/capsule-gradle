@@ -1,0 +1,137 @@
+= Session 133 — CAP-STEP-DIR (Cadrage US-0)
+
+== Contexte
+
+Le borough Détroit est DORMANT (30 EPICs terminés, S-132). Le `TODO.adoc`
+(ligne 137) documente une dette technique ouverte : **15+ steps Cucumber
+hardcodent `build/capsule/`** au lieu d'utiliser `CapsuleOutputDirResolver`
+(créé en S-087 pour corriger 3 steps du scénario burn-in E2E).
+
+`CapsuleOutputDirResolver` (package `capsule.support`) lit la propriété DSL
+`outputDir` depuis le contenu du `build.gradle` du projet de test et résout
+`build/<outputDir>/`. Le `outputDir` par défaut est `"capsule"`
+(`CapsuleConfig`), donc les chemins hardcodés correspondent au défaut — MAIS
+ils cassent dès qu'un scénario configure `outputDir = "capsules"` (comme le
+burn-in E2E). La migration rend les steps robustes à la configuration réelle
+du répertoire de sortie.
+
+== Constats (audit)
+
+. `CapsuleOutputDirResolver` (S-087) expose `resolveOutputDir`,
+  `resolveBuildOutputPath(projectDir, buildGradleContent)`,
+  `resolveSubtitleFile(projectDir, buildGradleContent, fileName)`.
+. Le défaut `outputDir` est `"capsule"` (`CapsuleConfig.DEFAULT_OUTPUT_DIR`).
+. Fichiers Cucumber/functional concernés (hardcodage `build/capsule/`) :
+  * `CapsuleStepDefinitions.kt` (shared core) — `scriptsDir()` +
+    injected dir + parse results + replaced dir (≈13 sites)
+  * `CapsuleContextSteps.kt` — `augmented-context.txt`
+  * `CapsuleDocContextSteps.kt` — `augmented-context.txt`
+  * `CapsuleGlossaryContextSteps.kt` — `augmented-context.txt`
+  * `CapsuleScenarioContextSteps.kt` — `augmented-context.txt`
+  * `CapsuleArchBoundarySteps.kt` — artefact générique
+  * `CapsuleChaptersSteps.kt` — `chapters/`, `intro.html`, `outro.html`
+  * `CapsulePodcastSteps.kt` — `demo/`, `-podcast.mp3`
+  * `CapsuleProvenanceSteps.kt` — `context-provenance.json`
+  * `CapsulePluginTest.kt` (functional JUnit) — ≈13 assertions
+. NON concernés (à laisser tels quels) : `ManimConfigTest.kt`,
+  `CapsuleConfigMergerTest.kt`, `Transcript*Test.kt` — affirment le
+  *défaut* `"capsule"` de la config (corrects, ne sont pas des steps Cucumber).
+
+== Décisions architecturales
+
+. [x] Source de vérité unique : `CapsuleOutputDirResolver.resolveBuildOutputPath(
+  projectDir, projectDir.resolve("build.gradle").readText())` pour la base
+  du répertoire de sortie dans chaque step.
+. [x] Chaque classe de step (séparée, glue `capsule.scenarios` partagée —
+  bug S-088) ajoute un helper privé `outputDir(): File` (ou lit
+  `build.gradle` inline) — pas de couplage inter-classes.
+. [x] `scriptsDir()` dans `CapsuleStepDefinitions` migrée vers le resolver
+  (elle créait `build/capsule` en dur).
+. [x] Les assertions lisent `build.gradle` *au moment de l'assertion*
+  (projet déjà créé) → résolution dynamique correcte.
+. [x] `CapsulePluginTest.kt` : remplacer les chemins hardcodés par le
+  resolver (ou une constante locale lue depuis le `build.gradle` du test).
+. [x] Zéro changement de comportement quand `outputDir` absent (défaut
+  `"capsule"` préservé) — non-régression garantie.
+. [x] US-8 ajoute 1 scénario BDD `@step-dir` qui configure
+  `outputDir = "capsules"` et affirme que les artefacts atterrissent dans
+  `build/capsules/` (régression de la path mismatch d'origine).
+. [x] Pas de nouveau `CucumberTaskSpec` (réutiliser `capsule.feature` ou un
+  runner existant) sauf si le scénario US-8 ne rentre dans aucun feature.
+
+== Découpage (8 US ~14 pts)
+
+| US | Description | Fichier |
+|----|-------------|---------|
+| US-0 | Cadrage (ce doc) | — |
+| US-1 | Shared core steps | `CapsuleStepDefinitions.kt` |
+| US-2 | Context steps | `Capsule{Context,DocContext,Glossary,Scenario}Steps.kt` |
+| US-3 | Chapters steps | `CapsuleChaptersSteps.kt` |
+| US-4 | Podcast steps | `CapsulePodcastSteps.kt` |
+| US-5 | Provenance steps | `CapsuleProvenanceSteps.kt` |
+| US-6 | Arch boundary steps | `CapsuleArchBoundarySteps.kt` |
+| US-7 | Functional assertions | `CapsulePluginTest.kt` |
+| US-8 | BDD regression `outputDir=capsules` | feature + steps |
+
+== Méthodologie
+
+Baby-step DDD/TDD/BDD : 1 fichier à la fois. Après chaque US : `compileKotlin`
+VERT + la suite Cucumber/dédiée concernée VERTE. Pas de subagent.
+
+== RED — Prémisse invalidée par le test (résultat de session)
+
+Exécution US-1→US-6 (migration resolver) puis `cucumberTestArchBoundary`
+(`-PrunCucumber`) → **2 scénarios FAILED** sur le step
+`aTtsScriptFileIsGeneratedByTheCapsuleArchBoundaryBuild` : le script TTS
+attendu en `build/capsules/demo_fr-script.txt` n'existe pas (présent en
+`build/capsules/demo_fr/demo_fr-script.txt` — sous-répertoire de langue).
+
+Analyse post-mortem (grep `outputDir = 'capsules'` dans `src/test/kotlin`) :
+
+* Le plugin écrit les artefacts **script** (speaker notes, TTS script,
+  parse-results, injected, replaced, augmented-context, chapters,
+  podcast mp3, provenance json) dans `build/capsule` **quelle que soit la
+  valeur de `outputDir`** (vérifié : `capsule_arch_boundary` noOp pose
+  `outputDir='capsules'` mais le script atterrit en `build/capsule`).
+* Les artefacts **vidéo/audio/subtitle** honorent `outputDir`
+  (`build/<outputDir>/...`) — déjà couverts par `CapsuleOutputDirResolver`
+  (S-087) pour le burn-in.
+* Le pipeline multi-langue ajoute un **sous-répertoire de langue**
+  `build/<outputDir>/<lang>/` pour les scripts — non capturé par le
+  resolver (qui ne gère que `build/<outputDir>/`).
+
+Donc `CapsuleOutputDirResolver` N'EST PAS une source de vérité unique pour
+les artefacts script : hardcoder `build/capsule` pour ces steps est
+**correct**. La migration introduisait une régression sur `capsule.feature`
+(lignes 264/282/1051/1153 posent `outputDir='capsules'` et utilisent les
+steps partagés injectés/parse-results/replaced).
+
+== Conclusion — EPIC CADUQUE (S-133)
+
+L'item de dette `TODO.adoc:137` (« 15+ steps Cucumber hardcodent
+`build/capsule/` ») est fondé sur une prémisse fausse : pour les artefacts
+script, `build/capsule` est le chemin réel (le plugin ignore `outputDir`).
+Seul le chemin vidéo/subtitle (S-087) bénéficie du resolver. Les steps
+vidéo/audio/subtitle qui posent `outputDir='capsules'` utilisent déjà
+`build/capsules` (grep : aucun `build/capsule` dans `CapsuleFormatSteps` /
+`CapsuleCaptureStrategySteps` / `MultiLanguageCapsuleSteps` /
+`CapsuleDistribSteps` / `CapsuleDurationValidationSteps` /
+`CapsuleRemotionSteps` / `CapsuleAudioPostSteps`).
+
+Toutes les migrations de steps sont **revertées** (`git checkout`), le
+build recompile et `cucumberTestArchBoundary` redevient VERT. Aucun code
+modifié — pure analyse de cadre (gouvernance).
+
+EPIC CADUQUE : pas de changement de code justifié. Si un jour le plugin doit
+honorer `outputDir` de façon uniforme pour les scripts (breaking change des
+emplacements d'artefacts), ce sera un EPIC dédié (CAP-OUTDIR-UNIFY), hors
+scope maintenance.
+
+== Rapport de session 133
+
+* Audit du dette `TODO.adoc:137` → prémisse invalidée par RED (test).
+* 8 constats + 8 décisions documentés (cadrage).
+* Migration US-1→US-6 exécutée puis **revertée** après régression
+  `cucumberTestArchBoundary` (2 FAILED sur step TTS script).
+* Borough Détroit reste DORMANT — aucun EPIC actif.
+* Build VERT, cucumber dédiés VERT (après revert).

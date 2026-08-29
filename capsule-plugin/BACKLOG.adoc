@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-29 (S-131 Merge PR #2 — maintenance pipeline + anim)
+:last_update: 2026-08-29 (S-133 CAP-STEP-DIR — migration chemins build/capsule/ hardcodés)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -65,6 +65,15 @@
   couvert avec CAP-ANIM-TEST.
 | P2
 | ✅ TERMINÉ (S-132) — US-0 ✅ S-132, US-1 ✅ S-132, US-2 ✅ S-132, US-3 ✅ S-132, US-4 ✅ S-132, US-5 ✅ S-132
+
+| CAP-STEP-DIR
+| **Migration des chemins `build/capsule/` hardcodés** — prémisse invalidée
+  (S-133) : le plugin écrit les artefacts *script* dans `build/capsule`
+  quoique soit `outputDir` ; seul le chemin vidéo/subtitle (S-087) honore
+  `outputDir`. Hardcoder `build/capsule` pour les steps script est correct.
+  EPIC **CADUQUE** — voir `.agents/sessions/133-cap-step-dir-cadrage.adoc`.
+| P2
+| ✅ CADUQUE (S-133) — US-0 ✅ S-133, migration US-1→US-6 revertée (RED)
 |===
 
 '''
