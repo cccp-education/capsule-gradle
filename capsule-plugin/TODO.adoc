@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-08-25 (Session 124 — **EPIC CAP-28 TERMINÉ 4/4 US** — coverage gaps sur 3 fichiers low-coverage. US-0 cadrage BACKLOG détaillé (7 décisions). US-1 PiperTtsEngine 4 unit. US-2 ManimEngineImpl 2 unit. US-3 ScreenshotCaptureImpl 3 unit. Baby-step TDD strict RED → GREEN. 986 unit VERT 0 FAIL (+9 net baseline 977 → 986). Zéro prod modifié — pure couverture. Découverte : LanguageCatalog N0 ne contient pas "de". EPIC CAP-28 clos.)
+:last_update: 2026-09-07 (Sync gouvernance post-S-133 — **Borough DORMANT, 0 EPIC actif**. Sessions 125→133 consignées dans INDEX : CAP-PODCAST ✅ S-127, CAP-PREVIEW ✅ S-128, CAP-CHAPITRE ✅ S-129, CAP-CR3-4 ✅ S-130, CAP-TRANSCRIPT ✅ 6/6 S-119/S-120, CAP-ANIM-TEST ✅ S-132, CAP-STEP-DIR ✅ CADUQUE S-133. 28 EPICs terminés, 0 TODO.)
 
 '''
 == ✅ EPIC CAP-MODEL — TERMINE (session 069)

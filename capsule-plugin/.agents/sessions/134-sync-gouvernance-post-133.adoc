@@ -1,0 +1,61 @@
+= Session 134 — Synchronisation gouvernance post-S-133 (zéro code)
+:date: 2026-09-07
+:source: Session 134 (gouvernance pure)
+:type: governance
+:borough: Détroit — capsule-gradle (N2, capsules vidéo reveal.js + TTS)
+:status: TERMINÉE
+
+== Contexte hérité
+
+Session 133 (2026-08-29) — CAP-STEP-DIR ✅ CADUQUE : prémisse de la dette
+`TODO.adoc:137` invalidée par RED (`cucumberTestArchBoundary` 2 FAILED).
+Migration testée puis revertée, zéro code modifié. 28 EPICs terminés,
+0 TODO actif.
+
+== Mission Session 134
+
+Synchroniser la gouvernance documentaire avec l'état réel (demande pilote,
+suite à code review écosystème foundry/public). Constats :
+
+1. BACKLOG : titre "BACKLOG ACTIF — EPICs en cours" contenant exclusivement
+   des EPICs ✅/CADUQUE — rien d'actif.
+2. TODO.adoc gelé à S-124 (sessions 125→133 absentes — pourtant bien
+   consignées dans INDEX/BACKLOG).
+
+== Déroulement
+
+1. Vérification statuts réels INDEX (S-133 à jour, 28 EPICs terminés).
+2. BACKLOG : titre corrigé "BACKLOG ACTIF — EPICs en cours ✅ VIDE (tous
+   EPICs terminés/CADUQUES, S-133)" + note borough DORMANT.
+3. TODO.adoc : header `last_update` S-124 → S-134, résumé sessions
+   125→133 (CAP-PODCAST ✅ S-127, CAP-PREVIEW ✅ S-128, CAP-CHAPITRE ✅
+   S-129, CAP-CR3-4 ✅ S-130, CAP-ANIM-TEST ✅ S-132, CAP-STEP-DIR ✅
+   CADUQUE S-133).
+
+== Résultats
+
+- ✅ BACKLOG : plus de titre "actif" trompeur.
+- ✅ TODO.adoc aligné sur INDEX (S-134).
+- ✅ Zéro code production modifié — gouvernance pure.
+- ✅ Baseline S-133 préservée (1172 unit 0 FAIL + 3 cucumber).
+
+== Prochaine session — 135
+
+Borough DORMANT — 28 EPICs terminés, 0 EPIC actif.
+
+Options :
+. Maintenance : publication (jamais publiée — 0.0.1-SNAPSHOT, à cadrer avec
+  le pilote), bumps, code review.
+. TODO conditionnel : EPIC extraction pipeline-contracts (MEMPHIS) —
+  uniquement si un 3e borough adopte le pattern pipeline koog.
+. Cadrer un nouvel EPIC si besoin identifié.
+
+== Méthodologie
+
+Gouvernance pure — zéro code, zéro test modifié.
+
+== Références
+
+- `capsule-plugin/.agents/INDEX.adoc` (S-133)
+- `capsule-plugin/.agents/sessions/133-cap-step-dir-caduque.adoc`
+- `capsule-plugin/TODO.adoc` (resynchronisé)

@@ -13,7 +13,9 @@
 20 fichiers README créés (10 langues × consumer + plugin).
 
 '''
-== BACKLOG ACTIF — EPICs en cours
+== BACKLOG ACTIF — EPICs en cours ✅ VIDE (tous EPICs terminés/CADUQUES, S-133)
+
+_Borough DORMANT — la liste ci-dessous est un historique des EPICs récemment clos._
 
 [cols="1,3,2,2", options="header"]
 |===

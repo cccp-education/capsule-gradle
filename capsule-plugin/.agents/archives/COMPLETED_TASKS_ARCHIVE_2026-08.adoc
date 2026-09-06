@@ -1405,3 +1405,11 @@ Baby-step TDD/BDD strict. 1172 unit VERT (+39 net S-131→S-132), 75 functional,
 21 cucumber dédiés GREEN. Zéro régression, zéro secret, zéro bump BOM.
 
 Rapport : `.agents/sessions/132-capsule-anim-test-pr2-cov.adoc`.
+
+== Session 134 — 2026-09-07 — Synchronisation gouvernance post-S-133
+
+Gouvernance pure (zéro code) :
+* BACKLOG : titre "BACKLOG ACTIF" corrigé (vide — tous EPICs ✅/CADUQUE).
+* TODO.adoc dégelé S-124 → S-134 (sessions 125→133 résumées : CAP-PODCAST,
+  CAP-PREVIEW, CAP-CHAPITRE, CAP-CR3-4, CAP-ANIM-TEST ✅, CAP-STEP-DIR
+  CADUQUE).
