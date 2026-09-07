@@ -5,9 +5,9 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-08-29 (S-133 CAP-STEP-DIR — CADUQUE : prémisse dette invalidée)
-_Derniere session terminee_ : 133 — **CAP-STEP-DIR CADUQUE** — audit dette `TODO.adoc:137` : migration `build/capsule/` → `CapsuleOutputDirResolver` invalidée par RED (`cucumberTestArchBoundary` 2 FAILED sur step TTS script). Le plugin écrit les artefacts script dans `build/capsule` quoique `outputDir`. Aucun code modifié — pure analyse de cadre. Borough DORMANT maintenu.
-_Prochaine session_ : 134 — **DORMANT** (tous EPICs terminés / CADUQUE) — maintenance ou nouveau cadrage au besoin.
+ _Derniere mise a jour_ : 2026-09-07 (S-215 globale — cadrage EPIC RENAME (US-4 capsule, FPA→content/CDA→coding, transverse 7 boroughs) : fixtures tests "Formation FPA" → génériques + check baseline. Zéro code modifié. Doc `.agents/CADRAGE_EPIC_RENAME.adoc`.)
+_Derniere session terminee_ : 215 (globale) — Cadrage RENAME (gouvernance pure).
+_Prochaine session_ : RENAME-4 (1 pt, 4e baby-step) OU maintenance DORMANT au besoin.
 _Session en cours_ : — (S-133 terminée, CADUQUE).
 
 '''
