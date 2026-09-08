@@ -263,7 +263,7 @@ class CapsuleManager(private val project: Project) {
             task.graphifyContent.set(project.findProperty("context.graphifyContent")?.toString().orEmpty())
             task.docsContent.set(project.findProperty("context.docsContent")?.toString().orEmpty())
 
-            // CAP-SPD-3 — resolve scenarioFile lazily (extension afterEvaluate > CLI).
+            // CAP-SCENARIO-3 — resolve scenarioFile lazily (extension afterEvaluate > CLI).
             task.scenarioFile.from(project.provider {
                 val extPath = capsuleExt?.scenarioFile?.orNull
                 val path = when {

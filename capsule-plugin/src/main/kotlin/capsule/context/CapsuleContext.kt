@@ -8,7 +8,7 @@ import contracts.context.ContextChannel
  * Carries the budgeted, non-empty [ContextChannel]s of a codebase
  * [contracts.context.CompositeContext] together with their prompt-ready
  * [rendered] block (produced by [CapsuleContextBuilder.merge]) and the
- * capsule-local [scenarioSection] (CAP-SPD-2 — a pedagogical scenario
+ * capsule-local [scenarioSection] (CAP-SCENARIO-2 — a pedagogical scenario
  * payload rendered by [CapsuleScenarioLoader] and appended after the N0
  * channels). This is the consumption contract of the `capsule.pipeline`
  * (CAP-ARCH-3) — content generation feeds on `rendered`, never on the raw
@@ -22,7 +22,7 @@ import contracts.context.ContextChannel
  * @property channels         non-empty channels after budget truncation + filtering.
  * @property rendered         prompt-ready sectioned text of [channels] + [scenarioSection] + [glossarySection].
  * @property scenarioSection  the capsule-local pedagogical scenario section
- *                            (CAP-SPD-2), blank when no scenario payload was provided.
+ *                            (CAP-SCENARIO-2), blank when no scenario payload was provided.
  * @property glossarySection  the capsule-local official glossary section
  *                            (CAP-GLOSSARY-2), blank when no glossary payload was provided.
  */

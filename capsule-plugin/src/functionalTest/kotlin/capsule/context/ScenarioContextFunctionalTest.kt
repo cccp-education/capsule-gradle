@@ -11,7 +11,7 @@ import kotlin.test.assertTrue
 
 /**
  * Functional tests for the `collectCapsuleAugmentedContext` scenario channel
- * extension (CAP-SPD-3).
+ * extension (CAP-SCENARIO-3).
  *
  * Verifies that:
  * - `-Pcapsule.context.scenarioFile` resolves a scenario directory
@@ -42,7 +42,7 @@ class ScenarioContextFunctionalTest {
     private fun writeScenarioDir(): File {
         val scenarioDir = projectDir.resolve("scenario").apply { mkdirs() }
         scenarioDir.resolve("metadata.json").writeText(
-            """{"source":"producer","type":"SPD","sessions":1,"generatedAt":"2026-08-11T10:00:00Z","model":"convention","version":"1.0","dependencies":[]}""",
+            """{"source":"producer","type":"content","sessions":1,"generatedAt":"2026-08-11T10:00:00Z","model":"convention","version":"1.0","dependencies":[]}""",
         )
         scenarioDir.resolve("001_bienvenue.adoc").writeText(
             """

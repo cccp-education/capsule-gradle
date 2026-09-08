@@ -37,7 +37,7 @@ data class ContextProvenance(
     fun toJson(): String = mapper.writeValueAsString(this)
 
     companion object {
-        /** Capsule-local provenance label of the pedagogical scenario section (CAP-SPD). */
+        /** Capsule-local provenance label of the pedagogical scenario section (CAP-SCENARIO). */
         const val SCENARIO_CHANNEL: String = "SCENARIO"
 
         /** Capsule-local provenance label of the official glossary section (CAP-GLOSSARY). */

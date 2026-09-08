@@ -9,7 +9,7 @@ _Derniere rotation_ : 2026-09-08 (S-135) — RENAME-4 neutralisation fixtures. R
 |===
 |# |Date |Type |Sujet |Score
 
-| 135 | 2026-09-08 | refactor+tests | **RENAME-4** — neutralisation fixtures tests "Formation FPA" → "Formation Content" (EPIC RENAME transverse, baby-step 4e). 9 fichiers test (8 Kotlin + 1 feature Gherkin), 11 occurrences, assertions Gherkin/functional appariées aux fixtures, références AFNOR conservées (référence publique). Gate cadrage VERT : `grep -ri fpa src/` = zéro match métier (faux positif `ofPattern` accepté), check BUILD SUCCESSFUL 13m16s, baseline exacte vérifiée par stash A/B : 1166 unit 0 FAIL avant et après (baseline gouvernance "1172" approximative). Zéro code production. Rapport `.agents/sessions/135-rename-4-fixtures-fpa.adoc`. | 9/10
+| 135 | 2026-09-08 | refactor+tests | **RENAME-4 (étendu pilote)** — neutralisation vocabulaire métier formation : vague 1 FPA (9 test, "Formation Content") + vague 2 AFNOR/REAC/SPD/SPG (5 prod + 11 test). **Breaking change prod** : `CapsuleScenarioLoader` valide `type == "content"` (ex-"SPD", enveloppe K-2) — pipeline A2 dormant à aligner. Fixtures referential/curriculum, comments CAP-SPD→CAP-SCENARIO. Gate : grep 5 termes = 0, check VERT 13m54s, baseline exacte 1166 unit 0 FAIL + 75 functional. Rapport `.agents/sessions/135-rename-4-fixtures-fpa.adoc`. | 9/10
 
 | 134 | 2026-09-07 | governance | **Sync gouvernance post-S-133** — BACKLOG : titre "BACKLOG ACTIF" corrigé (vide, tous EPICs ✅/CADUQUE). TODO.adoc dégelé S-124 → S-134 (sessions 125→133 résumées). Zéro code production, zéro bump BOM, zéro secret. Baseline S-133 préservée (1172 unit 0 FAIL). Rapport `.agents/sessions/134-sync-gouvernance-post-133.adoc`. | 9/10
 

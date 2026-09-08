@@ -9,16 +9,16 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * TDD unit tests for [CapsuleScenarioLoader] (CAP-SPD-1).
+ * TDD unit tests for [CapsuleScenarioLoader] (CAP-SCENARIO-1).
  *
  * The loader is an object pur mirroring [DocContextLoader]: it validates an
- * optional `metadata.json` K-2 envelope (type == "SPD" — the format, not the
+ * optional `metadata.json` K-2 envelope (type == "content" — the format, not the
  * producer borough: capsule is public OSS and validates only the content type,
  * never the `source` field, to stay format-agnostic and avoid coupling to any
  * specific producer borough), parses the companion AsciiDoc for the
  * pedagogical payload (objectives, duration, prerequisites, modalities,
  * session title, module), and renders a prompt-ready
- * `==== Pedagogical Scenario (spd)` section truncated to the supplied
+ * `==== Pedagogical Scenario (scenario)` section truncated to the supplied
  * token budget.
  *
  * Missing files are skipped silently — a null metadata file or a missing
@@ -39,7 +39,7 @@ class CapsuleScenarioLoaderTest {
 
     @Test
     fun `load with valid metadata and adoc extracts objectives`() {
-        val metadata = writeMetadata(type = "SPD", source = "producer", version = "1.0")
+        val metadata = writeMetadata(type = "content", source = "producer", version = "1.0")
         val adoc = File(tempDir, "001_bienvenue.adoc").also {
             it.writeText(
                 """
@@ -85,16 +85,16 @@ class CapsuleScenarioLoaderTest {
     }
 
     @Test
-    fun `load with metadata type not SPD skips the SPD entirely`() {
-        val metadata = writeMetadata(type = "SPG", source = "producer", version = "1.0")
-        val adoc = File(tempDir, "spg.adoc").also { it.writeText("= SPG\n\n== Objectifs\n- Global") }
+    fun `load with metadata type not content skips the scenario entirely`() {
+        val metadata = writeMetadata(type = "syllabus", source = "producer", version = "1.0")
+        val adoc = File(tempDir, "syllabus.adoc").also { it.writeText("= Syllabus\n\n== Objectifs\n- Global") }
         val result = CapsuleScenarioLoader.load(metadata, adoc, 400)
-        assertTrue(result.isBlank(), "metadata type != 'SPD' should yield a blank string (graceful skip)")
+        assertTrue(result.isBlank(), "metadata type != 'content' should yield a blank string (graceful skip)")
     }
 
     @Test
     fun `load with empty objectives section renders empty objectives label`() {
-        val metadata = writeMetadata(type = "SPD", source = "producer", version = "1.0")
+        val metadata = writeMetadata(type = "content", source = "producer", version = "1.0")
         val adoc = File(tempDir, "minimal.adoc").also {
             it.writeText("= Minimal Session\n:module: core\n\n== Déroulement\nStep by step.")
         }
@@ -105,7 +105,7 @@ class CapsuleScenarioLoaderTest {
 
     @Test
     fun `load truncates content exceeding the token budget`() {
-        val metadata = writeMetadata(type = "SPD", source = "producer", version = "1.0")
+        val metadata = writeMetadata(type = "content", source = "producer", version = "1.0")
         val longObjectives = (1..80).joinToString("\n") { "- Objectif $it avec suffisamment de mots pour consommer le budget" }
         val adoc = File(tempDir, "long.adoc").also {
             it.writeText("= Long Session\n:module: core\n\n== Objectifs\n$longObjectives")
@@ -120,7 +120,7 @@ class CapsuleScenarioLoaderTest {
     @Test
     fun `load with malformed metadata json gracefully skipped and still parses adoc`() {
         val metadata = File(tempDir, "bad.json").also { it.writeText("{not valid json") }
-        val adoc = File(tempDir, "spd.adoc").also { it.writeText("= SPD\n:module: core\n\n== Objectifs\n- Goal") }
+        val adoc = File(tempDir, "scenario.adoc").also { it.writeText("= Scenario\n:module: core\n\n== Objectifs\n- Goal") }
         val result = CapsuleScenarioLoader.load(metadata, adoc, 400)
         assertTrue(result.isNotBlank(), "Malformed metadata.json should be skipped (no throw) but adoc still parsed")
         assertTrue(result.contains("Goal"), "Expected objective from adoc when metadata is malformed")
@@ -128,7 +128,7 @@ class CapsuleScenarioLoaderTest {
 
     @Test
     fun `load extracts multi-line objectives as a list`() {
-        val metadata = writeMetadata(type = "SPD", source = "producer", version = "1.0")
+        val metadata = writeMetadata(type = "content", source = "producer", version = "1.0")
         val adoc = File(tempDir, "multi.adoc").also {
             it.writeText(
                 """
@@ -150,15 +150,15 @@ class CapsuleScenarioLoaderTest {
 
     @Test
     fun `load with zero token budget returns blank string`() {
-        val metadata = writeMetadata(type = "SPD", source = "producer", version = "1.0")
-        val adoc = File(tempDir, "spd.adoc").also { it.writeText("= SPD\n:module: core\n\n== Objectifs\n- Goal") }
+        val metadata = writeMetadata(type = "content", source = "producer", version = "1.0")
+        val adoc = File(tempDir, "scenario.adoc").also { it.writeText("= Scenario\n:module: core\n\n== Objectifs\n- Goal") }
         val result = CapsuleScenarioLoader.load(metadata, adoc, 0)
         assertTrue(result.isBlank(), "Zero token budget should yield a blank string")
     }
 
     @Test
     fun `load with empty adoc file returns blank string`() {
-        val metadata = writeMetadata(type = "SPD", source = "producer", version = "1.0")
+        val metadata = writeMetadata(type = "content", source = "producer", version = "1.0")
         val adoc = File(tempDir, "empty.adoc").also { it.writeText("") }
         val result = CapsuleScenarioLoader.load(metadata, adoc, 400)
         assertTrue(result.isBlank(), "Empty adoc should yield a blank string")

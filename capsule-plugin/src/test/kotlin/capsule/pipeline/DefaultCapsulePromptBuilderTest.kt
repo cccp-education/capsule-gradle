@@ -4,7 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**
- * Unit tests for [DefaultCapsulePromptBuilder] (CAP-SPD-2).
+ * Unit tests for [DefaultCapsulePromptBuilder] (CAP-SCENARIO-2).
  *
  * The production prompt builder must emit a pedagogical scenario instruction
  * line when the running [CapsuleState] carries a scenario-augmented context.

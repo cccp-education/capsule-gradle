@@ -82,7 +82,7 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
     abstract val tokenBudget: Property<Int>
 
     /**
-     * Pedagogical scenario file/directory (CAP-SPD-3). When present, the
+     * Pedagogical scenario file/directory (CAP-SCENARIO-3). When present, the
      * [CapsuleScenarioLoader] resolves `metadata.json` + companion AsciiDoc
      * and renders the scenario section appended after the N0 channels.
      */
@@ -280,7 +280,7 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
     }
 
     /**
-     * Resolves the pedagogical scenario section content (CAP-SPD-3).
+     * Resolves the pedagogical scenario section content (CAP-SCENARIO-3).
      *
      * The [scenarioFile] collection is fed by the wiring layer from the
      * 4-source config (ENV < props < YAML < CLI). When it contains a

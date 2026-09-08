@@ -30,20 +30,20 @@ class DocContextLoaderTest {
 
     @Test
     fun `load with a single file returns its content with a header`() {
-        val file = File(tempDir, "afnor-guide.adoc").also { it.writeText("AFNOR grading rules.") }
+        val file = File(tempDir, "referential-guide.adoc").also { it.writeText("Referential grading rules.") }
         val result = DocContextLoader.load(listOf(file), ChannelBudget())
-        assertTrue(result.contains("--- afnor-guide.adoc ---"), "Expected file header")
-        assertTrue(result.contains("AFNOR grading rules."), "Expected file content")
+        assertTrue(result.contains("--- referential-guide.adoc ---"), "Expected file header")
+        assertTrue(result.contains("Referential grading rules."), "Expected file content")
     }
 
     @Test
     fun `load with multiple files concatenates them sorted by name`() {
-        val fileB = File(tempDir, "reac-module.adoc").also { it.writeText("REAC content B.") }
-        val fileA = File(tempDir, "afnor-guide.adoc").also { it.writeText("AFNOR content A.") }
+        val fileB = File(tempDir, "curriculum-module.adoc").also { it.writeText("Curriculum content B.") }
+        val fileA = File(tempDir, "referential-guide.adoc").also { it.writeText("Referential content A.") }
         val result = DocContextLoader.load(listOf(fileB, fileA), ChannelBudget())
-        val idxAfnor = result.indexOf("afnor-guide.adoc")
-        val idxReac = result.indexOf("reac-module.adoc")
-        assertTrue(idxAfnor < idxReac, "Files should be sorted by name (afnor before reac)")
+        val idxRef = result.indexOf("referential-guide.adoc")
+        val idxCur = result.indexOf("curriculum-module.adoc")
+        assertTrue(idxCur < idxRef, "Files should be sorted by name (curriculum before referential)")
     }
 
     @Test
@@ -60,7 +60,7 @@ class DocContextLoaderTest {
 
     @Test
     fun `load with zero docs budget returns blank string`() {
-        val file = File(tempDir, "afnor.adoc").also { it.writeText("Some content.") }
+        val file = File(tempDir, "referential.adoc").also { it.writeText("Some content.") }
         val budget = ChannelBudget(totalTokenBudget = 8000, budgetEager = 0.40, budgetRag = 0.30, budgetGraphify = 0.20, budgetDocs = 0.0, budgetResource = 0.10)
         val result = DocContextLoader.load(listOf(file), budget)
         assertTrue(result.isBlank(), "Zero docs budget should yield a blank string")
@@ -96,7 +96,7 @@ class DocContextLoaderTest {
 
     @Test
     fun `load does not truncate content under the budget`() {
-        val smallContent = "Short AFNOR guide."
+        val smallContent = "Short referential guide."
         val file = File(tempDir, "small.adoc").also { it.writeText(smallContent) }
         val result = DocContextLoader.load(listOf(file), ChannelBudget())
         assertTrue(result.contains(smallContent), "Small content under budget should be preserved in full")

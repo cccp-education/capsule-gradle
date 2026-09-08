@@ -1414,22 +1414,22 @@ Gouvernance pure (zéro code) :
   CAP-PREVIEW, CAP-CHAPITRE, CAP-CR3-4, CAP-ANIM-TEST ✅, CAP-STEP-DIR
   CADUQUE).
 
-== Session 135 — 2026-09-08 — RENAME-4 : neutralisation fixtures tests FPA
+== Session 135 — 2026-09-08 — RENAME-4 : neutralisation vocabulaire métier formation (étendu pilote)
 
-EPIC RENAME transverse (baby-step 4e, après RENAME-1 codebase S-212) :
-* 9 fichiers test neutralisés (8 Kotlin + 1 feature Gherkin), 11
-  occurrences "Formation FPA"/"Glossaire FPA"/"AFNOR ... for FPA" →
-  "Formation Content"/"Glossaire Content"/"for content" (aligné
-  `Domain.CONTENT` codebase RENAME-1).
-* Assertions Gherkin (`capsule_doc_context.feature` × 2) et functional
-  (`ScenarioContextFunctionalTest`) appariées aux fixtures.
-* Références AFNOR conservées (référence publique française, pas IP
-  pilote — même règle qualiopi/rncp chez codebase).
-* Gate cadrage VERT : `grep -ri fpa src/` = zéro match métier (faux
-  positif `ofPattern` accepté).
-* `./gradlew check` BUILD SUCCESSFUL 13m16s. Baseline exacte vérifiée
-  par stash A/B : 1166 unit 0 FAIL avant et après (baseline gouvernance
-  "1172" approximative), 75 functional VERT, cucumber dédiés GREEN.
-* Zéro code production modifié.
+EPIC RENAME transverse (baby-step 4e, après RENAME-1 codebase S-212) —
+16 fichiers (5 prod + 11 test) :
+
+* Vague 1 FPA : 9 fichiers test, 11 occurrences "Formation FPA" →
+  "Formation Content" (aligné `Domain.CONTENT` codebase RENAME-1).
+* Vague 2 pilote AFNOR/REAC/SPD/SPG : **breaking change prod** —
+  `CapsuleScenarioLoader` valide `type == "content"` (ex-"SPD",
+  enveloppe K-2) + KDoc CapsuleScenario/ContextConfig/GlossaryEntry +
+  exemple globs `docs/referential/**` + comments CAP-SPD→CAP-SCENARIO.
+  Fixtures tests referential/curriculum, type "syllabus" (ex-"SPG").
+* Gate étendue : `grep -riE "\bafnor\b|\breac\b|\bspg\b|\bspd\b|\bfpa\b"
+  src/` = zéro match. `./gradlew check` BUILD SUCCESSFUL 13m54s —
+  1166 unit 0 FAIL + 75 functional 0 FAIL (baseline exacte préservée).
+* Cross-borough : enveloppe K-2 `type:"content"` à propager (planner,
+  pipeline A2 dormant) à la réactivation.
 
 Rapport : `.agents/sessions/135-rename-4-fixtures-fpa.adoc`.

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Assertions
 import java.io.File
 
 /**
- * BDD steps for `capsule_scenario_context.feature` (CAP-SPD-4).
+ * BDD steps for `capsule_scenario_context.feature` (CAP-SCENARIO-4).
  *
  * All step definitions are prefixed with "scenario context" signatures to
  * avoid `DuplicateStepDefinitionException` with the shared
@@ -46,7 +46,7 @@ class CapsuleScenarioContextSteps {
     fun aPedagogicalScenarioDirectoryIsPresentWithMetadataAndAdoc() {
         val scenarioDir = projectDir!!.resolve("scenario").apply { mkdirs() }
         scenarioDir.resolve("metadata.json").writeText(
-            """{"source":"producer","type":"SPD","sessions":1,"generatedAt":"2026-08-11T10:00:00Z","model":"convention","version":"1.0","dependencies":[]}""",
+            """{"source":"producer","type":"content","sessions":1,"generatedAt":"2026-08-11T10:00:00Z","model":"convention","version":"1.0","dependencies":[]}""",
         )
         scenarioDir.resolve("001_bienvenue.adoc").writeText(
             """

@@ -1,17 +1,18 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-09-08 (S-135 RENAME-4 ✅ — neutralisation fixtures tests "Formation FPA" → "Formation Content" (EPIC RENAME transverse baby-step 4e, 9 fichiers test, zéro code production). **Borough DORMANT, 0 EPIC actif**. Prochain candidat : RENAME-5 plantuml sur demande pilote.)
+:last_update: 2026-09-08 (S-135 RENAME-4 ✅ ÉTENDU — neutralisation vocabulaire métier formation : FPA + AFNOR/REAC + SPD/SPG → termes génériques (Content, referential, curriculum, content type). 16 fichiers (5 prod + 11 test). **Borough DORMANT, 0 EPIC actif**. Prochain candidat : RENAME-5 plantuml sur demande pilote.)
 
 '''
-== ✅ RENAME-4 — Neutralisation fixtures tests FPA (S-135)
+== ✅ RENAME-4 — Neutralisation vocabulaire métier (S-135, étendu pilote)
 
-. [x] Audit réel : 9 fichiers test (8 Kotlin + 1 feature Gherkin), 11 occurrences (cadrage annonçait 4 — grep élargi)
-. [x] Unit : GlossaryLoaderTest + CapsuleScenarioLoaderTest
-. [x] Steps Cucumber : CapsuleDocContextSteps + CapsuleScenarioContextSteps + CapsuleGlossaryContextSteps
-. [x] Feature Gherkin : capsule_doc_context.feature (2 assertions appariées)
-. [x] Functional : DocContextFunctionalTest + ScenarioContextFunctionalTest (fixture + assertion) + GlossaryContextFunctionalTest
-. [x] Références AFNOR conservées (référence publique, pas IP pilote)
-. [x] Gate grep : `grep -ri fpa src/` = zéro match métier (faux positif `ofPattern`)
-. [x] Gate check VERT 13m16s + baseline exacte 1166 unit vérifiée stash A/B
+. [x] Vague 1 FPA : 9 fichiers test, 11 occurrences "Formation FPA" → "Formation Content"
+. [x] Vague 2 AFNOR/REAC/SPD/SPG (demande pilote) : 5 prod + 11 test
+. [x] **Prod** : `CapsuleScenarioLoader` `type != "SPD"` → `type != "content"` (validation enveloppe K-2) + KDoc CapsuleScenario/ContextConfig/GlossaryEntry + comments CAP-SPD→CAP-SCENARIO (9 fichiers)
+. [x] **Prod** : exemple globs `docs/afnor/**` → `docs/referential/**` (ContextConfig KDoc)
+. [x] **Unit** : DocContextLoaderTest (fixtures referential/curriculum) + CapsuleScenarioLoaderTest (type content/syllabus) + CapsuleConfigMergerTest (14 globs) + 2 tags CAP-SPD
+. [x] **Cucumber** : 3 steps + 3 features (doc/scenario/glossary context), assertions appariées
+. [x] **Functional** : DocContextFunctionalTest (docs/referential) + ScenarioContextFunctionalTest (type content) + GlossaryContextFunctionalTest
+. [x] Gate grep : `grep -riE "\bafnor\b|\breac\b|\bspg\b|\bspd\b|\bfpa\b" src/` = zéro match
+. [x] Gate check VERT 13m54s — baseline exacte 1166 unit 0 FAIL + 75 functional préservée (changement sémantique type:"content" couvert par suites ciblées VERT)
 
 '''
 == ✅ EPIC CAP-MODEL — TERMINE (session 069)

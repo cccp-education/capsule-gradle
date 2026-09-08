@@ -24,7 +24,7 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val docsGlobs: ListProperty<String> = objects.listProperty(String::class.java)
         .convention(emptyList())
 
-    /** CAP-SPD-3 — path to a pedagogical scenario directory (metadata.json + .adoc) or direct .adoc. Defaults to empty. */
+    /** CAP-SCENARIO-3 — path to a pedagogical scenario directory (metadata.json + .adoc) or direct .adoc. Defaults to empty. */
     val scenarioFile: Property<String> = objects.property(String::class.java)
         .convention("")
 

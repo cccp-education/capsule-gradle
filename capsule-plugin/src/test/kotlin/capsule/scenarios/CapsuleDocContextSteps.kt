@@ -44,7 +44,7 @@ class CapsuleDocContextSteps {
     @Given("documentary corpus files are present under {string}")
     fun documentaryCorpusFilesArePresentUnder(dirPath: String) {
         val dir = projectDir!!.resolve(dirPath).apply { mkdirs() }
-        dir.resolve("grading-rules.adoc").writeText("AFNOR grading rules for content formation.")
+        dir.resolve("grading-rules.adoc").writeText("Referential grading rules for content formation.")
         dir.resolve("evaluation-criteria.adoc").writeText("Evaluation criteria for competency blocks.")
     }
 

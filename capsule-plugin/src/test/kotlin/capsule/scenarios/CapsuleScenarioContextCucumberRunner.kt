@@ -9,7 +9,7 @@ import org.junit.platform.suite.api.SelectClasspathResource
 import org.junit.platform.suite.api.Suite
 
 /**
- * Dedicated Cucumber suite for `capsule_scenario_context.feature` (CAP-SPD-4).
+ * Dedicated Cucumber suite for `capsule_scenario_context.feature` (CAP-SCENARIO-4).
  *
  * Scoped via `@SelectClasspathResource` so it never runs the full Playwright
  * suite — the `cucumberTestScenarioContext` Gradle task filters on this

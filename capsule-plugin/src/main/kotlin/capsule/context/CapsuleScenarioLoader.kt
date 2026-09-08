@@ -8,17 +8,17 @@ import java.io.File
 /**
  * Pure loader for a training-scenario pedagogical payload that feeds the
  * capsule-local [scenarioSection][CapsuleContext.scenarioSection] of
- * [CapsuleContext] (CAP-SPD-1).
+ * [CapsuleContext] (CAP-SCENARIO-1).
  *
  * Mirrors [DocContextLoader]: pure object (no Gradle, no I/O wiring) that
  * consumes pre-resolved files. The K-2 `metadata.json` envelope is validated
- * for content type (`type == "SPD"`) when present; the pedagogical payload
+ * for content type (`type == "content"`) when present; the pedagogical payload
  * (objectives, duration, prerequisites, modalities, session title, module)
  * is extracted from the companion AsciiDoc — the metadata.json carries no
  * pedagogical fields (K-2 envelope only). The producer borough is NOT
- * validated: capsule is format-agnostic and consumes any SPD-compliant
- * source, public or private (capsule is public OSS and must not couple to
- * any specific producer borough).
+ * validated: capsule is format-agnostic and consumes any source matching the
+ * content type, public or private (capsule is public OSS and must not couple
+ * to any specific producer borough).
  *
  * The rendered section follows the [CapsuleContextBuilder.merge] convention:
  * `==== Pedagogical Scenario (scenario)\nObjectives: ...\nDuration: ...\n
@@ -29,7 +29,7 @@ import java.io.File
  *
  * Missing files are skipped silently — a null metadata file or a missing
  * AsciiDoc yields an empty string (backward compatible, no error). A
- * metadata.json whose `type` is not `"SPD"` is also skipped (graceful no-op).
+ * metadata.json whose `type` is not `"content"` is also skipped (graceful no-op).
  */
 object CapsuleScenarioLoader {
 
@@ -55,7 +55,7 @@ object CapsuleScenarioLoader {
         if (!adocFile.exists()) return ""
 
         val metadata = metadataFile?.takeIf { it.exists() }?.let { parseMetadata(it) }
-        if (metadata != null && metadata.type.isNotEmpty() && metadata.type != "SPD") return ""
+        if (metadata != null && metadata.type.isNotEmpty() && metadata.type != "content") return ""
 
         val adocText = adocFile.readText()
         if (adocText.isBlank()) return ""

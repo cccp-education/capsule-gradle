@@ -53,7 +53,7 @@ object CapsuleContextBuilder {
      *
      * Budgets the composite channels via [channelsWithBudget], drops the empty
      * ones and renders the survivors via [merge]. When [scenarioSection] is
-     * non-blank, it is appended after the channel blocks (CAP-SPD-2 — the
+     * non-blank, it is appended after the channel blocks (CAP-SCENARIO-2 — the
      * pedagogical scenario payload is capsule-local and does not extend the
      * sealed N0 [ContextChannel] contract). When [glossarySection] is
      * non-blank, it is appended after [scenarioSection] (CAP-GLOSSARY-2 — the

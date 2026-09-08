@@ -5,8 +5,8 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-09-08 (S-135 — RENAME-4 : neutralisation fixtures tests "Formation FPA" → "Formation Content" (9 fichiers test, 11 occurrences, assertions appariées, zéro code production). EPIC RENAME transverse, baby-step 4e. Doc `.agents/CADRAGE_EPIC_RENAME.adoc`.)
-_Derniere session terminee_ : 135 — RENAME-4 (refactor tests).
+ _Derniere mise a jour_ : 2026-09-08 (S-135 — RENAME-4 étendu pilote : neutralisation vocabulaire métier formation FPA + AFNOR/REAC + SPD/SPG → génériques (16 fichiers : 5 prod + 11 test). **Breaking change prod** : type "content" (ex-"SPD") enveloppe K-2. Doc `.agents/CADRAGE_EPIC_RENAME.adoc`.)
+_Derniere session terminee_ : 135 — RENAME-4 (refactor prod+tests).
 _Prochaine session_ : DORMANT (maintenance OU RENAME-5 plantuml sur demande).
 _Session en cours_ : — (S-135 terminée, RENAME-4).
 
@@ -28,7 +28,7 @@ _Session en cours_ : — (S-135 terminée, RENAME-4).
 |===
 |# |Date |Type |Sujet |Score
 
-| 135 | 2026-09-08 | refactor+tests | **RENAME-4** — neutralisation fixtures tests "Formation FPA" → "Formation Content" (9 fichiers test, 11 occurrences, assertions Gherkin/functional appariées, zéro code production). Gate cadrage VERT : grep fpa = 0 métier, check 13m16s, baseline exacte 1166 unit vérifiée stash A/B. EPIC RENAME transverse baby-step 4e. | 9/10
+| 135 | 2026-09-08 | refactor+tests | **RENAME-4 étendu pilote** — neutralisation vocabulaire métier formation : FPA (9 test) + AFNOR/REAC/SPD/SPG (5 prod + 11 test). Breaking change prod : `CapsuleScenarioLoader` `type == "content"` (ex-"SPD"). Gate : grep 5 termes = 0, check 13m54s, 1166 unit 0 FAIL + 75 functional. | 9/10
 
 | 134 | 2026-09-07 | governance | **Sync gouvernance post-S-133** — BACKLOG titre 'ACTIF' corrigé (VIDE, DORMANT), TODO.adoc dégelé S-124→S-134. Zéro code. | 9/10
 
@@ -80,7 +80,7 @@ _Sessions 000-117 archivées_ : rapports dans `.agents/sessions/`, résumé dans
 | CAP-ANIM-TEST | Couverture timing JS Remotion (`Capsule.jsx`) — 6 US, 1172 unit (+39) + 3 cucumber | ✅ TERMINÉ (S-132) | P2
 | CAP-PR2-COV | Couverture 14 appelants Kotlin migrés PR #2 (ProcessRunner/FileReplace) — 5 US, +14 tests + 2 cucumber | ✅ TERMINÉ (S-132) | P2
 | CAP-STEP-DIR | Migration `build/capsule/` hardcodé → `CapsuleOutputDirResolver` — CADUQUE (S-133) : prémisse invalidée, scripts à `build/capsule` quoique `outputDir` | ✅ CADUQUE (S-133) | P2
-| RENAME-4 | Neutralisation fixtures tests "Formation FPA" → "Formation Content" (EPIC RENAME transverse) — 9 fichiers test, zéro code production | ✅ TERMINÉ (S-135) | P2
+| RENAME-4 | Neutralisation vocabulaire métier formation FPA + AFNOR/REAC + SPD/SPG → génériques (EPIC RENAME transverse) — 16 fichiers (5 prod + 11 test) | ✅ TERMINÉ (S-135) | P2
 | CAP-28 | Coverage gaps Kover — 4 US, 986 unit | ✅ TERMINÉ (S-124) | P2
 | CAP-27 | VTT burn-in — 3 US, 866 unit | ✅ TERMINÉ (S-113) | P2
 | CAP-26 | Style burn-in configurable | ✅ TERMINÉ (S-039) | P1

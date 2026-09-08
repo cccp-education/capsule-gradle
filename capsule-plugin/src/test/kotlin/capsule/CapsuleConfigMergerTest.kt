@@ -924,9 +924,9 @@ class CapsuleConfigMergerTest {
     @Test
     fun `docsGlobs is read from YAML`() {
         val projectDir = File(tempDir, "ctx-yaml").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(context = ContextConfig(docsGlobs = listOf("docs/afnor/**/*.adoc")))
+        val yamlConfig = CapsuleConfig(context = ContextConfig(docsGlobs = listOf("docs/referential/**/*.adoc")))
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
-        assertEquals(listOf("docs/afnor/**/*.adoc"), merged.context.docsGlobs, "YAML docsGlobs should be honored")
+        assertEquals(listOf("docs/referential/**/*.adoc"), merged.context.docsGlobs, "YAML docsGlobs should be honored")
     }
 
     @Test
@@ -934,10 +934,10 @@ class CapsuleConfigMergerTest {
         val projectDir = File(tempDir, "ctx-cli-over-yaml").also { it.mkdirs() }
         val yamlConfig = CapsuleConfig(context = ContextConfig(docsGlobs = listOf("docs/old/**/*.adoc")))
         val merged = CapsuleConfigMerger.merge(
-            projectDir, yamlConfig, mapOf("context.docsGlobs" to "docs/afnor/**/*.adoc,docs/reac/**/*.adoc")
+            projectDir, yamlConfig, mapOf("context.docsGlobs" to "docs/referential/**/*.adoc,docs/curriculum/**/*.adoc")
         )
         assertEquals(
-            listOf("docs/afnor/**/*.adoc", "docs/reac/**/*.adoc"),
+            listOf("docs/referential/**/*.adoc", "docs/curriculum/**/*.adoc"),
             merged.context.docsGlobs,
             "CLI comma-split should override YAML"
         )
@@ -947,20 +947,20 @@ class CapsuleConfigMergerTest {
     fun `docsGlobs single CLI value is read`() {
         val projectDir = File(tempDir, "ctx-cli-single").also { it.mkdirs() }
         val merged = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf("context.docsGlobs" to "docs/afnor/**/*.adoc")
+            projectDir, CapsuleConfig(), mapOf("context.docsGlobs" to "docs/referential/**/*.adoc")
         )
-        assertEquals(listOf("docs/afnor/**/*.adoc"), merged.context.docsGlobs, "CLI single glob")
+        assertEquals(listOf("docs/referential/**/*.adoc"), merged.context.docsGlobs, "CLI single glob")
     }
 
     @Test
     fun `docsGlobs is read from gradle properties`() {
         val projectDir = File(tempDir, "ctx-props").also { it.mkdirs() }
         File(projectDir, "gradle.properties").writeText("""
-            capsule.context.docsGlobs=docs/afnor/**/*.adoc,docs/reac/**/*.adoc
+            capsule.context.docsGlobs=docs/referential/**/*.adoc,docs/curriculum/**/*.adoc
         """.trimIndent())
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
         assertEquals(
-            listOf("docs/afnor/**/*.adoc", "docs/reac/**/*.adoc"),
+            listOf("docs/referential/**/*.adoc", "docs/curriculum/**/*.adoc"),
             merged.context.docsGlobs,
             "props docsGlobs comma-split should be honored when no YAML"
         )
@@ -972,9 +972,9 @@ class CapsuleConfigMergerTest {
         File(projectDir, "gradle.properties").writeText("""
             capsule.context.docsGlobs=docs/old/**/*.adoc
         """.trimIndent())
-        val yamlConfig = CapsuleConfig(context = ContextConfig(docsGlobs = listOf("docs/afnor/**/*.adoc")))
+        val yamlConfig = CapsuleConfig(context = ContextConfig(docsGlobs = listOf("docs/referential/**/*.adoc")))
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
-        assertEquals(listOf("docs/afnor/**/*.adoc"), merged.context.docsGlobs, "YAML should override props")
+        assertEquals(listOf("docs/referential/**/*.adoc"), merged.context.docsGlobs, "YAML should override props")
     }
 
     @Test
@@ -993,11 +993,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `docsGlobs empty CLI string falls back to YAML`() {
         val projectDir = File(tempDir, "ctx-empty-cli").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(context = ContextConfig(docsGlobs = listOf("docs/afnor/**/*.adoc")))
+        val yamlConfig = CapsuleConfig(context = ContextConfig(docsGlobs = listOf("docs/referential/**/*.adoc")))
         val merged = CapsuleConfigMerger.merge(
             projectDir, yamlConfig, mapOf("context.docsGlobs" to "")
         )
-        assertEquals(listOf("docs/afnor/**/*.adoc"), merged.context.docsGlobs, "Empty CLI should fall back to YAML")
+        assertEquals(listOf("docs/referential/**/*.adoc"), merged.context.docsGlobs, "Empty CLI should fall back to YAML")
     }
 
     @Test
@@ -1023,10 +1023,10 @@ class CapsuleConfigMergerTest {
     fun `loadFromGradleProperties reads capsule context docsGlobs`() {
         val projectDir = File(tempDir, "ctx-props-load").also { it.mkdirs() }
         File(projectDir, "gradle.properties").writeText("""
-            capsule.context.docsGlobs=docs/afnor/**/*.adoc
+            capsule.context.docsGlobs=docs/referential/**/*.adoc
         """.trimIndent())
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
-        assertEquals(listOf("docs/afnor/**/*.adoc"), config.context.docsGlobs, "loadFromGradleProperties should read docsGlobs")
+        assertEquals(listOf("docs/referential/**/*.adoc"), config.context.docsGlobs, "loadFromGradleProperties should read docsGlobs")
     }
 
     // ─── capture.strategy (CAP-CR3-3 US-1) ──────────────────────────

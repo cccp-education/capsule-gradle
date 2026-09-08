@@ -13,17 +13,21 @@ S-212 (bump 0.0.12), RENAME-4 capsule ✅ S-135 (cette session).
 Session 134 — Sync gouvernance post-S-133 : BACKLOG titre "ACTIF" corrigé
 (VIDE, DORMANT), TODO.adoc dégelé S-124→S-134.
 
-== Mission Session 135 (clôturée) — RENAME-4 ✅
+== Mission Session 135 (clôturée) — RENAME-4 ✅ (étendu pilote)
 
-Neutralisation fixtures tests « Formation FPA » → « Formation Content »
-(9 fichiers test, 11 occurrences, zéro code production). Assertions
-Gherkin/functional appariées aux fixtures. Références AFNOR conservées
-(référence publique, pas IP pilote). Gate cadrage VERT : `grep -ri fpa
-src/` = zéro match métier (faux positif `ofPattern` accepté). `check`
-BUILD SUCCESSFUL 13m16s. Baseline exacte vérifiée par stash A/B : **1166
-unit, 0 FAIL** avant et après (baseline gouvernance « 1172 » approximative).
-75 functional VERT, cucumber dédiés GREEN. Rapport :
-`.agents/sessions/135-rename-4-fixtures-fpa.adoc`.
+Neutralisation vocabulaire métier formation — 16 fichiers (5 prod + 11 test) :
+
+* Vague 1 FPA : fixtures "Formation FPA" → "Formation Content" (9 test).
+* Vague 2 pilote AFNOR/REAC/SPD/SPG : **breaking change prod** —
+  `CapsuleScenarioLoader` valide `type == "content"` (ex-"SPD", enveloppe
+  K-2) ; fixtures referential/curriculum ; comments CAP-SPD→CAP-SCENARIO.
+* Gate : grep 5 termes (afnor/reac/spg/spd/fpa) = 0 ; `check` VERT 13m54s ;
+  baseline exacte 1166 unit 0 FAIL + 75 functional 0 FAIL.
+* Rapport : `.agents/sessions/135-rename-4-fixtures-fpa.adoc`.
+
+⚠️ Cross-borough : l'enveloppe K-2 (`metadata.json` type "content") est
+produite par le pipeline A2 (planner, dormant) — à aligner à la
+réactivation.
 
 == Mission Session 136 — DORMANT (maintenance / nouveau cadrage au besoin)
 

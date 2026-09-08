@@ -2,25 +2,26 @@ package capsule
 
 /**
  * Configuration section for the augmented context channels
- * (CAP-DOCCONTEXT-1 + CAP-SPD-3).
+ * (CAP-DOCCONTEXT-1 + CAP-SCENARIO-3).
  *
  * The [docsGlobs] list drives the `DocContextLoader` (US-2) to resolve
  * documentary corpus files (AsciiDoc, Markdown, text) from the consumer
- * project via Ant-style globs (e.g. `docs/afnor/**/*.adoc`). The concatenated
- * content feeds the Docs channel of `CompositeContext` (CAP-ARCH-2), giving
- * the LLM the real training material instead of an empty prompt.
+ * project via Ant-style globs (e.g. `docs/referential/**/*.adoc`). The
+ * concatenated content feeds the Docs channel of `CompositeContext`
+ * (CAP-ARCH-2), giving the LLM the real training material instead of an
+ * empty prompt.
  *
  * The [scenarioFile] path drives the `PedagogicalScenarioLoader`
- * (CAP-SPD-3) to resolve a pedagogical scenario (K-2 `metadata.json` +
+ * (CAP-SCENARIO-3) to resolve a pedagogical scenario (K-2 `metadata.json` +
  * companion AsciiDoc). The rendered section feeds the capsule-local
- * `scenarioSection` of `CapsuleContext` (CAP-SPD-2), anchoring the LLM
+ * `scenarioSection` of `CapsuleContext` (CAP-SCENARIO-2), anchoring the LLM
  * speaker notes in the session objectives, duration and prerequisites.
  *
  * The [glossaryFile] path drives the `GlossaryLoader` (CAP-GLOSSARY-2) to
  * resolve a training referential glossary (AsciiDoc `== Glossary` section +
  * `- term: definition` bullets). The rendered section feeds the
  * capsule-local `glossarySection` of `CapsuleContext` (CAP-GLOSSARY-1),
- * anchoring the LLM vocabulary on the AFNOR/REAC referential instead of
+ * anchoring the LLM vocabulary on the training referential instead of
  * generic approximations.
  *
  * Resolution follows the 4-source precedence:

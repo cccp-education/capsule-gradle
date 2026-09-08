@@ -2,14 +2,14 @@ package capsule.context
 
 /**
  * Immutable pedagogical payload extracted from a training scenario companion
- * AsciiDoc (CAP-SPD-1).
+ * AsciiDoc (CAP-SCENARIO-1).
  *
  * The K-2 `metadata.json` envelope carries only provenance (source, type,
  * sessions, generatedAt, model, version, dependencies) — the pedagogical
  * fields live in the AsciiDoc. This data class is the capsule-local consumer
- * model: capsule is format-agnostic (validates `type == "SPD"` as a content
- * type, never the producer borough), and owns the pedagogical scenario model
- * since there is no N0 contract for it.
+ * model: capsule is format-agnostic (validates `type == "content"` as a
+ * content type, never the producer borough), and owns the pedagogical scenario
+ * model since there is no N0 contract for it.
  *
  * @property objectives    bullet objectives extracted from `== Objectifs`
  *                         (empty list when the section is absent).

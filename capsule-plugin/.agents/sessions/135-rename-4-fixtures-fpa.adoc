@@ -1,4 +1,4 @@
-= Session 135 — RENAME-4 : neutralisation fixtures tests "Formation FPA" (EPIC RENAME transverse)
+= Session 135 — RENAME-4 : neutralisation vocabulaire métier formation (FPA + AFNOR/REAC + SPD/SPG)
 :date: 2026-09-08
 :source: Session 135 (RENAME-4, baby-step 4e de l'EPIC RENAME)
 :type: refactor+tests
@@ -83,6 +83,80 @@ Le cadrage annonçait 4 fichiers ; le grep réel en trouve **9**
   0 FAIL** avant ET après (la baseline gouvernance « 1172 » était
   approximative ; 1166 est la valeur réelle). 75 functional VERT.
 - ✅ Zéro fichier production modifié (9 fichiers test only).
+
+== Extension pilote (même session) — AFNOR/REAC/SPD/SPG
+
+Le pilote a arbitré : AFNOR/REAC/SPG/SPD sont **aussi** des termes propres
+à la formation (métier) — ils doivent être renommés. Extension exécutée
+immédiatement, **16 fichiers au total** (5 prod + 11 test) :
+
+=== Code production (5 fichiers)
+
+- `CapsuleScenarioLoader.kt` : validation `type != "SPD"` → `type != "content"`
+  (ligne 58, enveloppe K-2) + KDoc (`SPD-compliant` → content type) —
+  **breaking change sémantique assumé** : l'enveloppe K-2 `metadata.json`
+  produite par le pipeline A2 (planner, dormant depuis S-070) devra
+  produire `type:"content"`.
+- `CapsuleScenario.kt` : KDoc `type == "SPD"` → `type == "content"`.
+- `ContextConfig.kt` : KDoc exemple globs `docs/afnor/**` →
+  `docs/referential/**` + glossaire "AFNOR/REAC referential" →
+  "training referential" + tags CAP-SPD→CAP-SCENARIO.
+- `GlossaryEntry.kt` : KDoc "AFNOR/REAC vocabulary" → "training vocabulary".
+- 5 fichiers comments CAP-SPD-2/3 → CAP-SCENARIO-2/3 (CapsuleContext,
+  CapsuleContextBuilder, CollectCapsuleAugmentedContextTask,
+  ContextProvenance, CapsuleManager, CapsuleModels, CapsulePlugin).
+
+=== Décision sémantique type de contenu
+
+|===
+| Ancien (métier) | Nouveau (générique) | Rôle
+| "SPD" | "content" | type de scénario pédagogique accepté (enveloppe K-2)
+| "SPG" | "syllabus" | type rejeté dans le test de graceful skip
+|===
+
+Le label rendu `==== Pedagogical Scenario (scenario)` (S-095) était déjà
+générique — inchangé.
+
+=== Tests (11 fichiers)
+
+- `DocContextLoaderTest` : fixtures `afnor-guide`/`reac-module` →
+  `referential-guide`/`curriculum-module` (assertions appariées).
+- `CapsuleScenarioLoaderTest` : `type:"SPD"` → `"content"`,
+  `type:"SPG"` → `"syllabus"`, fixtures `spg.adoc`/`spd.adoc` →
+  `syllabus.adoc`/`scenario.adoc`, titre KDoc `(spd)` → `(scenario)`.
+- `CapsuleConfigMergerTest` : 14 globs `docs/afnor`/`docs/reac` →
+  `docs/referential`/`docs/curriculum`.
+- Steps + features : `AFNOR grading rules` → `Referential grading rules`
+  (fixtures + assertions Gherkin appariées), `Glossaire AFNOR/REAC` →
+  `Glossaire référentiel`, `type:"SPD"` → `"content"` (step + functional).
+- 2 tags CAP-SPD (CapsuleContextBuilderTest, DefaultCapsulePromptBuilderTest).
+
+=== Gate extension
+
+- `grep -riE "\bafnor\b|\breac\b|\bspg\b|\bspd\b|\bfpa\b" src/` = **zéro match**.
+- Suites ciblées VERT : `test` (context + merger + prompt builder),
+  3 cucumber dédiés, `functionalTest` (3m19s).
+- `./gradlew check` BUILD SUCCESSFUL **13m54s** — **1166 unit 0 FAIL +
+  75 functional 0 FAIL** (baseline exacte préservée).
+- Le changement sémantique `type:"content"` est couvert :
+  CapsuleScenarioLoaderTest (unit) + CapsuleScenarioContextSteps +
+  ScenarioContextFunctionalTest (acceptance).
+
+=== Correction incident sed
+
+Un `sed` a corrompu 2 lignes (`:module:` attrapé par le motif
+`spd.adoc`). Corrigé immédiatement : `= Scenario\n:module: core`.
+Compilation vérifiée après correction (`compileTestKotlin` VERT).
+
+== Résultats consolidés S-135
+
+- 16 fichiers modifiés (5 prod + 11 test), zéro régression.
+- Gate cadrage étendue VERT : grep 5 termes = 0, check VERT.
+- Breaking change prod documenté (BACKLOG Points d'attention) :
+  enveloppe K-2 `type:"content"` — à propager cross-borough (planner)
+  quand le pipeline A2 sera réactivé.
+- Gouvernance synchronisée (BACKLOG, TODO, INDEX, SESSIONS_HISTORY,
+  archive, PROMPT_REPRISE).
 
 == Gouvernance synchronisée
 

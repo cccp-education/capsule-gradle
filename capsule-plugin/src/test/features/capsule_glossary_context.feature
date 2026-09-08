@@ -3,7 +3,7 @@ Feature: Capsule glossary injection (CAP-GLOSSARY-3)
 
   As a capsule-gradle producer
   I want to inject the training referential glossary (official terminology) into the augmented context
-  So that content generation aligns speaker notes on AFNOR/REAC terminology instead of generic synonyms
+  So that content generation aligns speaker notes on training referential terminology instead of generic synonyms
 
   Scenario: The glossaryFile CLI param resolves a glossary adoc and feeds the glossary section
     Given a Capsule glossary context Gradle project with the capsule plugin applied

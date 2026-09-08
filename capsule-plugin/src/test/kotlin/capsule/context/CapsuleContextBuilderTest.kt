@@ -194,7 +194,7 @@ class CapsuleContextBuilderTest {
         assertEquals(0.30, budget.budgetRag)
     }
 
-    // ─── CAP-SPD-2: scenarioSection extension ──────────────────────────
+    // ─── CAP-SCENARIO-2: scenarioSection extension ──────────────────────────
 
     @Test
     fun `build with non-blank scenarioSection renders the scenario section after channels`() {

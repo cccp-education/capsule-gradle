@@ -1,5 +1,5 @@
 @context @scenario
-Feature: Capsule pedagogical scenario injection (CAP-SPD-4)
+Feature: Capsule pedagogical scenario injection (CAP-SCENARIO-4)
 
   As a capsule-gradle producer
   I want to inject the pedagogical scenario (objectives, duration, prerequisites) into the augmented context

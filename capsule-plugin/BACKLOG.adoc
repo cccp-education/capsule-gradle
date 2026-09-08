@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-09-08 (S-135 RENAME-4 — neutralisation fixtures tests FPA → Content)
+:last_update: 2026-09-08 (S-135 RENAME-4 ÉTENDU — neutralisation vocabulaire métier formation FPA + AFNOR/REAC + SPD/SPG → génériques)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -78,12 +78,13 @@ _Borough DORMANT — la liste ci-dessous est un historique des EPICs récemment 
 | ✅ CADUQUE (S-133) — US-0 ✅ S-133, migration US-1→US-6 revertée (RED)
 
 | RENAME-4
-| **Neutralisation fixtures tests "Formation FPA" → "Formation Content"**
-  (EPIC RENAME transverse 7 boroughs, baby-step 4e — voir
-  `.agents/CADRAGE_EPIC_RENAME.adoc`). 9 fichiers test (8 Kotlin + 1
-  feature Gherkin), 11 occurrences, assertions appariées, références
-  AFNOR conservées. Zéro code production. Gate cadrage VERT (grep fpa = 0
-  métier, check 13m16s, baseline exacte 1166 unit vérifiée stash A/B).
+| **Neutralisation vocabulaire métier formation** (EPIC RENAME transverse 7
+  boroughs, baby-step 4e — voir `.agents/CADRAGE_EPIC_RENAME.adoc`). Vague 1
+  FPA (9 fichiers test) + vague 2 pilote AFNOR/REAC/SPD/SPG (5 prod + 11 test) :
+  `CapsuleScenarioLoader` valide désormais `type == "content"` (ex-"SPD",
+  breaking change enveloppe K-2 assumé — pipeline A2 dormant), fixtures
+  referential/curriculum, comments CAP-SPD→CAP-SCENARIO. Gate cadrage VERT
+  (grep 5 termes = 0, check 13m54s, baseline exacte 1166 unit + 75 functional).
 | P2
 | ✅ TERMINÉ (S-135)
 |===
@@ -267,7 +268,7 @@ Rapports par US dans `.agents/sessions/`._
 | CAP-MAINT-PIPELINE | Robustesse pipeline processus + rendus Manim + sync anim Remotion (PR #2) | 6 | ✅ TERMINÉ (S-131)
 | CAP-ANIM-TEST | Couverture timing JS Remotion (`Capsule.jsx`) — `RemotionTiming` | 6 | ✅ TERMINÉ (S-132)
 | CAP-PR2-COV | Couverture 14 appelants Kotlin migrés PR #2 (ProcessRunner/FileReplace) | 5 | ✅ TERMINÉ (S-132)
-| RENAME-4 | Neutralisation fixtures tests FPA → Content (EPIC RENAME transverse) | 1 | ✅ TERMINÉ (S-135)
+| RENAME-4 | Neutralisation vocabulaire métier formation FPA + AFNOR/REAC + SPD/SPG → génériques (EPIC RENAME transverse) | 1 | ✅ TERMINÉ (S-135)
 | CAP-0→CAP-12 | Bootstrap → split CapsuleManager | — | ✅ TERMINÉ
 |===
 
@@ -294,6 +295,11 @@ _Total_ : 30 EPICs terminés (0 TODO). _Baseline courante_ (S-135, exacte) :
   silencieuse). Remplace tous les `renameTo` ignorés.
 * RENAME-4 ✅ S-135 : fixtures tests neutralisées ("Formation Content").
   Gate `grep -ri fpa src/` = zéro match métier (faux positif `ofPattern`).
+* RENAME-4 ✅ S-135 (étendu pilote) : vocabulaire métier formation neutralisé
+  (FPA→Content, AFNOR/REAC→referential/curriculum, SPD/SPG→content/syllabus).
+  **Breaking change prod** : `CapsuleScenarioLoader` valide `type == "content"`
+  (ex-"SPD") — enveloppe K-2 produite par le pipeline A2 (dormant) à aligner
+  cross-borough (planner) quand il sera réactivé.
 * ⚠️ **TODO REVERT** : `codebase-gradle-plugin` épinglé 0.0.10 (lib 0.0.11) —
   workaround bug amont `Provider<OcrEngine>` Gradle 9.7.1. À remonter dès
   correctif amont publié.

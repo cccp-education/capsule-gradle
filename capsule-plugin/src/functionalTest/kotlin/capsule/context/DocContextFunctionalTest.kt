@@ -52,33 +52,33 @@ class DocContextFunctionalTest {
         writeEagerFiles()
         val result = runner(
             "collectCapsuleAugmentedContext",
-            "-Pcontext.docsContent=AFNOR grading manual content via CLI",
+            "-Pcontext.docsContent=Referential grading manual content via CLI",
         ).build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":collectCapsuleAugmentedContext")?.outcome)
         val artefact = projectDir.resolve("build/capsule/augmented-context.txt")
         assertTrue(artefact.exists(), "Expected augmented context artefact")
         val content = artefact.readText()
         assertTrue(content.contains("CONTEXTE_DOCS"), "Expected Docs section header")
-        assertTrue(content.contains("AFNOR grading manual content via CLI"), "Expected CLI docsContent")
+        assertTrue(content.contains("Referential grading manual content via CLI"), "Expected CLI docsContent")
     }
 
     @Test
     fun `docsGlobs resolves files and feeds the Docs channel`() {
         writeBuildFile()
         writeEagerFiles()
-        val docsDir = projectDir.resolve("docs/afnor").apply { mkdirs() }
-        docsDir.resolve("grading-rules.adoc").writeText("AFNOR grading rules for content formation.")
+        val docsDir = projectDir.resolve("docs/referential").apply { mkdirs() }
+        docsDir.resolve("grading-rules.adoc").writeText("Referential grading rules for content formation.")
         docsDir.resolve("evaluation-criteria.adoc").writeText("Evaluation criteria for competency blocks.")
         val result = runner(
             "collectCapsuleAugmentedContext",
-            "-Pcapsule.context.docsGlobs=docs/afnor/**/*.adoc",
+            "-Pcapsule.context.docsGlobs=docs/referential/**/*.adoc",
         ).build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":collectCapsuleAugmentedContext")?.outcome)
         val artefact = projectDir.resolve("build/capsule/augmented-context.txt")
         assertTrue(artefact.exists(), "Expected augmented context artefact")
         val content = artefact.readText()
         assertTrue(content.contains("CONTEXTE_DOCS"), "Expected Docs section header from globs")
-        assertTrue(content.contains("AFNOR grading rules"), "Expected first glob file content")
+        assertTrue(content.contains("Referential grading rules"), "Expected first glob file content")
         assertTrue(content.contains("Evaluation criteria"), "Expected second glob file content")
     }
 
