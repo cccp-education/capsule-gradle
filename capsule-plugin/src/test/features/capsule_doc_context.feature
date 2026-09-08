@@ -21,7 +21,7 @@ Feature: Capsule documentary corpus injection (CAP-DOCCONTEXT)
     When I collect the augmented context with doc globs "docs/afnor/**/*.adoc"
     Then the doc context build succeeds
     And the doc context artefact contains "CONTEXTE_DOCS"
-    And the doc context artefact contains "AFNOR grading rules for FPA"
+    And the doc context artefact contains "AFNOR grading rules for content"
     And the doc context artefact contains "Evaluation criteria for competency"
 
   Scenario: The docsGlobs CLI param overrides the docsContent string
@@ -30,7 +30,7 @@ Feature: Capsule documentary corpus injection (CAP-DOCCONTEXT)
     And documentary corpus files are present under "docs/afnor"
     When I collect the augmented context with doc content "legacy string" and doc globs "docs/afnor/**/*.adoc"
     Then the doc context build succeeds
-    And the doc context artefact contains "AFNOR grading rules for FPA"
+    And the doc context artefact contains "AFNOR grading rules for content"
     And the doc context artefact omits "legacy string"
 
   Scenario: Empty globs and empty docsContent produce no Docs channel

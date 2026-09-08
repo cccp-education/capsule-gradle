@@ -46,7 +46,7 @@ class ScenarioContextFunctionalTest {
         )
         scenarioDir.resolve("001_bienvenue.adoc").writeText(
             """
-            = Bienvenue dans la Formation FPA
+            = Bienvenue dans la Formation Content
             :module: accueil
 
             == Objectifs
@@ -85,7 +85,7 @@ class ScenarioContextFunctionalTest {
         val content = artefact.readText()
         assertTrue(content.contains("Pedagogical Scenario"), "Expected scenario section header")
         assertTrue(content.contains("Comprendre le cadre de la formation"), "Expected objective from scenario adoc")
-        assertTrue(content.contains("Session: Bienvenue dans la Formation FPA"), "Expected session title")
+        assertTrue(content.contains("Session: Bienvenue dans la Formation Content"), "Expected session title")
     }
 
     @Test

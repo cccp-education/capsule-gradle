@@ -50,7 +50,7 @@ class CapsuleScenarioContextSteps {
         )
         scenarioDir.resolve("001_bienvenue.adoc").writeText(
             """
-            = Bienvenue dans la Formation FPA
+            = Bienvenue dans la Formation Content
             :module: accueil
 
             == Objectifs

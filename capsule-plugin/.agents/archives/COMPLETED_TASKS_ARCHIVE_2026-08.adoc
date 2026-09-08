@@ -1413,3 +1413,23 @@ Gouvernance pure (zéro code) :
 * TODO.adoc dégelé S-124 → S-134 (sessions 125→133 résumées : CAP-PODCAST,
   CAP-PREVIEW, CAP-CHAPITRE, CAP-CR3-4, CAP-ANIM-TEST ✅, CAP-STEP-DIR
   CADUQUE).
+
+== Session 135 — 2026-09-08 — RENAME-4 : neutralisation fixtures tests FPA
+
+EPIC RENAME transverse (baby-step 4e, après RENAME-1 codebase S-212) :
+* 9 fichiers test neutralisés (8 Kotlin + 1 feature Gherkin), 11
+  occurrences "Formation FPA"/"Glossaire FPA"/"AFNOR ... for FPA" →
+  "Formation Content"/"Glossaire Content"/"for content" (aligné
+  `Domain.CONTENT` codebase RENAME-1).
+* Assertions Gherkin (`capsule_doc_context.feature` × 2) et functional
+  (`ScenarioContextFunctionalTest`) appariées aux fixtures.
+* Références AFNOR conservées (référence publique française, pas IP
+  pilote — même règle qualiopi/rncp chez codebase).
+* Gate cadrage VERT : `grep -ri fpa src/` = zéro match métier (faux
+  positif `ofPattern` accepté).
+* `./gradlew check` BUILD SUCCESSFUL 13m16s. Baseline exacte vérifiée
+  par stash A/B : 1166 unit 0 FAIL avant et après (baseline gouvernance
+  "1172" approximative), 75 functional VERT, cucumber dédiés GREEN.
+* Zéro code production modifié.
+
+Rapport : `.agents/sessions/135-rename-4-fixtures-fpa.adoc`.

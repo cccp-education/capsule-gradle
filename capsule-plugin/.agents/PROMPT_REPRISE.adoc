@@ -1,70 +1,42 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 133
+:session: 135
 :borough: Détroit
-:session_precedente: 132 — CAP-ANIM-TEST + CAP-PR2-COV TERMINÉS
+:session_precedente: 134 — Sync gouvernance post-S-133
 
 == Contexte Hérité
 
-Session 124 — **EPIC CAP-28 TERMINÉ 4/4 US** — coverage gaps sur 3 fichiers
-low-coverage (PiperTtsEngine 31%, ManimEngineImpl 25%, ScreenshotCaptureImpl
-26%). US-0 cadrage BACKLOG détaillé (7 décisions). US-1 PiperTtsEngine 4 unit
-(`PiperTtsEngineTest.kt` nouveau — `language()` 2 branches + `resolvedModel`
-2 branches). US-2 ManimEngineImpl 2 unit (`probeDuration` delegation).
-US-3 ScreenshotCaptureImpl 3 unit (capture empty durations throws, isAvailable
-ffmpeg absent, close resets probe). Baby-step TDD strict RED → GREEN.
-**986 unit VERT 0 FAIL** (+9 net baseline 977 → 986). Zéro prod modifié — pure
-couverture. Découverte : `LanguageCatalog` N0 ne contient pas "de" (10 langues :
-en/zh/hi/es/fr/ar/bn/pt/ru/ur). EPIC CAP-28 clos.
+Session 215 (globale) — Cadrage EPIC RENAME (transverse 7 boroughs) :
+neutralisation nommage métier privé FPA→content / CDA→coding. Doc
+`.agents/CADRAGE_EPIC_RENAME.adoc`. Baby-steps : RENAME-1 codebase ✅
+S-212 (bump 0.0.12), RENAME-4 capsule ✅ S-135 (cette session).
 
-== Mission Session 131 (clôturée) — Prochaine : S-132
+Session 134 — Sync gouvernance post-S-133 : BACKLOG titre "ACTIF" corrigé
+(VIDE, DORMANT), TODO.adoc dégelé S-124→S-134.
 
-S-131 = **Merge PR #2 (lion92)** — maintenance pipeline + enrichissement
-animation Remotion. EPIC CAP-MAINT-PIPELINE TERMINÉ 6/6 US, 1133 unit VERT
-(+62 net). Gouvernance synchronisée (BACKLOG/INDEX/SESSIONS_HISTORY/
-TEST_COVERAGE/PROMPT_REPRISE).
+== Mission Session 135 (clôturée) — RENAME-4 ✅
 
-== Mission Session 132 (clôturée) — Prochaine : S-133
+Neutralisation fixtures tests « Formation FPA » → « Formation Content »
+(9 fichiers test, 11 occurrences, zéro code production). Assertions
+Gherkin/functional appariées aux fixtures. Références AFNOR conservées
+(référence publique, pas IP pilote). Gate cadrage VERT : `grep -ri fpa
+src/` = zéro match métier (faux positif `ofPattern` accepté). `check`
+BUILD SUCCESSFUL 13m16s. Baseline exacte vérifiée par stash A/B : **1166
+unit, 0 FAIL** avant et après (baseline gouvernance « 1172 » approximative).
+75 functional VERT, cucumber dédiés GREEN. Rapport :
+`.agents/sessions/135-rename-4-fixtures-fpa.adoc`.
 
-S-132 = **CAP-ANIM-TEST + CAP-PR2-COV TERMINÉS** — couverture de la totalité
-du code non testé livré par PR #2. `RemotionTiming` (port pur `Capsule.jsx`,
-25 unit + 3 intégration) + Cucumber `capsule_remotion_anim.feature` (3
-scénarios). Guard `ProcessMigrationGuardTest` + `ProcessRunnerCallerArgvTest`
-(9) + `FileReplaceDelegationTest` (4) + Cucumber `capsule_pr2_coverage.feature`
-(2 scénarios). Migration corrective `RemotionCapture.kt`/`RemotionTemplate.kt`
-vers `ProcessRunner`. 1172 unit VERT (+39 net), 75 functional, 21 cucumber
-dédiés GREEN. Borough Détroit = **tous EPICs terminés** → DORMANT.
+== Mission Session 136 — DORMANT (maintenance / nouveau cadrage au besoin)
 
-== Mission Session 133 — CAP-STEP-DIR CADUQUE (clôturée)
+Borough Détroit = tous EPICs terminés + RENAME-4 clôturé. Aucun EPIC actif.
+Candidats si demande pilote :
 
-EPIC **CAP-STEP-DIR** cadrage (US-0 ✅) : migration `build/capsule/` hardcodé
-→ `CapsuleOutputDirResolver`. **Prémisse invalidée par RED** :
-`cucumberTestArchBoundary` 2 FAILED sur le step TTS script (artefact en
-`build/capsules/demo_fr/demo_fr-script.txt`, pas `build/capsules/...`).
-Le plugin écrit les artefacts *script* dans `build/capsule` quoique
-`outputDir` ; seul vidéo/audio/subtitle honore `outputDir` (S-087).
-Hardcoder `build/capsule` pour les steps script est **correct**.
-
-Migration US-1→US-6 exécutée puis **revertée** (build recompile, suite
-arch boundary VERTE après revert). Aucun code modifié.
-
-== Mission Session 134 — DORMANT (maintenance / nouveau cadrage au besoin)
-
-Borough Détroit = tous EPICs terminés + CAP-STEP-DIR CADUQUE. Aucun EPIC
-actif. Prochaine session ne démarre que sur nouvelle demande ou cadrage.
-
-Dette résiduelle (`TODO.adoc:137`) close : l'item était fondé sur une
-prémisse fausse (scripts à `build/capsule` quoique `outputDir`).
+* RENAME-5 plantuml (cross-borough, registre non-traductible — 1 pt)
+* Maintenance opportuniste uniquement sur demande explicite
 
 == Méthodologie
 
-Baby-step DDD/TDD/BDD : 1 fichier à la fois, compilation entre chaque étape.
-Pas de subagent, pas de parallélisation.
-
-== Rappel CADUQUE
-
-Si uniformisation `outputDir` pour les artefacts script un jour nécessaire
-(breaking change des emplacements), ce sera un EPIC `CAP-OUTDIR-UNIFY`
-dédié — hors scope maintenance S-133.
+Baby-step DDD/TDD/BDD : 1 fichier à la fois, compilation entre chaque
+étape. Pas de subagent, pas de parallélisation.
 
 == Rappels
 
@@ -77,25 +49,18 @@ dédié — hors scope maintenance S-133.
 * Ports Ollama : 11437-11465 rotation (11434-11436 INTERDITS)
 * `LanguageCatalog` N0 (i18n-contracts 0.0.2) = 10 langues
   (en/zh/hi/es/fr/ar/bn/pt/ru/ur) — pas de "de"
-* `CapsuleMessages` object (domaine `capsule.i18n`) — 11 `Messages*.properties`
-  10 langues, 24 keys (23 + transcript S-118)
 * DSL 4 sources pattern : ENV < props < YAML < CLI
-* 3 loaders domaine `capsule.context` : `DocContextLoader`,
-  `PedagogicalScenarioLoader`, `GlossaryLoader`
-* Pattern object pur pour commande ffmpeg : `AudioPostCommand`
-  (`capsule.audio`), `SubtitleBurnInCommand` (`capsule`, CAP-27),
-  `FormatConversion` (`capsule`, CAP-MP4)
-* `capsule.feed.SlideSegment` — `index`, `title`, `speakerNote`, `type:
-  SlideType`, `manimScene: String?`. Source de vérité contenu pédagogique.
+* Pattern object pur pour commande ffmpeg : `AudioPostCommand`,
+  `SubtitleBurnInCommand`, `FormatConversion`, `PodcastConcatCommand`
+* `capsule.feed.SlideSegment` — source de vérité contenu pédagogique
 * `compileOnly(libs.slider)` conservé (runtime). `testImplementation(libs.slider)`
   RETIRÉ S-120 (Groovy 3.x conflit ProjectBuilder).
-* Catalogue : `slider-plugin` (artifactId réel S-067), slider 0.0.18, codebase
-  0.0.10, BOM 0.0.27.
-* 14 domaines DDD capsule : `capsule.feed`, `capsule.capture`, `capsule.tts`,
-  `capsule.subtitles`, `capsule.manim`, `capsule.config`, `capsule.multilang`,
-  `capsule.ai`, `capsule.context`, `capsule.pipeline`, `capsule.i18n`,
-  `capsule.validation`, `capsule.audio`, `capsule.transcript`, `capsule.remotion`.
-* `CapsuleOutputDirResolver` (package `capsule.support`) : lit `outputDir` du
-  `build.gradle` du projet de test → `build/<outputDir>/`. Défaut `"capsule"`.
-* Baseline : 1172 unit VERT, 75 functional VERT, 21 cucumber dédiés GREEN.
-* Java 25 requis (sdkman `25.0.4-tem`) — conventions-plugin 0.0.3 exige JVM 25.
+* Catalogue : `slider-plugin`, slider 0.0.18, codebase 0.0.13, BOM 0.0.27.
+* ⚠️ TODO REVERT : `codebase-gradle-plugin` épinglé (workaround bug amont
+  Gradle 9.7.1 `Provider<OcrEngine>`) — à remonter dès correctif amont.
+* 14 domaines DDD capsule (feed, capture, tts, subtitles, manim, config,
+  multilang, ai, context, pipeline, i18n, validation, audio, transcript,
+  remotion, podcast, support, preview...).
+* Baseline : **1166 unit VERT (valeur exacte S-135), 75 functional VERT,
+  21 cucumber dédiés GREEN**.
+* Java 25 requis (sdkman `25.0.4-tem`) — conventions-plugin 0.0.4 exige JVM 25.

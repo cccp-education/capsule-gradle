@@ -43,9 +43,9 @@ class CapsuleScenarioLoaderTest {
         val adoc = File(tempDir, "001_bienvenue.adoc").also {
             it.writeText(
                 """
-                = Bienvenue dans la Formation FPA
+                = Bienvenue dans la Formation Content
                 :module: accueil
-                :title: Bienvenue dans la Formation FPA
+                :title: Bienvenue dans la Formation Content
 
                 == Objectifs
                 - Comprendre le cadre de la formation

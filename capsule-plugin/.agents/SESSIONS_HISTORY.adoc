@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-09-07 (S-134) — sync gouvernance post-S-133. Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-09-08 (S-135) — RENAME-4 neutralisation fixtures. Rapports détaillés dans `.agents/sessions/`.
 
-== 14 dernières sessions (121-134)
+== 14 dernières sessions (122-135)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 135 | 2026-09-08 | refactor+tests | **RENAME-4** — neutralisation fixtures tests "Formation FPA" → "Formation Content" (EPIC RENAME transverse, baby-step 4e). 9 fichiers test (8 Kotlin + 1 feature Gherkin), 11 occurrences, assertions Gherkin/functional appariées aux fixtures, références AFNOR conservées (référence publique). Gate cadrage VERT : `grep -ri fpa src/` = zéro match métier (faux positif `ofPattern` accepté), check BUILD SUCCESSFUL 13m16s, baseline exacte vérifiée par stash A/B : 1166 unit 0 FAIL avant et après (baseline gouvernance "1172" approximative). Zéro code production. Rapport `.agents/sessions/135-rename-4-fixtures-fpa.adoc`. | 9/10
 
 | 134 | 2026-09-07 | governance | **Sync gouvernance post-S-133** — BACKLOG : titre "BACKLOG ACTIF" corrigé (vide, tous EPICs ✅/CADUQUE). TODO.adoc dégelé S-124 → S-134 (sessions 125→133 résumées). Zéro code production, zéro bump BOM, zéro secret. Baseline S-133 préservée (1172 unit 0 FAIL). Rapport `.agents/sessions/134-sync-gouvernance-post-133.adoc`. | 9/10
 
@@ -38,8 +40,6 @@ _Derniere rotation_ : 2026-09-07 (S-134) — sync gouvernance post-S-133. Rappor
 | 121 | 2026-08-25 | merge+fix | **Intégration PR #1 (lion92) + fix ScreenshotCaptureImpl + gate Playwright** — merge 8 commits (fix build/i18n/capture/TTS, feat CAP-ANIM). Gate Playwright (`PlaywrightTestGuard` + `assumeTrue`). 937 unit 0 FAIL (+7 guard). | 9/10
 
 | 120 | 2026-08-25 | cross-borough | **EPIC MEMPHIS-BOM-FIX US-5** — catalogue capsule fixé `slider`→`slider-plugin`, slider 0.0.18, codebase 0.0.10, BOM 0.0.27. Bug Groovy 3.x conflit ProjectBuilder fixé (retrait `testImplementation(libs.slider)`). 917 tests 0 FAIL. CAP-TRANSCRIPT EPIC TERMINÉ. | 10/10
-
-| 119 | 2026-08-16 | bdd+cloture | **CAP-TRANSCRIPT US-5 Cucumber BDD** — `capsule_transcript.feature` 4 scénarios + runner dédié + steps. BUILD SUCCESSFUL. EPIC CAP-TRANSCRIPT 6/6 US. | 9/10
 |===
 
 == Sessions archivées (000-117) — résumé compact

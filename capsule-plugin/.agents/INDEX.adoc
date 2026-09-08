@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-09-07 (S-215 globale — cadrage EPIC RENAME (US-4 capsule, FPA→content/CDA→coding, transverse 7 boroughs) : fixtures tests "Formation FPA" → génériques + check baseline. Zéro code modifié. Doc `.agents/CADRAGE_EPIC_RENAME.adoc`.)
-_Derniere session terminee_ : 215 (globale) — Cadrage RENAME (gouvernance pure).
-_Prochaine session_ : RENAME-4 (1 pt, 4e baby-step) OU maintenance DORMANT au besoin.
-_Session en cours_ : — (S-133 terminée, CADUQUE).
+ _Derniere mise a jour_ : 2026-09-08 (S-135 — RENAME-4 : neutralisation fixtures tests "Formation FPA" → "Formation Content" (9 fichiers test, 11 occurrences, assertions appariées, zéro code production). EPIC RENAME transverse, baby-step 4e. Doc `.agents/CADRAGE_EPIC_RENAME.adoc`.)
+_Derniere session terminee_ : 135 — RENAME-4 (refactor tests).
+_Prochaine session_ : DORMANT (maintenance OU RENAME-5 plantuml sur demande).
+_Session en cours_ : — (S-135 terminée, RENAME-4).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -22,31 +22,31 @@ _Session en cours_ : — (S-133 terminée, CADUQUE).
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (119-128)
+== 10 dernières sessions (126-135)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
 
-| 128 | 2026-08-26 | tdd+bdd+cloture | **EPIC CAP-PREVIEW TERMINÉ 3/3 US** — `PreviewConfig` (14e section) + `mergePreviewConfig` 4 sources + `ScreenshotCaptureImpl` previewOnly short-circuit + Guards `captureDeckSequential`/`captureDeckParallel` + Cucumber `capsule_preview.feature` 3 scénarios `@preview` + runner dédié 18e + `PreviewExtensionFunctionalTest` 3 tests. 1034 unit VERT (+11 net), 75 functional VERT (+3 net). Domaine `capsule.preview` (14e) clos. | 9/10
+| 135 | 2026-09-08 | refactor+tests | **RENAME-4** — neutralisation fixtures tests "Formation FPA" → "Formation Content" (9 fichiers test, 11 occurrences, assertions Gherkin/functional appariées, zéro code production). Gate cadrage VERT : grep fpa = 0 métier, check 13m16s, baseline exacte 1166 unit vérifiée stash A/B. EPIC RENAME transverse baby-step 4e. | 9/10
 
-| 127 | 2026-08-26 | feat+bdd+cloture | **CAP-PODCAST US-2** — `GenerateCapsulePodcastTask` (113 lignes) + `CapsuleManager.registerGeneratePodcastTask` (16ème) + `CapsuleMessages` 25ème key (11 properties) + Cucumber `capsule_podcast.feature` 3 scénarios `@podcast` + runner dédié 17ème `cucumberTestPodcast` + `GeneratePodcastFunctionalTest` 3 tests. 1023 unit VERT (+9 i18n), 72 functional VERT (+3). EPIC CAP-PODCAST TERMINÉ 3/3 US. Domaine `capsule.podcast` clos. | 9/10
+| 134 | 2026-09-07 | governance | **Sync gouvernance post-S-133** — BACKLOG titre 'ACTIF' corrigé (VIDE, DORMANT), TODO.adoc dégelé S-124→S-134. Zéro code. | 9/10
 
-| 126 | 2026-08-25 | feat+ddd+tdd | **CAP-PODCAST US-1** — domaine `capsule.podcast` (13ème) créé : `PodcastConfig` + `PodcastConcatenator` interface + `PodcastConcatCommand` object pur + `PodcastConcatenatorImpl` FFmpeg concat demuxer + `NoOpPodcastConcatenator` + `CapsuleConfig` 13ème section + `mergePodcastConfig` 4 sources + `resolvePodcastConcatenator` 8ème factory. 1014 unit VERT (+28 net). EPIC 2/3 US. | 9/10
+| 133 | 2026-08-29 | cadrage+revert | **CAP-STEP-DIR CADUQUE** — prémisse invalidée par RED (cucumberTestArchBoundary), migration revertée, zéro code. | 8/10
 
-| 125 | 2026-08-25 | cadrage | **CAP-PODCAST US-0 Cadrage** — 15 constats + 12 décisions. Domaine `capsule.podcast` 13ème. 3 US ~4 pts. | 9/10
+| 132 | 2026-08-25 | tdd+bdd+cloture | **EPIC CAP-ANIM-TEST + CAP-PR2-COV TERMINÉS** — RemotionTiming + guard migration + argv + FileReplace. 1172 unit (+39). | 9/10
 
-| 124 | 2026-08-25 | tdd+cloture | **EPIC CAP-28 TERMINÉ 4/4 US** — coverage gaps 9 unit. 986 unit VERT (+9 net). | 8/10
+| 131 | 2026-08-25 | merge+fix | **Merge PR #2 (lion92)** — ProcessRunner anti-deadlock + FileReplace.moveOver + Manim débloqué + espeak-ng auto. EPIC CAP-MAINT-PIPELINE 6/6. 1133 unit (+62). | 9/10
 
-| 123 | 2026-08-25 | audit | **CAP-28 US-0 audit partiel** — 3 fichiers low-coverage gaps. Clôture anticipée. | 7/10
+| 130 | 2026-08-25 | feat | **CAP-CR3-4** — convention Gradle resolveScriptDir/resolveDeckDir configurable. | 9/10
 
-| 122 | 2026-08-25 | tdd+bdd+cloture | **EPIC CAP-ANIM TERMINÉ 3/3 US** — code Remotion PR #1 + 40 unit + 3 cucumber + 2 functional + restauration `build.gradle.kts`. 977 unit VERT (+40 net). Domaine `capsule.remotion` (12ème) clos. | 9/10
+| 129 | 2026-08-25 | feat+bdd | **CAP-CHAPITRE** — intro/outro cards + chapter markers Matroska. | 9/10
 
-| 121 | 2026-08-25 | merge+fix | **Intégration PR #1 (lion92) + gate Playwright** — merge 8 commits + fix ScreenshotCaptureImpl + `PlaywrightTestGuard`. 937 unit 0 FAIL (+7 guard). | 9/10
+| 128 | 2026-08-26 | tdd+bdd+cloture | **EPIC CAP-PREVIEW TERMINÉ 3/3 US** — PreviewConfig + previewOnly short-circuit + Cucumber. 1034 unit (+11). | 9/10
 
-| 120 | 2026-08-25 | cross-borough | **EPIC MEMPHIS-BOM-FIX US-5** — catalogue `slider`→`slider-plugin`, BOM 0.0.27. Bug Groovy 3.x fixé. CAP-TRANSCRIPT TERMINÉ. | 10/10
+| 127 | 2026-08-26 | feat+bdd+cloture | **CAP-PODCAST US-2 + clôture EPIC** — GenerateCapsulePodcastTask + Cucumber + runner 17e. 1023 unit (+9). | 9/10
 
-| 119 | 2026-08-16 | bdd+cloture | **CAP-TRANSCRIPT US-5 Cucumber BDD** — 4 scénarios + runner dédié. EPIC CAP-TRANSCRIPT 6/6 US. | 9/10
+| 126 | 2026-08-25 | feat+ddd+tdd | **CAP-PODCAST US-1** — domaine capsule.podcast (13e) : PodcastConfig + Concatenator + factory 8e. 1014 unit (+28). | 9/10
 |===
 
 _Sessions 000-117 archivées_ : rapports dans `.agents/sessions/`, résumé dans `SESSIONS_HISTORY.adoc` + `.agents/archives/CONTEXT_ARCHIVE_2026-08-rot1.adoc`.
@@ -80,6 +80,7 @@ _Sessions 000-117 archivées_ : rapports dans `.agents/sessions/`, résumé dans
 | CAP-ANIM-TEST | Couverture timing JS Remotion (`Capsule.jsx`) — 6 US, 1172 unit (+39) + 3 cucumber | ✅ TERMINÉ (S-132) | P2
 | CAP-PR2-COV | Couverture 14 appelants Kotlin migrés PR #2 (ProcessRunner/FileReplace) — 5 US, +14 tests + 2 cucumber | ✅ TERMINÉ (S-132) | P2
 | CAP-STEP-DIR | Migration `build/capsule/` hardcodé → `CapsuleOutputDirResolver` — CADUQUE (S-133) : prémisse invalidée, scripts à `build/capsule` quoique `outputDir` | ✅ CADUQUE (S-133) | P2
+| RENAME-4 | Neutralisation fixtures tests "Formation FPA" → "Formation Content" (EPIC RENAME transverse) — 9 fichiers test, zéro code production | ✅ TERMINÉ (S-135) | P2
 | CAP-28 | Coverage gaps Kover — 4 US, 986 unit | ✅ TERMINÉ (S-124) | P2
 | CAP-27 | VTT burn-in — 3 US, 866 unit | ✅ TERMINÉ (S-113) | P2
 | CAP-26 | Style burn-in configurable | ✅ TERMINÉ (S-039) | P1
@@ -111,8 +112,8 @@ _Details EPICs terminés_ : rapports dans `.agents/sessions/`, détails archivé
 | `doc/CAPSULE_ARCHITECTURE.adoc` | Cadrage architecture pipeline capsule | LAZY
 |===
 
-_Total_ : 28 EPICs terminés (0 TODO). _Baseline courante_ :
-1172 unit VERT, 75 functional VERT, 21 cucumber dédiés GREEN.
+_Total_ : 29 EPICs terminés (0 TODO). _Baseline courante_ (S-135, exacte) :
+1166 unit VERT, 75 functional VERT, 21 cucumber dédiés GREEN.
 
 _Décision architecture_ : Docker FFmpeg reporté MVP1 (fausse bonne idée
 pour MVP0 — gain fonctionnel nul, complexité ajoutée). FFmpeg reste local

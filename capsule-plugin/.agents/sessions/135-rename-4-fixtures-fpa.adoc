@@ -1,0 +1,95 @@
+= Session 135 — RENAME-4 : neutralisation fixtures tests "Formation FPA" (EPIC RENAME transverse)
+:date: 2026-09-08
+:source: Session 135 (RENAME-4, baby-step 4e de l'EPIC RENAME)
+:type: refactor+tests
+:borough: Détroit — capsule-gradle (N2, capsules vidéo reveal.js + TTS)
+:status: TERMINÉE
+:cadre: EPIC RENAME — voir `.agents/CADRAGE_EPIC_RENAME.adoc` (S-215 globale)
+
+== Contexte hérité
+
+Session 215 (globale, 2026-09-07) — Cadrage EPIC RENAME : neutralisation du
+nommage métier privé (FPA→content, CDA→coding) dans les 7 boroughs publics.
+Rationale pilote : FPA est un fond de commerce (talaria.school), il n'a pas
+vocation à vivre dans le nommage public Apache 2.0. Baby-steps actés :
+RENAME-1 codebase ✅ (S-212, bump 0.0.12), RENAME-2 document, RENAME-3
+bakery, RENAME-4 capsule (cette session), RENAME-5 plantuml, RENAME-6
+graphify/codex gouvernance.
+
+== Mission Session 135 — RENAME-4 (1 pt)
+
+Neutraliser les fixtures de test mentionnant « FPA » — zéro changement
+sémantique, pur renommage (gate cadrage : check VERT baseline exacte +
+`grep -ri fpa src/` = zéro match hors faux positifs).
+
+=== Audit réel (écart cadrage)
+
+Le cadrage annonçait 4 fichiers ; le grep réel en trouve **9**
+(8 Kotlin + 1 feature Gherkin, 11 occurrences) :
+
+- `src/test/kotlin/capsule/context/GlossaryLoaderTest.kt` (fixture `= Glossaire FPA`)
+- `src/test/kotlin/capsule/context/CapsuleScenarioLoaderTest.kt` (fixture
+  `= Bienvenue dans la Formation FPA` × 2 : titre + attribut `:title:`)
+- `src/test/kotlin/capsule/scenarios/CapsuleDocContextSteps.kt` (fixture
+  `AFNOR grading rules for FPA formation.`)
+- `src/test/kotlin/capsule/scenarios/CapsuleScenarioContextSteps.kt` (fixture
+  `= Bienvenue dans la Formation FPA`)
+- `src/test/kotlin/capsule/scenarios/CapsuleGlossaryContextSteps.kt`
+  (fixtures × 2 : `= Formation FPA — Glossaire AFNOR/REAC` +
+  `= Formation FPA — Document without glossary`)
+- `src/test/features/capsule_doc_context.feature` (2 assertions Gherkin
+  appariées `AFNOR grading rules for FPA` — scénarios 2 et 3)
+- `src/functionalTest/kotlin/capsule/context/DocContextFunctionalTest.kt`
+  (fixture appariée à la feature)
+- `src/functionalTest/kotlin/capsule/context/ScenarioContextFunctionalTest.kt`
+  (fixture + assertion appariée `Session: Bienvenue dans la Formation FPA`)
+- `src/functionalTest/kotlin/capsule/context/GlossaryContextFunctionalTest.kt`
+  (fixture `= Formation FPA — Glossaire AFNOR/REAC`)
+
+=== Décisions
+
+- D1 : terme de substitution « Content » (aligné RENAME-1 codebase
+  S-212 : `Domain.CONTENT`) — fixtures `Formation Content`,
+  `Glossaire Content`, `AFNOR grading rules for content formation.`
+- D2 : références publiques AFNOR **conservées** (même règle que
+  qualiopi/rncp/vae chez codebase — références publiques françaises,
+  pas IP du pilote).
+- D3 : assertions Gherkin/functional **appariées** aux fixtures (le step
+  doc context écrit la fixture que la feature affirme — renommage
+  cohérent des deux côtés de la paire).
+- D4 : zéro code production touché — `VideoDestinationResolver.kt` match
+  grep = faux positif `ofPattern` (`ofPa`), explicitement accepté par le
+  cadrage (même famille que `ggufPa`/`ofPa`).
+
+== Déroulement (baby-step, 4 vagues)
+
+. *Unit* : GlossaryLoaderTest (1) + CapsuleScenarioLoaderTest (2).
+. *Steps Cucumber* : CapsuleDocContextSteps (1) +
+  CapsuleScenarioContextSteps (1) + CapsuleGlossaryContextSteps (2).
+. *Feature Gherkin* : capsule_doc_context.feature (2 assertions).
+. *Functional* : DocContextFunctionalTest (1) +
+  ScenarioContextFunctionalTest (2 : fixture + assertion) +
+  GlossaryContextFunctionalTest (1).
+
+== Résultats
+
+- ✅ Gate grep cadrage : `grep -ri fpa src/` = **1 match** (faux positif
+  `ofPattern` accepté) — zéro occurrence métier.
+- ✅ Suites ciblées : `test` (2 classes) VERT, `cucumberTestDocContext` +
+  `cucumberTestScenarioContext` + `cucumberTestGlossaryContext` VERT,
+  `functionalTest` VERT.
+- ✅ Gate check complet : `./gradlew check` BUILD SUCCESSFUL 13m16s.
+- ✅ Baseline exacte vérifiée par stash A/B : **1166 unit, 0 skipped,
+  0 FAIL** avant ET après (la baseline gouvernance « 1172 » était
+  approximative ; 1166 est la valeur réelle). 75 functional VERT.
+- ✅ Zéro fichier production modifié (9 fichiers test only).
+
+== Gouvernance synchronisée
+
+- BACKLOG : RENAME-4 ajouté (✅ TERMINÉ S-135).
+- INDEX : dernière session 135, prochaine = maintenance OU RENAME-5
+  plantuml (cross-borough).
+- SESSIONS_HISTORY : entrée S-135.
+- TODO.adoc : item RENAME-4 coché.
+- PROMPT_REPRISE : mission S-136.
+- Archive : COMPLETED_TASKS_ARCHIVE_2026-08.adoc (entrée S-135).

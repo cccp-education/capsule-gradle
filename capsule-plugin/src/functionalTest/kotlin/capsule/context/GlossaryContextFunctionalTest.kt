@@ -44,7 +44,7 @@ class GlossaryContextFunctionalTest {
         val glossaryFile = projectDir.resolve("glossary.adoc")
         glossaryFile.writeText(
             """
-            = Formation FPA — Glossaire AFNOR/REAC
+            = Formation Content — Glossaire AFNOR/REAC
 
             == Glossary
 

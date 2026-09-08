@@ -78,7 +78,7 @@ class GlossaryLoaderTest {
         val glossary = File(tempDir, "glossary.adoc").also {
             it.writeText(
                 """
-                = Glossaire FPA
+                = Glossaire Content
 
                 == Glossary
                 - compétence transversale: savoir-faire mobilisable across contexts

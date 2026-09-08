@@ -1,5 +1,17 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-09-07 (Sync gouvernance post-S-133 — **Borough DORMANT, 0 EPIC actif**. Sessions 125→133 consignées dans INDEX : CAP-PODCAST ✅ S-127, CAP-PREVIEW ✅ S-128, CAP-CHAPITRE ✅ S-129, CAP-CR3-4 ✅ S-130, CAP-TRANSCRIPT ✅ 6/6 S-119/S-120, CAP-ANIM-TEST ✅ S-132, CAP-STEP-DIR ✅ CADUQUE S-133. 28 EPICs terminés, 0 TODO.)
+:last_update: 2026-09-08 (S-135 RENAME-4 ✅ — neutralisation fixtures tests "Formation FPA" → "Formation Content" (EPIC RENAME transverse baby-step 4e, 9 fichiers test, zéro code production). **Borough DORMANT, 0 EPIC actif**. Prochain candidat : RENAME-5 plantuml sur demande pilote.)
+
+'''
+== ✅ RENAME-4 — Neutralisation fixtures tests FPA (S-135)
+
+. [x] Audit réel : 9 fichiers test (8 Kotlin + 1 feature Gherkin), 11 occurrences (cadrage annonçait 4 — grep élargi)
+. [x] Unit : GlossaryLoaderTest + CapsuleScenarioLoaderTest
+. [x] Steps Cucumber : CapsuleDocContextSteps + CapsuleScenarioContextSteps + CapsuleGlossaryContextSteps
+. [x] Feature Gherkin : capsule_doc_context.feature (2 assertions appariées)
+. [x] Functional : DocContextFunctionalTest + ScenarioContextFunctionalTest (fixture + assertion) + GlossaryContextFunctionalTest
+. [x] Références AFNOR conservées (référence publique, pas IP pilote)
+. [x] Gate grep : `grep -ri fpa src/` = zéro match métier (faux positif `ofPattern`)
+. [x] Gate check VERT 13m16s + baseline exacte 1166 unit vérifiée stash A/B
 
 '''
 == ✅ EPIC CAP-MODEL — TERMINE (session 069)

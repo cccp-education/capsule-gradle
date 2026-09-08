@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-08-29 (S-133 CAP-STEP-DIR — migration chemins build/capsule/ hardcodés)
+:last_update: 2026-09-08 (S-135 RENAME-4 — neutralisation fixtures tests FPA → Content)
 
 '''
 == 📦 Publication Maven Central ✅
@@ -76,6 +76,16 @@ _Borough DORMANT — la liste ci-dessous est un historique des EPICs récemment 
   EPIC **CADUQUE** — voir `.agents/sessions/133-cap-step-dir-cadrage.adoc`.
 | P2
 | ✅ CADUQUE (S-133) — US-0 ✅ S-133, migration US-1→US-6 revertée (RED)
+
+| RENAME-4
+| **Neutralisation fixtures tests "Formation FPA" → "Formation Content"**
+  (EPIC RENAME transverse 7 boroughs, baby-step 4e — voir
+  `.agents/CADRAGE_EPIC_RENAME.adoc`). 9 fichiers test (8 Kotlin + 1
+  feature Gherkin), 11 occurrences, assertions appariées, références
+  AFNOR conservées. Zéro code production. Gate cadrage VERT (grep fpa = 0
+  métier, check 13m16s, baseline exacte 1166 unit vérifiée stash A/B).
+| P2
+| ✅ TERMINÉ (S-135)
 |===
 
 '''
@@ -257,17 +267,18 @@ Rapports par US dans `.agents/sessions/`._
 | CAP-MAINT-PIPELINE | Robustesse pipeline processus + rendus Manim + sync anim Remotion (PR #2) | 6 | ✅ TERMINÉ (S-131)
 | CAP-ANIM-TEST | Couverture timing JS Remotion (`Capsule.jsx`) — `RemotionTiming` | 6 | ✅ TERMINÉ (S-132)
 | CAP-PR2-COV | Couverture 14 appelants Kotlin migrés PR #2 (ProcessRunner/FileReplace) | 5 | ✅ TERMINÉ (S-132)
+| RENAME-4 | Neutralisation fixtures tests FPA → Content (EPIC RENAME transverse) | 1 | ✅ TERMINÉ (S-135)
 | CAP-0→CAP-12 | Bootstrap → split CapsuleManager | — | ✅ TERMINÉ
 |===
 
-_Total_ : 30 EPICs terminés (0 TODO). _Baseline courante_ :
-1172 unit VERT, 75 functional VERT, cucumber dédiés GREEN (21
+_Total_ : 30 EPICs terminés (0 TODO). _Baseline courante_ (S-135, exacte) :
+1166 unit VERT, 75 functional VERT, cucumber dédiés GREEN (21
 `CucumberTaskSpec`).
 
 '''
 == Points d'attention
 
-* 1172 unit VERT (S-132 baseline, +39 net S-131→S-132), 75 functional VERT, 21 cucumber dédiés GREEN
+* 1166 unit VERT (S-135 baseline exacte, vérifiée stash A/B), 75 functional VERT, 21 cucumber dédiés GREEN
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082) + steps
   préfixés par feature (bug S-088 glue `capsule.scenarios` partagée)
@@ -281,6 +292,8 @@ _Total_ : 30 EPICs terminés (0 TODO). _Baseline courante_ :
   — anti-interblocage tube 64 Kio + délai de garde. 14 appelants migrés + couverts (S-132).
 * `FileReplace.moveOver` (nouveau S-131) = déplacement honnête (zéro perte
   silencieuse). Remplace tous les `renameTo` ignorés.
+* RENAME-4 ✅ S-135 : fixtures tests neutralisées ("Formation Content").
+  Gate `grep -ri fpa src/` = zéro match métier (faux positif `ofPattern`).
 * ⚠️ **TODO REVERT** : `codebase-gradle-plugin` épinglé 0.0.10 (lib 0.0.11) —
   workaround bug amont `Provider<OcrEngine>` Gradle 9.7.1. À remonter dès
   correctif amont publié.
@@ -299,7 +312,7 @@ _Total_ : 30 EPICs terminés (0 TODO). _Baseline courante_ :
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 1071 unit VERT (S-130 baseline), 75 functional VERT, cucumber dédiés GREEN
+* 1166 unit VERT (S-135 baseline exacte), 75 functional VERT, cucumber dédiés GREEN
 * `cucumberTest` skippé par défaut (CR-10), `cucumberTestIntegration` skippé
   par défaut (Playwright gate S-121)
 * DSL 4 sources pattern : ENV < props < YAML < CLI

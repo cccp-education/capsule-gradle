@@ -47,7 +47,7 @@ class CapsuleGlossaryContextSteps {
         val glossaryFile = projectDir!!.resolve("glossary.adoc")
         glossaryFile.writeText(
             """
-            = Formation FPA — Glossaire AFNOR/REAC
+            = Formation Content — Glossaire AFNOR/REAC
 
             == Glossary
 
@@ -67,7 +67,7 @@ class CapsuleGlossaryContextSteps {
         val glossaryFile = projectDir!!.resolve("glossary.adoc")
         glossaryFile.writeText(
             """
-            = Formation FPA — Document without glossary
+            = Formation Content — Document without glossary
 
             == Introduction
 
