@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-09-08 (S-135 — RENAME-4 étendu pilote : neutralisation vocabulaire métier formation FPA + AFNOR/REAC + SPD/SPG → génériques (16 fichiers : 5 prod + 11 test). **Breaking change prod** : type "content" (ex-"SPD") enveloppe K-2. Doc `.agents/CADRAGE_EPIC_RENAME.adoc`.)
-_Derniere session terminee_ : 135 — RENAME-4 (refactor prod+tests).
+ _Derniere mise a jour_ : 2026-09-10 (S-136 — TODO REVERT maintenance : `codebase-gradle-plugin` dépin 0.0.10 → 0.0.14 aligné lib codebase N1 0.0.14. Correctif amont `fb19b7c` Provider<OcrEngine> vérifié (git log + strings jar). Commentaire workaround périmé retiré. Check VERT 15m49s, baseline exacte 1166 unit + 75 functional + 21 cucumber 0 FAIL.)
+_Derniere session terminee_ : 136 — TODO REVERT (build/deps).
 _Prochaine session_ : DORMANT (maintenance OU RENAME-5 plantuml sur demande).
-_Session en cours_ : — (S-135 terminée, RENAME-4).
+_Session en cours_ : — (S-136 terminée, TODO REVERT).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -22,11 +22,13 @@ _Session en cours_ : — (S-135 terminée, RENAME-4).
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (126-135)
+== 10 dernières sessions (126-136)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 136 | 2026-09-10 | build/deps | **TODO REVERT** — dépin `codebase-gradle-plugin` 0.0.10 → 0.0.14 (aligné lib codebase N1). Correctif amont `fb19b7c` (Provider<OcrEngine> supprimé) vérifié. Commentaire workaround périmé retiré. Check VERT 15m49s, baseline exacte 1166 unit + 75 functional + 21 cucumber 0 FAIL. | 9/10
 
 | 135 | 2026-09-08 | refactor+tests | **RENAME-4 étendu pilote** — neutralisation vocabulaire métier formation : FPA (9 test) + AFNOR/REAC/SPD/SPG (5 prod + 11 test). Breaking change prod : `CapsuleScenarioLoader` `type == "content"` (ex-"SPD"). Gate : grep 5 termes = 0, check 13m54s, 1166 unit 0 FAIL + 75 functional. | 9/10
 
@@ -112,7 +114,7 @@ _Details EPICs terminés_ : rapports dans `.agents/sessions/`, détails archivé
 | `doc/CAPSULE_ARCHITECTURE.adoc` | Cadrage architecture pipeline capsule | LAZY
 |===
 
-_Total_ : 29 EPICs terminés (0 TODO). _Baseline courante_ (S-135, exacte) :
+_Total_ : 29 EPICs terminés (0 TODO). _Baseline courante_ (S-136, exacte) :
 1166 unit VERT, 75 functional VERT, 21 cucumber dédiés GREEN.
 
 _Décision architecture_ : Docker FFmpeg reporté MVP1 (fausse bonne idée

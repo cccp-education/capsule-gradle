@@ -1,0 +1,30 @@
+= COMPLETED_TASKS_ARCHIVE — Septembre 2026
+:date: 2026-09-10
+
+== Session 136 — TODO REVERT: dépin codebase-gradle-plugin ✅
+
+Maintenance opportuniste (backlog DORMANT) — `gradle/libs.versions.toml` :
+`codebase-gradle-plugin` 0.0.10 → **0.0.14** (aligné lib codebase N1,
+bundle Central `3e82490d` S-214). Le pin 0.0.10 était un workaround d'un
+bug amont Gradle 9.7.1 (`CodebaseOcrExtension` déclarait
+`abstract val ocrEngine: Provider<OcrEngine>`, décoration impossible —
+« Cannot have abstract method ... »). Correctif amont `fb19b7c`
+(propriété morte supprimée) vérifié via : git log codebase + `strings`
+sur `CodebaseOcrExtension.class` 0.0.14 (seuls `getGeminiApiKeys`
+présents, zéro `getOcrEngine`) + marker plugin
+`education.cccp.codebase.gradle.plugin:0.0.14` mavenLocal/Central.
+Commentaire workaround 7 lignes retiré du catalogue.
+
+Gates : compileKotlin VERT (le plugin s'applique sous Gradle 9.7.1),
+`test` 1166 unit 0 FAIL, `functionalTest` 75 0 FAIL, `check` VERT 15m49s
+(38 tasks, 21 cucumber dédiés GREEN). Baseline exacte préservée,
+zéro code production, zéro test modifié.
+
+== Session 135 — RENAME-4 fixtures FPA ✅
+
+Neutralisation vocabulaire métier formation — 16 fichiers (5 prod + 11
+test) : vague 1 FPA → "Formation Content" (9 test), vague 2 AFNOR/REAC/
+SPD/SPG génériques (**breaking change prod** `CapsuleScenarioLoader`
+`type == "content"`, enveloppe K-2). Gate : grep 5 termes = 0. Check
+VERT 13m54s, baseline 1166 unit + 75 functional 0 FAIL. Détail :
+`.agents/sessions/135-rename-4-fixtures-fpa.adoc`.

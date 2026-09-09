@@ -1,0 +1,69 @@
+= Session 136 — TODO REVERT : dépin codebase-gradle-plugin 0.0.10 → 0.0.14
+:date: 2026-09-10
+:source: Session 136 (maintenance opportuniste, TODO REVERT backlog)
+:type: build/deps
+:borough: Détroit — capsule-gradle (N2, capsules vidéo reveal.js + TTS)
+:status: TERMINÉE
+:cadre: Maintenance opportuniste — backlog DORMANT, TODO REVERT acté
+
+== Contexte hérité
+
+Borough Détroit : tous EPICs terminés (DORMANT). Seul point d'attention
+restant au BACKLOG = **TODO REVERT** : `codebase-gradle-plugin` épinglé
+`0.0.10` comme workaround d'un bug amont Gradle 9.7.1 — `CodebaseOcrExtension`
+(codebase) déclarait `abstract val ocrEngine: Provider<OcrEngine>`, et Gradle
+ne sait décorer des propriétés abstraites que de type `Property`/`ListProperty`
+— jamais un `Provider` nu. Application échouait sur « Cannot have abstract
+method CodebaseOcrExtension.getOcrEngine(): Provider<OcrEngine> ».
+
+Le correctif amont `fb19b7c` (suppression de la propriété morte) a été publié
+dans codebase-gradle ≥ 0.0.11 ; la lib `codebase-plugin` est maintenant à
+0.0.14 (bump pub S-214, bundle `3e82490d`).
+
+== Mission Session 136 — TODO REVERT (1 fichier)
+
+Rebasculer le plugin Gradle `education.cccp.codebase` sur la version alignée
+de la lib N1 et retirer le commentaire workaround périmé.
+
+=== Changement
+
+`gradle/libs.versions.toml` :
+
+- `codebase-gradle-plugin = "0.0.10"` (pin workaround) → `"0.0.14"`
+- Commentaire 7 lignes « épinglé une version en arrière / 0.0.11 ne s'applique
+  pas sous Gradle 9.7.1 / Cannot have abstract method ... » → remplacé par
+  « Plugin Gradle aligné sur la lib (0.0.14) »
+
+=== Vérification correctif amont (audit préalable)
+
+- `git log` codebase : `fb19b7c fix(ocr): CodebaseOcrExtension — propriété
+  morte ocrEngine Provider<OcrEngine> supprimée (décoration Gradle impossible)`
+  présent dans codebase ≥ 0.0.11.
+- Jar `codebase-plugin-0.0.14` : `unzip -p ... CodebaseOcrExtension.class |
+  strings` = `getGeminiApiKeys` présents, **aucun `getOcrEngine`**.
+- Marker plugin `education.cccp.codebase.gradle.plugin:0.0.14` présent en
+  mavenLocal + publié Central (BOM 0.0.27).
+
+== Gates
+
+[cols="2,3", options="header"]
+|===
+| Gate | Résultat
+| `./gradlew compileKotlin` | VERT — plugin 0.0.14 s'applique sous Gradle 9.7.1
+| `./gradlew test` | VERT 2m06s — 1166 unit, 0 FAIL (baseline exacte S-135)
+| `./gradlew functionalTest` | VERT 3m14s — 75 functional, 0 FAIL
+| `./gradlew check` | VERT 15m49s — 38 tasks, cucumber 21 dédiés GREEN
+| Baseline totale | 1166 unit + 75 functional = **0 FAIL** (non-régression stricte)
+|===
+
+== Leçons / constats
+
+- Le bug amont `Provider<OcrEngine>` est corrigé dans codebase ≥ 0.0.11
+  (`fb19b7c`) — le pin 0.0.10 était périmé depuis la publication de 0.0.12.
+- Bump de version catalog pure : zéro code production modifié, zéro test
+  modifié, backward compat totale.
+
+== Session suivante
+
+DORMANT — tous EPICs terminés. Prochains candidats sur demande pilote :
+RENAME-5 plantuml (cross-borough), maintenance opportuniste.

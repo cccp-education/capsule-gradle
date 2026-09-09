@@ -1,38 +1,32 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 135
+:session: 136
 :borough: Détroit
-:session_precedente: 134 — Sync gouvernance post-S-133
+:session_precedente: 135 — RENAME-4 fixtures FPA
 
 == Contexte Hérité
 
 Session 215 (globale) — Cadrage EPIC RENAME (transverse 7 boroughs) :
 neutralisation nommage métier privé FPA→content / CDA→coding. Doc
 `.agents/CADRAGE_EPIC_RENAME.adoc`. Baby-steps : RENAME-1 codebase ✅
-S-212 (bump 0.0.12), RENAME-4 capsule ✅ S-135 (cette session).
+S-212 (bump 0.0.12), RENAME-4 capsule ✅ S-135.
 
-Session 134 — Sync gouvernance post-S-133 : BACKLOG titre "ACTIF" corrigé
-(VIDE, DORMANT), TODO.adoc dégelé S-124→S-134.
+Session 135 — RENAME-4 (clôturée) : neutralisation vocabulaire métier
+16 fichiers (5 prod + 11 test), gate grep 5 termes = 0, check VERT 13m54s,
+baseline 1166 unit + 75 functional 0 FAIL.
 
-== Mission Session 135 (clôturée) — RENAME-4 ✅ (étendu pilote)
+## Mission Session 136 (clôturée) — TODO REVERT ✅
 
-Neutralisation vocabulaire métier formation — 16 fichiers (5 prod + 11 test) :
+Dépin `codebase-gradle-plugin` 0.0.10 → **0.0.14** (aligné lib codebase
+N1 0.0.14). Correctif amont `fb19b7c` (propression Provider<OcrEngine>
+supprimée) vérifié via git log + strings jar. Commentaire workaround
+périmé retiré du catalogue. Gates : compileKotlin VERT, check VERT 15m49s,
+baseline exacte 1166 unit + 75 functional + 21 cucumber 0 FAIL.
+Rapport : `.agents/sessions/136-todo-revert-codebase-gradle-plugin.adoc`.
 
-* Vague 1 FPA : fixtures "Formation FPA" → "Formation Content" (9 test).
-* Vague 2 pilote AFNOR/REAC/SPD/SPG : **breaking change prod** —
-  `CapsuleScenarioLoader` valide `type == "content"` (ex-"SPD", enveloppe
-  K-2) ; fixtures referential/curriculum ; comments CAP-SPD→CAP-SCENARIO.
-* Gate : grep 5 termes (afnor/reac/spg/spd/fpa) = 0 ; `check` VERT 13m54s ;
-  baseline exacte 1166 unit 0 FAIL + 75 functional 0 FAIL.
-* Rapport : `.agents/sessions/135-rename-4-fixtures-fpa.adoc`.
+== Mission Session 137 — DORMANT (maintenance / nouveau cadrage au besoin)
 
-⚠️ Cross-borough : l'enveloppe K-2 (`metadata.json` type "content") est
-produite par le pipeline A2 (planner, dormant) — à aligner à la
-réactivation.
-
-== Mission Session 136 — DORMANT (maintenance / nouveau cadrage au besoin)
-
-Borough Détroit = tous EPICs terminés + RENAME-4 clôturé. Aucun EPIC actif.
-Candidats si demande pilote :
+Borough Détroit = tous EPICs terminés + RENAME-4 + TODO REVERT clôturés.
+Aucun EPIC actif. Candidats si demande pilote :
 
 * RENAME-5 plantuml (cross-borough, registre non-traductible — 1 pt)
 * Maintenance opportuniste uniquement sur demande explicite
@@ -59,9 +53,8 @@ Baby-step DDD/TDD/BDD : 1 fichier à la fois, compilation entre chaque
 * `capsule.feed.SlideSegment` — source de vérité contenu pédagogique
 * `compileOnly(libs.slider)` conservé (runtime). `testImplementation(libs.slider)`
   RETIRÉ S-120 (Groovy 3.x conflit ProjectBuilder).
-* Catalogue : `slider-plugin`, slider 0.0.18, codebase 0.0.13, BOM 0.0.27.
-* ⚠️ TODO REVERT : `codebase-gradle-plugin` épinglé (workaround bug amont
-  Gradle 9.7.1 `Provider<OcrEngine>`) — à remonter dès correctif amont.
+* Catalogue : `slider-plugin`, slider 0.0.18, codebase 0.0.14 (lib + plugin
+  Gradle 0.0.14 alignés — TODO REVERT S-136), BOM 0.0.27.
 * 14 domaines DDD capsule (feed, capture, tts, subtitles, manim, config,
   multilang, ai, context, pipeline, i18n, validation, audio, transcript,
   remotion, podcast, support, preview...).

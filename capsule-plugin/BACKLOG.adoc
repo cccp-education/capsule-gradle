@@ -272,7 +272,7 @@ Rapports par US dans `.agents/sessions/`._
 | CAP-0→CAP-12 | Bootstrap → split CapsuleManager | — | ✅ TERMINÉ
 |===
 
-_Total_ : 30 EPICs terminés (0 TODO). _Baseline courante_ (S-135, exacte) :
+_Total_ : 30 EPICs terminés (0 TODO). _Baseline courante_ (S-136, exacte) :
 1166 unit VERT, 75 functional VERT, cucumber dédiés GREEN (21
 `CucumberTaskSpec`).
 
@@ -286,7 +286,7 @@ _Total_ : 30 EPICs terminés (0 TODO). _Baseline courante_ (S-135, exacte) :
 * English only : code, Gherkin, commentaires
 * Économie d'encre = skip si artefact existe et valide (AGENT.adoc Loi)
 * `build.gradle.kts` — 21 `CucumberTaskSpec` actifs
-* Conventions 0.0.3 (mavenLocal), BOM 0.0.27, codebase 0.0.10, slider 0.0.18
+* Conventions 0.0.3 (mavenLocal), BOM 0.0.27, codebase 0.0.14 (lib + plugin Gradle alignés, dépin S-136), slider 0.0.18
 * 14 domaines DDD : feed, pipeline, ai, context, multilang, validation, audio,
   i18n, ci, transcript, remotion, podcast, support + preview. `capsule.preview` clos S-128.
 * `ProcessRunner` (nouveau S-131) remplace `ProcessBuilder.waitFor()` répandu
@@ -300,9 +300,10 @@ _Total_ : 30 EPICs terminés (0 TODO). _Baseline courante_ (S-135, exacte) :
   **Breaking change prod** : `CapsuleScenarioLoader` valide `type == "content"`
   (ex-"SPD") — enveloppe K-2 produite par le pipeline A2 (dormant) à aligner
   cross-borough (planner) quand il sera réactivé.
-* ⚠️ **TODO REVERT** : `codebase-gradle-plugin` épinglé 0.0.10 (lib 0.0.11) —
-  workaround bug amont `Provider<OcrEngine>` Gradle 9.7.1. À remonter dès
-  correctif amont publié.
+* ✅ **TODO REVERT TERMINÉ S-136** : `codebase-gradle-plugin` dépin 0.0.10 →
+  **0.0.14** (aligné lib codebase N1). Correctif amont `fb19b7c`
+  (propriété morte `Provider<OcrEngine>` supprimée) vérifié — le plugin
+  s'applique sous Gradle 9.7.1.
 
 == Décisions d'architecture
 
@@ -326,6 +327,6 @@ _Total_ : 30 EPICs terminés (0 TODO). _Baseline courante_ (S-135, exacte) :
   `SubtitleBurnInCommand`, `FormatConversion`, `PodcastConcatCommand`
 * `compileOnly(libs.slider)` conservé (runtime). `testImplementation(libs.slider)`
   RETIRÉ S-120 (Groovy 3.x conflit ProjectBuilder)
-* Catalogue : `slider-plugin`, slider 0.0.18, codebase 0.0.10, BOM 0.0.27
+* Catalogue : `slider-plugin`, slider 0.0.18, codebase 0.0.14 (lib + plugin Gradle alignés, dépin S-136), BOM 0.0.27
 * CAP-PREVIEW = mode dry-run (previewOnly → PNG only, skip mux WebM)
 * FFmpeg = local ProcessBuilder (pas Docker). Docker FFmpeg reporté MVP1.

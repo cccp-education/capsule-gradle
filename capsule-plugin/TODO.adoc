@@ -1,5 +1,14 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-09-08 (S-135 RENAME-4 ✅ ÉTENDU — neutralisation vocabulaire métier formation : FPA + AFNOR/REAC + SPD/SPG → termes génériques (Content, referential, curriculum, content type). 16 fichiers (5 prod + 11 test). **Borough DORMANT, 0 EPIC actif**. Prochain candidat : RENAME-5 plantuml sur demande pilote.)
+:last_update: 2026-09-10 (S-136 TODO REVERT ✅ — dépin codebase-gradle-plugin 0.0.10 → 0.0.14 aligné lib, correctif amont Provider<OcrEngine> vérifié. **Borough DORMANT, 0 EPIC actif**. Prochain candidat : RENAME-5 plantuml sur demande pilote.)
+
+'''
+== ✅ TODO REVERT — Dépin codebase-gradle-plugin (S-136)
+
+. [x] `codebase-gradle-plugin` 0.0.10 → 0.0.14 dans `gradle/libs.versions.toml` (aligné lib codebase N1)
+. [x] Correctif amont vérifié : `fb19b7c` (propriété morte `Provider<OcrEngine>` supprimée) présent codebase ≥ 0.0.11, confirmé par `strings` sur `CodebaseOcrExtension.class` 0.0.14 (zéro `getOcrEngine`)
+. [x] Commentaire workaround 7 lignes retiré du catalogue (remplacé par note alignement)
+. [x] Gate compileKotlin VERT (plugin s'applique sous Gradle 9.7.1)
+. [x] Gate `test` 1166 unit 0 FAIL (baseline exacte)
 
 '''
 == ✅ RENAME-4 — Neutralisation vocabulaire métier (S-135, étendu pilote)
