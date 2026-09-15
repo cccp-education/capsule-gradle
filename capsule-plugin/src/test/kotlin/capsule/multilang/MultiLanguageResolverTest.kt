@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Assertions.assertFalse
 class MultiLanguageResolverTest {
 
     @Test
-    fun `resolve returns non-null for all 10 supported language codes`() {
-        val codes = listOf("en", "zh", "hi", "es", "fr", "ar", "bn", "pt", "ru", "ur")
+    fun `resolve returns non-null for all supported language codes`() {
+        val codes = contracts.i18n.LanguageCatalog.supportedCodes()
         codes.forEach { code ->
             assertNotNull(MultiLanguageResolver.resolve(code), "Expected non-null resolution for code: $code")
         }
@@ -126,7 +126,7 @@ class MultiLanguageResolverTest {
     }
 
     @Test
-    fun `piperModel returns model string for all 10 codes`() {
+    fun `piperModel returns model string for all supported codes`() {
         val expected = mapOf(
             "fr" to "fr_FR-siwis-medium",
             "en" to "en_US-lessac-medium",
@@ -139,6 +139,17 @@ class MultiLanguageResolverTest {
             "pt" to "pt_BR-francisca-medium",
             "ru" to "ru_RU-irina-medium",
             "ur" to "ur_PK-gul-medium",
+            "it" to "it_IT-paola-medium",
+            "nl" to "nl_NL-pim-medium",
+            "el" to "el_GR-rapunzelina-medium",
+            "tr" to "tr_TR-dfki-medium",
+            "vi" to "vi_VN-vais1000-medium",
+            "th" to "th_TH-tsync2-medium",
+            "id" to "id_ID-news_tts-medium",
+            "ko" to "ko_KR-kss-medium",
+            "ja" to "ja_JA-hi_fi_captain-medium",
+            "sr" to "sr_RS-serbski_institut-medium",
+            "fa" to "fa_IR-amir-medium",
         )
         expected.forEach { (code, model) ->
             assertEquals(model, MultiLanguageResolver.piperModel(code), "Wrong Piper model for code: $code")
@@ -146,8 +157,8 @@ class MultiLanguageResolverTest {
     }
 
     @Test
-    fun `espeakVoice returns voice string for all 10 codes`() {
-        val codes = listOf("fr", "en", "es", "de", "zh", "hi", "ar", "bn", "pt", "ru", "ur")
+    fun `espeakVoice returns voice string for all supported codes`() {
+        val codes = contracts.i18n.LanguageCatalog.supportedCodes()
         codes.forEach { code ->
             assertEquals(code, MultiLanguageResolver.espeakVoice(code), "Wrong espeak voice for code: $code")
         }
@@ -166,11 +177,9 @@ class MultiLanguageResolverTest {
     }
 
     @Test
-    fun `supportedCodes covers all 10 LanguageCatalog codes`() {
+    fun `supportedCodes covers all LanguageCatalog codes`() {
         val codes = MultiLanguageResolver.supportedCodes
-        assertEquals(10, codes.size)
-        listOf("en", "zh", "hi", "es", "fr", "ar", "bn", "pt", "ru", "ur").forEach {
-            assertTrue(codes.contains(it), "Missing supported code: $it")
-        }
+        assertEquals(22, codes.size)
+        assertEquals(contracts.i18n.LanguageCatalog.supportedCodes(), codes)
     }
 }

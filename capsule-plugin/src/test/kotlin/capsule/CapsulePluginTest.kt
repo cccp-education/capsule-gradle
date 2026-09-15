@@ -2583,15 +2583,15 @@ Note.
 class LanguageVoiceMappingTest {
 
     @Test
-    fun `MultiLanguageResolver resolves all 10 LanguageCatalog codes`() {
-        listOf("en", "zh", "hi", "es", "fr", "ar", "bn", "pt", "ru", "ur").forEach { code ->
+    fun `MultiLanguageResolver resolves all LanguageCatalog codes`() {
+        contracts.i18n.LanguageCatalog.supportedCodes().forEach { code ->
             assertNotNull(capsule.multilang.MultiLanguageResolver.resolve(code), "Expected non-null resolution for code: $code")
         }
     }
 
     @Test
     fun `MultiLanguageResolver returns null for unknown code`() {
-        assertEquals(null, capsule.multilang.MultiLanguageResolver.resolve("jp"))
+        assertEquals(null, capsule.multilang.MultiLanguageResolver.resolve("zz"))
         assertEquals(null, capsule.multilang.MultiLanguageResolver.resolve(""))
         assertEquals(null, capsule.multilang.MultiLanguageResolver.resolve("unknown"))
     }

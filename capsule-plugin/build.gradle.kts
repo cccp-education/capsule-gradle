@@ -161,6 +161,16 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleTranscriptCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // CAP-29.5 — multi-language capsule pipeline (one WebM per LanguageCatalog).
+        // Dedicated runner pattern S-082 so it never runs the full Playwright suite.
+        // Uses NoOp engines: validates plan building + naming + RTL coverage.
+        CucumberTaskSpec(
+            name = "cucumberTestMultiLang",
+            features = listOf("src/test/features/multi_language_capsule.feature"),
+            tags = listOf("@multilang"),
+            runnerClass = "capsule.scenarios.CapsuleMultiLangCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // CAP-ANIM US-2 — Remotion capture strategy BDD (NoOp fallback, strictMode,
         // config DSL). Dedicated runner pattern S-082; steps prefixed "remotion"
         // (bug S-088 glue capsule.scenarios shared). No @integration — real

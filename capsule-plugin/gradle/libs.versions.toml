@@ -13,8 +13,8 @@ codebase = "0.0.14"
 # Plugin Gradle `education.cccp.codebase` — aligné sur la lib (0.0.14).
 codebase-gradle-plugin = "0.0.14"
 koog = "1.0.0"
-workspace-bom = "0.0.27"
-i18n-contracts = "0.0.2"
+workspace-bom = "0.0.43"
+i18n-contracts = "0.0.4"
 codebase-contracts = "0.0.2"
 
 [libraries]

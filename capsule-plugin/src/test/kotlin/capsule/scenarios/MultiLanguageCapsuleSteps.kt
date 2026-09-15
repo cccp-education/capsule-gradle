@@ -86,8 +86,8 @@ Note content in $lang.
 
     // ─── Given ─────────────────────────────────────────────────────
 
-    @Given("translated decks and scripts for all 10 LanguageCatalog languages")
-    fun translatedDecksAndScriptsForAll10LanguageCatalogLanguages() {
+    @Given("translated decks and scripts for all LanguageCatalog languages")
+    fun translatedDecksAndScriptsForAllLanguageCatalogLanguages() {
         ensureDirs()
         allCatalogLanguages().forEach { writePair(it.code) }
     }
@@ -169,6 +169,15 @@ Note content in $lang.
         Assertions.assertEquals(count, plan?.size(), "Plan size")
     }
 
+    @Then("the plan contains all LanguageCatalog entries")
+    fun thePlanContainsAllLanguageCatalogEntries() {
+        Assertions.assertEquals(
+            contracts.i18n.LanguageCatalog.ALL.size,
+            plan?.size(),
+            "Plan size should cover all LanguageCatalog languages",
+        )
+    }
+
     @And("the plan languages include {string} and {string}")
     fun thePlanLanguagesInclude(first: String, second: String) {
         val codes = plan?.languages()?.map { it.code } ?: emptyList()
@@ -200,6 +209,16 @@ Note content in $lang.
 
     @Then("the build output reports {int} rendered languages")
     fun theBuildOutputReportsRenderedLanguages(count: Int) {
+        Assertions.assertTrue(
+            lastBuildOutput.contains("CAPSULE MULTILANG → $count/$count languages rendered"),
+            "Expected 'CAPSULE MULTILANG → $count/$count languages rendered' in build output. " +
+                "Got: ${lastBuildOutput.take(2000)}",
+        )
+    }
+
+    @Then("the build output reports all rendered languages")
+    fun theBuildOutputReportsAllRenderedLanguages() {
+        val count = allCatalogLanguages().size
         Assertions.assertTrue(
             lastBuildOutput.contains("CAPSULE MULTILANG → $count/$count languages rendered"),
             "Expected 'CAPSULE MULTILANG → $count/$count languages rendered' in build output. " +

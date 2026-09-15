@@ -3,12 +3,12 @@ Feature: Multi-language capsule video pipeline (CAP-29.5)
 
   As a capsule-gradle producer
   I want a single pipeline that generates one localized capsule video per target language
-  So that the full 10-language feed produces <deckName>_<lang>.webm artifacts
+  So that the full multi-language feed produces <deckName>_<lang>.webm artifacts
 
-  Scenario: The multi-language plan covers all 10 LanguageCatalog languages
-    Given translated decks and scripts for all 10 LanguageCatalog languages
+  Scenario: The multi-language plan covers all LanguageCatalog languages
+    Given translated decks and scripts for all LanguageCatalog languages
     When the multi-language video plan is built
-    Then the plan contains 10 entries
+    Then the plan contains all LanguageCatalog entries
     And the plan languages include "ar" and "ur"
 
   Scenario: The plan names output videos with the deckName_lang.webm convention
@@ -30,9 +30,9 @@ Feature: Multi-language capsule video pipeline (CAP-29.5)
 
   Scenario: The task generates one WebM per language with NoOp engines
     Given a Gradle project with the capsule plugin applied and NoOp engines
-    And translated decks and scripts for all 10 LanguageCatalog languages
+    And translated decks and scripts for all LanguageCatalog languages
     When I run the multi-language video generation task
-    Then the build output reports 10 rendered languages
+    Then the build output reports all rendered languages
     And a video file "demo_fr.webm" is generated in the capsules build directory
     And a video file "demo_ar.webm" is generated in the capsules build directory
     And a video file "demo_ur.webm" is generated in the capsules build directory
