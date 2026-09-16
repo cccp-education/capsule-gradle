@@ -34,7 +34,7 @@ Aucun EPIC actif. Candidats si demande pilote :
 == Méthodologie
 
 Baby-step DDD/TDD/BDD : 1 fichier à la fois, compilation entre chaque
-étape. Pas de subagent, pas de parallélisation.
+étape. Parallélisation autorisée (décision pilote 2026-09-17).
 
 == Rappels
 

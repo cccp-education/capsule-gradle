@@ -11,7 +11,7 @@
 
 == Pendant la session
 
-. [ ] Respecter Regle 1 — AUCUN commit sans permission
+. [ ] Respecter la Règle — Git autorisé (décision 2026-09-17), zéro secret commité
 . [ ] Respecter Regle 2 — AUCUN publish sans permission
 . [ ] Respecter Regle 7 — CAPSULE CONSUME SLIDER sans modifier le deck source
 . [ ] Respecter Regle 6 — ZERO secret en dur
@@ -89,4 +89,4 @@ grep -r "TOKEN\|SECRET\|PASSWORD\|API_KEY\|gho_\|ghp_" --include="*.kts" --inclu
 * TTS : Piper (local, offline) en priorite, API externe en fallback
 * Playwright : installe via npx, pilote Chromium headless
 * WebM : format natif Playwright, aucune conversion necessaire
-* Aucun commit sans permission explicite
+* Commit/push/merge autorisés (décision pilote 2026-09-17). Ne JAMAIS commiter de secret.
