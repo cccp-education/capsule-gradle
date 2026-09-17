@@ -99,6 +99,13 @@ Note content in $lang.
         writePair(second)
     }
 
+    @Given("translated decks and real-chain scripts carrying the -deck suffix for language {string}")
+    fun translatedDecksAndRealChainScriptsCarryingTheDeckSuffix(lang: String) {
+        ensureDirs()
+        deckDir!!.resolve("demo_$lang-deck.html").writeText(deckHtml(lang))
+        scriptDir!!.resolve("demo_$lang-deck-script.txt").writeText(scriptText(lang))
+    }
+
     @Given("translated decks and scripts for RTL languages {string} and {string}")
     fun translatedDecksAndScriptsForRtlLanguages(first: String, second: String) {
         ensureDirs()
@@ -190,6 +197,13 @@ Note content in $lang.
         val entry = plan?.entries?.firstOrNull { it.language.code == lang }
             ?: error("No plan entry for language '$lang'")
         Assertions.assertEquals(fileName, entry.outputVideo.name)
+    }
+
+    @And("the plan entry for {string} resolves the script file {string}")
+    fun thePlanEntryForResolvesTheScriptFile(lang: String, fileName: String) {
+        val entry = plan?.entries?.firstOrNull { it.language.code == lang }
+            ?: error("No plan entry for language '$lang'")
+        Assertions.assertEquals(fileName, entry.scriptFile.name)
     }
 
     @And("the plan does not include language {string}")

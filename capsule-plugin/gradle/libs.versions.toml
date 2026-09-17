@@ -1,5 +1,5 @@
 [versions]
-capsule = "0.0.1-SNAPSHOT"
+capsule = "0.0.1"
 slider = "0.0.18"
 kotlin = "2.4.10"
 junit-platform-launcher = "1.10.2"

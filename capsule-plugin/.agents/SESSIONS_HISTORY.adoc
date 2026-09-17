@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-09-08 (S-135) — RENAME-4 neutralisation fixtures. Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-09-17 (S-137) — BKY-LANG-22-9/10. Rapports détaillés dans `.agents/sessions/`.
 
-== 14 dernières sessions (122-136)
+== 15 dernières sessions (123-137)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 137 | 2026-09-17 | fix cross-borough + dogfooding TTS réel + publication Central | **BKY-LANG-22-9/10** (EPIC transverse piloté bakery S-226). **Bug P0 réel découvert par le dogfooding réel** : la chaîne réelle `extractSpeakerNotes` produit `<slug>_<lang>-deck-script.txt` (suffixe `-deck` survit) mais `CapsuleVideoPlanner` cherchait exactement `<deckName>_<lang>-script.txt` → `no matching deck + script pair` fail-fast (S-082 contournait par `mv` manuel ; les tests NoOp hand-nommés masquaient la divergence). **Fix baby-step DDD/TDD/BDD** : `CapsuleVideoPlanner.resolveScript` préfère l'exact, tolère le suffixe `-deck` (miroir S-082 côté sortie WebM), RED prouvé, BDD 14/14. **Dogfooding réel 22 langues** : consumer composite `/tmp/opencode/dogfood-multilang22`, HTML via Ruby système (blocage gems JRuby Gradle préexistant, orthogonal) → `generateCapsuleVideoAllLanguages` → **21/22 rendered + 1 skipped = 22/22 vidéos** espeak+Playwright (26-81s), dégradation propre th/ja/ar (voix espeak absentes → vidéo silencieuse, zéro crash). **Publication Central capsule-plugin 0.0.1** : infra nmcp créée (settings `com.gradleup.nmcp.settings:1.5.0` + publishing mavenCentral + version release) + fix POM marker (name/description sur `withType<MavenPublication>`, bug « Project name is missing ») — bundle `54a58526`. Gates : `test` 1168/0, `cucumberTestMultiLang` 14/0. Rapport `.agents/sessions/137-bky-lang-22-9-10-dogfooding-publication.adoc`. | 9/10
 
 | 136 | 2026-09-10 | build/deps | **TODO REVERT** — dépin `codebase-gradle-plugin` 0.0.10 → 0.0.14 (aligné lib codebase N1 0.0.14, bundle Central `3e82490d` S-214). Workaround bug amont Gradle 9.7.1 (`Provider<OcrEngine>` décoré impossible) périmé : correctif `fb19b7c` vérifié via git log codebase + `strings` sur `CodebaseOcrExtension.class` 0.0.14 (seuls `getGeminiApiKeys` présents, zéro `getOcrEngine`). Commentaire 7 lignes workaround retiré du catalogue. Gates : compileKotlin VERT (plugin s'applique sous Gradle 9.7.1), test 1166 unit 0 FAIL, functionalTest 75 0 FAIL, check VERT 15m49s. Baseline exacte préservée. Rapport `.agents/sessions/136-todo-revert-codebase-gradle-plugin.adoc`. | 9/10
 

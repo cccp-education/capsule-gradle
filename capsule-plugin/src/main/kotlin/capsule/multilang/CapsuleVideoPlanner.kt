@@ -15,6 +15,17 @@ import java.io.File
  * translation, source equals target). When no language yields a matching
  * pair, the planner fails fast: an empty plan is a misconfiguration.
  *
+ * ## Script naming tolerance (real slider→capsule chain)
+ *
+ * The real chain names translated decks `<slug>_<lang>-deck.adoc`; the capsule
+ * `extractSpeakerNotes` task derives the script name from the AsciiDoc file
+ * name *without extension*, so it emits `<slug>_<lang>-deck-script.txt` — the
+ * `-deck` suffix survives. The planner therefore accepts either the exact
+ * `<deckName>_<lang>-script.txt` (preferred, hand-named artifacts and tests)
+ * or the `-deck` suffixed `<deckName>_<lang>-deck-script.txt` (real chain).
+ * This mirrors, on the input side, the S-082 fix that already aligned the
+ * output WebM.
+ *
  * Output naming convention: `<outputDir>/<deckName>_<lang>.webm`.
  */
 object CapsuleVideoPlanner {
@@ -45,8 +56,7 @@ object CapsuleVideoPlanner {
 
             for (deckFile in deckFiles) {
                 val deckName = deckNameOf(deckFile, language.code)
-                val scriptFile = scriptDir.resolve("${deckName}_${language.code}-script.txt")
-                if (!scriptFile.exists()) continue
+                val scriptFile = resolveScript(scriptDir, deckName, language.code) ?: continue
 
                 val outputVideo = outputDir.resolve("${deckName}_${language.code}.webm")
                 entries.add(
@@ -65,6 +75,21 @@ object CapsuleVideoPlanner {
                 targetLanguages.joinToString(", ") { it.code }
         }
         return CapsuleVideoPlan(entries)
+    }
+
+    /**
+     * Resolves the script file for a deck name + language code, tolerating the
+     * `-deck` suffix produced by the real `extractSpeakerNotes` chain.
+     *
+     * The exact `<deckName>_<code>-script.txt` is preferred; when absent, the
+     * `<deckName>_<code>-deck-script.txt` variant is accepted. Returns `null`
+     * when neither exists.
+     */
+    private fun resolveScript(scriptDir: File, deckName: String, code: String): File? {
+        val exact = scriptDir.resolve("${deckName}_${code}-script.txt")
+        if (exact.exists()) return exact
+        val deckSuffixed = scriptDir.resolve("${deckName}_${code}-deck-script.txt")
+        return deckSuffixed.takeIf { it.exists() }
     }
 
     /**

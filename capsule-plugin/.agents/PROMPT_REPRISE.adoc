@@ -1,63 +1,43 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 136
+:session: 138
 :borough: Détroit
-:session_precedente: 135 — RENAME-4 fixtures FPA
+:session_precedente: 137 — BKY-LANG-22-9/10 (dogfooding 22 langues + fix P0 + publication 0.0.1)
 
-== Contexte Hérité
+== Contexte (S-137)
 
-Session 215 (globale) — Cadrage EPIC RENAME (transverse 7 boroughs) :
-neutralisation nommage métier privé FPA→content / CDA→coding. Doc
-`.agents/CADRAGE_EPIC_RENAME.adoc`. Baby-steps : RENAME-1 codebase ✅
-S-212 (bump 0.0.12), RENAME-4 capsule ✅ S-135.
+Session cross-borough EPIC transverse BKY-LANG-22, pilotée bakery S-226.
 
-Session 135 — RENAME-4 (clôturée) : neutralisation vocabulaire métier
-16 fichiers (5 prod + 11 test), gate grep 5 termes = 0, check VERT 13m54s,
-baseline 1166 unit + 75 functional 0 FAIL.
+- *Bug P0 réel découvert par le dogfooding réel* : la chaîne réelle
+  `extractSpeakerNotes` produit `<slug>_<lang>-deck-script.txt` (suffixe `-deck`)
+  mais `CapsuleVideoPlanner` exigeait `<deckName>_<lang>-script.txt` →
+  fail-fast `no matching deck + script pair`. Les tests NoOp hand-nommés
+  masquaient la divergence (S-082 contournait par `mv` manuel).
+- *Fix* : `CapsuleVideoPlanner.resolveScript` tolère le suffixe `-deck` (miroir
+  S-082 côté sortie WebM). Baby-step DDD/TDD/BDD, RED prouvé, BDD 14/14.
+- *Dogfooding réel 22 langues* : consumer composite, `generateCapsuleVideoAllLanguages`
+  → **22/22 vidéos** espeak+Playwright (dégradation propre th/ja/ar).
+- *Publication Central capsule-plugin 0.0.1* : infra nmcp créée (settings +
+  publishing mavenCentral + version release) + fix POM marker (name/description
+  sur toutes les publications). Bundle `54a58526`.
+- Rapport : `.agents/sessions/137-bky-lang-22-9-10-dogfooding-publication.adoc`.
 
-## Mission Session 136 (clôturée) — TODO REVERT ✅
+== Prochaine session (138) — DORMANT (maintenance)
 
-Dépin `codebase-gradle-plugin` 0.0.10 → **0.0.14** (aligné lib codebase
-N1 0.0.14). Correctif amont `fb19b7c` (propression Provider<OcrEngine>
-supprimée) vérifié via git log + strings jar. Commentaire workaround
-périmé retiré du catalogue. Gates : compileKotlin VERT, check VERT 15m49s,
-baseline exacte 1166 unit + 75 functional + 21 cucumber 0 FAIL.
-Rapport : `.agents/sessions/136-todo-revert-codebase-gradle-plugin.adoc`.
-
-== Mission Session 137 — DORMANT (maintenance / nouveau cadrage au besoin)
-
-Borough Détroit = tous EPICs terminés + RENAME-4 + TODO REVERT clôturés.
-Aucun EPIC actif. Candidats si demande pilote :
-
-* RENAME-5 plantuml (cross-borough, registre non-traductible — 1 pt)
-* Maintenance opportuniste uniquement sur demande explicite
-
-== Méthodologie
-
-Baby-step DDD/TDD/BDD : 1 fichier à la fois, compilation entre chaque
-étape. Parallélisation autorisée (décision pilote 2026-09-17).
+Tous les EPICs capsule sont terminés. À la demande du pilote :
+- Maintenance / correctifs.
+- Dette transverse : rendu `asciidoctorRevealJs` Gradle cassé (gems JRuby
+  `jar-dependencies 0.5.4 vs 0.4.1`, préexistant S-023/S-034) — bloque le
+  dogfooding HTML automatisé.
 
 == Rappels
 
-* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* English only : code, Gherkin, commentaires
-* Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
-* Tout nouveau feature cucumber nécessite un runner dédié (bug S-082) + steps
-  préfixés par feature (bug S-088 glue `capsule.scenarios` partagée)
-* Économie d'encre = skip si artefact existe et valide (AGENT.adoc Loi)
-* Ports Ollama : 11437-11465 rotation (11434-11436 INTERDITS)
-* `LanguageCatalog` N0 (i18n-contracts 0.0.2) = 10 langues
-  (en/zh/hi/es/fr/ar/bn/pt/ru/ur) — pas de "de"
-* DSL 4 sources pattern : ENV < props < YAML < CLI
-* Pattern object pur pour commande ffmpeg : `AudioPostCommand`,
-  `SubtitleBurnInCommand`, `FormatConversion`, `PodcastConcatCommand`
-* `capsule.feed.SlideSegment` — source de vérité contenu pédagogique
-* `compileOnly(libs.slider)` conservé (runtime). `testImplementation(libs.slider)`
-  RETIRÉ S-120 (Groovy 3.x conflit ProjectBuilder).
-* Catalogue : `slider-plugin`, slider 0.0.18, codebase 0.0.14 (lib + plugin
-  Gradle 0.0.14 alignés — TODO REVERT S-136), BOM 0.0.27.
-* 14 domaines DDD capsule (feed, capture, tts, subtitles, manim, config,
-  multilang, ai, context, pipeline, i18n, validation, audio, transcript,
-  remotion, podcast, support, preview...).
-* Baseline : **1166 unit VERT (valeur exacte S-135), 75 functional VERT,
-  21 cucumber dédiés GREEN**.
-* Java 25 requis (sdkman `25.0.4-tem`) — conventions-plugin 0.0.4 exige JVM 25.
+* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`.
+* Baseline S-137 : `test` 1168/0, `cucumberTestMultiLang` 14/0, `functionalTest`
+  75 (1 échec infra timeout Playwright sous charge).
+* Versions : capsule-plugin 0.0.1 (Central), slider 0.0.19, BOM 0.0.48,
+  i18n-contracts 0.0.4, codebase 0.0.14.
+* Baby-step DDD/TDD/BDD : unit → functional → cucumber ; tout feature cucumber
+  nécessite un runner dédié (bug S-082) + steps préfixés (bug S-088).
+* English only : code, Gherkin, commentaires.
+* Git/commit/push autorisés (décision pilote 2026-09-17) — zéro secret.
+* Rendu HTML : conflit gems JRuby → Ruby système si dogfooding requis.

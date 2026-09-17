@@ -85,6 +85,46 @@ class CapsuleVideoPlannerTest {
     }
 
     @Test
+    fun `plan discovers real slider-generated scripts carrying the -deck suffix`() {
+        // Real chain: slider `translateDeck` emits `capsule-feed-demo-fr_en-deck.adoc`;
+        // `extractSpeakerNotes` writes `<adocName>-script.txt`, i.e. the script keeps
+        // the `-deck` suffix. The planner must tolerate this divergence (S-082 fixed
+        // the same divergence on the output WebM; this is the input counterpart).
+        deckDir().resolve("capsule-feed-demo-fr_en-deck.html").writeText("<html></html>")
+        scriptDir().resolve("capsule-feed-demo-fr_en-deck-script.txt").writeText("script")
+
+        val plan = CapsuleVideoPlanner.plan(
+            deckDir = deckDir(),
+            scriptDir = scriptDir(),
+            outputDir = outputDir(),
+            targetLanguages = languages("en"),
+        )
+
+        assertEquals(1, plan.size())
+        val entry = plan.entries.first()
+        assertTrue(entry.scriptFile.exists())
+        assertEquals("capsule-feed-demo-fr_en-deck-script.txt", entry.scriptFile.name)
+        assertEquals("capsule-feed-demo-fr_en.webm", entry.outputVideo.name)
+    }
+
+    @Test
+    fun `plan prefers the exact script name over the -deck suffixed variant`() {
+        writeDeck("kotlin-basics", "fr")
+        writeScript("kotlin-basics", "fr")
+        scriptDir().resolve("kotlin-basics_fr-deck-script.txt").writeText("deck variant")
+
+        val plan = CapsuleVideoPlanner.plan(
+            deckDir = deckDir(),
+            scriptDir = scriptDir(),
+            outputDir = outputDir(),
+            targetLanguages = languages("fr"),
+        )
+
+        val entry = plan.entries.first()
+        assertEquals("kotlin-basics_fr-script.txt", entry.scriptFile.name)
+    }
+
+    @Test
     fun `plan throws when no language produces matching files`() {
         writeDeck("kotlin-basics", "fr")
         writeScript("kotlin-basics", "fr")

@@ -1,0 +1,106 @@
+= Session 137 — BKY-LANG-22-9/10 : dogfooding 22 langues + publication Central
+:session: 137
+:date: 2026-09-17
+:type: fix cross-borough (bug P0 réel) + dogfooding TTS réel + publication Central
+:borough: Détroit (capsule-gradle)
+:epic: BKY-LANG-22 (transverse)
+:score: 9/10
+
+== Contexte
+
+US **BKY-LANG-22-9** (dogfooding capsule 22 langues) et **BKY-LANG-22-10**
+(publication Central capsule) de l'EPIC transverse BKY-LANG-22, pilotées depuis
+bakery S-226. Le dogfooding réel (pas les tests NoOp) a exposé un **bug P0** de
+la chaîne slider→capsule.
+
+== Bug P0 découvert par le dogfooding réel — chaîne script cassée
+
+La S-082 (dogfooding 3 langues) avait contourné par un `mv` manuel, jamais
+corrigé dans le code. La chaîne réelle est cassée par construction :
+
+- `translateDeck` (slider) produit `<slug>_<lang>-deck.adoc`.
+- `extractSpeakerNotes` dérive le script du nom de fichier `.adoc` sans
+  extension → `<slug>_<lang>-deck-script.txt` (le suffixe `-deck` survit).
+- `CapsuleVideoPlanner` cherchait exactement `<deckName>_<lang>-script.txt`
+  → **aucune paire trouvée** → fail-fast `no matching deck + script pair`.
+
+Les tests (NoOp, `demo_<lang>` hand-nommés) ne reproduisaient jamais la
+divergence header/nom de fichier — d'où l'invisibilité.
+
+== Fix baby-step DDD/TDD/BDD
+
+- **DOMAINE** `CapsuleVideoPlanner.resolveScript(scriptDir, deckName, code)` :
+  préfère l'exact `<deckName>_<code>-script.txt`, tolère le suffixe `-deck`
+  `<deckName>_<code>-deck-script.txt`, `null` sinon. Miroir, côté entrée, du
+  fix S-082 qui alignait déjà le WebM de sortie.
+- **TDD** `CapsuleVideoPlannerTest` +2 UT. RED prouvé
+  (`plan discovers real slider-generated scripts carrying the -deck suffix`
+  FAILED avant le fix) → GREEN.
+- **BDD** `multi_language_capsule.feature` : scénario « real slider-to-capsule
+  chain … still resolved » + step `the plan entry for … resolves the script
+  file …`. **14/14 PASSED.**
+
+== Dogfooding réel 22 langues (preuve)
+
+Consumer composite `/tmp/opencode/dogfood-multilang22` (slider 0.0.19 +
+capsule 0.0.1 mavenLocal). Contournement environnemental : rendu
+`asciidoctorRevealJs` Gradle cassé (gems JRuby `jar-dependencies 0.5.4 vs
+0.4.1`, préexistant S-023/S-034) → HTML via Ruby système
+(`gem install asciidoctor asciidoctor-revealjs`), orthogonal au périmètre
+(TTS + capture).
+
+. `translateDeck` (corpus LANG-22-8 réutilisé, Économie d'Encre) → 63 adoc.
+. `asciidoctor` (Ruby système) → 22 decks HTML.
+. `extractSpeakerNotes` → 67 scripts (dont les `-deck-script.txt` réels).
+. `generateCapsuleVideoAllLanguages --rerun-tasks` → **21/22 rendered + 1
+   skipped** = **22 vidéos WebM**.
+
+Résultat : **22/22 vidéos réelles** (espeak TTS + Playwright Chromium), 26-81 s.
+Dégradation propre sur 3 voix espeak absentes (`th`/`ja`/`ar` —
+`Failed to read voice`) : vidéo silencieuse produite (26 s), pipeline continue,
+zéro crash. Sans le fix planner, l'étape 4 échoue en fail-fast.
+
+== BKY-LANG-22-10 — publication capsule 0.0.1
+
+Capsule n'avait **aucune** infra nmcp. Ajouté (pattern slider/plantuml) :
+
+- `settings.gradle.kts` : plugin `com.gradleup.nmcp.settings:1.5.0` +
+  `nmcpSettings { centralPortal { … AUTOMATIC } }`.
+- `build.gradle.kts` : `repositories { mavenCentral() }` dans le bloc publishing ;
+  version `0.0.1-SNAPSHOT` → **`0.0.1`** (release).
+- **Bug de validation attrapé** : le POM n'était configuré que pour
+  `pluginMaven` ; la publication marker (`capsulePluginMarkerMaven`) manquait
+  `name` + `description` → « Project name is missing ». Corrigé en appliquant
+  le POM à `withType<MavenPublication>` (toutes les publications).
+- Central : bundle `54a58526-dc66-4ce4-95f3-99abaf1c3ea3` (AUTOMATIC),
+  propagation repo1 HTTP 200 vérifiée.
+
+Ordre DAG global (MEMPHIS 0.0.48 + bakery 0.0.13 + slider 0.0.19) piloté bakery.
+
+== Gates
+
+|===
+| Gate | Résultat
+
+| `CapsuleVideoPlannerTest` | 10/0
+| `cucumberTestMultiLang` | 14/0
+| `test` (global) | 1168/0
+| `functionalTest` | 75, 1 échec **infra** (timeout Playwright sous charge — passe en isolation 55 s, stash-confirmé non lié)
+| Central | capsule-plugin 0.0.1 propagé
+|===
+
+== Décisions
+
+. *Tolérance côté consommateur* — le suffixe `-deck` est un fait de la chaîne
+   réelle ; le planner l'accepte sans modifier slider (boundary respectée).
+   Miroir exact du fix S-082.
+. *POM sur toutes les publications* — Central valide chaque publication, y
+   compris les markers de plugin.
+. *Rendu HTML hors pipeline Gradle* — bug environnemental préexistant,
+   orthogonal ; contourné, pas masqué (EPIC candidat).
+
+== Prochaine session
+
+Borough DORMANT (maintenance). Dette : rendu `asciidoctorRevealJs` Gradle
+cassé (gems JRuby) à traiter dans un EPIC dédié si le dogfooding HTML
+automatisé devient requis.

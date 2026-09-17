@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-09-10 (S-136 — TODO REVERT maintenance : `codebase-gradle-plugin` dépin 0.0.10 → 0.0.14 aligné lib codebase N1 0.0.14. Correctif amont `fb19b7c` Provider<OcrEngine> vérifié (git log + strings jar). Commentaire workaround périmé retiré. Check VERT 15m49s, baseline exacte 1166 unit + 75 functional + 21 cucumber 0 FAIL.)
-_Derniere session terminee_ : 136 — TODO REVERT (build/deps).
-_Prochaine session_ : DORMANT (maintenance OU RENAME-5 plantuml sur demande).
-_Session en cours_ : — (S-136 terminée, TODO REVERT).
+ _Derniere mise a jour_ : 2026-09-17 (S-137 — **BKY-LANG-22-9/10** : dogfooding capsule 22 langues + publication Central. **Bug P0 réel découvert** : la chaîne réelle `extractSpeakerNotes` produit `<slug>_<lang>-deck-script.txt` (suffixe `-deck`) mais `CapsuleVideoPlanner` exigeait `<deckName>_<lang>-script.txt` → fail-fast `no matching deck + script pair` (S-082 contournait par `mv` manuel). Fix baby-step DDD/TDD/BDD `CapsuleVideoPlanner.resolveScript` (tolère le suffixe `-deck`, miroir S-082 côté sortie WebM), RED prouvé, BDD 14/14. Dogfooding réel consumer composite → **22/22 vidéos** espeak+Playwright (dégradation propre th/ja/ar). **Publication Central capsule-plugin 0.0.1** : infra nmcp créée (settings + publishing mavenCentral + release) + fix POM marker (name/description sur toutes les publications) — bundle `54a58526`. Gate `test` 1168/0, `cucumberTestMultiLang` 14/0.)
+_Derniere session terminee_ : 137 — BKY-LANG-22-9/10 (dogfooding + fix P0 + publication 0.0.1).
+_Prochaine session_ : DORMANT (maintenance). Dette : rendu `asciidoctorRevealJs` Gradle cassé (gems JRuby, préexistant S-023/S-034).
+_Session en cours_ : — (S-137 terminée).
 
 '''
 == REGLES ABSOLUES (resume)

@@ -17,6 +17,13 @@ Feature: Multi-language capsule video pipeline (CAP-29.5)
     Then the plan entry for "fr" outputs "demo_fr.webm"
     And the plan entry for "en" outputs "demo_en.webm"
 
+  Scenario: The real slider-to-capsule chain script carries a -deck suffix and is still resolved
+    Given translated decks and real-chain scripts carrying the -deck suffix for language "fr"
+    When the multi-language video plan is built
+    Then the plan contains 1 entries
+    And the plan entry for "fr" resolves the script file "demo_fr-deck-script.txt"
+    And the plan entry for "fr" outputs "demo_fr.webm"
+
   Scenario: Languages without a matching deck and script pair are skipped
     Given translated decks and scripts for languages "fr" and "en"
     When the multi-language video plan is built for "fr", "en" and "ar"

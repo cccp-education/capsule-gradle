@@ -356,14 +356,18 @@ kover {
 
 publishing {
     publications {
+        // The Central validation requires name + description on EVERY publication,
+        // including the plugin marker (`capsulePluginMarkerMaven`) — not just
+        // `pluginMaven`.
         withType<MavenPublication> {
-            if (name == "pluginMaven") {
-                pom {
-                    name.set("Capsule Gradle Plugin")
-                    description.set("Generation automatisee de capsules video pedagogiques depuis des decks reveal.js")
-                    url.set("https://github.com/cheroliv/capsule-gradle/")
-                }
+            pom {
+                name.set("Capsule Gradle Plugin")
+                description.set("Generation automatisee de capsules video pedagogiques depuis des decks reveal.js")
+                url.set("https://github.com/cheroliv/capsule-gradle/")
             }
         }
+    }
+    repositories {
+        mavenCentral()
     }
 }
