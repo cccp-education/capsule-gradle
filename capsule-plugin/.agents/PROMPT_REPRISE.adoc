@@ -41,3 +41,4 @@ Tous les EPICs capsule sont terminés. À la demande du pilote :
 * English only : code, Gherkin, commentaires.
 * Git/commit/push autorisés (décision pilote 2026-09-17) — zéro secret.
 * Rendu HTML : conflit gems JRuby → Ruby système si dogfooding requis.
+
