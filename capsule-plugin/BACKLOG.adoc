@@ -10,7 +10,7 @@ technologie cccp.education. Réoriente le borough (DORMANT) vers le court-forme
 multi-plateforme, en réutilisant l'existant (TTS, Remotion, FFmpeg, hub LLM N1)._
 
 *Cadrage* : `.agents/sessions/138-cap-viral-cadrage.adoc` (US-0 ✅).
-*Charge* : ~48 pts, 13 US. *Prérequis* : US-1 CI verte.
+*Charge* : ~53 pts, 14 US. *Prérequis* : US-1 CI verte.
 *Méthode (chaîne à deux étages)* : socle **FFmpeg** (PNG par slide → durée
 exacte → concat demuxer), **pas** Playwright temps réel ; **enrichissement
 Remotion + Manim** (mouvement, schémas animés) — déjà câblés, renforcés pour le
@@ -20,6 +20,9 @@ viral.
 *Ancrage* : hooks/CTA/script **appuyés sur le contexte augmenté N1 codebase**
 (RAG/Graphify/Docs/EAGER, `CapsuleContextBuilder` → `CapsuleLlmService`) +
 provenance anti-hallucination — **pas de copy inventé**.
+*Dimension documentaire* : **storyboard AsciiDoc validable** (US-13) = porte
+éditoriale — message/point de vue → beat par beat → vidéo déployable ; aucun
+rendu sans storyboard validé.
 
 [cols="1,4,2,1", options="header"]
 |===
@@ -29,7 +32,7 @@ provenance anti-hallucination — **pas de copy inventé**.
 | US-1 | **CI verte** — fallback creds nmcp `?: ""` (`settings.gradle.kts:30-31`) | `settings.gradle.kts` | 2
 | US-2 | **Rendu vertical natif (FFmpeg)** — `ViralConfig` + PNG portrait 1080×1920 + assemblage FFmpeg | `capsule.viral` | 5
 | US-3 | **Format court** — `ViralConfig` (durée cible + preset plateforme) + merger 4 sources | `CapsuleConfig.kt` | 3
-| US-4 | **Hooks/CTA (ancrés contexte N1)** — domaine `capsule.viral` + LLM **appuyé sur composite context codebase** + provenance | `capsule.viral` | 4
+| US-4 | **Hooks/CTA + message (ancrés contexte N1)** — message/point de vue + hook + CTA + provenance | `capsule.viral` | 5
 | US-5 | **Métadonnées campagne (lecture)** — `CampaignMetadata` **lu** depuis `CopyPiece` GBL-006 (pas de second moteur) | `capsule.viral` | 3
 | US-6 | **Batch multi-plateforme** — matrice (langue × plateforme × durée) | `GenerateViralCampaignTask` | 4
 | US-7 | **Enrichissement Remotion + Manim** — presets composition verticale + `data-manim` schémas animés | `RemotionCapture.kt`, `Root.jsx`, `ManimParallelRenderer.kt` | 6
@@ -38,15 +41,16 @@ provenance anti-hallucination — **pas de copy inventé**.
 | US-10 | **`CampaignBundle`** (contrat aval GBL-002) — {vidéo + metadata + thumbnail + plateforme + langue} | `capsule.viral` | 4
 | US-11 | **Thumbnail / cover** par plateforme (1280×720) | `capsule.viral` | 3
 | US-12 | **Sous-titres stylés viral** — karaoké mot-à-mot + emojis | `SubtitleBurnInCommand.kt` | 5
+| US-13 | **Storyboard validable (document → vidéo)** — storyboard AsciiDoc (message/point de vue/beat/timing/asset) + **gate de validation pilote** avant rendu | `capsule.viral`, `capsule.feed`, `capsule.transcript` | 5
 |===
 
 *Gap bloquant* : vertical 9:16 = crop destructif (`CapsuleDistribTask.kt:92`),
 pas de format court, pas de hooks, pas de batch plateforme, CI rouge
 (`settings.gradle.kts:30`). *Méthode* : FFmpeg déterministe (Playwright temps
 réel écarté) **enrichi par Remotion + Manim**. *Split-brain tranché* : métadonnées
-**lues** depuis GBL-006 (pas régénérées). *Hors scope* : publication API
-(EPIC N4 / GBL-002), écriture copy (GBL-006), calendrier + musique + analytics
-(GBL-002).
+**lues** depuis GBL-006 (pas régénérées). *Porte éditoriale* : storyboard validé
+avant rendu (US-13). *Hors scope* : publication API (EPIC N4 / GBL-002), écriture
+copy (GBL-006), calendrier + musique + analytics (GBL-002).
 
 '''
 == 📦 Publication Maven Central ✅

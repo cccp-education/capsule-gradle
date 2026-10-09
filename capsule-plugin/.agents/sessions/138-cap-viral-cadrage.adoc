@@ -173,6 +173,19 @@ tests ne tournent pas sur GitHub. Prérequis US-1.
    viral ; les hooks/copy portent leur **provenance** (`ProvenanceTracker`,
    anti-hallucination). Le script vidéo est une **dérivation ancrée** du corpus,
    pas une invention libre.
+. [x] **Dimension documentaire — storyboard validable (US-13)** : une campagne est
+   d'abord un **document** qui *porte un message / expose un point de vue*, dont
+   la fonction est de **proposer un storyboard validable et transformable en
+   vidéo déployable**. Avant de brûler du TTS et du rendu, capsule produit un
+   **storyboard AsciiDoc** (message, angle, beat par beat : hook / development /
+   CTA, durée cible, type de segment HTML/MANIM, asset attendu), **revu et validé
+   par le pilote**, puis **transformé** en vidéo. C'est la **porte éditoriale**
+   du pipeline viral : aucun rendu vidéo sans storyboard validé (miroir de la
+   règle A9 « corpus propre avant génération »). Socle réutilisable :
+   `capsule.feed.CapsuleScript`/`SlideSegment` (`SlideType.HTML`/`MANIM`,
+   `manimScene`) + `capsule.transcript.TranscriptBuilder` (rendu AsciiDoc
+   déterministe) — CAP-VIRAL les étend en **storyboard structuré** (message,
+   point de vue, beat, timing), pas en simple transcript.
 . [x] **Métadonnées campagne — CONSOMMÉES, pas générées (split-brain tranché)** :
    `CampaignMetadata` (titre, description, hashtags, caption) est **lu** depuis le
    `CopyPiece` de GBL-006 (`MarketCopyWriter`, bakery), **jamais** régénéré par
@@ -209,9 +222,12 @@ GBL-006 (copy natif 22 langues, bakery)   →   CAPSULE   →   GBL-002 (upload 
                           CONTEXTE AUGMENTÉ N1 ──────┘
                           (codebase : RAG pgvector + Graphify + Docs + EAGER)
                           hooks/CTA/script = dérivation ANCRÉE, pas hallucination
+
+   Porte éditoriale (US-13) : STORYBOARD AsciiDoc validé → rendu vidéo
+   (message / point de vue → beat par beat → vidéo déployable)
 ```
 
-*Trois trous d'interface identifiés (audit S-138)* :
+*Quatre trous d'interface identifiés (audit S-138)* :
 
 [cols="2,3,2", options="header"]
 |===
@@ -229,10 +245,47 @@ GBL-006 (copy natif 22 langues, bakery)   →   CAPSULE   →   GBL-002 (upload 
 | **Ancrage contexte N1** : hooks/CTA/script doivent être appuyés sur le contexte augmenté codebase
 | ⚙️ socle existant (CAP-ARCH-2/3, CAP-PROVENANCE) mais **non câblé au viral**
 | **US-4 + US-9** — composite context codebase (RAG/Graphify/Docs/EAGER) + provenance
+| **Dimension documentaire** : proposer un **storyboard validable** avant de transformer en vidéo
+| ⚙️ embryon existant (`CapsuleScript`/`SlideSegment` + `TranscriptBuilder`) mais c'est un transcript, **pas un storyboard**
+| **US-13** — storyboard AsciiDoc (message/point de vue/beat/timing) + **gate de validation** avant rendu
 |===
 
 *Hors capsule (à acter dans GBL, pas ici)* : **bibliothèque musicale** et
 **calendrier éditorial** relèvent de GBL-002, pas de capsule.
+
+=== La dimension documentaire — le storyboard comme porte (US-13)
+
+Une campagne de viralité n'est pas d'abord une vidéo : c'est un **document qui
+porte un message** — un point de vue à exposer — et **dont la fonction est de
+proposer un storyboard validable, transformable en vidéo déployable**.
+
+Capsule formalise cette fonction en un artefact de plein droit :
+
+```
+MESSAGE / POINT DE VUE (ancré contexte N1)
+   │
+   ▼
+STORYBOARD AsciiDoc  ── beat par beat ──
+   • objectif du message
+   • hook (les 3 premières secondes)
+   • development (démonstration ancrée RAG/Graphify)
+   • CTA (produit talaria / techno cccp)
+   • par beat : durée cible, type de segment HTML/MANIM, asset attendu
+   │
+   ▼  ── GATE : validation pilote (Économie d'Encre : pas de rendu sans accord)
+RENDU VIDÉO DÉPLOYABLE  →  CampaignBundle  →  GBL-002 (publication)
+```
+
+*Réutilisation* : `capsule.feed.CapsuleScript`/`SlideSegment` (`SlideType.HTML`/
+`MANIM`, `manimScene`) + `capsule.transcript.TranscriptBuilder` (rendu AsciiDoc
+déterministe) fournissent déjà la **structure de segments** et le **rendu texte**.
+CAP-VIRAL les **étend** d'une sémantique *storyboard* (message, point de vue,
+beat, timing, asset) — pas un simple transcript, mais un **plan de tournage
+validable**.
+
+*Règle* : aucun TTS/vidéo brûlé sur un message non approuvé. C'est le pendant
+viral de la règle A9 « corpus propre avant génération » — **message validé avant
+rendu**.
 
 === L'ancrage contexte augmenté (exigence structurante)
 
@@ -257,7 +310,7 @@ hooks / CTA / script viral   ── chaque fait porte sa provenance ──▶  C
 exigence d'ancrage et de provenance que le pipeline pédagogique CAP-ARCH
 (`capsule.context`, domaine déjà clos).
 
-== Découpage (13 US ~48 pts)
+== Découpage (14 US ~53 pts)
 
 [cols="1,4,2,1", options="header"]
 |===
@@ -267,7 +320,7 @@ exigence d'ancrage et de provenance que le pipeline pédagogique CAP-ARCH
 | US-1 | **CI verte** — fallback creds nmcp `?: ""` (`settings.gradle.kts:30-31`), preuve CI | `settings.gradle.kts` | 2
 | US-2 | **Rendu vertical natif (FFmpeg)** — `ViralConfig` + rasterisation PNG portrait 1080×1920 découplée + assemblage FFmpeg | `capsule.viral`, `ScreenshotPlanner.kt`, `ScreenshotCaptureImpl` | 5
 | US-3 | **Format court** — `ViralConfig` (durée cible, preset plateforme), section `CapsuleConfig` + merger 4 sources, cadence exacte FFmpeg | `CapsuleConfig.kt`, `CapsuleConfigMerger.kt`, `ScreenshotPlanner.kt` | 3
-| US-4 | **Hooks/CTA (ancrés contexte augmenté N1)** — domaine `capsule.viral` + génération LLM **appuyée sur le composite context codebase** (RAG/Graphify/Docs/EAGER) + provenance anti-hallucination | `capsule.viral`, `CapsuleLlmService`, `CapsuleContextBuilder` | 4
+| US-4 | **Hooks/CTA + message (ancrés contexte N1)** — domaine `capsule.viral` : message/point de vue + hook + CTA, appuyés sur le composite context codebase + provenance | `capsule.viral`, `CapsuleLlmService`, `CapsuleContextBuilder` | 5
 | US-5 | **Métadonnées campagne (lecture)** — `MarketCopySource` port + `CampaignMetadata` **lu** depuis `CopyPiece` GBL-006 (pas de second moteur) | `capsule.viral` | 3
 | US-6 | **Batch multi-plateforme** — matrice (langue × plateforme × durée), skip Économie d'Encre | `GenerateViralCampaignTask` | 4
 | US-7 | **Enrichissement Remotion + Manim** — presets de composition verticale (transitions, dérive, fond animé) + `data-manim` pour schémas animés accordés à la voix ; mode `viral` du composeur | `capsule.viral`, `RemotionCapture.kt`, `Root.jsx`, `ManimParallelRenderer.kt` | 6
@@ -276,11 +329,16 @@ exigence d'ancrage et de provenance que le pipeline pédagogique CAP-ARCH
 | US-10 | **`CampaignBundle`** (contrat aval vers GBL-002) — paquet {vidéo + métadonnées + thumbnail + plateforme + langue}, format stable consommé par `publishToYouTube`/`publishToTikTok` ; élimine le split-brain recadrage 9:16 | `capsule.viral` | 4
 | US-11 | **Thumbnail / cover** par plateforme (asset YouTube, 1280×720) depuis le slide-titre + habillage viral | `capsule.viral`, `chapters/CardRenderer.kt` | 3
 | US-12 | **Sous-titres stylés viral** — karaoké mot-à-mot + emojis (burn-in ASS avancé) | `SubtitleBurnInCommand.kt`, `SubtitleModels.kt` | 5
+| US-13 | **Storyboard validable (document → vidéo)** — `capsule.viral` produit un **storyboard AsciiDoc** (message, point de vue, beat par beat : hook / development / CTA, durée cible, type de segment HTML/MANIM, asset attendu) ; **gate de validation pilote** avant rendu ; transformation storyboard → vidéo déployable. Étend `CapsuleScript`/`SlideSegment` + `TranscriptBuilder`. | `capsule.viral`, `capsule.feed`, `capsule.transcript` | 5
 |===
 
-*Total : ~48 pts.* Additif (aucune rupture des domaines existants).
+*Total : ~53 pts.* Additif (aucune rupture des domaines existants).
 *Deux chemins testés au dogfooding (US-8)* : (a) socle FFmpeg déterministe ;
 (b) enrichi Remotion+Manim.
+
+*Porte éditoriale (US-13)* : le storyboard validé précède le rendu — aucun TTS/
+vidéo brûlé sur un message non approuvé. C'est le pendant viral de la règle A9
+« corpus propre avant génération ».
 
 == Réutilisation de l'existant (Économie d'Encre)
 
@@ -300,6 +358,11 @@ exigence d'ancrage et de provenance que le pipeline pédagogique CAP-ARCH
   `CompositeContext`/`ContextChannel`) + `DefaultCapsulePromptBuilder` +
   `ProvenanceTracker` (CAP-PROVENANCE). **Réutilisé tel quel** pour ancrer
   hooks/CTA/script viral — pas de nouvelle chaîne RAG.
+* **Storyboard (`capsule.feed` + `capsule.transcript`)** — `CapsuleScript`/
+  `SlideSegment` (`SlideType.HTML`/`MANIM`, `manimScene`) + `TranscriptBuilder`
+  (rendu AsciiDoc déterministe) forment l'**embryon du storyboard** : structure
+  de segments + rendu texte. CAP-VIRAL US-13 les étend en storyboard validable
+  (message / point de vue / beat / timing / asset).
 * Batch (`GenerateCapsuleVideoAllLanguagesTask`) — étendu à la dimension plateforme.
 * Recadrage 9:16 (`CapsuleDistribTask`) — conservé comme fallback deck 16:9 legacy.
 * _À découpler_ : le rasteriseur PNG (`ScreenshotCaptureImpl.shootSlides` dépend
@@ -344,6 +407,10 @@ préfixés (pattern S-088).
   métadonnées sont des **dérivations ancrées** du corpus via le composite context
   codebase (RAG/Graphify/Docs/EAGER) + provenance anti-hallucination — socle
   déjà branché (CAP-ARCH-2/3, CAP-PROVENANCE), réutilisé, jamais contourné.
-* 10 décisions architecturales, **13 US ~48 pts**.
+* **Dimension documentaire (US-13)** : la campagne est d'abord un **document qui
+  porte un message / expose un point de vue**, dont la fonction est de **proposer
+  un storyboard validable, transformable en vidéo déployable**. Porte éditoriale :
+  pas de rendu vidéo sans storyboard validé (miroir viral de la règle A9).
+* 11 décisions architecturales, **14 US ~53 pts**.
 * Prérequis immédiat non-code : **US-1 CI verte**.
 * Zéro code modifié — session de cadrage (gouvernance pure).

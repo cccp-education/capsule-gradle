@@ -2,18 +2,21 @@
 :last_update: 2026-10-09 (S-138 CAP-VIRAL cadré — capsule devient moteur de campagnes virales YouTube/TikTok. Borough RÉACTIVÉ (était DORMANT). Prérequis US-1 = CI verte.)
 
 '''
-== 🔴 CAP-VIRAL — moteur de viralité (cadré S-138, 13 US ~48 pts)
+== 🔴 CAP-VIRAL — moteur de viralité (cadré S-138, 14 US ~53 pts)
 
 _Place dans la chaîne marketing_ : capsule = maillon du milieu → **amont**
 `capsule.copy` (US-9, absorbe GBL-006-6) + **aval** `CampaignBundle` (US-10).
 _Ancrage_ : hooks/CTA/script **appuyés sur le contexte augmenté N1 codebase**
 (RAG/Graphify/Docs/EAGER, `CapsuleContextBuilder` → `CapsuleLlmService`) +
 provenance anti-hallucination — pas de copy inventé.
+_Dimension documentaire_ : **storyboard AsciiDoc validable** (US-13) = porte
+éditoriale — message/point de vue → beat par beat → vidéo déployable ; aucun
+rendu sans storyboard validé.
 
 . [ ] **US-1 (prérequis)** — CI verte : `settings.gradle.kts:30-31` `error("ossrhUsername not found")` → fallback `?: ""` (pattern Queens S-269 / bakery S-243). CI **rouge** actuellement (runs `37864492361`/`...261`).
 . [ ] **US-2** — Rendu vertical natif (socle FFmpeg) : `ViralConfig` + PNG portrait 1080×1920 + assemblage FFmpeg (découpler le rasteriseur PNG de Playwright).
 . [ ] **US-3** — Format court : `ViralConfig` (durée cible + preset plateforme YouTube Short/TikTok/Reels) + merger 4 sources.
-. [ ] **US-4** — Hooks/CTA **ancrés contexte augmenté N1** (composite context codebase + provenance).
+. [ ] **US-4** — Hooks/CTA + message **ancrés contexte augmenté N1** (composite context codebase + provenance).
 . [ ] **US-5** — Métadonnées campagne (**lues** depuis `CopyPiece` GBL-006, pas régénérées).
 . [ ] **US-6** — Batch multi-plateforme (matrice langue × plateforme × durée).
 . [ ] **US-7** — Enrichissement Remotion + Manim (presets composition verticale + `data-manim` schémas animés).
@@ -22,6 +25,7 @@ provenance anti-hallucination — pas de copy inventé.
 . [ ] **US-10** — `CampaignBundle` (contrat aval GBL-002) : {vidéo + metadata + thumbnail + plateforme + langue}.
 . [ ] **US-11** — Thumbnail/cover par plateforme (1280×720).
 . [ ] **US-12** — Sous-titres stylés viral (karaoké mot-à-mot + emojis).
+. [ ] **US-13** — Storyboard validable (document → vidéo) : storyboard AsciiDoc (message/point de vue/beat/timing/asset) + gate de validation pilote avant rendu.
 
 _Hors scope CAP-VIRAL_ : publication API YouTube/TikTok (EPIC N4 / GBL-002),
 écriture copy (GBL-006), calendrier éditorial + musique + analytics (GBL-002).
