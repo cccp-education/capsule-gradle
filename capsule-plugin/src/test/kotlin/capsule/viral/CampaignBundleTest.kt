@@ -70,4 +70,23 @@ class CampaignBundleTest {
         assertEquals(copy().hook, parsed.get("metadata").get("hook").asText())
         assertEquals(copy().caption, parsed.get("metadata").get("caption").asText())
     }
+
+    @Test
+    fun `manifest serializer produces a deterministic json array of bundles`() {
+        val bundles = listOf(bundle(), bundle(thumbnail = ""))
+        val json = CampaignBundleSerializer.toManifestJson(bundles)
+        val parsed = ObjectMapper().readTree(json)
+        assertTrue(parsed.isArray)
+        assertEquals(2, parsed.size())
+        assertEquals("fr", parsed.get(0).get("language").asText())
+        assertEquals("build/capsule/fr-tiktok-30.mp4", parsed.get(0).get("videoFile").asText())
+        assertEquals(json, CampaignBundleSerializer.toManifestJson(bundles), "manifest must be deterministic")
+    }
+
+    @Test
+    fun `manifest serializer produces an empty array for an empty campaign`() {
+        val parsed = ObjectMapper().readTree(CampaignBundleSerializer.toManifestJson(emptyList()))
+        assertTrue(parsed.isArray)
+        assertEquals(0, parsed.size())
+    }
 }

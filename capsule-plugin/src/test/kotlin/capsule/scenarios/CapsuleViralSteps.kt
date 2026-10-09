@@ -2,6 +2,7 @@ package capsule.scenarios
 
 import capsule.feed.SlideType
 import capsule.viral.CampaignBundle
+import capsule.viral.CampaignBundleSerializer
 import capsule.viral.MarketCopy
 import capsule.viral.MarketCopySource
 import capsule.viral.StoryboardBeat
@@ -14,6 +15,7 @@ import capsule.viral.ViralHookPromptBuilder
 import capsule.viral.ViralPlatform
 import capsule.viral.ViralStoryboard
 import capsule.viral.ViralStoryboardBuilder
+import capsule.viral.ViralStoryboardParser
 import capsule.viral.ViralStoryboardValidator
 import capsule.viral.ViralVariant
 import io.cucumber.datatable.DataTable
@@ -38,6 +40,8 @@ class CapsuleViralSteps {
     private var hookPrompt: String? = null
     private var marketCopy: MarketCopy? = null
     private var bundles: List<CampaignBundle> = emptyList()
+    private var parsedStoryboard: ViralStoryboard? = null
+    private var manifest: String? = null
 
     private fun buildStoryboard(deckName: String, language: String, platform: String, table: DataTable): ViralStoryboard {
         val beats = table.asMaps().map { row ->
@@ -194,5 +198,31 @@ class CapsuleViralSteps {
     @Then("the first campaign bundle title is {string}")
     fun `the first campaign bundle title is`(title: String) {
         assertThat(bundles.first().metadata.title).isEqualTo(title)
+    }
+
+    @When("the storyboard is rendered then parsed back")
+    fun `the storyboard is rendered then parsed back`() {
+        val source = storyboard!!
+        document = ViralStoryboardBuilder.build(source)
+        parsedStoryboard = ViralStoryboardParser.parse(document!!)
+    }
+
+    @Then("the parsed storyboard equals the original")
+    fun `the parsed storyboard equals the original`() {
+        assertThat(parsedStoryboard).isEqualTo(storyboard)
+    }
+
+    @Then("the campaign manifest is a JSON array of {int} bundle")
+    fun `the campaign manifest is a JSON array`(count: Int) {
+        manifest = CampaignBundleSerializer.toManifestJson(bundles)
+        val parsed = com.fasterxml.jackson.databind.ObjectMapper().readTree(manifest)
+        assertThat(parsed.isArray).isTrue()
+        assertThat(parsed.size()).isEqualTo(count)
+    }
+
+    @Then("the campaign manifest first bundle title is {string}")
+    fun `the campaign manifest first bundle title is`(title: String) {
+        val parsed = com.fasterxml.jackson.databind.ObjectMapper().readTree(manifest)
+        assertThat(parsed.get(0).get("metadata").get("title").asText()).isEqualTo(title)
     }
 }

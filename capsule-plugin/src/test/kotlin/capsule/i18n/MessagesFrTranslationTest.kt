@@ -32,7 +32,8 @@ class MessagesFrTranslationTest {
         "task.generateCapsuleContentAndVideos.description",
         "task.validateCapsuleVideoDuration.description",
         "task.generateCapsuleTranscript.description",
-        "task.generateCapsulePodcast.description"
+        "task.generateCapsulePodcast.description",
+        "task.generateViralCampaign.description"
     ])
     fun `should translate task description key to French`(key: String) {
         val en = CapsuleMessages.get(key, "en")

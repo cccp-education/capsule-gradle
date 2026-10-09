@@ -58,3 +58,14 @@ Feature: Viral campaign engine
     And no market copy is available
     When the campaign is assembled with a rendered video and no hook
     Then the first campaign bundle title is "Devenir formateur professionnel"
+
+  Scenario: A rendered storyboard parses back into the same document
+    When the storyboard is rendered then parsed back
+    Then the parsed storyboard equals the original
+
+  Scenario: The campaign manifest serialises the bundles as a stable JSON array
+    Given a viral batch with languages "fr" platforms "TIKTOK" and duration 30
+    And a market copy for "fr" and "TIKTOK" with title "Titre natif"
+    When the campaign is assembled with a rendered video
+    Then the campaign manifest is a JSON array of 1 bundle
+    And the campaign manifest first bundle title is "Titre natif"
