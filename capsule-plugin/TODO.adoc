@@ -40,6 +40,13 @@
 . [ ] **US-5** — BDD + CI (rendu par variante couvert).
 
 '''
+== 🟡 CAP-CONTEXT — contexte du storyboard (CANDIDAT, issu S-144)
+
+. [ ] **Portage du squelette `CAPSULE_VIDEO.adoc`** — champs additifs `ViralStoryboard`
+  (`qqoqcp`/`visualIdentity`/`narrativeThread`), builder/parser étendus, gate de
+  cohérence, `Capsule.jsx` sur tokens du brand book. Candidat EPIC (rattachable CAP-SHORT).
+
+'''
 == 🟡 RESTE (S-144+)
 
 . [ ] **Optimisation CI** (optionnel) — `Full Tests` ~30 min (20 runners pure-domain).

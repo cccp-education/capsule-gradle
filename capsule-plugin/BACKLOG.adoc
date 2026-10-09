@@ -103,6 +103,22 @@ variante)._
 `capsule produit` (avant : seul le domaine existait).
 
 '''
+== 🎬 CAP-CONTEXT 🟡 CANDIDAT (issu S-144)
+
+_Contexte du storyboard : identité visuelle (design system) + QQOQCP + fil
+conducteur narratif. Revue de code S-144 : le storyboard `capsule.viral` est
+validé en **forme** mais ne porte **aucun contexte**. Squelette documentaire :
+`.agents/CAPSULE_VIDEO.adoc` (littérature agentique)._
+
+*Portage domaine proposé (baby-step, à cadrer)* :
+. `ViralStoryboard` — champs additifs `qqoqcp` / `visualIdentity` / `narrativeThread` (optionnels, backward compat).
+. `ViralStoryboardBuilder` / `ViralStoryboardParser` — rendre/parser les 3 sections (round-trip étendu).
+. `ViralStoryboardValidator` — gate de **cohérence** (arc complet, transition par séquence, identité alignée).
+. `Capsule.jsx` — lire les tokens du brand book (`BRAND.adoc`) au lieu du `PAGE_BACKGROUND` hardcodé.
+
+*Statut* : candidat — rattachable à CAP-SHORT ou EPIC dédié. Revue : `.agents/sessions/144-capsule-video-litterature-storyboard.adoc`.
+
+'''
 == 📦 Publication Maven Central ✅
 
 `education.cccp:capsule-plugin:0.0.1` publié via nmcp (Session 029).

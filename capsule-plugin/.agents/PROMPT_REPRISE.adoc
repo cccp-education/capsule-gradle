@@ -1,61 +1,49 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 144
+:session: 145
 :borough: Détroit
-:session_precedente: 143 (deux sessions concurrentes) — 143 bis : CI S-142 corrigée + dette `cucumberTest` résolue ; 143 : CAP-SHORT cadré
+:session_precedente: 144 — CAPSULE_VIDEO (littérature agentique) : squelette de storyboard guidé par le contexte
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
-== Contexte Hérité (S-143 — deux travaux concurrents)
+== Contexte Hérité
 
-=== S-143 bis — CI S-142 corrigée + dette `cucumberTest` résolue
+=== S-144 — `CAPSULE_VIDEO.adoc` (littérature agentique)
 
-- **2 bugs réels attrapés par la CI** (invisibles en local) :
-  1. `RemotionRootTemplateTest` — `1408`/`792` restaient dans le **commentaire**
-     KDoc de `Root.jsx` (garde ressource). Fix : commentaire neutralisé.
-  2. `GenerateViralCampaignFunctionalTest` — `synthesizeStoryboard` produisait un
-     beat `hook` de 27 s rejeté par la gate (`MAX_BEAT_SECONDS=10`). Fix : découpe
-     en beats `development` ≤ 10 s.
-     → `Test` + `Full Tests` **VERTS** (run `37961053126`).
-- **Dette `cucumberTest` (14 scénarios) RÉSOLUE** : cause racine = **mauvaise
-  portée de la tâche globale**, qui collectait les 14 suites `@Suite` dédiées
-  (pattern S-082) → `NoTestsDiscoveredException`. Fix : `cucumberTest` scopée à
-  `CucumberTestRunner` (agrégé, 153 verts). Preuve : workflow diagnostic
-  `37967978808` BUILD SUCCESSFUL, 0 `initializationError`.
-- Nouveau workflow **manuel** `.github/workflows/cucumber-full.yml`.
-- Rapport : `.agents/sessions/143-ci-s142-fixes-dette-cucumbertest.adoc`
+- **Revue de code + cadrage** du storyboard `capsule.viral` → constat : le
+  storyboard est validé en **forme** (hook/CTA/durée) mais ne porte **aucun
+  contexte** (identité visuelle, QQOQCP, fil conducteur).
+- **Livrable** : `.agents/CAPSULE_VIDEO.adoc` — squelette AsciiDoc à 3 axes de
+  contexte (design system + QQOQCP + fil conducteur) + sections `Séquences` et
+  `Gate`. Ancré sur `BRAND.adoc` (talaria) et `CAPSULE_PEDAGOGIQUE.adoc` (recette 3C).
+- Rapport : `.agents/sessions/144-capsule-video-litterature-storyboard.adoc`
+- Suite : portage domaine (champs additifs `ViralStoryboard`, builder/parser,
+  gate de cohérence, `Capsule.jsx` sur tokens) — candidat EPIC **CAP-CONTEXT**.
 
-=== S-143 — CAP-SHORT cadré (P0)
+=== S-143 (deux sessions concurrentes)
 
-- Le domaine `capsule.viral` (CAP-VIRAL) est complet, mais le **rendu n'est pas
-  câblé** : `generateViralCampaign` écrit storyboard + `viral-campaign.json` et
-  **référence** les vidéos par chemin **sans les produire**. CAP-SHORT ferme le
-  trou domaine→livrable (MP4 1080×1920 par `ViralVariant`, durée 15-60 s imposée
-  au montage, batch réel langue×plateforme, dogfooding). 5 US ~17 pts.
-- Détail : `BACKLOG.adoc` § CAP-SHORT.
+- **143 bis** — CI S-142 corrigée (2 bugs CI) + dette `cucumberTest` résolue
+  (scoping au runner agrégé). Preuve CI `37967978808`.
+- **143** — CAP-SHORT cadré (rendu short end-to-end, 5 US ~17 pts).
 
-== Mission Session 144 — priorités
+== Mission Session 145 — priorités
 
-1. **CAP-SHORT US-0/1 (P0)** — cadrage (déjà fait S-143) puis **rendu par
-   variante** : câbler le rendu réel des `ViralVariant` en MP4 1080×1920 dans
-   `renderedVideoDir/<variant.id>.mp4` (socle FFmpeg `ScreenshotPlanner`).
-2. **Optimisation CI** (optionnel) : `Full Tests` ~30 min (20 runners pure-domain).
-   Envisager un job dédié / parallélisation.
-3. **Dogfooding viral réel** (accord pilote requis — run LLM metered).
+1. **CAP-CONTEXT (nouveau, issu S-144)** — porter le squelette `CAPSULE_VIDEO.adoc`
+   dans le domaine : `ViralStoryboard` champs additifs (`qqoqcp`/`visualIdentity`/
+   `narrativeThread`), `ViralStoryboardBuilder`/`Parser` étendus (round-trip),
+   gate de cohérence, `Capsule.jsx` sur tokens du brand book. Baby-step DDD/TDD/BDD.
+2. **CAP-SHORT US-0/1 (P0)** — rendu réel par variante (MP4 1080×1920).
+3. **Optimisation CI** (optionnel) + **dogfooding viral réel** (accord pilote).
 
 == Points d'attention
 
-* **Local = Build, Tests = CI** : jamais de `test`/`check` local. Compiler, pousser,
-  surveiller le run GitHub. Diagnostic des suites non câblées au push = workflow
-  manuel `cucumber-full.yml`.
-* **Viral = socle FFmpeg** : ne jamais réintroduire l'enregistrement Playwright
-  temps réel (`ViralCaptureStrategy` force `SCREENSHOT`).
-* **Sessions concurrentes** : vérifier `git status` à l'ouverture (drift gouvernance).
-* Baby-step DDD/TDD/BDD : domaine pur → unit, puis câblage, puis cucumber.
-  Runner dédié par feature (S-082), steps préfixés (S-088). **Quoter les `{string}`**.
+* **Local = Build, Tests = CI**. Diagnostic des suites non câblées au push =
+  workflow manuel `cucumber-full.yml`.
+* **Viral = socle FFmpeg** (`ViralCaptureStrategy` force `SCREENSHOT`).
+* **Sessions concurrentes** : `git status` à l'ouverture (drift gouvernance).
+* Baby-step DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
 * English only : code, Gherkin, commentaires.
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.1
-* CI : `test.yml` (fast unit) + `full-tests.yml` (unit + functional + duration +
-  viral + 20 runners pure-domain) + `cucumber-full.yml` (manuel, diagnostic).
+* `.agents/CAPSULE_VIDEO.adoc` = littérature agentique du storyboard (EAGER).
 * CAP-VIRAL **TERMINÉ 14/14 US** (S-142) ; CAP-SHORT **CADRÉ** (S-143).

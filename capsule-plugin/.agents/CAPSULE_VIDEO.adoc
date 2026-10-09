@@ -1,0 +1,238 @@
+= CAPSULE_VIDEO — Squelette de storyboard guidé par le contexte (design system + QQOQCP + fil conducteur)
+:toc:
+:toclevels: 3
+:date: 2026-10-09
+:type: littérature agentique (Détroit / capsule-gradle)
+:statut: document vivant
+:epic: CAP-SHORT (rendu short end-to-end) ; recoupe CAP-VIRAL US-13 (storyboard validable)
+:origine: revue de code du domaine `capsule.viral` + recette 3C de `CAPSULE_PEDAGOGIQUE.adoc`
+:source_brand: `office/sites/talaria.school/BRAND.adoc` (identité visuelle talaria.school)
+
+[abstract]
+--
+Ce document fixe le **contexte** que le storyboard d'une capsule doit porter, et
+fournit le **squelette** AsciiDoc qui le guide. Le constat de la revue : le
+domaine `capsule.viral` livré (CAP-VIRAL, S-142) sait *valider* un storyboard
+(hook/CTA/durée) mais le storyboard ne reçoit **aucun contexte** pour être
+*cohérent* : ni **identité visuelle** (design system), ni **QQOQCP**, ni
+**fil conducteur narratif** entre séquences. Le squelette comble ce trou.
+
+Trois axes de contexte, un seul artefact :
+
+1. *Identité visuelle (design system)* — habillage verrouillé (charte, palette,
+   typographie, logo, format).
+2. *QQOQCP* — le contexte macro de la capsule (Qui / Quoi / Où / Quand / Comment /
+   Pourquoi).
+3. *Fil conducteur narratif* — la cohérence entre séquences (thèse, motif
+   récurrent, arc, transitions).
+
+L'identité visuelle **habille**, elle ne remplace pas le message : c'est un
+paramètre du rendu, jamais l'entrée du storyboard (`CAPSULE_PEDAGOGIQUE.adoc` § 4.1).
+--
+
+== 1. Objet
+
+Donner au storyboard de capsule un **cadre de contexte** qui réponde aux trois
+questions du pilote :
+
+* *quelle identité visuelle* (design system) porte la capsule ?
+* *quel QQOQCP* situe la capsule (le pour quoi / pour qui / comment) ?
+* *quel fil conducteur* rend les séquences cohérentes entre elles (et non une
+  simple liste de plans) ?
+
+Le livrable est un **squelette** : le storyboard devient un document AsciiDoc
+structuré, revu et validé *avant* tout rendu (porte éditoriale, miroir de la
+règle A9 « corpus propre avant génération »).
+
+== 2. Revue de code — état du storyboard (au code réel)
+
+.Le domaine `capsule.viral` (S-140 → S-142)
+[cols="2,3,2", options="header"]
+|===
+| Élément | Rôle réel | Limite
+
+| `ViralStoryboard` (`ViralStoryboard.kt:63`)
+| message, angle, beats, platform, language, targetDurationSeconds
+| **Pas** de contexte visuel, **pas** de QQOQCP, **pas** de fil conducteur
+| `StoryboardBeat` (`ViralStoryboard.kt:19`)
+| role, intent, durationSeconds, type (HTML/MANIM), manimScene, asset
+| Une séquence isolée : **aucune** transition ni lien vers la suivante
+| `ViralStoryboardBuilder` (`ViralStoryboardBuilder.kt:22`)
+| rend `= Storyboard — <message>` + `:platform:`/`:language:`/`:target-duration:` + `== Angle` + `== Beats`
+| Squelette **pauvre** : pas de sections identité visuelle / QQOQCP / fil conducteur
+| `ViralStoryboardValidator` (`ViralStoryboardValidator.kt:56`)
+| gate : hook + cta présents, durée ±20 %, beat ≤ 10 s
+| Valide la **forme**, jamais la **cohérence narrative**
+| `ViralStoryboardParser` (`ViralStoryboardParser.kt`, S-142)
+| round-trip builder (aller-retour document ↔ modèle)
+| Rejoue le squelette pauvre
+| `Capsule.jsx:237` (`PAGE_BACKGROUND`)
+| fond de composition **codé en dur** (dégradé bleu)
+| **Aucun** branchement à une identité visuelle (charte talaria / cccp)
+|===
+
+.Constat de fond
+
+Le storyboard CAP-VIRAL est un **plan de montage** (ce que l'écran montre,
+combien de temps, par quel rendu). Il **ne porte pas** ce qui fait la cohérence
+d'une capsule : *un habillage unique* et *un fil narratif*. La revue recoupe le
+constat de `CAPSULE_PEDAGOGIQUE.adoc` § 4.1 : la chaîne de conception part du
+**QQOQCP**, passe par l'**identité visuelle**, puis produit le **storyboard** —
+mais le storyboard CAP-VIRAL n'accueille que la dernière étape.
+
+== 3. Cadrage — décisions
+
+. *Trois axes de contexte, un squelette* — le storyboard porte **QQOQCP** +
+   **identité visuelle** + **fil conducteur**, en plus des séquences. Additif.
+. *Le storyboard est un document, pas un JSON* — AsciiDoc revu/validé par le
+   pilote (porte éditoriale). Le `viral-campaign.json` reste la sortie machine ;
+   le storyboard est l'entrée humaine.
+. *Identité visuelle = habillage paramétré* — la charte vient du **brand book**
+   (`BRAND.adoc`, talaria.school) ; le storyboard la **référence** (tokens,
+   logo, typo, format) sans la réinventer. `Capsule.jsx` doit lire ces tokens,
+   pas hardcoder `PAGE_BACKGROUND`.
+. *QQOQCP est macro* — six questions décisives, pas un questionnaire. Le format
+   court (~15-60 s, max 5 min sur la variante pédagogique) ne supporte pas la
+   surcharge (`CAPSULE_PEDAGOGIQUE.adoc` § 4.1).
+. *Fil conducteur = contrat de cohérence* — thèse/angle, motif récurrent, arc
+   (accroche → démonstration → résolution → CTA), et **transition entrante** de
+   chaque séquence. La gate peut ensuite vérifier la continuité, pas seulement
+   la présence de hook/CTA.
+. *Ancrage contexte N1* — QQOQCP et fil conducteur sont des **dérivations
+   ancrées** (RAG/Graphify/Docs + provenance), jamais inventés (CAP-VIRAL US-4/US-9).
+. *Baby-step* — le squelette est d'abord **documentaire** (ce fichier) ; son
+   portage dans le domaine (`ViralStoryboard` champs additifs, builder/parser
+   étendus, gate de cohérence) se fait ensuite en baby-step DDD/TDD/BDD.
+
+== 4. Le squelette de storyboard (template)
+
+_Ce bloc est le squelette à copier/adapter pour toute capsule. Les sections
+`QQOQCP`, `Identité visuelle` et `Fil conducteur` sont **obligatoires** ; les
+séquences suivent le contrat `StoryboardBeat`._
+
+[source,asciidoc]
+----
+= Storyboard — <titre / message de la capsule>
+:platform: TIKTOK
+:language: fr
+:target-duration: 20
+:author: <auteur>
+:provenance: <source N1 : RAG / Graphify / Docs / EAGER — réf.>
+
+== QQOQCP
+
+[cols="1,3", options="header"]
+|===
+| Question | Réponse (dérivée du contexte N1)
+| Qui (public) | <à qui s'adresse la capsule>
+| Quoi (sujet) | <le sujet / le comportement montré>
+| Où (contexte) | <où cela se passe (lieu, outil, situation)>
+| Quand (moment) | <à quel moment du parcours>
+| Comment (modalité) | <comment c'est montré : démonstration, témoignage…>
+| Pourquoi (but) | <le bénéfice / l'objectif pédagogique ou l'accroche>
+|===
+
+== Identité visuelle (design system)
+
+*Brand* : talaria.school — réf. `office/sites/talaria.school/BRAND.adoc`.
+*Format* : 9:16 (1080×1920) pour le viral ; 16:9 (1408×792) pour la capsule pédagogique.
+*Tokens* :
+
+[cols="2,2,3", options="header"]
+|===
+| Token | Valeur | Usage
+| --navy-dark | #0f1b33 | fond principal / pastille
+| --navy | #16213e | fonds secondaires / og
+| marine | #0F2E3F | mark (source)
+| crème | #fcf9f0 | contour du mark / texte sur navy
+| terracotta | #c46f44 | accent (sandale)
+| --amber | #d97706 | réservé au survol — jamais une surface
+|===
+
+*Typographie* : Sora. *Logo* : sandale marine (source de vérité unique).
+*Fond de composition* : <dégradé charté — voir tokens> — **ne jamais hardcoder**
+(`Capsule.jsx` doit lire les tokens, pas `PAGE_BACKGROUND`).
+
+== Fil conducteur narratif
+
+* Thèse / angle : <le point de vue, en une phrase>
+* Motif récurrent : <élément visuel ou lexical rappelé d'une séquence à l'autre>
+* Arc : accroche (hook) → démonstration → résolution → CTA
+* Registre : <pédagogique | promotionnel | témoignage>
+* Voix / ton : <…>
+
+== Séquences
+
+[cols="1,2,4,1,1,2,2", options="header"]
+|===
+| # | Rôle | Intention | Durée | Rendu | Transition entrante | Asset / scène Manim
+| 1 | hook | <les 3 premières secondes> | 3 | HTML | — (ouverture) | <asset>
+| 2 | development | <démonstration ancrée> | 8 | HTML | <transition> | <asset>
+| 3 | development | <…> | 6 | MANIM | <transition> | <scène Manim>
+| 4 | cta | <appel à l'action> | 3 | HTML | <transition> | <asset>
+|===
+
+== Gate (validation pilote)
+
+* [ ] QQOQCP renseigné (6 réponses non vides, dérivées du contexte N1)
+* [ ] Identité visuelle alignée sur le brand book (tokens/logo/typo/format)
+* [ ] Fil conducteur : arc complet + transition par séquence
+* [ ] Durée totale dans la cible ±20 % ; aucun beat > 10 s (gate CAP-VIRAL)
+* [ ] Provenance : chaque fait ancré (anti-hallucination)
+----
+
+== 5. Contrat de contexte (les 3 axes)
+
+[cols="1,3,3", options="header"]
+|===
+| Axe | Répond à | Porté par
+
+| **Identité visuelle (design system)**
+| Quelle charte ? quelle palette ? quel logo ? quelle typo ? quel format ?
+| `BRAND.adoc` (talaria) ; tokens dans le squelette ; `Capsule.jsx` (à câbler)
+| **QQOQCP**
+| Pour qui / quoi / où / quand / comment / pourquoi ?
+| Section `QQOQCP` du squelette (dérivée contexte N1)
+| **Fil conducteur narratif**
+| Qu'est-ce qui rend les séquences cohérentes ?
+| Section `Fil conducteur` + colonne « Transition entrante » des séquences
+|===
+
+== 6. Impacts (portage domaine — baby-step, sessions suivantes)
+
+[cols="1,4,2", options="header"]
+|===
+| Cible | Évolution | Type
+
+| `ViralStoryboard`
+| champs additifs `qqoqcp: Qqoqcp?`, `visualIdentity: VisualIdentity?`, `narrativeThread: NarrativeThread?` (optionnels, backward compat)
+| +3 types purs
+| `ViralStoryboardBuilder` / `ViralStoryboardParser`
+| rendre/parser les 3 sections (round-trip étendu)
+| étendre
+| `ViralStoryboardValidator`
+| gate de **cohérence** : arc complet, transition par séquence, identité alignée
+| étendre
+| `Capsule.jsx` / tokens
+| lire les tokens du brand book au lieu du `PAGE_BACKGROUND` hardcodé
+| câbler
+|===
+
+*Statut* : cadrage **documentaire** (ce fichier). Le portage code est une
+décision à prendre (EPIC CAP-SHORT ou EPIC dédié « CAP-CONTEXT »).
+
+== 7. Références
+
+[cols="2,3", options="header"]
+|===
+| Document | Rôle
+| `foundry/public/capsule-gradle/.../viral/ViralStoryboard.kt` | Modèle storyboard (CAP-VIRAL US-13)
+| `.agents/sessions/138-cap-viral-cadrage.adoc` | Cadrage CAP-VIRAL (storyboard validable)
+| `BACKLOG.adoc` § CAP-SHORT | Rendu short end-to-end (US-0→5)
+| `training-plugin/.agents/CAPSULE_PEDAGOGIQUE.adoc` | Recette 3C + QQOQCP (littérature agentique)
+| `office/sites/talaria.school/BRAND.adoc` | Identité visuelle talaria.school (palette, logo, gardes)
+| `office/sites/talaria.school/.agents/sessions/043-*.adoc` | Design System v2 (tokens, Sora)
+|===
+
+_Document de littérature agentique du borough capsule (Détroit). Recherche et
+revue en lecture seule ; toute donnée citée reste dans le cercle privé (`office/`)._

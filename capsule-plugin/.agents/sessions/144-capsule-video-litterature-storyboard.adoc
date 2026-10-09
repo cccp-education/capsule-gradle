@@ -1,0 +1,69 @@
+= Session 144 — CAPSULE_VIDEO : littérature agentique + squelette de storyboard
+:session: 144
+:date: 2026-10-09
+:type: gouvernance + revue de code (zéro code)
+:epic: CAP-SHORT (recoupe CAP-VIRAL US-13)
+:livrable: `.agents/CAPSULE_VIDEO.adoc` (nouveau)
+
+== Contexte
+
+Demande pilote : une revue de code + cadrage autour du borough capsule, apportant
+un **squelette qui guide le storyboard**, dans la **littérature agentique**, dans
+un fichier nommé « capsule vidéo » au format AsciiDoc. Le storyboard a besoin
+d'un contexte répondant à (1) une **identité visuelle** (design system),
+(2) un **QQOQCP**, et (3) un **fil conducteur narratif** cohérent entre séquences.
+
+== Revue de code (au code réel)
+
+Le domaine `capsule.viral` (CAP-VIRAL, S-140→S-142) sait *valider* un storyboard
+mais ne lui donne **aucun contexte** :
+
+* `ViralStoryboard` (`ViralStoryboard.kt:63`) — message/angle/beats/platform/
+  language/durée ; **pas** de QQOQCP, identité visuelle ni fil conducteur.
+* `StoryboardBeat` (`:19`) — séquence isolée (role, intent, durée, rendu,
+  manimScene, asset) ; **aucune** transition/lien vers la suivante.
+* `ViralStoryboardBuilder` (`:22`) — squelette pauvre (`== Angle` + `== Beats`).
+* `ViralStoryboardValidator` (`:56`) — gate de **forme** (hook/CTA, ±20 %, ≤ 10 s),
+  jamais de **cohérence narrative**.
+* `Capsule.jsx:237` (`PAGE_BACKGROUND`) — fond de composition **codé en dur**,
+  **aucun** branchement à une charte.
+
+Recoupe `CAPSULE_PEDAGOGIQUE.adoc` § 4.1 (recette 3C) : la chaîne part du
+**QQOQCP** → **identité visuelle** → **storyboard** ; le storyboard CAP-VIRAL
+n'accueille que la dernière étape.
+
+== Livrable — `.agents/CAPSULE_VIDEO.adoc`
+
+Littérature agentique du borough (mirror de `CAPSULE_PEDAGOGIQUE.adoc` côté
+training). Contenu :
+
+* **Objet** + **revue de code** (constats ci-dessus, avec `file:line`).
+* **Cadrage** — 7 décisions (3 axes de contexte, storyboard = document, identité
+  = habillage paramétré depuis le brand book, QQOQCP macro, fil conducteur =
+  contrat de cohérence, ancrage N1, portage baby-step).
+* **Le squelette** (template AsciiDoc) — sections obligatoires `QQOQCP`,
+  `Identité visuelle (design system)`, `Fil conducteur narratif`, `Séquences`
+  (avec colonne « transition entrante »), `Gate`.
+* **Contrat de contexte** (3 axes → qui les porte).
+* **Impacts** — portage domaine (champs additifs `ViralStoryboard`, builder/
+  parser étendus, gate de cohérence, `Capsule.jsx` sur tokens du brand book).
+
+== Ancrages
+
+* Identité visuelle : `office/sites/talaria.school/BRAND.adoc` (palette `--navy-dark`
+  #0f1b33, `--navy` #16213e, marine #0F2E3F, crème #fcf9f0, terracotta #c46f44,
+  amber #d97706 ; typo Sora ; logo sandale marine) + Design System v2 (S-043).
+* Recette : `training-plugin/.agents/CAPSULE_PEDAGOGIQUE.adoc` (3C de Mager +
+  QQOQCP + « storyboard = GPS » de l'épreuve FPA).
+
+== Fichiers
+
+* `.agents/CAPSULE_VIDEO.adoc` (nouveau)
+* `.agents/INDEX.adoc` (référence EAGER dans _Fichiers Associés_)
+
+== Statut / suite
+
+Cadrage **documentaire** (zéro code). Le portage dans le domaine (champs additifs,
+builder/parser, gate de cohérence, tokens Remotion) est une décision à prendre —
+candidat EPIC **CAP-CONTEXT** rattaché à CAP-SHORT, en baby-step DDD/TDD/BDD.
+Zéro code modifié, zéro publication, zéro secret.

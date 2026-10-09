@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-09 (S-143) — CI S-142 corrigée + dette `cucumberTest` résolue + CAP-SHORT cadré. Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-09 (S-144) — CAPSULE_VIDEO (littérature agentique) + S-143 (CI/dette/cadrage). Rapports détaillés dans `.agents/sessions/`.
 
-== 23 dernières sessions (121-143)
+== 24 dernières sessions (121-144)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 144 | 2026-10-09 | gouvernance + revue de code | **`CAPSULE_VIDEO.adoc` (littérature agentique)** — revue de code + cadrage du storyboard `capsule.viral`. Constat : le storyboard est validé en **forme** (hook/CTA/durée) mais ne porte **aucun contexte**. Livrable : **squelette** AsciiDoc guidé par 3 axes (design system + QQOQCP + fil conducteur narratif) + sections Séquences/Gate. 7 décisions, ancrage `BRAND.adoc` (talaria) + `CAPSULE_PEDAGOGIQUE.adoc` (recette 3C). Suite : portage domaine (candidat EPIC CAP-CONTEXT). Zéro code. | 9/10
 
 | 143 | 2026-10-09 | fix+ci+cadrage | **CI S-142 corrigée + dette `cucumberTest` résolue + CAP-SHORT cadré** (deux sessions concurrentes). **143 bis** : 2 bugs réels attrapés par la CI (Root.jsx commentaire KDoc + synthesizeStoryboard beat>10s) ; la dette `cucumberTest` (14 scénarios) était un **mauvais scoping** de la tâche globale collectant les 14 suites `@Suite` dédiées → `NoTestsDiscoveredException` ; scopée au `CucumberTestRunner` agrégé. Preuve CI `37967978808` BUILD SUCCESSFUL (0 `initializationError`, 153 verts). Rapport `.agents/sessions/143-ci-s142-fixes-dette-cucumbertest.adoc`. **143** : CAP-SHORT cadré (rendu short end-to-end, 5 US ~17 pts) — `BACKLOG.adoc`. | 9/10
 

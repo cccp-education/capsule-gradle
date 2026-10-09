@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-09 (S-143, deux sessions concurrentes — **143 bis : CI S-142 corrigée + dette `cucumberTest` résolue** ; 2 bugs réels attrapés par la CI (Root.jsx commentaire + synthesizeStoryboard), `cucumberTest` scopée à `CucumberTestRunner` (agrégé, 153 verts, run `37967978808`) ; **143 : CAP-SHORT cadré** (rendu short end-to-end).)
-_Derniere session terminee_ : 143 (bis + cadrage).
-_Prochaine session_ : 144 — **CAP-SHORT US-0/1** (rendu par variante, P0) + optimisation CI (optionnel) + dogfooding viral réel (accord pilote).
-_Session en cours_ : — (S-143 terminée).
+ _Derniere mise a jour_ : 2026-10-09 (S-144 — **`CAPSULE_VIDEO.adoc`** (littérature agentique) : revue de code + cadrage du storyboard → **squelette** guidé par 3 axes de contexte (design system + QQOQCP + fil conducteur narratif). Précédent : S-143, deux sessions concurrentes — **143 bis : CI S-142 corrigée + dette `cucumberTest` résolue** (2 bugs CI ; `cucumberTest` scopée au runner agrégé, run `37967978808`) ; **143 : CAP-SHORT cadré**.)
+_Derniere session terminee_ : 144.
+_Prochaine session_ : 145 — **CAP-CONTEXT** (porter le squelette dans le domaine : `ViralStoryboard` additif + builder/parser + gate cohérence + tokens Remotion) + CAP-SHORT US-0/1 + optimisation CI.
+_Session en cours_ : — (S-144 terminée).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -112,6 +112,7 @@ _Details EPICs terminés_ : rapports dans `.agents/sessions/`, détails archivé
 | `.agents/archives/` | Archives taches terminees + rotation contexte | LAZY
 | `BACKLOG.adoc` | Backlog aktif (EPICs en cours + statut agrégé) | EAGER
 | `doc/CAPSULE_ARCHITECTURE.adoc` | Cadrage architecture pipeline capsule | LAZY
+| `.agents/CAPSULE_VIDEO.adoc` | **Littérature agentique** — squelette de storyboard guidé par le contexte (design system + QQOQCP + fil conducteur) | EAGER
 |===
 
 _Total_ : 30 EPICs terminés + **CAP-VIRAL ✅ TERMINÉ (S-142, 14/14 US)**. _Baseline courante_ (S-136, exacte) :

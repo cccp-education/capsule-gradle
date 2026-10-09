@@ -1,6 +1,21 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-09
 
+== Session 144 — CAPSULE_VIDEO : littérature agentique + squelette de storyboard ✅
+
+* **Revue de code** du domaine `capsule.viral` — le storyboard est validé en
+  **forme** (hook/CTA/durée) mais ne porte **aucun contexte** : ni identité
+  visuelle, ni QQOQCP, ni fil conducteur (`ViralStoryboard.kt`, `StoryboardBeat`,
+  `ViralStoryboardBuilder`, `ViralStoryboardValidator`, `Capsule.jsx:237`).
+* **Livrable** `.agents/CAPSULE_VIDEO.adoc` (littérature agentique) — squelette
+  AsciiDoc guidé par 3 axes de contexte : **design system** (tokens `BRAND.adoc`
+  talaria), **QQOQCP**, **fil conducteur narratif** ; sections `Séquences`
+  (transition entrante) + `Gate`. 7 décisions. Ancrage `CAPSULE_PEDAGOGIQUE.adoc`
+  (recette 3C).
+* Suite : portage domaine (champs additifs, builder/parser, gate de cohérence,
+  tokens Remotion) — candidat EPIC **CAP-CONTEXT**. Zéro code modifié.
+* Rapport : `.agents/sessions/144-capsule-video-litterature-storyboard.adoc`.
+
 == Session 143 — CI S-142 corrigée + dette `cucumberTest` résolue + CAP-SHORT cadré ✅
 
 * **CI S-142 rouge → verte** — 2 bugs réels attrapés par la CI (invisibles en local) :
