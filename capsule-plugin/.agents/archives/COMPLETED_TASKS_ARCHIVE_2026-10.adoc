@@ -1,6 +1,45 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-09
 
+== Session 139 — CAP-VIRAL US-1 (CI ressuscitée) + US-3 (ViralConfig) ✅
+
+Développement baby-step DDD/TDD/BDD. Deux incréments + résurrection de la CI.
+
+=== US-1 — CI verte (prérequis) ✅
+
+* `settings.gradle.kts` : fallback creds nmcp `?: ""` (`ossrhUsername`/
+  `ossrhPassword`) — pattern codebase/bakery/plantuml. La CI était **morte en
+  configuration** (`error("ossrhUsername not found")`) → les ~1166 tests ne
+  tournaient pas.
+* **CI RESSUSCITÉE** : `Test` (fast, `./gradlew test`, 3m1s) + `Full Tests`
+  (`./gradlew test functionalTest`, 5m59s) **VERTS**.
+
+=== Dette latente révélée (leçon S-243 / S-269) ✅
+
+* 5 tests unit ffmpeg (`AudioConversionUtilTest` ×2, `ParallelCaptureTest` ×3) +
+  1 functional espeak gatés via `assumeTrue` (`BinaryAvailability` /
+  `ExternalBinaryAssumption`).
+* Isolation CI fast/full (pattern codebase `testFast`).
+
+=== US-3 — `ViralConfig` (fondation domaine) ✅
+
+* Domaine `capsule.viral` (15e) : `ViralConfig` (enabled, platform, durée cible
+  clamp 15-60 s, hook, cta, storyboard gate) + `ViralPlatform`
+  (YOUTUBE_SHORT/TIKTOK/REELS).
+* Section `viral` de `CapsuleConfig` + merger 4 sources + DSL 7 properties.
+* Tests : `ViralConfigTest` + `ViralPlatformTest` + 5 merger.
+
+=== Dette restante (S-140)
+
+* 14 scénarios `cucumberTest` échouent (révélés par `check` avec outils) — jamais
+  lancés en CI verte. À corriger/gater/isoler.
+
+=== Commits
+
+`7de3fb2`, `13ed29a`, `3b328eb`, `8eca466`, `af79f85`, `28ea418`.
+
+'''
+
 == Session 138 — CAP-VIRAL US-0 : cadrage moteur de viralité ✅
 
 Cadrage (gouvernance pure, zéro code) de la réorientation de `capsule-gradle`

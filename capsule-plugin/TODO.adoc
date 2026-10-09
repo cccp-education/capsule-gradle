@@ -1,8 +1,27 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-09 (S-138 CAP-VIRAL cadré — capsule devient moteur de campagnes virales YouTube/TikTok. Borough RÉACTIVÉ (était DORMANT). Prérequis US-1 = CI verte.)
+:last_update: 2026-10-09 (S-139 CAP-VIRAL US-1 ✅ CI ressuscitée + US-3 ✅ ViralConfig. Dette S-140 : 14 scénarios cucumberTest échouent.)
 
 '''
-== 🔴 CAP-VIRAL — moteur de viralité (cadré S-138, 14 US ~53 pts)
+== ✅ US-1 — CI ressuscitée (S-139)
+
+. [x] `settings.gradle.kts` fallback creds nmcp `?: ""` — CI débloquée (morte en configuration `ossrhUsername not found`).
+. [x] Isolation fast/full : `Test` (`./gradlew test`, unit) + `Full Tests` (`test functionalTest`, binaires) — **VERTS**.
+. [x] 5 tests unit ffmpeg + 1 functional espeak gatés `assumeTrue` (`BinaryAvailability`/`ExternalBinaryAssumption`).
+
+'''
+== ✅ US-3 — ViralConfig (S-139)
+
+. [x] Domaine `capsule.viral` (15e) : `ViralConfig` + `ViralPlatform`.
+. [x] Section `CapsuleConfig` + merger 4 sources + DSL 7 properties.
+. [x] Tests domaine pur (`ViralConfigTest`/`ViralPlatformTest`) + 5 merger.
+
+'''
+== 🔴 DETTE — cucumberTest (S-140)
+
+. [ ] **14 scénarios `cucumberTest` échouent** (dont `CucumberRunner > initializationError`) — révélés en testant `./gradlew check` avec outils ; jamais lancés en CI verte. Corriger / gater / isoler.
+
+'''
+== 🟡 CAP-VIRAL — moteur de viralité (cadré S-138, 14 US ~53 pts)
 
 _Place dans la chaîne marketing_ : capsule = maillon du milieu → **amont**
 `capsule.copy` (US-9, absorbe GBL-006-6) + **aval** `CampaignBundle` (US-10).
@@ -13,9 +32,9 @@ _Dimension documentaire_ : **storyboard AsciiDoc validable** (US-13) = porte
 éditoriale — message/point de vue → beat par beat → vidéo déployable ; aucun
 rendu sans storyboard validé.
 
-. [ ] **US-1 (prérequis)** — CI verte : `settings.gradle.kts:30-31` `error("ossrhUsername not found")` → fallback `?: ""` (pattern Queens S-269 / bakery S-243). CI **rouge** actuellement (runs `37864492361`/`...261`).
+. [x] **US-1 (prérequis)** ✅ S-139 — CI ressuscitée (fallback creds nmcp).
 . [ ] **US-2** — Rendu vertical natif (socle FFmpeg) : `ViralConfig` + PNG portrait 1080×1920 + assemblage FFmpeg (découpler le rasteriseur PNG de Playwright).
-. [ ] **US-3** — Format court : `ViralConfig` (durée cible + preset plateforme YouTube Short/TikTok/Reels) + merger 4 sources.
+. [x] **US-3** ✅ S-139 — Format court : `ViralConfig` (durée cible + preset plateforme YouTube Short/TikTok/Reels) + merger 4 sources.
 . [ ] **US-4** — Hooks/CTA + message **ancrés contexte augmenté N1** (composite context codebase + provenance).
 . [ ] **US-5** — Métadonnées campagne (**lues** depuis `CopyPiece` GBL-006, pas régénérées).
 . [ ] **US-6** — Batch multi-plateforme (matrice langue × plateforme × durée).

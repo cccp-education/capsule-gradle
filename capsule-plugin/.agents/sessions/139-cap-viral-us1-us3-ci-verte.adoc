@@ -1,0 +1,108 @@
+= Session 139 — CAP-VIRAL US-1 (CI verte) + US-3 (ViralConfig fondation) + dette CI révélée
+:session: 139
+:date: 2026-10-09
+:type: feat + fix (baby-step DDD/TDD/BDD)
+:epic: CAP-VIRAL
+:méthode: baby-step DDD/TDD/BDD — unit (domaine pur) → functional → cucumber ; Local = Build, Tests = CI
+
+== Contexte
+
+Première session de développement de CAP-VIRAL (cadré S-138). Le prérequis
+absolu est **US-1 : CI verte** — la CI capsule était **morte en configuration**
+(`settings.gradle.kts:30-31` `error("ossrhUsername not found")`), donc les ~1166
+tests ne tournaient pas sur GitHub.
+
+== US-1 — CI verte (prérequis)
+
+*Fix* : `settings.gradle.kts` — fallback creds nmcp `?: ""` sur `ossrhUsername`
+et `ossrhPassword` (pattern validé codebase/bakery/plantuml, S-243/S-269).
+
+*Constat de déblocage* : la CI n'échoue plus à 50 s (configuration) mais exécute
+désormais réellement les suites (~6 min +). Preuve : le job `Full Tests` passe de
+`failure` en 1m23s (configuration) à l'exécution réelle.
+
+== US-3 — `ViralConfig` (fondation domaine)
+
+Domaine `capsule.viral` (15ᵉ) — objet pur + 4 sources, mirror du pattern
+`TranscriptConfig` :
+
+* `ViralConfig` — `enabled` (défaut false, opt-in), `platform`
+  ([ViralPlatform]), `targetDurationSeconds` (clamp 15-60 s via
+  `effectiveDurationSeconds`), `hook`, `cta`, `storyboardRequired` (gate
+  éditoriale, défaut true), `storyboardFile`.
+* `ViralPlatform` enum — `YOUTUBE_SHORT` / `TIKTOK` (défaut) / `REELS`,
+  `fromString` case-insensitive + fallback TIKTOK.
+* Section `viral` de `CapsuleConfig` + merger 4 sources
+  (ENV `CAPSULE_VIRAL_*` < props `capsule.viral.*` < YAML `viral.*` < CLI
+  `-Pcapsule.viral.*`) + `mergeViralConfig` / `mergeViralPlatform`.
+* DSL `CapsuleExtension` (7 properties) + `CapsuleConventions` (7 champs) +
+  `pushConfigIntoExtension`.
+* Backward compat : défaut désactivé — les configs sans section `viral` gardent
+  le comportement pédagogique.
+
+*Tests* : `ViralConfigTest` + `ViralPlatformTest` (domaine pur, 10 tests) + 5
+tests merger 4 sources (précédence CLI > YAML > props, repli props sans YAML).
+
+== Dette CI révélée par le déblocage (leçon S-243 / S-269)
+
+Le déblocage a révélé une **dette latente masquée** par la CI morte :
+
+. *`CapsuleAudioConstraintFunctionalTest`* — exige `espeak` réel, installé
+   seulement dans le job `Full Tests`. Fix baby-step test-only :
+   `ExternalBinaryAssumption` (helper `assumeTrue`, mirror
+   `PlaywrightTestAssumption`) + garde sur le test.
+. *5 tests unitaires ffmpeg* — `AudioConversionUtilTest` (2, `@Tag integration`)
+   + `ParallelCaptureTest` (3) exigent `ffmpeg` réel, absent du job `Test`. Fix
+   baby-step test-only : `BinaryAvailability.assumeAvailable("ffmpeg")`.
+. *Isolation CI fast/full* — `./gradlew check` (job `Test`) exécutait la suite
+   complète sans outils. Corrigé : job `Test` = `./gradlew test` (unit only,
+   fast gate, 3m1s) ; job `Full Tests` = `./gradlew test functionalTest` avec
+   ffmpeg/espeak/Playwright (5m59s). Pattern miroir codebase `testFast`.
+
+*Preuve de validité* : les **deux jobs CI sont VERTS** — `Test` (fast) 3m1s +
+`Full Tests` 5m59s. La CI capsule est **ressuscitée**.
+
+=== Dette restante (S-140) — `cucumberTest` (333 scénarios Playwright)
+
+En testant `./gradlew check` dans un job avec outils, **14 scénarios
+`cucumberTest` échouent** (dont `CucumberRunner > initializationError`) — ces
+scénarios n'avaient **jamais tourné dans une CI verte** (l'ancien `Full Tests`
+ne lançait que `test functionalTest`). C'est une **dette préexistante révélée**,
+pas introduite. À traiter en S-140 : soit corriger, soit gater proprement, soit
+isoler dans un job dédié.
+
+== Méthode (rappel)
+
+Baby-step DDD/TDD/BDD : domaine pur testé unitairement d'abord, câblage ensuite,
+functional/Cucumber en aval. **Local = Build** (`compileKotlin`,
+`compileTestKotlin`, `compileFunctionalTestKotlin`), **Tests = CI** (jamais de
+`test`/`check` local).
+
+== Fichiers
+
+* `settings.gradle.kts` (US-1)
+* `src/main/kotlin/capsule/viral/ViralConfig.kt` (US-3, nouveau)
+* `src/main/kotlin/capsule/CapsuleConfig.kt` + `CapsuleConfigMerger.kt` +
+  `CapsuleModels.kt` + `CapsulePlugin.kt` (US-3 wiring)
+* `src/test/kotlin/capsule/viral/ViralConfigTest.kt` (nouveau)
+* `src/test/kotlin/capsule/CapsuleConfigMergerTest.kt` (5 tests viral)
+* `src/functionalTest/kotlin/capsule/test/ExternalBinaryAssumption.kt` (nouveau)
+* `src/functionalTest/kotlin/capsule/CapsulePluginFunctionalTest.kt` (garde)
+* `.github/workflows/test.yml` (timeout)
+
+== Commits
+
+* `7de3fb2` — US-1 + US-3
+* `13ed29a` — gate espeak (dette CI)
+* `3b328eb` — correctif sémantique test merger
+* `ccc7726` — bump timeout Test (intermédiaire)
+* `8eca466` — isolation fast/full
+* `af79f85` — gate 5 tests unitaires ffmpeg
+* `28ea418` — retour baseline verte full-tests
+
+== Verdict CI
+
+* **`Test` (fast PR gate)** : ✅ VERT — 3m1s, `./gradlew test` (unit).
+* **`Full Tests`** : ✅ VERT — 5m59s, `./gradlew test functionalTest` (binaires réels).
+* **CI capsule ressuscitée** : première CI verte après ≥ 2026-10-09 (elle échouait
+  en configuration `ossrhUsername not found`).

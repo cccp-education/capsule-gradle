@@ -1,72 +1,58 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 139
+:session: 140
 :borough: Détroit
-:session_precedente: 138 — CAP-VIRAL US-0 (cadrage, gouvernance pure)
+:session_precedente: 139 — CAP-VIRAL US-1 (CI ressuscitée) + US-3 (ViralConfig)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-Session 138 — **CAP-VIRAL cadré** (US-0 ✅, gouvernance pure, zéro code) :
-- Capsule = moteur de campagnes de viralité YouTube/TikTok des produits talaria
-  + technologie cccp.education.
-- Audit au code : **excellent moteur de capsules pédagogiques (4,5/5)**, **pas
-  encore moteur viral (2/5)**. ~60 % des briques réutilisables.
-- Gap bloquant : vertical 9:16 = **crop centré destructif**
-  (`CapsuleDistribTask.kt:92`), pas de format court 15-60 s, pas de hooks 3 s,
-  pas de batch multi-plateforme, **CI rouge** (`ossrhUsername not found`,
-  `settings.gradle.kts:30-31`).
-- **Chaîne à deux étages** : socle **FFmpeg** (PNG par slide → durée exacte `-t`
-  → concat demuxer `-c copy`), **pas** l'enregistrement vidéo temps réel
-  Playwright (`CaptureStrategy.PLAYWRIGHT` **écarté du viral**) ; **enrichissement
-  Remotion + Manim** (mouvement, transitions, schémas animés `data-manim`) — déjà
-  câblés (CAP-ANIM), renforcés pour le viral. _À découpler_ : le rasteriseur PNG
-  dépend aujourd'hui de Playwright pour le screenshot (pas la vidéo) → rendre le
-  pipeline image-native.
-- 11 décisions + **14 US ~53 pts**, domaine `capsule.viral` **additif**.
-- Rapport : `.agents/sessions/138-cap-viral-cadrage.adoc`
+Session 139 — **CAP-VIRAL US-1 + US-3** (baby-step DDD/TDD/BDD) :
+- **US-1 ✅ CI ressuscitée** : `settings.gradle.kts` fallback creds nmcp `?: ""`
+  (pattern codebase/bakery/plantuml). La CI était **morte en configuration**
+  (`ossrhUsername not found`) → les ~1166 tests ne tournaient pas. Désormais
+  `Test` (fast unit, 3m1s) + `Full Tests` (test+functional, 5m59s) **VERTS**.
+- **Dette latente révélée** (leçon S-243/S-269) : 5 tests unit ffmpeg
+  (`AudioConversionUtilTest`, `ParallelCaptureTest`) + 1 functional espeak gatés
+  via `assumeTrue` (`BinaryAvailability` / `ExternalBinaryAssumption`) ;
+  isolation fast/full (pattern codebase `testFast`).
+- **US-3 ✅ `ViralConfig`** : domaine `capsule.viral` (15e) — config pure
+  (enabled/platform/durée clamp 15-60 s/hook/cta/storyboard gate) + merger 4
+  sources + DSL 7 properties. Tests domaine pur + 5 merger.
+- Rapport : `.agents/sessions/139-cap-viral-us1-us3-ci-verte.adoc`
 
-== Mission Session 139 — CAP-VIRAL US-1 : CI verte (PRÉREQUIS)
+== Mission Session 140 — CAP-VIRAL US-4 : Hooks/CTA ancrés contexte N1
 
-*Avant toute feature* : corriger la CI morte en configuration.
-- `settings.gradle.kts:30-31` : `error("ossrhUsername not found")` → fallback
-  `?: ""` (pattern Queens S-269, bakery S-243).
-- Preuve : run CI vert du commit poussé (Local = Build, Tests = CI).
+Domaine `capsule.viral` (poursuite) : génération des hooks/CTA/message **appuyés
+sur le contexte augmenté N1** (composite context codebase RAG/Graphify/Docs/EAGER)
++ provenance anti-hallucination. Réutilise `CapsuleContextBuilder` →
+`CapsuleLlmService` (socle CAP-ARCH-2/3 déjà branché).
 
-Puis US-2→7 (voir BACKLOG § CAP-VIRAL) :
+Puis ordre : US-2 (rendu vertical FFmpeg) → US-5 (métadonnées lues GBL-006) →
+US-9 (câblage `capsule.copy`) → US-13 (storyboard validable) → US-6/US-7/US-10/
+US-11/US-12 → US-8 (BDD + dogfooding).
 
-| US | Livrable
-| US-2 | Rendu vertical 9:16 natif (`ViralConfig` + composition 1080×1920 Remotion/reveal.js portrait)
-| US-3 | Format court (`ViralConfig` durée cible + preset plateforme) + merger 4 sources
-| US-4 | Hooks/CTA (domaine `capsule.viral` + hub LLM N1 `CapsuleLlmService`)
-| US-5 | Métadonnées campagne (`CampaignMetadata` par plateforme)
-| US-6 | Batch multi-plateforme (matrice langue × plateforme × durée)
-| US-7 | **Enrichissement Remotion + Manim** (presets composition verticale + `data-manim` schémas animés)
-| US-8 | BDD `cucumberTestViral` + dogfooding 1 produit talaria (socle **et** enrichi)
+=== Dette à traiter (S-140 ou session dédiée)
+
+* **14 scénarios `cucumberTest` échouent** (dont `CucumberRunner >
+  initializationError`) — révélés en testant `./gradlew check` avec outils.
+  Jamais lancés dans une CI verte (l'ancien `Full Tests` ne faisait que `test
+  functionalTest`). Dette **préexistante**, à corriger/gater/Isoler.
 
 == Points d'attention
 
-* 1166 unit VERT (S-136 baseline), 75 functional VERT, 21 cucumber dédiés GREEN
-* Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
-* Nouveau feature cucumber → runner dédié (bug S-082) + steps préfixés (S-088)
-* English only : code, Gherkin, commentaires
-* Économie d'encre = skip si artefact existe et valide
-* CaptureStrategy 3 valeurs : PLAYWRIGHT (default), SCREENSHOT, REMOTION
-* Levier viral = **socle FFmpeg** (cadence exacte, concat `-c copy`) **enrichi
-  par Remotion + Manim** (mouvement, schémas animés), PAS l'enregistrement
-  Playwright temps réel, PAS le recadrage
-* `deployCapsule` (`CapsuleDistribTask.kt:92`) reste comme fallback deck 16:9
-* `CaptureStrategy.PLAYWRIGHT` = legacy pédagogique, **interdit** CAP-VIRAL ;
-  `SCREENSHOT` = socle ; `REMOTION` = enrichissement (Manim embarqué) ;
-  `ManimEngine`/`ManimParallelRenderer` = schémas animés accordés à la voix
-* Hors scope CAP-VIRAL : publication API YouTube/TikTok (EPIC N4 / GBL-002),
-  bibliothèque musicale, analytics
+* **Local = Build, Tests = CI** : jamais de `test`/`check` local. Compiler
+  (`compileKotlin`/`compileTestKotlin`), pousser, surveiller le run GitHub.
+* Baby-step DDD/TDD/BDD : domaine pur → unit, puis câblage, puis
+  functional → cucumber. Un runner dédié par feature (S-082), steps préfixés
+  (S-088).
+* English only : code, Gherkin, commentaires.
+* Économie d'encre = skip si artefact existe et valide.
+* `cucumberTest` skippé par défaut (CR-10) sauf `CI=true`/`-PrunCucumber`.
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.1
-* `cucumberTest` skippé par défaut (CR-10), `cucumberTestIntegration` skippé (Playwright S-121)
-* DSL 4 sources : ENV < props < YAML < CLI
-* Pattern object pur commande ffmpeg : `AudioPostCommand`, `SubtitleBurnInCommand`,
-  `FormatConversion`, `PodcastConcatCommand`
-* `compileOnly(libs.slider)` conservé (runtime). `testImplementation(libs.slider)` RETIRÉ S-120
-* Catalogue : `slider-plugin` 0.0.18, codebase 0.0.14, BOM 0.0.43, conventions 0.0.7
+* CI : `.github/workflows/test.yml` (fast, `./gradlew test` — unit) +
+  `.github/workflows/full-tests.yml` (`./gradlew test functionalTest` — binaires)
+* Domaine `capsule.viral` créé S-139 (ViralConfig) ; `capsule.context`,
+  `capsule.feed`, `capsule.transcript` réutilisés pour US-4/US-9/US-13.

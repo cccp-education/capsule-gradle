@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-09 (S-138) — CAP-VIRAL cadré. Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-09 (S-139) — CAP-VIRAL US-1 + US-3 + CI ressuscitée. Rapports détaillés dans `.agents/sessions/`.
 
-== 15 dernières sessions (124-138)
+== 15 dernières sessions (125-139)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 139 | 2026-10-09 | feat+fix | **CAP-VIRAL US-1 (CI ressuscitée) + US-3 (ViralConfig)** — US-1 : `settings.gradle.kts` fallback creds nmcp `?: ""` débloque la CI **morte en configuration** (`ossrhUsername not found`). **CI capsule RESSUSCITÉE** (`Test` fast unit 3m1s + `Full Tests` test+functional 5m59s VERTS). **Dette latente révélée** (leçon S-243/S-269 : CI morte masque la dette aval) : 5 tests unit ffmpeg (`AudioConversionUtilTest`/`ParallelCaptureTest`) + 1 functional espeak gatés `assumeTrue` (`BinaryAvailability`/`ExternalBinaryAssumption`), isolation fast/full (pattern codebase). US-3 : domaine `capsule.viral` (15e) `ViralConfig` (enabled/platform/durée clamp 15-60s/hook/cta/storyboard gate) + `ViralPlatform` (YOUTUBE_SHORT/TIKTOK/REELS) + section CapsuleConfig + merger 4 sources + DSL 7 properties. Tests domaine pur + 5 merger. **Dette S-140** : 14 scénarios `cucumberTest` échouent (jamais lancés en CI verte). Rapport `.agents/sessions/139-cap-viral-us1-us3-ci-verte.adoc`. | 8/10
 
 | 138 | 2026-10-09 | cadrage | **CAP-VIRAL US-0** — capsule comme moteur de campagnes virales YouTube/TikTok (talaria + cccp.education). Audit au code : 4,5/5 capsules pédagogiques, 2/5 viral. Gap : vertical 9:16 = crop destructif (`CapsuleDistribTask.kt:92`), pas de format court/hooks/batch plateforme, CI rouge (`settings.gradle.kts:30`). **Chaîne à deux étages : socle FFmpeg** (PNG→durée exacte→concat `-c copy`, **Playwright temps réel écarté du viral**) **+ enrichissement Remotion + Manim** (mouvement, schémas animés `data-manim`, déjà câblés CAP-ANIM). **Place dans la chaîne marketing** : maillon du milieu → amont `capsule.copy` (US-9, absorbe GBL-006-6) + aval `CampaignBundle` (US-10) ; **split-brain tranché** (métadonnées lues de GBL-006) ; **hooks/CTA ancrés contexte augmenté N1 codebase** (RAG/Graphify/Docs/EAGER + provenance, socle CAP-ARCH-2/3) ; **dimension documentaire** : storyboard validable (US-13, message/point de vue → beat par beat → vidéo déployable, gate de validation) ; assets thumbnail (US-11) + sous-titres stylés (US-12). 11 décisions + **14 US ~53 pts**, domaine `capsule.viral` additif. Prérequis US-1 = CI verte. Zéro code. | 8/10
 
