@@ -1,53 +1,54 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 143
+:session: 144
 :borough: Détroit
-:session_precedente: 142 — CAP-VIRAL câblage `generateViralCampaign` + socle FFmpeg + US-7 + ghost-tests
+:session_precedente: 143 — CI S-142 corrigée + dette `cucumberTest` résolue (scoping)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-Session 142 — **câblage tâche + socle FFmpeg + US-7 + dette ghost-tests** :
-- **`GenerateViralCampaignTask`** : pilote `ViralCampaignAssembler` (porte
-  éditoriale storyboard → hook ancré N1 → batch → copy lue → manifeste
-  `viral-campaign.json`). Registrar + wiring extension 4 sources.
-- **`ViralStoryboardParser`** : inverse de `ViralStoryboardBuilder` (round-trip).
-- **`CampaignBundleSerializer.toManifestJson`** : manifeste JSON de campagne.
-- **`ViralCaptureStrategy`** : règle pure — viral activé **remplace `PLAYWRIGHT`
-  par `SCREENSHOT`** (socle FFmpeg PNG→concat) ; `REMOTION` conservé
-  (enrichissement). Câblé dans `CapsuleVideoTask`.
-- **US-7** : `Root.jsx` piloté par props (`calculateMetadata`) — fin du hardcode
-  1408×792, le preset vertical 1080×1920 est honoré par composition.
-- **Ghost-tests** : 20 runners Cucumber pure-domain câblés dans `full-tests.yml`.
-- Rapport : `.agents/sessions/142-cap-viral-wiring-ffmpeg-socle-us7-ghost-tests.adoc`
+Session 143 — **correction CI + résolution dette `cucumberTest`** :
+- **2 bugs réels attrapés par la CI** sur le push S-142 (invisibles en local) :
+  1. `RemotionRootTemplateTest` — `1408`/`792` restaient dans le **commentaire**
+     KDoc de `Root.jsx` (garde ressource). Fix : commentaire neutralisé.
+  2. `GenerateViralCampaignFunctionalTest` — `synthesizeStoryboard` produisait un
+     beat `hook` de 27 s rejeté par la gate (`MAX_BEAT_SECONDS=10`). Fix : découpe
+     en beats `development` ≤ 10 s.
+  → `Test` + `Full Tests` **VERTS** (run `37961053126`).
+- **Dette `cucumberTest` (14 scénarios) RÉSOLUE** : cause racine = **mauvaise
+  portée de la tâche globale**, qui collectait les 14 suites `@Suite` dédiées
+  (pattern S-082) → `NoTestsDiscoveredException`. Fix : `cucumberTest` scopée à
+  `CucumberTestRunner` (agrégé, 153 scénarios verts). Preuve : workflow diagnostic
+  `37967978808` BUILD SUCCESSFUL, 0 `initializationError`.
+- Nouveau workflow **manuel** `.github/workflows/cucumber-full.yml`
+  (`workflow_dispatch`) pour le diagnostic du runner global.
+- Rapport : `.agents/sessions/143-ci-s142-fixes-dette-cucumbertest.adoc`
 
-== Mission Session 143 — priorités
+== Mission Session 144 — priorités
 
-1. **Dette `cucumberTest`** (héritée S-139) : 14 scénarios échouent. Diagnostiquer
-   via la CI (jamais en local), corriger (quotage, fixtures, glue S-088).
-2. **Vérifier la CI S-142** : le nouveau job « pure-domain BDD runners » (20
-   runners) doit être vert ; traiter tout échec (leçon S-269 : la CI révèle ce que
-   le local cache).
-3. **Dogfooding viral réel** (si accord pilote) : un produit talaria, socle
-   FFmpeg **et** chemin enrichi Remotion+Manim — nécessite un run LLM metered.
+1. **Dogfooding viral réel** (accord pilote requis — run LLM metered) : un produit
+   talaria, socle **FFmpeg** (`generateViralCampaign` + capture screenshot) **et**
+   chemin enrichi **Remotion + Manim**.
+2. **Optimisation CI** (optionnel) : `Full Tests` ~30 min (20 runners pure-domain).
+   Envisager un job dédié / parallélisation.
+3. **Maintenance** : surveiller la CI des pushes ; aucune dette connue restante.
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** : jamais de `test`/`check` local. Compiler, pousser,
-  surveiller le run GitHub.
+  surveiller le run GitHub. Le diagnostic passe par les artefacts CI (workflow
+  manuel pour les suites non câblées au push).
 * **Viral = socle FFmpeg** : ne jamais réintroduire l'enregistrement Playwright
-  temps réel dans le chemin viral (garde `ViralCaptureStrategy`).
+  temps réel (`ViralCaptureStrategy` force `SCREENSHOT`).
 * Baby-step DDD/TDD/BDD : domaine pur → unit, puis câblage, puis cucumber.
-  Runner dédié par feature (S-082), steps préfixés (S-088). **Quoter les `{string}`**
-  dans les features (UndefinedStepException sinon — piège S-269/S-141).
+  Runner dédié par feature (S-082), steps préfixés (S-088). **Quoter les `{string}`**.
 * English only : code, Gherkin, commentaires.
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.1
-* CI : `.github/workflows/test.yml` (`./gradlew test`) +
-  `.github/workflows/full-tests.yml` (`test functionalTest` + duration + viral +
-  20 runners pure-domain).
-* DSL viral 4 sources : `CAPSULE_VIRAL_*` < `capsule.viral.*` < YAML `viral.*` < CLI
-  `-Pcapsule.viral.*` (+ `viralLanguages` / `viralPlatforms` pour le batch).
-* Commande : `./gradlew generateViralCampaign -Pcapsule.viral.enabled=true
+* CI : `.github/workflows/test.yml` (fast unit) +
+  `.github/workflows/full-tests.yml` (unit + functional + duration + viral + 20
+  runners pure-domain) + `.github/workflows/cucumber-full.yml` (manuel, diagnostic).
+* Commande viral : `./gradlew generateViralCampaign -Pcapsule.viral.enabled=true
   -Pcapsule.viral.storyboardFile=storyboard.adoc`
+* CAP-VIRAL **TERMINÉ 14/14 US** (S-142).

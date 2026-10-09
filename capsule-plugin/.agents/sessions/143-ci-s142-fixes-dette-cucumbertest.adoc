@@ -1,0 +1,107 @@
+= Session 143 — CI S-142 corrigée + dette `cucumberTest` résolue
+:session: 143
+:date: 2026-10-09
+:type: fix + ci (baby-step, preuve CI)
+:epic: CAP-VIRAL (dettes)
+:methode: Local = Build, Tests = CI — diagnostic par artefacts CI, jamais par test local
+
+== Contexte
+
+Suite directe de S-142 (CAP-VIRAL TERMINÉ). Deux travaux : (1) la CI du push S-142
+est **rouge** → diagnostiquer et corriger ; (2) la dette **`cucumberTest` (14
+scénarios)** héritée S-139, longtemps invisible car le runner global n'est **pas**
+invoqué par les workflows de push.
+
+== 1. CI S-142 rouge — 2 bugs réels attrapés par la CI
+
+Le push S-142 a échoué : `Test` (unitaire) **et** `Full Tests` (fonctionnel). C'est
+exactement le principe « Local = Build, Tests = CI » : les deux défauts étaient
+invisibles en local (compile-only).
+
+. *`RemotionRootTemplateTest` (unitaire)* — la garde ressource scanne tout
+   `Root.jsx` ; les littéraux `1408`/`792` survivaient dans le **commentaire** KDoc
+   (retirés du code mais pas de la doc). Fix : commentaire neutralisé. RED prouvé
+   par la CI (`AssertionFailedError at RemotionRootTemplateTest.kt:31`).
+. *`GenerateViralCampaignFunctionalTest` (fonctionnel)* — `synthesizeStoryboard`
+   produisait un unique beat `hook` de 27 s, **rejeté** par `ViralStoryboardValidator`
+   (`MAX_BEAT_SECONDS = 10.0`, tolérance ±20 %). Fix : la synthèse découpe le corps
+   en beats `development` de ≤ 10 s. RED prouvé par la CI
+   (`UnexpectedBuildFailure`, `:generateCapsuleVideo` FAILED).
+
+*Preuve* : `Test` **VERT** 2m36s + `Full Tests` **VERT** (run `37961053126`).
+
+== 2. Dette `cucumberTest` (14 scénarios) — résolue
+
+=== Diagnostic (sans test local)
+
+Le runner global `cucumberTest` n'est invoqué par aucun workflow de push
+(`Full Tests` ne lance que `test functionalTest` + runners dédiés) : la dette était
+**latente**. Pour l'obtenir sans rendre le push rouge, un workflow **manuel**
+`cucumber-full.yml` (`workflow_dispatch`) exécute `cucumberTest` et publie les
+rapports. Run `37965407935` : **360 tests, 14 failed, 150 skipped**.
+
+=== Cause racine (au code)
+
+Les 14 échecs étaient des `initializationError` /
+`org.junit.platform.suite.engine.NoTestsDiscoveredException` sur les **14 suites
+`@Suite` dédiées** (pattern S-082) — **pas** des échecs de scénarios :
+
+- la tâche globale `cucumberTest` (conventions) collecte **toutes** les classes
+  `@Suite` de `capsule.scenarios`, donc aussi les 14 runners dédiés par feature ;
+- leur `@SelectClasspathResource("features/<f>.feature")` **ne résout pas** sous la
+  tâche globale : les `.feature` sont copiés à la **racine** du classpath de test
+  (`build/resources/test/`), pas dans un sous-répertoire `features/` ;
+- leurs tâches dédiées (`cucumberTest<Feature>`) passent car elles injectent
+  `cucumber.features` (`CucumberTaskSpec.features`), ce qui court-circuite la
+  sélection par ressource ;
+- le runner agrégé `CucumberTestRunner` (`@ConfigurationParameter(FEATURES_PROPERTY_NAME=src/test/features)`)
+  couvre **déjà toutes** les features : **153 scénarios PASSED, 0 FAILED**.
+
+Le task global était donc **mal scopé** : il ramassait les runners dédiés qui ne
+sont pas faits pour tourner dans ce contexte.
+
+=== Fix
+
+`build.gradle.kts` — scoper la tâche globale à son runner agrégé :
+
+[source,kotlin]
+----
+tasks.named("cucumberTest", Test::class.java) {
+    filter.includeTestsMatching("capsule.scenarios.CucumberTestRunner")
+}
+----
+
+Les 23 runners dédiés gardent leurs tâches propres (déjà câblées en CI S-142).
+
+=== Preuve
+
+Workflow diagnostic `37967978808` (commit `741ecce`) : **BUILD SUCCESSFUL in
+16m41s**, **0 `initializationError`**, `CucumberTestRunner` **153 PASSED**. Dette
+close.
+
+== 3. CI de push — état final
+
+Deux jobs de push, tous **VERTS** sur `852a7f1` :
+`Test` (fast unit) et `Full Tests` (unit + functional + duration + viral + 20
+runners pure-domain). Le job `Full Tests` dure ~30 min (les 20 runners
+précédemment fantômes).
+
+== Fichiers
+
+* `capsule-plugin/src/main/resources/capsule/remotion/src/Root.jsx` (commentaire)
+* `capsule-plugin/src/main/kotlin/capsule/viral/GenerateViralCampaignTask.kt`
+  (`synthesizeStoryboard` + constantes)
+* `capsule-plugin/build.gradle.kts` (scoping `cucumberTest`)
+* `.github/workflows/cucumber-full.yml` (nouveau, diagnostic manuel)
+
+== Commits
+
+`11da0d7` (Root.jsx), `852a7f1` (storyboard), `20d5739` (workflow diagnostic),
+`741ecce` (scoping cucumberTest).
+
+== Reste (S-144+)
+
+* **Dogfooding viral réel** — un produit talaria (socle FFmpeg **et** chemin
+  enrichi Remotion+Manim) ; nécessite un run LLM metered (accord pilote).
+* **Coût CI** — `Full Tests` ~30 min (20 runners pure-domain). Optimisation
+  possible (job dédié, parallélisation) si nécessaire.

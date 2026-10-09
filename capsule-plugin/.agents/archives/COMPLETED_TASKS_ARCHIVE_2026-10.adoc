@@ -1,6 +1,21 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-09
 
+== Session 143 — CI S-142 corrigée + dette `cucumberTest` résolue + CAP-SHORT cadré ✅
+
+* **CI S-142 rouge → verte** — 2 bugs réels attrapés par la CI (invisibles en local) :
+  (1) `RemotionRootTemplateTest` : `1408`/`792` restaient dans le commentaire KDoc
+  de `Root.jsx` ; (2) `GenerateViralCampaignFunctionalTest` : `synthesizeStoryboard`
+  produisait un beat `hook` de 27 s rejeté par la gate (`MAX_BEAT_SECONDS=10`) →
+  découpe en beats `development` ≤ 10 s. `Test` + `Full Tests` VERTS.
+* **Dette `cucumberTest` (14 scénarios) RÉSOLUE** — cause racine = **mauvais
+  scoping** : la tâche globale collectait les 14 suites `@Suite` dédiées (pattern
+  S-082) dont le `@SelectClasspathResource` ne résout pas → `NoTestsDiscoveredException` ;
+  scopée au `CucumberTestRunner` agrégé (153 verts). Preuve CI `37967978808`
+  BUILD SUCCESSFUL, 0 `initializationError`. Nouveau workflow manuel `cucumber-full.yml`.
+* **CAP-SHORT cadré** (session concurrente) — rendu short end-to-end, 5 US ~17 pts.
+* Rapports : `.agents/sessions/143-ci-s142-fixes-dette-cucumbertest.adoc` + `BACKLOG.adoc`.
+
 == Session 142 — CAP-VIRAL : câblage `generateViralCampaign` + socle FFmpeg + US-7 + ghost-tests ✅
 
 * **`GenerateViralCampaignTask`** — pilote `ViralCampaignAssembler` : porte

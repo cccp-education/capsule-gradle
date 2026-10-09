@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-09 (S-138 CAP-VIRAL cadré — capsule comme moteur de campagnes virales YouTube/TikTok)
+:last_update: 2026-10-09 (CAP-SHORT cadré — livraison end-to-end du format court ; CAP-VIRAL terminé S-142)
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)
@@ -53,7 +53,54 @@ socle **FFmpeg** (`ViralCaptureStrategy` — Playwright temps réel écarté).
 *Dettes* :
 * 🟢 **Ghost-tests** — résolu S-142 : les 20 runners Cucumber pure-domain sont
   câblés dans `full-tests.yml`.
-* 🔴 **`cucumberTest`** — 14 scénarios échouent (héritée S-139).
+* 🟢 **`cucumberTest`** — résolu (S-142, commit `741ecce`) : le task global
+  collectait les 14 runners par feature (pattern S-082) dont le
+  `@SelectClasspathResource` ne résout pas → `NoTestsDiscoveredException` ;
+  scopé au `CucumberTestRunner` agrégé (qui exécute déjà toutes les features).
+
+'''
+
+== 🎬 BACKLOG ACTIF — CAP-SHORT 🟡 CADRÉ (S-143)
+
+_Livraison **end-to-end** du format court (YouTube Shorts / TikTok / Reels).
+CAP-VIRAL (S-139→S-142) a livré le **domaine** viral complet, mais le **rendu
+n'est pas câblé** : `generateViralCampaign` n'écrit que le storyboard + le
+manifeste `viral-campaign.json` et **référence** les vidéos par chemin
+(`renderedVideoDir/<variant.id>.mp4`) **sans jamais les produire**. CAP-SHORT
+ferme le trou entre le domaine (fait) et le livrable (MP4 1080×1920 par
+variante)._
+
+*Constat au code (S-143)* :
+* `GenerateViralCampaignTask.kt:158` — `videoPathFor` = **construction de chemin**,
+  pas de rendu ; `renderedVideoDir` est un `@Input` (préfixe), pas un `@Output`.
+* `GenerateViralCampaignFunctionalTest` n'assère **jamais** une vidéo rendue
+  (manifeste + storyboard uniquement).
+* Le viewport portrait **1080×1920** est bien câblé pour une **capture unique**
+  (`CapsuleVideoTask.resolveViewport` + `ViralCaptureStrategy` → socle FFmpeg),
+  mais **aucune tâche n'itère** les `ViralVariant` (langue × plateforme).
+* La **durée cible 15-60 s** est une contrainte de *plan* (`ViralConfig` clamp),
+  **non imposée** au montage (la capture suit les durées TTS réelles).
+* **Zéro dogfooding viral réel** (tests = unit domaine + 1 fonctionnel manifeste
+  + BDD pure-domain).
+
+*Prérequis* : CI verte (acquise S-139) ; dogfooding viral = **accord pilote**
+(run LLM metered).
+
+[cols="1,4,2,1,2", options="header"]
+|===
+| US | Description | Cibles | Pts | Statut
+
+| US-0 | Cadrage — audit du trou domaine→livrable + décisions de câblage | — | 0 | 🟡 À FAIRE
+| US-1 | **Rendu par variante** — câbler `generateViralCampaign` (ou tâche dédiée `renderViralVariants`) pour produire chaque `ViralVariant` en MP4 1080×1920 réellement écrit dans `renderedVideoDir/<variant.id>.mp4` | `GenerateViralCampaignTask`, `CapsuleVideoTask`, `ScreenshotPlanner` | 5 | 🟡 À FAIRE
+| US-2 | **Durée courte imposée au montage** — cadence FFmpeg honorant `targetDurationSeconds` (15-60 s) : trim/pad + gate de validation | `capsule.viral`, `ScreenshotPlanner`, `VideoDurationValidator` | 3 | 🟡 À FAIRE
+| US-3 | **Batch réel langue × plateforme** — N variantes rendues en une commande, skip Économie d'Encre si MP4 valide | `capsule.viral` | 4 | 🟡 À FAIRE
+| US-4 | **Dogfooding viral réel** — 1 produit talaria, socle FFmpeg **et** chemin enrichi Remotion+Manim (accord pilote, run LLM metered) | consumer | 3 | 🟡 À FAIRE
+| US-5 | **BDD + CI** — rendu par variante couvert (runner dédié pattern S-082, steps préfixés S-088) | feature + steps + CI | 2 | 🟡 À FAIRE
+|===
+
+*Total* : 5 US (~17 pts). Additif — **ne modifie pas** le domaine CAP-VIRAL.
+*Lien chaîne marketing (GBL-009)* : CAP-SHORT rend réellement livrable le maillon
+`capsule produit` (avant : seul le domaine existait).
 
 '''
 == 📦 Publication Maven Central ✅

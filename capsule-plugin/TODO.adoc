@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-09 (S-142 CAP-VIRAL TERMINÉ 14/14 US — câblage tâche + socle FFmpeg + US-7 + ghost-tests. Reste dette cucumberTest.)
+:last_update: 2026-10-09 (S-143 — CI S-142 corrigée + dette `cucumberTest` RÉSOLUE (scoping) ; CAP-SHORT cadré.)
 
 '''
 == ✅ CAP-VIRAL — US livrées (S-139 + S-140 + S-141 + S-142)
@@ -22,10 +22,28 @@
 . [x] **socle FFmpeg** ✅ S-142 — `ViralCaptureStrategy` (viral force `SCREENSHOT`, Playwright écarté).
 
 '''
-== 🔴 DETTES (S-143+)
+== ✅ DETTES RÉSOLUES (S-142 + S-143)
 
-. [ ] **cucumberTest** — 14 scénarios échouent (héritée S-139). Diagnostiquer via la CI.
-. [ ] **Dogfooding viral réel** — un produit talaria (socle FFmpeg **et** chemin enrichi Remotion+Manim), dépend d'un run LLM metered (accord pilote).
+. [x] **Ghost-tests** ✅ S-142 — 20 runners Cucumber pure-domain câblés dans `full-tests.yml`.
+. [x] **cucumberTest** ✅ S-143 — 14 scénarios : **mauvais scoping** de la tâche globale
+  (collectait les 14 suites `@Suite` dédiées) → scopée au `CucumberTestRunner` agrégé.
+  Preuve CI `37967978808` BUILD SUCCESSFUL (153 verts, 0 `initializationError`).
+
+'''
+== 🟡 CAP-SHORT — rendu short end-to-end (cadré S-143, P0)
+
+. [ ] **US-0** — cadrage (audit du trou domaine→livrable). _Le cadrage S-143 est dans `BACKLOG.adoc`._
+. [ ] **US-1** — rendu par variante (MP4 1080×1920 réellement écrit dans `renderedVideoDir/<variant.id>.mp4`).
+. [ ] **US-2** — durée courte 15-60 s imposée au montage.
+. [ ] **US-3** — batch réel langue × plateforme (Économie d'Encre).
+. [ ] **US-4** — dogfooding viral réel (accord pilote, run LLM metered).
+. [ ] **US-5** — BDD + CI (rendu par variante couvert).
+
+'''
+== 🟡 RESTE (S-144+)
+
+. [ ] **Optimisation CI** (optionnel) — `Full Tests` ~30 min (20 runners pure-domain).
+. [ ] **Dogfooding viral réel** — accord pilote requis.
 
 _Hors scope CAP-VIRAL_ : publication API (N4/GBL-002), écriture copy (GBL-006),
 calendrier + musique + analytics (GBL-002).

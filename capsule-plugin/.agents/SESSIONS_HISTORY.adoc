@@ -1,15 +1,17 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-09 (S-142) — CAP-VIRAL câblage `generateViralCampaign` + socle FFmpeg + US-7 + ghost-tests. Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-09 (S-143) — CI S-142 corrigée + dette `cucumberTest` résolue + CAP-SHORT cadré. Rapports détaillés dans `.agents/sessions/`.
 
-== 15 dernières sessions (128-142)
+== 23 dernières sessions (121-143)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
 
-| 142 | 2026-10-09 | feat+test+ci | **CAP-VIRAL : câblage `generateViralCampaign` + socle FFmpeg + US-7 + ghost-tests** — `GenerateViralCampaignTask` pilote `ViralCampaignAssembler` (porte storyboard → hook ancré N1 → batch → copy lue → `viral-campaign.json`). `ViralStoryboardParser` (round-trip). `ViralCaptureStrategy` : viral force le socle **FFmpeg** `SCREENSHOT` (Playwright temps réel écarté), `REMOTION` conservé (enrichissement), câblé `CapsuleVideoTask`. `Root.jsx` piloté par props (`calculateMetadata`). 20 runners pure-domain câblés `full-tests.yml`. **CAP-VIRAL TERMINÉ 14/14 US.** +15 unit, +5 functional, +2 scénarios `@viral`. Rapport `.agents/sessions/142-cap-viral-wiring-ffmpeg-socle-us7-ghost-tests.adoc`. | 9/10
+| 143 | 2026-10-09 | fix+ci+cadrage | **CI S-142 corrigée + dette `cucumberTest` résolue + CAP-SHORT cadré** (deux sessions concurrentes). **143 bis** : 2 bugs réels attrapés par la CI (Root.jsx commentaire KDoc + synthesizeStoryboard beat>10s) ; la dette `cucumberTest` (14 scénarios) était un **mauvais scoping** de la tâche globale collectant les 14 suites `@Suite` dédiées → `NoTestsDiscoveredException` ; scopée au `CucumberTestRunner` agrégé. Preuve CI `37967978808` BUILD SUCCESSFUL (0 `initializationError`, 153 verts). Rapport `.agents/sessions/143-ci-s142-fixes-dette-cucumbertest.adoc`. **143** : CAP-SHORT cadré (rendu short end-to-end, 5 US ~17 pts) — `BACKLOG.adoc`. | 9/10
+
+| 142 | 2026-10-09 | feat+test+ci | **CAP-VIRAL : câblage `generateViralCampaign` + socle FFmpeg + US-7 + ghost-tests** — `GenerateViralCampaignTask` pilote `ViralCampaignAssembler` (porte storyboard → hook ancré N1 → batch → copy lue → `viral-campaign.json`). `ViralStoryboardParser` (round-trip). `ViralCaptureStrategy` : viral force le socle **FFmpeg** `SCREENSHOT` (Playwright temps réel écarté), `REMOTION` conservé (enrichissement), câblé `CapsuleVideoTask`. `Root.jsx` piloté par props (`calculateMetadata`). 20 runners pure-domain câblés `full-tests.yml`. **CAP-VIRAL TERMINÉ 14/14 US.** +15 unit, +5 functional, +2 scénarios `@viral`. | 9/10
 
 | 141 | 2026-10-09 | feat+test+ci | **CAP-VIRAL assemblage + US-8 BDD + ghost-test fix** — `ViralCampaignAssembler` joint les briques (storyboard → variants → hooks ancrés N1 → copy lu GBL-006 → `CampaignBundle`). **US-8** : BDD `cucumberTestViral` (`capsule_viral.feature` `@viral` 7 scénarios + steps préfixés S-088 + runner S-082). **Ghost-tests** : 22 runners opt-in jamais invoqués (leçon Queens S-269) → `cucumberTestViral` câblé. 3 bugs attrapés par la CI. CI VERTE. Rapport `.agents/sessions/141-cap-viral-assemblage-bdd-ghost-test.adoc`. | 9/10
 
