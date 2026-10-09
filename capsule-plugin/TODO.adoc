@@ -1,50 +1,32 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-09 (S-139 CAP-VIRAL US-1 ✅ CI ressuscitée + US-3 ✅ ViralConfig. Dette S-140 : 14 scénarios cucumberTest échouent.)
+:last_update: 2026-10-09 (S-140 CAP-VIRAL 8 US livrées — domaine viral complet. Reste US-7/US-8 + tâche bout-en-bout + dette cucumberTest.)
 
 '''
-== ✅ US-1 — CI ressuscitée (S-139)
+== ✅ CAP-VIRAL — US livrées (S-139 + S-140)
 
-. [x] `settings.gradle.kts` fallback creds nmcp `?: ""` — CI débloquée (morte en configuration `ossrhUsername not found`).
-. [x] Isolation fast/full : `Test` (`./gradlew test`, unit) + `Full Tests` (`test functionalTest`, binaires) — **VERTS**.
-. [x] 5 tests unit ffmpeg + 1 functional espeak gatés `assumeTrue` (`BinaryAvailability`/`ExternalBinaryAssumption`).
-
-'''
-== ✅ US-3 — ViralConfig (S-139)
-
-. [x] Domaine `capsule.viral` (15e) : `ViralConfig` + `ViralPlatform`.
-. [x] Section `CapsuleConfig` + merger 4 sources + DSL 7 properties.
-. [x] Tests domaine pur (`ViralConfigTest`/`ViralPlatformTest`) + 5 merger.
-
-'''
-== 🔴 DETTE — cucumberTest (S-140)
-
-. [ ] **14 scénarios `cucumberTest` échouent** (dont `CucumberRunner > initializationError`) — révélés en testant `./gradlew check` avec outils ; jamais lancés en CI verte. Corriger / gater / isoler.
+. [x] **US-1** ✅ S-139 — CI ressuscitée (fallback creds nmcp).
+. [x] **US-2** ✅ S-140 — Rendu vertical 9:16 (ViralViewport + câblage).
+. [x] **US-3** ✅ S-139 — ViralConfig (durée cible + preset plateforme) + merger 4 sources.
+. [x] **US-4** ✅ S-140 — Hooks/CTA/message ancrés contexte N1.
+. [x] **US-5** ✅ ABSORBÉE par US-9 (métadonnées lues, pas régénérées).
+. [x] **US-6** ✅ S-140 — Batch multi-plateforme (ViralBatchPlanner).
+. [x] **US-9** ✅ S-140 — Lecture copy GBL-006 (MarketCopySource).
+. [x] **US-10** ✅ S-140 — CampaignBundle (contrat aval GBL-002).
+. [x] **US-11** ✅ S-140 — Thumbnail/cover.
+. [x] **US-12** ✅ S-140 — Sous-titres stylés karaoké.
+. [x] **US-13** ✅ S-140 — Storyboard validable (porte éditoriale).
 
 '''
-== 🟡 CAP-VIRAL — moteur de viralité (cadré S-138, 14 US ~53 pts)
+== 🔴 DETTE — cucumberTest
 
-_Place dans la chaîne marketing_ : capsule = maillon du milieu → **amont**
-`capsule.copy` (US-9, absorbe GBL-006-6) + **aval** `CampaignBundle` (US-10).
-_Ancrage_ : hooks/CTA/script **appuyés sur le contexte augmenté N1 codebase**
-(RAG/Graphify/Docs/EAGER, `CapsuleContextBuilder` → `CapsuleLlmService`) +
-provenance anti-hallucination — pas de copy inventé.
-_Dimension documentaire_ : **storyboard AsciiDoc validable** (US-13) = porte
-éditoriale — message/point de vue → beat par beat → vidéo déployable ; aucun
-rendu sans storyboard validé.
+. [ ] **14 scénarios `cucumberTest` échouent** (dont `CucumberRunner > initializationError`) — héritée S-139. Corriger / gater / isoler.
 
-. [x] **US-1 (prérequis)** ✅ S-139 — CI ressuscitée (fallback creds nmcp).
-. [ ] **US-2** — Rendu vertical natif (socle FFmpeg) : `ViralConfig` + PNG portrait 1080×1920 + assemblage FFmpeg (découpler le rasteriseur PNG de Playwright).
-. [x] **US-3** ✅ S-139 — Format court : `ViralConfig` (durée cible + preset plateforme YouTube Short/TikTok/Reels) + merger 4 sources.
-. [ ] **US-4** — Hooks/CTA + message **ancrés contexte augmenté N1** (composite context codebase + provenance).
-. [ ] **US-5** — Métadonnées campagne (**lues** depuis `CopyPiece` GBL-006, pas régénérées).
-. [ ] **US-6** — Batch multi-plateforme (matrice langue × plateforme × durée).
-. [ ] **US-7** — Enrichissement Remotion + Manim (presets composition verticale + `data-manim` schémas animés).
-. [ ] **US-8** — BDD `cucumberTestViral` + dogfooding 1 produit talaria (socle FFmpeg **et** enrichi Remotion+Manim).
-. [ ] **US-9** — Câblage amont `capsule.copy` (absorbe GBL-006-6) : script vidéo consomme `CopyPiece` du marché + contexte N1.
-. [ ] **US-10** — `CampaignBundle` (contrat aval GBL-002) : {vidéo + metadata + thumbnail + plateforme + langue}.
-. [ ] **US-11** — Thumbnail/cover par plateforme (1280×720).
-. [ ] **US-12** — Sous-titres stylés viral (karaoké mot-à-mot + emojis).
-. [ ] **US-13** — Storyboard validable (document → vidéo) : storyboard AsciiDoc (message/point de vue/beat/timing/asset) + gate de validation pilote avant rendu.
+'''
+== 🟡 CAP-VIRAL — reste à faire (S-141+)
+
+. [ ] **US-7** — Enrichissement Remotion + Manim (presets composition verticale + `data-manim` schémas animés). La plus lourde.
+. [ ] **US-8** — BDD `cucumberTestViral` + dogfooding 1 produit talaria.
+. [ ] **Câblage bout-en-bout** — tâche `generateViralCampaign` (storyboard → hooks → vidéo → bundle).
 
 _Hors scope CAP-VIRAL_ : publication API YouTube/TikTok (EPIC N4 / GBL-002),
 écriture copy (GBL-006), calendrier éditorial + musique + analytics (GBL-002).

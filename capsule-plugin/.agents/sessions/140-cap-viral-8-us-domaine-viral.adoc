@@ -1,0 +1,78 @@
+= Session 140 — CAP-VIRAL : 8 US livrées (domaine viral complet, socle + contrats)
+:session: 140
+:date: 2026-10-09
+:type: feat (baby-step DDD/TDD/BDD, multiples US)
+:epic: CAP-VIRAL
+:méthode: domaine pur par US (unit) → câblage → functional/cucumber ; Local = Build, Tests = CI
+
+== Contexte
+
+Session de développement intensif de CAP-VIRAL (cadré S-138, US-1/US-3 S-139).
+Objectif : construire le **domaine viral** complet en réutilisant l'existant
+(mirror des patterns `transcript` / `context` / `pipeline`).
+
+== US livrées (8)
+
+[cols="1,4,2", options="header"]
+|===
+| US | Livrable | Preuve CI
+
+| **US-4** | Hooks/CTA/message **ancrés contexte N1** : `ViralHookPlan` + `ViralHook` + `ViralHookPromptBuilder` (embarque le composite context RAG/Graphify/Docs/EAGER, interdit les faits inventés) + `ViralHookParser` (tolérant prose/fences) + `ViralHookGenerator` port + `ChatModelViralHookGenerator` adapter | Test ✅ + Full ✅
+| **US-2** | Rendu vertical 9:16 natif : `ViralViewport` (1080×1920) + câblage `CapsuleVideoTask.resolveViewport()` gaté par `viral.enabled` (les 2 chemins de capture) | Test ✅ + Full ✅
+| **US-6** | Batch multi-plateforme : `ViralVariant` (id déterministe) + `ViralBatchPlanner` (produit cartésien langues × plateformes × durée, dédoublonnage, clamp) | Test ✅ + Full ✅
+| **US-9** | Câblage amont `capsule.copy` + contexte N1 : `MarketCopy` + `MarketCopySource` port + `FileMarketCopySource` adapter (lit bakery GBL-006, tolérant, dégradé) — **split-brain tranché : lit, ne génère pas** | Test ✅ + Full ✅
+| **US-10** | `CampaignBundle` (contrat aval GBL-002) + `CampaignBundleSerializer` (JSON stable) — élimine le split-brain recadrage 9:16 | Test ✅ + Full ✅
+| **US-11** | `ViralThumbnailPlanner` (cover : overlay = hook, viewport portrait) | Test ✅ + Full ✅
+| **US-12** | `KaraokeSubtitleBuilder` (ASS karaoké mot-à-mot `\k`, timestamp H:MM:SS.cc) | Test ✅ + Full ✅
+| **US-13** | Storyboard validable : `ViralStoryboard` + `StoryboardBeat` + `ViralStoryboardBuilder` (AsciiDoc) + `ViralStoryboardValidator` (porte éditoriale sealed : hook/cta/durée ±20 %/beat ≤ 10 s) | Test ✅ + Full ✅
+|===
+
+*US-5 (métadonnées campagne)* est **absorbée par US-9** — capsule lit `MarketCopy`
+de bakery, ne régénère pas.
+
+== Preuve de validité — CI (Local = Build, Tests = CI)
+
+Chaque US a été **compilée localement** (`compileKotlin`/`compileTestKotlin`
+uniquement) puis **poussée** ; la GitHub Action a exécuté les suites :
+
+* Job **`Test`** (fast, `./gradlew test`, unit) : ✅ VERT à chaque US (~3m30).
+* Job **`Full Tests`** (`./gradlew test functionalTest`, binaires réels) : ✅ VERT
+  à chaque US (~7-8 min).
+
+Aucun `test`/`check` lancé localement.
+
+== Architecture du domaine `capsule.viral` (après S-140)
+
+```
+capsule.viral
+├── ViralConfig / ViralPlatform          (US-3, S-139)
+├── ViralViewport                         (US-2 — vertical 9:16)
+├── ViralHookPlan / ViralHook             (US-4 — ancré N1)
+├── ViralHookPromptBuilder / ViralHookParser / ViralHookGenerator / ChatModel…  (US-4)
+├── ViralVariant / ViralBatchPlanner      (US-6 — matrice)
+├── MarketCopy / MarketCopySource / FileMarketCopySource  (US-9 — lecture GBL-006)
+├── CampaignBundle / CampaignBundleSerializer             (US-10 — aval GBL-002)
+├── ViralThumbnailPlanner / ThumbnailPlan (US-11 — cover)
+├── KaraokeSubtitleBuilder / KaraokeWord  (US-12 — sous-titres stylés)
+└── ViralStoryboard / StoryboardBeat / ViralStoryboardBuilder / ViralStoryboardValidator  (US-13 — porte éditoriale)
+```
+
+*Réutilisation* : `capsule.context` (CapsuleContextBuilder pour l'ancrage US-4),
+`capsule.feed` (SlideSegment/SlideType), `capsule.transcript` (patterns port/adapter),
+`CapsuleLlmService` (hub N1).
+
+== Reste à faire (S-141)
+
+* **US-7 — Enrichissement Remotion + Manim** (presets composition verticale +
+  `data-manim` schémas animés) — la plus lourde (JSX/Remotion), 6 pts.
+* **US-8 — BDD `cucumberTestViral` + dogfooding** 1 produit talaria (runner dédié
+  pattern S-082, steps préfixés S-088, consumer réel).
+* **Dette cucumberTest** (héritée S-139) : 14 scénarios échouent.
+* **Câblage bout-en-bout** : une tâche `generateViralCampaign` qui assemble
+  storyboard → hooks → vidéo → bundle (les briques sont prêtes, l'orchestration
+  Gradle reste à écrire).
+
+== Commits (S-140)
+
+`080d9c0` (US-4), `1da8ced` (US-2), `739dc81` (US-6), `4fc5019` (US-13),
+`f5ff1c6` (US-9), `c352736` (US-10), `dd21ccb` (US-11+12).

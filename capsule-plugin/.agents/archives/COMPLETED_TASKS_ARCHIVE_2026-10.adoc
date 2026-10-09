@@ -1,6 +1,23 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-09
 
+== Session 140 — CAP-VIRAL : 8 US livrées (domaine viral complet) ✅
+
+Baby-step DDD/TDD/BDD, domaine pur par US, CI verte à chaque US.
+
+| US | Livrable
+| US-4 | Hooks/CTA/message **ancrés contexte N1** — `ViralHookPlan`/`ViralHook`/`ViralHookPromptBuilder`/`ViralHookParser`/`ViralHookGenerator`/`ChatModelViralHookGenerator`
+| US-2 | Rendu vertical 9:16 — `ViralViewport` (1080×1920) + câblage `CapsuleVideoTask.resolveViewport()`
+| US-6 | Batch multi-plateforme — `ViralVariant`/`ViralBatchPlanner`
+| US-9 | Lecture copy GBL-006 — `MarketCopy`/`MarketCopySource`/`FileMarketCopySource` (split-brain tranché)
+| US-10 | `CampaignBundle`/`CampaignBundleSerializer` (aval GBL-002)
+| US-11 | `ViralThumbnailPlanner`/`ThumbnailPlan`
+| US-12 | `KaraokeSubtitleBuilder`/`KaraokeWord` (ASS karaoké `\k`)
+| US-13 | Storyboard validable — `ViralStoryboard`/`StoryboardBeat`/`ViralStoryboardBuilder`/`ViralStoryboardValidator` (porte éditoriale sealed)
+
+US-5 (métadonnées) absorbée par US-9. Preuve : jobs CI `Test` + `Full Tests`
+VERTS à chaque US. Rapport `.agents/sessions/140-cap-viral-8-us-domaine-viral.adoc`.
+
 == Session 139 — CAP-VIRAL US-1 (CI ressuscitée) + US-3 (ViralConfig) ✅
 
 Développement baby-step DDD/TDD/BDD. Deux incréments + résurrection de la CI.

@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-09 (S-139 — **CAP-VIRAL US-1 ✅ CI ressuscitée + US-3 ✅ ViralConfig**. US-1 : `settings.gradle.kts` fallback creds nmcp `?: ""` débloque la CI morte en configuration (`ossrhUsername not found`). **CI capsule RESSUSCITÉE** : `Test` (fast, unit, 3m1s) + `Full Tests` (test+functional, 5m59s) VERTS — dette latente révélée (leçon S-243/S-269 : CI morte masque la dette aval) : 5 tests unit ffmpeg + 1 functional espeak gatés (`assumeTrue`), isolation fast/full (pattern codebase). US-3 : domaine `capsule.viral` (15e) — `ViralConfig` (enabled/platform/durée clamp 15-60s/hook/cta/storyboard gate) + `ViralPlatform` (YOUTUBE_SHORT/TIKTOK/REELS) + section CapsuleConfig + merger 4 sources + DSL 7 properties. Tests domaine pur + 5 merger. Dette S-140 : 14 scénarios cucumberTest échouent (jamais lancés en CI verte).)
-_Derniere session terminee_ : 139 — CAP-VIRAL US-1 + US-3 + CI ressuscitée.
-_Prochaine session_ : 140 — CAP-VIRAL US-4 (Hooks/CTA ancrés contexte N1) puis US-2/US-5→13 ; dette cucumberTest à traiter.
-_Session en cours_ : — (S-139 terminée).
+ _Derniere mise a jour_ : 2026-10-09 (S-140 — **CAP-VIRAL : 8 US livrées** — le domaine `capsule.viral` est complet en briques pures. US-4 hooks/CTA ancrés N1, US-2 vertical 9:16 (ViralViewport+câblage), US-6 batch multi-plateforme, US-9 lecture copy GBL-006 (split-brain tranché), US-10 `CampaignBundle` (aval GBL-002), US-11 thumbnail, US-12 sous-titres karaoké, US-13 storyboard validable (porte éditoriale). US-5 absorbée par US-9. **CI VERTE à chaque US** (`Test` ~3m30 + `Full Tests` ~7-8min). Reste S-141 : US-7 (Remotion/Manim JSX), US-8 (BDD+dogfooding), tâche `generateViralCampaign` bout-en-bout, dette cucumberTest.)
+_Derniere session terminee_ : 140 — CAP-VIRAL 8 US (domaine viral complet).
+_Prochaine session_ : 141 — CAP-VIRAL US-7 (enrichissement Remotion+Manim) + US-8 (BDD) + câblage tâche `generateViralCampaign`.
+_Session en cours_ : — (S-140 terminée).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -22,11 +22,13 @@ _Session en cours_ : — (S-139 terminée).
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (130-139)
+== 10 dernières sessions (131-140)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 140 | 2026-10-09 | feat | **CAP-VIRAL 8 US** — domaine `capsule.viral` complet en briques pures : US-4 hooks/CTA ancrés N1, US-2 vertical 9:16, US-6 batch multi-plateforme, US-9 lecture copy GBL-006, US-10 `CampaignBundle`, US-11 thumbnail, US-12 sous-titres karaoké, US-13 storyboard validable. US-5 absorbée US-9. CI verte à chaque US. | 9/10
 
 | 139 | 2026-10-09 | feat+fix | **CAP-VIRAL US-1 + US-3 + CI ressuscitée** — US-1 : fallback creds nmcp débloque la CI morte en configuration. **CI capsule RESSUSCITÉE** (`Test` unit 3m1s + `Full Tests` test+functional 5m59s VERTS). Dette latente révélée : 5 tests unit ffmpeg + 1 functional espeak gatés (`assumeTrue`), isolation fast/full (pattern codebase). US-3 : domaine `capsule.viral` (15e) `ViralConfig`+`ViralPlatform`+merger 4 sources+DSL. Dette S-140 : 14 scénarios cucumberTest échouent. | 8/10
 
@@ -66,7 +68,7 @@ _Sessions 000-117 archivées_ : rapports dans `.agents/sessions/`, résumé dans
 |===
 |EPIC |Description |Statut |Priorité
 
-| **CAP-VIRAL** | **Moteur de campagnes virales YouTube/TikTok** — domaine `capsule.viral` additif : rendu vertical 9:16 natif (**socle FFmpeg** PNG→durée exacte→concat ; **enrichissement Remotion + Manim**), format court 15-60 s, hooks/CTA **ancrés contexte augmenté N1** (RAG/Graphify/Docs/EAGER + provenance), **storyboard validable** (US-13, document→vidéo), **place dans la chaîne marketing** (amont `capsule.copy` US-9 / aval `CampaignBundle` US-10), thumbnail (US-11) + sous-titres stylés (US-12), batch multi-plateforme. 14 US ~53 pts. Cadrage `.agents/sessions/138-cap-viral-cadrage.adoc`. **US-1 ✅ S-139 (CI ressuscitée) ; US-3 ✅ S-139 (ViralConfig)** ; Playwright temps réel écarté. Métadonnées **lues** depuis GBL-006. | 🟡 EN COURS (S-139) — US-0/1/3 ✅, US-2/4→13 à faire | P0
+| **CAP-VIRAL** | **Moteur de campagnes virales YouTube/TikTok** — domaine `capsule.viral` : rendu vertical 9:16 natif (socle FFmpeg + Remotion/Manim), format court 15-60 s, hooks/CTA **ancrés contexte N1**, **storyboard validable** (porte éditoriale), chaîne marketing (amont `capsule.copy` US-9 / aval `CampaignBundle` US-10), thumbnail, sous-titres karaoké, batch multi-plateforme. 14 US ~53 pts. Cadrage `.agents/sessions/138-cap-viral-cadrage.adoc`. **US-0/1/2/3/4/6/9/10/11/12/13 ✅ (S-139/S-140)** ; reste US-7 (Remotion/Manim JSX) + US-8 (BDD+dogfooding) + tâche bout-en-bout. | 🟡 EN COURS (S-140) — 11 US ✅, reste US-7/US-8 | P0
 | CAP-PODCAST | Extraction audio-only — `PodcastConcatenator` FFmpeg concat MP3 slides, tâche `generateCapsulePodcast`. Domaine `capsule.podcast` 13ème. 3 US ~4 pts | ✅ TERMINÉ (S-127) | P2
 | CAP-PREVIEW | Mode dry-run — `capture.previewOnly` 4 sources, screenshot path s'arrête après PNG. 3 US ~4 pts | ✅ TERMINÉ (S-128) | P2
 | CAP-CHAPITRE | Intro/outro + chapter markers — `CardRenderer` PNG, `ChapterMarkers` Matroska tags. 5 US ~10 pts | ✅ TERMINÉ (S-129) | P2
