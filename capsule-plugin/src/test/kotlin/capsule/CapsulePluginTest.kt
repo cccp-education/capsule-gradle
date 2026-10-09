@@ -4,6 +4,7 @@ import capsule.feed.CapsuleScript
 import capsule.feed.CapsuleScriptReader
 import capsule.feed.SlideSegment
 import capsule.feed.SlideType
+import capsule.test.BinaryAvailability
 import contracts.i18n.LanguageCatalog
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Tag
@@ -1427,6 +1428,7 @@ class ParallelCaptureTest {
 
     @Test
     fun `concatWebmFiles creates output from multiple webm files`() {
+        BinaryAvailability.assumeAvailable("ffmpeg")
         val webm1 = File(tempDir, "slide1.webm").also { createTinyWebm(it) }
         val webm2 = File(tempDir, "slide2.webm").also { createTinyWebm(it) }
         val output = File(tempDir, "output.webm")
@@ -1450,6 +1452,7 @@ class ParallelCaptureTest {
 
     @Test
     fun `concatWebmFiles cleans up individual webm files after concat`() {
+        BinaryAvailability.assumeAvailable("ffmpeg")
         val webm1 = File(tempDir, "a.webm").also { createTinyWebm(it) }
         val output = File(tempDir, "out.webm")
 
@@ -1461,6 +1464,7 @@ class ParallelCaptureTest {
 
     @Test
     fun `concatWebmFiles falls back gracefully when ffmpeg not available`() {
+        BinaryAvailability.assumeAvailable("ffmpeg")
         val webm1 = File(tempDir, "single.webm").also { createTinyWebm(it) }
         val output = File(tempDir, "fallback.webm")
 

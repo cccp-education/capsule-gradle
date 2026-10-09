@@ -1,5 +1,6 @@
 package capsule
 
+import capsule.test.BinaryAvailability
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -53,6 +54,7 @@ class AudioConversionUtilTest {
     @Test
     @Tag("integration")
     fun `wavToMp3 converts wav to mp3 using ffmpeg`(@TempDir tempDir: File) {
+        BinaryAvailability.assumeAvailable("ffmpeg")
         val wavFile = tempDir.resolve("input.wav")
         // Generate a real silent wav with ffmpeg for the test
         val genProc = ProcessBuilder(
@@ -74,6 +76,7 @@ class AudioConversionUtilTest {
     @Test
     @Tag("integration")
     fun `isAvailable returns true when ffmpeg in PATH`() {
+        BinaryAvailability.assumeAvailable("ffmpeg")
         assertTrue(AudioConversionUtil.isAvailable())
     }
 
