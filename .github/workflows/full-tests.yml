@@ -60,6 +60,38 @@ jobs:
         env:
           CI: "true"
 
+      # The remaining dedicated pure-domain runners (no ffmpeg/node/network):
+      # they are opt-in (`additionalTasksInCheck` default false) so they never
+      # run in `check`. Invoking them here closes the ghost-test debt (S-141/S-142
+      # — lesson Queens S-269). `cucumberTestIntegration` (real ffmpeg) stays out.
+      - name: Run pure-domain BDD runners (ghost-test fix)
+        run: >
+          ./gradlew
+          cucumberTestContext
+          cucumberTestContentAndVideos
+          cucumberTestArchBoundary
+          cucumberTestDistrib
+          cucumberTestStrictMode
+          cucumberTestDocContext
+          cucumberTestScenarioContext
+          cucumberTestCaptureStrategy
+          cucumberTestFormat
+          cucumberTestAudioPost
+          cucumberTestProvenance
+          cucumberTestGlossaryContext
+          cucumberTestTranscript
+          cucumberTestMultiLang
+          cucumberTestRemotion
+          cucumberTestPodcast
+          cucumberTestPreview
+          cucumberTestChapters
+          cucumberTestRemotionAnim
+          cucumberTestPr2Coverage
+          -PrunCucumber
+        working-directory: capsule-plugin
+        env:
+          CI: "true"
+
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
