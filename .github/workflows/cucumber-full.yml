@@ -1,0 +1,56 @@
+name: Cucumber Full (diagnostic)
+
+# Manual, non-gating diagnostic run for the monolithic `cucumberTest` suite.
+#
+# The global Cucumber runner (all features, shared glue) is opt-in and never
+# invoked by the push workflows — it carries a preexisting debt of failing
+# scenarios (see .agents/sessions/139). This dispatch-only workflow runs it on
+# demand so the failures can be enumerated from real CI artifacts, without
+# turning the push baseline red.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cucumber-full:
+    name: Full cucumberTest (diagnostic)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Install ffmpeg + espeak
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg espeak espeak-data
+
+      - name: Install Playwright Chromium
+        run: |
+          cd capsule-plugin
+          ./gradlew --version
+          npx playwright install chromium
+          npx playwright install-deps chromium
+
+      - name: Run full cucumberTest
+        run: ./gradlew cucumberTest -PrunCucumber
+        working-directory: capsule-plugin
+        env:
+          CI: "true"
+
+      - name: Upload cucumber reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-full-reports
+          path: |
+            capsule-plugin/build/reports/cucumber.html
+            capsule-plugin/build/reports/cucumber.json
+            capsule-plugin/build/test-results/cucumberTest
