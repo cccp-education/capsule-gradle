@@ -1,0 +1,59 @@
+= COMPLETED_TASKS_ARCHIVE — Octobre 2026
+:date: 2026-10-09
+
+== Session 138 — CAP-VIRAL US-0 : cadrage moteur de viralité ✅
+
+Cadrage (gouvernance pure, zéro code) de la réorientation de `capsule-gradle`
+vers les **campagnes de viralité YouTube/TikTok** des produits talaria + cccp.education.
+
+=== Constat
+
+Audit au code réel :
+
+* **Moteur de capsules pédagogiques : 4,5/5** (30 EPICs, ~1166 unit / 75 functional
+  / 21 cucumber dédiés, publié Central 0.0.1, TTS 22 langues, sous-titres,
+  loudnorm, 3 stratégies de capture).
+* **Moteur viral : 2/5** — gap bloquant : vertical 9:16 = **crop destructif**
+  (`CapsuleDistribTask.kt:92`), pas de format court 15-60 s, pas de hooks 3 s,
+  pas de batch multi-plateforme, CI **rouge** (`ossrhUsername not found`,
+  `settings.gradle.kts:30-31`).
+
+=== Décision structurante — chaîne à deux étages
+
+* **Socle FFmpeg** (déterministe) : PNG par slide → `-t <durée>` (cadence exacte)
+  → concat demuxer `-c copy` (sans ré-encodage). **Playwright temps réel écarté**
+  du viral (`CaptureStrategy.PLAYWRIGHT` = legacy pédagogique).
+* **Enrichissement Remotion + Manim** (déjà câblés CAP-ANIM) : Remotion =
+  composeur frame-par-frame (mouvement, transitions) qui embarque les animations
+  Manim par slide (`data-manim` → `RemotionCapture.stageManimAssets`,
+  `RemotionCapture.kt:128-170`, accord clip/voix). Renforcés pour le viral.
+
+=== Découpage
+
+10 décisions architecturales, **9 US ~32 pts**, domaine `capsule.viral` additif :
+
+| US | Livrable | Pts
+| US-0 | Cadrage | 0 ✅
+| US-1 | CI verte (fallback creds nmcp) | 2
+| US-2 | Rendu vertical natif (socle FFmpeg) | 5
+| US-3 | Format court (ViralConfig + preset plateforme) | 3
+| US-4 | Hooks/CTA (hub LLM N1) | 4
+| US-5 | Métadonnées campagne (CampaignMetadata) | 3
+| US-6 | Batch multi-plateforme | 4
+| US-7 | Enrichissement Remotion + Manim | 6
+| US-8 | BDD + dogfooding (socle **et** enrichi) | 5
+
+=== Gates
+
+Zéro code modifié. Gouvernance : rapport `.agents/sessions/138-cap-viral-cadrage.adoc`,
+`BACKLOG.adoc`, `.agents/INDEX.adoc`, `.agents/PROMPT_REPRISE.adoc`,
+`.agents/SESSIONS_HISTORY.adoc`. Prérequis US-1 = CI verte.
+
+=== Fichiers
+
+* `.agents/sessions/138-cap-viral-cadrage.adoc` (créé)
+* `BACKLOG.adoc` (§ 🎬 BACKLOG ACTIF CAP-VIRAL)
+* `.agents/INDEX.adoc` (roadmap + 10 dernières sessions + en-tête)
+* `.agents/PROMPT_REPRISE.adoc` (mission S-139)
+* `.agents/SESSIONS_HISTORY.adoc` (entrée 138)
+* `.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-10.adoc` (ce fichier)

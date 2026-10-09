@@ -1,5 +1,20 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-09-10 (S-136 TODO REVERT ✅ — dépin codebase-gradle-plugin 0.0.10 → 0.0.14 aligné lib, correctif amont Provider<OcrEngine> vérifié. **Borough DORMANT, 0 EPIC actif**. Prochain candidat : RENAME-5 plantuml sur demande pilote.)
+:last_update: 2026-10-09 (S-138 CAP-VIRAL cadré — capsule devient moteur de campagnes virales YouTube/TikTok. Borough RÉACTIVÉ (était DORMANT). Prérequis US-1 = CI verte.)
+
+'''
+== 🔴 CAP-VIRAL — moteur de viralité (cadré S-138, 9 US ~32 pts)
+
+. [ ] **US-1 (prérequis)** — CI verte : `settings.gradle.kts:30-31` `error("ossrhUsername not found")` → fallback `?: ""` (pattern Queens S-269 / bakery S-243). CI **rouge** actuellement (runs `37864492361`/`...261`).
+. [ ] **US-2** — Rendu vertical natif (socle FFmpeg) : `ViralConfig` + PNG portrait 1080×1920 + assemblage FFmpeg (découpler le rasteriseur PNG de Playwright).
+. [ ] **US-3** — Format court : `ViralConfig` (durée cible + preset plateforme YouTube Short/TikTok/Reels) + merger 4 sources.
+. [ ] **US-4** — Hooks/CTA via hub LLM N1 (`CapsuleLlmService`).
+. [ ] **US-5** — Métadonnées campagne (`CampaignMetadata` par plateforme).
+. [ ] **US-6** — Batch multi-plateforme (matrice langue × plateforme × durée).
+. [ ] **US-7** — Enrichissement Remotion + Manim (presets composition verticale + `data-manim` schémas animés).
+. [ ] **US-8** — BDD `cucumberTestViral` + dogfooding 1 produit talaria (socle FFmpeg **et** enrichi Remotion+Manim).
+
+_Hors scope CAP-VIRAL_ : publication API YouTube/TikTok (EPIC N4 / GBL-002),
+bibliothèque musicale, analytics.
 
 '''
 == ✅ TODO REVERT — Dépin codebase-gradle-plugin (S-136)

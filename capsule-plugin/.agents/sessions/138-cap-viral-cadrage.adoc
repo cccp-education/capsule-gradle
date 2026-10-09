@@ -1,0 +1,241 @@
+= Session 138 — CAP-VIRAL (Cadrage US-0) — Capsule comme moteur de campagnes virales
+:session: 138
+:date: 2026-10-09
+:type: cadrage (gouvernance pure, zéro code)
+:epic: CAP-VIRAL
+:méthode: audit au code réel + gap analysis (pattern cadrage)
+
+== Contexte
+
+Demande pilote : évaluer si `capsule-gradle` peut devenir le **moteur des
+campagnes de viralité** YouTube/TikTok des produits de talaria et de la
+technologie cccp.education. Ce document est le **cadrage** de l'EPIC qui
+réoriente le borough (DORMANT depuis S-137, 30 EPICs terminés).
+
+Le borough a été conçu comme générateur de **capsules pédagogiques longues**
+(deck → vidéo narrée multi-langue). Le viral court-forme est un **usage
+nouveau** : format vertical, durée 15-60 s, hook 3 s, batch multi-plateforme,
+métadonnées et publication. Cet EPIC réutilise massivement l'existant.
+
+== Constat de maturité (audit au code)
+
+=== Ce qui est prêt (briques réutilisables)
+
+[cols="2,3,2", options="header"]
+|===
+| Capacité | Détail | Preuve
+
+| Encodage MP4/H.264+AAC + WebM | `libx264 +faststart`, `libvpx`/`libvorbis` | `VideoFormatConverter.kt:57-80`, `OutputFormat{WEBM,MP4,BOTH}`
+| Capture 3 stratégies | Playwright (temps réel), Screenshot (PNG+FFmpeg), **Remotion** (frame-par-frame animé) | `CapsuleConfig.kt:93-107` + `RemotionCapture.kt`
+| TTS 22 langues | Piper + espeak fallback | `multilang/VoiceMapping.kt:15-63`
+| Sous-titres SRT/VTT + burn-in stylé | filtre FFmpeg `subtitles=`, police/couleur/position | `SubtitleBurnInCommand.kt:47`, `SubtitleModels.kt:40-66`
+| Loudness EBU R128 + BGM + ducking | `loudnorm=I=-16:TP=-1.5:LRA=11` + `amix` + `sidechaincompress` | `AudioPostCommand.kt:37-57`
+| Batch multi-langue | 1 commande → N vidéos | `multilang/GenerateCapsuleVideoAllLanguagesTask.kt`
+| Validation durée | vidéo vs somme TTS (tolérance 2 s) | `validation/VideoDurationValidator.kt:43-55`
+| 30 EPICs, ~1166 unit / 75 functional / 21 cucumber dédiés | publié Central 0.0.1 | `INDEX.adoc`, bundle `54a58526`
+|===
+
+=== Ce qui manque pour le viral (gap analysis)
+
+[cols="2,3,1", options="header"]
+|===
+| Besoin viral | État réel | Sévérité
+
+| **Vertical 9:16 natif** | ⚠️ **crop centré destructif** d'un rendu 16:9 (`crop=1080:1920`, `CapsuleDistribTask.kt:92`) ; composition Remotion 16:9 par défaut (`Root.jsx:14-15`) — le layout est surchargeable (`render.mjs:63-64`) | 🔴 bloquant
+| **Format court 15-60 s** | ❌ aucun mode Shorts/TikTok, aucune durée min/max | 🔴 bloquant
+| **Hooks 3 s / rétention** | ❌ aucune accroche, question choc, CTA | 🔴 bloquant
+| **Batch multi-plateforme** | ❌ batch **par langue uniquement**, aucune notion de plateforme | 🔴 bloquant
+| **Titre/description/hashtags/caption/CTA** | ❌ absent | 🟠
+| **Publication API YouTube/TikTok** | ❌ 0 intégration (relève d'un N4) | 🟠
+| **Thumbnail/cover** | ❌ (cards intro/outro 1920×1080 existent, `chapters/CardRenderer.kt:35,62`) | 🟠
+| **Bibliothèque musicale + sous-titres karaoké/emojis** | ❌ 1 BGM unique opt-in, burn-in basique | 🟡
+| **CI verte** | 🔴 **ROUGE** — `error("ossrhUsername not found")` en configuration (`settings.gradle.kts:30-31`), runs `37864492361`/`...261` | 🔴
+|===
+
+=== Constat structurel du crop
+
+`deployCapsule` recadre 16:9 → 9:16 par `scale=...:force_original_aspect_ratio=increase,
+crop=1080:1920` (`CapsuleDistribTask.kt:92`). Un slide pédagogique 16:9 recadré
+en portrait **ampute le contenu latéral**. Le levier correct est le **rendu
+vertical natif**, pas le recadrage. Le recadrage peut rester une stratégie de
+secours (deck 16:9 existant), mais pas le chemin nominal d'une campagne.
+
+=== Décision structurante — méthode FFmpeg, PAS Playwright temps réel
+
+*Direction pilote (2026-10-09)* : les campagnes virales s'appuient sur la
+**méthode FFmpeg** (assemblage déterministe), **pas** sur l'enregistrement vidéo
+temps réel Playwright. **Remotion et Manim sont renforcés** comme couches
+d'**enrichissement du contenu** — ce n'est pas un choix antagoniste, c'est une
+chaîne à deux étages.
+
+Les 3 stratégies existantes (`CaptureStrategy`, `CapsuleConfig.kt:93-96`) :
+
+[cols="1,3,2", options="header"]
+|===
+| Stratégie | Principe | Rôle CAP-VIRAL
+
+| `PLAYWRIGHT`
+| Enregistrement vidéo du navigateur en temps réel (`.recordVideo`)
+| ❌ **exclu** — timing non déterministe, fragilité, navigateur headless lourd
+| `SCREENSHOT`
+| PNG par slide → **encode FFmpeg durée exacte** → **concat demuxer** (`ScreenshotPlanner.kt`, `ScreenshotCaptureImpl`)
+| ✅ **socle** — assemblage déterministe, reproductible, cadence exacte ; base du format court
+| `REMOTION`
+| Rendu frame-par-frame animé (React) — **composeur enrichi** qui embarque les animations Manim par slide
+| ✅ **enrichissement** — mouvement, transitions, fond animé, intégration Manim
+|===
+
+*La chaîne à deux étages (pas un choix, une complémentarité)* :
+
+```
+contenu enrichi        Remotion (React)  ── embarque ──▶  animations Manim (schémas animés)
+   │                                                       (data-manim → stageManimAssets)
+   ▼
+assemblage                PNG/frames → FFmpeg durée exacte → concat demuxer (-c copy)
+   │
+   ▼
+livrable viral        MP4/H.264 1080×1920 + TTS + sous-titres burn-in + loudnorm
+```
+
+.Le socle FFmpeg (déterminisme)
+* La cadence est **exacte par slide** (`-t <durée>`), le montage est un **concat
+  demuxer** (`-c copy`), donc **sans ré-encodage** — c'est ce qui rend le format
+  court viral fiable et reproductible au frame près.
+* `PLAYWRIGHT` (enregistrement temps réel) est **écarté** : timing non
+  déterministe, incompatible avec une campagne batch.
+
+.L'enrichissement Remotion + Manim (déjà intégré)
+* **Remotion** (`RemotionCapture`, CAP-ANIM) est le **composeur frame-par-frame**
+  qui produit le mouvement : transitions d'entrée, dérive lente, cross-fades —
+  là où `SCREENSHOT` ne tient qu'une image figée par slide. Sortie MP4/H.264
+  (`outputExtension() == "mp4"`, mesuré 13.1 fps H.264 vs 9.1 VP8).
+* **Manim** (`ManimEngine`, `ManimParallelRenderer`, `ManimVideoMixer`) produit
+  des **schémas animés** (courbes, formules, transformations) attachés à une
+  slide via l'attribut `data-manim` ; Remotion les charge (staging `public/`),
+  mesure la durée du clip et accorde l'animation à la voix
+  (`RemotionCapture.stageManimAssets`, `RemotionCapture.kt:128-170`). C'est le
+  différenciateur visuel d'une vidéo pédagogique virale.
+* Les deux sont **déjà câblés** (Manim → Remotion → pipeline) : CAP-VIRAL les
+  **renforce**, ne les réintroduit pas.
+
+*Contrainte à lever* : la méthode `SCREENSHOT` rasterise aujourd'hui ses PNG
+**via Playwright** (`ScreenshotCaptureImpl.shootSlides`,
+`PlaywrightManager.kt:249-280`). Le cadrage retient la **chaîne d'assemblage
+FFmpeg** (PNG → durée exacte → concat) ; le rasteriseur PNG est un point
+d'extension à rendre découplable (pipeline image-native, sans enregistrement
+vidéo temps réel). Le socle FFmpeg reste le chemin par défaut ; **Remotion est
+le chemin enrichi** quand la campagne exige du mouvement.
+
+*Conséquence sur CAP-VIRAL* :
+- Le batch multi-plateforme (US-6) et le format court (US-3) reposent sur la
+  cadence exacte FFmpeg (durée cible 15-60 s maîtrisée au frame près).
+- Le rendu vertical natif (US-2) = cadrage 1080×1920 **portrait** ; le socle
+  FFmpeg assemble, **Remotion enrichit** (mouvement + Manim) sans rejouer le
+  montage.
+- `PLAYWRIGHT` reste disponible pour les capsules pédagogiques legacy
+  (backward compat), mais **interdit** comme chemin CAP-VIRAL.
+
+=== Constat CI (prérequis)
+
+La CI est **morte en configuration** : `ossrhUsername not found` à 50 s. Le
+fallback `?: ""` appliqué ailleurs (Queens S-269, bakery S-243) manque ici. Tant
+que ce n'est pas corrigé, **aucune preuve de qualité reproductible** — les ~1166
+tests ne tournent pas sur GitHub. Prérequis US-1.
+
+== Décisions architecturales
+
+. [x] **EPIC `CAP-VIRAL`** — nouveau domaine `capsule.viral`, ne modifie pas
+   les domaines pédagogiques existants (additif, backward compat).
+. [x] **Méthode FFmpeg, pas Playwright temps réel** : le chemin nominal viral est
+   PNG → encode FFmpeg (durée exacte par slide) → concat demuxer (`-c copy`).
+   `PLAYWRIGHT` (enregistrement vidéo temps réel) = **exclu du viral**.
+. [x] **Remotion + Manim renforcés (enrichissement)** : Remotion est le
+   **composeur frame-par-frame** (mouvement, transitions) qui **embarque les
+   animations Manim** par slide (`data-manim`). Deux étages complémentaires au
+   socle FFmpeg, **pas** un choix antagoniste. Déjà câblés (CAP-ANIM,
+   `RemotionCapture`/`ManimEngine`) — CAP-VIRAL les intensifie pour le viral.
+. [x] **Rendu vertical natif prioritaire** : cadrage 1080×1920 **portrait** ;
+   socle FFmpeg assemble, Remotion enrichit (mouvement + Manim) ; le crop
+   `deployCapsule` devient opt-in/fallback (deck 16:9 legacy).
+. [x] **Format court** : `ViralConfig` — durée cible, preset plateforme
+   (YOUTUBE_SHORT / TIKTOK / REELS), hook, CTA. Section `viral` de `CapsuleConfig`
+   (defaults backward compat).
+. [x] **Hooks/CTA générés par LLM** via `pipeline/CapsuleLlmService` (codebase
+   N1 déjà branché) — pas de nouveau socle LLM.
+. [x] **Métadonnées campagne** : `CampaignMetadata` (titre, description,
+   hashtags, caption) par plateforme, généré par LLM.
+. [x] **Batch multi-plateforme** : matrice (langue × plateforme × durée) →
+   N variantes en une commande, Économie d'Encre (skip si artefact valide).
+. [x] **Publication API** : hors scope CAP-VIRAL (EPIC aval N4, cf. GBL-002) —
+   CAP-VIRAL produit les artefacts + métadonnées, pas l'upload.
+. [x] **CI d'abord** (US-1) : corriger le fallback creds avant toute feature,
+   sinon pas de preuve.
+. [x] **Baby-step DDD/TDD/BDD strict** + runner Cucumber dédié (pattern S-082)
+   + steps préfixés (pattern S-088).
+
+== Découpage (9 US ~32 pts)
+
+[cols="1,4,2,1", options="header"]
+|===
+| US | Description | Fichiers cibles | Pts
+
+| US-0 | Cadrage (ce document) — audit + gap analysis + décisions | — | 0 ✅
+| US-1 | **CI verte** — fallback creds nmcp `?: ""` (`settings.gradle.kts:30-31`), preuve CI | `settings.gradle.kts` | 2
+| US-2 | **Rendu vertical natif (FFmpeg)** — `ViralConfig` + rasterisation PNG portrait 1080×1920 découplée + assemblage FFmpeg | `capsule.viral`, `ScreenshotPlanner.kt`, `ScreenshotCaptureImpl` | 5
+| US-3 | **Format court** — `ViralConfig` (durée cible, preset plateforme), section `CapsuleConfig` + merger 4 sources, cadence exacte FFmpeg | `CapsuleConfig.kt`, `CapsuleConfigMerger.kt`, `ScreenshotPlanner.kt` | 3
+| US-4 | **Hooks/CTA** — domaine `capsule.viral` + génération LLM (hub N1) | `capsule.viral`, `CapsuleLlmService` | 4
+| US-5 | **Métadonnées campagne** — `CampaignMetadata` par plateforme (titre/description/hashtags/caption) | `capsule.viral` | 3
+| US-6 | **Batch multi-plateforme** — matrice (langue × plateforme × durée), skip Économie d'Encre | `GenerateViralCampaignTask` | 4
+| US-7 | **Enrichissement Remotion + Manim** — presets de composition verticale (transitions, dérive, fond animé) + `data-manim` pour schémas animés accordés à la voix ; mode `viral` du composeur | `capsule.viral`, `RemotionCapture.kt`, `Root.jsx`, `ManimParallelRenderer.kt` | 6
+| US-8 | **BDD + dogfooding** — runner dédié `cucumberTestViral`, dogfooding 1 produit talaria (socle FFmpeg **et** chemin enrichi Remotion+Manim) | feature + steps + consumer | 5
+|===
+
+*Total : ~32 pts.* Additif (aucune rupture des domaines existants).
+*Deux chemins testés au dogfooding (US-8)* : (a) socle FFmpeg déterministe ;
+(b) enrichi Remotion+Manim.
+
+== Réutilisation de l'existant (Économie d'Encre)
+
+* TTS 22 langues (`VoiceMapping`) — réutilisé tel quel.
+* **Chaîne FFmpeg `ScreenshotPlanner`/`ScreenshotCaptureImpl`** — socle :
+  PNG par slide → `-t <durée>` (cadence exacte) → concat demuxer `-c copy` (sans
+  ré-encodage). Base du format court viral.
+* FFmpeg encode MP4/H.264, loudnorm, burn-in — réutilisé.
+* **Remotion (`RemotionCapture`, CAP-ANIM)** — composeur enrichi, déjà câblé :
+  mouvement, transitions, sortie MP4/H.264. Renforcé pour le vertical.
+* **Manim (`ManimEngine`/`ManimParallelRenderer`/`ManimVideoMixer`)** — schémas
+  animés attachés par `data-manim`, déjà embarqués par Remotion
+  (`stageManimAssets`, accord clip/voix). Renforcé pour le viral.
+* `CapsuleLlmService` (codebase N1) — réutilisé pour hooks + métadonnées.
+* Batch (`GenerateCapsuleVideoAllLanguagesTask`) — étendu à la dimension plateforme.
+* Recadrage 9:16 (`CapsuleDistribTask`) — conservé comme fallback deck 16:9 legacy.
+* _À découpler_ : le rasteriseur PNG (`ScreenshotCaptureImpl.shootSlides` dépend
+  aujourd'hui de Playwright pour le screenshot — pas pour la vidéo). Le chemin
+  viral doit rendre le pipeline **image-native** (PNG → FFmpeg) sans enregistrement
+  vidéo temps réel.
+
+== Hors scope (EPICs aval)
+
+* **Publication API** YouTube Data API / TikTok Content Posting API — EPIC N4
+  (cf. `GBL-002` stratégie de distribution, ~14 pts).
+* **Bibliothèque musicale** (catalogue BGM licencié) — dépendance externe.
+* **Analytics de performance** (vues, rétention) — dashboard.
+
+== Méthodologie
+
+Baby-step DDD/TDD/BDD : 1 fichier à la fois, `compileKotlin` VERT après chaque
+étape puis suite Cucumber dédiée. Local = Build, Tests = CI. English only pour le
+code/Gherkin. Un runner Cucumber dédié par feature (pattern S-082) + steps
+préfixés (pattern S-088).
+
+== Rapport de session 138
+
+* Cadrage CAP-VIRAL (US-0) — audit au code réel de `capsule-gradle` + gap analysis.
+* Verdict : capsule = **excellent moteur de capsules pédagogiques (4,5/5)**, pas
+  encore un **moteur viral (2/5)** ; ~60 % des briques réutilisables.
+* **Chaîne à deux étages actée** : socle **FFmpeg** (assemblage déterministe,
+  pas d'enregistrement Playwright temps réel) + **enrichissement Remotion + Manim**
+  (mouvement et schémas animés, déjà câblés CAP-ANIM).
+* 10 décisions architecturales, 9 US ~32 pts.
+* Prérequis immédiat non-code : **US-1 CI verte**.
+* Zéro code modifié — session de cadrage (gouvernance pure).

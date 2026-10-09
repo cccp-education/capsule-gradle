@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-09-17 (S-137) — BKY-LANG-22-9/10. Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-09 (S-138) — CAP-VIRAL cadré. Rapports détaillés dans `.agents/sessions/`.
 
-== 15 dernières sessions (123-137)
+== 15 dernières sessions (124-138)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 138 | 2026-10-09 | cadrage | **CAP-VIRAL US-0** — capsule comme moteur de campagnes virales YouTube/TikTok (talaria + cccp.education). Audit au code : 4,5/5 capsules pédagogiques, 2/5 viral. Gap : vertical 9:16 = crop destructif (`CapsuleDistribTask.kt:92`), pas de format court/hooks/batch plateforme, CI rouge (`settings.gradle.kts:30`). **Chaîne à deux étages : socle FFmpeg** (PNG→durée exacte→concat `-c copy`, **Playwright temps réel écarté du viral**) **+ enrichissement Remotion + Manim** (mouvement, schémas animés `data-manim`, déjà câblés CAP-ANIM). 10 décisions + 9 US ~32 pts, domaine `capsule.viral` additif, réutilisation massive (TTS 22 langues, ScreenshotPlanner, Remotion, Manim, FFmpeg, hub LLM N1). Prérequis US-1 = CI verte. Zéro code. | 8/10
 
 | 137 | 2026-09-17 | fix cross-borough + dogfooding TTS réel + publication Central | **BKY-LANG-22-9/10** (EPIC transverse piloté bakery S-226). **Bug P0 réel découvert par le dogfooding réel** : la chaîne réelle `extractSpeakerNotes` produit `<slug>_<lang>-deck-script.txt` (suffixe `-deck` survit) mais `CapsuleVideoPlanner` cherchait exactement `<deckName>_<lang>-script.txt` → `no matching deck + script pair` fail-fast (S-082 contournait par `mv` manuel ; les tests NoOp hand-nommés masquaient la divergence). **Fix baby-step DDD/TDD/BDD** : `CapsuleVideoPlanner.resolveScript` préfère l'exact, tolère le suffixe `-deck` (miroir S-082 côté sortie WebM), RED prouvé, BDD 14/14. **Dogfooding réel 22 langues** : consumer composite `/tmp/opencode/dogfood-multilang22`, HTML via Ruby système (blocage gems JRuby Gradle préexistant, orthogonal) → `generateCapsuleVideoAllLanguages` → **21/22 rendered + 1 skipped = 22/22 vidéos** espeak+Playwright (26-81s), dégradation propre th/ja/ar (voix espeak absentes → vidéo silencieuse, zéro crash). **Publication Central capsule-plugin 0.0.1** : infra nmcp créée (settings `com.gradleup.nmcp.settings:1.5.0` + publishing mavenCentral + version release) + fix POM marker (name/description sur `withType<MavenPublication>`, bug « Project name is missing ») — bundle `54a58526`. Gates : `test` 1168/0, `cucumberTestMultiLang` 14/0. Rapport `.agents/sessions/137-bky-lang-22-9-10-dogfooding-publication.adoc`. | 9/10
 
