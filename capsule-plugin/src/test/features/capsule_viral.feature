@@ -69,6 +69,24 @@ Feature: Viral campaign engine
     And the viral deck has 4 sections
     And the viral deck contains "data-duration=\"3.0\""
 
+  Scenario: The render plan names one MP4 per variant
+    Given a viral render plan for languages "fr,en" platforms "TIKTOK,YOUTUBE_SHORT" duration 30
+    Then the render plan has 4 entries
+    And the render plan ids are "fr-tiktok-30,fr-youtube_short-30,en-tiktok-30,en-youtube_short-30"
+
+  Scenario: An already rendered variant is skipped (economy of ink)
+    Given a viral render plan for languages "fr" platforms "TIKTOK" duration 30
+    And the variant video "fr-tiktok-30" already exists
+    When the render plan is executed with a fake renderer
+    Then the render result rendered is 0
+    And the render result skipped is 1
+
+  Scenario: A missing variant is rendered
+    Given a viral render plan for languages "fr,en" platforms "TIKTOK" duration 30
+    When the render plan is executed with a fake renderer
+    Then the render result rendered is 2
+    And the render result skipped is 0
+
   Scenario: The campaign manifest serialises the bundles as a stable JSON array
     Given a viral batch with languages "fr" platforms "TIKTOK" and duration 30
     And a market copy for "fr" and "TIKTOK" with title "Titre natif"

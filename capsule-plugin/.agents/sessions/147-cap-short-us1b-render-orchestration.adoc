@@ -1,0 +1,93 @@
+= Session 147 — CAP-SHORT US-1b : orchestration `renderViralVariants`
+:session: 147
+:date: 2026-10-09
+:type: feat + test (baby-step DDD/TDD/BDD)
+:epic: CAP-SHORT (US-1b)
+:methode: Local = Build, Tests = CI (aucun test/check local — GitHub Actions)
+
+== Contexte
+
+Suite d'US-1a (S-146, deck capturable). Le diagnostic S-145 pointait deux trous
+🔴 : (1) le pont storyboard → deck (✅ S-146) ; (2) l'**orchestration** — aucune
+tâche n'itère les `ViralVariant` pour exécuter le socle FFmpeg et écrire
+`<variant.id>.mp4`. US-1b ferme le second : c'est la **colonne qui relie** le
+domaine au livrable.
+
+== Livrable — `ViralVariantRenderer` + tâche `renderViralVariants`
+
+=== Domaine pur `capsule.viral`
+
+* `ViralVariantRenderEntry(variant, videoFile)` — un couple (variante →
+  `<id>.mp4`).
+* `ViralVariantRenderPlan(entries)` — `size`/`isEmpty`/`ids`.
+* `ViralRenderResult(rendered, skipped, failed)` — compteurs.
+* `fun interface ViralVariantRender { render(entry): Boolean }` — le seam du
+  rendu lourd (capture + FFmpeg), pour garder l'orchestration unit-testable.
+* `ViralVariantRenderer.plan(variants, renderedVideoDir)` — nomme un MP4 par
+  variante.
+* `ViralVariantRenderer.pending(plan, isRenderable)` — le delta (économie d'encre).
+* `ViralVariantRenderer.render(plan, isRenderable, render)` — skip les vidéos
+  valides, rend les autres, agrège rendu/skippé/échoué.
+
+Objets purs — zéro I/O propre (le `ViralVariantRender` fait le travail, le
+prédicat de validité est injecté).
+
+=== Tâche Gradle `RenderViralVariantsTask` (groupe `generate`)
+
+* `dependsOn generateViralCampaign` (le deck US-1a + le storyboard sont produits).
+* Capture le deck via le **socle FFmpeg** `SCREENSHOT` (`CaptureResolver`,
+  `ScreenshotCaptureImpl` — Playwright ne prend que des PNG statiques, FFmpeg
+  anime + concat) puis transcode MP4 (`CapsuleManager.resolveFormatConverter`).
+* Écrit `renderedVideoDir/<variant.id>.mp4` ; **skip** si le fichier existe et
+  est non vide (économie d'encre).
+* Seams `@Internal` `captureFactory` / `formatConverter` (tests) ; `viralEnabled`
+  gèle la tâche par défaut ; `strict` fait échouer le build en cas de variante
+  non rendue (sinon `warn`, mode dégradé).
+* `CapsuleManager` : conventions (langues, plateformes, durée, ffmpegPath,
+  strict, timeout, storyboard, deck) + enregistrement.
+
+== Preuves (layers de test)
+
+* **Unit** : `ViralVariantRendererTest` (5 tests) — plan `<id>.mp4` ordonné,
+  plan vide, `pending`, `render` (skip + rendu agrégés), échec par variante sans
+  casser le batch. RED prouvé par la compilation.
+* **Functional** : `RenderViralVariantsFunctionalTest` (3 tests) — enregistrement
+  groupe `generate` ; disabled skip ; **économie d'encre** (`0 rendered, 2 skipped`
+  quand les MP4 existent — aucune capture).
+* **Cucumber** : `capsule_viral.feature` +3 scénarios `@viral` (plan par variante,
+  skip économie d'encre, rendu des manquants) + 7 steps (`CapsuleViralSteps`
+  préfixe « render plan »/« render result »). Runner `cucumberTestViral` existant.
+
+== Méthode
+
+Baby-step DDD/TDD : RED (compilation) → GREEN (compilation locale) → REFACTOR.
+**Aucun test/check local** (règle EAGER Local = Build, Tests = CI) :
+`compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` VERTS.
+Preuve = CI du push (`Test` + `Full Tests`).
+
+== Décisions
+
+* **Orchestration pure + adaptateur mince** — toute la logique (plan/skip/driver)
+  vit dans `ViralVariantRenderer` ; la tâche n'est qu'un câblage (pattern
+  `GenerateViralCampaignTask`).
+* **Socle FFmpeg** (rappel pilote) : `SCREENSHOT` forcé, Playwright uniquement
+  pour les PNG statiques — jamais l'enregistrement temps réel.
+* **Validité = fichier non vide** (cheap, sans ffprobe) pour l'économie d'encre —
+  un MP4 de 0 octet est invalide ; tout fichier non vide est présumé rendu.
+* **Rendu monolingue en US-1b** : le deck US-1a est celui du storyboard (une
+  langue) ; la localisation par variante relève d'US ultérieures (traduction /
+  CAP-29). US-1b prouve l'orchestration + l'écriture réelle des fichiers.
+
+== Fichiers
+
+* Créés (4) : `viral/ViralVariantRenderer.kt`, `viral/RenderViralVariantsTask.kt`,
+  `test/.../viral/ViralVariantRendererTest.kt`,
+  `functionalTest/.../viral/RenderViralVariantsFunctionalTest.kt`.
+* Modifiés (3) : `CapsuleManager.kt` (registrar), `capsule_viral.feature` (+3
+  scénarios), `scenarios/CapsuleViralSteps.kt` (+7 steps + imports).
+
+== Statut / suite
+
+CAP-SHORT **US-1a ✅ S-146, US-1b ✅ S-147** (3/6 US). Reste **US-2** (time-fit
+15-60 s), **US-3** (batch réel), **US-4** (dogfooding, accord pilote), **US-5**
+(BDD rendu). Zéro publication, zéro secret.

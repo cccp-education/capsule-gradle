@@ -14,16 +14,21 @@ import capsule.viral.ViralHook
 import capsule.viral.ViralHookPlan
 import capsule.viral.ViralHookPromptBuilder
 import capsule.viral.ViralPlatform
+import capsule.viral.ViralRenderResult
 import capsule.viral.ViralStoryboard
 import capsule.viral.ViralStoryboardBuilder
 import capsule.viral.ViralStoryboardParser
 import capsule.viral.ViralStoryboardValidator
+import capsule.viral.ViralVariantRenderPlan
+import capsule.viral.ViralVariantRenderer
 import capsule.viral.ViralVariant
 import io.cucumber.datatable.DataTable
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import org.assertj.core.api.Assertions.assertThat
+import java.io.File
+import java.nio.file.Files
 
 /**
  * Cucumber steps for the viral campaign engine (CAP-VIRAL US-8).
@@ -44,6 +49,9 @@ class CapsuleViralSteps {
     private var parsedStoryboard: ViralStoryboard? = null
     private var manifest: String? = null
     private var deck: String? = null
+    private var renderPlan: ViralVariantRenderPlan? = null
+    private var renderDir: File? = null
+    private var renderResult: ViralRenderResult? = null
 
     private fun buildStoryboard(deckName: String, language: String, platform: String, table: DataTable): ViralStoryboard {
         val beats = table.asMaps().map { row ->
@@ -247,5 +255,51 @@ class CapsuleViralSteps {
     fun `the campaign manifest first bundle title is`(title: String) {
         val parsed = com.fasterxml.jackson.databind.ObjectMapper().readTree(manifest)
         assertThat(parsed.get(0).get("metadata").get("title").asText()).isEqualTo(title)
+    }
+
+    @Given("a viral render plan for languages {string} platforms {string} duration {int}")
+    fun `a viral render plan`(languages: String, platforms: String, duration: Int) {
+        val langs = languages.split(",").map { it.trim() }
+        val plats = platforms.split(",").map { ViralPlatform.fromString(it.trim()) }
+        val dir = Files.createTempDirectory("viral-render").toFile()
+        renderDir = dir
+        renderPlan = ViralVariantRenderer.plan(ViralBatchPlanner.plan(langs, plats, duration), dir)
+    }
+
+    @Given("the variant video {string} already exists")
+    fun `the variant video already exists`(id: String) {
+        File(renderDir, "$id.mp4").writeText("mp4")
+    }
+
+    @When("the render plan is executed with a fake renderer")
+    fun `the render plan is executed with a fake renderer`() {
+        renderResult = ViralVariantRenderer.render(
+            plan = renderPlan!!,
+            isRenderable = { it.exists() && it.length() > 0L },
+            render = { entry ->
+                entry.videoFile.writeText("mp4")
+                true
+            },
+        )
+    }
+
+    @Then("the render plan has {int} entries")
+    fun `the render plan has entries`(count: Int) {
+        assertThat(renderPlan!!.size).isEqualTo(count)
+    }
+
+    @Then("the render plan ids are {string}")
+    fun `the render plan ids are`(csv: String) {
+        assertThat(renderPlan!!.ids).isEqualTo(csv.split(",").map { it.trim() })
+    }
+
+    @Then("the render result rendered is {int}")
+    fun `the render result rendered is`(count: Int) {
+        assertThat(renderResult!!.renderedCount).isEqualTo(count)
+    }
+
+    @Then("the render result skipped is {int}")
+    fun `the render result skipped is`(count: Int) {
+        assertThat(renderResult!!.skippedCount).isEqualTo(count)
     }
 }

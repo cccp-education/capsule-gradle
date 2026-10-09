@@ -1,7 +1,22 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-09
-:session: 145 CAP-CONTEXT — contexte du storyboard dans le domaine
+:session: 147 CAP-SHORT US-1b — orchestration `renderViralVariants`
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 9 octobre 2026 (après session 147)
+
+.Modifications session 147 — CAP-SHORT US-1b (orchestration du rendu)
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/viral/ViralVariantRenderer.kt` (nouveau) | Objet pur : `plan` (`<id>.mp4` par variante), `pending` (économie d'encre), `render` (driver via `ViralVariantRender`). | +5 `ViralVariantRendererTest`
+| `capsule/viral/RenderViralVariantsTask.kt` (nouveau) | Tâche Gradle : capture deck US-1a (socle FFmpeg `SCREENSHOT`) + transcode MP4 par variante, skip si `<id>.mp4` existe. Seams `@Internal`. | 0 unit (adaptateur) ; +3 functional
+| `capsule/CapsuleManager.kt` (modifié) | Enregistrement `renderViralVariants` (groupe generate, `dependsOn generateViralCampaign`) + conventions. | 0 (configuration)
+| `capsule_viral.feature` + `CapsuleViralSteps.kt` (modifiés) | 12 → 15 scénarios `@viral` (plan par variante, skip économie d'encre, rendu des manquants). | +3 scénarios (runner `cucumberTestViral` existant)
+|===
+
+*Totaux S-147* : +5 unit, +3 functional, +3 scénarios BDD. Gates locaux
+(Local = Build) : `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin`
+VERT. Les suites s'exécutent en CI (`Test` + `Full Tests`).
 
 == Couverture — 9 octobre 2026 (après session 145)
 

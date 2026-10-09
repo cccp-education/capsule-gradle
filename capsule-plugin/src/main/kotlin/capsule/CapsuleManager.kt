@@ -33,6 +33,7 @@ class CapsuleManager(private val project: Project) {
         project.registerValidateCapsuleVideoDurationTask()
         project.registerGenerateCapsuleChaptersTask()
         project.registerGenerateViralCampaignTask()
+        project.registerRenderViralVariantsTask()
     }
 
     private fun Project.registerExtractSpeakerNotesTask() {
@@ -257,6 +258,64 @@ class CapsuleManager(private val project: Project) {
             task.manifestOutput.convention(project.layout.buildDirectory.file("capsule/viral/viral-campaign.json"))
             task.llmService.set(llmServiceProvider)
             task.usesService(llmServiceProvider)
+        }
+    }
+
+    private fun Project.registerRenderViralVariantsTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
+        val capsuleExt = project.extensions.findByType(CapsuleExtension::class.java)
+        tasks.register("renderViralVariants", capsule.viral.RenderViralVariantsTask::class.java) { task ->
+            task.group = CapsuleMessages.get("task.group.generate", lang)
+            task.description = "Render the viral campaign: one short-form MP4 per variant (FFmpeg socle)."
+            task.dependsOn("generateViralCampaign")
+            task.viralEnabled.convention(project.provider {
+                capsuleExt?.viralEnabled?.get()
+                    ?: project.findProperty("capsule.viral.enabled")?.toString()?.toBoolean()
+                    ?: false
+            })
+            task.languages.convention(
+                project.provider {
+                    val ext = capsuleExt?.viralLanguages?.orNull
+                    if (!ext.isNullOrEmpty()) ext
+                    else project.findProperty("capsule.viral.languages")?.toString()
+                        ?.let { it.split(",").map { code -> code.trim() }.filter { code -> code.isNotBlank() } }
+                        ?: listOf(project.findProperty("deck.language")?.toString() ?: "fr")
+                },
+            )
+            task.platforms.convention(
+                project.provider {
+                    val ext = capsuleExt?.viralPlatforms?.orNull
+                    if (!ext.isNullOrEmpty()) ext
+                    else project.findProperty("capsule.viral.platforms")?.toString()
+                        ?.let { it.split(",").map { name -> name.trim() }.filter { name -> name.isNotBlank() } }
+                        ?: listOf(capsuleExt?.viralPlatform?.get() ?: capsule.viral.ViralPlatform.TIKTOK.name)
+                },
+            )
+            task.targetDurationSeconds.convention(project.provider {
+                capsuleExt?.viralTargetDurationSeconds?.get()
+                    ?: project.findProperty("capsule.viral.targetDurationSeconds")?.toString()?.toIntOrNull()
+                    ?: capsule.viral.ViralConfig.DEFAULT_DURATION_SECONDS
+            })
+            task.renderedVideoDir.convention("build/capsule/viral/videos")
+            task.ffmpegPath.convention(project.provider {
+                capsuleExt?.ffmpegExecutablePath?.get() ?: "ffmpeg"
+            })
+            task.strict.convention(project.provider {
+                capsuleExt?.strictMode?.get() ?: false
+            })
+            task.captureTimeoutMs.convention(project.provider {
+                capsuleExt?.playwrightTimeout?.get() ?: 120_000.0
+            })
+            task.storyboardFile.convention(
+                project.layout.file(project.provider {
+                    val configured = capsuleExt?.viralStoryboardFile?.get().orEmpty()
+                    val path = configured.ifBlank {
+                        project.findProperty("capsule.viral.storyboardFile")?.toString().orEmpty()
+                    }
+                    if (path.isBlank()) null else project.file(path)
+                }),
+            )
+            task.deckFile.convention(project.layout.buildDirectory.file("capsule/viral/viral-deck.html"))
         }
     }
 

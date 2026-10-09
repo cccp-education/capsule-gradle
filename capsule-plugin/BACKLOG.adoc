@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-09 (CAP-SHORT US-1a livrée S-146 — `ViralDeckBuilder` storyboard → deck 1080×1920 + `deckOutput` ; CAP-CONTEXT 3/4)
+:last_update: 2026-10-09 (CAP-SHORT US-1b livrée S-147 — orchestration `renderViralVariants` : `ViralVariantRenderer` + tâche, MP4 par variante, Économie d'Encre ; CAP-CONTEXT 3/4)
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)
@@ -60,7 +60,7 @@ socle **FFmpeg** (`ViralCaptureStrategy` — Playwright temps réel écarté).
 
 '''
 
-== 🎬 BACKLOG ACTIF — CAP-SHORT 🟡 CADRÉ (S-143)
+== 🎬 BACKLOG ACTIF — CAP-SHORT 🟡 EN COURS (S-143, diagnostic S-145, US-1a S-146, US-1b S-147)
 
 _Livraison **end-to-end** du format court (YouTube Shorts / TikTok / Reels).
 CAP-VIRAL (S-139→S-142) a livré le **domaine** viral complet, mais le **rendu
@@ -105,11 +105,14 @@ le test fonctionnel n'assère aucune vidéo.
 
 *Ce qui manque, par criticité* :
 
-. 🔴 **Storyboard → deck portrait rendable** — `ViralStoryboardBuilder.build()`
-  n'émet qu'un **document AsciiDoc** ; aucun pont storyboard → `CapsuleScript`/HTML
-  9:16. Sans deck capturable, **rien à filmer** → *le vrai déblocage*.
-. 🔴 **Orchestration** — aucune tâche n'itère les `ViralVariant` (langue ×
+. ✅ **Storyboard → deck portrait rendable** — `ViralStoryboardBuilder.build()`
+  n'émet qu'un **document AsciiDoc** ; aucun pont storyboard → HTML 9:16. Sans
+  deck capturable, **rien à filmer** → *le vrai déblocage*. **RÉSOLU S-146**
+  (`ViralDeckBuilder` + `deckOutput`).
+. ✅ **Orchestration** — aucune tâche n'itère les `ViralVariant` (langue ×
   plateforme) pour exécuter le socle FFmpeg et écrire `<variant.id>.mp4`.
+  **RÉSOLU S-147** (`ViralVariantRenderer` + tâche `renderViralVariants`,
+  Économie d'Encre).
 . 🟠 **Durée 15-60 s** non imposée au montage (time-fit trim/pad/pacing manquant).
 . 🟠 **Thumbnail** — `ViralThumbnailPlanner` sans **usage prod** (`thumbnailFor = { "" }`).
 . 🟠 **Sous-titres karaoké** — `KaraokeSubtitleBuilder` sans **usage prod**.
@@ -118,10 +121,11 @@ le test fonctionnel n'assère aucune vidéo.
 . 🟡 **Tests rendu** — aucun test fonctionnel/BDD ne produit un MP4 (+ durée).
 . 🧹 **RENAME métier OSS** — voir « Maintenance » ci-dessous.
 
-*Verdict* : le **moteur** est mature et réutilisable ; il manque le **pont
-storyboard → deck → variantes**, **l'orchestration** et le **time-fit**. Maturité
-e2e réelle **~20-25 %** : la tête (domaine) et les jambes (FFmpeg), pas la colonne
-qui les relie.
+*Verdict (S-145)* : le **moteur** est mature et réutilisable ; il manquait le
+**pont storyboard → deck → variantes**, **l'orchestration** et le **time-fit**.
+Maturité e2e **~20-25 %** au diagnostic. **Après S-146 + S-147** : le pont et
+l'orchestration sont livrés (MP4 par variante) ; reste le time-fit (US-2), le
+batch réel (US-3), le dogfooding (US-4) et la BDD rendu (US-5).
 
 [cols="1,4,2,1,2", options="header"]
 |===
@@ -129,7 +133,7 @@ qui les relie.
 
 | US-0 | Cadrage — audit du trou domaine→livrable + décisions de câblage | — | 0 | ✅ S-145 (diagnostic e2e)
 | US-1a | **Storyboard → deck portrait rendable** (prérequis du rendu) — dériver des beats (hook/development/cta, `SlideType` HTML/MANIM, durées) un deck HTML **1080×1920** capturable, ou piloter la composition Remotion verticale par les beats ; aujourd'hui `ViralStoryboardBuilder` n'émet qu'un document AsciiDoc | `capsule.viral`, `ScreenshotPlanner`, `Root.jsx` | 5 | ✅ S-146 (`ViralDeckBuilder` + `deckOutput`)
-| US-1b | **Orchestration `renderViralVariants`** — itérer les `ViralVariant`, viewport 1080×1920 + `viralEnabled`, socle FFmpeg (`SCREENSHOT`), MP4 **réellement écrit** dans `renderedVideoDir/<variant.id>.mp4`, skip Économie d'Encre | `GenerateViralCampaignTask`, `CapsuleVideoTask`, `ScreenshotPlanner` | 5 | 🟡 À FAIRE
+| US-1b | **Orchestration `renderViralVariants`** — itérer les `ViralVariant`, viewport 1080×1920 + `viralEnabled`, socle FFmpeg (`SCREENSHOT`), MP4 **réellement écrit** dans `renderedVideoDir/<variant.id>.mp4`, skip Économie d'Encre | `GenerateViralCampaignTask`, `CapsuleVideoTask`, `ScreenshotPlanner` | 5 | ✅ S-147 (`ViralVariantRenderer` + tâche `renderViralVariants`)
 | US-2 | **Durée courte imposée au montage** — cadence FFmpeg honorant `targetDurationSeconds` (15-60 s) : trim/pad + gate de validation | `capsule.viral`, `ScreenshotPlanner`, `VideoDurationValidator` | 3 | 🟡 À FAIRE
 | US-3 | **Batch réel langue × plateforme** — N variantes rendues en une commande, skip Économie d'Encre si MP4 valide | `capsule.viral` | 4 | 🟡 À FAIRE
 | US-4 | **Dogfooding viral réel** — 1 produit talaria, socle FFmpeg **et** chemin enrichi Remotion+Manim (accord pilote, run LLM metered) | consumer | 3 | 🟡 À FAIRE
@@ -137,8 +141,8 @@ qui les relie.
 |===
 
 *Total* : 6 US (~22 pts — US-1 **scindée** en US-1a « storyboard → deck » + US-1b
-« orchestration », cf. diagnostic S-145). Additif — **ne modifie pas** le domaine
-CAP-VIRAL.
+« orchestration », cf. diagnostic S-145). **US-0 ✅ S-145, US-1a ✅ S-146,
+US-1b ✅ S-147** (3/6). Additif — **ne modifie pas** le domaine CAP-VIRAL.
 *Lien chaîne marketing (GBL-009)* : CAP-SHORT rend réellement livrable le maillon
 `capsule produit` (avant : seul le domaine existait).
 

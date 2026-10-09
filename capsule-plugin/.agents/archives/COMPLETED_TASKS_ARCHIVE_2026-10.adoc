@@ -1,6 +1,24 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-09
 
+== Session 147 — CAP-SHORT US-1b : orchestration `renderViralVariants` ✅
+
+* **`ViralVariantRenderer`** (domaine `capsule.viral`, objet pur) — la colonne
+  qui relie le domaine au livrable : `plan` (un `<variant.id>.mp4` par variante),
+  `pending` (économie d'encre), `render` (driver via le seam `ViralVariantRender`,
+  résultat agrégé rendu/skippé/échoué).
+* **Tâche Gradle `RenderViralVariantsTask`** (groupe `generate`,
+  `dependsOn generateViralCampaign`) — capture le deck US-1a via le **socle
+  FFmpeg** `SCREENSHOT` (`CaptureResolver`), transcode en MP4
+  (`CapsuleManager.resolveFormatConverter`), écrit `renderedVideoDir/<id>.mp4`,
+  skip si `<id>.mp4` existe (non vide). Seams `@Internal`
+  `captureFactory`/`formatConverter` ; `viralEnabled` gèle la tâche par défaut.
+* **Layers** : 1 unit (`ViralVariantRendererTest`, 5) + 1 functional
+  (registration, disabled skip, economy-of-ink skip) + 3 scénarios BDD `@viral`
+  (runner `cucumberTestViral` existant). Local = Build, Tests = CI.
+* Reste CAP-SHORT : US-2 (time-fit), US-3 (batch réel), US-4 (dogfooding),
+  US-5 (BDD rendu). Rapport `.agents/sessions/147-cap-short-us1b-render-orchestration.adoc`.
+
 == Session 146 — CAP-SHORT US-1a : storyboard → deck portrait rendable ✅
 
 * **`ViralDeckBuilder`** (domaine `capsule.viral`, objet pur) — dérive d'un

@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-09 (S-146 — CAP-SHORT US-1a ✅ : `ViralDeckBuilder` storyboard → deck 1080×1920 capturable + `deckOutput`.)
+:last_update: 2026-10-09 (S-147 — CAP-SHORT US-1b ✅ : orchestration `renderViralVariants` (`ViralVariantRenderer` + tâche, MP4 par variante).)
 
 '''
 == ✅ CAP-VIRAL — US livrées (S-139 + S-140 + S-141 + S-142)
@@ -34,7 +34,7 @@
 
 . [x] **US-0** ✅ S-145 — cadrage + diagnostic de maturité e2e (audit au code).
 . [x] **US-1a** ✅ S-146 — storyboard → deck portrait rendable (`ViralDeckBuilder` one `<section>` per beat, 1080×1920, tokens ; `deckOutput`).
-. [ ] **US-1b** — orchestration `renderViralVariants` (MP4 1080×1920 réellement écrit dans `renderedVideoDir/<variant.id>.mp4`, socle FFmpeg).
+. [x] **US-1b** ✅ S-147 — orchestration `renderViralVariants` (`ViralVariantRenderer` + tâche, MP4 1080×1920 par variante, Économie d'Encre).
 . [ ] **US-2** — durée courte 15-60 s imposée au montage.
 . [ ] **US-3** — batch réel langue × plateforme (Économie d'Encre).
 . [ ] **US-4** — dogfooding viral réel (accord pilote, run LLM metered).
