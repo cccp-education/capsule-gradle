@@ -1,5 +1,6 @@
 package capsule
 
+import capsule.test.ExternalBinaryAssumption
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -173,6 +174,7 @@ class CapsuleAudioConstraintFunctionalTest {
 
     @Test
     fun `espeak TTS must produce real audio not text placeholder`() {
+        ExternalBinaryAssumption.assumeBinaryAvailable("espeak")
         setup()
 
         val scriptDir = projectDir.resolve("build/capsule").also { it.mkdirs() }
