@@ -1,0 +1,87 @@
+= Session 146 — CAP-SHORT US-1a : storyboard → deck portrait rendable
+:session: 146
+:date: 2026-10-09
+:type: feat + test (baby-step DDD/TDD/BDD)
+:epic: CAP-SHORT (US-1a)
+:methode: Local = Build, Tests = CI (aucun test/check local — GitHub Actions)
+
+== Contexte
+
+Suite du diagnostic e2e CAP-SHORT (S-145, `BACKLOG.adoc` § CAP-SHORT) : le
+**moteur** capsule est mature (domaine viral ~95 %, socle FFmpeg ~95 %), mais
+l'e2e viral est à ~20 %. Le trou n°1 : `ViralStoryboardBuilder.build()` n'émet
+qu'un **document AsciiDoc** — aucun deck capturable. Sans deck, **rien à
+filmer** : c'est le vrai déblocage du rendu (US-1a, prérequis d'US-1b
+« orchestration `renderViralVariants` »).
+
+== Livrable — `ViralDeckBuilder`
+
+Objet pur (domaine `capsule.viral`, zéro I/O / navigateur / FFmpeg) :
+
+* `ViralDeckBuilder.WIDTH/HEIGHT` = 1080×1920 (9:16, aligné `ViralViewport`).
+* `build(storyboard): String` — document HTML auto-suffisant :
+  **une `<section>` par beat** (capturable par le socle FFmpeg `SCREENSHOT`).
+  * `data-role` (hook/development/cta), `data-duration` (secondes, pour le
+    montage), `data-manim` (scène) et `data-asset` quand portés.
+  * contenu : le `role` (kick) + l'`intent` (titre), **HTML échappé**
+    (`capsule.HtmlEscape`) — anti-XSS (CR-4).
+  * identité visuelle : les tokens de `VisualIdentity` sont injectés en
+    variables CSS (`:root { --accent-color: … }`), la typo et le fond sont
+    paramétrés ; sans contexte, valeurs par défaut neutres.
+  * déterministe (test byte-identique).
+
+Câblage Gradle :
+
+* `GenerateViralCampaignTask.deckOutput: RegularFileProperty` (`@OutputFile`) ;
+  écrit `ViralDeckBuilder.build(storyboard)`.
+* `CapsuleManager` : convention `build/capsule/viral/viral-deck.html`.
+
+== Preuves (layers de test)
+
+* **Unit** : `ViralDeckBuilderTest` (8 tests) — une section par beat, portrait
+  1080×1920 (`<meta viewport>` + variables CSS), rôle/intent exposés, durée
+  `data-duration`, beat Manim (`data-manim`) + asset, échappement HTML, tokens
+  de marque, déterminisme.
+* **Functional** : `GenerateViralCampaignFunctionalTest` +1 — `generateViralCampaign`
+  écrit `viral-deck.html` (3 sections, viewport portrait, durée, token). RED
+  prouvé par la compilation (`Unresolved reference 'ViralDeckBuilder'`).
+* **Cucumber** : `capsule_viral.feature` +1 scénario `@viral` (« the storyboard
+  renders a capturable portrait deck ») + 4 steps (`CapsuleViralSteps`, préfixe
+  « viral deck »). Réutilise le runner `cucumberTestViral` existant (pas de
+  nouveau runner).
+
+== Méthode
+
+Baby-step DDD/TDD : RED (compilation) → GREEN (compilation locale) → REFACTOR.
+**Aucun test/check local** (règle EAGER Local = Build, Tests = CI) :
+`compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` VERTS.
+Preuve = CI du push (`Test` + `Full Tests`).
+
+== Décisions
+
+* **Un seul artefact : le deck = la porte du rendu** — le storyboard document
+  reste l'entrée **humaine** (validée par le pilote) ; le deck HTML est l'entrée
+  **machine** du rendu. Les deux sont écrits par `generateViralCampaign`
+  (`storyboard.adoc` + `viral-deck.html`).
+* **Socle FFmpeg, pas Playwright** (rappel pilote) : le deck est conçu pour la
+  capture PNG→concat (`ScreenshotPlanner`), pas pour l'enregistrement temps réel
+  (`ViralCaptureStrategy` force `SCREENSHOT`).
+* **Tokens de marque en variables CSS** : l'identité visuelle *habille* le deck
+  (CAP-CONTEXT) sans que le builder ne réinvente la charte.
+* US-1b (orchestration du rendu par variante) reste à faire — le deck est
+  désormais capturable.
+
+== Fichiers
+
+* Créés (2) : `src/main/kotlin/capsule/viral/ViralDeckBuilder.kt`,
+  `src/test/kotlin/capsule/viral/ViralDeckBuilderTest.kt`.
+* Modifiés (5) : `GenerateViralCampaignTask.kt` (`deckOutput`),
+  `CapsuleManager.kt` (convention), `GenerateViralCampaignFunctionalTest.kt` (+1),
+  `capsule_viral.feature` (+1 scénario), `CapsuleViralSteps.kt` (+4 steps).
+
+== Statut / suite
+
+CAP-SHORT **US-1a ✅ S-146** (1/6 US). Reste **US-1b** — orchestration
+`renderViralVariants` (MP4 1080×1920 par `ViralVariant`, socle FFmpeg), puis
+US-2 (time-fit 15-60 s), US-3 (batch), US-4 (dogfooding), US-5 (BDD rendu).
+Zéro publication, zéro secret.

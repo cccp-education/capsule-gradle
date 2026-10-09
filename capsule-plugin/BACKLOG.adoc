@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-09 (CAP-CONTEXT US-1/2/3 livrées S-145 — contexte du storyboard dans le domaine ; CAP-SHORT cadré)
+:last_update: 2026-10-09 (CAP-SHORT US-1a livrée S-146 — `ViralDeckBuilder` storyboard → deck 1080×1920 + `deckOutput` ; CAP-CONTEXT 3/4)
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)
@@ -86,21 +86,73 @@ variante)._
 *Prérequis* : CI verte (acquise S-139) ; dogfooding viral = **accord pilote**
 (run LLM metered).
 
+=== Diagnostic de maturité e2e (S-145 — audit au code, lecture seule)
+
+[cols="2,1,3", options="header"]
+|===
+| Maillon | État | Preuve
+
+| Domaine viral (pur) | ✅ ~95 % | config, viewport, capture-strategy, batch planner, storyboard build/parse/validate, hook LLM, market copy, thumbnail, karaoké, `CampaignBundle`
+| Moteur de rendu FFmpeg | ✅ ~95 % | `ScreenshotPlanner` (PNG→durée→concat `-c copy`) + `ScreenshotCaptureImpl` + `VideoFormatConverter` (MP4)
+| Rendu mono-langue | ✅ ~95 % | `CapsuleVideoTask` (TTS, capture, sous-titres, burn-in, audio, format)
+| Batch multi-**langue** | ✅ ~90 % | `GenerateCapsuleVideoAllLanguagesTask` (depuis deck+script slider)
+| **e2e viral** (storyboard → MP4/variante) | 🔴 **~20 %** | `generateViralCampaign` = storyboard + manifeste **uniquement**
+|===
+
+*Le trou* : `GenerateViralCampaignTask` n'a **aucun `dependsOn`** vers un rendu
+(`CapsuleManager.kt:179`) ; `videoPathFor` construit un chemin **jamais produit** ;
+le test fonctionnel n'assère aucune vidéo.
+
+*Ce qui manque, par criticité* :
+
+. 🔴 **Storyboard → deck portrait rendable** — `ViralStoryboardBuilder.build()`
+  n'émet qu'un **document AsciiDoc** ; aucun pont storyboard → `CapsuleScript`/HTML
+  9:16. Sans deck capturable, **rien à filmer** → *le vrai déblocage*.
+. 🔴 **Orchestration** — aucune tâche n'itère les `ViralVariant` (langue ×
+  plateforme) pour exécuter le socle FFmpeg et écrire `<variant.id>.mp4`.
+. 🟠 **Durée 15-60 s** non imposée au montage (time-fit trim/pad/pacing manquant).
+. 🟠 **Thumbnail** — `ViralThumbnailPlanner` sans **usage prod** (`thumbnailFor = { "" }`).
+. 🟠 **Sous-titres karaoké** — `KaraokeSubtitleBuilder` sans **usage prod**.
+. 🟠 **Manifeste ↔ fichiers réels** — `CampaignBundle.videoFile` pointe un
+  fichier inexistant ; gate de validation manquant.
+. 🟡 **Tests rendu** — aucun test fonctionnel/BDD ne produit un MP4 (+ durée).
+. 🧹 **RENAME métier OSS** — voir « Maintenance » ci-dessous.
+
+*Verdict* : le **moteur** est mature et réutilisable ; il manque le **pont
+storyboard → deck → variantes**, **l'orchestration** et le **time-fit**. Maturité
+e2e réelle **~20-25 %** : la tête (domaine) et les jambes (FFmpeg), pas la colonne
+qui les relie.
+
 [cols="1,4,2,1,2", options="header"]
 |===
 | US | Description | Cibles | Pts | Statut
 
-| US-0 | Cadrage — audit du trou domaine→livrable + décisions de câblage | — | 0 | 🟡 À FAIRE
-| US-1 | **Rendu par variante** — câbler `generateViralCampaign` (ou tâche dédiée `renderViralVariants`) pour produire chaque `ViralVariant` en MP4 1080×1920 réellement écrit dans `renderedVideoDir/<variant.id>.mp4` | `GenerateViralCampaignTask`, `CapsuleVideoTask`, `ScreenshotPlanner` | 5 | 🟡 À FAIRE
+| US-0 | Cadrage — audit du trou domaine→livrable + décisions de câblage | — | 0 | ✅ S-145 (diagnostic e2e)
+| US-1a | **Storyboard → deck portrait rendable** (prérequis du rendu) — dériver des beats (hook/development/cta, `SlideType` HTML/MANIM, durées) un deck HTML **1080×1920** capturable, ou piloter la composition Remotion verticale par les beats ; aujourd'hui `ViralStoryboardBuilder` n'émet qu'un document AsciiDoc | `capsule.viral`, `ScreenshotPlanner`, `Root.jsx` | 5 | ✅ S-146 (`ViralDeckBuilder` + `deckOutput`)
+| US-1b | **Orchestration `renderViralVariants`** — itérer les `ViralVariant`, viewport 1080×1920 + `viralEnabled`, socle FFmpeg (`SCREENSHOT`), MP4 **réellement écrit** dans `renderedVideoDir/<variant.id>.mp4`, skip Économie d'Encre | `GenerateViralCampaignTask`, `CapsuleVideoTask`, `ScreenshotPlanner` | 5 | 🟡 À FAIRE
 | US-2 | **Durée courte imposée au montage** — cadence FFmpeg honorant `targetDurationSeconds` (15-60 s) : trim/pad + gate de validation | `capsule.viral`, `ScreenshotPlanner`, `VideoDurationValidator` | 3 | 🟡 À FAIRE
 | US-3 | **Batch réel langue × plateforme** — N variantes rendues en une commande, skip Économie d'Encre si MP4 valide | `capsule.viral` | 4 | 🟡 À FAIRE
 | US-4 | **Dogfooding viral réel** — 1 produit talaria, socle FFmpeg **et** chemin enrichi Remotion+Manim (accord pilote, run LLM metered) | consumer | 3 | 🟡 À FAIRE
 | US-5 | **BDD + CI** — rendu par variante couvert (runner dédié pattern S-082, steps préfixés S-088) | feature + steps + CI | 2 | 🟡 À FAIRE
 |===
 
-*Total* : 5 US (~17 pts). Additif — **ne modifie pas** le domaine CAP-VIRAL.
+*Total* : 6 US (~22 pts — US-1 **scindée** en US-1a « storyboard → deck » + US-1b
+« orchestration », cf. diagnostic S-145). Additif — **ne modifie pas** le domaine
+CAP-VIRAL.
 *Lien chaîne marketing (GBL-009)* : CAP-SHORT rend réellement livrable le maillon
 `capsule produit` (avant : seul le domaine existait).
+
+=== 🧹 Maintenance OSS — résidus métier (RENAME)
+
+Le RENAME transverse (RENAME-4, S-135) a neutralisé `FPA/AFNOR/REAC/SPD/SPG` mais
+**pas** `pédagogique/formation` dans la brique OSS. Résidus (prod + doc shippée) :
+`build.gradle.kts:385` (description « capsules video pedagogiques »),
+`AGENT.adoc:3,72`, `doc/CAPSULE_ARCHITECTURE.adoc:1`,
+`src/main/resources/capsule/remotion/src/Capsule.jsx:5` (« Composition d'une
+capsule **pédagogique** » — dans le jar), `viral/FileMarketCopySource.kt:15` (KDoc
+`#fpa`/`#formation`), fixtures de test. → neutraliser vers « capsule vidéo »
+générique (`#content`). **Le métier formation vit dans training-gradle, pas ici.**
+*Estimé* : ~1 pt (test-only + docs + 1 KDoc prod).
 
 '''
 == 🎬 CAP-CONTEXT 🟡 EN COURS — 3/4 US (S-145)

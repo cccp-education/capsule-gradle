@@ -46,6 +46,8 @@ import java.io.File
  *
  * Outputs:
  *   - [storyboardOutput] the deterministic storyboard document (reviewable).
+ *   - [deckOutput]       the capturable portrait 1080×1920 HTML deck
+ *                        (CAP-SHORT US-1a — one `<section>` per beat).
  *   - [manifestOutput]   `viral-campaign.json` (list of [CampaignBundle]).
  *
  * Economy of ink: skipped when [viralEnabled] is false (default); UP-TO-DATE
@@ -115,6 +117,14 @@ abstract class GenerateViralCampaignTask : DefaultTask() {
     @get:OutputFile
     abstract val storyboardOutput: RegularFileProperty
 
+    /**
+     * Capturable portrait 1080×1920 HTML deck output (CAP-SHORT US-1a). Derived
+     * from the beats by [ViralDeckBuilder]; the input the FFmpeg screenshot socle
+     * (US-1b) will capture.
+     */
+    @get:OutputFile
+    abstract val deckOutput: RegularFileProperty
+
     /** `viral-campaign.json` — the [CampaignBundle] manifest output. */
     @get:OutputFile
     abstract val manifestOutput: RegularFileProperty
@@ -161,6 +171,10 @@ abstract class GenerateViralCampaignTask : DefaultTask() {
         val storyboardOut = storyboardOutput.get().asFile
         storyboardOut.parentFile.mkdirs()
         storyboardOut.writeText(ViralStoryboardBuilder.build(storyboard))
+
+        val deckOut = deckOutput.get().asFile
+        deckOut.parentFile.mkdirs()
+        deckOut.writeText(ViralDeckBuilder.build(storyboard))
 
         val manifestOut = manifestOutput.get().asFile
         manifestOut.parentFile.mkdirs()

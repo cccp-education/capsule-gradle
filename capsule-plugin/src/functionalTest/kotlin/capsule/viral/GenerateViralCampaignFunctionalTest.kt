@@ -234,6 +234,36 @@ class GenerateViralCampaignFunctionalTest {
     }
 
     @Test
+    fun `enabled writes a capturable portrait deck`() {
+        setupBuild()
+        writeContextualStoryboard()
+        val result = GradleRunner.create()
+            .forwardOutput()
+            .withPluginClasspath()
+            .withArguments(
+                "generateViralCampaign",
+                "-Pcapsule.viral.enabled=true",
+                "-Pcapsule.viral.storyboardFile=storyboard.adoc",
+                "-Pcapsule.viral.hook=Un site perso, sans écrire de HTML",
+            )
+            .withProjectDir(projectDir)
+            .build()
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":generateViralCampaign")?.outcome)
+
+        val deck = projectDir.resolve("build/capsule/viral/viral-deck.html")
+        assertTrue(
+            deck.exists(),
+            "Expected the capturable deck, got: ${projectDir.resolve("build/capsule/viral").listFiles()?.joinToString { it.name }}",
+        )
+        val html = deck.readText()
+        assertEquals(3, Regex("<section").findAll(html).count(), "Expected one section per beat, got: $html")
+        assertTrue(html.contains("width=1080, height=1920"), "Expected the portrait viewport, got: $html")
+        assertTrue(html.contains("data-duration=\"3.0\""), "Expected per-beat duration")
+        assertTrue(html.contains("--accent-color: #0d6efd"), "Expected the design token")
+    }
+
+    @Test
     fun `enabled without a storyboard fails the editorial gate`() {
         setupBuild()
         val result = GradleRunner.create()

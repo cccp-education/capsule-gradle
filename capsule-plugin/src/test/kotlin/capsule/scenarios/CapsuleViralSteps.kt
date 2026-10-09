@@ -9,6 +9,7 @@ import capsule.viral.StoryboardBeat
 import capsule.viral.StoryboardValidationResult
 import capsule.viral.ViralBatchPlanner
 import capsule.viral.ViralCampaignAssembler
+import capsule.viral.ViralDeckBuilder
 import capsule.viral.ViralHook
 import capsule.viral.ViralHookPlan
 import capsule.viral.ViralHookPromptBuilder
@@ -42,6 +43,7 @@ class CapsuleViralSteps {
     private var bundles: List<CampaignBundle> = emptyList()
     private var parsedStoryboard: ViralStoryboard? = null
     private var manifest: String? = null
+    private var deck: String? = null
 
     private fun buildStoryboard(deckName: String, language: String, platform: String, table: DataTable): ViralStoryboard {
         val beats = table.asMaps().map { row ->
@@ -99,6 +101,27 @@ class CapsuleViralSteps {
     @Then("the storyboard document contains {string}")
     fun `the storyboard document contains`(needle: String) {
         assertThat(document).contains(needle)
+    }
+
+    @When("the storyboard is rendered as a deck")
+    fun `the storyboard is rendered as a deck`() {
+        deck = ViralDeckBuilder.build(storyboard!!)
+    }
+
+    @Then("the viral deck is a portrait {int}x{int} document")
+    fun `the viral deck is a portrait document`(width: Int, height: Int) {
+        assertThat(deck).startsWith("<!DOCTYPE html>")
+        assertThat(deck).contains("width=$width, height=$height")
+    }
+
+    @Then("the viral deck has {int} sections")
+    fun `the viral deck has sections`(count: Int) {
+        assertThat(Regex("<section").findAll(deck!!).count()).isEqualTo(count)
+    }
+
+    @Then("the viral deck contains {string}")
+    fun `the viral deck contains`(needle: String) {
+        assertThat(deck).contains(needle)
     }
 
     @Given("a viral batch with languages {string} platforms {string} and duration {int}")

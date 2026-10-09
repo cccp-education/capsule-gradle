@@ -63,6 +63,12 @@ Feature: Viral campaign engine
     When the storyboard is rendered then parsed back
     Then the parsed storyboard equals the original
 
+  Scenario: The storyboard renders a capturable portrait deck
+    When the storyboard is rendered as a deck
+    Then the viral deck is a portrait 1080x1920 document
+    And the viral deck has 4 sections
+    And the viral deck contains "data-duration=\"3.0\""
+
   Scenario: The campaign manifest serialises the bundles as a stable JSON array
     Given a viral batch with languages "fr" platforms "TIKTOK" and duration 30
     And a market copy for "fr" and "TIKTOK" with title "Titre natif"

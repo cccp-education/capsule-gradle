@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-09 (S-143 — CI S-142 corrigée + dette `cucumberTest` RÉSOLUE (scoping) ; CAP-SHORT cadré.)
+:last_update: 2026-10-09 (S-146 — CAP-SHORT US-1a ✅ : `ViralDeckBuilder` storyboard → deck 1080×1920 capturable + `deckOutput`.)
 
 '''
 == ✅ CAP-VIRAL — US livrées (S-139 + S-140 + S-141 + S-142)
@@ -30,14 +30,16 @@
   Preuve CI `37967978808` BUILD SUCCESSFUL (153 verts, 0 `initializationError`).
 
 '''
-== 🟡 CAP-SHORT — rendu short end-to-end (cadré S-143, P0)
+== 🟡 CAP-SHORT — rendu short end-to-end (cadré S-143, diagnostic S-145, P0)
 
-. [ ] **US-0** — cadrage (audit du trou domaine→livrable). _Le cadrage S-143 est dans `BACKLOG.adoc`._
-. [ ] **US-1** — rendu par variante (MP4 1080×1920 réellement écrit dans `renderedVideoDir/<variant.id>.mp4`).
+. [x] **US-0** ✅ S-145 — cadrage + diagnostic de maturité e2e (audit au code).
+. [x] **US-1a** ✅ S-146 — storyboard → deck portrait rendable (`ViralDeckBuilder` one `<section>` per beat, 1080×1920, tokens ; `deckOutput`).
+. [ ] **US-1b** — orchestration `renderViralVariants` (MP4 1080×1920 réellement écrit dans `renderedVideoDir/<variant.id>.mp4`, socle FFmpeg).
 . [ ] **US-2** — durée courte 15-60 s imposée au montage.
 . [ ] **US-3** — batch réel langue × plateforme (Économie d'Encre).
 . [ ] **US-4** — dogfooding viral réel (accord pilote, run LLM metered).
 . [ ] **US-5** — BDD + CI (rendu par variante couvert).
+. [ ] **🧹 RENAME** — résidus métier `pédagogique/formation` dans l'OSS (docs + 1 KDoc prod + fixtures).
 
 '''
 == 🟡 CAP-CONTEXT — contexte du storyboard (S-145, 3/4 US)

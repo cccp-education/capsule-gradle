@@ -1,6 +1,24 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-09
 
+== Session 146 — CAP-SHORT US-1a : storyboard → deck portrait rendable ✅
+
+* **`ViralDeckBuilder`** (domaine `capsule.viral`, objet pur) — dérive d'un
+  `ViralStoryboard` un document HTML **1080×1920** capturable : une `<section>`
+  par beat, attributs `data-role`/`data-duration`/`data-manim`/`data-asset`,
+  tokens de marque (`VisualIdentity`) en variables CSS, HTML échappé
+  (`HtmlEscape`), déterministe. Comble le trou « le storyboard n'est qu'un
+  document AsciiDoc, rien à filmer ».
+* **Câblage** : `GenerateViralCampaignTask.deckOutput` (`@OutputFile`,
+  `build/capsule/viral/viral-deck.html`) + convention `CapsuleManager`.
+* **Layers** : 1 unit (`ViralDeckBuilderTest`, 8 tests) + 1 functional (deck
+  écrit : 3 sections, viewport, durée, token) + 2 scénarios BDD `@viral`
+  (`capsule_viral.feature`, runner `cucumberTestViral` existant). Local = Build,
+  Tests = CI.
+* Adopte le diagnostic S-145 (US-1 scindée en US-1a « deck » + US-1b
+  « orchestration »). Reste US-1b (orchestration `renderViralVariants`).
+* Rapport : `.agents/sessions/146-cap-short-us1a-viral-deck.adoc`.
+
 == Session 145 — CAP-CONTEXT : port du squelette de contexte dans le domaine (3/4 US) ✅
 
 * **US-1** — types purs `Qqoqcp` (6 réponses), `VisualIdentity`

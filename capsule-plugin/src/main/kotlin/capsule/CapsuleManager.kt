@@ -253,6 +253,7 @@ class CapsuleManager(private val project: Project) {
             )
             task.renderedVideoDir.convention("build/capsule/viral/videos")
             task.storyboardOutput.convention(project.layout.buildDirectory.file("capsule/viral/storyboard.adoc"))
+            task.deckOutput.convention(project.layout.buildDirectory.file("capsule/viral/viral-deck.html"))
             task.manifestOutput.convention(project.layout.buildDirectory.file("capsule/viral/viral-campaign.json"))
             task.llmService.set(llmServiceProvider)
             task.usesService(llmServiceProvider)
