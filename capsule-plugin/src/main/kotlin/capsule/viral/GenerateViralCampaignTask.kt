@@ -202,17 +202,29 @@ abstract class GenerateViralCampaignTask : DefaultTask() {
         val hook = configuredHook.get().ifBlank {
             error("CAPSULE VIRAL → storyboardRequired=false but no hook configured to synthesize a storyboard.")
         }
+        val cta = configuredCta.get().ifBlank { hook }
         val duration = targetDurationSeconds.get()
             .coerceIn(ViralConfig.MIN_DURATION_SECONDS, ViralConfig.MAX_DURATION_SECONDS)
-        val ctaSeconds = 3.0
-        val hookSeconds = (duration - ctaSeconds).coerceAtLeast(1.0)
+
+        // The synthesized storyboard must satisfy the editorial validator:
+        // no beat exceeds MAX_BEAT_SECONDS, and the summed beats stay within
+        // ±20% of the target. Bracket with a short hook + cta and split the
+        // remainder into development beats of at most MAX_BEAT_SECONDS each.
+        val hookSeconds = HOOK_SECONDS.coerceAtMost(duration.toDouble())
+        val ctaSeconds = CTA_SECONDS.coerceAtMost((duration - hookSeconds).coerceAtLeast(0.0))
+        val developmentTotal = (duration - hookSeconds - ctaSeconds).coerceAtLeast(0.0)
+        val beats = mutableListOf(StoryboardBeat(role = "hook", intent = hook, durationSeconds = hookSeconds))
+        if (developmentTotal > 0.0) {
+            val count = kotlin.math.ceil(developmentTotal / ViralStoryboardValidator.MAX_BEAT_SECONDS).toInt().coerceAtLeast(1)
+            val per = developmentTotal / count
+            repeat(count) { beats += StoryboardBeat(role = "development", intent = hook, durationSeconds = per) }
+        }
+        beats += StoryboardBeat(role = "cta", intent = cta, durationSeconds = ctaSeconds)
+
         return ViralStoryboard(
             message = hook,
-            angle = configuredCta.get().ifBlank { hook },
-            beats = listOf(
-                StoryboardBeat(role = "hook", intent = hook, durationSeconds = hookSeconds),
-                StoryboardBeat(role = "cta", intent = configuredCta.get().ifBlank { hook }, durationSeconds = ctaSeconds),
-            ),
+            angle = cta,
+            beats = beats,
             platform = ViralPlatform.fromString(platform.get()),
             language = languages.get().firstOrNull()?.takeIf { it.isNotBlank() } ?: "fr",
             targetDurationSeconds = duration,
@@ -262,4 +274,12 @@ abstract class GenerateViralCampaignTask : DefaultTask() {
     /** Directory holding bakery copy pieces (first resolved file's parent, or blank). */
     private fun firstCopyDir(): File =
         copyFiles.files.firstOrNull()?.parentFile ?: File(project.projectDir, "build/capsule/viral/copy")
+
+    private companion object {
+        /** Synthesized hook beat duration (seconds) — within MAX_BEAT_SECONDS. */
+        const val HOOK_SECONDS: Double = 3.0
+
+        /** Synthesized closing call-to-action beat duration (seconds). */
+        const val CTA_SECONDS: Double = 3.0
+    }
 }
