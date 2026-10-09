@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-09 (S-144 — **`CAPSULE_VIDEO.adoc`** (littérature agentique) : revue de code + cadrage du storyboard → **squelette** guidé par 3 axes de contexte (design system + QQOQCP + fil conducteur narratif). Précédent : S-143, deux sessions concurrentes — **143 bis : CI S-142 corrigée + dette `cucumberTest` résolue** (2 bugs CI ; `cucumberTest` scopée au runner agrégé, run `37967978808`) ; **143 : CAP-SHORT cadré**.)
-_Derniere session terminee_ : 144.
-_Prochaine session_ : 145 — **CAP-CONTEXT** (porter le squelette dans le domaine : `ViralStoryboard` additif + builder/parser + gate cohérence + tokens Remotion) + CAP-SHORT US-0/1 + optimisation CI.
-_Session en cours_ : — (S-144 terminée).
+ _Derniere mise a jour_ : 2026-10-09 (S-145 — **CAP-CONTEXT US-1/2/3** : le contexte du storyboard porté dans le domaine `capsule.viral` — `Qqoqcp`/`VisualIdentity`/`NarrativeThread` + champs additifs, builder/parser 3 sections (round-trip), gate de cohérence (tout-ou-rien + transition par séquence), BDD dédiée + functional + CI. Précédent : S-144 `CAPSULE_VIDEO.adoc` (littérature agentique) ; S-143 CI S-142 + dette `cucumberTest` + CAP-SHORT cadré.)
+ _Derniere session terminee_ : 145.
+ _Prochaine session_ : 146 — **CAP-SHORT US-0/1 (P0)** (rendu short end-to-end, MP4 1080×1920 par variante, socle FFmpeg) + **CAP-CONTEXT US-4** (`Capsule.jsx` tokens brand book) + optimisation CI.
+ _Session en cours_ : — (S-145 terminée).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -22,31 +22,31 @@ _Session en cours_ : — (S-144 terminée).
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (134-143)
+== 10 dernières sessions (134-145)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
 
+| 145 | 2026-10-09 | feat+test | **CAP-CONTEXT US-1/2/3** — contexte du storyboard porté dans le domaine `capsule.viral`. `Qqoqcp` (Qui/Quoi/Où/Quand/Comment/Pourquoi), `VisualIdentity` (brand/format/tokens/typo/logo/fond), `NarrativeThread` (thèse/motif/arc/registre/voix) + champs additifs `ViralStoryboard` + `StoryboardBeat.enteringTransition`. Builder/parser 3 sections + round-trip. Gate de cohérence (tout-ou-rien + transition par séquence, actif seulement si contexte). 3 fichiers unit + 1 functional + BDD `@storyboard-context` (22e runner câblé `full-tests.yml`). | 9/10
+
+| 144 | 2026-10-09 | gouvernance | **`CAPSULE_VIDEO.adoc`** (littérature agentique) — squelette de storyboard à 3 axes (design system + QQOQCP + fil conducteur) + revue de code (le storyboard valide la forme, pas le contexte). | 8/10
+
 | 143 | 2026-10-09 | fix+ci+cadrage | **CI S-142 corrigée + dette `cucumberTest` résolue + CAP-SHORT cadré** (deux sessions concurrentes). **143 bis** : 2 bugs réels attrapés par la CI (Root.jsx commentaire + synthesizeStoryboard), `cucumberTest` mauvaise portée → scopée au runner agrégé (run `37967978808` BUILD SUCCESSFUL, 0 `initializationError`, 153 verts). **143** : CAP-SHORT cadré (rendu short end-to-end, 5 US ~17 pts). | 9/10
 
-| 142 | 2026-10-09 | feat+test+ci | **CAP-VIRAL : câblage `generateViralCampaign` + socle FFmpeg + US-7 + ghost-tests** — `GenerateViralCampaignTask` (pilote `ViralCampaignAssembler` : porte storyboard → hook N1 → batch → copy lue → `viral-campaign.json`) + registrar + wiring extension. `ViralStoryboardParser` (round-trip builder). `ViralCaptureStrategy` (viral force `SCREENSHOT`/FFmpeg, `PLAYWRIGHT` écarté, `REMOTION` conservé) câblé dans `CapsuleVideoTask`. `Root.jsx` piloté par props (`calculateMetadata`). 20 runners pure-domain câblés `full-tests.yml`. **CAP-VIRAL TERMINÉ 14/14 US.** | 9/10
+| 142 | 2026-10-09 | feat+test+ci | **CAP-VIRAL : câblage `generateViralCampaign` + socle FFmpeg + US-7 + ghost-tests** — `GenerateViralCampaignTask` + registrar + wiring. `ViralCaptureStrategy` (viral force `SCREENSHOT`/FFmpeg, `PLAYWRIGHT` écarté). 20 runners pure-domain câblés `full-tests.yml`. **CAP-VIRAL TERMINÉ 14/14 US.** | 9/10
 
-| 141 | 2026-10-09 | feat+test+ci | **CAP-VIRAL assemblage + US-8 BDD + ghost-test fix** — `ViralCampaignAssembler` (joint storyboard → variants → hooks N1 → copy GBL-006 → `CampaignBundle`). BDD `cucumberTestViral` (7 scénarios). Découverte ghost-tests (22 runners opt-in jamais invoqués) → `cucumberTestViral` câblé. 3 bugs attrapés par la CI. | 9/10
+| 141 | 2026-10-09 | feat+test+ci | **CAP-VIRAL assemblage + US-8 BDD + ghost-test fix** — `ViralCampaignAssembler` + BDD `cucumberTestViral` (7 scénarios). Découverte ghost-tests (22 runners opt-in jamais invoqués) → câblés. | 9/10
 
-| 140 | 2026-10-09 | feat | **CAP-VIRAL 8 US** — domaine `capsule.viral` complet en briques pures : US-4 hooks/CTA ancrés N1, US-2 vertical 9:16, US-6 batch multi-plateforme, US-9 lecture copy GBL-006, US-10 `CampaignBundle`, US-11 thumbnail, US-12 sous-titres karaoké, US-13 storyboard validable. US-5 absorbée US-9. CI verte à chaque US. | 9/10
+| 140 | 2026-10-09 | feat | **CAP-VIRAL 8 US** — domaine `capsule.viral` complet en briques pures. | 9/10
 
-| 139 | 2026-10-09 | feat+fix | **CAP-VIRAL US-1 + US-3 + CI ressuscitée** — US-1 : fallback creds nmcp débloque la CI morte en configuration. **CI capsule RESSUSCITÉE** (`Test` unit 3m1s + `Full Tests` test+functional 5m59s VERTS). Dette latente révélée : 5 tests unit ffmpeg + 1 functional espeak gatés (`assumeTrue`), isolation fast/full (pattern codebase). US-3 : domaine `capsule.viral` (15e) `ViralConfig`+`ViralPlatform`+merger 4 sources+DSL. Dette S-140 : 14 scénarios cucumberTest échouent. | 8/10
+| 139 | 2026-10-09 | feat+fix | **CAP-VIRAL US-1 + US-3 + CI ressuscitée** — fallback creds nmcp. Dette latente : 5 tests ffmpeg + 1 functional espeak gatés. | 8/10
 
-| 138 | 2026-10-09 | cadrage | **CAP-VIRAL US-0** — cadrage capsule comme moteur de campagnes virales YouTube/TikTok (talaria + cccp.education). Audit : 4,5/5 capsules pédagogiques, 2/5 viral. Gap : vertical 9:16 crop destructif, pas de format court/hooks/batch plateforme, CI rouge. **Chaîne à deux étages : socle FFmpeg (déterministe, Playwright temps réel écarté) + enrichissement Remotion + Manim (mouvement/schémas animés)**. **Chaîne marketing** : amont `capsule.copy` (US-9) + aval `CampaignBundle` (US-10) ; split-brain tranché ; **hooks/CTA ancrés contexte augmenté N1** (RAG/Graphify/Docs/EAGER + provenance) ; **storyboard validable** (US-13, document→vidéo). 11 décisions + **14 US ~53 pts**, domaine `capsule.viral` additif. Prérequis US-1 = CI verte. Zéro code. | 8/10
+| 138 | 2026-10-09 | cadrage | **CAP-VIRAL US-0** — cadrage capsule comme moteur de campagnes virales. Socle FFmpeg + Remotion/Manim. 14 US ~53 pts. | 8/10
 
-| 137 | 2026-09-17 | feat+dogfood+pub | **BKY-LANG-22-9/10** — dogfooding capsule 22 langues + publication Central 0.0.1. Fix P0 `CapsuleVideoPlanner.resolveScript` (suffixe `-deck`). 22/22 vidéos. | 9/10
+| 137 | 2026-09-17 | feat+dogfood+pub | **BKY-LANG-22-9/10** — dogfooding capsule 22 langues + publication Central 0.0.1. | 9/10
 
-| 136 | 2026-09-10 | build/deps | **TODO REVERT** — dépin `codebase-gradle-plugin` 0.0.10 → 0.0.14 (aligné lib codebase N1). Correctif amont `fb19b7c` (Provider<OcrEngine> supprimé) vérifié. Commentaire workaround périmé retiré. Check VERT 15m49s, baseline exacte 1166 unit + 75 functional + 21 cucumber 0 FAIL. | 9/10
-
-| 135 | 2026-09-08 | refactor+tests | **RENAME-4 étendu pilote** — neutralisation vocabulaire métier formation : FPA (9 test) + AFNOR/REAC/SPD/SPG (5 prod + 11 test). Breaking change prod : `CapsuleScenarioLoader` `type == "content"` (ex-"SPD"). Gate : grep 5 termes = 0, check 13m54s, 1166 unit 0 FAIL + 75 functional. | 9/10
-
-| 134 | 2026-09-07 | governance | **Sync gouvernance post-S-133** — BACKLOG titre 'ACTIF' corrigé (VIDE, DORMANT), TODO.adoc dégelé S-124→S-134. Zéro code. | 9/10
+| 136 | 2026-09-10 | build/deps | **TODO REVERT** — dépin `codebase-gradle-plugin` 0.0.10 → 0.0.14. Check VERT. | 9/10
 |===
 
 _Sessions 000-117 archivées_ : rapports dans `.agents/sessions/`, résumé dans `SESSIONS_HISTORY.adoc` + `.agents/archives/CONTEXT_ARCHIVE_2026-08-rot1.adoc`.
@@ -60,6 +60,7 @@ _Sessions 000-117 archivées_ : rapports dans `.agents/sessions/`, résumé dans
 
 | **CAP-VIRAL** | **Moteur de campagnes virales YouTube/TikTok** — domaine `capsule.viral` : rendu vertical 9:16, format court 15-60 s, hooks/CTA **ancrés contexte N1**, **storyboard validable** (porte éditoriale), chaîne marketing (amont `capsule.copy` / aval `CampaignBundle`), thumbnail, sous-titres karaoké, batch multi-plateforme, **assemblage bout-en-bout** (`ViralCampaignAssembler`), **socle FFmpeg** (`ViralCaptureStrategy` — Playwright temps réel écarté), **câblage tâche `generateViralCampaign`**. 14 US ~53 pts. Cadrage `.agents/sessions/138-cap-viral-cadrage.adoc`. | ✅ TERMINÉ (S-142) — 14/14 US (wiring + US-7 livrés) | P0
 | CAP-SHORT | **Livraison end-to-end du format court** (YouTube Shorts / TikTok / Reels) — le domaine `capsule.viral` (CAP-VIRAL) est complet, mais le **rendu n'est pas câblé** : `generateViralCampaign` n'écrit que storyboard + `viral-campaign.json` et **référence** les vidéos par chemin sans les produire. Ferme le trou domaine→livrable (MP4 1080×1920 par `ViralVariant`), impose la durée 15-60 s au montage, batch réel langue×plateforme, dogfooding. 5 US ~17 pts. Cadré S-143 (`BACKLOG.adoc` § CAP-SHORT). | 🟡 CADRÉ (S-143) | P0 |
+| CAP-CONTEXT | **Contexte du storyboard** — identité visuelle (design system) + QQOQCP + fil conducteur narratif portés dans le domaine `capsule.viral` (`Qqoqcp`/`VisualIdentity`/`NarrativeThread` + champs additifs, builder/parser 3 sections, gate de cohérence). Squelette : `.agents/CAPSULE_VIDEO.adoc`. 4 US ~10 pts, **US-1/2/3 ✅ S-145**, reste US-4 (`Capsule.jsx` tokens). | 🟡 EN COURS (S-145) — 3/4 US | P1 |
 | CAP-PODCAST | Extraction audio-only — `PodcastConcatenator` FFmpeg concat MP3 slides, tâche `generateCapsulePodcast`. Domaine `capsule.podcast` 13ème. 3 US ~4 pts | ✅ TERMINÉ (S-127) | P2
 | CAP-PREVIEW | Mode dry-run — `capture.previewOnly` 4 sources, screenshot path s'arrête après PNG. 3 US ~4 pts | ✅ TERMINÉ (S-128) | P2
 | CAP-CHAPITRE | Intro/outro + chapter markers — `CardRenderer` PNG, `ChapterMarkers` Matroska tags. 5 US ~10 pts | ✅ TERMINÉ (S-129) | P2
@@ -115,8 +116,10 @@ _Details EPICs terminés_ : rapports dans `.agents/sessions/`, détails archivé
 | `.agents/CAPSULE_VIDEO.adoc` | **Littérature agentique** — squelette de storyboard guidé par le contexte (design system + QQOQCP + fil conducteur) | EAGER
 |===
 
-_Total_ : 30 EPICs terminés + **CAP-VIRAL ✅ TERMINÉ (S-142, 14/14 US)**. _Baseline courante_ (S-136, exacte) :
-1166 unit VERT, 75 functional VERT, 21 cucumber dédiés GREEN.
+_Total_ : 30 EPICs terminés + **CAP-VIRAL ✅ TERMINÉ (S-142, 14/14 US)** + **CAP-CONTEXT 🟡 3/4 US (S-145)**. _Baseline courante_ (S-136, exacte) :
+1166 unit VERT, 75 functional VERT, 21 cucumber dédiés GREEN. **S-145** ajoute le
+**22e** runner dédié (`cucumberTestStoryboardContext`) câblé `full-tests.yml`
+(preuve = CI du push).
 
 _Décision architecture_ : Docker FFmpeg reporté MVP1 (fausse bonne idée
 pour MVP0 — gain fonctionnel nul, complexité ajoutée). FFmpeg reste local

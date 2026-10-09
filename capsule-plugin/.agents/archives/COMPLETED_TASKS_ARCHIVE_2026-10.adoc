@@ -1,6 +1,25 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-09
 
+== Session 145 — CAP-CONTEXT : port du squelette de contexte dans le domaine (3/4 US) ✅
+
+* **US-1** — types purs `Qqoqcp` (6 réponses), `VisualIdentity`
+  (brand/format/tokens/typo/logo/fond), `NarrativeThread`
+  (thèse/motif/arc/registre/voix) + champs additifs `ViralStoryboard`
+  (`qqoqcp`/`visualIdentity`/`narrativeThread` = `null`, backward compat) +
+  `StoryboardBeat.enteringTransition` = `""`.
+* **US-2** — `ViralStoryboardBuilder`/`Parser` rendent/parsent les 3 sections
+  AsciiDoc + `Transition:` par beat ; extraction de section niveau-2 aware ;
+  round-trip étendu (contexte complet et partiel), dégradé → `null`.
+* **US-3** — gate de cohérence (tout-ou-rien des 3 axes + transition par
+  séquence), **actif seulement si contexte porté** (rétro-compat exacte).
+* **Layers** : 3 fichiers unit + 1 functional (`generateViralCampaign` conserve
+  le contexte) + BDD `capsule_storyboard_context.feature` `@storyboard-context`
+  (4 scénarios) + 22e runner `cucumberTestStoryboardContext` câblé
+  `full-tests.yml` (anti ghost-test). Local = Build, Tests = CI.
+* Reste US-4 (`Capsule.jsx` tokens brand book). Zéro publication, zéro secret.
+* Rapport : `.agents/sessions/145-cap-context-domain-port.adoc`.
+
 == Session 144 — CAPSULE_VIDEO : littérature agentique + squelette de storyboard ✅
 
 * **Revue de code** du domaine `capsule.viral` — le storyboard est validé en

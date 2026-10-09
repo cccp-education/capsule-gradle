@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-09 (S-144) — CAPSULE_VIDEO (littérature agentique) + S-143 (CI/dette/cadrage). Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-09 (S-145) — CAP-CONTEXT (contexte du storyboard dans le domaine). Rapports détaillés dans `.agents/sessions/`.
 
-== 24 dernières sessions (121-144)
+== 24 dernières sessions (122-145)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 145 | 2026-10-09 | feat+test | **CAP-CONTEXT US-1/2/3 (3/4)** — contexte du storyboard porté dans le domaine `capsule.viral`. **US-1** : `Qqoqcp` (Qui/Quoi/Où/Quand/Comment/Pourquoi), `VisualIdentity` (brand/format/tokens/typo/logo/fond), `NarrativeThread` (thèse/motif/arc/registre/voix) + champs additifs `ViralStoryboard` (`qqoqcp`/`visualIdentity`/`narrativeThread`, backward compat) + `StoryboardBeat.enteringTransition`. **US-2** : builder/parser 3 sections AsciiDoc + round-trip étendu (extraction niveau-2 aware). **US-3** : gate de cohérence (tout-ou-rien des 3 axes + transition par séquence, actif seulement si contexte). Layered : 3 fichiers unit + 1 functional (tâche réelle conserve le contexte) + BDD `capsule_storyboard_context.feature` `@storyboard-context` (4 scénarios) + 22e runner `cucumberTestStoryboardContext` câblé `full-tests.yml`. Local = Build, Tests = CI. Rapport `.agents/sessions/145-cap-context-domain-port.adoc`. | 9/10
 
 | 144 | 2026-10-09 | gouvernance + revue de code | **`CAPSULE_VIDEO.adoc` (littérature agentique)** — revue de code + cadrage du storyboard `capsule.viral`. Constat : le storyboard est validé en **forme** (hook/CTA/durée) mais ne porte **aucun contexte**. Livrable : **squelette** AsciiDoc guidé par 3 axes (design system + QQOQCP + fil conducteur narratif) + sections Séquences/Gate. 7 décisions, ancrage `BRAND.adoc` (talaria) + `CAPSULE_PEDAGOGIQUE.adoc` (recette 3C). Suite : portage domaine (candidat EPIC CAP-CONTEXT). Zéro code. | 9/10
 

@@ -87,6 +87,7 @@ jobs:
           cucumberTestChapters
           cucumberTestRemotionAnim
           cucumberTestPr2Coverage
+          cucumberTestStoryboardContext
           -PrunCucumber
         working-directory: capsule-plugin
         env:

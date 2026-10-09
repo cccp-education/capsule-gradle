@@ -15,6 +15,9 @@ import capsule.feed.SlideType
  * @property type           rendering strategy for the beat.
  * @property manimScene     Manim scene name when [type] is [SlideType.MANIM].
  * @property asset          expected asset (image/overlay), blank when none.
+ * @property enteringTransition incoming transition from the previous beat
+ *           (CAP-CONTEXT US-1, `— (ouverture)` for the first beat), blank when
+ *           unspecified — backward compatible with the CAP-VIRAL model.
  */
 data class StoryboardBeat(
     val role: String,
@@ -23,6 +26,7 @@ data class StoryboardBeat(
     val type: SlideType = SlideType.HTML,
     val manimScene: String? = null,
     val asset: String = "",
+    val enteringTransition: String = "",
 ) {
     init {
         require(role.isNotBlank()) { "StoryboardBeat.role must not be blank" }
@@ -59,6 +63,9 @@ data class StoryboardBeat(
  * @property platform              target platform preset.
  * @property language              target ISO language code.
  * @property targetDurationSeconds target short-form duration, in [15, 60].
+ * @property qqoqcp                the QQOQCP context (CAP-CONTEXT, optional).
+ * @property visualIdentity        the visual identity / design system (CAP-CONTEXT, optional).
+ * @property narrativeThread       the narrative thread (CAP-CONTEXT, optional).
  */
 data class ViralStoryboard(
     val message: String,
@@ -67,6 +74,9 @@ data class ViralStoryboard(
     val platform: ViralPlatform,
     val language: String,
     val targetDurationSeconds: Int,
+    val qqoqcp: Qqoqcp? = null,
+    val visualIdentity: VisualIdentity? = null,
+    val narrativeThread: NarrativeThread? = null,
 ) {
     init {
         require(message.isNotBlank()) { "ViralStoryboard.message must not be blank" }

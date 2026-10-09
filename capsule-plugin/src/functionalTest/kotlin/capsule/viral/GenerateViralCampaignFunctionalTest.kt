@@ -79,6 +79,67 @@ class GenerateViralCampaignFunctionalTest {
         """.trimIndent())
     }
 
+    private fun writeContextualStoryboard() {
+        projectDir.resolve("storyboard.adoc").writeText("""
+            = Storyboard — Créer son site perso avec bakery + opencode
+            :platform: TIKTOK
+            :language: fr
+            :target-duration: 20
+
+            == Angle
+
+            L'agent écrit, Gradle bake
+
+            == QQOQCP
+
+            Qui (public): Développeur solo
+            Quoi (sujet): Créer un site perso
+            Où (contexte): Dépôt local via bakery + opencode
+            Quand (moment): Au démarrage d'un projet
+            Comment (modalité): Scaffold → rédaction → bake → publish
+            Pourquoi (but): Mettre un site perso en ligne
+
+            == Identité visuelle (design system)
+
+            Brand: cheroliv.com
+            Format: 9:16 (1080x1920)
+            Typography: Inter
+            Token: --accent-color = #0d6efd
+
+            == Fil conducteur narratif
+
+            Thesis: Un site perso, ça se génère
+            Recurring motif: le terminal qui produit le site
+            Arc: accroche → démonstration → résolution → CTA
+
+            == Beats
+
+            === Beat 1 — hook
+
+            Intent: Un site perso, sans HTML
+
+            Duration: 3.0s
+            Render: HTML
+            Transition: — (ouverture)
+
+            === Beat 2 — development
+
+            Intent: Scaffold bakery
+
+            Duration: 10.0s
+            Render: HTML
+            Transition: cut
+
+            === Beat 3 — cta
+
+            Intent: bakery-gradle + opencode
+
+            Duration: 7.0s
+            Render: HTML
+            Transition: fade
+        """.trimIndent())
+    }
+
     @Test
     fun `generateViralCampaign task is registered in the generate group`() {
         setupBuild()
@@ -142,6 +203,34 @@ class GenerateViralCampaignFunctionalTest {
         assertTrue(storyboard.exists(), "Expected storyboard output document")
         assertTrue(storyboard.readText().contains("=== Beat 1 — hook"), "Expected beats in storyboard doc")
         assertTrue(result.output.contains("CAPSULE VIRAL"), "Expected summary log, got: ${result.output}")
+    }
+
+    @Test
+    fun `enabled with a contextualised storyboard keeps the context in the output document`() {
+        setupBuild()
+        writeContextualStoryboard()
+        val result = GradleRunner.create()
+            .forwardOutput()
+            .withPluginClasspath()
+            .withArguments(
+                "generateViralCampaign",
+                "-Pcapsule.viral.enabled=true",
+                "-Pcapsule.viral.storyboardFile=storyboard.adoc",
+                "-Pcapsule.viral.hook=Un site perso, sans écrire de HTML",
+                "-Pcapsule.viral.cta=bakery-gradle + opencode, OSS",
+            )
+            .withProjectDir(projectDir)
+            .build()
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":generateViralCampaign")?.outcome)
+
+        val storyboard = projectDir.resolve("build/capsule/viral/storyboard.adoc")
+        assertTrue(storyboard.exists(), "Expected storyboard output document")
+        val out = storyboard.readText()
+        assertTrue(out.contains("== QQOQCP"), "Expected QQOQCP section, got: $out")
+        assertTrue(out.contains("== Identité visuelle (design system)"), "Expected visual identity section")
+        assertTrue(out.contains("== Fil conducteur narratif"), "Expected narrative thread section")
+        assertTrue(out.contains("Token: --accent-color = #0d6efd"), "Expected the design token")
     }
 
     @Test

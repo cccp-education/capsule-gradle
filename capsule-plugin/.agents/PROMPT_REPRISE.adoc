@@ -1,49 +1,63 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 145
+:session: 146
 :borough: Détroit
-:session_precedente: 144 — CAPSULE_VIDEO (littérature agentique) : squelette de storyboard guidé par le contexte
+:session_precedente: 145 — CAP-CONTEXT US-1/2/3 : contexte du storyboard dans le domaine
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-144 — `CAPSULE_VIDEO.adoc` (littérature agentique)
+=== S-145 — CAP-CONTEXT US-1/2/3 (domaine)
 
-- **Revue de code + cadrage** du storyboard `capsule.viral` → constat : le
-  storyboard est validé en **forme** (hook/CTA/durée) mais ne porte **aucun
-  contexte** (identité visuelle, QQOQCP, fil conducteur).
-- **Livrable** : `.agents/CAPSULE_VIDEO.adoc` — squelette AsciiDoc à 3 axes de
-  contexte (design system + QQOQCP + fil conducteur) + sections `Séquences` et
-  `Gate`. Ancré sur `BRAND.adoc` (talaria) et `CAPSULE_PEDAGOGIQUE.adoc` (recette 3C).
-- Rapport : `.agents/sessions/144-capsule-video-litterature-storyboard.adoc`
-- Suite : portage domaine (champs additifs `ViralStoryboard`, builder/parser,
-  gate de cohérence, `Capsule.jsx` sur tokens) — candidat EPIC **CAP-CONTEXT**.
+- **US-1** : types purs `Qqoqcp` (Qui/Quoi/Où/Quand/Comment/Pourquoi),
+  `VisualIdentity` (brand/format/tokens/typo/logo/fond), `NarrativeThread`
+  (thèse/motif/arc/registre/voix) + champs additifs `ViralStoryboard`
+  (`qqoqcp`/`visualIdentity`/`narrativeThread`, `null` par défaut) +
+  `StoryboardBeat.enteringTransition` (`""` par défaut). Backward compat.
+- **US-2** : `ViralStoryboardBuilder`/`Parser` rendent/parsent les 3 sections
+  (`== QQOQCP`, `== Identité visuelle (design system)`, `== Fil conducteur
+  narratif`) + `Transition:` par beat. Round-trip étendu. Extraction de section
+  **niveau-2 aware**.
+- **US-3** : `ViralStoryboardValidator` — règles de cohérence **actives seulement
+  si contexte porté** (tout-ou-rien 3 axes + transition par séquence).
+- Layered : 3 unit + 1 functional + BDD `@storyboard-context` (4 scénarios,
+  22e runner `cucumberTestStoryboardContext` câblé `full-tests.yml`).
+- Rapport : `.agents/sessions/145-cap-context-domain-port.adoc`.
 
-=== S-143 (deux sessions concurrentes)
+=== S-144 (contexte)
 
-- **143 bis** — CI S-142 corrigée (2 bugs CI) + dette `cucumberTest` résolue
-  (scoping au runner agrégé). Preuve CI `37967978808`.
-- **143** — CAP-SHORT cadré (rendu short end-to-end, 5 US ~17 pts).
+- `.agents/CAPSULE_VIDEO.adoc` = littérature agentique (squelette 3 axes).
+  Le storyboard CAP-VIRAL validait la **forme**, pas le **contexte**.
 
-== Mission Session 145 — priorités
+== Mission Session 146 — priorités
 
-1. **CAP-CONTEXT (nouveau, issu S-144)** — porter le squelette `CAPSULE_VIDEO.adoc`
-   dans le domaine : `ViralStoryboard` champs additifs (`qqoqcp`/`visualIdentity`/
-   `narrativeThread`), `ViralStoryboardBuilder`/`Parser` étendus (round-trip),
-   gate de cohérence, `Capsule.jsx` sur tokens du brand book. Baby-step DDD/TDD/BDD.
-2. **CAP-SHORT US-0/1 (P0)** — rendu réel par variante (MP4 1080×1920).
-3. **Optimisation CI** (optionnel) + **dogfooding viral réel** (accord pilote).
+1. **CAP-SHORT US-0/1 (P0)** — rendu réel **par variante** (MP4 1080×1920
+   réellement écrit dans `renderedVideoDir/<variant.id>.mp4`). Le domaine viral
+   est complet mais `generateViralCampaign` **référence** les vidéos par chemin
+   sans les produire. Socle **FFmpeg** (PNG par slide → concat demuxer),
+   Playwright temps réel **écarté**.
+2. **CAP-CONTEXT US-4** — `Capsule.jsx` lit les tokens du brand book
+   (`BRAND.adoc`) au lieu du `PAGE_BACKGROUND` hardcodé (tier Remotion).
+3. **Optimisation CI** (optionnel) — `Full Tests` ~30 min (22 runners
+   pure-domain).
+4. **Dogfooding viral réel** — accord pilote (run LLM metered).
 
 == Points d'attention
 
-* **Local = Build, Tests = CI**. Diagnostic des suites non câblées au push =
-  workflow manuel `cucumber-full.yml`.
-* **Viral = socle FFmpeg** (`ViralCaptureStrategy` force `SCREENSHOT`).
+* **Local = Build, Tests = CI** : aucun `test`/`check`/`cucumberTest` en local ;
+  `compileKotlin`/`compileTestKotlin`/`compileFunctionalTestKotlin` seulement. Le
+  vert de la CI (GitHub Actions) est la preuve. Diagnostic par artefacts CI.
+* **Rendu = socle FFmpeg** prioritaire (`ViralCaptureStrategy` force
+  `SCREENSHOT`) ; Remotion/Manim = enrichissement ; Playwright temps réel écarté.
+* Tout nouveau feature cucumber = **runner dédié** (S-082) + steps **préfixés**
+  (S-088) + câblage explicite dans `full-tests.yml` (anti ghost-test, leçon
+  Queens S-269).
 * **Sessions concurrentes** : `git status` à l'ouverture (drift gouvernance).
-* Baby-step DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
+* Baby-step DDD/TDD/BDD (unit → functional → cucumber), RED → GREEN → REFACTOR.
 * English only : code, Gherkin, commentaires.
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.1
 * `.agents/CAPSULE_VIDEO.adoc` = littérature agentique du storyboard (EAGER).
-* CAP-VIRAL **TERMINÉ 14/14 US** (S-142) ; CAP-SHORT **CADRÉ** (S-143).
+* CAP-VIRAL **TERMINÉ 14/14 US** (S-142) ; CAP-CONTEXT **3/4 US** (S-145) ;
+  CAP-SHORT **CADRÉ** (S-143).

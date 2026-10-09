@@ -258,6 +258,18 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleViralCucumberRunner",
             timeoutMinutes = 10,
         ),
+        // CAP-CONTEXT US-2/US-3 — storyboard context (QQOQCP, visual identity,
+        // narrative thread) rendering + round-trip + coherence gate. Dedicated
+        // runner pattern S-082; steps prefixed "contextual storyboard"/"contextual
+        // verdict" (bug S-088 glue capsule.scenarios shared). Pure domain, no
+        // ffmpeg/node/Playwright (the FFmpeg socle is untouched by the context).
+        CucumberTaskSpec(
+            name = "cucumberTestStoryboardContext",
+            features = listOf("src/test/features/capsule_storyboard_context.feature"),
+            tags = listOf("@storyboard-context"),
+            runnerClass = "capsule.scenarios.CapsuleStoryboardContextCucumberRunner",
+            timeoutMinutes = 10,
+        ),
     )
 }
 

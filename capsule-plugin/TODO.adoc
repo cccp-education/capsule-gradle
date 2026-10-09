@@ -40,11 +40,13 @@
 . [ ] **US-5** — BDD + CI (rendu par variante couvert).
 
 '''
-== 🟡 CAP-CONTEXT — contexte du storyboard (CANDIDAT, issu S-144)
+== 🟡 CAP-CONTEXT — contexte du storyboard (S-145, 3/4 US)
 
-. [ ] **Portage du squelette `CAPSULE_VIDEO.adoc`** — champs additifs `ViralStoryboard`
-  (`qqoqcp`/`visualIdentity`/`narrativeThread`), builder/parser étendus, gate de
-  cohérence, `Capsule.jsx` sur tokens du brand book. Candidat EPIC (rattachable CAP-SHORT).
+. [x] **US-0** ✅ S-144 — cadrage (squelette documentaire 3 axes, `CAPSULE_VIDEO.adoc`).
+. [x] **US-1** ✅ S-145 — `Qqoqcp` + `VisualIdentity` + `NarrativeThread` + champs additifs `ViralStoryboard` + `StoryboardBeat.enteringTransition`.
+. [x] **US-2** ✅ S-145 — builder/parser 3 sections (`== QQOQCP`, `== Identité visuelle`, `== Fil conducteur`) + round-trip étendu.
+. [x] **US-3** ✅ S-145 — gate de cohérence (tout-ou-rien + transition par séquence).
+. [ ] **US-4** — `Capsule.jsx` sur tokens du brand book (`BRAND.adoc`) au lieu du `PAGE_BACKGROUND` hardcodé (tier Remotion).
 
 '''
 == 🟡 RESTE (S-144+)

@@ -1,7 +1,28 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-09
-:session: 142 CAP-VIRAL câblage `generateViralCampaign` + socle FFmpeg + US-7 + ghost-tests
+:session: 145 CAP-CONTEXT — contexte du storyboard dans le domaine
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 9 octobre 2026 (après session 145)
+
+.Modifications session 145 — CAP-CONTEXT (contexte du storyboard)
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/viral/Qqoqcp.kt` (nouveau) | 6 réponses (audience/subject/context/moment/modality/purpose), invariants non-vides. | +3 `ViralStoryboardContextTest`
+| `capsule/viral/VisualIdentity.kt` (nouveau) | brand/format/tokens/typo/logo/fond, invariants (brand/format non vides, tokens non vide). | +2 `ViralStoryboardContextTest`
+| `capsule/viral/NarrativeThread.kt` (nouveau) | thesis/recurringMotif/arc/register/voice, invariants. | +2 `ViralStoryboardContextTest`
+| `capsule/viral/ViralStoryboard.kt` (modifié) | 3 champs additifs `qqoqcp`/`visualIdentity`/`narrativeThread` (null) + `StoryboardBeat.enteringTransition` (`""`). | +3 (additif, backward compat, transition)
+| `capsule/viral/ViralStoryboardBuilder.kt` (modifié) | Sections `== QQOQCP`, `== Identité visuelle (design system)`, `== Fil conducteur narratif` + `Transition:` par beat (omises si absentes). | +5 `ViralStoryboardContextRoundTripTest`
+| `capsule/viral/ViralStoryboardParser.kt` (modifié) | Extraction de section niveau-2 aware + parseurs tolérants des 3 sections + transition. | +3 `ViralStoryboardContextRoundTripTest`
+| `capsule/viral/ViralStoryboardValidator.kt` (modifié) | Règles de cohérence (tout-ou-rien 3 axes + transition par séquence), actives seulement si contexte. | +4 `ViralStoryboardCoherenceTest`
+| `GenerateViralCampaignFunctionalTest.kt` (modifié) | Storyboard contextualisé traversé par la tâche réelle, contexte conservé en sortie. | +1 functional
+| `capsule_storyboard_context.feature` + `CapsuleStoryboardContextSteps.kt` (nouveaux) | 4 scénarios `@storyboard-context` (round-trip, back-compat, partial, transition). | +4 scénarios (22e runner `cucumberTestStoryboardContext`)
+|===
+
+*Totaux S-145* : ~+20 unit net, +1 functional, +4 scénarios BDD. Gates locaux
+(Local = Build) : `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin`
+VERT ; tâche Cucumber enregistrée (`gradlew tasks`). Les suites s'exécutent en
+CI (`Test` + `Full Tests`), preuve = run du push.
 
 == Couverture — 9 octobre 2026 (après session 142)
 

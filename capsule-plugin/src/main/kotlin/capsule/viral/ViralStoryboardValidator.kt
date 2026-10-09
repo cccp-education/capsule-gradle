@@ -36,6 +36,15 @@ sealed class StoryboardValidationResult {
  *  3. the summed beat duration is within ±20 % of the target duration;
  *  4. no beat exceeds 10 s (short-form attention).
  *
+ * CAP-CONTEXT US-3 adds the **context coherence** rules of the `CAPSULE_VIDEO`
+ * Gate ("fil conducteur : arc complet + transition par séquence"). They apply
+ * **only when the storyboard carries context** — a context-less storyboard keeps
+ * the exact CAP-VIRAL verdict (backward compat):
+ *  5. the three context axes are all-or-none (a partially contextualised
+ *     storyboard is incoherent);
+ *  6. when a [NarrativeThread] is carried, each beat after the first declares an
+ *     entering transition (the narrative continuity contract).
+ *
  * Pure — no Gradle, no I/O.
  */
 object ViralStoryboardValidator {
@@ -76,6 +85,34 @@ object ViralStoryboardValidator {
             }
         }
 
+        reasons += coherenceReasons(storyboard)
+
         return if (reasons.isEmpty()) StoryboardValidationResult.Valid else StoryboardValidationResult.Invalid(reasons)
     }
+
+    /**
+     * CAP-CONTEXT US-3 coherence reasons. Empty when the storyboard carries no
+     * context (backward compat — the CAP-VIRAL verdict is preserved).
+     */
+    private fun coherenceReasons(storyboard: ViralStoryboard): List<String> {
+        val reasons = mutableListOf<String>()
+
+        val presentAxes = listOfNotNull(storyboard.qqoqcp, storyboard.visualIdentity, storyboard.narrativeThread)
+        if (presentAxes.isNotEmpty() && presentAxes.size < CONTEXT_AXIS_COUNT) {
+            reasons += "storyboard context is partial: QQOQCP, visual identity and narrative thread must be provided together"
+        }
+
+        if (storyboard.narrativeThread != null) {
+            storyboard.beats.drop(1).forEachIndexed { index, beat ->
+                if (beat.enteringTransition.isBlank()) {
+                    reasons += "beat ${index + 2} ('${beat.role}') has no entering transition (narrative thread continuity)"
+                }
+            }
+        }
+
+        return reasons
+    }
+
+    /** Number of context axes of `CAPSULE_VIDEO.adoc` (QQOQCP, identity, thread). */
+    private const val CONTEXT_AXIS_COUNT = 3
 }

@@ -1,0 +1,124 @@
+= Session 145 — CAP-CONTEXT : port du squelette de contexte dans le domaine
+:session: 145
+:date: 2026-10-09
+:type: feat + test (baby-step DDD/TDD/BDD)
+:epic: CAP-CONTEXT (issu S-144)
+:methode: Local = Build, Tests = CI (aucun test/check local — GitHub Actions)
+
+== Contexte
+
+Priorité 1 du `PROMPT_REPRISE` S-145 : porter le squelette documentaire de
+`.agents/CAPSULE_VIDEO.adoc` (S-144) dans le domaine `capsule.viral`. Le constat
+de la revue S-144 : le storyboard CAP-VIRAL valide la **forme** (hook/CTA/durée)
+mais ne porte **aucun contexte** — ni identité visuelle (design system), ni
+QQOQCP, ni fil conducteur narratif.
+
+== Livrable — CAP-CONTEXT US-1→US-3
+
+=== US-1 — types de contexte + câblage additif
+
+Trois types purs créés (domaine `capsule.viral`, aucune I/O) :
+
+* `Qqoqcp` — six réponses (Qui/Quoi/Où/Quand/Comment/Pourquoi) mappées sur des
+  identifiants non-réservés Kotlin : `audience`/`subject`/`context`/`moment`/
+  `modality`/`purpose`. Invariants fail-fast : aucune réponse vide.
+* `VisualIdentity` — `brand`, `format`, `tokens: Map<String,String>`,
+  `typography`, `logo`, `background`. Invariants : brand/format non vides,
+  tokens non vide, clés non vides.
+* `NarrativeThread` — `thesis`, `recurringMotif`, `arc`, `register`, `voice`.
+  Invariants : thesis/motif/arc non vides.
+
+Câblage **additif et backward-compatible** :
+
+* `ViralStoryboard` — 3 champs optionnels `qqoqcp` / `visualIdentity` /
+  `narrativeThread` (défaut `null`).
+* `StoryboardBeat` — champ additif `enteringTransition: String = ""` (colonne
+  « transition entrante » du squelette).
+
+=== US-2 — builder + parser (round-trip étendu)
+
+`ViralStoryboardBuilder` rend les 3 sections quand elles sont portées (économie
+d'encre : un storyboard sans contexte produit le document CAP-VIRAL **inchangé**) :
+
+* `== QQOQCP` — 6 lignes `Qui (public): …` … `Pourquoi (but): …`.
+* `== Identité visuelle (design system)` — `Brand:`/`Format:`/`Typography:`/
+  `Logo:`/`Background:` + `Token: <nom> = <valeur>` par token.
+* `== Fil conducteur narratif` — `Thesis:`/`Recurring motif:`/`Arc:`/`Register:`/
+  `Voice:`.
+* Ligne `Transition: <val>` par beat quand non vide.
+
+`ViralStoryboardParser` : extraction de section **niveau-2 aware** (le corps
+d'`== Angle` s'arrête au prochain `== `, les en-têtes `=== Beat` ne terminent
+pas un corps) + parseurs tolérants des 3 sections (dégradé → `null`, jamais
+d'exception). Round-trip `parse(build(sb)) == sb` étendu au contexte complet et
+partiel.
+
+=== US-3 — gate de cohérence
+
+`ViralStoryboardValidator.validate` étendu de règles de cohérence **actives
+seulement si le storyboard porte du contexte** (rétro-compat : un storyboard sans
+contexte garde le verdict CAP-VIRAL exact) :
+
+* **tout-ou-rien** : les 3 axes de contexte vont ensemble (un contexte partiel
+  est incohérent) ;
+* **transition par séquence** : quand un `NarrativeThread` est porté, chaque beat
+  après le premier déclare une transition entrante (contrat de continuité).
+
+== Preuves (layers de test)
+
+* **Unit** (3 fichiers, ~20 tests) : `ViralStoryboardContextTest` (invariants +
+  câblage additif), `ViralStoryboardContextRoundTripTest` (builder/parser),
+  `ViralStoryboardCoherenceTest` (gate).
+* **Functional** : `GenerateViralCampaignFunctionalTest` +1 — un storyboard
+  contextualisé traversé par la tâche réelle `generateViralCampaign` conserve
+  `== QQOQCP` / `== Identité visuelle` / `== Fil conducteur` / `Token:` dans le
+  document de sortie.
+* **Cucumber** : `capsule_storyboard_context.feature` 4 scénarios
+  `@storyboard-context` + runner dédié `CapsuleStoryboardContextCucumberRunner`
+  (pattern S-082) + steps préfixés « contextual storyboard » (bug S-088) +
+  `CucumberTaskSpec("cucumberTestStoryboardContext")` **22e runner** câblé dans
+  `full-tests.yml` (anti ghost-test — leçon Queens S-269 / S-141/S-142).
+
+== Méthode
+
+Baby-step DDD/TDD : RED prouvé par la compilation (`Unresolved reference`
+`Qqoqcp`/`VisualIdentity`/`NarrativeThread`, puis paramètres absents) → GREEN
+(compilation locale) → REFACTOR. **Aucun test/check local** (règle EAGER
+Local = Build, Tests = CI) : `compileKotlin` + `compileTestKotlin` +
+`compileFunctionalTestKotlin` VERTS, tâche Cucumber enregistrée
+(`gradlew tasks`), preuve = CI du push.
+
+== Ancrages
+
+* `.agents/CAPSULE_VIDEO.adoc` (EAGER) — squelette de storyboard à 3 axes.
+* `ViralCaptureStrategy` (CAP-VIRAL US-2) — rappel pilote : le rendu viral
+  privilégie le **socle FFmpeg** (PNG par slide → concat demuxer), Playwright
+  temps réel écarté. CAP-CONTEXT est pur domaine, il ne touche pas au rendu.
+
+== Décisions
+
+* Contexte **optionnel** (backward compat) mais gate **tout-ou-rien** quand il
+  est amorcé : le squelette déclare les 3 sections obligatoires, la règle
+  n'active pas de contrainte sur un storyboard CAP-VIRAL non contextualisé.
+* Encodage AsciiDoc **déterministe** (lignes labellisées, pas de table) pour un
+  round-trip machine robuste, cohérent avec le style `=== Beat` existant.
+* US-4 (`Capsule.jsx` sur tokens du brand book) **différée** : tier
+  enrichissement Remotion, hors socle FFmpeg, à cadrer séparément.
+
+== Fichiers
+
+* Créés (9) : `Qqoqcp.kt`, `VisualIdentity.kt`, `NarrativeThread.kt`,
+  `ViralStoryboardContextTest.kt`, `ViralStoryboardContextRoundTripTest.kt`,
+  `ViralStoryboardCoherenceTest.kt`, `capsule_storyboard_context.feature`,
+  `CapsuleStoryboardContextCucumberRunner.kt`,
+  `CapsuleStoryboardContextSteps.kt`.
+* Modifiés (7) : `ViralStoryboard.kt`, `ViralStoryboardBuilder.kt`,
+  `ViralStoryboardParser.kt`, `ViralStoryboardValidator.kt`,
+  `GenerateViralCampaignFunctionalTest.kt`, `build.gradle.kts`,
+  `.github/workflows/full-tests.yml`.
+
+== Statut / suite
+
+CAP-CONTEXT **US-1/2/3 ✅ (S-145)**. Reste US-4 (`Capsule.jsx` tokens brand
+book). CAP-SHORT US-0/1 (P0, rendu short end-to-end) reste priorité suivante.
+Zéro publication, zéro secret.
