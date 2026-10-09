@@ -8,7 +8,7 @@ import { Capsule } from './Capsule.jsx';
  * Dimensions, frame rate and length come from the props document written by the
  * plugin (`capsule-props.json`). They are resolved by `calculateMetadata`, so a
  * selected composition already carries the exact shape the plugin planned — the
- * landscape 1408×792 default for a pedagogical capsule, or the vertical 9:16
+ * legacy landscape default for a pedagogical capsule, or the vertical 9:16
  * 1080×1920 preset for a viral campaign (`capsule.viral.ViralViewport`).
  *
  * The placeholders below only exist so the composition can be selected before
