@@ -247,6 +247,17 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsulePr2CoverageCucumberRunner",
             timeoutMinutes = 10,
         ),
+        // CAP-VIRAL US-8 — viral campaign engine BDD (storyboard gate, batch,
+        // context-anchored hook prompt, campaign bundle with market copy read).
+        // Dedicated runner pattern S-082; steps prefixed "viral"/"batch"/"campaign"
+        // (bug S-088 glue capsule.scenarios shared). Pure domain, no ffmpeg/node.
+        CucumberTaskSpec(
+            name = "cucumberTestViral",
+            features = listOf("src/test/features/capsule_viral.feature"),
+            tags = listOf("@viral"),
+            runnerClass = "capsule.scenarios.CapsuleViralCucumberRunner",
+            timeoutMinutes = 10,
+        ),
     )
 }
 
