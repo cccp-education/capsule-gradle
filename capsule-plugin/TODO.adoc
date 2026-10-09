@@ -2,19 +2,29 @@
 :last_update: 2026-10-09 (S-138 CAP-VIRAL cadré — capsule devient moteur de campagnes virales YouTube/TikTok. Borough RÉACTIVÉ (était DORMANT). Prérequis US-1 = CI verte.)
 
 '''
-== 🔴 CAP-VIRAL — moteur de viralité (cadré S-138, 9 US ~32 pts)
+== 🔴 CAP-VIRAL — moteur de viralité (cadré S-138, 13 US ~48 pts)
+
+_Place dans la chaîne marketing_ : capsule = maillon du milieu → **amont**
+`capsule.copy` (US-9, absorbe GBL-006-6) + **aval** `CampaignBundle` (US-10).
+_Ancrage_ : hooks/CTA/script **appuyés sur le contexte augmenté N1 codebase**
+(RAG/Graphify/Docs/EAGER, `CapsuleContextBuilder` → `CapsuleLlmService`) +
+provenance anti-hallucination — pas de copy inventé.
 
 . [ ] **US-1 (prérequis)** — CI verte : `settings.gradle.kts:30-31` `error("ossrhUsername not found")` → fallback `?: ""` (pattern Queens S-269 / bakery S-243). CI **rouge** actuellement (runs `37864492361`/`...261`).
 . [ ] **US-2** — Rendu vertical natif (socle FFmpeg) : `ViralConfig` + PNG portrait 1080×1920 + assemblage FFmpeg (découpler le rasteriseur PNG de Playwright).
 . [ ] **US-3** — Format court : `ViralConfig` (durée cible + preset plateforme YouTube Short/TikTok/Reels) + merger 4 sources.
-. [ ] **US-4** — Hooks/CTA via hub LLM N1 (`CapsuleLlmService`).
-. [ ] **US-5** — Métadonnées campagne (`CampaignMetadata` par plateforme).
+. [ ] **US-4** — Hooks/CTA **ancrés contexte augmenté N1** (composite context codebase + provenance).
+. [ ] **US-5** — Métadonnées campagne (**lues** depuis `CopyPiece` GBL-006, pas régénérées).
 . [ ] **US-6** — Batch multi-plateforme (matrice langue × plateforme × durée).
 . [ ] **US-7** — Enrichissement Remotion + Manim (presets composition verticale + `data-manim` schémas animés).
 . [ ] **US-8** — BDD `cucumberTestViral` + dogfooding 1 produit talaria (socle FFmpeg **et** enrichi Remotion+Manim).
+. [ ] **US-9** — Câblage amont `capsule.copy` (absorbe GBL-006-6) : script vidéo consomme `CopyPiece` du marché + contexte N1.
+. [ ] **US-10** — `CampaignBundle` (contrat aval GBL-002) : {vidéo + metadata + thumbnail + plateforme + langue}.
+. [ ] **US-11** — Thumbnail/cover par plateforme (1280×720).
+. [ ] **US-12** — Sous-titres stylés viral (karaoké mot-à-mot + emojis).
 
 _Hors scope CAP-VIRAL_ : publication API YouTube/TikTok (EPIC N4 / GBL-002),
-bibliothèque musicale, analytics.
+écriture copy (GBL-006), calendrier éditorial + musique + analytics (GBL-002).
 
 '''
 == ✅ TODO REVERT — Dépin codebase-gradle-plugin (S-136)

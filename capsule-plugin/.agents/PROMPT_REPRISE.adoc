@@ -22,7 +22,7 @@ Session 138 — **CAP-VIRAL cadré** (US-0 ✅, gouvernance pure, zéro code) :
   câblés (CAP-ANIM), renforcés pour le viral. _À découpler_ : le rasteriseur PNG
   dépend aujourd'hui de Playwright pour le screenshot (pas la vidéo) → rendre le
   pipeline image-native.
-- 10 décisions + 9 US ~32 pts, domaine `capsule.viral` **additif**.
+- 10 décisions + **13 US ~48 pts**, domaine `capsule.viral` **additif**.
 - Rapport : `.agents/sessions/138-cap-viral-cadrage.adoc`
 
 == Mission Session 139 — CAP-VIRAL US-1 : CI verte (PRÉREQUIS)

@@ -162,18 +162,102 @@ tests ne tournent pas sur GitHub. Prérequis US-1.
    (defaults backward compat).
 . [x] **Hooks/CTA générés par LLM** via `pipeline/CapsuleLlmService` (codebase
    N1 déjà branché) — pas de nouveau socle LLM.
-. [x] **Métadonnées campagne** : `CampaignMetadata` (titre, description,
-   hashtags, caption) par plateforme, généré par LLM.
+. [x] **Ancrage contexte augmenté (N1 codebase) — obligatoire** : hooks, CTA,
+   script viral et métadonnées sont générés **appuyés sur le contexte augmenté
+   fourni par codebase** (RAG pgvector + graphe Graphify + Docs + EAGER), **pas
+   hallucinés**. Le socle existe déjà dans capsule (CAP-ARCH-2/3, CAP-PROVENANCE) :
+   `CollectCapsuleAugmentedContextTask` → `CapsuleContextBuilder`
+   (`capsule.context`, canaux N0 `CompositeContext`/`ContextChannel`) →
+   `DefaultCapsulePromptBuilder` (`Augmented context (EAGER/RAG/Graphify/Docs)`)
+   → `CapsuleLlmService` (hub N1). CAP-VIRAL **réutilise** ce chemin pour le
+   viral ; les hooks/copy portent leur **provenance** (`ProvenanceTracker`,
+   anti-hallucination). Le script vidéo est une **dérivation ancrée** du corpus,
+   pas une invention libre.
+. [x] **Métadonnées campagne — CONSOMMÉES, pas générées (split-brain tranché)** :
+   `CampaignMetadata` (titre, description, hashtags, caption) est **lu** depuis le
+   `CopyPiece` de GBL-006 (`MarketCopyWriter`, bakery), **jamais** régénéré par
+   capsule. Boundary GBL-006 : « *bakery écrit, capsule consomme* »
+   (`CADRAGE_EPIC_GBL_006_COPY_MULTIMARKET.adoc:233`). Conséquence : `capsule.viral`
+   déclare un **port de lecture** `MarketCopySource`, pas un second moteur LLM de
+   copy. US-5 requalifiée en conséquence ; l'US GBL-006-6 (câblage capsule) devient
+   une US **CAP-VIRAL** (US-9).
 . [x] **Batch multi-plateforme** : matrice (langue × plateforme × durée) →
    N variantes en une commande, Économie d'Encre (skip si artefact valide).
+. [x] **Contrat de passation `CampaignBundle`** (vers GBL-002) : paquet
+   {vidéo + métadonnées + thumbnail + plateforme + langue} produit par capsule,
+   consommé par `publishToYouTube`/`publishToTikTok`. Évite le **split-brain**
+   du recadrage 9:16 (GBL-002.2 le suppose ; CAP-VIRAL US-2 le produit).
 . [x] **Publication API** : hors scope CAP-VIRAL (EPIC aval N4, cf. GBL-002) —
-   CAP-VIRAL produit les artefacts + métadonnées, pas l'upload.
+   CAP-VIRAL produit le `CampaignBundle`, pas l'upload.
 . [x] **CI d'abord** (US-1) : corriger le fallback creds avant toute feature,
    sinon pas de preuve.
 . [x] **Baby-step DDD/TDD/BDD strict** + runner Cucumber dédié (pattern S-082)
    + steps préfixés (pattern S-088).
 
-== Découpage (9 US ~32 pts)
+== La place de capsule dans la chaîne marketing globale
+
+Capsule est le **maillon du milieu** : il produit le contenu, mais il doit parler
+à l'amont (copy) et à l'aval (publication). CAP-VIRAL couvre la **production** ;
+il ne fait pas encore de capsule un **participant** de la chaîne tant que les
+deux interfaces manquent.
+
+```
+GBL-006 (copy natif 22 langues, bakery)   →   CAPSULE   →   GBL-002 (upload YouTube/TikTok)
+        AMONT : CopyPiece par marché            PRODUCTION          AVAL : publication
+        (bakery écrit)                          (video + bundle)    (N4, hors capsule)
+                                                     ▲
+                          CONTEXTE AUGMENTÉ N1 ──────┘
+                          (codebase : RAG pgvector + Graphify + Docs + EAGER)
+                          hooks/CTA/script = dérivation ANCRÉE, pas hallucination
+```
+
+*Trois trous d'interface identifiés (audit S-138)* :
+
+[cols="2,3,2", options="header"]
+|===
+| Trous | Statut avant | Décision CAP-VIRAL
+
+| **Amont — copy natif** : le script vidéo doit consommer le `CopyPiece` du marché (GBL-006-6)
+| ❌ absent du backlog capsule ; existait seulement côté bakery (`BACKLOG.adoc:142`)
+| **US-9** — câblage `capsule.copy` (port de lecture `MarketCopySource`)
+| **Aval — contrat de publication** : rien ne définit le paquet livré à GBL-002
+| ❌ absent ; split-brain recadrage 9:16 (GBL-002.2 vs CAP-VIRAL US-2)
+| **US-10** — `CampaignBundle` (vidéo + metadata + thumbnail + plateforme)
+| **Assets marketing** : thumbnail YouTube, sous-titres stylés viral
+| ❌ absents (burn-in basique ; seules cards intro/outro 16:9)
+| **US-11** thumbnail/cover ; **US-12** sous-titres stylés
+| **Ancrage contexte N1** : hooks/CTA/script doivent être appuyés sur le contexte augmenté codebase
+| ⚙️ socle existant (CAP-ARCH-2/3, CAP-PROVENANCE) mais **non câblé au viral**
+| **US-4 + US-9** — composite context codebase (RAG/Graphify/Docs/EAGER) + provenance
+|===
+
+*Hors capsule (à acter dans GBL, pas ici)* : **bibliothèque musicale** et
+**calendrier éditorial** relèvent de GBL-002, pas de capsule.
+
+=== L'ancrage contexte augmenté (exigence structurante)
+
+Les campagnes ne sont pas du copy inventé : chaque hook, CTA, script et
+métadonnée est une **dérivation ancrée** du corpus via le contexte augmenté N1
+de codebase. Le chemin existe déjà dans capsule et **ne doit pas être contourné** :
+
+```
+codebase N1 (RAG pgvector + Graphify + Docs + EAGER)
+   │  CompositeContext (contrats N0 codebase-contracts)
+   ▼
+CollectCapsuleAugmentedContextTask  →  CapsuleContextBuilder (capsule.context)
+   │  canaux budgétés (ChannelBudget) + ProvenanceTracker (anti-hallucination)
+   ▼
+DefaultCapsulePromptBuilder  →  CapsuleLlmService (hub N1)
+   │  "Augmented context (EAGER/RAG/Graphify/Docs)"
+   ▼
+hooks / CTA / script viral   ── chaque fait porte sa provenance ──▶  CampaignBundle
+```
+
+*Règle* : pas de hook viral « à l'instinct ». Le viral doit porter la même
+exigence d'ancrage et de provenance que le pipeline pédagogique CAP-ARCH
+(`capsule.context`, domaine déjà clos).
+
+== Découpage (13 US ~48 pts)
 
 [cols="1,4,2,1", options="header"]
 |===
@@ -183,14 +267,18 @@ tests ne tournent pas sur GitHub. Prérequis US-1.
 | US-1 | **CI verte** — fallback creds nmcp `?: ""` (`settings.gradle.kts:30-31`), preuve CI | `settings.gradle.kts` | 2
 | US-2 | **Rendu vertical natif (FFmpeg)** — `ViralConfig` + rasterisation PNG portrait 1080×1920 découplée + assemblage FFmpeg | `capsule.viral`, `ScreenshotPlanner.kt`, `ScreenshotCaptureImpl` | 5
 | US-3 | **Format court** — `ViralConfig` (durée cible, preset plateforme), section `CapsuleConfig` + merger 4 sources, cadence exacte FFmpeg | `CapsuleConfig.kt`, `CapsuleConfigMerger.kt`, `ScreenshotPlanner.kt` | 3
-| US-4 | **Hooks/CTA** — domaine `capsule.viral` + génération LLM (hub N1) | `capsule.viral`, `CapsuleLlmService` | 4
-| US-5 | **Métadonnées campagne** — `CampaignMetadata` par plateforme (titre/description/hashtags/caption) | `capsule.viral` | 3
+| US-4 | **Hooks/CTA (ancrés contexte augmenté N1)** — domaine `capsule.viral` + génération LLM **appuyée sur le composite context codebase** (RAG/Graphify/Docs/EAGER) + provenance anti-hallucination | `capsule.viral`, `CapsuleLlmService`, `CapsuleContextBuilder` | 4
+| US-5 | **Métadonnées campagne (lecture)** — `MarketCopySource` port + `CampaignMetadata` **lu** depuis `CopyPiece` GBL-006 (pas de second moteur) | `capsule.viral` | 3
 | US-6 | **Batch multi-plateforme** — matrice (langue × plateforme × durée), skip Économie d'Encre | `GenerateViralCampaignTask` | 4
 | US-7 | **Enrichissement Remotion + Manim** — presets de composition verticale (transitions, dérive, fond animé) + `data-manim` pour schémas animés accordés à la voix ; mode `viral` du composeur | `capsule.viral`, `RemotionCapture.kt`, `Root.jsx`, `ManimParallelRenderer.kt` | 6
 | US-8 | **BDD + dogfooding** — runner dédié `cucumberTestViral`, dogfooding 1 produit talaria (socle FFmpeg **et** chemin enrichi Remotion+Manim) | feature + steps + consumer | 5
+| US-9 | **Câblage amont `capsule.copy` + contexte N1** (absorbe GBL-006-6) — le script vidéo consomme le `CopyPiece` natif du marché **et** le contexte augmenté codebase (`CapsuleContextBuilder` → `CapsuleLlmService`) ; `MarketCopySource` lit `generateMarketCopy` (bakery) | `capsule.viral`, `capsule.transcript`, `CapsuleContextBuilder` | 4
+| US-10 | **`CampaignBundle`** (contrat aval vers GBL-002) — paquet {vidéo + métadonnées + thumbnail + plateforme + langue}, format stable consommé par `publishToYouTube`/`publishToTikTok` ; élimine le split-brain recadrage 9:16 | `capsule.viral` | 4
+| US-11 | **Thumbnail / cover** par plateforme (asset YouTube, 1280×720) depuis le slide-titre + habillage viral | `capsule.viral`, `chapters/CardRenderer.kt` | 3
+| US-12 | **Sous-titres stylés viral** — karaoké mot-à-mot + emojis (burn-in ASS avancé) | `SubtitleBurnInCommand.kt`, `SubtitleModels.kt` | 5
 |===
 
-*Total : ~32 pts.* Additif (aucune rupture des domaines existants).
+*Total : ~48 pts.* Additif (aucune rupture des domaines existants).
 *Deux chemins testés au dogfooding (US-8)* : (a) socle FFmpeg déterministe ;
 (b) enrichi Remotion+Manim.
 
@@ -207,6 +295,11 @@ tests ne tournent pas sur GitHub. Prérequis US-1.
   animés attachés par `data-manim`, déjà embarqués par Remotion
   (`stageManimAssets`, accord clip/voix). Renforcé pour le viral.
 * `CapsuleLlmService` (codebase N1) — réutilisé pour hooks + métadonnées.
+* **Contexte augmenté N1 (`capsule.context`)** — socle CAP-ARCH-2/3 déjà branché :
+  `CollectCapsuleAugmentedContextTask` + `CapsuleContextBuilder` (canaux N0
+  `CompositeContext`/`ContextChannel`) + `DefaultCapsulePromptBuilder` +
+  `ProvenanceTracker` (CAP-PROVENANCE). **Réutilisé tel quel** pour ancrer
+  hooks/CTA/script viral — pas de nouvelle chaîne RAG.
 * Batch (`GenerateCapsuleVideoAllLanguagesTask`) — étendu à la dimension plateforme.
 * Recadrage 9:16 (`CapsuleDistribTask`) — conservé comme fallback deck 16:9 legacy.
 * _À découpler_ : le rasteriseur PNG (`ScreenshotCaptureImpl.shootSlides` dépend
@@ -214,12 +307,19 @@ tests ne tournent pas sur GitHub. Prérequis US-1.
   viral doit rendre le pipeline **image-native** (PNG → FFmpeg) sans enregistrement
   vidéo temps réel.
 
-== Hors scope (EPICs aval)
+== Hors scope (EPICs aval et amont)
 
 * **Publication API** YouTube Data API / TikTok Content Posting API — EPIC N4
-  (cf. `GBL-002` stratégie de distribution, ~14 pts).
-* **Bibliothèque musicale** (catalogue BGM licencié) — dépendance externe.
-* **Analytics de performance** (vues, rétention) — dashboard.
+  (cf. `GBL-002` stratégie de distribution, ~14 pts). Capsule produit le
+  `CampaignBundle` (US-10), GBL-002 l'upload.
+* **Écriture du copy natif** (`MarketProfile` × 22, `MarketCopyPromptBuilder`,
+  `MarketCopyWriter`) — GBL-006 (bakery). Capsule **lit** (US-5, US-9).
+* **Calendrier éditorial** (3 vidéos/semaine, GBL-002.0) — GBL, pas capsule.
+  Capsule expose le batch (US-6) que le calendrier pilote.
+* **Bibliothèque musicale** (catalogue BGM licencié) — dépendance externe,
+  relève de GBL-002.
+* **Analytics de performance** (vues, rétention, conversion) — GBL-002.3. Capsule
+  expose les identifiants de campagne (US-10) que l'analytics corrèle.
 
 == Méthodologie
 
@@ -236,6 +336,14 @@ préfixés (pattern S-088).
 * **Chaîne à deux étages actée** : socle **FFmpeg** (assemblage déterministe,
   pas d'enregistrement Playwright temps réel) + **enrichissement Remotion + Manim**
   (mouvement et schémas animés, déjà câblés CAP-ANIM).
-* 10 décisions architecturales, 9 US ~32 pts.
+* **Place dans la chaîne marketing** : capsule = maillon du milieu. **Split-brain
+  tranché** (métadonnées **lues** depuis GBL-006, pas régénérées). Deux interfaces
+  ajoutées : amont `capsule.copy` (US-9, absorbe GBL-006-6), aval `CampaignBundle`
+  (US-10). Assets marketing : thumbnail (US-11), sous-titres stylés (US-12).
+* **Ancrage contexte augmenté N1 (exigence structurante)** : hooks/CTA/script et
+  métadonnées sont des **dérivations ancrées** du corpus via le composite context
+  codebase (RAG/Graphify/Docs/EAGER) + provenance anti-hallucination — socle
+  déjà branché (CAP-ARCH-2/3, CAP-PROVENANCE), réutilisé, jamais contourné.
+* 10 décisions architecturales, **13 US ~48 pts**.
 * Prérequis immédiat non-code : **US-1 CI verte**.
 * Zéro code modifié — session de cadrage (gouvernance pure).
