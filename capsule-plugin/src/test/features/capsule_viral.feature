@@ -6,7 +6,7 @@ Feature: Viral campaign engine
   So that talaria and cccp.education can be promoted on YouTube/TikTok/Reels
 
   Background:
-    Given a viral storyboard for deck "fpa-decouverte" in language "fr" on platform TIKTOK
+    Given a viral storyboard for deck "fpa-decouverte" in language "fr" on platform "TIKTOK"
       | role        | intent                        | duration | type |
       | hook        | Et si 30 secondes suffisaient ? | 3        | HTML |
       | development | Les 4 activités types           | 10       | HTML |
@@ -18,7 +18,7 @@ Feature: Viral campaign engine
     Then the storyboard verdict is valid
 
   Scenario: A storyboard without a hook is rejected
-    Given a viral storyboard for deck "fpa-decouverte" in language "fr" on platform TIKTOK
+    Given a viral storyboard for deck "fpa-decouverte" in language "fr" on platform "TIKTOK"
       | role        | intent          | duration | type |
       | development | Dev             | 25       | HTML |
       | cta         | CTA             | 5        | HTML |
@@ -48,7 +48,7 @@ Feature: Viral campaign engine
 
   Scenario: The campaign bundles read the market copy and degrade gracefully
     Given a viral batch with languages "fr" platforms "TIKTOK" and duration 30
-    And a market copy for "fr" and TIKTOK with title "Titre natif"
+    And a market copy for "fr" and "TIKTOK" with title "Titre natif"
     When the campaign is assembled with a rendered video
     Then the campaign contains 1 bundle
     And the first campaign bundle title is "Titre natif"
