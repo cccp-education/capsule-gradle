@@ -7,6 +7,7 @@ import capsule.feed.CapsuleScriptReader
 import capsule.feed.SlideSegment
 import capsule.feed.SlideType
 import capsule.multilang.MultiLanguageResolver
+import capsule.viral.ViralViewport
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.Internal
@@ -516,6 +517,18 @@ open class CapsuleVideoTask : DefaultTask() {
         } else modifiedDeck
     }
 
+    /**
+     * Resolves the capture viewport (CAP-VIRAL US-2). When the `viral` section
+     * is enabled, the short-form 9:16 portrait viewport (1080×1920) is used;
+     * otherwise the pedagogical landscape default is preserved (backward compat).
+     */
+    private fun resolveViewport(): Pair<Int, Int> =
+        ViralViewport.resolve(
+            viralEnabled = capsuleExtension.viralEnabled.getOrElse(false),
+            defaultWidth = capsuleExtension.viewportWidth.get(),
+            defaultHeight = capsuleExtension.viewportHeight.get(),
+        )
+
     internal fun captureDeckSequential(
         parsed: CapsuleScript,
         finalDeckFile: File,
@@ -526,12 +539,13 @@ open class CapsuleVideoTask : DefaultTask() {
         subtitleFile: File?
     ) {
         val deckCapture = resolvePlaywrightCapture(slideDurations)
+        val (viewportWidth, viewportHeight) = resolveViewport()
         try {
             deckCapture.capture(
                 deckHtmlPath = finalDeckFile.absolutePath,
                 outputDir = videoOutputDir,
-                viewportWidth = capsuleExtension.viewportWidth.get(),
-                viewportHeight = capsuleExtension.viewportHeight.get(),
+                viewportWidth = viewportWidth,
+                viewportHeight = viewportHeight,
                 slideDurations = slideDurations
             )
         } catch (e: CapturingException) {
@@ -577,11 +591,12 @@ open class CapsuleVideoTask : DefaultTask() {
         subtitleFile: File?
     ) {
         logger.lifecycle("  Parallel capture enabled for '{}' ({} slides)", parsed.deckName, parsed.segments.size)
+        val (viewportWidth, viewportHeight) = resolveViewport()
         captureSlideParallel(
             deckHtmlPath = finalDeckFile.absolutePath,
             outputDir = videoOutputDir,
-            viewportWidth = capsuleExtension.viewportWidth.get(),
-            viewportHeight = capsuleExtension.viewportHeight.get(),
+            viewportWidth = viewportWidth,
+            viewportHeight = viewportHeight,
             parsed = parsed,
             audioDir = audioDir,
             captureTimeoutMillis = capsuleExtension.captureTimeoutMinutes.get().toLong() * 60_000L
