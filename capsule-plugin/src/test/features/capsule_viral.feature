@@ -56,5 +56,5 @@ Feature: Viral campaign engine
   Scenario: A missing market copy degrades to the storyboard message
     Given a viral batch with languages "fr" platforms "TIKTOK" and duration 30
     And no market copy is available
-    When the campaign is assembled with a rendered video
+    When the campaign is assembled with a rendered video and no hook
     Then the first campaign bundle title is "Devenir formateur professionnel"

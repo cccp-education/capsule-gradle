@@ -160,6 +160,15 @@ class CapsuleViralSteps {
 
     @When("the campaign is assembled with a rendered video")
     fun `the campaign is assembled`() {
+        assembleCampaign(hook = ViralHook("Accroche", "Message", "CTA"))
+    }
+
+    @When("the campaign is assembled with a rendered video and no hook")
+    fun `the campaign is assembled without a hook`() {
+        assembleCampaign(hook = null)
+    }
+
+    private fun assembleCampaign(hook: ViralHook?) {
         val copy = marketCopy
         val source = object : MarketCopySource {
             override fun read(language: String, platform: ViralPlatform): MarketCopy? =
@@ -170,7 +179,7 @@ class CapsuleViralSteps {
         bundles = ViralCampaignAssembler.assemble(
             storyboard = storyboard!!,
             variants = variants,
-            hook = ViralHook("Accroche", "Message", "CTA"),
+            hook = hook,
             copySource = source,
             videoPathFor = { "build/viral/${it.id}.mp4" },
             thumbnailFor = { "build/viral/${it.id}.png" },
