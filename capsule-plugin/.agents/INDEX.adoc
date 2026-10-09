@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-09 (S-140 — **CAP-VIRAL : 8 US livrées** — le domaine `capsule.viral` est complet en briques pures. US-4 hooks/CTA ancrés N1, US-2 vertical 9:16 (ViralViewport+câblage), US-6 batch multi-plateforme, US-9 lecture copy GBL-006 (split-brain tranché), US-10 `CampaignBundle` (aval GBL-002), US-11 thumbnail, US-12 sous-titres karaoké, US-13 storyboard validable (porte éditoriale). US-5 absorbée par US-9. **CI VERTE à chaque US** (`Test` ~3m30 + `Full Tests` ~7-8min). Reste S-141 : US-7 (Remotion/Manim JSX), US-8 (BDD+dogfooding), tâche `generateViralCampaign` bout-en-bout, dette cucumberTest.)
-_Derniere session terminee_ : 140 — CAP-VIRAL 8 US (domaine viral complet).
-_Prochaine session_ : 141 — CAP-VIRAL US-7 (enrichissement Remotion+Manim) + US-8 (BDD) + câblage tâche `generateViralCampaign`.
-_Session en cours_ : — (S-140 terminée).
+ _Derniere mise a jour_ : 2026-10-09 (S-141 — **CAP-VIRAL : assemblage bout-en-bout + US-8 BDD**. `ViralCampaignAssembler` joint les briques (storyboard → variants → hooks ancrés N1 → copy lu GBL-006 → `CampaignBundle`). **US-8** : BDD `cucumberTestViral` (feature `capsule_viral.feature` `@viral` 7 scénarios + steps préfixés S-088 + runner S-082 + `CucumberTaskSpec`). **Découverte ghost-tests** : les 22 runners Cucumber dédiés étaient opt-in et jamais invoqués par la CI (leçon Queens S-269) → `cucumberTestViral` câblé dans `full-tests.yml`. 3 bugs attrapés par la CI (UndefinedStepException quotage, scénario mal nommé, ghost-test). **CI VERTE** `Test` + `Full Tests` (ce dernier exécute désormais `cucumberTestViral`).
+_Derniere session terminee_ : 141 — CAP-VIRAL assemblage + US-8 BDD.
+_Prochaine session_ : 142 — CAP-VIRAL US-7 (Remotion/Manim JSX) + câblage tâche `generateViralCampaign` + dette ghost-tests (21 runners) + dette cucumberTest (14 scénarios).
+_Session en cours_ : — (S-141 terminée).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -22,11 +22,13 @@ _Session en cours_ : — (S-140 terminée).
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (131-140)
+== 10 dernières sessions (132-141)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 141 | 2026-10-09 | feat+test+ci | **CAP-VIRAL assemblage + US-8 BDD + ghost-test fix** — `ViralCampaignAssembler` (joint storyboard → variants → hooks N1 → copy GBL-006 → `CampaignBundle`). BDD `cucumberTestViral` (7 scénarios). Découverte ghost-tests (22 runners opt-in jamais invoqués) → `cucumberTestViral` câblé. 3 bugs attrapés par la CI. | 9/10
 
 | 140 | 2026-10-09 | feat | **CAP-VIRAL 8 US** — domaine `capsule.viral` complet en briques pures : US-4 hooks/CTA ancrés N1, US-2 vertical 9:16, US-6 batch multi-plateforme, US-9 lecture copy GBL-006, US-10 `CampaignBundle`, US-11 thumbnail, US-12 sous-titres karaoké, US-13 storyboard validable. US-5 absorbée US-9. CI verte à chaque US. | 9/10
 
@@ -68,7 +70,7 @@ _Sessions 000-117 archivées_ : rapports dans `.agents/sessions/`, résumé dans
 |===
 |EPIC |Description |Statut |Priorité
 
-| **CAP-VIRAL** | **Moteur de campagnes virales YouTube/TikTok** — domaine `capsule.viral` : rendu vertical 9:16 natif (socle FFmpeg + Remotion/Manim), format court 15-60 s, hooks/CTA **ancrés contexte N1**, **storyboard validable** (porte éditoriale), chaîne marketing (amont `capsule.copy` US-9 / aval `CampaignBundle` US-10), thumbnail, sous-titres karaoké, batch multi-plateforme. 14 US ~53 pts. Cadrage `.agents/sessions/138-cap-viral-cadrage.adoc`. **US-0/1/2/3/4/6/9/10/11/12/13 ✅ (S-139/S-140)** ; reste US-7 (Remotion/Manim JSX) + US-8 (BDD+dogfooding) + tâche bout-en-bout. | 🟡 EN COURS (S-140) — 11 US ✅, reste US-7/US-8 | P0
+| **CAP-VIRAL** | **Moteur de campagnes virales YouTube/TikTok** — domaine `capsule.viral` : rendu vertical 9:16, format court 15-60 s, hooks/CTA **ancrés contexte N1**, **storyboard validable** (porte éditoriale), chaîne marketing (amont `capsule.copy` / aval `CampaignBundle`), thumbnail, sous-titres karaoké, batch multi-plateforme, **assemblage bout-en-bout** (`ViralCampaignAssembler`). 14 US ~53 pts. Cadrage `.agents/sessions/138-cap-viral-cadrage.adoc`. **US-0→6/8/9→13 ✅ ; reste US-7 (Remotion/Manim JSX) + câblage tâche `generateViralCampaign`.** | 🟡 EN COURS (S-141) — 13 US ✅, reste US-7 + wiring | P0
 | CAP-PODCAST | Extraction audio-only — `PodcastConcatenator` FFmpeg concat MP3 slides, tâche `generateCapsulePodcast`. Domaine `capsule.podcast` 13ème. 3 US ~4 pts | ✅ TERMINÉ (S-127) | P2
 | CAP-PREVIEW | Mode dry-run — `capture.previewOnly` 4 sources, screenshot path s'arrête après PNG. 3 US ~4 pts | ✅ TERMINÉ (S-128) | P2
 | CAP-CHAPITRE | Intro/outro + chapter markers — `CardRenderer` PNG, `ChapterMarkers` Matroska tags. 5 US ~10 pts | ✅ TERMINÉ (S-129) | P2

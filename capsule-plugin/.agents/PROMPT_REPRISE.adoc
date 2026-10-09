@@ -1,51 +1,48 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 141
+:session: 142
 :borough: Détroit
-:session_precedente: 140 — CAP-VIRAL 8 US (domaine viral complet)
+:session_precedente: 141 — CAP-VIRAL assemblage bout-en-bout + US-8 BDD + ghost-test CI
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-Session 140 — **CAP-VIRAL : 8 US livrées** (domaine `capsule.viral` complet en
-briques pures, CI verte à chaque US) :
-- **US-4** hooks/CTA/message **ancrés contexte N1** (`ViralHookPlan`/`ViralHook`/
-  `ViralHookPromptBuilder`/`ViralHookParser`/`ViralHookGenerator`/`ChatModelViralHookGenerator`)
-- **US-2** rendu vertical 9:16 (`ViralViewport` + câblage `CapsuleVideoTask.resolveViewport()`)
-- **US-6** batch multi-plateforme (`ViralVariant`/`ViralBatchPlanner`)
-- **US-9** lecture copy GBL-006 (`MarketCopy`/`MarketCopySource`/`FileMarketCopySource`)
-- **US-10** `CampaignBundle`/`CampaignBundleSerializer` (aval GBL-002)
-- **US-11** `ViralThumbnailPlanner` ; **US-12** `KaraokeSubtitleBuilder`
-- **US-13** storyboard validable (`ViralStoryboard`/`Builder`/`Validator` — porte éditoriale)
-- US-5 absorbée par US-9.
-- Rapport : `.agents/sessions/140-cap-viral-8-us-domaine-viral.adoc`
+Session 141 — **assemblage + US-8 BDD + fix ghost-test** :
+- **`ViralCampaignAssembler`** : joint les briques (storyboard → variants → hooks
+  ancrés N1 → copy lu GBL-006 → `CampaignBundle`). Domaine pur, point de rencontre
+  des 3 boundaries.
+- **US-8** : BDD `cucumberTestViral` (`capsule_viral.feature` `@viral` 7 scénarios,
+  steps préfixés S-088, runner S-082, `CucumberTaskSpec`).
+- **Ghost-tests** : les 22 runners Cucumber dédiés sont opt-in et **jamais invoqués
+  par la CI** (leçon Queens S-269) → `cucumberTestViral` câblé dans `full-tests.yml`.
+- 3 bugs attrapés par la CI (UndefinedStepException quotage, scénario mal nommé,
+  ghost-test). CI VERTE.
+- Rapport : `.agents/sessions/141-cap-viral-assemblage-bdd-ghost-test.adoc`
 
-== Mission Session 141 — CAP-VIRAL US-7 + US-8 + câblage bout-en-bout
+== Mission Session 142 — US-7 + câblage tâche + dettes
 
-1. **US-7 — Enrichissement Remotion + Manim** (6 pts, la plus lourde) : presets
-   de composition verticale (transitions, dérive, fond animé) + `data-manim`
-   shémas animés. `RemotionCapture.kt`, `Root.jsx`, `ManimParallelRenderer.kt`.
-2. **US-8 — BDD `cucumberTestViral` + dogfooding** : runner dédié (pattern S-082),
-   steps préfixés (S-088), feature couvrant le domaine + 1 produit talaria.
-3. **Câblage bout-en-bout** : tâche `generateViralCampaign` qui assemble
-   storyboard → hooks (LLM ancré N1) → vidéo (US-2) → bundle (US-10). Les briques
-   sont prêtes ; l'orchestration Gradle reste à écrire (registrar + extension wiring).
-4. **Dette cucumberTest** (héritée S-139) : 14 scénarios échouent — corriger/gater.
+1. **US-7 — Enrichissement Remotion + Manim** (la plus lourde) : presets
+   composition verticale (transitions, dérive, fond animé) + `data-manim`.
+   `Root.jsx` hardcode 1408×792 — le rendre piloté par les props (déjà surchargé
+   par `render.mjs`). Absence d'infra de test node à combler (test JS pur).
+2. **Câblage tâche `generateViralCampaign`** : registrar + extension wiring qui
+   pilote `ViralCampaignAssembler` (storyboard → hooks LLM → vidéo → bundle).
+3. **Dette ghost-tests** : câbler les 21 runners Cucumber dédiés restants à la CI
+   (ou les activer via `additionalTasksInCheck`) — sinon tests fantômes.
+4. **Dette cucumberTest** (héritée S-139) : 14 scénarios échouent.
 
 == Points d'attention
 
-* **Local = Build, Tests = CI** : jamais de `test`/`check` local. Compiler
-  (`compileKotlin`/`compileTestKotlin`), pousser, surveiller le run GitHub.
-* Baby-step DDD/TDD/BDD : domaine pur → unit, puis câblage, puis functional →
-  cucumber. Runner dédié par feature (S-082), steps préfixés (S-088).
+* **Local = Build, Tests = CI** : jamais de `test`/`check` local. Compiler, pousser,
+  surveiller le run GitHub. La CI ressuscitée (S-139) révèle ce que le local cache.
+* Baby-step DDD/TDD/BDD : domaine pur → unit, puis câblage, puis cucumber.
+  Runner dédié par feature (S-082), steps préfixés (S-088). **Quoter les `{string}`
+  dans les features** (UndefinedStepException sinon — piège S-269/S-141).
 * English only : code, Gherkin, commentaires.
-* Le domaine `capsule.viral` est **additif** (défaut désactivé, backward compat).
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.1
-* CI : `.github/workflows/test.yml` (fast, `./gradlew test`) +
-  `.github/workflows/full-tests.yml` (`./gradlew test functionalTest`)
-* Patterns réutilisés : `capsule.transcript` (port/adapter LLM), `capsule.context`
-  (CapsuleContextBuilder N1), `capsule.feed` (SlideSegment/SlideType),
-  `ContentPlanValidator` (Jackson pur).
-* `cucumberTest` skippé par défaut (CR-10) sauf `CI=true`/`-PrunCucumber`.
+* CI : `.github/workflows/test.yml` (`./gradlew test`) +
+  `.github/workflows/full-tests.yml` (`test functionalTest` + `cucumberTestDurationValidation`
+  + `cucumberTestViral`)
+* Domaine `capsule.viral` complet en briques (13 US) ; reste US-7 (JSX) + wiring.

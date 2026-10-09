@@ -1,6 +1,19 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-09
 
+== Session 141 — CAP-VIRAL assemblage bout-en-bout + US-8 BDD + ghost-test ✅
+
+* **`ViralCampaignAssembler`** — joint storyboard → variants → hooks ancrés N1 →
+  copy lu GBL-006 → `CampaignBundle`. Domaine pur, 3 boundaries.
+* **US-8** — BDD `cucumberTestViral` (`capsule_viral.feature` `@viral`, 7 scénarios,
+  steps préfixés S-088, runner S-082, `CucumberTaskSpec`).
+* **Fix ghost-test** — les 22 runners Cucumber dédiés opt-in jamais invoqués par la
+  CI (leçon Queens S-269) → `cucumberTestViral` câblé dans `full-tests.yml`.
+* **3 bugs attrapés par la CI** : UndefinedStepException (quotage `{string}`),
+  scénario mal nommé (dégradation), ghost-test.
+* Preuve : `Test` + `Full Tests` VERTS (ce dernier exécute `cucumberTestViral`).
+  Rapport `.agents/sessions/141-cap-viral-assemblage-bdd-ghost-test.adoc`.
+
 == Session 140 — CAP-VIRAL : 8 US livrées (domaine viral complet) ✅
 
 Baby-step DDD/TDD/BDD, domaine pur par US, CI verte à chaque US.

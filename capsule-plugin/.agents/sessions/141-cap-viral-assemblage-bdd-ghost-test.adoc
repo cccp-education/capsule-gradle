@@ -1,0 +1,84 @@
+= Session 141 — CAP-VIRAL : assemblage bout-en-bout + BDD + fix ghost-test
+:session: 141
+:date: 2026-10-09
+:type: feat + test + ci (baby-step DDD/TDD/BDD)
+:epic: CAP-VIRAL
+:méthode: domaine pur (unit) → BDD (cucumber) → câblage CI ; Local = Build, Tests = CI
+
+== Contexte
+
+Suite de S-140 (8 US livrées). Objectif : assembler les briques du domaine en
+campagne bout-en-bout, couvrir l'ensemble en BDD, et vérifier la réalité d'CI.
+
+== Livré
+
+[cols="1,4,2", options="header"]
+|===
+| Élément | Contenu | Preuve CI
+
+| **Assemblage bout-en-bout** | `ViralCampaignAssembler` — joint les briques : pour chaque `ViralVariant` (US-6), lit le `MarketCopy` de bakery (US-9, jamais régénéré), dégrade sur le hook ancré N1 (US-4) puis sur le storyboard (US-13), produit le `CampaignBundle` (US-10). Point de rencontre des 3 boundaries. | Test ✅ + Full ✅
+| **US-8 — BDD `cucumberTestViral`** | Feature `capsule_viral.feature` (`@viral`, 7 scénarios) : gate éditorial (valid/invalid + raison), rendu AsciiDoc déterministe, matrice batch, prompt hook ancré N1, assemblage campagne (copy lu + dégradé). `CapsuleViralSteps` (steps préfixés, S-088) + `CapsuleViralCucumberRunner` (S-082) + `CucumberTaskSpec("cucumberTestViral")`. | Test ✅ + Full ✅
+| **Fix ghost-test CI** | Les 22 runners Cucumber dédiés sont **opt-in** (`additionalTasksInCheck=false`) et **aucun job CI ne les invoquait** → tests fantômes (leçon Queens S-269). `cucumberTestViral` câblé explicitement dans `full-tests.yml`. | Test ✅ (Full en cours) |
+|===
+
+== Découverte — ghost tests (leçon S-269)
+
+L'audit révèle que **seuls `cucumberTestDurationValidation`** était invoqué par
+la CI parmi les 22 runners dédiés. Les 21 autres (context, archBoundary,
+strictMode, format, audioPost, provenance, glossary, transcript, multiLang,
+remotion, podcast, preview, chapters, remotionAnim, integration, pr2Coverage,
+contentAndVideos, distrib, captureStrategy, docContext, scenarioContext) ne sont
+**jamais exécutés** — ils compilent, sont versionnés, mais ne tournent pas. C'est
+le « test fantôme » (Queens S-269). **Dette S-142** : les câbler à la CI.
+
+== Preuve de validité — CI
+
+* `Test` (fast, unit) : ✅ VERT à chaque commit (~3m).
+* `Full Tests` : ✅ **VERT** — exécute désormais `cucumberTestViral` (7 scénarios,
+  `@viral`) en plus de `test functionalTest` + `cucumberTestDurationValidation`.
+
+=== Trois bugs attrapés par la CI (jamais vus en local — Local = Build)
+
+. *`UndefinedStepException`* : `on platform TIKTOK` non quoté alors que le step
+   attend `{string}` → 14 scénarios échouaient. Corrigé (`"TIKTOK"`).
+. *Scénario mal nommé* : « missing market copy degrades to storyboard message »
+   testait en fait le chemin « hook présent » (le hook devient le titre). Ajout
+   d'un step `assembled ... and no hook` exerçant le **vrai** fallback storyboard.
+   Le domaine était correct, le scénario mentait.
+. *Ghost tests* : les 22 runners Cucumber dédiés étaient **opt-in et jamais
+   invoqués** par la CI (leçon Queens S-269) → `cucumberTestViral` câblé
+   explicitement ; les 21 autres restent à câbler (dette S-142).
+
+*Leçon* : la CI ressuscitée (S-139) rend ces défauts visibles ; ils resteraient
+invisibles en local (règle Local = Build, Tests = CI).
+
+== Architecture domaine `capsule.viral` (après S-141)
+
+```
+capsule.viral
+├── ViralConfig / ViralPlatform                    (US-3)
+├── ViralViewport                                   (US-2)
+├── ViralHookPlan / ViralHook / Prompt/Parser/Generator  (US-4)
+├── ViralVariant / ViralBatchPlanner                (US-6)
+├── MarketCopy / MarketCopySource / FileMarketCopySource  (US-9)
+├── CampaignBundle / CampaignBundleSerializer       (US-10)
+├── ViralThumbnailPlanner / ThumbnailPlan           (US-11)
+├── KaraokeSubtitleBuilder / KaraokeWord            (US-12)
+├── ViralStoryboard / Beat / Builder / Validator    (US-13)
+└── ViralCampaignAssembler                          (assemblage bout-en-bout)
+```
+
+== Reste (S-142)
+
+* **US-7** — Enrichissement Remotion + Manim (presets composition verticale +
+  `data-manim`). Le JSX (`Root.jsx` hardcode 1408×792) et l'absence d'infra de
+  test node restent à traiter — la plus lourde.
+* **Câblage Gradle** — une tâche `generateViralCampaign` (registrar + extension
+  wiring) qui pilote l'assembleur.
+* **Dette ghost-tests** — câbler les 21 runners dédiés restants à la CI.
+* **Dette cucumberTest** — 14 scénarios `cucumberTest` échouent (héritée S-139).
+
+== Commits (S-141)
+
+`3bfbc66` (assemblage), `3b385ae` (US-8 BDD), `61fc163` (fix ghost-test CI),
+`d657f8b` (fix quoting feature), `a84e96e` (fix scénario dégradation).

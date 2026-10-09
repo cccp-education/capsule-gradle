@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-09 (S-140) — CAP-VIRAL 8 US. Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-09 (S-141) — CAP-VIRAL assemblage + US-8 BDD + ghost-test. Rapports détaillés dans `.agents/sessions/`.
 
-== 15 dernières sessions (126-140)
+== 15 dernières sessions (127-141)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 141 | 2026-10-09 | feat+test+ci | **CAP-VIRAL assemblage + US-8 BDD + ghost-test fix** — `ViralCampaignAssembler` joint les briques (storyboard → variants → hooks ancrés N1 → copy lu GBL-006 → `CampaignBundle`), point de rencontre des 3 boundaries. **US-8** : BDD `cucumberTestViral` (`capsule_viral.feature` `@viral` 7 scénarios + steps préfixés S-088 + runner S-082 + `CucumberTaskSpec`). **Découverte ghost-tests** : les 22 runners Cucumber dédiés sont opt-in et jamais invoqués par la CI (leçon Queens S-269) → `cucumberTestViral` câblé dans `full-tests.yml`. **3 bugs attrapés par la CI** (UndefinedStepException quotage, scénario mal nommé, ghost-test). CI VERTE `Test` + `Full Tests`. Rapport `.agents/sessions/141-cap-viral-assemblage-bdd-ghost-test.adoc`. | 9/10
 
 | 140 | 2026-10-09 | feat | **CAP-VIRAL 8 US** — domaine `capsule.viral` complet en briques pures (baby-step DDD/TDD/BDD, CI verte à chaque US) : US-4 hooks/CTA ancrés N1, US-2 vertical 9:16 (ViralViewport+câblage), US-6 batch multi-plateforme, US-9 lecture copy GBL-006 (split-brain tranché : lit, ne génère pas), US-10 `CampaignBundle` (aval GBL-002), US-11 thumbnail, US-12 sous-titres karaoké (`\k` mot-à-mot), US-13 storyboard validable (porte éditoriale sealed). US-5 absorbée par US-9. Patterns réutilisés : transcript (port/adapter), context (CapsuleContextBuilder N1), feed. Reste S-141 : US-7 (Remotion/Manim JSX), US-8 (BDD+dogfooding), tâche `generateViralCampaign` bout-en-bout, dette cucumberTest. Rapport `.agents/sessions/140-cap-viral-8-us-domaine-viral.adoc`. | 9/10
 
