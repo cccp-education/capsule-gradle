@@ -6,6 +6,8 @@ import capsule.podcast.PodcastConfig
 import capsule.preview.PreviewConfig
 import capsule.transcript.TranscriptConfig
 import capsule.transcript.TranscriptStrategy
+import capsule.viral.ViralConfig
+import capsule.viral.ViralPlatform
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -1952,5 +1954,93 @@ class CapsuleConfigMergerTest {
         val yamlConfig = CapsuleConfig(chapters = ChaptersConfig(introText = ""))
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
         assertEquals("Props Intro", merged.chapters.introText, "Blank YAML introText should fall back to props")
+    }
+
+    // ─── CAP-VIRAL US-3 — viral section 4-source wiring ───────────────
+
+    @Test
+    fun `capsule viral defaults are backward-compat disabled`() {
+        val config = CapsuleConfig()
+        assertEquals(false, config.viral.enabled, "viral.enabled should default to false")
+        assertEquals("TIKTOK", config.viral.platform.name, "viral.platform should default to TIKTOK")
+        assertEquals(30, config.viral.targetDurationSeconds, "viral.targetDurationSeconds should default to 30")
+        assertEquals(true, config.viral.storyboardRequired, "viral.storyboardRequired should default to true")
+        assertEquals("", config.viral.hook, "viral.hook should default to empty")
+        assertEquals("", config.viral.cta, "viral.cta should default to empty")
+        assertEquals("", config.viral.storyboardFile, "viral.storyboardFile should default to empty")
+    }
+
+    @Test
+    fun `loadFromGradleProperties reads capsule viral section`() {
+        val projectDir = File(tempDir, "viral-props-load").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText(
+            """
+            capsule.viral.enabled=true
+            capsule.viral.platform=YOUTUBE_SHORT
+            capsule.viral.targetDurationSeconds=45
+            capsule.viral.hook=Hook props
+            capsule.viral.cta=CTA props
+            capsule.viral.storyboardFile=story/board.adoc
+            """.trimIndent()
+        )
+        val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
+        assertEquals(true, config.viral.enabled, "props should read viral.enabled")
+        assertEquals("YOUTUBE_SHORT", config.viral.platform.name, "props should read viral.platform")
+        assertEquals(45, config.viral.targetDurationSeconds, "props should read viral.targetDurationSeconds")
+        assertEquals("Hook props", config.viral.hook, "props should read viral.hook")
+        assertEquals("CTA props", config.viral.cta, "props should read viral.cta")
+        assertEquals("story/board.adoc", config.viral.storyboardFile, "props should read viral.storyboardFile")
+    }
+
+    @Test
+    fun `merge CLI viral values win over YAML and props`() {
+        val projectDir = File(tempDir, "viral-cli-win").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText(
+            """
+            capsule.viral.platform=REELS
+            capsule.viral.targetDurationSeconds=20
+            """.trimIndent()
+        )
+        val yamlConfig = CapsuleConfig(
+            viral = ViralConfig(enabled = true, platform = ViralPlatform.YOUTUBE_SHORT, targetDurationSeconds = 40)
+        )
+        val merged = CapsuleConfigMerger.merge(
+            projectDir,
+            yamlConfig,
+            mapOf("viral.platform" to "tiktok", "viral.targetDurationSeconds" to "55")
+        )
+        assertEquals("TIKTOK", merged.viral.platform.name, "CLI viral.platform should win")
+        assertEquals(55, merged.viral.targetDurationSeconds, "CLI viral.targetDurationSeconds should win")
+    }
+
+    @Test
+    fun `merge YAML viral values win over props when present`() {
+        val projectDir = File(tempDir, "viral-yaml-win").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText(
+            """
+            capsule.viral.platform=REELS
+            capsule.viral.hook=Hook props
+            """.trimIndent()
+        )
+        val yamlConfig = CapsuleConfig(
+            viral = ViralConfig(enabled = true, platform = ViralPlatform.YOUTUBE_SHORT, hook = "Hook yaml")
+        )
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
+        assertEquals("YOUTUBE_SHORT", merged.viral.platform.name, "YAML viral.platform should win over props")
+        assertEquals("Hook yaml", merged.viral.hook, "YAML viral.hook should win over props")
+    }
+
+    @Test
+    fun `merge viral absent in YAML falls back to props`() {
+        val projectDir = File(tempDir, "viral-yaml-absent").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText(
+            """
+            capsule.viral.enabled=true
+            capsule.viral.platform=TIKTOK
+            """.trimIndent()
+        )
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
+        assertEquals(true, merged.viral.enabled, "props viral.enabled should apply when YAML has no viral section")
+        assertEquals("TIKTOK", merged.viral.platform.name, "props viral.platform should apply")
     }
 }

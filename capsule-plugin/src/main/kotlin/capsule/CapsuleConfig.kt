@@ -5,6 +5,7 @@ import capsule.chapters.ChaptersConfig
 import capsule.podcast.PodcastConfig
 import capsule.preview.PreviewConfig
 import capsule.transcript.TranscriptConfig
+import capsule.viral.ViralConfig
 
 /**
  * Immutable configuration model for capsule-gradle.
@@ -29,7 +30,8 @@ data class CapsuleConfig(
     val remotion: RemotionConfig = RemotionConfig(),
     val podcast: PodcastConfig = PodcastConfig(),
     val preview: PreviewConfig = PreviewConfig(),
-    val chapters: ChaptersConfig = ChaptersConfig()
+    val chapters: ChaptersConfig = ChaptersConfig(),
+    val viral: ViralConfig = ViralConfig()
 )
 
 data class InputConfig(

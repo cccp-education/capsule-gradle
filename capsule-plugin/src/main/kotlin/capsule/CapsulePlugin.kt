@@ -232,5 +232,28 @@ class CapsulePlugin : Plugin<Project> {
         if (!ext.chaptersOutroText.isPresent || ext.chaptersOutroText.get() == conventions.chaptersOutroText) {
             ext.chaptersOutroText.set(config.chapters.outroText)
         }
+
+        // Viral section (CAP-VIRAL)
+        if (!ext.viralEnabled.isPresent || ext.viralEnabled.get() == conventions.viralEnabled) {
+            ext.viralEnabled.set(config.viral.enabled)
+        }
+        if (!ext.viralPlatform.isPresent || ext.viralPlatform.get() == conventions.viralPlatform) {
+            ext.viralPlatform.set(config.viral.platform.name)
+        }
+        if (!ext.viralTargetDurationSeconds.isPresent || ext.viralTargetDurationSeconds.get() == conventions.viralTargetDurationSeconds) {
+            ext.viralTargetDurationSeconds.set(config.viral.targetDurationSeconds)
+        }
+        if (!ext.viralHook.isPresent || ext.viralHook.get() == conventions.viralHook) {
+            ext.viralHook.set(config.viral.hook)
+        }
+        if (!ext.viralCta.isPresent || ext.viralCta.get() == conventions.viralCta) {
+            ext.viralCta.set(config.viral.cta)
+        }
+        if (!ext.viralStoryboardRequired.isPresent || ext.viralStoryboardRequired.get() == conventions.viralStoryboardRequired) {
+            ext.viralStoryboardRequired.set(config.viral.storyboardRequired)
+        }
+        if (!ext.viralStoryboardFile.isPresent || ext.viralStoryboardFile.get() == conventions.viralStoryboardFile) {
+            ext.viralStoryboardFile.set(config.viral.storyboardFile)
+        }
     }
 }

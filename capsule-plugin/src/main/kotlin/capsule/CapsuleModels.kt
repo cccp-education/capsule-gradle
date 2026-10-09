@@ -240,6 +240,34 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val chaptersOutroText: Property<String> = objects.property(String::class.java)
         .convention("")
 
+    /** CAP-VIRAL — `true` to enable viral campaign generation (short-form vertical). Defaults to false (opt-in). */
+    val viralEnabled: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
+    /** CAP-VIRAL — target platform preset (`YOUTUBE_SHORT`/`TIKTOK`/`REELS`). Defaults to `TIKTOK`. */
+    val viralPlatform: Property<String> = objects.property(String::class.java)
+        .convention("TIKTOK")
+
+    /** CAP-VIRAL — target video duration in seconds (coerced to 15-60 s). Defaults to 30. */
+    val viralTargetDurationSeconds: Property<Int> = objects.property(Int::class.java)
+        .convention(30)
+
+    /** CAP-VIRAL — opening 3-second hook / message angle. Defaults to empty. */
+    val viralHook: Property<String> = objects.property(String::class.java)
+        .convention("")
+
+    /** CAP-VIRAL — closing call-to-action. Defaults to empty. */
+    val viralCta: Property<String> = objects.property(String::class.java)
+        .convention("")
+
+    /** CAP-VIRAL — when `true`, no video is rendered before a validated storyboard exists. Defaults to true (editorial gate). */
+    val viralStoryboardRequired: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(true)
+
+    /** CAP-VIRAL — path to the storyboard AsciiDoc. Defaults to empty (resolved per campaign). */
+    val viralStoryboardFile: Property<String> = objects.property(String::class.java)
+        .convention("")
+
     internal val conventions: CapsuleConventions = CapsuleConventions(
         outputDir = "capsule",
         sliderScriptDir = "capsule",
@@ -296,7 +324,14 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         previewOnly = false,
         chaptersEnabled = false,
         chaptersIntroText = "",
-        chaptersOutroText = ""
+        chaptersOutroText = "",
+        viralEnabled = false,
+        viralPlatform = "TIKTOK",
+        viralTargetDurationSeconds = 30,
+        viralHook = "",
+        viralCta = "",
+        viralStoryboardRequired = true,
+        viralStoryboardFile = ""
     )
 }
 
@@ -356,5 +391,12 @@ data class CapsuleConventions(
     val previewOnly: Boolean,
     val chaptersEnabled: Boolean,
     val chaptersIntroText: String,
-    val chaptersOutroText: String
+    val chaptersOutroText: String,
+    val viralEnabled: Boolean,
+    val viralPlatform: String,
+    val viralTargetDurationSeconds: Int,
+    val viralHook: String,
+    val viralCta: String,
+    val viralStoryboardRequired: Boolean,
+    val viralStoryboardFile: String
 )

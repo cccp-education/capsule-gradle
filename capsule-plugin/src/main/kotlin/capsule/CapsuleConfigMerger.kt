@@ -6,6 +6,8 @@ import capsule.podcast.PodcastConfig
 import capsule.preview.PreviewConfig
 import capsule.transcript.TranscriptConfig
 import capsule.transcript.TranscriptStrategy
+import capsule.viral.ViralConfig
+import capsule.viral.ViralPlatform
 import java.io.File
 
 /**
@@ -48,7 +50,8 @@ object CapsuleConfigMerger {
             remotion = mergeRemotionConfig(envConfig.remotion, propertiesConfig.remotion, yaml?.remotion, cliParams),
             podcast = mergePodcastConfig(envConfig.podcast, propertiesConfig.podcast, yaml?.podcast, cliParams),
             preview = mergePreviewConfig(envConfig.preview, propertiesConfig.preview, yaml?.preview, cliParams),
-            chapters = mergeChaptersConfig(envConfig.chapters, propertiesConfig.chapters, yaml?.chapters, cliParams)
+            chapters = mergeChaptersConfig(envConfig.chapters, propertiesConfig.chapters, yaml?.chapters, cliParams),
+            viral = mergeViralConfig(envConfig.viral, propertiesConfig.viral, yaml?.viral, cliParams)
         )
     }
 
@@ -179,6 +182,15 @@ object CapsuleConfigMerger {
                 introText = env["CAPSULE_CHAPTERS_INTRO_TEXT"] ?: "",
                 outroText = env["CAPSULE_CHAPTERS_OUTRO_TEXT"] ?: "",
                 outputDir = env["CAPSULE_CHAPTERS_OUTPUT_DIR"] ?: ""
+            ),
+            viral = ViralConfig(
+                enabled = env["CAPSULE_VIRAL_ENABLED"]?.toBoolean() ?: false,
+                platform = ViralPlatform.fromString(env["CAPSULE_VIRAL_PLATFORM"]),
+                targetDurationSeconds = env["CAPSULE_VIRAL_TARGET_DURATION_SECONDS"]?.toIntOrNull() ?: 30,
+                hook = env["CAPSULE_VIRAL_HOOK"] ?: "",
+                cta = env["CAPSULE_VIRAL_CTA"] ?: "",
+                storyboardRequired = env["CAPSULE_VIRAL_STORYBOARD_REQUIRED"]?.toBoolean() ?: true,
+                storyboardFile = env["CAPSULE_VIRAL_STORYBOARD_FILE"] ?: ""
             )
         )
     }
@@ -278,6 +290,15 @@ object CapsuleConfigMerger {
                 introText = props["capsule.chapters.introText"] ?: "",
                 outroText = props["capsule.chapters.outroText"] ?: "",
                 outputDir = props["capsule.chapters.outputDir"] ?: ""
+            ),
+            viral = ViralConfig(
+                enabled = props["capsule.viral.enabled"]?.toBoolean() ?: false,
+                platform = ViralPlatform.fromString(props["capsule.viral.platform"]),
+                targetDurationSeconds = props["capsule.viral.targetDurationSeconds"]?.toIntOrNull() ?: 30,
+                hook = props["capsule.viral.hook"] ?: "",
+                cta = props["capsule.viral.cta"] ?: "",
+                storyboardRequired = props["capsule.viral.storyboardRequired"]?.toBoolean() ?: true,
+                storyboardFile = props["capsule.viral.storyboardFile"] ?: ""
             )
         )
     }
@@ -391,6 +412,18 @@ object CapsuleConfigMerger {
         )
     }
 
+    private fun mergeViralConfig(env: ViralConfig, props: ViralConfig, yaml: ViralConfig?, cli: Map<String, Any?>): ViralConfig {
+        return ViralConfig(
+            enabled = mergeBoolean(cli, "viral.enabled", yaml?.enabled, props.enabled),
+            platform = mergeViralPlatform(cli, "viral.platform", yaml?.platform, props.platform),
+            targetDurationSeconds = mergeInt(cli, "viral.targetDurationSeconds", yaml?.targetDurationSeconds, props.targetDurationSeconds),
+            hook = mergeStr(cli, "viral.hook", yaml?.hook, props.hook, env.hook),
+            cta = mergeStr(cli, "viral.cta", yaml?.cta, props.cta, env.cta),
+            storyboardRequired = mergeBoolean(cli, "viral.storyboardRequired", yaml?.storyboardRequired, props.storyboardRequired),
+            storyboardFile = mergeStr(cli, "viral.storyboardFile", yaml?.storyboardFile, props.storyboardFile, env.storyboardFile)
+        )
+    }
+
     private fun mergeRemotionConfig(env: RemotionConfig, props: RemotionConfig, yaml: RemotionConfig?, cli: Map<String, Any?>): RemotionConfig {
         return RemotionConfig(
             projectDir = mergeStr(cli, "remotion.projectDir", yaml?.projectDir, props.projectDir, env.projectDir),
@@ -474,6 +507,18 @@ object CapsuleConfigMerger {
     ): TranscriptStrategy {
         val cliValue = cli[key]?.toString()
         if (!cliValue.isNullOrBlank()) return TranscriptStrategy.fromString(cliValue)
+        yaml?.let { return it }
+        return props
+    }
+
+    private fun mergeViralPlatform(
+        cli: Map<String, Any?>,
+        key: String,
+        yaml: ViralPlatform?,
+        props: ViralPlatform
+    ): ViralPlatform {
+        val cliValue = cli[key]?.toString()
+        if (!cliValue.isNullOrBlank()) return ViralPlatform.fromString(cliValue)
         yaml?.let { return it }
         return props
     }
