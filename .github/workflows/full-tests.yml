@@ -51,6 +51,15 @@ jobs:
         env:
           CI: "true"
 
+      # Dedicated pure-domain BDD runners (no ffmpeg/node). They are opt-in
+      # (`additionalTasksInCheck` default false) so `check` stays fast — CI must
+      # invoke them explicitly or they are ghost tests (lesson Queens S-269).
+      - name: Run viral campaign BDD (CAP-VIRAL domain)
+        run: ./gradlew cucumberTestViral -PrunCucumber
+        working-directory: capsule-plugin
+        env:
+          CI: "true"
+
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
