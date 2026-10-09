@@ -125,6 +125,8 @@ class RenderViralVariantsFunctionalTest {
                 "renderViralVariants",
                 "-Pcapsule.viral.enabled=true",
                 "-Pcapsule.viral.storyboardFile=storyboard.adoc",
+                "-Pcapsule.viral.hook=Et si 30 secondes suffisaient ?",
+                "-Pcapsule.viral.cta=Découvrez FPA",
                 "-Pcapsule.viral.languages=fr,en",
                 "-Pcapsule.viral.platforms=TIKTOK",
             )

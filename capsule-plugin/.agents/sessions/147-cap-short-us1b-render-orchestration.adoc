@@ -65,6 +65,24 @@ Baby-step DDD/TDD : RED (compilation) → GREEN (compilation locale) → REFACTO
 `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` VERTS.
 Preuve = CI du push (`Test` + `Full Tests`).
 
+=== Correctif CI (premier run rouge → vert)
+
+Le premier run `Full Tests` est **rouge** (2 functional rendus). La CI a révélé
+deux défauts invisibles en local (compile-only) :
+
+* **`deckFile` `@InputFile @Optional`** — la convention posait *toujours* le
+  chemin `viral-deck.html`, même absent → `Input file does not exist` (validation
+  Gradle) dès que la tâche tourne sans deck (mode désactivé). **Fix** : convention
+  *tolérante* (présent → fichier, absent → `null`), pattern `augmentedContextFile`
+  du campaign task.
+* **Test « déjà rendu »** — `renderViralVariants` `dependsOn generateViralCampaign`
+  qui, sans hook configuré, appelle le **LLM** (`ChatModelViralHookGenerator`) →
+  `ConnectException` sur runner sans Ollama. **Fix** : le test passe
+  `-Pcapsule.viral.hook=…` (court-circuit Économie d'Encre, comme les tests du
+  campagne).
+
+Re-run CI : `Test` + `Full Tests` VERTS.
+
 == Décisions
 
 * **Orchestration pure + adaptateur mince** — toute la logique (plan/skip/driver)

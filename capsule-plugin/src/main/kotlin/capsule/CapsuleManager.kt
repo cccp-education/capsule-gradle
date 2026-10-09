@@ -315,7 +315,12 @@ class CapsuleManager(private val project: Project) {
                     if (path.isBlank()) null else project.file(path)
                 }),
             )
-            task.deckFile.convention(project.layout.buildDirectory.file("capsule/viral/viral-deck.html"))
+            task.deckFile.convention(
+                project.layout.file(project.provider {
+                    val f = project.layout.buildDirectory.file("capsule/viral/viral-deck.html").get().asFile
+                    if (f.exists()) f else null
+                }),
+            )
         }
     }
 
