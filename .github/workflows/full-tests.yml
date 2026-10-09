@@ -8,7 +8,7 @@ jobs:
   full-tests:
     name: Full Test Suite (real binaries + duration validation)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,11 @@ jobs:
           npx playwright install chromium
           npx playwright install-deps chromium
 
-      - name: Run fast tests (unit + functional + cucumber dedicated)
-        run: ./gradlew test functionalTest
+      # Full suite with real binaries installed: unit + functionalTest +
+      # cucumberTest (all Playwright scenarios) + dedicated runners + kover.
+      # `check` runs the whole gate; `test` alone excludes `*.scenarios.*`.
+      - name: Run full test suite
+        run: ./gradlew check
         working-directory: capsule-plugin
         env:
           CI: "true"

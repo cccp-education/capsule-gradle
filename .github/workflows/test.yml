@@ -8,9 +8,9 @@ on:
 
 jobs:
   test:
-    name: Build & Test
+    name: Fast Tests (PR Gate)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
@@ -24,6 +24,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build and Test
-        run: ./gradlew check
+      # Fast PR gate: unit tests only — no real ffmpeg/espeak/node/Chromium.
+      # functionalTest + cucumberTest require those binaries and run in the
+      # `Full Tests` job which installs them. (Mirror codebase `testFast`.)
+      - name: Run fast tests (unit)
+        run: ./gradlew test
         working-directory: capsule-plugin
