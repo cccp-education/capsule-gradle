@@ -19,6 +19,7 @@ import capsule.viral.ViralStoryboard
 import capsule.viral.ViralStoryboardBuilder
 import capsule.viral.ViralStoryboardParser
 import capsule.viral.ViralStoryboardValidator
+import capsule.viral.ViralTimeFitter
 import capsule.viral.ViralVariantRenderPlan
 import capsule.viral.ViralVariantRenderer
 import capsule.viral.ViralVariant
@@ -27,6 +28,7 @@ import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import java.io.File
 import java.nio.file.Files
 
@@ -52,6 +54,9 @@ class CapsuleViralSteps {
     private var renderPlan: ViralVariantRenderPlan? = null
     private var renderDir: File? = null
     private var renderResult: ViralRenderResult? = null
+    private var fittedDurations: List<Double> = emptyList()
+    private var gateTarget: Int = 0
+    private var gateTolerance: Double = 0.0
 
     private fun buildStoryboard(deckName: String, language: String, platform: String, table: DataTable): ViralStoryboard {
         val beats = table.asMaps().map { row ->
@@ -301,5 +306,36 @@ class CapsuleViralSteps {
     @Then("the render result skipped is {int}")
     fun `the render result skipped is`(count: Int) {
         assertThat(renderResult!!.skippedCount).isEqualTo(count)
+    }
+
+    @Given("a viral time-fit of beats {string} to target {int}")
+    fun `a viral time-fit of beats to target`(beats: String, target: Int) {
+        fittedDurations = ViralTimeFitter.fit(beats.split(",").map { it.trim().toDouble() }, target)
+    }
+
+    @Then("the fitted durations sum to {double}")
+    fun `the fitted durations sum to`(expected: Double) {
+        assertThat(fittedDurations.sum()).isCloseTo(expected, within(1e-6))
+    }
+
+    @Then("the fitted duration at index {int} is {double}")
+    fun `the fitted duration at index is`(index: Int, expected: Double) {
+        assertThat(fittedDurations[index]).isCloseTo(expected, within(0.01))
+    }
+
+    @Given("a viral duration gate with target {int} and tolerance {double}")
+    fun `a viral duration gate with target and tolerance`(target: Int, tolerance: Double) {
+        gateTarget = target
+        gateTolerance = tolerance
+    }
+
+    @Then("the duration {double} is fitted")
+    fun `the duration is fitted`(seconds: Double) {
+        assertThat(ViralTimeFitter.isFitted(seconds, gateTarget, gateTolerance)).isTrue()
+    }
+
+    @Then("the duration {double} is not fitted")
+    fun `the duration is not fitted`(seconds: Double) {
+        assertThat(ViralTimeFitter.isFitted(seconds, gateTarget, gateTolerance)).isFalse()
     }
 }

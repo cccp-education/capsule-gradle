@@ -1,7 +1,22 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-09
-:session: 147 CAP-SHORT US-1b — orchestration `renderViralVariants`
+:session: 148 CAP-SHORT US-2 — time-fit 15-60 s
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 9 octobre 2026 (après session 148)
+
+.Modifications session 148 — CAP-SHORT US-2 (time-fit)
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/viral/ViralTimeFitter.kt` (nouveau) | Objet pur : `fit` (trim/pad proportionnel au target, clamp [15,60], somme exacte) + `isFitted` (gate). | +7 `ViralTimeFitterTest`
+| `capsule/viral/RenderViralVariantsTask.kt` (modifié) | Durées ajustées (`fit`) avant capture + gate durée sur le MP4 sondé (`MediaProbeUtil`), `toleranceSecs`. | 0 (adaptateur)
+| `capsule/CapsuleManager.kt` (modifié) | Convention `toleranceSecs`. | 0 (configuration)
+| `capsule_viral.feature` + `CapsuleViralSteps.kt` (modifiés) | 15 → 18 scénarios `@viral` (fit scale, fit trim, gate). | +3 scénarios (runner `cucumberTestViral` existant)
+|===
+
+*Totaux S-148* : +7 unit, +3 scénarios BDD. Gates locaux (Local = Build) :
+`compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` VERT. Les
+suites s'exécutent en CI (`Test` + `Full Tests`).
 
 == Couverture — 9 octobre 2026 (après session 147)
 

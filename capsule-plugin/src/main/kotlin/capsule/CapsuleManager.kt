@@ -306,6 +306,9 @@ class CapsuleManager(private val project: Project) {
             task.captureTimeoutMs.convention(project.provider {
                 capsuleExt?.playwrightTimeout?.get() ?: 120_000.0
             })
+            task.toleranceSecs.convention(project.provider {
+                project.findProperty("capsule.viral.durationToleranceSecs")?.toString()?.toDoubleOrNull() ?: 1.0
+            })
             task.storyboardFile.convention(
                 project.layout.file(project.provider {
                     val configured = capsuleExt?.viralStoryboardFile?.get().orEmpty()

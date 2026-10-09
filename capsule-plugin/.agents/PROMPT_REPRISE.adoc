@@ -1,36 +1,34 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 148
+:session: 149
 :borough: Détroit
-:session_precedente: 147 — CAP-SHORT US-1b : orchestration `renderViralVariants`
+:session_precedente: 148 — CAP-SHORT US-2 : time-fit 15-60 s imposé au montage
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-147 — CAP-SHORT US-1b (orchestration du rendu)
+=== S-148 — CAP-SHORT US-2 (time-fit)
 
-- `ViralVariantRenderer` (objet pur) : `plan` (`<id>.mp4` par variante),
-  `pending` (économie d'encre), `render` (driver via le seam `ViralVariantRender`).
-- Tâche `renderViralVariants` (groupe `generate`, `dependsOn generateViralCampaign`) :
-  capture le deck US-1a via le **socle FFmpeg** `SCREENSHOT`, transcode MP4, écrit
-  `renderedVideoDir/<variant.id>.mp4`, skip si `<id>.mp4` existe.
-- Layered : 1 unit + 1 functional + 3 scénarios BDD `@viral` (runner existant).
-- Rapport : `.agents/sessions/147-cap-short-us1b-render-orchestration.adoc`.
+- `ViralTimeFitter` (objet pur) : `fit` (trim/pad proportionnel au
+  `targetDurationSeconds`, clamp [15,60], somme exacte) + `isFitted` (gate durée).
+- Câblé dans `RenderViralVariantsTask` : durées ajustées avant capture + gate sur
+  la durée sondée du MP4 (`toleranceSecs` défaut 1.0s).
+- Layered : 1 unit (`ViralTimeFitterTest`, 7) + 3 scénarios BDD `@viral`.
+- Rapport : `.agents/sessions/148-cap-short-us2-time-fit.adoc`.
 
-=== S-146 (contexte)
+=== S-147 / S-146 (contexte)
 
-- CAP-SHORT US-1a : `ViralDeckBuilder` (storyboard → deck HTML 1080×1920) +
-  `GenerateViralCampaignTask.deckOutput`.
+- US-1b : `ViralVariantRenderer` + tâche `renderViralVariants` (MP4 par variante,
+  socle FFmpeg, économie d'encre). US-1a : `ViralDeckBuilder` (deck 1080×1920).
 
-== Mission Session 148 — priorités
+== Mission Session 149 — priorités
 
-1. **CAP-SHORT US-2 (P0)** — **time-fit 15-60 s imposé au montage** : cadence
-   FFmpeg honorant `targetDurationSeconds` (trim/pad/pacing) + gate
-   `VideoDurationValidator`.
-2. **CAP-SHORT US-3** — batch réel langue × plateforme (N variantes en une
-   commande, skip Économie d'Encre).
-3. **CAP-SHORT US-5** — BDD rendu (un vrai MP4 produit, durée).
-4. **CAP-CONTEXT US-4** — `Capsule.jsx` sur tokens du brand book.
-5. **Maintenance RENAME** — résidus métier `pédagogique/formation` dans l'OSS.
+1. **CAP-SHORT US-3 (P0)** — **batch réel langue × plateforme** : N variantes
+   rendues en une commande, skip Économie d'Encre si MP4 valide. (Le domaine
+   `ViralBatchPlanner` + `ViralVariantRenderer` existent ; vérifier/renforcer le
+   comportement batch de bout en bout.)
+2. **CAP-SHORT US-5** — BDD rendu : un **vrai MP4** produit + durée (gate).
+3. **CAP-CONTEXT US-4** — `Capsule.jsx` sur tokens du brand book.
+4. **Maintenance RENAME** — résidus métier `pédagogique/formation` dans l'OSS.
 
 == Points d'attention
 
@@ -42,6 +40,7 @@ _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 * Tout nouveau feature cucumber = **runner dédié** (S-082) + steps **préfixés**
   (S-088) + câblage explicite `full-tests.yml` (anti ghost-test, leçon Queens
   S-269).
+* **Économie d'Encre** : skip si `<id>.mp4` existe et est non vide.
 * **Sessions concurrentes** : `git status` à l'ouverture (drift gouvernance).
 * Baby-step DDD/TDD/BDD (unit → functional → cucumber), RED → GREEN → REFACTOR.
 * English only : code, Gherkin, commentaires.
@@ -53,4 +52,4 @@ _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
   variantes = `build/capsule/viral/videos/<id>.mp4` (US-1b) ; manifeste =
   `viral-campaign.json`.
 * CAP-VIRAL **TERMINÉ 14/14 US** (S-142) ; CAP-CONTEXT **3/4 US** (S-145) ;
-  CAP-SHORT **3/6 US** (S-146/S-147 : US-1a + US-1b ✅).
+  CAP-SHORT **4/6 US** (S-146→S-148 : US-1a + US-1b + US-2 ✅).

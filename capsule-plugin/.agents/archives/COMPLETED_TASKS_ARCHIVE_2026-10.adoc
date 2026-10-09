@@ -1,6 +1,21 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-09
 
+== Session 148 — CAP-SHORT US-2 : time-fit 15-60 s imposé au montage ✅
+
+* **`ViralTimeFitter`** (domaine `capsule.viral`, objet pur) — `fit` trime/pade
+  les beats **proportionnellement** au `targetDurationSeconds` (clamp [15,60],
+  somme exacte par absorption du résidu sur le dernier beat) ; `isFitted` = gate
+  de durée.
+* **Câblage** `RenderViralVariantsTask` : les durées de capture sont ajustées
+  avant le rendu (`time-fit: Σ… → target`) ; après conversion, la durée **sondée**
+  du MP4 est gatée (`MediaProbeUtil.probeDuration` + `ViralTimeFitter.isFitted`,
+  `toleranceSecs` défaut 1.0s, via `-Pcapsule.viral.durationToleranceSecs`).
+* **Layers** : 1 unit (`ViralTimeFitterTest`, 7) + 3 scénarios BDD `@viral`
+  (runner `cucumberTestViral` existant). Local = Build, Tests = CI.
+* Reste CAP-SHORT : US-3 (batch réel), US-4 (dogfooding), US-5 (BDD rendu).
+  Rapport `.agents/sessions/148-cap-short-us2-time-fit.adoc`.
+
 == Session 147 — CAP-SHORT US-1b : orchestration `renderViralVariants` ✅
 
 * **`ViralVariantRenderer`** (domaine `capsule.viral`, objet pur) — la colonne

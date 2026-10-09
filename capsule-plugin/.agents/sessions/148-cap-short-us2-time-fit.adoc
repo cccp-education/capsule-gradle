@@ -1,0 +1,76 @@
+= Session 148 — CAP-SHORT US-2 : time-fit 15-60 s imposé au montage
+:session: 148
+:date: 2026-10-09
+:type: feat + test (baby-step DDD/TDD/BDD)
+:epic: CAP-SHORT (US-2)
+:methode: Local = Build, Tests = CI (aucun test/check local — GitHub Actions)
+
+== Contexte
+
+Suite d'US-1b (S-147, orchestration `renderViralVariants`). Le montage rendait
+les beats à leur durée **brute** (somme ≈ cible ±20 %, gate éditoriale), mais le
+format court exige que le livrable tienne la fenêtre **[15, 60] s** de façon
+**exacte**. US-2 impose la cadence au montage (trim/pad) et gate la durée produite.
+
+== Livrable — `ViralTimeFitter` + gate
+
+=== Domaine pur `capsule.viral`
+
+* `ViralTimeFitter.fit(beatDurations, targetSeconds)` — trime/pade les beats
+  **proportionnellement** (`scale = target / Σbeats`), clampe la cible à [15, 60],
+  et absorbe le résidu flottant sur le dernier beat → **somme exactement** égale
+  à la cible. Le *pacing relatif* est préservé (seule la cadence change).
+* `ViralTimeFitter.isFitted(actualSeconds, targetSeconds, toleranceSecs)` — le
+  **gate** de durée sur la valeur sondée.
+
+Invariants (fail-fast) : liste non vide, durées strictement positives. Objet pur
+— zéro I/O, déterministe.
+
+=== Câblage `RenderViralVariantsTask`
+
+* Les durées de capture passent par `fit(rawDurations, target)` (log
+  `time-fit: Σ… → …s (target …s, ±…s)`).
+* Après conversion MP4, la durée **sondée** (`MediaProbeUtil.probeDuration`) est
+  gatée (`isFitted`) : hors tolérance → la variante est marquée *failed* (warn en
+  non-strict, `error` en strict). Nouvelle entrée `@Input toleranceSecs`
+  (défaut 1.0s, `-Pcapsule.viral.durationToleranceSecs`).
+
+== Preuves (layers de test)
+
+* **Unit** : `ViralTimeFitterTest` (7 tests) — identité, pad, trim, clamp [15,60],
+  rejet liste vide/non-positive, déterminisme, gate (`isFitted`). RED prouvé par
+  la compilation.
+* **Cucumber** : `capsule_viral.feature` +3 scénarios `@viral` (fit scale, fit
+  trim, gate fitted/not-fitted) + 6 steps (`CapsuleViralSteps` préfixes
+  « viral time-fit »/« duration gate »/« fitted »). Runner `cucumberTestViral`
+  existant.
+
+== Méthode
+
+Baby-step DDD/TDD : RED (compilation) → GREEN (compilation locale) → REFACTOR.
+**Aucun test/check local** (règle EAGER Local = Build, Tests = CI) :
+`compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` VERTS.
+Preuve = CI du push (`Test` + `Full Tests`).
+
+== Décisions
+
+* **Time-fit proportionnel** (pas de hold/cut par beat) — déterministe, préserve
+  le pacing narratif, et la somme est exacte par construction.
+* **Gate sur la durée sondée** — la capture produit `Σdurations = target`, mais le
+  conteneur/ffmpeg peut dériver de quelques centaines de ms → tolérance absolue
+  (`toleranceSecs`, défaut 1.0s).
+* **Pas d'audio dans le rendu viral** (deck HTML statique, pas de TTS muxé) — le
+  scaling des durées ne désynchronise rien.
+
+== Fichiers
+
+* Créés (2) : `viral/ViralTimeFitter.kt`, `test/.../viral/ViralTimeFitterTest.kt`.
+* Modifiés (4) : `viral/RenderViralVariantsTask.kt` (fit + gate + `toleranceSecs`),
+  `CapsuleManager.kt` (convention), `capsule_viral.feature` (+3 scénarios),
+  `scenarios/CapsuleViralSteps.kt` (+6 steps).
+
+== Statut / suite
+
+CAP-SHORT **US-1a ✅ S-146, US-1b ✅ S-147, US-2 ✅ S-148** (4/6 US). Reste
+**US-3** (batch réel langue × plateforme), **US-5** (BDD rendu), **US-4**
+(dogfooding, accord pilote). Zéro publication, zéro secret.

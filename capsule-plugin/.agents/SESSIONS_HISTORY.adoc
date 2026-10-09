@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-09 (S-147) — CAP-SHORT US-1b (orchestration renderViralVariants). Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-09 (S-148) — CAP-SHORT US-2 (time-fit 15-60 s). Rapports détaillés dans `.agents/sessions/`.
 
-== 24 dernières sessions (124-147)
+== 24 dernières sessions (125-148)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 148 | 2026-10-09 | feat+test | **CAP-SHORT US-2 — time-fit 15-60 s imposé au montage**. `ViralTimeFitter` (objet pur) : `fit` (trim/pad **proportionnel** au `targetDurationSeconds`, clamp [15,60], somme exacte par absorption du résidu sur le dernier beat) + `isFitted` (gate durée). Câblé dans `RenderViralVariantsTask` : durées ajustées avant capture + gate sur la durée **sondée** du MP4 (`MediaProbeUtil`, `toleranceSecs` défaut 1.0s). Layered : 1 unit (`ViralTimeFitterTest`, 7) + 3 scénarios BDD `@viral` (runner existant). Local = Build, Tests = CI. Rapport `.agents/sessions/148-cap-short-us2-time-fit.adoc`. | 9/10
 
 | 147 | 2026-10-09 | feat+test | **CAP-SHORT US-1b — orchestration `renderViralVariants`** (ferme le trou domaine→livrable). `ViralVariantRenderer` (objet pur) : `plan` (`<id>.mp4` par variante), `pending` (économie d'encre), `render` (driver via `ViralVariantRender` — rend, skip, échec agrégés). Tâche Gradle `RenderViralVariantsTask` (groupe generate, `dependsOn generateViralCampaign`) : capture le deck US-1a via le socle FFmpeg `SCREENSHOT` (`CaptureResolver`), transcode MP4 (`resolveFormatConverter`), écrit `renderedVideoDir/<variant.id>.mp4`, skip si `<id>.mp4` existe. Seams `@Internal` `captureFactory`/`formatConverter`. Layered : 1 unit (`ViralVariantRendererTest`, 5) + 1 functional (registration, disabled, economy-of-ink) + 3 scénarios BDD `@viral` (runner existant). Local = Build, Tests = CI. Rapport `.agents/sessions/147-cap-short-us1b-render-orchestration.adoc`. | 9/10
 

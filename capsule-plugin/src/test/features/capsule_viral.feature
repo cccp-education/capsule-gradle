@@ -87,6 +87,21 @@ Feature: Viral campaign engine
     Then the render result rendered is 2
     And the render result skipped is 0
 
+  Scenario: The time-fit scales the beats to the target duration
+    Given a viral time-fit of beats "3,10,10,7" to target 30
+    Then the fitted durations sum to 30
+    And the fitted duration at index 1 is 10
+
+  Scenario: The time-fit trims a storyboard that runs long
+    Given a viral time-fit of beats "10,10,10" to target 20
+    Then the fitted durations sum to 20
+    And the fitted duration at index 0 is 6.67
+
+  Scenario: The duration gate accepts a fitted video and rejects a drifted one
+    Given a viral duration gate with target 30 and tolerance 1.0
+    Then the duration 30.4 is fitted
+    And the duration 33.0 is not fitted
+
   Scenario: The campaign manifest serialises the bundles as a stable JSON array
     Given a viral batch with languages "fr" platforms "TIKTOK" and duration 30
     And a market copy for "fr" and "TIKTOK" with title "Titre natif"

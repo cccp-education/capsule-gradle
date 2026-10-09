@@ -3,6 +3,7 @@ package capsule.viral
 import capsule.CaptureResolver
 import capsule.CaptureStrategy
 import capsule.CapsuleManager
+import capsule.MediaProbeUtil
 import capsule.NoOpPlaywrightCapture
 import capsule.PlaywrightCapture
 import capsule.ScreenshotCaptureImpl
@@ -79,6 +80,10 @@ abstract class RenderViralVariantsTask : DefaultTask() {
     @get:Input
     abstract val captureTimeoutMs: Property<Double>
 
+    /** Tolerance (seconds) of the produced duration against the target short-form duration. */
+    @get:Input
+    abstract val toleranceSecs: Property<Double>
+
     /** Validated storyboard AsciiDoc — the beat durations drive the capture. */
     @get:InputFile
     @get:Optional
@@ -120,7 +125,13 @@ abstract class RenderViralVariantsTask : DefaultTask() {
         val parsed = ViralStoryboardParser.parse(storyboard.readText())
             ?: error("CAPSULE VIRAL RENDER → storyboard '${storyboard.path}' is not a validable storyboard.")
 
-        val durations = parsed.beats.map { it.durationSeconds }
+        val rawDurations = parsed.beats.map { it.durationSeconds }
+        val target = targetDurationSeconds.get()
+        val durations = ViralTimeFitter.fit(rawDurations, target)
+        logger.lifecycle(
+            "CAPSULE VIRAL RENDER → time-fit: Σ${"%.2f".format(rawDurations.sum())}s " +
+                "→ ${"%.2f".format(durations.sum())}s (target ${target}s, ±${toleranceSecs.get()}s)",
+        )
         val resolvedPlatforms = platforms.get()
             .mapNotNull { name -> name.takeIf { it.isNotBlank() }?.let { ViralPlatform.fromString(it) } }
         val variants = ViralBatchPlanner.plan(languages.get(), resolvedPlatforms, targetDurationSeconds.get())
@@ -139,7 +150,9 @@ abstract class RenderViralVariantsTask : DefaultTask() {
             val result = ViralVariantRenderer.render(
                 plan = plan,
                 isRenderable = { it.exists() && it.length() > 0L },
-                render = { entry -> renderVariant(entry, deck, durations, engine, converter) },
+                render = { entry ->
+                    renderVariant(entry, deck, durations, target, toleranceSecs.get(), engine, converter)
+                },
             )
             logger.lifecycle(
                 "CAPSULE VIRAL RENDER → ${result.renderedCount} rendered, " +
@@ -155,11 +168,13 @@ abstract class RenderViralVariantsTask : DefaultTask() {
         }
     }
 
-    /** Captures the deck and transcodes it to `entry.videoFile` (economy of ink upstream). */
+    /** Captures the deck, transcodes to `entry.videoFile`, then gates the duration (US-2). */
     private fun renderVariant(
         entry: ViralVariantRenderEntry,
         deck: File,
         durations: List<Double>,
+        targetSeconds: Int,
+        toleranceSecs: Double,
         engine: PlaywrightCapture,
         converter: VideoFormatConverter,
     ): Boolean {
@@ -176,7 +191,20 @@ abstract class RenderViralVariantsTask : DefaultTask() {
             )
             val webm = File(work, "capsule.webm")
             val converted = converter.convertToMp4(webm, entry.videoFile)
-            converted && entry.videoFile.exists() && entry.videoFile.length() > 0L
+            val produced = converted && entry.videoFile.exists() && entry.videoFile.length() > 0L
+            if (!produced) {
+                false
+            } else {
+                val seconds = MediaProbeUtil.probeDuration(entry.videoFile)
+                val fitted = ViralTimeFitter.isFitted(seconds, targetSeconds, toleranceSecs)
+                if (!fitted) {
+                    logger.warn(
+                        "CAPSULE VIRAL RENDER → variant '{}' produced {}s, outside target {}s ±{}s",
+                        entry.variant.id, seconds, targetSeconds, toleranceSecs,
+                    )
+                }
+                fitted
+            }
         } catch (e: Exception) {
             logger.warn("CAPSULE VIRAL RENDER → variant '{}' failed: {}", entry.variant.id, e.message)
             false
