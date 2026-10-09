@@ -1,6 +1,28 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-09
 
+== Session 142 — CAP-VIRAL : câblage `generateViralCampaign` + socle FFmpeg + US-7 + ghost-tests ✅
+
+* **`GenerateViralCampaignTask`** — pilote `ViralCampaignAssembler` : porte
+  éditoriale storyboard → hook ancré N1 (LLM ou hook explicite = économie d'encre)
+  → batch (US-6) → copy lue GBL-006 (US-9) → manifeste `viral-campaign.json` (US-10).
+  Registrar `generateViralCampaign` + wiring extension 4 sources (dont
+  `viralLanguages` / `viralPlatforms`).
+* **`ViralStoryboardParser`** — inverse de `ViralStoryboardBuilder` (round-trip
+  `parse(build(sb)) == sb`), dégradation `null`.
+* **`CampaignBundleSerializer.toManifestJson`** — manifeste JSON de campagne
+  (tableau stable) ; `toJson` refactoré DRY sur `bundleNode`.
+* **`ViralCaptureStrategy`** — règle pure : viral activé **remplace `PLAYWRIGHT`
+  par `SCREENSHOT`** (socle FFmpeg PNG→concat `-c copy`, Playwright temps réel
+  écarté), `REMOTION` conservé (enrichissement). Câblé `CapsuleVideoTask`.
+* **US-7** — `Root.jsx` piloté par props (`calculateMetadata`) : fin du hardcode
+  1408×792, le preset vertical 1080×1920 de `ViralViewport` est honoré par
+  composition.
+* **Dette ghost-tests** — 20 runners Cucumber pure-domain câblés `full-tests.yml`.
+* **CAP-VIRAL TERMINÉ 14/14 US.**
+* +15 unit, +5 functional, `capsule_viral.feature` 7 → 9 scénarios. Rapport
+  `.agents/sessions/142-cap-viral-wiring-ffmpeg-socle-us7-ghost-tests.adoc`.
+
 == Session 141 — CAP-VIRAL assemblage bout-en-bout + US-8 BDD + ghost-test ✅
 
 * **`ViralCampaignAssembler`** — joint storyboard → variants → hooks ancrés N1 →

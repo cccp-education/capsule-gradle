@@ -1,0 +1,81 @@
+= Session 142 — CAP-VIRAL : câblage tâche `generateViralCampaign` + socle FFmpeg + US-7 + dette ghost-tests
+:session: 142
+:date: 2026-10-09
+:type: feat + test + ci (baby-step DDD/TDD/BDD)
+:epic: CAP-VIRAL
+:methode: domaine pur → tâche → functional → BDD → CI ; Local = Build, Tests = CI
+
+== Contexte
+
+Suite de S-141 (assemblage `ViralCampaignAssembler` + US-8 BDD). Objectif : le
+domaine viral était assemblé mais **aucune tâche Gradle ne le pilotait**.
+Directive pilote de la session : le viral passe par le **socle FFmpeg**
+(PNG → durée exacte → concat demuxer), **pas** l'enregistrement Playwright temps
+réel.
+
+== Livré
+
+[cols="1,4,2", options="header"]
+|===
+| Élément | Contenu | Preuve
+
+| **Câblage tâche (wiring)** | `GenerateViralCampaignTask` — pilote `ViralCampaignAssembler` : porte éditoriale storyboard → hook ancré N1 (LLM, ou hook explicite = économie d'encre) → batch (US-6) → copy lue GBL-006 (US-9) → manifeste `viral-campaign.json` (US-10). Registrar `generateViralCampaign` + wiring extension 4 sources. | compile + FunctionalTestKit
+| **`ViralStoryboardParser`** (nouveau) | Inverse de `ViralStoryboardBuilder` : lit le storyboard AsciiDoc validé → `ViralStoryboard`. Round-trip `parse(build(sb)) == sb`. Dégradation `null` (jamais throw). | 6 unit
+| **`CampaignBundleSerializer.toManifestJson`** | Sérialise la liste de bundles en tableau JSON stable (`viral-campaign.json`) ; `toJson` refactoré DRY sur `bundleNode`. | +2 unit
+| **`ViralCaptureStrategy`** (nouveau) | Règle pure : viral activé **remplace** `PLAYWRIGHT` par `SCREENSHOT` (socle FFmpeg) ; `REMOTION` conservé (enrichissement) ; viral désactivé = stratégie inchangée. Câblé dans `CapsuleVideoTask.resolvePlaywrightCapture`. | 4 unit
+| **US-7 — `Root.jsx` piloté par props** | Fin du hardcode `1408×792` : `calculateMetadata` résout `width/height/fps/durationInFrames` depuis les props (le preset vertical 1080×1920 de `ViralViewport` est honoré par composition). | 3 unit (garde ressource)
+| **Dette ghost-tests** | Les 20 runners Cucumber pure-domain restants (opt-in, jamais invoqués) câblés dans `full-tests.yml` — ferme la leçon Queens S-269. | CI (job `full-tests`)
+|===
+
+== Décision clé — socle FFmpeg, pas Playwright
+
+Le chemin viral force la stratégie `SCREENSHOT` (PNG par slide → encode FFmpeg
+durée exacte → `concat` demuxer `-c copy`) via `ViralCaptureStrategy`. C'est la
+décision S-138 rendue **exécutable** : `PLAYWRIGHT` (temps réel, non
+déterministe) est écarté du viral ; `REMOTION` reste la couche d'enrichissement
+(mouvement + Manim) composée **par-dessus** le socle. Une garde pure empêche la
+dérive silencieuse vers Playwright quand `capsule.viral.enabled=true`.
+
+== Architecture du câblage (après S-142)
+
+```
+generateViralCampaign (GenerateViralCampaignTask, thin adapter)
+  ├─ resolveStoryboard()   → ViralStoryboardParser.parse(storyboardFile)   [porte US-13]
+  ├─ ViralStoryboardValidator.validate()                                     [gate éditoriale]
+  ├─ resolveHook()         → ChatModelViralHookGenerator (N1) ou hook CLI   [US-4, économie d'encre]
+  ├─ ViralBatchPlanner.plan(languages × platforms × durée)                  [US-6]
+  ├─ FileMarketCopySource.read()                                            [US-9 — lu, jamais généré]
+  └─ ViralCampaignAssembler.assemble() → CampaignBundleSerializer.toManifestJson()  [US-10]
+```
+
+== Baseline
+
+* **Unit** : +15 net (6 parser + 2 serializer + 4 stratégie + 3 Root.jsx).
+* **Functional** : +5 `GenerateViralCampaignFunctionalTest`.
+* **Cucumber** : `capsule_viral.feature` passe de 7 à **9 scénarios** `@viral`.
+* Gates locaux (Local = Build) : `compileKotlin` + `compileTestKotlin` +
+  `compileFunctionalTestKotlin` VERT. Les suites s'exécutent en CI.
+
+== Reste (S-143+)
+
+* **Dette `cucumberTest`** — 14 scénarios échouent (héritée S-139) ; non traitée
+  cette session (périmètre : câblage + socle + US-7 + ghost-tests).
+* **Dogfooding viral réel** — un produit talaria (socle FFmpeg **et** chemin
+  enrichi Remotion+Manim), dépend d'un run LLM metered (accord pilote).
+
+== Commits (S-142)
+
+À remplir en clôture.
+
+== Fichiers
+
+* `GenerateViralCampaignTask.kt`, `ViralStoryboardParser.kt`,
+  `ViralCaptureStrategy.kt` (nouveaux)
+* `CampaignBundleSerializer.kt`, `CapsuleManager.kt`, `CapsulePlugin.kt`,
+  `CapsuleModels.kt`, `CapsuleVideoTask.kt`, `Root.jsx` (modifiés)
+* `capsule_viral.feature`, `CapsuleViralSteps.kt`, `CapsuleViralCucumberRunner.kt`
+* tests : `ViralStoryboardParserTest`, `ViralCaptureStrategyTest`,
+  `RemotionRootTemplateTest`, `CampaignBundleTest` (+2),
+  `GenerateViralCampaignFunctionalTest`
+* i18n : 11 `Messages*.properties` + 2 tests
+* CI : `.github/workflows/full-tests.yml`

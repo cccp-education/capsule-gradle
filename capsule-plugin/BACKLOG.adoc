@@ -3,18 +3,18 @@
 :last_update: 2026-10-09 (S-138 CAP-VIRAL cadré — capsule comme moteur de campagnes virales YouTube/TikTok)
 
 '''
-== 🎬 BACKLOG ACTIF — CAP-VIRAL (cadré S-138)
+== 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)
 
 _Capsule = moteur de campagnes de viralité YouTube/TikTok des produits talaria +
 technologie cccp.education. Réoriente le borough (DORMANT) vers le court-forme
 multi-plateforme, en réutilisant l'existant (TTS, Remotion, FFmpeg, hub LLM N1)._
 
 *Cadrage* : `.agents/sessions/138-cap-viral-cadrage.adoc` (US-0 ✅).
-*Charge* : ~53 pts, 14 US — **13 ✅ (S-139→S-141), reste US-7 + câblage tâche.**
+*Charge* : ~53 pts, 14 US — **14 ✅ (S-139→S-142) — CAP-VIRAL TERMINÉ.**
 *Méthode (chaîne à deux étages)* : socle **FFmpeg** (PNG par slide → durée
-exacte → concat demuxer), **pas** Playwright temps réel ; **enrichissement
-Remotion + Manim** (mouvement, schémas animés) — déjà câblés, renforcés pour le
-viral.
+exacte → concat demuxer), **pas** Playwright temps réel (`ViralCaptureStrategy`
+force `SCREENSHOT` quand le viral est activé) ; **enrichissement Remotion + Manim**
+(mouvement, schémas animés) — déjà câblés, renforcés pour le viral.
 *Place dans la chaîne marketing* : capsule = maillon du milieu → **amont**
 `capsule.copy` (US-9, absorbe GBL-006-6) + **aval** `CampaignBundle` (US-10).
 *Ancrage* : hooks/CTA/script **appuyés sur le contexte augmenté N1 codebase**
@@ -23,8 +23,9 @@ provenance anti-hallucination — **pas de copy inventé**.
 *Dimension documentaire* : **storyboard AsciiDoc validable** (US-13) = porte
 éditoriale — message/point de vue → beat par beat → vidéo déployable ; aucun
 rendu sans storyboard validé.
-*Levier du domaine viral* : assemblé (`ViralCampaignAssembler`, S-141) mais **non
-encore branché à une tâche Gradle** (wiring 🟡 S-142).
+*Levier du domaine viral* : assemblé (`ViralCampaignAssembler`, S-141) **et
+branché** à la tâche `generateViralCampaign` (S-142) ; le chemin viral force le
+socle **FFmpeg** (`ViralCaptureStrategy` — Playwright temps réel écarté).
 
 [cols="1,4,2,1,2", options="header"]
 |===
@@ -37,21 +38,21 @@ encore branché à une tâche Gradle** (wiring 🟡 S-142).
 | US-4 | **Hooks/CTA + message (ancrés contexte N1)** — message/point de vue + hook + CTA + provenance | `capsule.viral` | 5 | ✅ S-140
 | US-5 | **Métadonnées campagne (lecture)** — **lu** depuis `CopyPiece` GBL-006 (pas de second moteur) | `capsule.viral` | 3 | ✅ ABSORBÉE par US-9 (S-140)
 | US-6 | **Batch multi-plateforme** — matrice (langue × plateforme × durée) | `capsule.viral` | 4 | ✅ S-140
-| US-7 | **Enrichissement Remotion + Manim** — presets composition verticale + `data-manim` schémas animés | `RemotionCapture.kt`, `Root.jsx`, `ManimParallelRenderer.kt` | 6 | 🟡 À FAIRE (S-142)
+| US-7 | **Enrichissement Remotion + Manim** — presets composition verticale + `data-manim` schémas animés + `Root.jsx` piloté par props | `RemotionCapture.kt`, `Root.jsx`, `ManimParallelRenderer.kt` | 6 | ✅ S-142
 | US-8 | **BDD `cucumberTestViral` + dogfooding** — runner + 1 produit talaria | feature + steps | 5 | ✅ S-141 (dogfooding reporté)
 | US-9 | **Câblage amont `capsule.copy` + contexte N1** (absorbe GBL-006-6) | `capsule.viral` | 4 | ✅ S-140
 | US-10 | **`CampaignBundle`** (contrat aval GBL-002) | `capsule.viral` | 4 | ✅ S-140
 | US-11 | **Thumbnail / cover** par plateforme | `capsule.viral` | 3 | ✅ S-140
 | US-12 | **Sous-titres stylés viral** — karaoké mot-à-mot + emojis | `capsule.viral` | 5 | ✅ S-140
 | US-13 | **Storyboard validable (document → vidéo)** + gate de validation | `capsule.viral`, `capsule.feed`, `capsule.transcript` | 5 | ✅ S-140
-| **wiring** | **Câblage tâche `generateViralCampaign`** (registrar + extension wiring pilotant `ViralCampaignAssembler`) | `CapsuleManager`, `CapsulePlugin` | — | 🟡 À FAIRE (S-142)
+| **wiring** | **Câblage tâche `generateViralCampaign`** (registrar + extension wiring pilotant `ViralCampaignAssembler`) | `CapsuleManager`, `CapsulePlugin` | — | ✅ S-142
 |===
 
-*Total* : 14 US (~53 pts) — **13 ✅ (US-5 absorbée), reste US-7 🟡 + wiring 🟡.**
+*Total* : 14 US (~53 pts) + wiring — **14 ✅ + wiring ✅ — CAP-VIRAL TERMINÉ (S-142).**
 
 *Dettes* :
-* 🔴 **Ghost-tests** — 21 runners Cucumber dédiés non invoqués par la CI (seuls
-  `cucumberTestViral` + `cucumberTestDurationValidation` le sont).
+* 🟢 **Ghost-tests** — résolu S-142 : les 20 runners Cucumber pure-domain sont
+  câblés dans `full-tests.yml`.
 * 🔴 **`cucumberTest`** — 14 scénarios échouent (héritée S-139).
 
 '''

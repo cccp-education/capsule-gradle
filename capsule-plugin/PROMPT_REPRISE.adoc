@@ -1,56 +1,53 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 132
+:session: 143
 :borough: Détroit
-:session_precedente: 131 — Merge PR #2 — EPIC CAP-MAINT-PIPELINE TERMINÉ
-_note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc` (S-132).
+:session_precedente: 142 — CAP-VIRAL câblage `generateViralCampaign` + socle FFmpeg + US-7 + ghost-tests
+_note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-Session 128 — **CAP-PREVIEW TERMINÉ 3/3 US** :
-- US-0 : `PreviewConfig` data class (1 champ `enabled: Boolean = false`) +
-  `CapsuleConfig` 14e section + `mergePreviewConfig` 4 sources (ENV/props/YAML/CLI) +
-  `CapsuleExtension.previewOnly` + `pushConfigIntoExtension` preview block.
-- US-1 : `ScreenshotCaptureImpl` previewOnly constructor param → capture PNG only,
-  skip `encodeSlides`/`concatSlides`. Guards `captureDeckSequential`/`captureDeckParallel`
-  skip audio post + format conversion. `PreviewExtensionFunctionalTest` 3 tests.
-- US-2 : `capsule_preview.feature` 3 scénarios `@preview` + runner dédié 18e
-  `cucumberTestPreview` + `CapsulePreviewSteps` préfixés "preview".
-- Gate : 1034 unit (+11 net), 75 functional (+3 net), 3 cucumber PASSED.
-- Domaine `capsule.preview` (14e) clos.
-- Rapport : `.agents/sessions/128-cap-preview-dry-run.adoc`
+Session 142 — **câblage tâche + socle FFmpeg + US-7 + dette ghost-tests** :
+- **`GenerateViralCampaignTask`** : pilote `ViralCampaignAssembler` (porte
+  éditoriale storyboard → hook ancré N1 → batch → copy lue → manifeste
+  `viral-campaign.json`). Registrar + wiring extension 4 sources.
+- **`ViralStoryboardParser`** : inverse de `ViralStoryboardBuilder` (round-trip).
+- **`CampaignBundleSerializer.toManifestJson`** : manifeste JSON de campagne.
+- **`ViralCaptureStrategy`** : règle pure — viral activé **remplace `PLAYWRIGHT`
+  par `SCREENSHOT`** (socle FFmpeg PNG→concat) ; `REMOTION` conservé
+  (enrichissement). Câblé dans `CapsuleVideoTask`.
+- **US-7** : `Root.jsx` piloté par props (`calculateMetadata`) — fin du hardcode
+  1408×792, le preset vertical 1080×1920 est honoré par composition.
+- **Ghost-tests** : 20 runners Cucumber pure-domain câblés dans `full-tests.yml`.
+- Rapport : `.agents/sessions/142-cap-viral-wiring-ffmpeg-socle-us7-ghost-tests.adoc`
 
-== Mission Session 129 (clôturée) — CAP-CHAPITRE ✅ S-129
+== Mission Session 143 — priorités
 
-Voir `.agents/PROMPT_REPRISE.adoc` (S-132) pour l'état courant. Résumé :
-S-129 CAP-CHAPITRE TERMINÉ, S-130 CAP-CR3-4 TERMINÉ, S-131 Merge PR #2
-(CAP-MAINT-PIPELINE TERMINÉ), S-132 CAP-ANIM-TEST + CAP-PR2-COV TERMINÉS
-(borough DORMANT — tous EPICs terminés).
+1. **Dette `cucumberTest`** (héritée S-139) : 14 scénarios échouent. Diagnostiquer
+   via la CI (jamais en local), corriger (quotage, fixtures, glue S-088).
+2. **Vérifier la CI S-142** : le nouveau job « pure-domain BDD runners » (20
+   runners) doit être vert ; traiter tout échec (leçon S-269 : la CI révèle ce que
+   le local cache).
+3. **Dogfooding viral réel** (si accord pilote) : un produit talaria, socle
+   FFmpeg **et** chemin enrichi Remotion+Manim — nécessite un run LLM metered.
 
 == Points d'attention
 
-* 1034 unit VERT (S-128 baseline), 75 functional VERT, 18 cucumber dédiés GREEN
-* Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
-* Tout nouveau feature cucumber nécessite un runner dédié (bug S-082) + steps
-  préfixés par feature (bug S-088 glue `capsule.scenarios` partagée)
-* English only : code, Gherkin, commentaires
-* Économie d'encre = skip si artefact existe et valide (AGENT.adoc Loi)
-* `build.gradle.kts` — 18 `CucumberTaskSpec` actifs (19e
-  `cucumberTestChapters` à câbler CAP-CHAPITRE)
-* Conventions 0.0.3 (mavenLocal), BOM 0.0.27, codebase 0.0.10, slider 0.0.18
-* CaptureStrategy 3 valeurs : PLAYWRIGHT (default), SCREENSHOT, REMOTION
-* 14 domaines DDD : feed, pipeline, ai, context, multilang, validation, audio,
-  i18n, ci, transcript, remotion, podcast, support + preview. `capsule.preview` clos S-128.
+* **Local = Build, Tests = CI** : jamais de `test`/`check` local. Compiler, pousser,
+  surveiller le run GitHub.
+* **Viral = socle FFmpeg** : ne jamais réintroduire l'enregistrement Playwright
+  temps réel dans le chemin viral (garde `ViralCaptureStrategy`).
+* Baby-step DDD/TDD/BDD : domaine pur → unit, puis câblage, puis cucumber.
+  Runner dédié par feature (S-082), steps préfixés (S-088). **Quoter les `{string}`**
+  dans les features (UndefinedStepException sinon — piège S-269/S-141).
+* English only : code, Gherkin, commentaires.
 
 == Rappels
 
-* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 1034 unit VERT (S-128 baseline), 75 functional VERT, cucumber dédiés GREEN
-* `cucumberTest` skippé par défaut (CR-10), `cucumberTestIntegration` skippé
-  par défaut (Playwright gate S-121)
-* DSL 4 sources pattern : ENV < props < YAML < CLI
-* Pattern object pur pour commande ffmpeg : `AudioPostCommand`,
-  `SubtitleBurnInCommand`, `FormatConversion`, `PodcastConcatCommand`
-* `compileOnly(libs.slider)` conservé (runtime). `testImplementation(libs.slider)`
-  RETIRÉ S-120 (Groovy 3.x conflit ProjectBuilder)
-* Catalogue : `slider-plugin`, slider 0.0.18, codebase 0.0.10, BOM 0.0.27
-* CAP-CHAPITRE = intro/outro cards + chapter markers Matroska/WebM
+* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.1
+* CI : `.github/workflows/test.yml` (`./gradlew test`) +
+  `.github/workflows/full-tests.yml` (`test functionalTest` + duration + viral +
+  20 runners pure-domain).
+* DSL viral 4 sources : `CAPSULE_VIRAL_*` < `capsule.viral.*` < YAML `viral.*` < CLI
+  `-Pcapsule.viral.*` (+ `viralLanguages` / `viralPlatforms` pour le batch).
+* Commande : `./gradlew generateViralCampaign -Pcapsule.viral.enabled=true
+  -Pcapsule.viral.storyboardFile=storyboard.adoc`

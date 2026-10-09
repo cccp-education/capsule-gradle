@@ -1,8 +1,8 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-09 (S-141 CAP-VIRAL assemblage bout-en-bout + US-8 BDD + ghost-test fix. Reste US-7 + wiring + dettes.)
+:last_update: 2026-10-09 (S-142 CAP-VIRAL TERMINÉ 14/14 US — câblage tâche + socle FFmpeg + US-7 + ghost-tests. Reste dette cucumberTest.)
 
 '''
-== ✅ CAP-VIRAL — US livrées (S-139 + S-140 + S-141)
+== ✅ CAP-VIRAL — US livrées (S-139 + S-140 + S-141 + S-142)
 
 . [x] **US-1** ✅ S-139 — CI ressuscitée (fallback creds nmcp).
 . [x] **US-2** ✅ S-140 — Rendu vertical 9:16 (ViralViewport + câblage).
@@ -10,29 +10,22 @@
 . [x] **US-4** ✅ S-140 — Hooks/CTA/message ancrés contexte N1.
 . [x] **US-5** ✅ ABSORBÉE par US-9.
 . [x] **US-6** ✅ S-140 — Batch multi-plateforme.
-. [x] **US-8** ✅ S-141 — BDD `cucumberTestViral` (7 scénarios).
+. [x] **US-7** ✅ S-142 — Enrichissement Remotion + Manim (`Root.jsx` piloté par props, `calculateMetadata`).
+. [x] **US-8** ✅ S-141 — BDD `cucumberTestViral` (9 scénarios).
 . [x] **US-9** ✅ S-140 — Lecture copy GBL-006.
 . [x] **US-10** ✅ S-140 — CampaignBundle (aval GBL-002).
 . [x] **US-11** ✅ S-140 — Thumbnail/cover.
 . [x] **US-12** ✅ S-140 — Sous-titres stylés karaoké.
 . [x] **US-13** ✅ S-140 — Storyboard validable (porte éditoriale).
 . [x] **assemblage** ✅ S-141 — `ViralCampaignAssembler`.
+. [x] **câblage tâche** ✅ S-142 — `GenerateViralCampaignTask` + registrar + wiring.
+. [x] **socle FFmpeg** ✅ S-142 — `ViralCaptureStrategy` (viral force `SCREENSHOT`, Playwright écarté).
 
 '''
-== 🟡 CAP-VIRAL — reste à faire (S-142+)
+== 🔴 DETTES (S-143+)
 
-. [ ] **US-7** — Enrichissement Remotion + Manim (presets composition verticale +
-  `data-manim` ; `Root.jsx` piloté par props ; infra test node). La plus lourde.
-. [ ] **Câblage tâche** — `generateViralCampaign` (registrar + extension wiring
-  pilotant `ViralCampaignAssembler`).
-
-'''
-== 🔴 DETTES
-
-. [ ] **Ghost-tests** — 21 runners Cucumber dédiés restants non invoqués par la CI
-  (seul `cucumberTestViral` + `cucumberTestDurationValidation` le sont) — câbler
-  ou activer `additionalTasksInCheck`.
-. [ ] **cucumberTest** — 14 scénarios échouent (héritée S-139).
+. [ ] **cucumberTest** — 14 scénarios échouent (héritée S-139). Diagnostiquer via la CI.
+. [ ] **Dogfooding viral réel** — un produit talaria (socle FFmpeg **et** chemin enrichi Remotion+Manim), dépend d'un run LLM metered (accord pilote).
 
 _Hors scope CAP-VIRAL_ : publication API (N4/GBL-002), écriture copy (GBL-006),
 calendrier + musique + analytics (GBL-002).

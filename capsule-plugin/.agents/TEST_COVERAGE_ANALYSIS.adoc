@@ -1,7 +1,26 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
-:date: 2026-08-29
-:session: 131 Merge PR #2 (lion92) — maintenance pipeline + sync anim Remotion
-:rotation: 2026-08-25 (S-127) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+:date: 2026-10-09
+:session: 142 CAP-VIRAL câblage `generateViralCampaign` + socle FFmpeg + US-7 + ghost-tests
+:rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 9 octobre 2026 (après session 142)
+
+.Modifications session 142 — câblage viral + socle FFmpeg + US-7
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/viral/ViralStoryboardParser.kt` (nouveau) | Inverse de `ViralStoryboardBuilder` (round-trip, dégradation `null`). | +6 `ViralStoryboardParserTest`
+| `capsule/viral/CampaignBundleSerializer.kt` (modifié) | `toManifestJson` (tableau JSON) + refactor DRY `bundleNode`. | +2 `CampaignBundleTest`
+| `capsule/viral/ViralCaptureStrategy.kt` (nouveau) | Règle pure : viral force `SCREENSHOT` (FFmpeg), `PLAYWRIGHT` écarté, `REMOTION` conservé. | +4 `ViralCaptureStrategyTest`
+| `capsule/remotion/src/Root.jsx` (modifié) | Props-driven (`calculateMetadata`), fin du hardcode 1408×792. | +3 `RemotionRootTemplateTest` (garde ressource)
+| `capsule/viral/GenerateViralCampaignTask.kt` (nouveau) | Tâche = adaptateur mince (orchestration). Couvert par functional + cucumber. | 0 unit (adapter)
+| `capsule/CapsuleVideoTask.kt` (modifié) | `resolvePlaywrightCapture` applique `ViralCaptureStrategy` (1 ligne câblage). | 0 (couvert par `ViralCaptureStrategyTest`)
+| `GenerateViralCampaignFunctionalTest.kt` (nouveau) | Registration, skip, manifest, gate éditoriale, synthèse. | +5 functional
+| `capsule_viral.feature` + `CapsuleViralSteps.kt` (modifiés) | 7 → 9 scénarios `@viral` (round-trip parse, manifeste). | +2 scénarios PASSED
+|===
+
+*Totaux S-142* : +15 unit net, +5 functional, `capsule_viral.feature` 9
+scénarios. Gates locaux (Local = Build) : `compileKotlin` + `compileTestKotlin`
++ `compileFunctionalTestKotlin` VERT. Les suites s'exécutent en CI.
 
 == Couverture — 25 août 2026 (après session 121)
 
