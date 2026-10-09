@@ -278,6 +278,15 @@ afterEvaluate {
         }
     }
 
+    // The global `cucumberTest` task runs the aggregate CucumberTestRunner, which
+    // already exercises every feature via the shared glue. The per-feature @Suite
+    // runners (pattern S-082) are driven by their own `cucumberTest<Feature>` tasks
+    // (they inject `cucumber.features`); collected by the global task they fail
+    // discovery (NoTestsDiscoveredException). Scope the global task to its runner.
+    tasks.named("cucumberTest", Test::class.java) {
+        filter.includeTestsMatching("capsule.scenarios.CucumberTestRunner")
+    }
+
     // Playwright tests — spin a real Chromium browser, 15-30 min.
     // Skip by default unless -PrunPlaywrightTests or CI env var is active.
     // Pattern mirror CR-10. Decision logic in capsule.ci.PlaywrightTestGuard.
