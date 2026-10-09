@@ -2031,16 +2031,19 @@ class CapsuleConfigMergerTest {
     }
 
     @Test
-    fun `merge viral absent in YAML falls back to props`() {
-        val projectDir = File(tempDir, "viral-yaml-absent").also { it.mkdirs() }
+    fun `merge viral falls back to props when no YAML file is loaded`() {
+        val projectDir = File(tempDir, "viral-no-yaml").also { it.mkdirs() }
         File(projectDir, "gradle.properties").writeText(
             """
             capsule.viral.enabled=true
             capsule.viral.platform=TIKTOK
+            capsule.viral.targetDurationSeconds=42
             """.trimIndent()
         )
-        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
-        assertEquals(true, merged.viral.enabled, "props viral.enabled should apply when YAML has no viral section")
+        // yamlLoaded = false simulates an absent YAML file: props/ENV apply.
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
+        assertEquals(true, merged.viral.enabled, "props viral.enabled should apply when no YAML is loaded")
         assertEquals("TIKTOK", merged.viral.platform.name, "props viral.platform should apply")
+        assertEquals(42, merged.viral.targetDurationSeconds, "props viral.targetDurationSeconds should apply")
     }
 }
