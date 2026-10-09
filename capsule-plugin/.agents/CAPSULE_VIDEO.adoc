@@ -181,6 +181,95 @@ séquences suivent le contrat `StoryboardBeat`._
 * [ ] Provenance : chaque fait ancré (anti-hallucination)
 ----
 
+=== 4.1 Exemple rempli — Créer un site perso avec bakery + opencode
+
+_Cas de départ : une **capsule pédagogique courte** montrant comment créer un
+site perso (blog/portfolio) avec **bakery-gradle** (génération de site statique
+JBake) et **opencode** (l'agent qui rédige et édite le contenu). Illustre le
+squelette du § 4 sur un sujet dev concret._
+
+[source,asciidoc]
+----
+= Storyboard — Créer son site perso avec bakery + opencode
+:platform: YOUTUBE_SHORT
+:language: fr
+:target-duration: 60
+:author: cheroliv
+:provenance: EAGER (.agents/*) + Docs (README bakery) — N1 codebase
+
+== QQOQCP
+
+[cols="1,3", options="header"]
+|===
+| Question | Réponse
+| Qui (public) | Développeur solo / créateur voulant un site perso, sans écrire de HTML/CSS
+| Quoi (sujet) | Créer un site perso (blog/portfolio) statique
+| Où (contexte) | Dans un dépôt local, via `bakery-gradle` (Gradle + JBake) et `opencode` (agent CLI)
+| Quand (moment) | Au démarrage d'un projet (ou refonte d'un site existant)
+| Comment (modalité) | Scaffold bakery → l'agent opencode rédige/édite → `generateSite` → `serve` → `publishSite`
+| Pourquoi (but) | Mettre un site perso en ligne, produit par l'agent (« le site, c'est Gradle qui bake »)
+|===
+
+== Identité visuelle (design system)
+
+*Brand* : cheroliv.com (le site perso lui-même). *Format* : 9:16 (YouTube Shorts).
+*Tokens* :
+
+[cols="2,2,3", options="header"]
+|===
+| Token | Valeur | Usage
+| --accent-color | #0d6efd | liens, CTA, accents UI
+| --footer-bg | #7952b3 | bandes / pied de page
+| --bg-primary | #f8f9fa / #212529 | fond clair / mode sombre
+| --card-bg | #ffffff / #1a1a1a | cartes (clair / sombre)
+|===
+
+*Typographie* : Inter (sans) + SFMono/Consolas (code). *Logo* : marque cheroliv.
+*Fond de composition* : charté (tokens ci-dessus) — pas de hardcode.
+
+== Fil conducteur narratif
+
+* Thèse / angle : « Un site perso, ça se **génère** — l'agent écrit, Gradle bake. »
+* Motif récurrent : le **terminal** (l'agent + la commande) qui produit le site, rappelé à chaque étape.
+* Arc : accroche (le site apparaît) → démonstration (scaffold → rédaction → bake → serve → publish) → CTA.
+* Registre : pédagogique dev (« build in public »).
+* Voix / ton : direct, technique, sans jargon superflu.
+
+== Séquences
+
+[cols="1,2,4,1,1,2,2", options="header"]
+|===
+| # | Rôle | Intention | Durée | Rendu | Transition entrante | Asset / scène Manim
+| 1 | hook | « Un site perso, sans écrire une ligne de HTML. » (site final à l'écran) | 3 | HTML | — (ouverture) | capture du site fini
+| 2 | development | Scaffold : `bakery` crée la structure (`site.yml`, templates) | 8 | HTML | cut | terminal `generateSite`
+| 3 | development | `opencode` rédige la page d'accueil à partir d'une intention | 9 | HTML | slide | terminal agent + page qui se remplit
+| 4 | development | `opencode` ajoute un article de blog | 8 | HTML | slide | terminal agent + article
+| 5 | development | `generateSite` : HTML statique (le terminal produit le site) | 8 | HTML | zoom | terminal + arborescence `build/`
+| 6 | development | `serve` : aperçu live du site | 8 | HTML | cut | navigateur localhost
+| 7 | development | `publishSite` : mise en ligne (gh-pages) | 8 | MANIM | slide | scène Manim « deploy » (flèche local→cloud)
+| 8 | cta | « bakery-gradle + opencode — OSS (Apache 2.0). » + lien | 8 | HTML | fade | logo + URL
+|===
+
+== Gate (validation pilote)
+
+* [x] QQOQCP renseigné (6 réponses, dérivées N1)
+* [x] Identité visuelle alignée (tokens cheroliv.com)
+* [x] Fil conducteur : arc complet + transition par séquence
+* [x] Durée totale 60 s = cible ; aucun beat > 10 s
+* [x] Provenance : ancré sur `bakery-gradle` (README) + `opencode` — rien d'inventé
+----
+
+_Notes sur l'exemple_ :
+
+* Les commandes citées sont les tâches réelles de bakery : `generateSite`,
+   `generateSiteFromIntention`, `serve`, `publishSite` (`SiteTaskRegistrar`/
+   `DeployTaskRegistrar`). L'agent opencode écrit le contenu **avant** le bake.
+* L'identité visuelle **habille** la capsule ; c'est le site perso (cheroliv.com)
+   qui est mis en avant, pas la charte de l'outil.
+* La séquence 7 est le seul rendu `MANIM` : un schéma animé « local → cloud »
+   porte mieux la mise en ligne qu'une capture figée — illustration de l'usage
+   `data-manim` (CAP-VIRAL US-7).
+
 == 5. Contrat de contexte (les 3 axes)
 
 [cols="1,3,3", options="header"]
@@ -232,7 +321,11 @@ décision à prendre (EPIC CAP-SHORT ou EPIC dédié « CAP-CONTEXT »).
 | `training-plugin/.agents/CAPSULE_PEDAGOGIQUE.adoc` | Recette 3C + QQOQCP (littérature agentique)
 | `office/sites/talaria.school/BRAND.adoc` | Identité visuelle talaria.school (palette, logo, gardes)
 | `office/sites/talaria.school/.agents/sessions/043-*.adoc` | Design System v2 (tokens, Sora)
+| `foundry/public/bakery-gradle/bakery-plugin/README.md` | Tâches réelles `generateSite`/`serve`/`publishSite` (exemple § 4.1)
+| `office/sites/cheroliv.com/` | Site perso de l'exemple § 4.1 (tokens Inter `#0d6efd`/`#7952b3`)
 |===
+
+_Exemple rempli_ : § 4.1 — « Créer son site perso avec bakery + opencode ».
 
 _Document de littérature agentique du borough capsule (Détroit). Recherche et
 revue en lecture seule ; toute donnée citée reste dans le cercle privé (`office/`)._

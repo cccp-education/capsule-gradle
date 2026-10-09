@@ -44,6 +44,11 @@ training). Contenu :
 * **Le squelette** (template AsciiDoc) — sections obligatoires `QQOQCP`,
   `Identité visuelle (design system)`, `Fil conducteur narratif`, `Séquences`
   (avec colonne « transition entrante »), `Gate`.
+* **§ 4.1 Exemple rempli** — « **Créer son site perso avec bakery + opencode** »
+  (demande pilote) : capsule pédagogique courte, 8 séquences (scaffold →
+  `opencode` rédige → `generateSite` → `serve` → `publishSite` → CTA), tokens
+  cheroliv.com (Inter, `#0d6efd`/`#7952b3`), QQOQCP + fil conducteur + gate
+  renseignés. Commands ancrées sur les tâches réelles de bakery.
 * **Contrat de contexte** (3 axes → qui les porte).
 * **Impacts** — portage domaine (champs additifs `ViralStoryboard`, builder/
   parser étendus, gate de cohérence, `Capsule.jsx` sur tokens du brand book).
