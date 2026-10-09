@@ -200,7 +200,10 @@ open class CapsuleVideoTask : DefaultTask() {
         if (playwrightCapture != null) return playwrightCapture!!
 
         val defaultDur = capsuleExtension.slideDurationSeconds.get()
-        val strategy = capsuleExtension.captureStrategy.get()
+        val strategy = capsule.viral.ViralCaptureStrategy.resolve(
+            configured = capsuleExtension.captureStrategy.get(),
+            viralEnabled = capsuleExtension.viralEnabled.getOrElse(false),
+        )
         val resolved = CaptureResolver.resolve(
             strategy = strategy,
             strict = capsuleExtension.strictMode.get(),

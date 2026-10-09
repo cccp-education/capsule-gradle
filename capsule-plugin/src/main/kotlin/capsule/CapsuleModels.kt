@@ -268,6 +268,12 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val viralStoryboardFile: Property<String> = objects.property(String::class.java)
         .convention("")
 
+    /** CAP-VIRAL — batch languages (CSV via `-Pcapsule.viral.languages`; default = deck language). */
+    val viralLanguages: ListProperty<String> = objects.listProperty(String::class.java)
+
+    /** CAP-VIRAL — batch platforms (CSV via `-Pcapsule.viral.platforms`; default = configured preset). */
+    val viralPlatforms: ListProperty<String> = objects.listProperty(String::class.java)
+
     internal val conventions: CapsuleConventions = CapsuleConventions(
         outputDir = "capsule",
         sliderScriptDir = "capsule",

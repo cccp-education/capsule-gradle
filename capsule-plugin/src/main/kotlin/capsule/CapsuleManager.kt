@@ -32,6 +32,7 @@ class CapsuleManager(private val project: Project) {
         project.registerDistributeCapsuleVideoTask()
         project.registerValidateCapsuleVideoDurationTask()
         project.registerGenerateCapsuleChaptersTask()
+        project.registerGenerateViralCampaignTask()
     }
 
     private fun Project.registerExtractSpeakerNotesTask() {
@@ -175,8 +176,90 @@ class CapsuleManager(private val project: Project) {
         }
     }
 
-    private fun Project.registerCollectCapsuleContextTask() {
+    private fun Project.registerGenerateViralCampaignTask() {
         val lang = CapsuleMessages.resolveLanguage(this)
+        val capsuleExt = project.extensions.findByType(CapsuleExtension::class.java)
+        val llmServiceProvider = registerLlmBuildService()
+        tasks.register("generateViralCampaign", capsule.viral.GenerateViralCampaignTask::class.java) { task ->
+            task.group = CapsuleMessages.get("task.group.generate", lang)
+            task.description = CapsuleMessages.get("task.generateViralCampaign.description", lang)
+            task.viralEnabled.convention(project.provider {
+                capsuleExt?.viralEnabled?.get()
+                    ?: project.findProperty("capsule.viral.enabled")?.toString()?.toBoolean()
+                    ?: false
+            })
+            task.storyboardRequired.convention(project.provider {
+                capsuleExt?.viralStoryboardRequired?.get()
+                    ?: project.findProperty("capsule.viral.storyboardRequired")?.toString()?.toBoolean()
+                    ?: true
+            })
+            task.platform.convention(project.provider {
+                capsuleExt?.viralPlatform?.get()
+                    ?: project.findProperty("capsule.viral.platform")?.toString()
+                    ?: capsule.viral.ViralPlatform.TIKTOK.name
+            })
+            task.targetDurationSeconds.convention(project.provider {
+                capsuleExt?.viralTargetDurationSeconds?.get()
+                    ?: project.findProperty("capsule.viral.targetDurationSeconds")?.toString()?.toIntOrNull()
+                    ?: capsule.viral.ViralConfig.DEFAULT_DURATION_SECONDS
+            })
+            task.configuredHook.convention(project.provider {
+                capsuleExt?.viralHook?.get()
+                    ?: project.findProperty("capsule.viral.hook")?.toString().orEmpty()
+            })
+            task.configuredCta.convention(project.provider {
+                capsuleExt?.viralCta?.get()
+                    ?: project.findProperty("capsule.viral.cta")?.toString().orEmpty()
+            })
+            task.languages.convention(
+                project.provider {
+                    val ext = capsuleExt?.viralLanguages?.orNull
+                    if (!ext.isNullOrEmpty()) ext
+                    else project.findProperty("capsule.viral.languages")?.toString()
+                        ?.let { it.split(",").map { code -> code.trim() }.filter { code -> code.isNotBlank() } }
+                        ?: listOf(project.findProperty("deck.language")?.toString() ?: "fr")
+                },
+            )
+            task.platforms.convention(
+                project.provider {
+                    val ext = capsuleExt?.viralPlatforms?.orNull
+                    if (!ext.isNullOrEmpty()) ext
+                    else project.findProperty("capsule.viral.platforms")?.toString()
+                        ?.let { it.split(",").map { name -> name.trim() }.filter { name -> name.isNotBlank() } }
+                        ?: listOf(task.platform.get())
+                },
+            )
+            task.storyboardFile.convention(
+                project.layout.file(project.provider {
+                    val configured = capsuleExt?.viralStoryboardFile?.get().orEmpty()
+                    val path = configured.ifBlank {
+                        project.findProperty("capsule.viral.storyboardFile")?.toString().orEmpty()
+                    }
+                    if (path.isBlank()) null else project.file(path)
+                }),
+            )
+            task.augmentedContextFile.convention(
+                project.layout.file(project.provider {
+                    val f = project.layout.buildDirectory.file("capsule/augmented-context.txt").get().asFile
+                    if (f.exists()) f else null
+                }),
+            )
+            task.copyFiles.from(
+                project.provider {
+                    val dir = project.layout.buildDirectory.dir("capsule/viral/copy").get().asFile
+                    if (dir.isDirectory) dir.listFiles { f -> f.isFile && f.name.endsWith(".json") }?.toList() ?: emptyList()
+                    else emptyList()
+                },
+            )
+            task.renderedVideoDir.convention("build/capsule/viral/videos")
+            task.storyboardOutput.convention(project.layout.buildDirectory.file("capsule/viral/storyboard.adoc"))
+            task.manifestOutput.convention(project.layout.buildDirectory.file("capsule/viral/viral-campaign.json"))
+            task.llmService.set(llmServiceProvider)
+            task.usesService(llmServiceProvider)
+        }
+    }
+
+    private fun Project.registerCollectCapsuleContextTask() {        val lang = CapsuleMessages.resolveLanguage(this)
         tasks.register("collectCapsuleContext", CapsuleCompositeContextTask::class.java) { task ->
             task.group = CapsuleMessages.get("task.group.collect", lang)
             task.description = CapsuleMessages.get("task.collectCapsuleContext.description", lang)
