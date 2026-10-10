@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-09 (S-149) — CAP-SHORT US-3 (batch réel capture unique + réplication). Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-09 (S-150) — CAP-SHORT US-5 (BDD rendu réel). Rapports détaillés dans `.agents/sessions/`.
 
-== 24 dernières sessions (126-149)
+== 24 dernières sessions (127-150)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 150 | 2026-10-09 | feat+test+ci | **CAP-SHORT US-5 — BDD rendu réel**. Feature `capsule_viral_render.feature` `@viral-render` + runner dédié `CapsuleViralRenderCucumberRunner` (pattern S-082, 23e `CucumberTaskSpec`) + steps préfixés « real viral render » (S-088). `ViralRealRenderSupport` rejoue le socle FFmpeg (`ScreenshotPlanner` PNG→WebM→concat + `VideoFormatConverterImpl` MP4) sur un PNG 1×1 local (pas de Chromium) → **vrai MP4** ; durée (fitée par `ViralTimeFitter`) gatée via `MediaProbeUtil`. Scénarios **pending** (`PendingException`) si ffmpeg absent (leçon S-269). Câblé `full-tests.yml` ; exclu de l'agrégat `CucumberTestRunner` (pur domaine). Local = Build, Tests = CI. Rapport `.agents/sessions/150-cap-short-us5-real-render-bdd.adoc`. | 9/10
 
 | 149 | 2026-10-09 | feat+test | **CAP-SHORT US-3 — batch réel langue × plateforme (Économie d'Encre de capture)**. `ViralVariantRenderer.render` : le deck est capturé **une seule fois** (seam `capture`) puis **répliqué** à chaque variante (seam `replicate`) — 1 capture pour N variantes au lieu de N. Skip des `<id>.mp4` valides ; échec de capture → tout le pending en échec. Câblé dans `RenderViralVariantsTask` (`captureDeckToTarget` + `replicateVideo`) ; gate durée rendu **robuste** (probe ≤ 0 → pas d'échec, mode dégradé). Layered : `ViralVariantRendererTest` (7 unit) + 3 scénarios BDD `@viral` (runner existant). Local = Build, Tests = CI. Rapport `.agents/sessions/149-cap-short-us3-batch.adoc`. | 9/10
 

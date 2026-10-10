@@ -1,7 +1,22 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-09
-:session: 149 CAP-SHORT US-3 — batch réel (capture unique + réplication)
+:session: 150 CAP-SHORT US-5 — BDD rendu réel (vrai MP4 + durée)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 9 octobre 2026 (après session 150)
+
+.Modifications session 150 — CAP-SHORT US-5 (rendu réel)
+|===
+| Fichier | Changement | Tests ajoutés
+| `scenarios/ViralRealRenderSupport.kt` (nouveau, test support) | Rejoue le socle FFmpeg (ScreenshotPlanner + VideoFormatConverter) sur un PNG local → vrai MP4 (pas de Chromium). | — (support)
+| `features/capsule_viral_render.feature` + `CapsuleViralRenderSteps.kt` + `CapsuleViralRenderCucumberRunner.kt` (nouveaux) | 2 scénarios `@viral-render` — vrai MP4 + durée fitée gatée ; pending si ffmpeg absent. | 2 scénarios (23e runner dédié)
+| `scenarios/CucumberTestRunner.kt` (modifié) | Exclusion `not @viral-render` (l'agrégat reste pur domaine). | 0
+| `build.gradle.kts` + `.github/workflows/full-tests.yml` (modifiés) | `CucumberTaskSpec("cucumberTestViralRender")` + étape CI. | 0
+|===
+
+*Totaux S-150* : +2 scénarios BDD réels (vrai MP4). Gates locaux (Local = Build) :
+`compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` VERT. Les
+suites s'exécutent en CI (`Test` + `Full Tests`, ffmpeg installé).
 
 == Couverture — 9 octobre 2026 (après session 149)
 

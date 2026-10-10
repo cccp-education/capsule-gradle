@@ -270,6 +270,16 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleStoryboardContextCucumberRunner",
             timeoutMinutes = 10,
         ),
+        // CAP-SHORT US-5 — real short-form render: produces a real MP4 through the
+        // FFmpeg socle (ScreenshotPlanner + VideoFormatConverter), durations fitted
+        // to the target. Needs real ffmpeg/ffprobe (scenarios pending when absent).
+        CucumberTaskSpec(
+            name = "cucumberTestViralRender",
+            features = listOf("src/test/features/capsule_viral_render.feature"),
+            tags = listOf("@viral-render"),
+            runnerClass = "capsule.scenarios.CapsuleViralRenderCucumberRunner",
+            timeoutMinutes = 15,
+        ),
     )
 }
 

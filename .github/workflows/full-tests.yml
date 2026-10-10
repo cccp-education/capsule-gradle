@@ -60,6 +60,15 @@ jobs:
         env:
           CI: "true"
 
+      # CAP-SHORT US-5 — real short-form render: produces a real MP4 through the
+      # FFmpeg socle and validates its duration against the fitted target. Needs
+      # real ffmpeg/ffprobe (installed above).
+      - name: Run viral real-render BDD (US-5, real ffmpeg)
+        run: ./gradlew cucumberTestViralRender -PrunCucumber
+        working-directory: capsule-plugin
+        env:
+          CI: "true"
+
       # The remaining dedicated pure-domain runners (no ffmpeg/node/network):
       # they are opt-in (`additionalTasksInCheck` default false) so they never
       # run in `check`. Invoking them here closes the ghost-test debt (S-141/S-142

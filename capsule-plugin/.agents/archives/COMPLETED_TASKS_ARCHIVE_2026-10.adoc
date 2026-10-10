@@ -1,6 +1,20 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-09
 
+== Session 150 — CAP-SHORT US-5 : BDD rendu réel (vrai MP4 + durée) ✅
+
+* **Feature** `capsule_viral_render.feature` `@viral-render` + runner dédié
+  `CapsuleViralRenderCucumberRunner` (pattern S-082, 23e `CucumberTaskSpec`) +
+  steps préfixés « real viral render » (S-088).
+* **`ViralRealRenderSupport`** rejoue le socle FFmpeg (`ScreenshotPlanner`
+  PNG→WebM→concat + `VideoFormatConverterImpl` MP4) sur un PNG 1×1 local — **pas
+  de Chromium**, `ffmpeg`/`ffprobe` seulement. Produit un **vrai MP4** ; la durée
+  (fitée par `ViralTimeFitter`) est gatée via `MediaProbeUtil`.
+* Scénarios **pending** (`PendingException`) si ffmpeg absent (leçon S-269).
+  Câblé `full-tests.yml` ; exclu de l'agrégat `CucumberTestRunner` (pur domaine).
+* Reste CAP-SHORT : **US-4** (dogfooding viral réel = accord pilote).
+  Rapport `.agents/sessions/150-cap-short-us5-real-render-bdd.adoc`.
+
 == Session 149 — CAP-SHORT US-3 : batch réel (capture unique + réplication) ✅
 
 * **Économie d'Encre de capture** — `ViralVariantRenderer.render` capture le deck

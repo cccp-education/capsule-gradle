@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-09 (CAP-SHORT US-3 livrée S-149 — batch réel : capture unique du deck + réplication par variante (`ViralVariantRenderer.render`) ; CAP-CONTEXT 3/4)
+:last_update: 2026-10-09 (CAP-SHORT US-5 livrée S-150 — BDD rendu réel : `@viral-render` produit un vrai MP4 (socle FFmpeg) + durée validée, câblé CI ; CAP-CONTEXT 3/4)
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)
@@ -60,7 +60,7 @@ socle **FFmpeg** (`ViralCaptureStrategy` — Playwright temps réel écarté).
 
 '''
 
-== 🎬 BACKLOG ACTIF — CAP-SHORT 🟡 EN COURS (S-143, diagnostic S-145 ; US-1a S-146, US-1b S-147, US-2 S-148, US-3 S-149)
+== 🎬 BACKLOG ACTIF — CAP-SHORT 🟡 EN COURS 5/6 US (S-143 cadrage, diagnostic S-145 ; US-1a S-146, US-1b S-147, US-2 S-148, US-3 S-149, US-5 S-150 ; US-4 dogfooding = accord pilote)
 
 _Livraison **end-to-end** du format court (YouTube Shorts / TikTok / Reels).
 CAP-VIRAL (S-139→S-142) a livré le **domaine** viral complet, mais le **rendu
@@ -119,7 +119,8 @@ le test fonctionnel n'assère aucune vidéo.
 . 🟠 **Sous-titres karaoké** — `KaraokeSubtitleBuilder` sans **usage prod**.
 . 🟠 **Manifeste ↔ fichiers réels** — `CampaignBundle.videoFile` pointe un
   fichier inexistant ; gate de validation manquant.
-. 🟡 **Tests rendu** — aucun test fonctionnel/BDD ne produit un MP4 (+ durée).
+. ✅ **Tests rendu** — aucun test fonctionnel/BDD ne produit un MP4 (+ durée).
+  **RÉSOLU S-150** (`@viral-render` : un vrai MP4 via le socle FFmpeg, durée gatée).
 . 🧹 **RENAME métier OSS** — voir « Maintenance » ci-dessous.
 
 *Verdict (S-145)* : le **moteur** est mature et réutilisable ; il manquait le
@@ -138,12 +139,13 @@ batch réel (US-3), le dogfooding (US-4) et la BDD rendu (US-5).
 | US-2 | **Durée courte imposée au montage** — cadence FFmpeg honorant `targetDurationSeconds` (15-60 s) : trim/pad + gate de validation | `capsule.viral`, `ScreenshotPlanner`, `VideoDurationValidator` | 3 | ✅ S-148 (`ViralTimeFitter` + gate durée)
 | US-3 | **Batch réel langue × plateforme** — N variantes rendues en une commande, skip Économie d'Encre si MP4 valide | `capsule.viral` | 4 | ✅ S-149 (capture unique + réplication, `ViralVariantRenderer.render`)
 | US-4 | **Dogfooding viral réel** — 1 produit talaria, socle FFmpeg **et** chemin enrichi Remotion+Manim (accord pilote, run LLM metered) | consumer | 3 | 🟡 À FAIRE
-| US-5 | **BDD + CI** — rendu par variante couvert (runner dédié pattern S-082, steps préfixés S-088) | feature + steps + CI | 2 | 🟡 À FAIRE
+| US-5 | **BDD + CI** — rendu par variante couvert (runner dédié pattern S-082, steps préfixés S-088) | feature + steps + CI | 2 | ✅ S-150 (réel MP4 `@viral-render` + CI)
 |===
 
 *Total* : 6 US (~22 pts — US-1 **scindée** en US-1a « storyboard → deck » + US-1b
 « orchestration », cf. diagnostic S-145). **US-0 ✅ S-145, US-1a ✅ S-146,
-US-1b ✅ S-147, US-2 ✅ S-148, US-3 ✅ S-149** (5/6). Additif — **ne modifie pas** le domaine CAP-VIRAL.
+US-1b ✅ S-147, US-2 ✅ S-148, US-3 ✅ S-149, US-5 ✅ S-150 (5/6 + dogfooding)**.
+Reste **US-4** (dogfooding viral réel = **accord pilote**, run LLM metered). Additif — **ne modifie pas** le domaine CAP-VIRAL.
 *Lien chaîne marketing (GBL-009)* : CAP-SHORT rend réellement livrable le maillon
 `capsule produit` (avant : seul le domaine existait).
 

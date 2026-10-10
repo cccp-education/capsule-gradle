@@ -1,47 +1,46 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 150
+:session: 151
 :borough: Détroit
-:session_precedente: 149 — CAP-SHORT US-3 : batch réel (capture unique + réplication)
+:session_precedente: 150 — CAP-SHORT US-5 : BDD rendu réel (vrai MP4 + durée)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-149 — CAP-SHORT US-3 (batch réel)
+=== S-150 — CAP-SHORT US-5 (BDD rendu réel)
 
-- `ViralVariantRenderer.render(plan, isRenderable, capture, replicate)` : le deck
-  est capturé **une seule fois** puis **répliqué** à chaque variante (`<id>.mp4`),
-  skip des `<id>.mp4` valides. Échec capture → tout le pending en échec.
-- Câblé dans `RenderViralVariantsTask` (`captureDeckToTarget` + `replicateVideo`,
-  gate durée robuste).
-- Layered : `ViralVariantRendererTest` (7 unit) + 3 scénarios BDD `@viral`.
-- Rapport : `.agents/sessions/149-cap-short-us3-batch.adoc`.
+- Feature `capsule_viral_render.feature` `@viral-render` + runner dédié
+  `CapsuleViralRenderCucumberRunner` (23e `CucumberTaskSpec`) + steps préfixés.
+- `ViralRealRenderSupport` rejoue le socle FFmpeg (`ScreenshotPlanner` +
+  `VideoFormatConverterImpl`) sur un PNG local → **vrai MP4**, durée gatée ; pas
+  de Chromium. Scénarios *pending* si ffmpeg absent. Câblé `full-tests.yml`.
+- Rapport : `.agents/sessions/150-cap-short-us5-real-render-bdd.adoc`.
 
-=== S-146→S-148 (contexte)
+=== S-146→S-149 (contexte)
 
-- US-1a `ViralDeckBuilder` (deck 1080×1920) ; US-1b orchestration
-  `renderViralVariants` ; US-2 `ViralTimeFitter` (time-fit 15-60 s + gate).
+- US-1a `ViralDeckBuilder` · US-1b orchestration `renderViralVariants` ·
+  US-2 `ViralTimeFitter` (time-fit 15-60 s + gate) · US-3 batch (capture unique
+  + réplication).
 
-== Mission Session 150 — priorités
+== Mission Session 151 — priorités
 
-1. **CAP-SHORT US-5 (P0)** — **BDD rendu** : un **vrai MP4** produit (durée
-   validée). Probablement via le socle réel en CI (`Full Tests` installe ffmpeg +
-   Chromium) OU un seam `@Internal` de task exécuté en test. Runner dédié si
-   nouveau feature (pattern S-082), steps préfixés (S-088).
-2. **CAP-SHORT US-4** — **dogfooding viral réel** : 1 produit talaria (accord
-   pilote, run LLM metered).
-3. **CAP-CONTEXT US-4** — `Capsule.jsx` sur tokens du brand book.
-4. **Maintenance RENAME** — résidus métier `pédagogique/formation` dans l'OSS.
+1. **CAP-CONTEXT US-4** — `Capsule.jsx` sur **tokens du brand book**
+   (`BRAND.adoc`) au lieu du `PAGE_BACKGROUND` hardcodé (tier Remotion). Tests JS
+   (node) comme CAP-ANIM-TEST (`RemotionTiming`), et/ou port pur Kotlin.
+2. **Maintenance RENAME** — résidus métier `pédagogique/formation` dans l'OSS
+   (`build.gradle.kts` description, `AGENT.adoc`, `doc/CAPSULE_ARCHITECTURE.adoc`,
+   `Capsule.jsx` KDoc dans le jar, `FileMarketCopySource` KDoc `#fpa`/`#formation`,
+   fixtures). ~1 pt.
+3. **CAP-SHORT US-4** (dogfooding viral réel) = **accord pilote** (run LLM metered).
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** : aucun `test`/`check`/`cucumberTest` en local ;
   `compileKotlin`/`compileTestKotlin`/`compileFunctionalTestKotlin` seulement. Le
   vert de la CI (GitHub Actions) est la preuve. Diagnostic par artefacts CI.
-* **Rendu = socle FFmpeg** (`ViralCaptureStrategy` force `SCREENSHOT`) ;
-  Playwright temps réel écarté. Le déck viral est un HTML `<section>` capturable.
-* **Capture unique** (US-3) : ne pas revenir à une capture par variante.
+* **CAP-SHORT** : 5/6 US + dogfooding. Ne pas régresser la capture **unique** (US-3).
 * Tout nouveau feature cucumber = **runner dédié** (S-082) + steps **préfixés**
-  (S-088) + câblage explicite `full-tests.yml` (anti ghost-test, leçon Queens S-269).
+  (S-088) + câblage explicite `full-tests.yml` (anti ghost-test, Queens S-269).
+  Un runner nécessitant un binaire doit **skipp** (pending) s'il manque.
 * **Sessions concurrentes** : `git status` à l'ouverture (drift gouvernance).
 * Baby-step DDD/TDD/BDD (unit → functional → cucumber), RED → GREEN → REFACTOR.
 * English only : code, Gherkin, commentaires.
@@ -49,8 +48,7 @@ _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.1
-* Deck = `build/capsule/viral/viral-deck.html` (US-1a) ; doc = `storyboard.adoc` ;
-  variantes = `build/capsule/viral/videos/<id>.mp4` (US-1b/US-3) ; manifeste =
-  `viral-campaign.json`.
 * CAP-VIRAL **TERMINÉ 14/14 US** (S-142) ; CAP-CONTEXT **3/4 US** (S-145) ;
-  CAP-SHORT **5/6 US** (S-146→S-149 : US-1a + US-1b + US-2 + US-3 ✅).
+  CAP-SHORT **5/6 US + dogfooding** (S-146→S-150).
+* Pipeline viral : `storyboard → viral-deck.html → videos/<id>.mp4 (15-60s) →
+  viral-campaign.json` ; `renderViralVariants` capture **une fois** + réplique.

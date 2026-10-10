@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-09 (S-149 — **CAP-SHORT US-3** : batch réel langue × plateforme — `ViralVariantRenderer.render` capture le deck **une fois** et **réplique** la vidéo à chaque variante (`<id>.mp4`), skip Économie d'Encre. Précédent : S-148 US-2 time-fit ; S-147 US-1b orchestration ; S-146 US-1a deck ; S-145 CAP-CONTEXT + diagnostic e2e.)
- _Derniere session terminee_ : 149.
- _Prochaine session_ : 150 — **CAP-SHORT US-5 (P0)** : BDD rendu (un vrai MP4 produit + durée) → puis US-4 (dogfooding, accord pilote, run LLM metered). + **CAP-CONTEXT US-4** (`Capsule.jsx` tokens) + maintenance RENAME.
- _Session en cours_ : — (S-149 terminée).
+ _Derniere mise a jour_ : 2026-10-09 (S-150 — **CAP-SHORT US-5** : BDD rendu **réel** — feature `@viral-render` + runner dédié `CapsuleViralRenderCucumberRunner` (23e) qui produit un **vrai MP4** via le socle FFmpeg (`ScreenshotPlanner` PNG→WebM→concat + `VideoFormatConverterImpl`), durée fitée gatée, câblé `full-tests.yml`. Précédent : S-149 US-3 batch capture-once ; S-148 US-2 time-fit ; S-147 US-1b orchestration ; S-146 US-1a deck ; S-145 CAP-CONTEXT + diagnostic.)
+ _Derniere session terminee_ : 150.
+ _Prochaine session_ : 151 — **CAP-CONTEXT US-4** (`Capsule.jsx` tokens du brand book) + **maintenance RENAME** (résidus `pédagogique/formation` OSS). **CAP-SHORT US-4** (dogfooding viral réel) = accord pilote (run LLM metered).
+ _Session en cours_ : — (S-150 terminée).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -22,11 +22,13 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (138-149)
+== 10 dernières sessions (139-150)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 150 | 2026-10-09 | feat+test+ci | **CAP-SHORT US-5** — BDD rendu **réel** : feature `capsule_viral_render.feature` `@viral-render` + runner dédié `CapsuleViralRenderCucumberRunner` (pattern S-082) + steps préfixés « real viral render » (S-088). `ViralRealRenderSupport` rejoue le socle FFmpeg (`ScreenshotPlanner` PNG→WebM→concat + `VideoFormatConverterImpl` MP4) sur un PNG local (pas de Chromium) → **vrai MP4** dont la durée (fitée) est gatée ; scénarios **pending** si ffmpeg absent (leçon S-269). Câblé `full-tests.yml`. Exclu de l'agrégat `CucumberTestRunner` (pur domaine). | 9/10
 
 | 149 | 2026-10-09 | feat+test | **CAP-SHORT US-3** — batch réel langue × plateforme : `ViralVariantRenderer.render` (capture le deck **une fois** puis **réplique** la vidéo à chaque variante — 1 capture pour N variantes, vs N captures), skip Économie d'Encre, échec de capture → tout le batch en échec. Câblé dans `RenderViralVariantsTask` (`captureDeckToTarget` + `replicateVideo`, gate durée robuste : probe≤0 → pas d'échec). Layered : `ViralVariantRendererTest` (7 unit) + 3 scénarios BDD `@viral` (runner existant). Local = Build, Tests = CI. | 9/10
 
@@ -67,7 +69,7 @@ _Sessions 000-117 archivées_ : rapports dans `.agents/sessions/`, résumé dans
 |EPIC |Description |Statut |Priorité
 
 | **CAP-VIRAL** | **Moteur de campagnes virales YouTube/TikTok** — domaine `capsule.viral` : rendu vertical 9:16, format court 15-60 s, hooks/CTA **ancrés contexte N1**, **storyboard validable** (porte éditoriale), chaîne marketing (amont `capsule.copy` / aval `CampaignBundle`), thumbnail, sous-titres karaoké, batch multi-plateforme, **assemblage bout-en-bout** (`ViralCampaignAssembler`), **socle FFmpeg** (`ViralCaptureStrategy` — Playwright temps réel écarté), **câblage tâche `generateViralCampaign`**. 14 US ~53 pts. Cadrage `.agents/sessions/138-cap-viral-cadrage.adoc`. | ✅ TERMINÉ (S-142) — 14/14 US (wiring + US-7 livrés) | P0
-| CAP-SHORT | **Livraison end-to-end du format court** (YouTube Shorts / TikTok / Reels). **US-1a ✅ S-146** : `ViralDeckBuilder` (storyboard → deck HTML **1080×1920**). **US-1b ✅ S-147** : orchestration `renderViralVariants` (MP4 par `ViralVariant`, socle FFmpeg, économie d'encre). **US-2 ✅ S-148** : time-fit 15-60 s imposé au montage (`ViralTimeFitter` + gate durée). **US-3 ✅ S-149** : batch réel langue × plateforme (capture unique + réplication). Reste **US-5** (BDD rendu), **US-4** (dogfooding). **6 US ~22 pts**. + **maintenance RENAME** (résidus métier `pédagogique/formation` dans l'OSS). Cadré S-143, diagnostic S-145. | 🟡 EN COURS (S-149) — 5/6 US | P0 |
+| CAP-SHORT | **Livraison end-to-end du format court** (YouTube Shorts / TikTok / Reels). **US-1a ✅ S-146** : `ViralDeckBuilder` (storyboard → deck HTML **1080×1920**). **US-1b ✅ S-147** : orchestration `renderViralVariants` (MP4 par `ViralVariant`, socle FFmpeg). **US-2 ✅ S-148** : time-fit 15-60 s (`ViralTimeFitter` + gate durée). **US-3 ✅ S-149** : batch réel (capture unique + réplication). **US-5 ✅ S-150** : BDD rendu réel (`@viral-render`, vrai MP4 + durée, CI). Reste **US-4** (dogfooding viral réel = **accord pilote**). **6 US ~22 pts**. + **maintenance RENAME** (résidus métier `pédagogique/formation` dans l'OSS). Cadré S-143, diagnostic S-145. | 🟡 EN COURS (S-150) — 5/6 US + dogfooding | P0 |
 | CAP-CONTEXT | **Contexte du storyboard** — identité visuelle (design system) + QQOQCP + fil conducteur narratif portés dans le domaine `capsule.viral` (`Qqoqcp`/`VisualIdentity`/`NarrativeThread` + champs additifs, builder/parser 3 sections, gate de cohérence). Squelette : `.agents/CAPSULE_VIDEO.adoc`. 4 US ~10 pts, **US-1/2/3 ✅ S-145**, reste US-4 (`Capsule.jsx` tokens). | 🟡 EN COURS (S-145) — 3/4 US | P1 |
 | CAP-PODCAST | Extraction audio-only — `PodcastConcatenator` FFmpeg concat MP3 slides, tâche `generateCapsulePodcast`. Domaine `capsule.podcast` 13ème. 3 US ~4 pts | ✅ TERMINÉ (S-127) | P2
 | CAP-PREVIEW | Mode dry-run — `capture.previewOnly` 4 sources, screenshot path s'arrête après PNG. 3 US ~4 pts | ✅ TERMINÉ (S-128) | P2
@@ -124,10 +126,11 @@ _Details EPICs terminés_ : rapports dans `.agents/sessions/`, détails archivé
 | `.agents/CAPSULE_VIDEO.adoc` | **Littérature agentique** — squelette de storyboard guidé par le contexte (design system + QQOQCP + fil conducteur) | EAGER
 |===
 
-_Total_ : 30 EPICs terminés + **CAP-VIRAL ✅ TERMINÉ (S-142, 14/14 US)** + **CAP-CONTEXT 🟡 3/4 US (S-145)** + **CAP-SHORT 🟡 5/6 US (S-146→S-149)**. _Baseline courante_ (S-136, exacte) :
+_Total_ : 30 EPICs terminés + **CAP-VIRAL ✅ TERMINÉ (S-142, 14/14 US)** + **CAP-CONTEXT 🟡 3/4 US (S-145)** + **CAP-SHORT 🟡 5/6 US + dogfooding (S-146→S-150)**. _Baseline courante_ (S-136, exacte) :
 1166 unit VERT, 75 functional VERT, 21 cucumber dédiés GREEN. **S-145** ajoute le
 **22e** runner dédié (`cucumberTestStoryboardContext`) câblé `full-tests.yml`
-(preuve = CI du push) ; **S-146→S-148** étendent la feature `@viral` (aucun runner neuf).
+(preuve = CI du push) ; **S-146→S-149** étendent la feature `@viral` (aucun runner
+neuf) ; **S-150** ajoute le **23e** runner (`cucumberTestViralRender`, vrai MP4).
 
 _Décision architecture_ : Docker FFmpeg reporté MVP1 (fausse bonne idée
 pour MVP0 — gain fonctionnel nul, complexité ajoutée). FFmpeg reste local
