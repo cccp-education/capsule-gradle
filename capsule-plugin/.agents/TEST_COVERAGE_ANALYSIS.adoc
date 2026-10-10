@@ -1,7 +1,19 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
-:date: 2026-10-09
-:session: 150 CAP-SHORT US-5 — BDD rendu réel (vrai MP4 + durée)
+:date: 2026-10-10
+:session: 152 CAP-CONTEXT US-4 — Capsule.jsx sur tokens du brand book
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 10 octobre 2026 (après session 152)
+
+.Modifications session 152 — CAP-CONTEXT US-4 (tokens du brand book)
+|===
+| Fichier | Changement | Tests ajoutés
+| `resources/capsule/remotion/src/Capsule.jsx` (modifié) | Fond + accent lus via `var(--capsule-background, …)` / `var(--accent-color, …)` ; `PAGE_BACKGROUND` → `DEFAULT_BACKGROUND` (repli). | +3 `CapsuleThemeTemplateTest` (garde ressource)
+|===
+
+*Totaux S-152* : +3 unit (garde ressource JSX). Gates locaux (Local = Build) :
+`compileKotlin` + `compileTestKotlin` VERT. Les suites s'exécutent en CI
+(`Test` + `Full Tests`).
 
 == Couverture — 9 octobre 2026 (après session 150)
 

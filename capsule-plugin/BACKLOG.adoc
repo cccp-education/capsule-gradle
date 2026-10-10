@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-10 (S-151 — publication capsule-plugin 0.0.2 (local + Central) + consommateurs : racine 0.0.2, workspace-bom 0.0.75)
+:last_update: 2026-10-10 (S-152 — CAP-CONTEXT US-4 ✅ : `Capsule.jsx` lit les tokens du brand book (`--capsule-background`/`--accent-color`), CAP-CONTEXT TERMINÉ 4/4)
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)
@@ -162,7 +162,7 @@ générique (`#content`). **Le métier formation vit dans training-gradle, pas i
 *Estimé* : ~1 pt (test-only + docs + 1 KDoc prod).
 
 '''
-== 🎬 CAP-CONTEXT 🟡 EN COURS — 3/4 US (S-145)
+== 🎬 CAP-CONTEXT ✅ TERMINÉ 4/4 US (S-144 cadrage ; US-1/2/3 S-145, US-4 S-152)
 
 _Contexte du storyboard : identité visuelle (design system) + QQOQCP + fil
 conducteur narratif. Revue de code S-144 : le storyboard `capsule.viral` est
@@ -170,7 +170,7 @@ validé en **forme** mais ne porte **aucun contexte**. Squelette documentaire :
 `.agents/CAPSULE_VIDEO.adoc` (littérature agentique)._
 
 *Cadrage* : `.agents/CAPSULE_VIDEO.adoc` (S-144) — 7 décisions, squelette AsciiDoc.
-*Charge* : 4 US (~10 pts) — **US-1/2/3 ✅ S-145**, US-4 🟡.
+*Charge* : 4 US (~10 pts) — **US-1/2/3 ✅ S-145, US-4 ✅ S-152 — TERMINÉ 4/4**.
 *Ancrage socle* : pur domaine `capsule.viral`, **ne touche pas** au rendu — le
 rendu viral privilégie le **socle FFmpeg** (`ViralCaptureStrategy` force
 `SCREENSHOT`, Playwright temps réel écarté).
@@ -183,12 +183,12 @@ rendu viral privilégie le **socle FFmpeg** (`ViralCaptureStrategy` force
 | US-1 | **Types de contexte + câblage additif** — `Qqoqcp` (6 réponses), `VisualIdentity` (brand/format/tokens/typo/logo/fond), `NarrativeThread` (thèse/motif/arc/registre/voix) + `ViralStoryboard` 3 champs optionnels + `StoryboardBeat.enteringTransition` | `capsule.viral` | 3 | ✅ S-145
 | US-2 | **Builder + parser (round-trip étendu)** — 3 sections AsciiDoc (`== QQOQCP`, `== Identité visuelle`, `== Fil conducteur`) + `Transition:` par beat ; extraction de section niveau-2 aware | `capsule.viral` | 4 | ✅ S-145
 | US-3 | **Gate de cohérence** — tout-ou-rien des 3 axes + transition par séquence (actif seulement si contexte porté) | `capsule.viral` | 3 | ✅ S-145
-| US-4 | **`Capsule.jsx` sur tokens du brand book** — lire les tokens (`BRAND.adoc`) au lieu du `PAGE_BACKGROUND` hardcodé (tier enrichissement Remotion) | `Remotion`, `Capsule.jsx` | 3 | 🟡 À FAIRE
+| US-4 | **`Capsule.jsx` sur tokens du brand book** — la composition Remotion lit `--capsule-background` / `--accent-color` (injectés dans le deck par `ViralDeckBuilder` depuis CAP-CONTEXT) au lieu du `PAGE_BACKGROUND` hardcodé ; littéraux conservés en repli neutre | `Remotion`, `Capsule.jsx` | 3 | ✅ S-152 (`BRAND_BACKGROUND`/`BRAND_ACCENT` + garde ressource)
 |===
 
-*Total* : 4 US (~10 pts). US-1/2/3 **✅ S-145** (domaine + BDD + functional +
-CI). Revue : `.agents/sessions/144-capsule-video-litterature-storyboard.adoc`,
-`.agents/sessions/145-cap-context-domain-port.adoc`.
+*Total* : 4 US (~10 pts). **US-1/2/3 ✅ S-145, US-4 ✅ S-152 — CAP-CONTEXT TERMINÉ 4/4** (domaine + BDD + functional + CI). Revue : `.agents/sessions/144-capsule-video-litterature-storyboard.adoc`,
+`.agents/sessions/145-cap-context-domain-port.adoc`,
+`.agents/sessions/152-cap-context-us4-capsule-tokens.adoc`.
 
 '''
 == 📦 Publication Maven Central ✅

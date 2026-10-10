@@ -234,8 +234,17 @@ const DIAGRAM_MASK = (() => {
   };
 })();
 
-const PAGE_BACKGROUND =
+// Default composition background. It is only a *fallback*: the composition
+// reads the deck's `--capsule-background` variable (design system / CAP-CONTEXT),
+// injected by `ViralDeckBuilder` from the brand book. A brand that sets
+// `--capsule-background` dresses the capsule without this file knowing it.
+const DEFAULT_BACKGROUND =
   'radial-gradient(120% 90% at 78% 42%, #16233c 0%, #0d1526 45%, #080e1a 100%)';
+
+// Brand-driven surfaces. The token wins when the deck carries it; the historical
+// literals are kept as the neutral fallback (no brand book → unchanged look).
+const BRAND_BACKGROUND = `var(--capsule-background, ${DEFAULT_BACKGROUND})`;
+const BRAND_ACCENT = 'var(--accent-color, rgba(255,180,58,0.85))';
 
 const Slide = ({ html, durationInFrames, manim, manimDurationInFrames, first }) => {
   const frame = useCurrentFrame();
@@ -272,7 +281,7 @@ const Slide = ({ html, durationInFrames, manim, manimDurationInFrames, first }) 
       });
 
   return (
-    <AbsoluteFill style={{ opacity: EASE_OUT(appear), background: PAGE_BACKGROUND }}>
+    <AbsoluteFill style={{ opacity: EASE_OUT(appear), background: BRAND_BACKGROUND }}>
       {manim ? (
         <Animation
           asset={manim}
@@ -322,7 +331,7 @@ const Progress = ({ boundaries }) => {
       <div
         style={{
           position: 'absolute', left: 0, bottom: 0, height: 3, width: `${pct}%`,
-          background: 'rgba(255,180,58,0.85)',
+          background: BRAND_ACCENT,
         }}
       />
       {boundaries.map((b) => (
@@ -374,7 +383,7 @@ export const Capsule = ({ slides = [], headHtml = '' }) => {
   const boundaries = placed.slice(1).map(({ start }) => start / total);
 
   return (
-    <AbsoluteFill style={{ background: PAGE_BACKGROUND }}>
+    <AbsoluteFill style={{ background: BRAND_BACKGROUND }}>
       <div dangerouslySetInnerHTML={{ __html: head }} />
       <style dangerouslySetInnerHTML={{ __html: REVEAL_CSS }} />
       {placed.map(({ slide, start }, i) => (

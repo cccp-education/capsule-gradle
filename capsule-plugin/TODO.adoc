@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-09 (S-150 — CAP-SHORT US-5 ✅ : BDD rendu réel (`@viral-render`, vrai MP4 + durée).)
+:last_update: 2026-10-10 (S-152 — CAP-CONTEXT US-4 ✅ : `Capsule.jsx` sur tokens du brand book. CAP-CONTEXT TERMINÉ 4/4.)
 
 '''
 == ✅ CAP-VIRAL — US livrées (S-139 + S-140 + S-141 + S-142)
@@ -42,13 +42,13 @@
 . [ ] **🧹 RENAME** — résidus métier `pédagogique/formation` dans l'OSS (docs + 1 KDoc prod + fixtures).
 
 '''
-== 🟡 CAP-CONTEXT — contexte du storyboard (S-145, 3/4 US)
+== ✅ CAP-CONTEXT — contexte du storyboard (TERMINÉ 4/4, S-145/S-152)
 
 . [x] **US-0** ✅ S-144 — cadrage (squelette documentaire 3 axes, `CAPSULE_VIDEO.adoc`).
 . [x] **US-1** ✅ S-145 — `Qqoqcp` + `VisualIdentity` + `NarrativeThread` + champs additifs `ViralStoryboard` + `StoryboardBeat.enteringTransition`.
 . [x] **US-2** ✅ S-145 — builder/parser 3 sections (`== QQOQCP`, `== Identité visuelle`, `== Fil conducteur`) + round-trip étendu.
 . [x] **US-3** ✅ S-145 — gate de cohérence (tout-ou-rien + transition par séquence).
-. [ ] **US-4** — `Capsule.jsx` sur tokens du brand book (`BRAND.adoc`) au lieu du `PAGE_BACKGROUND` hardcodé (tier Remotion).
+. [x] **US-4** ✅ S-152 — `Capsule.jsx` lit les tokens du brand book (`--capsule-background`/`--accent-color`) au lieu du `PAGE_BACKGROUND` hardcodé.
 
 '''
 == 🟡 RESTE (S-144+)

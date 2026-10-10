@@ -1,0 +1,74 @@
+= Session 152 — CAP-CONTEXT US-4 : `Capsule.jsx` sur tokens du brand book
+:session: 152
+:date: 2026-10-10
+:type: feat + test (garde ressource)
+:epic: CAP-CONTEXT (US-4) — clôture 4/4
+:methode: Local = Build, Tests = CI (aucun test/check local — GitHub Actions)
+
+== Contexte
+
+US-4 clôt CAP-CONTEXT. La composition Remotion (`Capsule.jsx`) hardcodait son
+fond (`PAGE_BACKGROUND`), donc une marque ne pouvait pas habiller la capsule :
+les tokens du deck (CAP-CONTEXT, injectés par `ViralDeckBuilder` as
+`--capsule-background` / `--accent-color`) étaient **ignorés**.
+
+Chaîne des tokens (rappel) : `VisualIdentity` (domaine `capsule.viral`) →
+`ViralDeckBuilder` émet `:root { --capsule-background; --capsule-typography;
+<brand tokens> }` dans le `<head>` du deck → `Capsule` (Remotion) rejoue ce
+`headHtml` dans la composition. Le token était donc **déjà** disponible ; il ne
+restait qu'à le **lire**.
+
+== Livrable — `Capsule.jsx` lit les tokens
+
+* `DEFAULT_BACKGROUND` (ex-`PAGE_BACKGROUND`) devient un simple **repli**.
+* `BRAND_BACKGROUND = var(--capsule-background, ${DEFAULT_BACKGROUND})` — fond
+  de composition (remplace le littéral hardcodé dans les deux `AbsoluteFill`).
+* `BRAND_ACCENT = var(--accent-color, rgba(255,180,58,0.85))` — barre de
+  progression.
+* Aucun changement Kotlin : les tokens circulent déjà via le deck `headHtml`.
+
+Effet : une marque qui pose `--capsule-background` / `--accent-color` habille la
+capsule **sans** que `Capsule.jsx` la connaisse ; sans brand book, le rendu
+historique est **inchangé** (repli).
+
+== Preuves
+
+* **Unit (garde ressource)** : `CapsuleThemeTemplateTest` (3 tests) lit le
+  template shippé dans le jar (mirror `RemotionRootTemplateTest`, pattern
+  CAP-VIRAL US-7) et assert : lecture de `var(--capsule-background`, lecture de
+  `var(--accent-color`, `PAGE_BACKGROUND` **supprimé**, repli gradient conservé.
+
+_Ce niveau (garde ressource) est le patron établi du projet pour un template JSX
+shippé : pas de Node, pas de navigateur, contrat de ressource pur._
+
+== Méthode
+
+Feat + garde ressource. `compileKotlin` + `compileTestKotlin` VERTS. Preuve = CI
+du push (`Test` + `Full Tests`).
+
+== Décisions
+
+* **Token d'abord, littéral en repli** (`var(--token, <fallback>)`) — la marque
+  habille, le défaut neutre est préservé (aucune régression pour les capsules
+  sans brand book).
+* **Pas de nouvelle prop Remotion** — les tokens circulent déjà par `headHtml`
+  (CAP-CONTEXT US-2) ; introduire une prop `theme` aurait dupliqué le canal.
+* **Pas de threading Kotlin** — `ViralDeckBuilder` émet déjà `--capsule-background`
+  + les tokens de `VisualIdentity` ; `Capsule` rejoue le `headHtml`.
+
+== Fichiers
+
+* Modifié : `src/main/resources/capsule/remotion/src/Capsule.jsx`
+  (`BRAND_BACKGROUND`/`BRAND_ACCENT`, `PAGE_BACKGROUND` → `DEFAULT_BACKGROUND`).
+* Créé : `src/test/kotlin/capsule/remotion/CapsuleThemeTemplateTest.kt`.
+
+== Statut / suite
+
+**CAP-CONTEXT TERMINÉ 4/4** (S-144 cadrage ; US-1/2/3 S-145 ; US-4 S-152).
+CAP-SHORT 5/6 US + dogfooding (US-4 = accord pilote). Reste : maintenance RENAME
+(résidus `pédagogique/formation` OSS).
+
+*Note release* : `Capsule.jsx` est une ressource **shippée** dans le jar ; US-4
+est postérieur à la publication **0.0.2** (S-151). Ce changement sera donc livré
+dans une **prochaine release** (bump `[versions].capsule` → 0.0.3 + publication),
+pas dans le 0.0.2 déjà sur Central. Zéro publication dans cette session, zéro secret.

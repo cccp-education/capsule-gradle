@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-10 (S-151) — publication capsule-plugin 0.0.2 + consommateurs. Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-10 (S-152) — CAP-CONTEXT US-4 (`Capsule.jsx` sur tokens). Rapports détaillés dans `.agents/sessions/`.
 
-== 24 dernières sessions (128-151)
+== 24 dernières sessions (129-152)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 152 | 2026-10-10 | feat+test | **CAP-CONTEXT US-4 — `Capsule.jsx` sur tokens du brand book** (clôt l'EPIC 4/4). La composition Remotion ne hardcode plus son fond (`PAGE_BACKGROUND`) : `BRAND_BACKGROUND = var(--capsule-background, <repli gradient>)` et `BRAND_ACCENT = var(--accent-color, <repli amber>)`. Les tokens sont injectés dans le deck par `ViralDeckBuilder` (CAP-CONTEXT US-2, `:root { --capsule-background; --capsule-typography; <brand tokens> }`) puis rejoués par `Capsule` via `headHtml`. Fond et barre de progression désormais habillés par la marque. Garde ressource `CapsuleThemeTemplateTest` (3 tests : lit `--capsule-background`, lit `--accent-color`, `PAGE_BACKGROUND` supprimé, repli conservé). Local = Build, Tests = CI. Rapport `.agents/sessions/152-cap-context-us4-capsule-tokens.adoc`. | 9/10
 
 | 151 | 2026-10-10 | release | **Publication capsule-plugin 0.0.2 (local + Maven Central)** + consommateurs. Bump `capsule = 0.0.2` ; `publishToMavenLocal` (artefacts + marker signés) ; `publishAggregationToCentralPortal` bundle `99ecf225-c2a1-47e1-8fb9-bea7ccdcdd5e` (AUTOMATIC). Consommateurs : racine consommateur `capsule = 0.0.2` ; MEMPHIS `workspace-bom` catalog `capsule-plugin = 0.0.2` + BOM `0.0.74` → **`0.0.75`** publié (bundle `d92b4516…`, POM contraint capsule-plugin 0.0.2). Contenu depuis 0.0.1 : CAP-VIRAL 14 US, CAP-CONTEXT 3/4, CAP-SHORT 5/6. Ordre DAG N0/N1 déjà Central. Rapport `.agents/sessions/151-publication-0.0.2.adoc`. | 9/10
 

@@ -1,49 +1,51 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 152
+:session: 153
 :borough: Détroit
-:session_precedente: 151 — Publication capsule-plugin 0.0.2 (local + Central) + consommateurs
+:session_precedente: 152 — CAP-CONTEXT US-4 : `Capsule.jsx` sur tokens du brand book
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-151 — Publication 0.0.2
+=== S-152 — CAP-CONTEXT US-4 (clôture 4/4)
 
-- `capsule-plugin 0.0.2` publié **local + Maven Central** (bundle `99ecf225…`).
-- Consommateurs : racine `capsule = 0.0.2` ; MEMPHIS `workspace-bom 0.0.75`
-  (capsule-plugin 0.0.2, bundle `d92b4516…`).
-- Rapport : `.agents/sessions/151-publication-0.0.2.adoc`.
+- `Capsule.jsx` lit `var(--capsule-background, <repli>)` (fond) et
+  `var(--accent-color, <repli>)` (barre de progression) au lieu du
+  `PAGE_BACKGROUND` hardcodé. Tokens injectés par `ViralDeckBuilder` (US-2).
+- Garde ressource `CapsuleThemeTemplateTest` (3 tests). **CAP-CONTEXT 4/4 TERMINÉ**.
+- Rapport : `.agents/sessions/152-cap-context-us4-capsule-tokens.adoc`.
 
-=== S-146→S-150 (contexte)
+=== S-151 / S-146→S-150 (contexte)
 
+- Publication **0.0.2** (local + Central) + consommateurs (racine + workspace-bom 0.0.75).
 - CAP-SHORT : deck (US-1a), orchestration (US-1b), time-fit (US-2), batch (US-3),
-  BDD rendu réel (US-5). CAP-CONTEXT : US-1/2/3 (contexte du storyboard).
+  BDD rendu réel (US-5).
 
-== Mission Session 152 — priorités
+== Mission Session 153 — priorités
 
-1. **CAP-CONTEXT US-4** — `Capsule.jsx` sur **tokens du brand book** (`BRAND.adoc`)
-   au lieu du `PAGE_BACKGROUND` hardcodé (tier Remotion). Port pur Kotlin et/ou
-   tests node (pattern CAP-ANIM-TEST `RemotionTiming`).
-2. **Maintenance RENAME** — résidus métier `pédagogique/formation` dans l'OSS
-   (`build.gradle.kts` description, `AGENT.adoc`, `doc/CAPSULE_ARCHITECTURE.adoc`,
-   `Capsule.jsx` KDoc dans le jar, `FileMarketCopySource` KDoc, fixtures). ~1 pt.
-3. **CAP-SHORT US-4** (dogfooding viral réel) = accord pilote.
+1. **Maintenance RENAME** — résidus métier `pédagogique/formation` dans l'OSS :
+   `build.gradle.kts` (description « capsules video pedagogiques »), `AGENT.adoc`,
+   `doc/CAPSULE_ARCHITECTURE.adoc`, `Capsule.jsx` KDoc (dans le jar),
+   `viral/FileMarketCopySource.kt` KDoc (`#fpa`/`#formation`), fixtures de test.
+   → neutraliser vers « capsule vidéo » générique (`#content`). ~1 pt.
+   **Attention** : re-générer un bump/publication si la description POM change
+   (`build.gradle.kts` name/description) — sinon différer la publication.
+2. **CAP-SHORT US-4** (dogfooding viral réel) = **accord pilote** (run LLM metered).
 
 == Points d'attention
 
-* **Local = Build, Tests = CI** : aucun `test`/`check`/`cucumberTest` en local ;
-  `compileKotlin`/`compileTestKotlin`/`compileFunctionalTestKotlin` seulement. Le
-  vert de la CI (GitHub Actions) est la preuve.
-* **Publication** : `version = libs.plugins.capsule.get().version` ; bump = éditer
-  `[versions].capsule` ; publication `publishToMavenLocal` +
-  `publishAggregationToCentralPortal --no-daemon`. Ordre DAG : N0/N1 sur Central
-  avant N2.
-* **CAP-SHORT** : 5/6 US + dogfooding. Ne pas régresser la capture **unique** (US-3).
-* Tout nouveau feature cucumber = **runner dédié** (S-082) + steps **préfixés**
-  (S-088) + câblage `full-tests.yml` (anti ghost-test, Queens S-269).
+* **Local = Build, Tests = CI** : `compileKotlin`/`compileTestKotlin` seulement.
+  Le vert de la CI (GitHub Actions) est la preuve.
+* **Publication** : `version = libs.plugins.capsule.get().version` ; `0.0.2` sur
+  Central. Un futur bump = éditer `[versions].capsule` + `publishToMavenLocal` +
+  `publishAggregationToCentralPortal --no-daemon` (+ consommateurs).
+* **English only** : le RENAME vise justement les littéraux français du code/docs.
+* **CAP-CONTEXT** TERMINÉ 4/4 ; **CAP-SHORT** 5/6 + dogfooding.
 * **Sessions concurrentes** : `git status` à l'ouverture (drift gouvernance).
-* Baby-step DDD/TDD/BDD, RED → GREEN → REFACTOR. English only (code/Gherkin).
+* Baby-step DDD/TDD/BDD, RED → GREEN → REFACTOR. Tout nouveau feature cucumber =
+  runner dédié (S-082) + steps préfixés (S-088) + câblage `full-tests.yml`.
+* Un test nécessitant un binaire doit **skipp** (pending) s'il manque (S-269).
 
 == Rappels
 
 * GroupId : `education.cccp` ; Plugin ID : `education.cccp.capsule` ; version **0.0.2** (Central).
-* CAP-VIRAL **TERMINÉ 14/14 US** ; CAP-CONTEXT **3/4 US** ; CAP-SHORT **5/6 US + dogfooding**.
+* CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **5/6 + dogfooding**.

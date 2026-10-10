@@ -1,6 +1,16 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-10
 
+== Session 152 — CAP-CONTEXT US-4 : `Capsule.jsx` sur tokens du brand book ✅
+
+* La composition Remotion `Capsule.jsx` ne hardcode plus son fond
+  (`PAGE_BACKGROUND`) : `BRAND_BACKGROUND = var(--capsule-background, <repli>)`
+  et `BRAND_ACCENT = var(--accent-color, <repli>)` (barre de progression).
+* Les tokens sont injectés dans le deck par `ViralDeckBuilder` (CAP-CONTEXT US-2)
+  puis rejoués par `Capsule` via `headHtml` → fond + accent habillés par la marque.
+* Garde ressource `CapsuleThemeTemplateTest` (3 tests). **CAP-CONTEXT TERMINÉ 4/4.**
+  Rapport `.agents/sessions/152-cap-context-us4-capsule-tokens.adoc`.
+
 == Session 151 — Publication capsule-plugin 0.0.2 (local + Central) + consommateurs ✅
 
 * Bump `capsule = 0.0.1` → **0.0.2** (catalogue plugin).
