@@ -150,9 +150,11 @@ abstract class RenderViralVariantsTask : DefaultTask() {
             val result = ViralVariantRenderer.render(
                 plan = plan,
                 isRenderable = { it.exists() && it.length() > 0L },
-                render = { entry ->
-                    renderVariant(entry, deck, durations, target, toleranceSecs.get(), engine, converter)
+                // US-3: the deck is captured once and replicated to every variant.
+                capture = { output ->
+                    captureDeckToTarget(output, deck, durations, target, toleranceSecs.get(), engine, converter)
                 },
+                replicate = { source, target -> replicateVideo(source, target) },
             )
             logger.lifecycle(
                 "CAPSULE VIRAL RENDER → ${result.renderedCount} rendered, " +
@@ -168,9 +170,12 @@ abstract class RenderViralVariantsTask : DefaultTask() {
         }
     }
 
-    /** Captures the deck, transcodes to `entry.videoFile`, then gates the duration (US-2). */
-    private fun renderVariant(
-        entry: ViralVariantRenderEntry,
+    /**
+     * Captures the shared deck once into [target] (MP4), then gates its duration
+     * (US-2). The remaining variants are replicated from [target].
+     */
+    private fun captureDeckToTarget(
+        target: File,
         deck: File,
         durations: List<Double>,
         targetSeconds: Int,
@@ -178,7 +183,7 @@ abstract class RenderViralVariantsTask : DefaultTask() {
         engine: PlaywrightCapture,
         converter: VideoFormatConverter,
     ): Boolean {
-        val work = File(entry.videoFile.parentFile, "${entry.variant.id}-work")
+        val work = File(target.parentFile, "_capture-work")
         work.deleteRecursively()
         work.mkdirs()
         return try {
@@ -190,28 +195,40 @@ abstract class RenderViralVariantsTask : DefaultTask() {
                 slideDurations = durations,
             )
             val webm = File(work, "capsule.webm")
-            val converted = converter.convertToMp4(webm, entry.videoFile)
-            val produced = converted && entry.videoFile.exists() && entry.videoFile.length() > 0L
+            val converted = converter.convertToMp4(webm, target)
+            val produced = converted && target.exists() && target.length() > 0L
             if (!produced) {
                 false
             } else {
-                val seconds = MediaProbeUtil.probeDuration(entry.videoFile)
-                val fitted = ViralTimeFitter.isFitted(seconds, targetSeconds, toleranceSecs)
-                if (!fitted) {
-                    logger.warn(
-                        "CAPSULE VIRAL RENDER → variant '{}' produced {}s, outside target {}s ±{}s",
-                        entry.variant.id, seconds, targetSeconds, toleranceSecs,
-                    )
+                val seconds = MediaProbeUtil.probeDuration(target)
+                when {
+                    // Probe unavailable/degraded: don't fail an otherwise produced file.
+                    seconds <= 0.0 -> true
+                    ViralTimeFitter.isFitted(seconds, targetSeconds, toleranceSecs) -> true
+                    else -> {
+                        logger.warn(
+                            "CAPSULE VIRAL RENDER → produced {}s, outside target {}s ±{}s",
+                            seconds, targetSeconds, toleranceSecs,
+                        )
+                        false
+                    }
                 }
-                fitted
             }
         } catch (e: Exception) {
-            logger.warn("CAPSULE VIRAL RENDER → variant '{}' failed: {}", entry.variant.id, e.message)
+            logger.warn("CAPSULE VIRAL RENDER → capture failed: {}", e.message)
             false
         } finally {
             work.deleteRecursively()
         }
     }
+
+    /** Copies a produced video to another variant's file (batch replication, US-3). */
+    private fun replicateVideo(source: File, target: File): Boolean =
+        runCatching {
+            target.parentFile?.mkdirs()
+            source.copyTo(target, overwrite = true)
+            target.exists() && target.length() > 0L
+        }.getOrDefault(false)
 
     /** Resolves the capture engine — viral always uses the FFmpeg screenshot socle. */
     private fun resolveCapture(): PlaywrightCapture {

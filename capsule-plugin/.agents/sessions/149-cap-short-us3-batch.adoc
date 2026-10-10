@@ -1,0 +1,86 @@
+= Session 149 — CAP-SHORT US-3 : batch réel (capture unique + réplication)
+:session: 149
+:date: 2026-10-09
+:type: feat + test (baby-step DDD/TDD/BDD)
+:epic: CAP-SHORT (US-3)
+:methode: Local = Build, Tests = CI (aucun test/check local — GitHub Actions)
+
+== Contexte
+
+Suite d'US-1b/US-2. L'orchestration (S-147) capturait le deck **par variante** :
+pour N variantes (langue × plateforme) partageant le **même** deck portrait et les
+**mêmes** durées, c'était N captures identiques — un gaspillage. US-3 rend le
+batch **réel et économique** : capturer **une fois**, répliquer à chaque variante.
+
+== Livrable — batch capture-once
+
+=== Domaine pur `capsule.viral` — `ViralVariantRenderer.render`
+
+Signature revue (2 seams I/O injectés, logique pure) :
+
+[source,kotlin]
+----
+fun render(
+    plan: ViralVariantRenderPlan,
+    isRenderable: (File) -> Boolean,
+    capture: (target: File) -> Boolean,
+    replicate: (source: File, target: File) -> Boolean,
+): ViralRenderResult
+----
+
+* skip des `<id>.mp4` déjà valides (Économie d'Encre) ;
+* **capture une seule fois** dans le premier variant *pending* (`capture`) ;
+* **réplique** cette vidéo à chaque autre variant (`replicate`) ;
+* échec de capture → tout le *pending* en échec ; échec de réplication → variante
+  en échec (le batch ne casse pas).
+
+L'interface `ViralVariantRender` (per-entry) est **retirée** — remplacée par les
+deux lambdas, ce qui rend la capture unique explicite et testable.
+
+=== Câblage `RenderViralVariantsTask`
+
+* `captureDeckToTarget` — capture le deck (socle FFmpeg `SCREENSHOT`) → transcode
+  MP4 → **gate durée** (US-2). Dossier de travail `_capture-work`.
+* `replicateVideo` — copie fichier (`copyTo(overwrite=true)`), garde non-vide.
+* Gate durée **robuste** : probe ≤ 0 (ffprobe absent/dégradé) → pas d'échec (un
+  fichier produit n'est pas rejeté faute de mesure).
+
+== Preuves (layers de test)
+
+* **Unit** : `ViralVariantRendererTest` (7 tests) — plan, pending, **capture
+  unique** (`captures == 1` pour 3 variants), **skip total** (aucune capture),
+  échec capture → tout en échec, échec réplication partiel. RED prouvé par la
+  compilation.
+* **Cucumber** : 3 scénarios `@viral` existants adaptés aux 2 seams (plan par
+  variante, skip économie d'encre, rendu des manquants) — runner `cucumberTestViral`.
+
+== Méthode
+
+Baby-step DDD/TDD : RED (compilation) → GREEN (compilation locale) → REFACTOR.
+**Aucun test/check local** (règle EAGER Local = Build, Tests = CI) :
+`compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` VERTS.
+Preuve = CI du push (`Test` + `Full Tests`).
+
+== Décisions
+
+* **Capture-once total** (pas par langue) : le deck US-1a est **monolingue** ; tous
+  les variants partagent la même source → une capture suffit. La localisation par
+  variante reste une US future (traduction / CAP-29) — le seam `capture` prendra
+  alors la langue.
+* **Seams capture/replicate** plutôt qu'une interface per-entry : rend la capture
+  unique **explicite** dans le type et **testable**.
+* **Gate durée robuste** : ne pas échouer un fichier produit quand ffprobe ne
+  peut pas mesurer (mode dégradé).
+
+== Fichiers
+
+* Modifiés (4) : `viral/ViralVariantRenderer.kt` (batch capture-once),
+  `viral/RenderViralVariantsTask.kt` (`captureDeckToTarget` + `replicateVideo` +
+  gate robuste), `test/.../viral/ViralVariantRendererTest.kt`,
+  `scenarios/CapsuleViralSteps.kt`.
+
+== Statut / suite
+
+CAP-SHORT **US-1a ✅ S-146, US-1b ✅ S-147, US-2 ✅ S-148, US-3 ✅ S-149** (5/6 US).
+Reste **US-5** (BDD rendu — un vrai MP4 produit + durée) et **US-4** (dogfooding,
+accord pilote). Zéro publication, zéro secret.

@@ -40,27 +40,21 @@ data class ViralRenderResult(
 }
 
 /**
- * Renders one variant to [ViralVariantRenderEntry.videoFile].
- *
- * The heavy capture + FFmpeg socle lives behind this seam so the orchestration
- * itself stays pure and unit-testable (the Gradle task supplies the real
- * engine; tests supply a fake).
- */
-fun interface ViralVariantRender {
-    /** @return `true` when the variant video was produced. */
-    fun render(entry: ViralVariantRenderEntry): Boolean
-}
-
-/**
- * Pure orchestration of the viral short-form render (CAP-SHORT US-1b).
+ * Pure orchestration of the viral short-form render (CAP-SHORT US-1b + US-3).
  *
  * The campaign domain (CAP-VIRAL) knows the (language × platform) matrix; the
- * FFmpeg socle knows how to capture a deck. This object is the *column that
- * links them*: it names one MP4 per variant, skips the ones already rendered
- * (economy of ink), and drives the render through the injected [ViralVariantRender].
+ * FFmpeg socle knows how to capture a deck. This object links them: it names one
+ * MP4 per variant, skips already-rendered ones (economy of ink), and drives the
+ * batch through two injected seams.
  *
- * Pure — no Gradle, no I/O of its own (the [ViralVariantRender] does the work,
- * and the validity predicate is injected).
+ * **Batch (US-3) — capture once, replicate**: every variant shares the same
+ * portrait deck and durations, so the source is captured **once** and the
+ * resulting video is replicated to each variant's `<id>.mp4`. This is the
+ * economy-of-ink win of a real batch (one capture for N variants, not N
+ * captures).
+ *
+ * Pure — no Gradle, no I/O of its own (the seams do the work; the validity
+ * predicate is injected).
  */
 object ViralVariantRenderer {
 
@@ -91,24 +85,49 @@ object ViralVariantRenderer {
     ): List<ViralVariantRenderEntry> = plan.entries.filterNot { isRenderable(it.videoFile) }
 
     /**
-     * Drives the render over [plan]: skips renderable videos, renders the rest
-     * via [render], and accumulates the outcome by variant id.
+     * Drives the batch render over [plan]:
+     *  - skips renderable videos (economy of ink);
+     *  - captures the shared source **once** into the first pending variant
+     *    (`capture`);
+     *  - replicates that video to every other pending variant (`replicate`).
+     *
+     * @param capture   renders the source into [target] (`true` on success).
+     * @param replicate copies a produced video to another variant (`true` on success).
      */
     fun render(
         plan: ViralVariantRenderPlan,
         isRenderable: (File) -> Boolean,
-        render: ViralVariantRender,
+        capture: (target: File) -> Boolean,
+        replicate: (source: File, target: File) -> Boolean,
     ): ViralRenderResult {
         val rendered = mutableListOf<String>()
         val skipped = mutableListOf<String>()
         val failed = mutableListOf<String>()
-        plan.entries.forEach { entry ->
-            when {
-                isRenderable(entry.videoFile) -> skipped += entry.variant.id
-                render.render(entry) -> rendered += entry.variant.id
-                else -> failed += entry.variant.id
+
+        val pending = plan.entries.filterNot { entry ->
+            if (isRenderable(entry.videoFile)) {
+                skipped += entry.variant.id
+                true
+            } else {
+                false
             }
         }
-        return ViralRenderResult(rendered = rendered, skipped = skipped, failed = failed)
+        if (pending.isEmpty()) return ViralRenderResult(rendered, skipped, failed)
+
+        val primary = pending.first()
+        if (!capture(primary.videoFile)) {
+            failed += pending.map { it.variant.id }
+            return ViralRenderResult(rendered, skipped, failed)
+        }
+        rendered += primary.variant.id
+
+        pending.drop(1).forEach { entry ->
+            if (replicate(primary.videoFile, entry.videoFile)) {
+                rendered += entry.variant.id
+            } else {
+                failed += entry.variant.id
+            }
+        }
+        return ViralRenderResult(rendered, skipped, failed)
     }
 }

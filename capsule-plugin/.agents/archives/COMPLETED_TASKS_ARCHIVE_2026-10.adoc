@@ -1,6 +1,22 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-09
 
+== Session 149 — CAP-SHORT US-3 : batch réel (capture unique + réplication) ✅
+
+* **Économie d'Encre de capture** — `ViralVariantRenderer.render` capture le deck
+  **une seule fois** (seam `capture`) puis **réplique** la vidéo à chaque variante
+  (seam `replicate`) : 1 capture pour N variantes au lieu de N. Skip des
+  `<id>.mp4` déjà valides ; échec de capture → tout le pending en échec ; échec
+  de réplication → variante en échec (sans casser le batch).
+* **Câblage** `RenderViralVariantsTask` : `captureDeckToTarget` (capture +
+  transcode + gate durée) et `replicateVideo` (copie fichier). Gate durée rendu
+  **robuste** (probe ≤ 0 → pas d'échec, mode dégradé).
+* **Layers** : `ViralVariantRendererTest` (7 unit — capture unique, skip total,
+  échec capture, échec réplication) + 3 scénarios BDD `@viral`. Local = Build,
+  Tests = CI.
+* Reste CAP-SHORT : US-5 (BDD rendu), US-4 (dogfooding).
+  Rapport `.agents/sessions/149-cap-short-us3-batch.adoc`.
+
 == Session 148 — CAP-SHORT US-2 : time-fit 15-60 s imposé au montage ✅
 
 * **`ViralTimeFitter`** (domaine `capsule.viral`, objet pur) — `fit` trime/pade

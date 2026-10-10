@@ -1,7 +1,21 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-09
-:session: 148 CAP-SHORT US-2 — time-fit 15-60 s
+:session: 149 CAP-SHORT US-3 — batch réel (capture unique + réplication)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 9 octobre 2026 (après session 149)
+
+.Modifications session 149 — CAP-SHORT US-3 (batch)
+|===
+| Fichier | Changement | Tests ajoutés
+| `capsule/viral/ViralVariantRenderer.kt` (modifié) | `render(plan, isRenderable, capture, replicate)` — capture **unique** du deck + **réplication** par variante ; `ViralVariantRender` retiré. | `ViralVariantRendererTest` revu (7)
+| `capsule/viral/RenderViralVariantsTask.kt` (modifié) | `captureDeckToTarget` (capture+transcode+gate) + `replicateVideo` ; gate durée robuste (probe ≤ 0 → pas d'échec). | 0 (adaptateur)
+| `capsule_viral.feature` + `CapsuleViralSteps.kt` (modifiés) | Scénarios de rendu adaptés aux 2 seams capture/replicate. | 3 scénarios (runner existant)
+|===
+
+*Totaux S-149* : 7 unit (revus), 3 scénarios BDD. Gates locaux (Local = Build) :
+`compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` VERT. Les
+suites s'exécutent en CI (`Test` + `Full Tests`).
 
 == Couverture — 9 octobre 2026 (après session 148)
 

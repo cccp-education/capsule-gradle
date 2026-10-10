@@ -281,8 +281,12 @@ class CapsuleViralSteps {
         renderResult = ViralVariantRenderer.render(
             plan = renderPlan!!,
             isRenderable = { it.exists() && it.length() > 0L },
-            render = { entry ->
-                entry.videoFile.writeText("mp4")
+            capture = { target ->
+                target.writeText("mp4")
+                true
+            },
+            replicate = { source, target ->
+                target.writeText(source.readText())
                 true
             },
         )

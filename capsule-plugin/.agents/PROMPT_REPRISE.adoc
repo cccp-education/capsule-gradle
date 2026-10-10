@@ -1,32 +1,34 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 149
+:session: 150
 :borough: Détroit
-:session_precedente: 148 — CAP-SHORT US-2 : time-fit 15-60 s imposé au montage
+:session_precedente: 149 — CAP-SHORT US-3 : batch réel (capture unique + réplication)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-148 — CAP-SHORT US-2 (time-fit)
+=== S-149 — CAP-SHORT US-3 (batch réel)
 
-- `ViralTimeFitter` (objet pur) : `fit` (trim/pad proportionnel au
-  `targetDurationSeconds`, clamp [15,60], somme exacte) + `isFitted` (gate durée).
-- Câblé dans `RenderViralVariantsTask` : durées ajustées avant capture + gate sur
-  la durée sondée du MP4 (`toleranceSecs` défaut 1.0s).
-- Layered : 1 unit (`ViralTimeFitterTest`, 7) + 3 scénarios BDD `@viral`.
-- Rapport : `.agents/sessions/148-cap-short-us2-time-fit.adoc`.
+- `ViralVariantRenderer.render(plan, isRenderable, capture, replicate)` : le deck
+  est capturé **une seule fois** puis **répliqué** à chaque variante (`<id>.mp4`),
+  skip des `<id>.mp4` valides. Échec capture → tout le pending en échec.
+- Câblé dans `RenderViralVariantsTask` (`captureDeckToTarget` + `replicateVideo`,
+  gate durée robuste).
+- Layered : `ViralVariantRendererTest` (7 unit) + 3 scénarios BDD `@viral`.
+- Rapport : `.agents/sessions/149-cap-short-us3-batch.adoc`.
 
-=== S-147 / S-146 (contexte)
+=== S-146→S-148 (contexte)
 
-- US-1b : `ViralVariantRenderer` + tâche `renderViralVariants` (MP4 par variante,
-  socle FFmpeg, économie d'encre). US-1a : `ViralDeckBuilder` (deck 1080×1920).
+- US-1a `ViralDeckBuilder` (deck 1080×1920) ; US-1b orchestration
+  `renderViralVariants` ; US-2 `ViralTimeFitter` (time-fit 15-60 s + gate).
 
-== Mission Session 149 — priorités
+== Mission Session 150 — priorités
 
-1. **CAP-SHORT US-3 (P0)** — **batch réel langue × plateforme** : N variantes
-   rendues en une commande, skip Économie d'Encre si MP4 valide. (Le domaine
-   `ViralBatchPlanner` + `ViralVariantRenderer` existent ; vérifier/renforcer le
-   comportement batch de bout en bout.)
-2. **CAP-SHORT US-5** — BDD rendu : un **vrai MP4** produit + durée (gate).
+1. **CAP-SHORT US-5 (P0)** — **BDD rendu** : un **vrai MP4** produit (durée
+   validée). Probablement via le socle réel en CI (`Full Tests` installe ffmpeg +
+   Chromium) OU un seam `@Internal` de task exécuté en test. Runner dédié si
+   nouveau feature (pattern S-082), steps préfixés (S-088).
+2. **CAP-SHORT US-4** — **dogfooding viral réel** : 1 produit talaria (accord
+   pilote, run LLM metered).
 3. **CAP-CONTEXT US-4** — `Capsule.jsx` sur tokens du brand book.
 4. **Maintenance RENAME** — résidus métier `pédagogique/formation` dans l'OSS.
 
@@ -36,11 +38,10 @@ _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
   `compileKotlin`/`compileTestKotlin`/`compileFunctionalTestKotlin` seulement. Le
   vert de la CI (GitHub Actions) est la preuve. Diagnostic par artefacts CI.
 * **Rendu = socle FFmpeg** (`ViralCaptureStrategy` force `SCREENSHOT`) ;
-  Playwright temps réel écarté.
+  Playwright temps réel écarté. Le déck viral est un HTML `<section>` capturable.
+* **Capture unique** (US-3) : ne pas revenir à une capture par variante.
 * Tout nouveau feature cucumber = **runner dédié** (S-082) + steps **préfixés**
-  (S-088) + câblage explicite `full-tests.yml` (anti ghost-test, leçon Queens
-  S-269).
-* **Économie d'Encre** : skip si `<id>.mp4` existe et est non vide.
+  (S-088) + câblage explicite `full-tests.yml` (anti ghost-test, leçon Queens S-269).
 * **Sessions concurrentes** : `git status` à l'ouverture (drift gouvernance).
 * Baby-step DDD/TDD/BDD (unit → functional → cucumber), RED → GREEN → REFACTOR.
 * English only : code, Gherkin, commentaires.
@@ -49,7 +50,7 @@ _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.1
 * Deck = `build/capsule/viral/viral-deck.html` (US-1a) ; doc = `storyboard.adoc` ;
-  variantes = `build/capsule/viral/videos/<id>.mp4` (US-1b) ; manifeste =
+  variantes = `build/capsule/viral/videos/<id>.mp4` (US-1b/US-3) ; manifeste =
   `viral-campaign.json`.
 * CAP-VIRAL **TERMINÉ 14/14 US** (S-142) ; CAP-CONTEXT **3/4 US** (S-145) ;
-  CAP-SHORT **4/6 US** (S-146→S-148 : US-1a + US-1b + US-2 ✅).
+  CAP-SHORT **5/6 US** (S-146→S-149 : US-1a + US-1b + US-2 + US-3 ✅).

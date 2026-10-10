@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-09 (S-148 — CAP-SHORT US-2 ✅ : time-fit 15-60 s imposé au montage (`ViralTimeFitter` trim/pad + gate).)
+:last_update: 2026-10-09 (S-149 — CAP-SHORT US-3 ✅ : batch réel (capture unique + réplication par variante).)
 
 '''
 == ✅ CAP-VIRAL — US livrées (S-139 + S-140 + S-141 + S-142)
@@ -36,7 +36,7 @@
 . [x] **US-1a** ✅ S-146 — storyboard → deck portrait rendable (`ViralDeckBuilder` one `<section>` per beat, 1080×1920, tokens ; `deckOutput`).
 . [x] **US-1b** ✅ S-147 — orchestration `renderViralVariants` (`ViralVariantRenderer` + tâche, MP4 1080×1920 par variante, Économie d'Encre).
 . [x] **US-2** ✅ S-148 — time-fit 15-60 s imposé au montage (`ViralTimeFitter` trim/pad + gate durée).
-. [ ] **US-3** — batch réel langue × plateforme (Économie d'Encre).
+. [x] **US-3** ✅ S-149 — batch réel langue × plateforme (capture unique du deck + réplication par variante, Économie d'Encre).
 . [ ] **US-4** — dogfooding viral réel (accord pilote, run LLM metered).
 . [ ] **US-5** — BDD + CI (rendu par variante couvert).
 . [ ] **🧹 RENAME** — résidus métier `pédagogique/formation` dans l'OSS (docs + 1 KDoc prod + fixtures).
