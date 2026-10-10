@@ -278,7 +278,7 @@ cucumberConventions {
             features = listOf("src/test/features/capsule_viral_render.feature"),
             tags = listOf("@viral-render"),
             runnerClass = "capsule.scenarios.CapsuleViralRenderCucumberRunner",
-            timeoutMinutes = 15,
+            timeoutMinutes = 5,
         ),
     )
 }

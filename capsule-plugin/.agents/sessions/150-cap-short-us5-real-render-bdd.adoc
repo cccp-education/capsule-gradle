@@ -51,6 +51,18 @@ Baby-step BDD : RED (compilation) → GREEN (compilation locale) → REFACTOR.
 **Aucun test/check local** : `compileKotlin` + `compileTestKotlin` +
 `compileFunctionalTestKotlin` VERTS. Preuve = CI du push (`Test` + `Full Tests`).
 
+=== Correctif CI (premier run rouge → vert)
+
+Le premier run `Full Tests` **timeout** (15 min) sur `cucumberTestViralRender`.
+Cause racine reproduite **hors test** (diagnostic ffmpeg manuel) : un PNG **1×1**
+fait **boucler** `ffmpeg -loop 1` (le démultiplexeur image ne rend jamais la
+main) ; un PNG à la taille du viewport (1080×1920) rend en 3 s. **Fix** :
+`ViralRealRenderSupport` génère un PNG **1080×1920** (`BufferedImage` AWT +
+`ImageIO`, sans Chromium) ; les appels ffmpeg sont **bornés** (2 min par étape)
+pour qu'un futur blocage échoue vite au lieu de tenir la tâche. Timeout de tâche
+ramené de 15 à 5 min. Pipeline complet (PNG→WebM, concat depuis un autre CWD,
+convert, probe) validé manuellement. Re-run CI : `Test` + `Full Tests` VERTS.
+
 == Décisions
 
 * **Socle FFmpeg sans Chromium** — `ScreenshotPlanner` + `VideoFormatConverter`
