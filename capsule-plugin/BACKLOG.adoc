@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-10 (S-152 — CAP-CONTEXT US-4 ✅ : `Capsule.jsx` lit les tokens du brand book (`--capsule-background`/`--accent-color`), CAP-CONTEXT TERMINÉ 4/4)
+:last_update: 2026-10-11 (S-153 — Maintenance RENAME ✅ SOLDÉE : vocabulaire FPA/formation neutralisé dans l'OSS + garde `OssVocabularyGuardTest`)
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)
@@ -149,17 +149,21 @@ Reste **US-4** (dogfooding viral réel = **accord pilote**, run LLM metered). Ad
 *Lien chaîne marketing (GBL-009)* : CAP-SHORT rend réellement livrable le maillon
 `capsule produit` (avant : seul le domaine existait).
 
-=== 🧹 Maintenance OSS — résidus métier (RENAME)
+=== ✅ Maintenance OSS — résidus métier (RENAME) — SOLDÉE (S-153)
 
 Le RENAME transverse (RENAME-4, S-135) a neutralisé `FPA/AFNOR/REAC/SPD/SPG` mais
-**pas** `pédagogique/formation` dans la brique OSS. Résidus (prod + doc shippée) :
-`build.gradle.kts:385` (description « capsules video pedagogiques »),
-`AGENT.adoc:3,72`, `doc/CAPSULE_ARCHITECTURE.adoc:1`,
-`src/main/resources/capsule/remotion/src/Capsule.jsx:5` (« Composition d'une
-capsule **pédagogique** » — dans le jar), `viral/FileMarketCopySource.kt:15` (KDoc
-`#fpa`/`#formation`), fixtures de test. → neutraliser vers « capsule vidéo »
-générique (`#content`). **Le métier formation vit dans training-gradle, pas ici.**
-*Estimé* : ~1 pt (test-only + docs + 1 KDoc prod).
+**pas** `pédagogique/formation` dans la brique OSS. Le constat S-153 a montré un
+résidu **plus large** que l'estimation initiale (~1 pt) : CAP-VIRAL (S-139→142) et
+CAP-CONTEXT (S-145) avaient **réintroduit** `FPA`/`formation` dans les fixtures.
+
+**Livré S-153** : garde unit `OssVocabularyGuardTest` (verrouille la description
+POM + **toute la surface `src/`**, regex `(?i)\b(fpa|formation|formateur)\b|p[ée]dagogique`)
++ **24 fichiers `src/`** neutralisés (`FPA→Content`, `formateur→développeur`,
+`formation→contenu`, `#fpa/#formation→#content`, `pédagogique→instructional`,
+`capsule pédagogique→capsule vidéo`, `CAPSULE_PEDAGOGIQUE.adoc→.agents/CAPSULE_VIDEO.adoc`)
++ **13 docs** (description POM, `AGENT.adoc`, `CAPSULE_ARCHITECTURE.adoc`,
+`README.md` + 9 `README.plugin/*`). Gate `rg` = 0. **Le métier formation vit dans
+training-gradle, pas ici.** Rapport `.agents/sessions/153-rename-metier-oss-vocabulary.adoc`.
 
 '''
 == 🎬 CAP-CONTEXT ✅ TERMINÉ 4/4 US (S-144 cadrage ; US-1/2/3 S-145, US-4 S-152)

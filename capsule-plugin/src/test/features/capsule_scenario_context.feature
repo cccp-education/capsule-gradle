@@ -12,7 +12,7 @@ Feature: Capsule pedagogical scenario injection (CAP-SCENARIO-4)
     When I collect the augmented context with scenario file pointing to the scenario directory
     Then the scenario context build succeeds
     And the scenario context artefact contains "Pedagogical Scenario"
-    And the scenario context artefact contains "Comprendre le cadre de la formation"
+    And the scenario context artefact contains "Comprendre le cadre du contenu"
 
   Scenario: No scenarioFile configured produces no scenario section
     Given a Capsule scenario context Gradle project with the capsule plugin applied

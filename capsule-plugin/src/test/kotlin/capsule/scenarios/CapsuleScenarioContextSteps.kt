@@ -50,11 +50,11 @@ class CapsuleScenarioContextSteps {
         )
         scenarioDir.resolve("001_bienvenue.adoc").writeText(
             """
-            = Bienvenue dans la Formation Content
+            = Bienvenue dans le Content
             :module: accueil
 
             == Objectifs
-            - Comprendre le cadre de la formation
+            - Comprendre le cadre du contenu
             - Connaître les modalités d'évaluation
 
             == Prérequis
@@ -72,7 +72,7 @@ class CapsuleScenarioContextSteps {
         scenarioDir.resolve("metadata.json").writeText("{not valid json")
         scenarioDir.resolve("001_objectifs.adoc").writeText(
             """
-            = Objectifs Pédagogiques
+            = Objectives
             :module: core
 
             == Objectifs

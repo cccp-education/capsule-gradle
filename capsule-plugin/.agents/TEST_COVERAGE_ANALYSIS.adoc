@@ -1,7 +1,25 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
-:date: 2026-10-10
-:session: 152 CAP-CONTEXT US-4 — Capsule.jsx sur tokens du brand book
+:date: 2026-10-11
+:session: 153 RENAME metier — vocabulaire FPA/formation neutralisé dans l'OSS
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 11 octobre 2026 (après session 153)
+
+.Modifications session 153 — RENAME metier (vocabulaire OSS)
+|===
+| Fichier | Changement | Tests ajoutés
+| `ci/OssVocabularyGuardTest.kt` (nouveau) | Garde vocabulaire : description POM + toute la surface `src/` (prod/ressources/fixtures/features) exempts de `FPA`/`formation`/`formateur`/`pédagogique`. | +2 unit (garde)
+| `viral/FileMarketCopySource.kt`, `viral/CampaignBundleSerializer.kt` (modifiés) | Exemples hashtags `#fpa`/`#formation` → `#content`. | 0 (KDoc)
+| `viral/NarrativeThread.kt` (modifié) | Registre `pédagogique\|promotionnel\|témoignage` → `instructional\|promotional\|testimonial`. | 0 (KDoc)
+| `viral/Qqoqcp.kt`, `viral/VisualIdentity.kt` (modifiés) | Référence morte `CAPSULE_PEDAGOGIQUE.adoc` → `.agents/CAPSULE_VIDEO.adoc`. | 0 (KDoc)
+| `resources/capsule/remotion/src/Capsule.jsx` (modifié) | KDoc `capsule pédagogique` → `capsule vidéo`. | 0 (ressource)
+| 18 fixtures/features (modifiés) | `Devenir formateur`, `Découvrez FPA`, `fpa-decouverte`, `référentiel FPA`, `Formation Content`, `Objectifs Pédagogiques`, `#fpa`/`#formation`… → génériques ; assertions appariées. | 0 (assertions alignées)
+| 13 docs (modifiés) | Description POM, `AGENT.adoc`, `CAPSULE_ARCHITECTURE.adoc`, `README.md` + 9 `README.plugin/*`. | 0 (docs)
+|===
+
+*Totaux S-153* : +2 unit (garde vocabulaire). Gates locaux (Local = Build) :
+`compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` VERT +
+`rg` métier = 0. Les suites s'exécutent en CI (`Test` + `Full Tests`).
 
 == Couverture — 10 octobre 2026 (après session 152)
 

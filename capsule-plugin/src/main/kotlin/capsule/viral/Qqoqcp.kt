@@ -8,7 +8,7 @@ package capsule.viral
  * how it is shown and why. Derived from the augmented N1 context (RAG/Graphify/
  * Docs/EAGER) and their provenance — never invented (CAP-VIRAL US-4/US-9).
  *
- * The short form (15-60 s) does not support overload (`CAPSULE_PEDAGOGIQUE.adoc`
+ * The short form (15-60 s) does not support overload (`.agents/CAPSULE_VIDEO.adoc`
  * § 4.1): the answers are concise.
  *
  * Property names map the French labels to non-keyword identifiers:

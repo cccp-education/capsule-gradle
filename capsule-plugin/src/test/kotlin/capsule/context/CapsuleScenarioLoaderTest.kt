@@ -43,12 +43,12 @@ class CapsuleScenarioLoaderTest {
         val adoc = File(tempDir, "001_bienvenue.adoc").also {
             it.writeText(
                 """
-                = Bienvenue dans la Formation Content
+                = Bienvenue dans le Content
                 :module: accueil
-                :title: Bienvenue dans la Formation Content
+                :title: Bienvenue dans le Content
 
                 == Objectifs
-                - Comprendre le cadre de la formation
+                - Comprendre le cadre du contenu
                 - Connaître les modalités d'évaluation
 
                 == Prérequis
@@ -62,7 +62,7 @@ class CapsuleScenarioLoaderTest {
         val result = CapsuleScenarioLoader.load(metadata, adoc, 400)
         assertTrue(result.contains("Pedagogical Scenario"), "Expected scenario section header")
         assertTrue(result.contains("Objectives:"), "Expected objectives label")
-        assertTrue(result.contains("Comprendre le cadre de la formation"), "Expected objective content")
+        assertTrue(result.contains("Comprendre le cadre du contenu"), "Expected objective content")
     }
 
     @Test
@@ -70,7 +70,7 @@ class CapsuleScenarioLoaderTest {
         val adoc = File(tempDir, "002_objectifs.adoc").also {
             it.writeText(
                 """
-                = Objectifs Pédagogiques
+                = Objectives
                 :module: accueil
 
                 == Objectifs

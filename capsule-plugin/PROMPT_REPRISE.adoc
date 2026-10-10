@@ -1,42 +1,46 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 145
+:session: 154
 :borough: Détroit
-:session_precedente: 144 — CAPSULE_VIDEO (littérature agentique) : squelette de storyboard guidé par le contexte
+:session_precedente: 153 — RENAME metier : neutralisation du vocabulaire FPA/formation dans l'OSS
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-144 — `CAPSULE_VIDEO.adoc` (littérature agentique)
+=== S-153 — RENAME metier (résidu OSS soldé)
 
-- **Revue de code + cadrage** du storyboard `capsule.viral` → constat : le
-  storyboard est validé en **forme** (hook/CTA/durée) mais ne porte **aucun
-  contexte** (identité visuelle, QQOQCP, fil conducteur).
-- **Livrable** : `.agents/CAPSULE_VIDEO.adoc` — squelette AsciiDoc à 3 axes de
-  contexte (design system + QQOQCP + fil conducteur) + sections `Séquences` et
-  `Gate`. Ancré sur `BRAND.adoc` (talaria) et `CAPSULE_PEDAGOGIQUE.adoc` (recette 3C).
-- Rapport : `.agents/sessions/144-capsule-video-litterature-storyboard.adoc`
-- Suite : portage domaine (champs additifs `ViralStoryboard`, builder/parser,
-  gate de cohérence, `Capsule.jsx` sur tokens) — candidat EPIC **CAP-CONTEXT**.
+- **Constat** : le RENAME-4 (S-135) avait neutralisé `FPA/AFNOR/REAC/SPD/SPG`,
+  mais CAP-VIRAL (S-139→142) et CAP-CONTEXT (S-145) ont **réintroduit** `FPA`/
+  `formation` dans les fixtures, et la **description produit** restait
+  « capsules vidéo pédagogiques ».
+- **Livrable** : garde unit `capsule.ci.OssVocabularyGuardTest` (verrouille la
+  description POM + toute la surface `src/` via regex
+  `(?i)\b(fpa|formation|formateur)\b|p[ée]dagogique`) + neutralisation de
+  **24 fichiers `src/`** + **13 docs** (description, `AGENT`, archi, README ×10).
+- Vocabulaire cible (aligné RENAME-4) : `FPA→Content`,
+  `formateur→développeur`, `formation→contenu`, `#fpa/#formation→#content`,
+  registre `pédagogique→instructional`, `capsule pédagogique→capsule vidéo`,
+  `CAPSULE_PEDAGOGIQUE.adoc→.agents/CAPSULE_VIDEO.adoc` (lien mort réparé).
+- Rapport : `.agents/sessions/153-rename-metier-oss-vocabulary.adoc`.
+- Preuve : `rg` = 0 ; `compileKotlin`/`compileTestKotlin`/`compileFunctionalTestKotlin`
+  VERTS ; CI `Test` + `Full Tests` du push. Zéro bump, zéro publication.
 
-=== S-143 (deux sessions concurrentes)
+== Mission Session 154 — priorités
 
-- **143 bis** — CI S-142 corrigée (2 bugs CI) + dette `cucumberTest` résolue
-  (scoping au runner agrégé). Preuve CI `37967978808`.
-- **143** — CAP-SHORT cadré (rendu short end-to-end, 5 US ~17 pts).
-
-== Mission Session 145 — priorités
-
-1. **CAP-CONTEXT (nouveau, issu S-144)** — porter le squelette `CAPSULE_VIDEO.adoc`
-   dans le domaine : `ViralStoryboard` champs additifs (`qqoqcp`/`visualIdentity`/
-   `narrativeThread`), `ViralStoryboardBuilder`/`Parser` étendus (round-trip),
-   gate de cohérence, `Capsule.jsx` sur tokens du brand book. Baby-step DDD/TDD/BDD.
-2. **CAP-SHORT US-0/1 (P0)** — rendu réel par variante (MP4 1080×1920).
-3. **Optimisation CI** (optionnel) + **dogfooding viral réel** (accord pilote).
+1. **CAP-SHORT US-4 — dogfooding viral réel (P0)** : 1 produit talaria, socle
+   FFmpeg **et** chemin enrichi Remotion+Manim. **Accord pilote requis** (run
+   LLM metered) — ne pas lancer sans accord explicite.
+2. **Optimisation CI** (optionnel) — `Full Tests` ~30 min (20+ runners pure-domain).
+3. À défaut d'accord pilote : **cadrage** d'un EPIC candidat (ex. publication
+   `capsule 0.0.3` portant la description générique + `Capsule.jsx` ; ou un
+   nouveau besoin issu du backlog racine).
 
 == Points d'attention
 
 * **Local = Build, Tests = CI**. Diagnostic des suites non câblées au push =
   workflow manuel `cucumber-full.yml`.
+* **Garde vocabulaire** : toute nouvelle fixture prod/test doit rester
+  **générique** — `OssVocabularyGuardTest` échoue si `FPA`/`formation`/`formateur`/
+  `pédagogique` réapparaît dans `src/`.
 * **Viral = socle FFmpeg** (`ViralCaptureStrategy` force `SCREENSHOT`).
 * **Sessions concurrentes** : `git status` à l'ouverture (drift gouvernance).
 * Baby-step DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
@@ -44,6 +48,7 @@ _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Rappels
 
-* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.1
-* `.agents/CAPSULE_VIDEO.adoc` = littérature agentique du storyboard (EAGER).
-* CAP-VIRAL **TERMINÉ 14/14 US** (S-142) ; CAP-SHORT **CADRÉ** (S-143).
+* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.2.
+* CAP-VIRAL **TERMINÉ 14/14** (S-142) ; CAP-CONTEXT **TERMINÉ 4/4** (S-152) ;
+  CAP-SHORT **5/6** (reste US-4 dogfooding).
+* RENAME metier **SOLDÉ** (S-153) — délivré dans la prochaine release 0.0.3.

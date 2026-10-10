@@ -1,6 +1,6 @@
 = AGENT.adoc — Capsule Gradle
 
-_Produit_ : Capsule video pedagogique comme plugin Gradle
+_Produit_ : Capsule video comme plugin Gradle
 _Licence_ : Apache 2.0 (OSS)
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance_ : compileOnly slider-gradle (consomme les decks reveal.js)
@@ -69,4 +69,4 @@ Toute modification de code source DOIT passer `./gradlew check`
 
 Le plugin est invoque PAR opencode (via tool use).
 Il automatise la capture video, mais la validation humaine
-du contenu pedagogique reste obligatoire.
+du contenu reste obligatoire.

@@ -1,0 +1,118 @@
+= Session 153 — RENAME metier : neutralisation du vocabulaire FPA/formation dans l'OSS
+:session: 153
+:date: 2026-10-11
+:type: refactor (vocabulaire) + test (garde)
+:epic: Maintenance RENAME (résidus OSS) — issu de CAP-SHORT / RENAME-4
+:methode: Baby-step DDD/TDD/BDD — Local = Build, Tests = CI (aucun test/check local)
+
+== Contexte
+
+`capsule-gradle` est une brique **Apache 2.0 publique** publiée sur le Gradle
+Plugin Portal. Sa mission est générique : transformer un deck reveal.js en
+capsule vidéo. Le vocabulaire métier **FPA / formation** appartient à
+`training-gradle` (Newark), **jamais** à la brique OSS.
+
+Le RENAME-4 (S-135) avait neutralisé `FPA/AFNOR/REAC/SPD/SPG` avec un gate
+`grep -riE "\bafnor\b|\breac\b|\bspg\b|\bspd\b|\bfpa\b" src/` = 0. Mais le
+travail ultérieur **CAP-VIRAL** (S-139→S-142) et **CAP-CONTEXT** (S-145) a
+réintroduit `FPA` et `formation` dans les fixtures (`fpa-decouverte`,
+`Devenir formateur professionnel`, `Découvrez FPA`, `référentiel FPA`…), et la
+**description produit** (« capsules vidéo pédagogiques ») n'avait jamais été
+neutralisée. La dette RENAME listée au BACKLOG (`pédagogique/formation` :
+description plugin, `AGENT.adoc`, `doc/`, `Capsule.jsx`, `FileMarketCopySource`,
+fixtures) était donc plus large que prévu au constat.
+
+== Audit (au code, lecture seule)
+
+Inventaire `rg -ni "\b(fpa|formation|formateur)\b|p[ée]dagogique|#fpa|#formation"`
+sur `src/` : **24 fichiers** portaient le résidu, en 3 familles :
+
+. **Prod / ressource shippée** — `FileMarketCopySource.kt`, `CampaignBundleSerializer.kt`
+  (KDoc hashtags `#fpa`/`#formation`), `NarrativeThread.kt` (registre `pédagogique
+  | promotionnel | témoignage`), `Qqoqcp.kt`/`VisualIdentity.kt` (référence morts
+  `CAPSULE_PEDAGOGIQUE.adoc` — fichier vivant chez training-gradle), `Capsule.jsx`
+  (KDoc `Composition d'une capsule pédagogique`, **dans le jar**).
+. **Fixtures / features** — storyboards et scénarios d'exemple : `Devenir formateur
+  professionnel`, `Le rôle du formateur`, `Découvrez FPA`, `fpa-decouverte`,
+  `référentiel FPA`, `Formation Content`, `Bienvenue dans la Formation Content`,
+  `Objectifs Pédagogiques`, `Et si votre formation…`, `#fpa`/`#formation`.
+. **Docs shippées** — `build.gradle.kts` (description POM), `AGENT.adoc`,
+  `doc/CAPSULE_ARCHITECTURE.adoc`, `README.md` + `README.plugin/*` (9 langues).
+
+== Livrable
+
+. **Garde unit** `capsule.ci.OssVocabularyGuardTest` (nouveau, pattern
+   `ProcessMigrationGuardTest`) — verrouille l'invariant en 2 tests :
+   * la **description POM** (self-description OSS shippée dans le jar) reste
+     générique ;
+   * **aucun fichier de `src/`** (prod + ressources + fixtures + features) ne
+     porte le vocabulaire métier — regex `(?i)\b(fpa|formation|formateur)\b|p[ée]dagogique`
+     (bornes de mot : `information`/`transformation` hors scope ; l'anglais
+     générique `pedagogical`/`training` est **autorisé**). Le fichier de garde
+     s'auto-exempte (sa KDoc nomme les termes interdits).
+. **Neutralisation** — vocabulaire générique aligné sur la décision RENAME-4
+   (`FPA→Content`) :
+   * `Devenir formateur (professionnel)` → `Devenir développeur (professionnel)`
+   * `Le rôle du formateur` → `Le rôle du développeur`
+   * `Découvrez FPA (sur talaria.school)` → `Découvrez Content (sur talaria.school)`
+   * `référentiel FPA` → `référentiel Content` ; `fpa-decouverte` → `content-decouverte`
+   * `La formation FPA en accéléré` → `Le contenu Content en accéléré`
+   * `Et si votre formation…` → `Et si votre contenu…`
+   * `Bienvenue dans la Formation Content` → `Bienvenue dans le Content`
+   * `Comprendre le cadre de la formation` → `Comprendre le cadre du contenu`
+   * `Objectifs Pédagogiques` → `Objectives` (titre de fixture, non lu par le loader)
+   * `#fpa`/`#formation` → `#content` (exemples hashtags + fixtures)
+   * registre narratif `pédagogique | promotionnel | témoignage` →
+     `instructional | promotional | testimonial` (KDoc + 2 fixtures, English-only)
+   * `CAPSULE_PEDAGOGIQUE.adoc` → `.agents/CAPSULE_VIDEO.adoc` (référence vivante
+     côté brique, répare un lien mort)
+   * `capsule pédagogique` → `capsule vidéo` ; `contenu pédagogique` → `contenu`
+   * docs : description POM, `AGENT.adoc`, titre `CAPSULE_ARCHITECTURE`,
+     `README.md` + 9 `README.plugin/*`, `formateur`→`locuteur` dans l'archi.
+
+== Méthode (baby-step)
+
+Refactor + garde. La garde **nomme** l'invariant (RED par construction : les
+24 fichiers portaient encore le résidu au constat `rg`), puis la neutralisation
+le satisfait (GREEN). Chaque lot compilé. **Local = Build, Tests = CI** :
+`compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` **VERTS** ;
+preuve = CI du push (`Test` unit + `Full Tests` unit/functional/BDD).
+
+== Décisions
+
+* **`src/`-wide, pas seulement shipped** — un résidu dans une fixture est un
+  signal public trompeur (un contributeur OSS lit les tests) et le RENAME-4
+  avait déjà traité les fixtures ; on verrouille toute la surface `src/`.
+* **Acronymes + noms, pas l'adjectif anglais** — on interdit `FPA`/`formation`/
+  `formateur`/`pédagogique` (FR) ; on autorise `pedagogical`/`training` (EN
+  générique, déjà neutralisés SPD→scenario en RENAME-4).
+* **Registre narratif anglicisé** — `pédagogique|promotionnel|témoignage` était
+  le seul KDoc prod encore en français ; aligné English-only.
+* **Description POM générique** — « Generation automatisee de capsules video
+  depuis des decks reveal.js » (self-description OSS).
+* **Zéro bump** — le changement de description/Ressource sera livré dans une
+  prochaine release (`capsule` 0.0.3), pas rétroactivement dans 0.0.2.
+
+== Fichiers
+
+* Créé : `src/test/kotlin/capsule/ci/OssVocabularyGuardTest.kt`.
+* Prod modifiés (6) : `viral/FileMarketCopySource.kt`, `viral/CampaignBundleSerializer.kt`,
+  `viral/NarrativeThread.kt`, `viral/Qqoqcp.kt`, `viral/VisualIdentity.kt`,
+  `resources/capsule/remotion/src/Capsule.jsx`.
+* Fixtures/features modifiés (16) : 12 tests unit, 3 functional, 1 feature.
+* Docs modifiés (13) : `build.gradle.kts`, `AGENT.adoc`, `doc/CAPSULE_ARCHITECTURE.adoc`,
+  `README.md`, `README.plugin/*` (9).
+
+== Preuves
+
+* `rg -ni "\b(fpa|formation|formateur)\b|p[ée]dagogique" src -g '!\*\*/OssVocabularyGuardTest.kt'` → **0**.
+* `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` → **VERT**.
+* Preuve CI = `Test` (unit) + `Full Tests` du commit poussé.
+
+== Statut / suite
+
+Résidu RENAME **soldé** (garde permanente). Reste : **CAP-SHORT US-4** (dogfooding
+viral réel = accord pilote, run LLM metered) et **optimisation CI** (optionnel).
+Prochaine release `capsule 0.0.3` emportera la description générique + `Capsule.jsx`.
+
+Zéro publication, zéro secret, zéro bump.

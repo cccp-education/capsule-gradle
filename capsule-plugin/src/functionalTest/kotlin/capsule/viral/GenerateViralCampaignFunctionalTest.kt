@@ -38,7 +38,7 @@ class GenerateViralCampaignFunctionalTest {
 
     private fun writeStoryboard() {
         projectDir.resolve("storyboard.adoc").writeText("""
-            = Storyboard — Devenir formateur professionnel
+            = Storyboard — Devenir développeur professionnel
             :platform: TIKTOK
             :language: fr
             :target-duration: 30
@@ -65,14 +65,14 @@ class GenerateViralCampaignFunctionalTest {
 
             === Beat 3 — development
 
-            Intent: Le rôle du formateur
+            Intent: Le rôle du développeur
 
             Duration: 10.0s
             Render: HTML
 
             === Beat 4 — cta
 
-            Intent: Découvrez FPA
+            Intent: Découvrez Content
 
             Duration: 7.0s
             Render: HTML
@@ -182,7 +182,7 @@ class GenerateViralCampaignFunctionalTest {
                 "-Pcapsule.viral.enabled=true",
                 "-Pcapsule.viral.storyboardFile=storyboard.adoc",
                 "-Pcapsule.viral.hook=Et si 30 secondes suffisaient ?",
-                "-Pcapsule.viral.cta=Découvrez FPA",
+                "-Pcapsule.viral.cta=Découvrez Content",
                 "-Pcapsule.viral.languages=fr,en",
                 "-Pcapsule.viral.platforms=TIKTOK,YOUTUBE_SHORT",
             )
@@ -294,7 +294,7 @@ class GenerateViralCampaignFunctionalTest {
                 "-Pcapsule.viral.enabled=true",
                 "-Pcapsule.viral.storyboardRequired=false",
                 "-Pcapsule.viral.hook=Et si 30 secondes suffisaient ?",
-                "-Pcapsule.viral.cta=Découvrez FPA",
+                "-Pcapsule.viral.cta=Découvrez Content",
             )
             .withProjectDir(projectDir)
             .build()

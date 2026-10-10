@@ -12,13 +12,13 @@ import kotlin.test.assertTrue
 class ViralAssetsTest {
 
     private fun storyboard() = ViralStoryboard(
-        message = "Devenir formateur",
+        message = "Devenir développeur",
         angle = "Le métier en 30 s",
         beats = listOf(
             StoryboardBeat("hook", "Et si 30 secondes suffisaient ?", 3.0),
             StoryboardBeat("development", "Les 4 activités types", 10.0),
-            StoryboardBeat("development", "Le rôle du formateur", 10.0),
-            StoryboardBeat("cta", "Découvrez FPA", 7.0),
+            StoryboardBeat("development", "Le rôle du développeur", 10.0),
+            StoryboardBeat("cta", "Découvrez Content", 7.0),
         ),
         platform = ViralPlatform.YOUTUBE_SHORT,
         language = "fr",
@@ -44,7 +44,7 @@ class ViralAssetsTest {
                 StoryboardBeat("cta", "CTA", 5.0),
             ),
         )
-        assertEquals("Devenir formateur", ViralThumbnailPlanner.plan(sb).overlayText)
+        assertEquals("Devenir développeur", ViralThumbnailPlanner.plan(sb).overlayText)
     }
 
     @Test

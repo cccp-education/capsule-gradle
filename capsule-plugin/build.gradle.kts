@@ -404,7 +404,7 @@ publishing {
         withType<MavenPublication> {
             pom {
                 name.set("Capsule Gradle Plugin")
-                description.set("Generation automatisee de capsules video pedagogiques depuis des decks reveal.js")
+                description.set("Generation automatisee de capsules video depuis des decks reveal.js")
                 url.set("https://github.com/cheroliv/capsule-gradle/")
             }
         }

@@ -503,7 +503,7 @@ class CapsuleVideoTaskTest {
         scriptFile.writeText("""
 === CAPSULE SCRIPT : mon-cours ===
 --- SLIDE 1 : Intro ---
-Bienvenue dans la formation.
+Bienvenue dans le contenu.
 --- SLIDE 2 : Topic ---
 Voici le contenu principal.
         """.trimIndent())
@@ -1119,7 +1119,7 @@ class CapsuleCompositeContextTaskTest {
 --- SLIDE 1 : Introduction ---
 Bienvenue dans le cours.
 --- SLIDE 2 : Contenu ---
-Voici le contenu principal de la formation.
+Voici le contenu principal.
         """.trimIndent())
 
         val task = createTask(scriptDir, capDir, distDir)

@@ -67,7 +67,7 @@ class DocContextFunctionalTest {
         writeBuildFile()
         writeEagerFiles()
         val docsDir = projectDir.resolve("docs/referential").apply { mkdirs() }
-        docsDir.resolve("grading-rules.adoc").writeText("Referential grading rules for content formation.")
+        docsDir.resolve("grading-rules.adoc").writeText("Referential grading rules for content.")
         docsDir.resolve("evaluation-criteria.adoc").writeText("Evaluation criteria for competency blocks.")
         val result = runner(
             "collectCapsuleAugmentedContext",

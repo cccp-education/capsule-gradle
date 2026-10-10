@@ -1,4 +1,4 @@
-= CAPSULE_ARCHITECTURE — Pipeline Capsule Video Pedagogique
+= CAPSULE_ARCHITECTURE — Pipeline Capsule Video
 :author: cheroliv
 :revdate: 2026-05-14
 :revnumber: 1.0
@@ -185,7 +185,7 @@ Contenu visible...
 
 [NOTE.speaker]
 ====
-Texte que le formateur prononcerait a cette slide.
+Texte que le locuteur prononcerait a cette slide.
 Devient le script TTS.
 ====
 ----

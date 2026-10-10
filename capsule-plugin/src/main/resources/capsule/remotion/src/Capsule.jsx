@@ -2,7 +2,7 @@ import React from 'react';
 import { AbsoluteFill, Sequence, OffthreadVideo, staticFile, useCurrentFrame, useVideoConfig, interpolate } from 'remotion';
 
 /**
- * Composition d'une capsule pédagogique.
+ * Composition d'une capsule vidéo.
  *
  * Tout est piloté par le numéro d'image, jamais par une animation CSS : un
  * rendu image par image se déplace librement dans le temps, et une animation

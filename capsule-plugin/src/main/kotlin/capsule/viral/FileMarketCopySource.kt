@@ -12,7 +12,7 @@ import java.io.File
  * ```json
  * { "language": "fr", "platform": "TIKTOK",
  *   "hook": "...", "title": "...", "caption": "...",
- *   "hashtags": ["#fpa", "#formation"] }
+ *   "hashtags": ["#content"] }
  * ```
  *
  * Resolution: `<root>/<language>-<platform>.json` (deterministic, matching

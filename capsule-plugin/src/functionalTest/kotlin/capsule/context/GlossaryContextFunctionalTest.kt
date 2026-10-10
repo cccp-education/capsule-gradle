@@ -44,7 +44,7 @@ class GlossaryContextFunctionalTest {
         val glossaryFile = projectDir.resolve("glossary.adoc")
         glossaryFile.writeText(
             """
-            = Formation Content — Glossaire référentiel
+            = Content — Glossaire référentiel
 
             == Glossary
 

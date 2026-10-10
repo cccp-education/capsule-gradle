@@ -24,13 +24,13 @@ class MarketCopySourceTest {
     fun `read resolves the language-platform file`(@TempDir root: File) {
         write(
             root, "fr-tiktok.json",
-            """{"language":"fr","platform":"TIKTOK","hook":"H","title":"T","caption":"C","hashtags":["#fpa"]}""",
+            """{"language":"fr","platform":"TIKTOK","hook":"H","title":"T","caption":"C","hashtags":["#content"]}""",
         )
         val source = FileMarketCopySource(root)
         val copy = source.read("fr", ViralPlatform.TIKTOK)
         assertEquals("H", copy?.hook)
         assertEquals("T", copy?.title)
-        assertEquals(listOf("#fpa"), copy?.hashtags)
+        assertEquals(listOf("#content"), copy?.hashtags)
         assertEquals(ViralPlatform.TIKTOK, copy?.platform)
     }
 

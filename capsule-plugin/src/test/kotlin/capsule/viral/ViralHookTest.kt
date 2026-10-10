@@ -26,15 +26,15 @@ import kotlin.test.assertTrue
 class ViralHookTest {
 
     private fun plan(
-        deckName: String = "fpa-decouverte",
+        deckName: String = "content-decouverte",
         language: String = "fr",
         platform: ViralPlatform = ViralPlatform.TIKTOK,
         duration: Int = 30,
-        augmentedContext: String = "==== Docs (DOCS)\nLe référentiel FPA définit 4 activités types.",
+        augmentedContext: String = "==== Docs (DOCS)\nLe référentiel Content définit 4 activités types.",
     ) = ViralHookPlan(
         deckName = deckName,
         segments = listOf(
-            SlideSegment(1, "Introduction", "Pourquoi devenir formateur ?"),
+            SlideSegment(1, "Introduction", "Pourquoi devenir développeur ?"),
             SlideSegment(2, "Coeur", "Les 4 activités types du référentiel."),
         ),
         language = language,
@@ -75,9 +75,9 @@ class ViralHookTest {
     @Test
     fun `hook prompt embeds the augmented context when anchored`() {
         val prompt = ViralHookPromptBuilder.buildHookPrompt(plan())
-        assertTrue(prompt.contains("Le référentiel FPA définit 4 activités types."), "prompt should embed the N1 context")
+        assertTrue(prompt.contains("Le référentiel Content définit 4 activités types."), "prompt should embed the N1 context")
         assertTrue(prompt.contains("Do not invent facts", ignoreCase = true), "prompt should forbid ungrounded claims")
-        assertTrue(prompt.contains("fpa-decouverte"), "prompt should embed the deck name")
+        assertTrue(prompt.contains("content-decouverte"), "prompt should embed the deck name")
         assertTrue(prompt.contains("TIKTOK"), "prompt should embed the platform")
     }
 
@@ -91,11 +91,11 @@ class ViralHookTest {
 
     @Test
     fun `parser reads a strict JSON object`() {
-        val hook = ViralHookParser.parse("""{"hook":"Et si 30 secondes suffisaient ?","message":"Devenir formateur","cta":"Découvrez FPA"}""")
+        val hook = ViralHookParser.parse("""{"hook":"Et si 30 secondes suffisaient ?","message":"Devenir développeur","cta":"Découvrez Content"}""")
         assertNotNull(hook)
         assertEquals("Et si 30 secondes suffisaient ?", hook.hook)
-        assertEquals("Devenir formateur", hook.message)
-        assertEquals("Découvrez FPA", hook.cta)
+        assertEquals("Devenir développeur", hook.message)
+        assertEquals("Découvrez Content", hook.cta)
     }
 
     @Test
@@ -170,7 +170,7 @@ class ViralHookTest {
         assertNotNull(hook)
         assertEquals("Accroche", hook.hook)
         assertEquals(1, fake.callCount)
-        assertTrue(fake.lastPrompt!!.contains("Le référentiel FPA définit 4 activités types."), "forwarded prompt should embed the N1 context")
+        assertTrue(fake.lastPrompt!!.contains("Le référentiel Content définit 4 activités types."), "forwarded prompt should embed the N1 context")
     }
 
     @Test

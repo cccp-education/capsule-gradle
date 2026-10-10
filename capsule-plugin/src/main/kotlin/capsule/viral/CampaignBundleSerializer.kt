@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
  * { "language": "fr", "platform": "TIKTOK",
  *   "videoFile": "...", "thumbnailFile": "...",
  *   "metadata": { "hook": "...", "title": "...", "caption": "...",
- *                 "hashtags": ["#fpa"] } }
+ *                 "hashtags": ["#content"] } }
  * ```
  *
  * Pattern: `capsule.pipeline.ContentPlanValidator` (Jackson) — the writer side.

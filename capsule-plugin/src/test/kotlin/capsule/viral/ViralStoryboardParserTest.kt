@@ -19,13 +19,13 @@ import kotlin.test.assertNull
 class ViralStoryboardParserTest {
 
     private fun storyboard() = ViralStoryboard(
-        message = "Devenir formateur professionnel",
+        message = "Devenir développeur professionnel",
         angle = "Le métier en 30 secondes",
         beats = listOf(
             StoryboardBeat("hook", "Et si 30 secondes suffisaient ?", 3.0),
             StoryboardBeat("development", "Les 4 activités types", 10.0),
-            StoryboardBeat("development", "Le rôle du formateur", 10.0),
-            StoryboardBeat("cta", "Découvrez FPA", 7.0),
+            StoryboardBeat("development", "Le rôle du développeur", 10.0),
+            StoryboardBeat("cta", "Découvrez Content", 7.0),
         ),
         platform = ViralPlatform.TIKTOK,
         language = "fr",
@@ -82,7 +82,7 @@ class ViralStoryboardParserTest {
     @Test
     fun `parse returns null when there is no beat`() {
         val broken = """
-            = Storyboard — Devenir formateur professionnel
+            = Storyboard — Devenir développeur professionnel
             :platform: TIKTOK
             :language: fr
             :target-duration: 30

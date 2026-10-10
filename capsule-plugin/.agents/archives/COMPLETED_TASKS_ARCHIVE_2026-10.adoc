@@ -1,5 +1,24 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
-:date: 2026-10-10
+:date: 2026-10-11
+
+== Session 153 — RENAME metier : vocabulaire FPA/formation neutralisé dans l'OSS ✅
+
+* **Constat** : RENAME-4 (S-135) avait neutralisé `FPA/AFNOR/REAC/SPD/SPG`, mais
+  CAP-VIRAL (S-139→142) et CAP-CONTEXT (S-145) ont **réintroduit** `FPA`/`formation`
+  dans les fixtures, et la description POM restait « capsules vidéo pédagogiques ».
+* **Garde** `capsule.ci.OssVocabularyGuardTest` (pattern `ProcessMigrationGuardTest`) —
+  verrouille la **description POM** + **toute la surface `src/`** (regex
+  `(?i)\b(fpa|formation|formateur)\b|p[ée]dagogique` ; `information`/`transformation`
+  hors scope ; `pedagogical`/`training` EN autorisés ; self-exemption).
+* **Neutralisation** : 24 fichiers `src/` (6 prod/ressource + 18 fixtures/features)
+  + 13 docs (`build.gradle.kts`, `AGENT.adoc`, `CAPSULE_ARCHITECTURE.adoc`,
+  `README.md` + 9 `README.plugin/*`). Vocabulaire : `FPA→Content`,
+  `formateur→développeur`, `formation→contenu`, `#fpa/#formation→#content`,
+  registre `pédagogique→instructional`, `capsule pédagogique→capsule vidéo`,
+  `CAPSULE_PEDAGOGIQUE.adoc→.agents/CAPSULE_VIDEO.adoc` (lien mort réparé).
+* Baby-step DDD/TDD/BDD (RED par constat `rg`, GREEN après sweep). Gate `rg` = 0 ;
+  compiles VERTS ; preuve CI `Test` + `Full Tests`. Zéro bump, zéro publication.
+  Rapport `.agents/sessions/153-rename-metier-oss-vocabulary.adoc`.
 
 == Session 152 — CAP-CONTEXT US-4 : `Capsule.jsx` sur tokens du brand book ✅
 

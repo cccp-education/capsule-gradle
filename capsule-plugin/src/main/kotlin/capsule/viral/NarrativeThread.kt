@@ -15,7 +15,7 @@ package capsule.viral
  * @property thesis         the point of view, in one sentence.
  * @property recurringMotif the element recalled from one sequence to the next.
  * @property arc            the narrative arc (hook → … → CTA).
- * @property register       the register (pédagogique | promotionnel | témoignage).
+ * @property register       the register (instructional | promotional | testimonial).
  * @property voice          the voice / tone (optional).
  */
 data class NarrativeThread(

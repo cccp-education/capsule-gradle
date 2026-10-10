@@ -29,12 +29,12 @@ class ViralStoryboardTest {
         beats: List<StoryboardBeat> = listOf(
             beat("hook", "Et si 30 secondes suffisaient ?", 3.0),
             beat("development", "Les 4 activités types", 10.0),
-            beat("development", "Le rôle du formateur", 10.0),
-            beat("cta", "Découvrez FPA", 7.0),
+            beat("development", "Le rôle du développeur", 10.0),
+            beat("cta", "Découvrez Content", 7.0),
         ),
         target: Int = 30,
     ) = ViralStoryboard(
-        message = "Devenir formateur professionnel",
+        message = "Devenir développeur professionnel",
         angle = "Le métier en 30 secondes",
         beats = beats,
         platform = ViralPlatform.TIKTOK,
@@ -73,7 +73,7 @@ class ViralStoryboardTest {
     @Test
     fun `builder renders a deterministic asciidoc document`() {
         val doc = ViralStoryboardBuilder.build(storyboard())
-        assertTrue(doc.contains("= Storyboard — Devenir formateur professionnel"))
+        assertTrue(doc.contains("= Storyboard — Devenir développeur professionnel"))
         assertTrue(doc.contains(":platform: TIKTOK"))
         assertTrue(doc.contains(":target-duration: 30"))
         assertTrue(doc.contains("=== Beat 1 — hook"))

@@ -52,16 +52,16 @@ class ViralConfigTest {
             enabled = true,
             platform = ViralPlatform.YOUTUBE_SHORT,
             targetDurationSeconds = 45,
-            hook = "Et si votre formation ne durait que 30 secondes ?",
-            cta = "Découvrez FPA sur talaria.school",
+            hook = "Et si votre contenu ne durait que 30 secondes ?",
+            cta = "Découvrez Content sur talaria.school",
             storyboardRequired = true,
             storyboardFile = "storyboard.adoc"
         )
         assertTrue(config.enabled)
         assertEquals(ViralPlatform.YOUTUBE_SHORT, config.platform)
         assertEquals(45, config.effectiveDurationSeconds)
-        assertEquals("Et si votre formation ne durait que 30 secondes ?", config.hook)
-        assertEquals("Découvrez FPA sur talaria.school", config.cta)
+        assertEquals("Et si votre contenu ne durait que 30 secondes ?", config.hook)
+        assertEquals("Découvrez Content sur talaria.school", config.cta)
         assertEquals("storyboard.adoc", config.storyboardFile)
     }
 

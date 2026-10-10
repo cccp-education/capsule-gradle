@@ -155,7 +155,7 @@ jobs:
 إضافتي `maven-publish` و`signing`:
 
 - POM: الاسم "Capsule Gradle Plugin"، الوصف "Generation automatisee de capsules video
-  pedagogiques depuis des decks reveal.js"، الرابط `github.com/cheroliv/capsule-gradle/`
+  depuis des decks reveal.js"، الرابط `github.com/cheroliv/capsule-gradle/`
 - التوقيع: `useGpgCmd()` (مضبوط لكنه لم يُنفّذ بعد)
 - هدف النشر: `publishToMavenLocal` متاح؛ NMCP `publishAggregationToCentralPortal`
   يتطلب بيانات اعتماد في `~/.gradle/gradle.properties`

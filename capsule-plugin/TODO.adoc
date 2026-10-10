@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-10 (S-152 — CAP-CONTEXT US-4 ✅ : `Capsule.jsx` sur tokens du brand book. CAP-CONTEXT TERMINÉ 4/4.)
+:last_update: 2026-10-11 (S-153 — Maintenance RENAME ✅ SOLDÉE : vocabulaire FPA/formation neutralisé dans l'OSS + garde `OssVocabularyGuardTest`.)
 
 '''
 == ✅ CAP-VIRAL — US livrées (S-139 + S-140 + S-141 + S-142)
@@ -39,7 +39,7 @@
 . [x] **US-3** ✅ S-149 — batch réel langue × plateforme (capture unique du deck + réplication par variante, Économie d'Encre).
 . [ ] **US-4** — dogfooding viral réel (accord pilote, run LLM metered).
 . [x] **US-5** ✅ S-150 — BDD rendu réel (`@viral-render` : vrai MP4 via socle FFmpeg + durée gatée, câblé CI).
-. [ ] **🧹 RENAME** — résidus métier `pédagogique/formation` dans l'OSS (docs + 1 KDoc prod + fixtures).
+. [x] **🧹 RENAME** ✅ S-153 — résidus métier `pédagogique/formation` dans l'OSS (docs + KDoc prod + fixtures). Garde `OssVocabularyGuardTest` + 24 fichiers `src/` + 13 docs neutralisés. `rg` = 0.
 
 '''
 == ✅ CAP-CONTEXT — contexte du storyboard (TERMINÉ 4/4, S-145/S-152)

@@ -49,7 +49,7 @@ class ViralStoryboardContextRoundTripTest {
             thesis = "Un site perso, ça se génère",
             recurringMotif = "le terminal qui produit le site",
             arc = "accroche → démonstration → résolution → CTA",
-            register = "pédagogique",
+            register = "instructional",
             voice = "direct, technique",
         ),
     )

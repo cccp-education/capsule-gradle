@@ -154,7 +154,7 @@ jobs:
 **未发布** —— 版本 `0.0.1-SNAPSHOT`。POM 通过 `maven-publish` 和 `signing` 插件为 Maven Central 配置：
 
 - POM：名称 "Capsule Gradle Plugin"，描述 "Generation automatisee de capsules video
-  pedagogiques depuis des decks reveal.js"，URL `github.com/cheroliv/capsule-gradle/`
+  depuis des decks reveal.js"，URL `github.com/cheroliv/capsule-gradle/`
 - 签名：`useGpgCmd()`（已配置但尚未执行）
 - 发布目标：`publishToMavenLocal` 可用；NMCP `publishAggregationToCentralPortal`
   需在 `~/.gradle/gradle.properties` 中提供凭证

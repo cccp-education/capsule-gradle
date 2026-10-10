@@ -20,9 +20,9 @@ class CampaignBundleTest {
         language = "fr",
         platform = ViralPlatform.TIKTOK,
         hook = "Et si 30 secondes suffisaient ?",
-        title = "Devenir formateur",
-        caption = "La formation FPA en accéléré",
-        hashtags = listOf("#fpa", "#formation"),
+        title = "Devenir développeur",
+        caption = "Le contenu Content en accéléré",
+        hashtags = listOf("#content"),
     )
 
     private fun bundle(thumbnail: String = "thumb.png") = CampaignBundle(
@@ -54,9 +54,9 @@ class CampaignBundleTest {
         assertEquals("build/capsule/fr-tiktok-30.mp4", parsed.get("videoFile").asText())
         assertEquals("thumb.png", parsed.get("thumbnailFile").asText())
         val metadata = parsed.get("metadata")
-        assertEquals("Devenir formateur", metadata.get("title").asText())
-        assertEquals(2, metadata.get("hashtags").size())
-        assertEquals("#fpa", metadata.get("hashtags").get(0).asText())
+        assertEquals("Devenir développeur", metadata.get("title").asText())
+        assertEquals(1, metadata.get("hashtags").size())
+        assertEquals("#content", metadata.get("hashtags").get(0).asText())
     }
 
     @Test

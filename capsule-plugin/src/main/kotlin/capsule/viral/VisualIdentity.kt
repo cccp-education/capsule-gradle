@@ -6,7 +6,7 @@ package capsule.viral
  * The locked dressing of a capsule: the [brand], the [format], the design
  * [tokens], the [typography], the [logo] and the composition [background]. The
  * identity *dresses* the message — it never replaces it: it is a parameter of
- * the rendering, never the entry of the storyboard (`CAPSULE_PEDAGOGIQUE.adoc`
+ * the rendering, never the entry of the storyboard (`.agents/CAPSULE_VIDEO.adoc`
  * § 4.1). The tokens come from the brand book (`BRAND.adoc`, talaria.school);
  * the storyboard *references* them without reinventing them.
  *

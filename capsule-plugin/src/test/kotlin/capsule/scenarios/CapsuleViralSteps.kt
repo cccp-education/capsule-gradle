@@ -69,7 +69,7 @@ class CapsuleViralSteps {
             )
         }
         return ViralStoryboard(
-            message = "Devenir formateur professionnel",
+            message = "Devenir développeur professionnel",
             angle = "Le métier en 30 secondes",
             beats = beats,
             platform = ViralPlatform.fromString(platform),

@@ -39,7 +39,7 @@ class ViralStoryboardContextTest {
         thesis = "Un site perso, ça se génère",
         recurringMotif = "le terminal qui produit le site",
         arc = "accroche → démonstration → résolution → CTA",
-        register = "pédagogique",
+        register = "instructional",
         voice = "direct, technique",
     )
 
@@ -109,7 +109,7 @@ class ViralStoryboardContextTest {
         assertEquals("Un site perso, ça se génère", nt.thesis)
         assertEquals("le terminal qui produit le site", nt.recurringMotif)
         assertEquals("accroche → démonstration → résolution → CTA", nt.arc)
-        assertEquals("pédagogique", nt.register)
+        assertEquals("instructional", nt.register)
     }
 
     @Test

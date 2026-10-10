@@ -17,7 +17,7 @@ class CapsuleScriptReaderTest {
             === CAPSULE SCRIPT : cours ===
 
             --- SLIDE 1 : Intro ---
-            Bienvenue dans la formation.
+            Bienvenue dans le contenu.
             """.trimIndent()
         )
 
