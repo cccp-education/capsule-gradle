@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-09 (S-150 — **CAP-SHORT US-5** : BDD rendu **réel** — feature `@viral-render` + runner dédié `CapsuleViralRenderCucumberRunner` (23e) qui produit un **vrai MP4** via le socle FFmpeg (`ScreenshotPlanner` PNG→WebM→concat + `VideoFormatConverterImpl`), durée fitée gatée, câblé `full-tests.yml`. Précédent : S-149 US-3 batch capture-once ; S-148 US-2 time-fit ; S-147 US-1b orchestration ; S-146 US-1a deck ; S-145 CAP-CONTEXT + diagnostic.)
- _Derniere session terminee_ : 150.
- _Prochaine session_ : 151 — **CAP-CONTEXT US-4** (`Capsule.jsx` tokens du brand book) + **maintenance RENAME** (résidus `pédagogique/formation` OSS). **CAP-SHORT US-4** (dogfooding viral réel) = accord pilote (run LLM metered).
- _Session en cours_ : — (S-150 terminée).
+ _Derniere mise a jour_ : 2026-10-10 (S-151 — **Publication capsule-plugin 0.0.2** (local + Maven Central, bundle `99ecf225…`, AUTOMATIC) + consommateurs mis à jour (racine `0.0.2`, `workspace-bom 0.0.75`). Précédent : S-150 CAP-SHORT US-5 BDD rendu réel.)
+ _Derniere session terminee_ : 151.
+ _Prochaine session_ : 152 — **CAP-CONTEXT US-4** (`Capsule.jsx` tokens du brand book) + **maintenance RENAME** (résidus `pédagogique/formation` OSS). **CAP-SHORT US-4** (dogfooding viral réel) = accord pilote.
+ _Session en cours_ : — (S-151 terminée).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -22,11 +22,13 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (139-150)
+== 10 dernières sessions (140-151)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 151 | 2026-10-10 | release | **Publication capsule-plugin 0.0.2** (bump local + Maven Central, bundle `99ecf225…`, AUTOMATIC) — contenu depuis 0.0.1 (CAP-VIRAL 14 US, CAP-CONTEXT 3/4, CAP-SHORT 5/6). Consommateurs : racine `capsule = 0.0.2` + MEMPHIS `workspace-bom 0.0.75` (capsule-plugin 0.0.2, bundle `d92b4516…`). Ordre DAG N0/N1 déjà Central. | 9/10
 
 | 150 | 2026-10-09 | feat+test+ci | **CAP-SHORT US-5** — BDD rendu **réel** : feature `capsule_viral_render.feature` `@viral-render` + runner dédié `CapsuleViralRenderCucumberRunner` (pattern S-082) + steps préfixés « real viral render » (S-088). `ViralRealRenderSupport` rejoue le socle FFmpeg (`ScreenshotPlanner` PNG→WebM→concat + `VideoFormatConverterImpl` MP4) sur un PNG local (pas de Chromium) → **vrai MP4** dont la durée (fitée) est gatée ; scénarios **pending** si ffmpeg absent (leçon S-269). Câblé `full-tests.yml`. Exclu de l'agrégat `CucumberTestRunner` (pur domaine). | 9/10
 

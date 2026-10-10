@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-09 (CAP-SHORT US-5 livrée S-150 — BDD rendu réel : `@viral-render` produit un vrai MP4 (socle FFmpeg) + durée validée, câblé CI ; CAP-CONTEXT 3/4)
+:last_update: 2026-10-10 (S-151 — publication capsule-plugin 0.0.2 (local + Central) + consommateurs : racine 0.0.2, workspace-bom 0.0.75)
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)
@@ -194,6 +194,10 @@ CI). Revue : `.agents/sessions/144-capsule-video-litterature-storyboard.adoc`,
 == 📦 Publication Maven Central ✅
 
 `education.cccp:capsule-plugin:0.0.1` publié via nmcp (Session 029).
+
+`education.cccp:capsule-plugin:0.0.2` publié via nmcp (Session 151, bundle
+`99ecf225-c2a1-47e1-8fb9-bea7ccdcdd5e`, AUTOMATIC) + consommateur racine et
+`workspace-bom 0.0.75` (bundle `d92b4516`, capsule-plugin 0.0.2).
 
 '''
 == 📚 README i18n ✅ TERMINE (Session 041)

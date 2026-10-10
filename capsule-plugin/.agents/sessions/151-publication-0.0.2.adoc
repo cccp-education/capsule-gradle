@@ -1,0 +1,56 @@
+= Session 151 — Publication capsule-plugin 0.0.2 (local + Central) + consommateurs
+:session: 151
+:date: 2026-10-10
+:type: release (bump + publish + consumers)
+:epic: PUB (capsule-plugin)
+:accord: pilote (publication autorisée)
+
+== Contexte
+
+Le pilote autorise le **bump + publication** de `capsule-plugin` (local + Maven
+Central) et la **mise à jour des consommateurs**. Le contenu livré depuis 0.0.1
+(CAP-VIRAL 14 US, CAP-CONTEXT 3/4, CAP-SHORT 5/6 : deck, orchestration, time-fit,
+batch, BDD rendu réel) devait être publié.
+
+== Bump
+
+`gradle/libs.versions.toml` (capsule-plugin) : `capsule = "0.0.1"` → **`"0.0.2"`**
+(la version du plugin dérive du catalogue : `version = libs.plugins.capsule.get().version`).
+
+== Publication
+
+* **Maven Local** — `./gradlew publishToMavenLocal` : `capsule-plugin-0.0.2` (jar,
+  sources, javadoc, POM, module + signatures `.asc`) + marker
+  `education.cccp.capsule.gradle.plugin-0.0.2`.
+* **Maven Central** — `./gradlew publishAggregationToCentralPortal --no-daemon` :
+  bundle **`99ecf225-c2a1-47e1-8fb9-bea7ccdcdd5e`** (AUTOMATIC).
+* POM vérifié : importe `workspace-bom 0.0.43`, toutes les dépendances en release
+  (aucun `-SNAPSHOT`).
+
+== Consommateurs mis à jour
+
+. `foundry/public/capsule-gradle/gradle/libs.versions.toml` (racine consommateur) :
+  `capsule = "0.0.1"` → **`"0.0.2"`**.
+. `foundry/public/workspace-bom/gradle/libs.versions.toml` (MEMPHIS, agrégateur) :
+  `capsule-plugin = "0.0.1"` → **`"0.0.2"`** + bump BOM/catalog **`0.0.74` → `0.0.75`**,
+  publié **local + Central** (bundle **`d92b4516-0464-4047-bafb-bb9958f9cb89`**,
+  AUTOMATIC). Le POM 0.0.75 contraint `capsule-plugin` à **0.0.2**.
+
+== Ordre DAG
+
+N0 (workspace-bom 0.0.43, i18n-contracts 0.0.4, codebase-contracts 0.0.2) et
+N1 (codebase-plugin 0.0.14) déjà sur Central → capsule (N2) publié. Puis Mise à
+jour de l'agrégateur N0 (workspace-bom 0.0.75) référençant le N2.
+
+== Suite
+
+* Propagation Central de `capsule-plugin 0.0.2` (polling repo1).
+* **Cascade BOM 0.0.75** (optionnelle) : les boroughs pinning `workspace-bom 0.0.74`
+  peuvent migrer vers 0.0.75 — hors scope de cette session (rollout MEMPHIS).
+* Gouvernance MEMPHIS (bump 0.0.75) : notée côté MEMPHIS.
+
+== Fichiers
+
+* `capsule-plugin/gradle/libs.versions.toml` (0.0.2)
+* `gradle/libs.versions.toml` (racine consommateur, 0.0.2)
+* `workspace-bom/gradle/libs.versions.toml` (BOM 0.0.75, capsule-plugin 0.0.2)

@@ -1,5 +1,14 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
-:date: 2026-10-09
+:date: 2026-10-10
+
+== Session 151 — Publication capsule-plugin 0.0.2 (local + Central) + consommateurs ✅
+
+* Bump `capsule = 0.0.1` → **0.0.2** (catalogue plugin).
+* **Maven Local** : `publishToMavenLocal` (jar/sources/javadoc/POM/module signés + marker).
+* **Maven Central** : `publishAggregationToCentralPortal` bundle **`99ecf225-c2a1-47e1-8fb9-bea7ccdcdd5e`** (AUTOMATIC).
+* **Consommateurs** : racine `foundry/public/capsule-gradle` `capsule = 0.0.2` ;
+  MEMPHIS `workspace-bom` `capsule-plugin = 0.0.2` + BOM **0.0.74 → 0.0.75**
+  publié (bundle `d92b4516…`). Rapport `.agents/sessions/151-publication-0.0.2.adoc`.
 
 == Session 150 — CAP-SHORT US-5 : BDD rendu réel (vrai MP4 + durée) ✅
 
