@@ -1,0 +1,76 @@
+= Session 156 — CAP-VIRAL-E2E US-3 (karaoké prod wiring)
+:session: 156
+:borough: Détroit
+:date: 2026-10-11
+:epic: CAP-VIRAL-E2E
+:us: US-3 (karaoké prod wiring) — clôture EPIC 3/3
+
+== Mission
+
+Dernier US de l'EPIC CAP-VIRAL-E2E : clore le constat C3 du cadrage
+(`KaraokeSubtitleBuilder` sans usage prod). Les sous-titres stylés mot-à-mot du
+format court sont produits et référencés par le manifeste de campagne.
+
+== Livrable
+
+=== Domaine pur (unit)
+
+* `capsule.viral.KaraokeLine` + `KaraokeWordPlanner` (objet pur) : `plan(beats)`
+  → une ligne par beat, mots **timés proportionnellement à leur longueur** dans
+  la fenêtre du beat (curseur cumulé, déterministe). Le texte parlé est le beat
+  intent — jamais inventé.
+* `capsule.viral.AssKaraokeDocument` (objet pur) : `build(lines)` → document ASS
+  v4.00+ complet (`[Script Info]` portrait 1080×1920, un style `Viral`, un
+  `Dialogue` par ligne) réutilisant `KaraokeSubtitleBuilder.buildKaraokeText` +
+  `formatAssTimestamp`. `KaraokeSubtitleBuilder.fileNameFor` = `<id>.ass`.
+* Tests : `KaraokeWordPlannerTest` (5) + `AssKaraokeDocumentTest` (5).
+
+=== Câblage (functional)
+
+* `CampaignBundle.subtitleFile` (champ **additif**, défaut `""`, `hasSubtitle`) +
+  `CampaignBundleSerializer` (écriture + `parseManifest`) + `ViralCampaignGate`
+  vérifie le `subtitleFile` non-blanc (comme le thumbnail) + `ViralCampaignAssembler`
+  `subtitleFor`.
+* `GenerateViralCampaignTask` : `subtitleFor` alimenté →
+  `CampaignBundle.subtitleFile` pointe `<variant.id>.ass`.
+* `RenderViralSubtitlesTask` (groupe `generate`, `dependsOn generateViralCampaign`) :
+  lit le storyboard, planifie, écrit `<id>.ass` par variante (Économie d'Encre :
+  skip si présent). **Pur texte** — zéro Chromium, zéro FFmpeg.
+* `CapsuleManager` : `registerRenderViralSubtitlesTask` + `validateViralCampaign`
+  `dependsOn renderViralVariants, renderViralThumbnails, renderViralSubtitles`
+  (le gate vérifie désormais vidéo + thumbnail + soustitre).
+* `RenderViralSubtitlesFunctionalTest` : 5 tests TestKit (registration, skip par
+  défaut, écriture karaoké par variante, économie d'encre, storyboard manquant →
+  warning).
+
+=== BDD (cucumber)
+
+* `capsule_viral_karaoke.feature` `@karaoke` : 4 scénarios (fenêtre de beat,
+  découpage mot-à-mot, document ASS avec dialogue, beat mono-mot).
+* `CapsuleKaraokeSteps` (préfixés « karaoke », S-088) +
+  `CapsuleViralKaraokeCucumberRunner` (S-082).
+* `CucumberTaskSpec("cucumberTestViralKaraoke")` câblé + `full-tests.yml`.
+
+=== Tests US-1 étendus
+
+`ViralCampaignGateTest` : +2 (subtitle manquant listé, subtitle blanc
+non-violation) + round-trip incluant le subtitle.
+
+== Gates
+
+* Local = Build (RÈGLE EAGER) : `compileKotlin` + `compileTestKotlin` +
+  `compileFunctionalTestKotlin` **VERTS** ; tâche Cucumber enregistrée. Les
+  suites s'exécutent en CI — preuve = run du push.
+* `rg` vocabulaire métier dans `src/` = 0. Zéro secret. Zéro bump. Zéro publication.
+
+== Clôture EPIC
+
+**CAP-VIRAL-E2E TERMINÉ 3/3 US** (US-0/US-1 S-154, US-2 S-155, US-3 S-156) : les
+3 dettes e2e du moteur viral sont soldées — gate manifeste ↔ fichiers, thumbnail
+prod, karaoké prod. La chaîne marketing `capsule produit` est cohérente de bout
+en bout (vidéo + cover + captions référencés et vérifiés).
+
+== Reste (hors EPIC, pilot-only)
+
+* CAP-SHORT US-4 (dogfooding viral réel, run LLM metered).
+* Publication `capsule 0.0.3` (accord pilote) — porte le RENAME S-153 + tout CAP-VIRAL-E2E.

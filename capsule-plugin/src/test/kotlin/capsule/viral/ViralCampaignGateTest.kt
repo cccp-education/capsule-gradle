@@ -16,11 +16,13 @@ class ViralCampaignGateTest {
         platform: ViralPlatform = ViralPlatform.TIKTOK,
         video: String = "build/viral/fr-tiktok-30.mp4",
         thumbnail: String = "",
+        subtitle: String = "",
     ) = CampaignBundle(
         language = language,
         platform = platform,
         videoFile = video,
         thumbnailFile = thumbnail,
+        subtitleFile = subtitle,
         metadata = MarketCopy(
             language = language,
             platform = platform,
@@ -66,6 +68,23 @@ class ViralCampaignGateTest {
     }
 
     @Test
+    fun `invalid lists a missing non-blank subtitle`() {
+        val b = bundle(subtitle = "build/viral/fr-tiktok-30.ass")
+        val result = ViralCampaignGate.verdict(listOf(b)) { it.endsWith(".mp4") }
+        assertTrue(result is ViralCampaignGateResult.Invalid)
+        assertEquals(
+            listOf("fr/TIKTOK subtitleFile: build/viral/fr-tiktok-30.ass"),
+            result.missing,
+        )
+    }
+
+    @Test
+    fun `a blank subtitle is not a violation`() {
+        val result = ViralCampaignGate.verdict(listOf(bundle(subtitle = ""))) { it.endsWith(".mp4") }
+        assertEquals(ViralCampaignGateResult.Valid, result)
+    }
+
+    @Test
     fun `aggregates every missing asset in bundle order`() {
         val bundles = listOf(
             bundle(language = "fr"),
@@ -96,7 +115,7 @@ class ViralCampaignGateTest {
     @Test
     fun `manifest serialises then parses back to the same bundles`() {
         val bundles = listOf(
-            bundle(language = "fr", thumbnail = "build/viral/fr-tiktok-30.png"),
+            bundle(language = "fr", thumbnail = "build/viral/fr-tiktok-30.png", subtitle = "build/viral/fr-tiktok-30.ass"),
             bundle(language = "en", platform = ViralPlatform.YOUTUBE_SHORT, video = "build/viral/en-yt.mp4"),
         )
         val parsed = CampaignBundleSerializer.parseManifest(CampaignBundleSerializer.toManifestJson(bundles))

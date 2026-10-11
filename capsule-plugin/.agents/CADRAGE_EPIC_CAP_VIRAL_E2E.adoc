@@ -91,8 +91,13 @@ verticaux + assets) soit **cohérent avec lui-même**.
 | **Karaoké prod wiring** — `.ass` karaoké par variante
 | `capsule.viral`
 | 3
-| 🟡 À FAIRE
+| ✅ S-156
 |===
+
+== Bilan
+
+**CAP-VIRAL-E2E TERMINÉ 3/3 US** (US-0/US-1 S-154, US-2 S-155, US-3 S-156) — les
+3 dettes e2e du moteur viral sont soldées.
 
 == Hors scope
 

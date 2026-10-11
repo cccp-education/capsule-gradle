@@ -36,8 +36,8 @@ sealed class ViralCampaignGateResult {
  * This object is the last-mile contract: given the assembled [CampaignBundle]s and
  * an existence predicate, it reports every referenced asset that is missing. It
  * checks the mandatory [CampaignBundle.videoFile] and, when non-blank, the optional
- * [CampaignBundle.thumbnailFile] (a blank thumbnail is a valid, weaker render — not
- * a violation).
+ * [CampaignBundle.thumbnailFile] and [CampaignBundle.subtitleFile] (a blank optional
+ * asset is a valid, weaker render — not a violation).
  *
  * Pure — no I/O of its own (the existence predicate is injected), no Gradle.
  */
@@ -62,6 +62,9 @@ object ViralCampaignGate {
                 }
                 if (bundle.thumbnailFile.isNotBlank() && !exists(bundle.thumbnailFile)) {
                     add("${bundle.language}/${bundle.platform.name} thumbnailFile: ${bundle.thumbnailFile}")
+                }
+                if (bundle.subtitleFile.isNotBlank() && !exists(bundle.subtitleFile)) {
+                    add("${bundle.language}/${bundle.platform.name} subtitleFile: ${bundle.subtitleFile}")
                 }
             }
         }

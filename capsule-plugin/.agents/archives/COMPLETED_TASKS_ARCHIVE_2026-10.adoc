@@ -1,6 +1,17 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-11
 
+== Session 156 — CAP-VIRAL-E2E US-3 : karaoké prod wiring (EPIC TERMINÉ 3/3) ✅
+
+* **Constat C3 soldé** : `KaraokeSubtitleBuilder` sans usage prod.
+* **Livré** : `KaraokeLine` + `KaraokeWordPlanner` (mots timés proportionnellement
+  dans la fenêtre du beat) + `AssKaraokeDocument` (ASS v4.00+ complet, `\k`
+  mot-à-mot) + `CampaignBundle.subtitleFile` (additif) + `GenerateViralCampaignTask.subtitleFor`
+  + `RenderViralSubtitlesTask` (`<id>.ass` par variante, pur texte) + gate étendue.
+* Baby-step DDD/TDD/BDD : 12 unit + 5 functional + 4 scénarios `@karaoke`
+  (26e runner `cucumberTestViralKaraoke`). **CAP-VIRAL-E2E TERMINÉ 3/3.**
+  Local = Build, Tests = CI. Zéro bump.
+
 == Session 155 — CAP-VIRAL-E2E US-2 : thumbnail prod wiring ✅
 
 * **Constat C1 soldé** : `GenerateViralCampaignTask` n'alimentait pas `thumbnailFor`

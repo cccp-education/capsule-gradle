@@ -1,7 +1,30 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-11
-:session: 155 CAP-VIRAL-E2E US-2 — thumbnail prod wiring
+:session: 156 CAP-VIRAL-E2E US-3 — karaoké prod wiring (EPIC TERMINÉ 3/3)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 11 octobre 2026 (après session 156)
+
+.Modifications session 156 — CAP-VIRAL-E2E US-3 (karaoké prod wiring)
+|===
+| Fichier | Changement | Tests ajoutés
+| `viral/KaraokeWordPlanner.kt` (nouveau) | `KaraokeLine` + objet pur `plan(beats)` → mots timés proportionnellement dans la fenêtre du beat. | +5 `KaraokeWordPlannerTest`
+| `viral/AssKaraokeDocument.kt` (nouveau) | Objet pur : ASS v4.00+ complet (script info portrait, style `Viral`, un `Dialogue` par ligne, `\k` mot-à-mot). | +5 `AssKaraokeDocumentTest`
+| `viral/KaraokeSubtitleBuilder.kt` (modifié) | `SUBTITLE_EXTENSION` + `fileNameFor` (`<id>.ass`). | 0 (couvert par `AssKaraokeDocumentTest`)
+| `viral/CampaignBundle.kt` (modifié) | `subtitleFile` (additif, défaut `""`, `hasSubtitle`). | 0
+| `viral/CampaignBundleSerializer.kt` (modifié) | écriture + `parseManifest` du `subtitleFile`. | 0 (couvert par round-trip)
+| `viral/ViralCampaignGate.kt` (modifié) | vérifie le `subtitleFile` non-blanc. | +2 `ViralCampaignGateTest`
+| `viral/ViralCampaignAssembler.kt` (modifié) | `subtitleFor` (additif). | 0
+| `viral/GenerateViralCampaignTask.kt` (modifié) | `subtitleFor` alimenté (`<id>.ass`). | 0 (adaptateur)
+| `viral/RenderViralSubtitlesTask.kt` (nouveau) | Tâche `renderViralSubtitles` (groupe `generate`) : écrit `<id>.ass` par variante, pur texte, Économie d'Encre. | 0 unit (adaptateur) ; +5 functional
+| `CapsuleManager.kt` (modifié) | `registerRenderViralSubtitlesTask` + `validateViralCampaign` dépend des 3 renders. | 0 (configuration)
+| `capsule_viral_karaoke.feature` + `CapsuleKaraokeSteps.kt` + `CapsuleViralKaraokeCucumberRunner.kt` (nouveaux) | 4 scénarios `@karaoke` (fenêtre, découpage mot-à-mot, document ASS, beat mono-mot). | 4 scénarios (26e runner `cucumberTestViralKaraoke`)
+| `build.gradle.kts` + `.github/workflows/full-tests.yml` (modifiés) | `CucumberTaskSpec("cucumberTestViralKaraoke")` + étape CI. | 0
+|===
+
+*Totaux S-156* : +12 unit, +5 functional, +4 scénarios BDD. Gates locaux
+(Local = Build) : compiles VERT ; tâche Cucumber enregistrée. Les suites
+s'exécutent en CI (`Test` + `Full Tests`), preuve = run du push.
 
 == Couverture — 11 octobre 2026 (après session 155)
 

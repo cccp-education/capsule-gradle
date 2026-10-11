@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
  * Produces the deterministic JSON that the distribution layer (GBL-002) reads:
  * ```json
  * { "language": "fr", "platform": "TIKTOK",
- *   "videoFile": "...", "thumbnailFile": "...",
+ *   "videoFile": "...", "thumbnailFile": "...", "subtitleFile": "...",
  *   "metadata": { "hook": "...", "title": "...", "caption": "...",
  *                 "hashtags": ["#content"] } }
  * ```
@@ -57,6 +57,7 @@ object CampaignBundleSerializer {
                 platform = ViralPlatform.fromString(node.get("platform")?.asText().orEmpty()),
                 videoFile = node.get("videoFile")?.asText().orEmpty(),
                 thumbnailFile = node.get("thumbnailFile")?.asText().orEmpty(),
+                subtitleFile = node.get("subtitleFile")?.asText().orEmpty(),
                 metadata = MarketCopy(
                     language = node.get("language")?.asText().orEmpty(),
                     platform = ViralPlatform.fromString(node.get("platform")?.asText().orEmpty()),
@@ -76,6 +77,7 @@ object CampaignBundleSerializer {
         root.put("platform", bundle.platform.name)
         root.put("videoFile", bundle.videoFile)
         root.put("thumbnailFile", bundle.thumbnailFile)
+        root.put("subtitleFile", bundle.subtitleFile)
         val metadata: ObjectNode = root.putObject("metadata")
         metadata.put("hook", bundle.metadata.hook)
         metadata.put("title", bundle.metadata.title)

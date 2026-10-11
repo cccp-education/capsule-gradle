@@ -176,6 +176,7 @@ abstract class GenerateViralCampaignTask : DefaultTask() {
             copySource = copySource,
             videoPathFor = { variant -> File(videoDir, "${variant.id}.mp4").absolutePath },
             thumbnailFor = { variant -> File(videoDir, ViralThumbnailBuilder.fileNameFor(variant.id)).absolutePath },
+            subtitleFor = { variant -> File(videoDir, KaraokeSubtitleBuilder.fileNameFor(variant.id)).absolutePath },
         )
 
         val storyboardOut = storyboardOutput.get().asFile

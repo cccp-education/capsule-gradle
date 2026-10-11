@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-11 (S-155 — CAP-VIRAL-E2E US-2 : thumbnail prod wiring livré ; 2/3 US)
+:last_update: 2026-10-11 (S-156 — CAP-VIRAL-E2E US-3 karaoké prod wiring : EPIC TERMINÉ 3/3)
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)
@@ -118,8 +118,9 @@ le test fonctionnel n'assère aucune vidéo.
 . ✅ **Thumbnail** — `ViralThumbnailPlanner` sans **usage prod** (`thumbnailFor = { "" }`).
   **RÉSOLU S-155** (`ViralThumbnailBuilder` + `renderViralThumbnails`,
   CAP-VIRAL-E2E US-2).
-. 🟠 **Sous-titres karaoké** — `KaraokeSubtitleBuilder` sans **usage prod**.
-  → suivi **CAP-VIRAL-E2E US-3**.
+. ✅ **Sous-titres karaoké** — `KaraokeSubtitleBuilder` sans **usage prod**.
+  **RÉSOLU S-156** (`KaraokeWordPlanner` + `AssKaraokeDocument` +
+  `renderViralSubtitles`, CAP-VIRAL-E2E US-3).
 . ✅ **Manifeste ↔ fichiers réels** — `CampaignBundle.videoFile` pointe un
   fichier inexistant ; gate de validation manquant. **RÉSOLU S-154**
   (`ViralCampaignGate` + `validateViralCampaign`, CAP-VIRAL-E2E US-1).
@@ -171,15 +172,15 @@ training-gradle, pas ici.** Rapport `.agents/sessions/153-rename-metier-oss-voca
 
 '''
 
-== 🎬 CAP-VIRAL-E2E 🟡 EN COURS 2/3 US (US-1 S-154, US-2 S-155 ; US-3 À FAIRE)
+== 🎬 CAP-VIRAL-E2E ✅ TERMINÉ 3/3 US (US-1 S-154, US-2 S-155, US-3 S-156)
 
 _Clore les **3 dettes e2e** restantes du moteur viral (diagnostic S-145) : le
-domaine viral existe (CAP-VIRAL 14/14, CAP-SHORT 5/6) mais trois briques sont
+domaine viral existe (CAP-VIRAL 14/14, CAP-SHORT 5/6) mais trois briques étaient
 **sans usage en production**. L'EPIC **branche** la production là où le domaine
 est déjà complet, sans modifier CAP-VIRAL._
 
 *Cadrage* : `.agents/CADRAGE_EPIC_CAP_VIRAL_E2E.adoc` (S-154).
-*Charge* : 3 US ~9 pts — **US-1 ✅ S-154, US-2 ✅ S-155**.
+*Charge* : 3 US ~9 pts — **TERMINÉ 3/3**.
 
 [cols="1,4,2,1,2", options="header"]
 |===
@@ -188,7 +189,7 @@ est déjà complet, sans modifier CAP-VIRAL._
 | US-0 | Cadrage (audit des 3 dettes e2e + décisions) | `.agents/CADRAGE_EPIC_CAP_VIRAL_E2E.adoc` | 0 | ✅ S-154
 | US-1 | **Gate manifeste ↔ fichiers** — `ViralCampaignGate` pur + `CampaignBundleSerializer.parseManifest` + tâche `validateViralCampaign` (groupe `verification`) | `capsule.viral`, `CapsuleManager` | 3 | ✅ S-154
 | US-2 | **Thumbnail prod wiring** — `ViralThumbnailBuilder` pur + cover HTML (`thumbnailOutput`) + tâche `renderViralThumbnails` (`<id>-thumb.png`) + `thumbnailFor` alimenté | `capsule.viral`, `CapsuleManager` | 3 | ✅ S-155
-| US-3 | **Karaoké prod wiring** — `.ass` mot-à-mot par variante via `KaraokeSubtitleBuilder` | `capsule.viral` | 3 | 🟡 À FAIRE
+| US-3 | **Karaoké prod wiring** — `KaraokeWordPlanner` + `AssKaraokeDocument` purs + tâche `renderViralSubtitles` (`<id>.ass`) + `subtitleFile` dans le bundle + gate étendue | `capsule.viral`, `CapsuleManager` | 3 | ✅ S-156
 |===
 
 *US-1 livré* : `ViralCampaignGate` (objet pur, `verdict(bundles, exists)` →
@@ -204,6 +205,13 @@ résolu **via codebase N1**) + `thumbnailFor` alimenté +
 `<id>-thumb.png`, Économie d'Encre) + `validateViralCampaign` dépend des deux
 renders + 6 unit + 5 functional + 4 scénarios BDD `@thumbnail` (25e runner
 `cucumberTestViralThumbnail`). Zéro appel LLM direct (frontière codebase). Local = Build.
+
+*US-3 livré* : `KaraokeLine` + `KaraokeWordPlanner` (mots timés proportionnellement
+dans la fenêtre du beat) + `AssKaraokeDocument` (ASS v4.00+ complet, `\k` mot-à-mot)
++ `CampaignBundle.subtitleFile` (additif) + `GenerateViralCampaignTask.subtitleFor`
++ `RenderViralSubtitlesTask` (`<id>.ass` par variante, pur texte) + gate étendue
+(vidéo + thumbnail + soustitre) + 10 unit + 5 functional + 4 scénarios BDD `@karaoke`
+(26e runner `cucumberTestViralKaraoke`). Local = Build.
 
 '''
 == 🎬 CAP-CONTEXT ✅ TERMINÉ 4/4 US (S-144 cadrage ; US-1/2/3 S-145, US-4 S-152)

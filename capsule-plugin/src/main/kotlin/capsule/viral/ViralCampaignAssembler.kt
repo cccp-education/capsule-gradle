@@ -31,6 +31,7 @@ object ViralCampaignAssembler {
      * @param copySource    the market copy source (bakery GBL-006).
      * @param videoPathFor  maps a variant id to the rendered video path.
      * @param thumbnailFor  maps a variant id to the thumbnail path (may return blank).
+     * @param subtitleFor   maps a variant id to the karaoke caption path (may return blank).
      * @return one [CampaignBundle] per variant, in variant order.
      */
     fun assemble(
@@ -40,6 +41,7 @@ object ViralCampaignAssembler {
         copySource: MarketCopySource,
         videoPathFor: (ViralVariant) -> String,
         thumbnailFor: (ViralVariant) -> String = { "" },
+        subtitleFor: (ViralVariant) -> String = { "" },
     ): List<CampaignBundle> = variants.map { variant ->
         val metadata = copySource.read(variant.language, variant.platform)
             ?: degradedMetadata(variant, storyboard, hook)
@@ -48,6 +50,7 @@ object ViralCampaignAssembler {
             platform = variant.platform,
             videoFile = videoPathFor(variant),
             thumbnailFile = thumbnailFor(variant),
+            subtitleFile = subtitleFor(variant),
             metadata = metadata,
         )
     }

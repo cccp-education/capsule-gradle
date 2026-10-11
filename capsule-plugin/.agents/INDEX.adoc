@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-11 (S-155 — **CAP-VIRAL-E2E US-2** : thumbnail prod wiring — `ViralThumbnailBuilder` pur + cover HTML + tâche `renderViralThumbnails` (`<id>-thumb.png`) + `thumbnailFor` alimenté ; 6 unit + 5 functional + 4 BDD `@thumbnail`. Précédent : S-154 US-1 gate.)
- _Derniere session terminee_ : 155.
- _Prochaine session_ : 156 — **CAP-VIRAL-E2E US-3** (karaoké prod wiring), dernier US de l'EPIC ; à défaut : CAP-SHORT US-4 (dogfooding viral = **accord pilote**), optimisation CI (optionnel) ou cadrage release `0.0.3`.
- _Session en cours_ : — (S-155 terminée).
+ _Derniere mise a jour_ : 2026-10-11 (S-156 — **CAP-VIRAL-E2E US-3** : karaoké prod wiring — `KaraokeWordPlanner` + `AssKaraokeDocument` purs + `renderViralSubtitles` (`<id>.ass`) + `subtitleFile` dans le bundle + gate étendue ; 10 unit + 5 functional + 4 BDD `@karaoke`. **CAP-VIRAL-E2E TERMINÉ 3/3.** Précédent : S-155 thumbnail.)
+ _Derniere session terminee_ : 156.
+ _Prochaine session_ : 157 — backlog actif vidé : **CAP-SHORT US-4** (dogfooding viral = **accord pilote**), optimisation CI (optionnel) ou **publication `capsule 0.0.3`** (accord pilote — porte RENAME S-153 + tout CAP-VIRAL-E2E).
+ _Session en cours_ : — (S-156 terminée).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -22,11 +22,13 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (145-155)
+== 10 dernières sessions (146-156)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 156 | 2026-10-11 | feat+test | **CAP-VIRAL-E2E US-3 — karaoké prod wiring** (clôt C3 : `KaraokeSubtitleBuilder` sans usage prod). Domaine pur `capsule.viral.KaraokeLine` + `KaraokeWordPlanner` (`plan(beats)` → mots timés proportionnellement dans la fenêtre du beat) + `AssKaraokeDocument` (ASS v4.00+ complet, dialogue `\k` mot-à-mot) + `CampaignBundle.subtitleFile` (additif, `hasSubtitle`) + `CampaignBundleSerializer` + `ViralCampaignGate` étendue (vidéo + thumbnail + soustitre) + `ViralCampaignAssembler.subtitleFor` + `GenerateViralCampaignTask.subtitleFor` + `RenderViralSubtitlesTask` (groupe `generate`, `<id>.ass` par variante, pur texte, Économie d'Encre) + `validateViralCampaign` dépend des 3 renders. Baby-step DDD/TDD/BDD : `KaraokeWordPlannerTest` (5) + `AssKaraokeDocumentTest` (5) + `RenderViralSubtitlesFunctionalTest` (5 TestKit) + `ViralCampaignGateTest` étendu (+2) + `capsule_viral_karaoke.feature` `@karaoke` (4 scénarios) + runner dédié 26e `cucumberTestViralKaraoke` câblé `full-tests.yml`. **CAP-VIRAL-E2E TERMINÉ 3/3.** Local = Build, Tests = CI. Zéro bump, zéro publication. | 9/10
 
 | 155 | 2026-10-11 | feat+test | **CAP-VIRAL-E2E US-2 — thumbnail prod wiring**. Clôt le constat C1 : `GenerateViralCampaignTask` n'alimentait pas `thumbnailFor` (`CampaignBundle.thumbnailFile` vide, `ViralThumbnailPlanner` sans usage prod). Domaine pur `capsule.viral.ViralThumbnailBuilder` (`build(plan)` → HTML portrait échappé, `fileNameFor` = `<id>-thumb.png`) + `GenerateViralCampaignTask.thumbnailOutput` (cover HTML, overlay = **hook contextuel résolu via codebase N1**) + `thumbnailFor` alimenté + `RenderViralThumbnailsTask` (groupe `generate`, `dependsOn generateViralCampaign` : capture la cover **une fois** via le socle FFmpeg screenshot `previewOnly` puis réplique par variante, Économie d'Encre) + `validateViralCampaign` `dependsOn renderViralVariants, renderViralThumbnails`. Baby-step DDD/TDD/BDD : `ViralThumbnailBuilderTest` (6 unit) + `RenderViralThumbnailsFunctionalTest` (5 functional TestKit, capture réelle gatée `assumePlaywrightAvailable`) + `capsule_viral_thumbnail.feature` `@thumbnail` (4 scénarios) + runner dédié 25e `cucumberTestViralThumbnail` câblé `full-tests.yml`. **Frontière IA codebase respectée** (zéro appel LLM direct). Local = Build, Tests = CI. Zéro bump, zéro publication. | 9/10
 
@@ -66,7 +68,7 @@ _Sessions 000-117 archivées_ : rapports dans `.agents/sessions/`, résumé dans
 
 | **CAP-VIRAL** | **Moteur de campagnes virales YouTube/TikTok** — domaine `capsule.viral` : rendu vertical 9:16, format court 15-60 s, hooks/CTA **ancrés contexte N1**, **storyboard validable** (porte éditoriale), chaîne marketing (amont `capsule.copy` / aval `CampaignBundle`), thumbnail, sous-titres karaoké, batch multi-plateforme, **assemblage bout-en-bout** (`ViralCampaignAssembler`), **socle FFmpeg** (`ViralCaptureStrategy` — Playwright temps réel écarté), **câblage tâche `generateViralCampaign`**. 14 US ~53 pts. Cadrage `.agents/sessions/138-cap-viral-cadrage.adoc`. | ✅ TERMINÉ (S-142) — 14/14 US (wiring + US-7 livrés) | P0
 | CAP-SHORT | **Livraison end-to-end du format court** (YouTube Shorts / TikTok / Reels). **US-1a ✅ S-146** : `ViralDeckBuilder` (storyboard → deck HTML **1080×1920**). **US-1b ✅ S-147** : orchestration `renderViralVariants` (MP4 par `ViralVariant`, socle FFmpeg). **US-2 ✅ S-148** : time-fit 15-60 s (`ViralTimeFitter` + gate durée). **US-3 ✅ S-149** : batch réel (capture unique + réplication). **US-5 ✅ S-150** : BDD rendu réel (`@viral-render`, vrai MP4 + durée, CI). Reste **US-4** (dogfooding viral réel = **accord pilote**). **6 US ~22 pts**. ~~maintenance RENAME~~ ✅ **SOLDÉE S-153**. Cadré S-143, diagnostic S-145. | 🟡 EN COURS (S-153) — 5/6 US + dogfooding | P0 |
-| CAP-VIRAL-E2E | **Clore les 3 dettes e2e du moteur viral** — gate manifeste ↔ fichiers (US-1 ✅ S-154 : `ViralCampaignGate` + `validateViralCampaign`), thumbnail prod wiring (US-2 ✅ S-155 : `ViralThumbnailBuilder` + `renderViralThumbnails` + `thumbnailFor`), karaoké prod wiring (US-3 🟡). Cadrage `.agents/CADRAGE_EPIC_CAP_VIRAL_E2E.adoc`. 3 US ~9 pts. | 🟡 EN COURS 2/3 (S-154 : US-0/US-1 ; S-155 : US-2) | P1 |
+| CAP-VIRAL-E2E | **Clore les 3 dettes e2e du moteur viral** — gate manifeste ↔ fichiers (US-1 S-154 : `ViralCampaignGate` + `validateViralCampaign`), thumbnail prod wiring (US-2 S-155 : `ViralThumbnailBuilder` + `renderViralThumbnails` + `thumbnailFor`), karaoké prod wiring (US-3 S-156 : `KaraokeWordPlanner` + `AssKaraokeDocument` + `renderViralSubtitles` + `subtitleFile`). Cadrage `.agents/CADRAGE_EPIC_CAP_VIRAL_E2E.adoc`. 3 US ~9 pts. | ✅ TERMINÉ 3/3 (S-154→S-156) | P1 |
 | RENAME-OSS | **Neutralisation du vocabulaire métier FPA/formation dans l'OSS** — garde `OssVocabularyGuardTest` (description POM + `src/`) + 24 fichiers `src/` + 13 docs neutralisés. | ✅ TERMINÉ (S-153) | P2 |
 | CAP-CONTEXT | **Contexte du storyboard** — identité visuelle (design system) + QQOQCP + fil conducteur narratif portés dans le domaine `capsule.viral` (`Qqoqcp`/`VisualIdentity`/`NarrativeThread` + champs additifs, builder/parser 3 sections, gate de cohérence) + `Capsule.jsx` sur tokens du brand book (US-4). Squelette : `.agents/CAPSULE_VIDEO.adoc`. 4 US ~10 pts. | ✅ TERMINÉ 4/4 (S-144 cadrage ; US-1/2/3 S-145, US-4 S-152) | P1 |
 | CAP-PODCAST | Extraction audio-only — `PodcastConcatenator` FFmpeg concat MP3 slides, tâche `generateCapsulePodcast`. Domaine `capsule.podcast` 13ème. 3 US ~4 pts | ✅ TERMINÉ (S-127) | P2
@@ -124,13 +126,13 @@ _Details EPICs terminés_ : rapports dans `.agents/sessions/`, détails archivé
 | `.agents/CAPSULE_VIDEO.adoc` | **Littérature agentique** — squelette de storyboard guidé par le contexte (design system + QQOQCP + fil conducteur) | EAGER
 |===
 
-_Total_ : 30 EPICs terminés + **CAP-VIRAL ✅ TERMINÉ (S-142, 14/14 US)** + **CAP-CONTEXT ✅ TERMINÉ 4/4 (S-145→S-152)** + **CAP-SHORT 🟡 5/6 US + dogfooding (S-146→S-150)** + **CAP-VIRAL-E2E 🟡 2/3 US (S-154→S-155)**. _Baseline courante_ (S-136, exacte) :
+_Total_ : 30 EPICs terminés + **CAP-VIRAL ✅ TERMINÉ (S-142, 14/14 US)** + **CAP-CONTEXT ✅ TERMINÉ 4/4 (S-145→S-152)** + **CAP-SHORT 🟡 5/6 US + dogfooding (S-146→S-150)** + **CAP-VIRAL-E2E ✅ TERMINÉ 3/3 (S-154→S-156)**. _Baseline courante_ (S-136, exacte) :
 1166 unit VERT, 75 functional VERT, 21 cucumber dédiés GREEN. **S-145** ajoute le
 **22e** runner dédié (`cucumberTestStoryboardContext`) câblé `full-tests.yml`
 (preuve = CI du push) ; **S-146→S-149** étendent la feature `@viral` (aucun runner
 neuf) ; **S-150** ajoute le **23e** runner (`cucumberTestViralRender`, vrai MP4) ;
-**S-154** ajoute le **24e** runner (`cucumberTestViralGate`) ; **S-155** le **25e**
-(`cucumberTestViralThumbnail`, `@thumbnail`).
+**S-154** le **24e** (`cucumberTestViralGate`) ; **S-155** le **25e**
+(`cucumberTestViralThumbnail`) ; **S-156** le **26e** (`cucumberTestViralKaraoke`).
 
 _Décision architecture_ : Docker FFmpeg reporté MVP1 (fausse bonne idée
 pour MVP0 — gain fonctionnel nul, complexité ajoutée). FFmpeg reste local

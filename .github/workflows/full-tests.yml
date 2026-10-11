@@ -99,6 +99,7 @@ jobs:
           cucumberTestStoryboardContext
           cucumberTestViralGate
           cucumberTestViralThumbnail
+          cucumberTestViralKaraoke
           -PrunCucumber
         working-directory: capsule-plugin
         env:

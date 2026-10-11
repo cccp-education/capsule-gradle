@@ -302,6 +302,16 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleViralThumbnailCucumberRunner",
             timeoutMinutes = 10,
         ),
+        // CAP-VIRAL-E2E US-3 — karaoke captions: the beat words are timed across the
+        // beat windows and rendered into a full ASS document. Dedicated runner pattern
+        // S-082; steps prefixed "karaoke" (bug S-088). Pure domain (planner + document).
+        CucumberTaskSpec(
+            name = "cucumberTestViralKaraoke",
+            features = listOf("src/test/features/capsule_viral_karaoke.feature"),
+            tags = listOf("@karaoke"),
+            runnerClass = "capsule.scenarios.CapsuleViralKaraokeCucumberRunner",
+            timeoutMinutes = 10,
+        ),
     )
 }
 

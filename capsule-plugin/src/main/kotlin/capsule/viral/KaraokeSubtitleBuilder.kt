@@ -39,6 +39,12 @@ data class KaraokeWord(
  */
 object KaraokeSubtitleBuilder {
 
+    /** Container of the per-variant karaoke caption file. */
+    const val SUBTITLE_EXTENSION: String = "ass"
+
+    /** Names the per-variant karaoke caption file, e.g. `fr-tiktok-30.ass`. */
+    fun fileNameFor(variantId: String): String = "$variantId.$SUBTITLE_EXTENSION"
+
     /**
      * Builds the ASS karaoke dialogue text for [words].
      *

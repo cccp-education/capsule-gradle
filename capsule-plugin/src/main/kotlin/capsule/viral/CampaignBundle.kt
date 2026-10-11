@@ -16,12 +16,14 @@ package capsule.viral
  * - [language] must not be blank.
  *
  * [thumbnailFile] may be blank (a render without thumbnail is valid but weaker);
+ * [subtitleFile] may be blank (a render without captions is valid but weaker);
  * [metadata] may be a degraded [MarketCopy] fallback.
  *
  * @property language      target ISO language code.
  * @property platform      target platform preset.
  * @property videoFile     path to the rendered short-form vertical video.
  * @property thumbnailFile path to the cover/thumbnail (may be blank).
+ * @property subtitleFile  path to the karaoke caption file (may be blank).
  * @property metadata      the platform metadata (title/caption/hashtags).
  */
 data class CampaignBundle(
@@ -29,6 +31,7 @@ data class CampaignBundle(
     val platform: ViralPlatform,
     val videoFile: String,
     val thumbnailFile: String,
+    val subtitleFile: String = "",
     val metadata: MarketCopy,
 ) {
     init {
@@ -38,4 +41,7 @@ data class CampaignBundle(
 
     /** `true` when a thumbnail asset is carried. */
     val hasThumbnail: Boolean get() = thumbnailFile.isNotBlank()
+
+    /** `true` when a karaoke caption asset is carried. */
+    val hasSubtitle: Boolean get() = subtitleFile.isNotBlank()
 }
