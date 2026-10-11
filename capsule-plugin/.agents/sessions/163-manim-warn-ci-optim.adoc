@@ -41,15 +41,17 @@ step). L'agrégé exclut `@integration` et `@viral-render`.
 liste des 24 runners) par **une seule** :
 `./gradlew cucumberTest cucumberTestViralRender -PrunCucumber` (agrégé + rendu réel).
 
-*Gain attendu* : ~18 min → quelques minutes (une tâche au lieu de 24).
+*Gain mesuré* (run `38163403479`) : étape BDD **17m47s → 12m23s** (une tâche agrégée
+au lieu de 24), job complet **~26 min → ~18,5 min** — et l'agrégé couvre **plus** de
+scénarios (features jusqu'ici non CI-couvertes).
 *Couverture* : identique **ou supérieure** (l'agrégé exécute en plus les features
 jamais invoquées en CI par un runner dédié : `capsule.feature`, `capsule_ai.feature`,
 `capsule_speaker_notes.feature`, `consolidated_capsule_model.feature`,
 `cucumber_skip.feature`, `parallel_capture_timeout.feature`,
 `translate_and_extract_speaker_notes.feature`). **Preuve = CI du push** (l'agrégé
-est le garde bloquant). Si l'agrégé révèle un échec préexistant sur une feature
-jusqu'ici non couverte, il est traité en correction (leçon S-243/S-269 : une CI qui
-n'exécute pas masque la dette).
+est le garde bloquant) — **VERTE**. Si l'agrégé révèle un échec préexistant sur une
+feature jusqu'ici non couverte, il est traité en correction (leçon S-243/S-269 : une
+CI qui n'exécute pas masque la dette).
 
 Les 24 tâches `cucumberTest<Feature>` restent définies (usage local opt-in), seule
 la CI change.

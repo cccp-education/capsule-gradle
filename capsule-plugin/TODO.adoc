@@ -80,7 +80,7 @@
 '''
 == 🟡 CANDIDATS (hors EPIC, accord pilote requis)
 
-. [x] **Optimisation CI** ✅ S-163 — `full-tests.yml` s'appuie sur le runner **agrégé** `cucumberTest` (+ `cucumberTestViralRender`) au lieu des 24 runners dédiés (~18 min → quelques minutes).
+. [x] **Optimisation CI** ✅ S-163 — `full-tests.yml` s'appuie sur le runner **agrégé** `cucumberTest` (+ `cucumberTestViralRender`) au lieu des 24 runners dédiés. **Gain mesuré** : étape BDD 17m47s → 12m23s, job ~26 min → ~18,5 min (couverture supérieure).
 . [x] **Dogfooding Remotion + Manim** ✅ S-161 — chemin enrichi validé au niveau tâche (Manim via shim Docker ; Remotion via `generateCapsuleVideo` + `captureStrategy=remotion`).
 . [x] **Warn per-scene Manim** ✅ S-163 — le `NoOpManimParallelRenderer` journalise un warning par scène en échec (script manquant / `ManimException`) au lieu d'avaler silencieusement.
 . [x] **Extraction N0 résilience transverse** — **CADUQUE** (S-162, cadrage) : voir `.agents/CADRAGE_EPIC_LLM_RESILIENCE_N0.adoc`.
