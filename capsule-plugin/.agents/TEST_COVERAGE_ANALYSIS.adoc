@@ -1,7 +1,20 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-11
-:session: 164 publication 0.0.3 (aucun test modifié)
+:session: 165 correctif dérive dépendances + capsule-plugin 0.0.4
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 11 octobre 2026 (après session 165)
+
+.Correctif dérive dépendances (release 0.0.4)
+|===
+| Élément | Changement | Tests
+| `gradle/libs.versions.toml` (modifié) | Alignement catalogue interne sur BOM 0.0.79 (workspace-bom, codebase 0.0.17, slider 0.0.19, koog 1.3.0, jackson 2.21.2, langchain4j 1.22). | 0 (deps)
+|===
+
+*Totaux S-165* : 0 test modifié. `compileKotlin` + `compileTestKotlin` +
+`compileFunctionalTestKotlin` **VERTS** avec les nouvelles dépendances. Preuve CI =
+push (les tests valident l'absence de régression runtime sous langchain4j 1.22 /
+koog 1.3 / codebase 0.0.17).
 
 == Couverture — 11 octobre 2026 (après session 164)
 

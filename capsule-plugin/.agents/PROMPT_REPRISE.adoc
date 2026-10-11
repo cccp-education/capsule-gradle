@@ -1,47 +1,43 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 165
+:session: 166
 :borough: Détroit
-:session_precedente: 164 — publication capsule-plugin 0.0.3 (Maven Central) + consommateurs
+:session_precedente: 165 — correctif dérive dépendances + capsule-plugin 0.0.4
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-164 — publication 0.0.3
+=== S-165 — correctif dérive + 0.0.4
 
-- `capsule-plugin 0.0.3` publié sur Maven Central (bundle `e040491f`, AUTOMATIC),
-  propagation repo1 HTTP 200. Description POM neutralisée (RENAME S-153).
-- Consommateurs : racine `capsule = 0.0.3` ; MEMPHIS `workspace-bom` catalog
-  `capsule-plugin 0.0.3` + BOM/catalog `0.0.79` (bundle `019cd3b5`).
-- Contenu : RENAME S-153 + CAP-VIRAL-E2E S-154→S-156 + `normalizeViralStoryboard`
-  S-159 + LLM-RESILIENCE S-160 + warn Manim S-163.
-- Rapport `.agents/sessions/164-publication-0.0.3.adoc`.
+- Le catalogue **interne** du plugin épinglait `workspace-bom 0.0.43` (POM 0.0.3
+  importait une BOM périmée). Aligné sur BOM `0.0.79` (+ codebase 0.0.17, slider
+  0.0.19, koog 1.3.0, jackson 2.21.2, langchain4j 1.22). Bump **0.0.4**.
+- Central bundle `59e4597a` (repo1 200) ; POM 0.0.4 importe `workspace-bom:0.0.79`.
+- Consommateurs : racine `capsule = 0.0.4` ; MEMPHIS BOM/catalog **0.0.80** (bundle
+  `14bccf1d`, capsule-plugin 0.0.4).
+- Rapport `.agents/sessions/165-fix-dep-drift-0.0.4.adoc`.
 
-=== S-163 — warn per-scene Manim + optimisation CI (Full Tests ~26 → ~18,5 min).
+=== S-164 — publication 0.0.3. S-163 — warn Manim + optim CI.
 
-=== S-162 — extraction N0 résilience : CADUQUE. S-161 — dogfooding Remotion+Manim.
+== Mission Session 166
 
-== Mission Session 165
-
-**Backlog actif vidé** : tous les EPICs sont terminés, la publication 0.0.3 faite.
-Il ne reste :
-
-1. **Extraction N0 résilience transverse** — CADUQUE (S-162). Réouverture = **module
-   utilitaire Gradle partagé** cross-borough (MEMPHIS/ABIDJAN), hors périmètre capsule.
-2. Tout nouveau besoin issu du backlog racine / d'une découverte de session.
+**Backlog actif vidé.** Seul candidat : **extraction N0 résilience transverse**
+(CADUQUE, S-162 ; réouverture = module utilitaire Gradle partagé cross-borough,
+hors périmètre capsule). Sinon : tout nouveau besoin du backlog racine.
 
 == Points d'attention
 
 * **Local = Build, Tests = CI**. Publication = méthode nmcp (AGENTS racine).
+* Le catalogue **interne** du plugin doit rester aligné sur le catalogue workspace
+  (BOM) — vérifier au fil des bumps MEMPHIS.
 * **English only** (`OssVocabularyGuardTest`). **Zéro Python**. **Zéro secret**.
 * Baby-step DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
-  Un test qui isole une tâche exclut toutes ses dépendances productrices (`-x`).
-* Viral = socle FFmpeg ; interface IA = codebase N1.
 
 == Rappels
 
-* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version **0.0.3** (Central).
+* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version **0.0.4** (Central).
 * CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **6/6** ; CAP-VIRAL-E2E **3/3** ;
   LLM-RESILIENCE **1/1**.
+
 
 
 
