@@ -3,6 +3,7 @@ package capsule.voice
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * TDD unit tests for [TakeSelector] and [VoiceSelectionJson] (CAP-QC-VOICE US-3).
@@ -126,6 +127,10 @@ class TakeSelectorTest {
 
     @Test
     fun `an empty selection renders an empty json array`() {
-        assertEquals("[]", VoiceSelectionJson.toJson(emptyList()))
+        // Jackson's pretty printer emits "[ ]" for an empty array — assert on the
+        // parsed shape, whitespace-insensitive.
+        val node = com.fasterxml.jackson.databind.ObjectMapper().readTree(VoiceSelectionJson.toJson(emptyList()))
+        assertTrue(node.isArray, "expected a JSON array")
+        assertEquals(0, node.size())
     }
 }
