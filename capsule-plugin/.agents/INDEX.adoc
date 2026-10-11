@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-12 (S-172 — **CAP-QC-VOICE US-2** : port `SpeechRecognizer` (fun interface) + adapter CLI `CliSpeechRecognizer` (whisper/faster-whisper via `ProcessRunner`, `isAvailable`) + commande pure `SpeechRecognizerCommand` + domaine pur étendu (`VoiceThresholds`/`VoiceVerdict` Pass-Fail-Degraded/`VoiceQualityGate`/`VoiceVerifier`/`VoiceReportJson`) + enveloppe SNR (`RmsEnvelope` pur + `AudioEnvelopeExtractor` ffmpeg→PCM) + tâche `verifyCapsuleVoice` (groupe `verification`, opt-in `voice.verifyEnabled`, seuils, rapport JSON, dégradé si ASR absent, échec en `strict`/seuil) + `VoiceConfig` 4 sources + extension/conventions/push + `CapsuleManager`. +29 unit, +4 functional, BDD `@voice-verify` (4 scénarios fake ASR, runner dédié 35e `cucumberTestVoiceVerification`). Gates locaux VERT. **CAP-QC-VOICE 2/5**, **CAP-QC 7/9**. Précédent : S-171 littérature CAP-QC.)
- _Derniere session terminee_ : 172.
- _Prochaine session_ : 173 — au choix : A) `CAP-QC-VOICE` US-3 (choix de prise : régénérer + retenir la meilleure, `audio/choix.json`) ; B) PRT-01 (prononciation dit/lu + cache contenu, intrusif, clôt CAP-QC) ; C) PRT-08 (planches QC visuelles).
- _Session en cours_ : — (S-172 terminée).
+ _Derniere mise a jour_ : 2026-10-12 (S-173 — **chaînage EPICs + cache CI**). **Cache CI** : action composite `.github/actions/setup-ollama` (image Docker `ollama/ollama` + `~/.ollama/models` cachés, `ollama pull` seulement si absent) + workflow `llm-smoke.yml` (dispatch, port 11466) + cache Gradle durci (`gradle/actions/setup-gradle@v4`). **CAP-QC-VOICE US-3** : `TakeSelector` (pur) + `VoiceSelectionJson` + tâche `selectBestVoiceTake` (opt-in `voice.selectBestTake`, non destructif). **US-4** : `VoiceAsrIntegrationTest` (TTS→ASR réels, skip-gardé). **CAP-QC PRT-08** : `capsule.qc` (`QcBoard`/`BeatsBoardPlanner`/`DitMontreBoardPlanner`) + `QcBoardRenderer` (Java2D→PNG) + tâche `renderQcBoards` (opt-in `qc.boardsEnabled`). BDD `@qc-boards` (runner 36e). Gates locaux VERT ; **CI `Test` + `Full Tests` VERTES** (run `38182193992`). **CAP-QC 8/9**, **CAP-QC-VOICE 4/5**. Précédent : S-172 US-2.)
+ _Derniere session terminee_ : 173.
+ _Prochaine session_ : 174 — au choix : A) PRT-01 (prononciation dit/lu + cache contenu `slide-NN-<key8>.mp3`, **intrusif**, clôt CAP-QC) ; B) `CAP-QC-VOICE` US-5 *(optionnel)* karaoké sur timings ASR ; C) maintenance.
+ _Session en cours_ : — (S-173 terminée).
  _Littérature de référence_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage) + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc` (EPIC voix).
 
 '''
@@ -23,11 +23,13 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (160-172)
+== 10 dernières sessions (160-173)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 173 | 2026-10-12 | feat+test+ci | **Chaînage EPICs + cache CI**. **A — Cache CI** : action composite `.github/actions/setup-ollama` (image Docker `ollama/ollama` via `docker save` + `~/.ollama/models` depuis le cache Actions, `ollama pull` seulement si absent, `chown` du store) + workflow `llm-smoke.yml` (`workflow_dispatch` non bloquant, port dédié 11466, `OLLAMA_TEST_PORT`/`OLLAMA_TEST_MODEL`) + cache Gradle durci `gradle/actions/setup-gradle@v4` dans `full-tests.yml`/`cucumber-full.yml`. **B — CAP-QC-VOICE US-3** : domaine pur `TakeSelector` (`selectBest`/`selectBySlide` — non-échouant > WER > surplus > ordre) + `VoiceSelection` + `VoiceSelectionJson` (`choix.json`) + tâche `selectBestVoiceTake` (groupe `verification`, opt-in `voice.selectBestTake`, non destructif, dégradé si ASR absent) + `VoiceConfig.selectBestTake` 4 sources. **C — US-4** : `VoiceAsrIntegrationTest` (TTS espeak/piper → ASR whisper réels → `FidelityScorer`, skip-gardé). **D — CAP-QC PRT-08** : domaine pur `capsule.qc` (`QcBoard`/`QcCell` + `BeatsBoardPlanner` + `DitMontreBoardPlanner`) + `QcBoardRenderer` (Java2D → PNG, image manquante → placeholder) + tâche `renderQcBoards` (opt-in `qc.boardsEnabled`, `<deck>-beats.png` + `<deck>-dit-montre.png`) + `QcConfig.boardsEnabled` 4 sources. Baby-step DDD/TDD/BDD : +14 unit (TakeSelector 8, QcBoardRenderer 5, merger) + 8 functional TestKit + BDD `@qc-boards` (runner 36e `cucumberTestQcBoards`). **CI `Test` + `Full Tests` VERTES** (run `38182193992`, `1481 tests`). **CAP-QC 8/9**, **CAP-QC-VOICE 4/5**. Reste : PRT-01 (intrusif), US-5 (optionnel). Zéro bump, zéro publication, zéro secret. Rapport `.agents/sessions/173-cap-qc-chain-and-ci-cache.adoc`. | 9/10
 
 | 172 | 2026-10-12 | feat+test | **CAP-QC-VOICE US-2 — port ASR + tâche `verifyCapsuleVoice` + `VoiceConfig`** (cœur de l'EPIC en cours). Port `fun interface SpeechRecognizer { transcribe(audio, language) }` + adapter CLI `CliSpeechRecognizer` (`whisper`/`faster-whisper` via `ProcessRunner`, `isAvailable(path)`, échec → `SpeechRecognizerException` = dégradation) + commande pure `SpeechRecognizerCommand` (`--model`/`--language` omis si blancs, `--output_format txt`, `--output_dir`). Domaine pur étendu : `VoiceThresholds` (0.15/66.0/3) + `VoiceVerdict` sealed (Pass/Fail(reasons)/Degraded(reason)) + `VoiceQualityGate.verdict(score, snrDb, thresholds)` (raisons `word-error-rate`/`surplus`/`snr`/`empty-transcription`) + `VoiceVerifier` (`VoiceTake`/`TakeVerification`/`VoiceReport`, ASR + enveloppe **injectés**, `degraded(...)`, erreur ASR = take dégradé jamais « propre ») + `VoiceReportJson` (Jackson déterministe). Enveloppe SNR : `RmsEnvelope` (PCM s16le → RMS/cadre, cadre partiel jeté) + `AudioEnvelopeExtractor` (ffmpeg → PCM raw mono 16 kHz, `null` = dégradé). Tâche `verifyCapsuleVoice` (groupe `verification`, opt-in `voice.verifyEnabled`, no-op si disabled, skip si aucun take, ASR absent → **rapport dégradé** + warning, échec seulement en `strict`, seuil franchi → `GradleException` actionnable ; seams `recognizerOverride`/`envelopeOverride`/`scriptDirOverride`). `VoiceConfig` 4 sources + 7 propriétés d'extension + `CapsuleConventions` + `pushConfigIntoExtension` + `CapsuleManager`. Clé i18n `task.verifyCapsuleVoice.description` sur 10 langues. Baby-step DDD/TDD/BDD : +29 unit (`VoiceQualityGateTest` 7, `VoiceVerifierTest` 6, `VoiceReportJsonTest` 3, `CliSpeechRecognizerTest` 5, `AudioEnvelopeTest` 7, `CapsuleConfigMergerTest` +1) + 4 functional TestKit (registration, disabled no-op, no-take skip, ASR absent → dégradé `assumeFalse`) + BDD `capsule_voice_verification.feature` `@voice-verify` (4 scénarios fake ASR) + runner dédié 35e `cucumberTestVoiceVerification`. Gates locaux (`compileKotlin`/`compileTestKotlin`/`compileFunctionalTestKotlin`/`validatePlugins`/`assemble`) VERT. Local = Build, Tests = CI ; ASR **jamais** prérequis de `check`. **CAP-QC-VOICE 2/5** (reste US-3/4/5), **CAP-QC 7/9**. Zéro bump, zéro publication, zéro secret. Rapport `.agents/sessions/172-cap-qc-voice-us2.adoc`. | 9/10
 
@@ -172,9 +174,11 @@ neuf) ; **S-150** ajoute le **23e** runner (`cucumberTestViralRender`, vrai MP4)
 `cucumberTestSubtitlesCartons`/`cucumberTestRenderSignature`) ; **S-167** le **32e**
 (`cucumberTestContentPreflight`) ; **S-168** le **33e** (`cucumberTestTimeline`) ;
 **S-170** le **34e** (`cucumberTestVoiceQuality`) ; **S-172** le **35e**
-(`cucumberTestVoiceVerification`).
-**EPICs en cours** : **CAP-QC 🟡 7/9** (reste PRT-01, PRT-08) et **CAP-QC-VOICE 🟡 2/5**
-(reste US-3/4/5) — portage `prepa_electricite_complet` → capsule.
+(`cucumberTestVoiceVerification`) ; **S-173** le **36e** (`cucumberTestQcBoards`).
+**EPICs en cours** : **CAP-QC 🟡 8/9** (reste PRT-01, intrusif) et **CAP-QC-VOICE 🟡 4/5**
+(reste US-5, optionnel) — portage `prepa_electricite_complet` → capsule.
+**Cache CI** : `.github/actions/setup-ollama` (image Docker + modèle) + Gradle
+(`gradle/actions/setup-gradle@v4`).
 
 _Décision architecture_ : Docker FFmpeg reporté MVP1 (fausse bonne idée
 pour MVP0 — gain fonctionnel nul, complexité ajoutée). FFmpeg reste local

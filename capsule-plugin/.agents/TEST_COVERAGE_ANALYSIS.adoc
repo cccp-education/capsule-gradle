@@ -1,7 +1,29 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-12
-:session: 172 CAP-QC-VOICE US-2 (port ASR + tâche verifyCapsuleVoice + VoiceConfig)
+:session: 173 Chaînage EPICs (CAP-QC-VOICE US-3/US-4 + CAP-QC PRT-08) + cache CI
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 12 octobre 2026 (après session 173)
+
+.Chaînage EPICs + cache CI
+|===
+| Élément | Changement | Tests
+
+| `voice/TakeSelector.kt` (créé) | `TakeSelector`/`VoiceSelection`/`VoiceSelectionJson` (pur) | +8 `TakeSelectorTest`
+| `voice/SelectBestVoiceTakeTask.kt` (créé) | Tâche `selectBestVoiceTake` (opt-in, non destructif) | +4 `SelectBestVoiceTakeFunctionalTest`
+| `voice/VoiceAsrIntegrationTest.kt` (créé) | Dogfooding TTS→ASR réels (skip-gardé) | 1 (skipped sans binaires)
+| `qc/QcBoard.kt` (créé) | `QcBoard`/`QcCell` + planners purs | (couvert par renderer + BDD)
+| `qc/QcBoardRenderer.kt` (créé) | Rendu Java2D → PNG | +5 `QcBoardRendererTest`
+| `qc/RenderQcBoardsTask.kt` (créé) | Tâche `renderQcBoards` (opt-in) | +3 `RenderQcBoardsFunctionalTest`
+| `capsule_qc_boards.feature` (créée) | BDD `@qc-boards` (2 scénarios) | runner 36e `cucumberTestQcBoards`
+| `CapsuleConfig*.kt` (`selectBestTake`, `boardsEnabled`) | 4 sources + extension + push | +1 `CapsuleConfigMergerTest`
+| `.github/actions/setup-ollama` + `llm-smoke.yml` | Cache image Docker + modèle Ollama | (infra)
+|===
+
+*Totaux S-173* : **+14 unit** + **+8 functional** + 1 feature BDD dédiée (36e runner).
+Gates locaux (compiles + `validatePlugins`) **VERTS** ; **CI `Test` + `Full Tests`
+VERTES** (run `38182193992`, `1481 tests`). Aucun test local lancé (Local = Build,
+Tests = CI).
 
 == Couverture — 12 octobre 2026 (après session 172)
 

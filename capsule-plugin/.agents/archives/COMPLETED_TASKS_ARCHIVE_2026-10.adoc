@@ -1,6 +1,19 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 173 — Chaînage EPICs (CAP-QC-VOICE US-3/US-4 + CAP-QC PRT-08) + cache CI ✅
+
+* **Cache CI** : action composite `.github/actions/setup-ollama` (image Docker
+  `ollama/ollama` + `~/.ollama/models` cachés) + workflow `llm-smoke.yml` (dispatch,
+  port 11466) + cache Gradle durci (`gradle/actions/setup-gradle@v4`).
+* **CAP-QC-VOICE US-3** : `TakeSelector` (pur) + `VoiceSelectionJson` + tâche
+  `selectBestVoiceTake` (opt-in, non destructif).
+* **CAP-QC-VOICE US-4** : `VoiceAsrIntegrationTest` (TTS→ASR réels, skip-gardé).
+* **CAP-QC PRT-08** : `capsule.qc` + `QcBoardRenderer` (Java2D→PNG) + tâche
+  `renderQcBoards` (opt-in `qc.boardsEnabled`). BDD `@qc-boards` (runner 36e).
+* +14 unit + 8 functional. **CI `Test` + `Full Tests` VERTES** (run `38182193992`).
+  **CAP-QC 8/9**, **CAP-QC-VOICE 4/5**. Rapport `.agents/sessions/173-cap-qc-chain-and-ci-cache.adoc`.
+
 == Session 172 — CAP-QC-VOICE US-2 : port ASR + tâche `verifyCapsuleVoice` + `VoiceConfig` ✅
 
 * Port `SpeechRecognizer` + adapter CLI `CliSpeechRecognizer` + commande pure

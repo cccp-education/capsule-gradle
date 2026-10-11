@@ -1,0 +1,77 @@
+= Rapport de session 173 — Chaînage EPICs (CAP-QC-VOICE US-3/US-4 + CAP-QC PRT-08) + cache CI
+:session: 173
+:date: 2026-10-12
+:borough: Détroit
+:epic: CAP-QC-VOICE (US-3, US-4) + CAP-QC (PRT-08) + infra CI
+:statut: TERMINÉ
+:methode: baby-step DDD/TDD/BDD (unit → fonctionnel → cucumber)
+
+== Mission
+
+Demande pilote : *« fais le nécessaire pour ne pas re-télécharger le modèle Ollama,
+Gradle et les images Docker à chaque besoin ; enchaîne toutes les EPICs du backlog »*.
+
+== A — Cache CI (Ollama modèle + image Docker + Gradle)
+
+* `.github/actions/setup-ollama/action.yml` (nouvelle **action composite réutilisable**) :
+  restaure l'image Docker `ollama/ollama` (tar `docker save`) **et** `~/.ollama/models`
+  depuis le cache Actions, démarre le serveur et ne fait `ollama pull` que si le
+  modèle est absent. Rendu le store au runner user (`chown`) pour que le cache
+  s'archive.
+* `.github/workflows/llm-smoke.yml` (nouveau, **workflow_dispatch** non bloquant) :
+  `setup-gradle` + l'action composite (modèle CI léger, port dédié **11466**,
+  `OLLAMA_TEST_PORT`/`OLLAMA_TEST_MODEL` exportés pour de futurs tests `@integration`
+  — convention AGENTS.adoc).
+* `full-tests.yml` / `cucumber-full.yml` : **cache Gradle durci** via
+  `gradle/actions/setup-gradle@v4` (wrapper + dépendances + build cache partagés),
+  remplaçant `actions/setup-java cache: gradle`.
+
+== B — CAP-QC-VOICE US-3 — choix de prise (3 pts)
+
+* **Domaine pur** `capsule.voice` : `TakeSelector` (`selectBest`/`selectBySlide` —
+  non-échouant > WER le plus bas > surplus le plus bas > ordre d'entrée, déterministe)
+  + `VoiceSelection` + `VoiceSelectionJson` (`choix.json`).
+* **Tâche** `selectBestVoiceTake` (groupe `verification`, opt-in `voice.selectBestTake`) :
+  transcrit chaque candidate `slide-NN*.mp3`, retient la meilleure par diapo, écrit
+  `voice-selection.json`. **Non destructif**. Dégradé si ASR absent (échec en `strict`).
+  Config 4 sources + extension/conventions/push.
+* BDD : 2 scénarios ajoutés à `capsule_voice_verification.feature`. Tests : +8 unit
+  (`TakeSelectorTest`) + merger + 4 functional TestKit.
+
+== C — CAP-QC-VOICE US-4 — dogfooding ASR réel (3 pts)
+
+* `VoiceAsrIntegrationTest` : TTS réel (espeak/piper) → ASR réel (whisper/faster-whisper)
+  → `FidelityScorer`, **skip-gardé** (`assumeTrue`, jamais prérequis de `check`).
+
+== D — CAP-QC PRT-08 — planches QC visuelles (3 pts)
+
+* **Domaine pur** `capsule.qc` : `QcBoard`/`QcCell` + `BeatsBoardPlanner` +
+  `DitMontreBoardPlanner`.
+* `QcBoardRenderer` (Java2D → PNG) : grille déterministe, image manquante → placeholder,
+  jamais d'échec.
+* **Tâche** `renderQcBoards` (groupe `verification`, opt-in `qc.boardsEnabled`) :
+  écrit `<deck>-beats.png` et `<deck>-dit-montre.png`. `QcConfig.boardsEnabled`
+  4 sources + extension/push.
+* BDD `capsule_qc_boards.feature` `@qc-boards` (runner 36e `cucumberTestQcBoards`) +
+  +5 unit (`QcBoardRendererTest`) + 3 functional TestKit.
+
+== Gates
+
+* Local = Build : `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin`
+  + `validatePlugins` **VERTS**.
+* **CI** : `Test` **VERT** + **`Full Tests` VERT** (run `38182193992`, commit `a7e891c`) —
+  `1481 tests`, `functionalTest` + BDD agrégé + real render inclus.
+* Découverte (S-172) : la CI était **rouge depuis S-166** (3 bugs de test S-166/S-170)
+  — corrigée test-only (`8da6e20`), CI revenue verte.
+* Zéro bump, zéro publication, zéro secret.
+
+== Reste à faire
+
+* **PRT-01** (CAP-QC 8/9 → 9/9) — prononciation « dit/lu » + cache indexé sur le texte
+  dit (`slide-NN-<key8>.mp3`). **Intrusif** : touche `TtsManager`/`CapsuleBuildTask`/
+  `CapsuleVideoTask` et le nommage `slide-NN.mp3` couvert par de nombreux tests →
+  à mener avec accord pilote.
+* **US-5** *(optionnel)* — karaoké sur timings mot-à-mot ASR : nécessite un port ASR
+  enrichi (timestamps), `SpeechRecognizer` ne rend aujourd'hui qu'une chaîne.
+
+_Score : 9/10._

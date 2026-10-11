@@ -1,9 +1,9 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-12 (S-172 — CAP-QC-VOICE US-2 port ASR + tâche verifyCapsuleVoice + VoiceConfig ; CAP-QC 7/9, CAP-QC-VOICE 2/5)
+:last_update: 2026-10-12 (S-173 — chaînage : CAP-QC-VOICE US-3/US-4 + CAP-QC PRT-08 + cache CI ; CAP-QC 8/9, CAP-QC-VOICE 4/5)
 
 '''
-== 🔌 BACKLOG ACTIF — CAP-QC 🟡 EN COURS 7/9 (S-168)
+== 🔌 BACKLOG ACTIF — CAP-QC 🟡 EN COURS 8/9 (S-173)
 _📖 Littérature de référence : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage `prepa` → capsule : frontière, catalogue PRT, décisions, reste à faire)._
 
 _Portage de l'**utilitaire hors rendu** de `prepa_electricite_complet` (usine Python de
@@ -27,19 +27,20 @@ nouvelle est **opt-in (défaut false)** et câblée sur les **4 sources** de con
 | PRT-05 | **Pré-vol contenu avant TTS** (`ContentPreflight` : note longue/dupliquée = warning, forme interdite = error) | `capsule.qc` | 3 | ✅ S-167
 | PRT-10 | **Publication** : chapitres **YouTube texte** (`MM:SS Titre`) + `VideoDescriptionBuilder` (garde chevrons) — miniature pédagogique non portée (le viral couvre) | `capsule.chapters`, `capsule.publish` | 3 | ✅ S-167
 | PRT-01 | **Prononciation « dit / lu »** + cache indexé sur le **texte dit** (nom `slide-NN-<key>.mp3`) | `capsule.voice`, `TtsManager` | 5 | 🟡 À FAIRE (intrusif)
-| PRT-02 | **QC voix par ASR** (fidélité mot-à-mot + souffle + choix de prise) — EPIC **`CAP-QC-VOICE`** | `capsule.voice` + port `SpeechRecognizer` | 8 | 🟡 EN COURS → EPIC `CAP-QC-VOICE` 2/5 (US-0 ✅ S-169, US-1 ✅ S-170, US-2 ✅ S-172)
+| PRT-02 | **QC voix par ASR** (fidélité mot-à-mot + souffle + choix de prise) — EPIC **`CAP-QC-VOICE`** | `capsule.voice` + port `SpeechRecognizer` | 8 | 🟡 EN COURS → EPIC `CAP-QC-VOICE` 4/5 (US-0 ✅ S-169, US-1 ✅ S-170, US-2 ✅ S-172, US-3 ✅ S-173, US-4 ✅ S-173)
 | PRT-07 | **Timeline déterministe** (frames entières, placement exact, avance image/voix) | `capsule.timeline` | 5 | ✅ S-168 (US-1 pur ; câblage capture = US-2)
+| PRT-08 | **Planches QC visuelles** (`QcBoard`/`QcCell` + `BeatsBoardPlanner`/`DitMontreBoardPlanner` purs + `QcBoardRenderer` Java2D→PNG) — opt-in `qc.boardsEnabled`, tâche `renderQcBoards` | `capsule.qc` | 3 | ✅ S-173
 
 | ~~PRT-11~~ | Rendu de contenu maison (Java2D / LaTeX serveur) | — | — | ✅ **CADUQUE** (§ 8 revue)
 | ~~PRT-12/13~~ | Vérification exécutable (principe) / DSL schémas métier | — | — | ✅ hors cœur OSS
 |===
 
-*Total* : 9 items portables — **7 ✅ (S-166→S-168)** + **1 🟡 à faire** (PRT-01) + **PRT-02 🟡 en cours** (EPIC `CAP-QC-VOICE` 2/5, S-172).
+*Total* : 10 items portables — **8 ✅ (S-166→S-173)** + **1 🟡 à faire** (PRT-01, intrusif) + **PRT-02 🟡 en cours** (EPIC `CAP-QC-VOICE` 4/5, S-173).
 Rapports : `.agents/sessions/166-cap-qc-prt-04-03-09-06.adoc`,
 `167-cap-qc-prt-05-10.adoc`, `168-cap-qc-prt-07.adoc`.
 
 '''
-== 🎤 BACKLOG ACTIF — CAP-QC-VOICE 🟡 EN COURS 2/5 (S-172)
+== 🎤 BACKLOG ACTIF — CAP-QC-VOICE 🟡 EN COURS 4/5 (S-173)
 _📖 Littérature : `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`._
 
 _Contrôle qualité de voix par ASR (PRT-02 du portage `prepa` → capsule). **Prouver que la
@@ -55,12 +56,12 @@ souffle de fond, choix de prise. Source `prepa` : `verif_voix.py`/`score_voix.py
 | US-0 | Cadrage (audit 7 constats + décisions) | ce doc | 0 | ✅ S-169
 | US-1 | **Domaine pur** `capsule.voice` (`TextNormalizer`/`WordAligner`/`FidelityScorer`/`SnrEstimator`/`VoiceScore`) | `capsule.voice` | 3 | ✅ S-170
 | US-2 | **Port + tâche** `SpeechRecognizer` (CLI whisper) + `verifyCapsuleVoice` (rapport JSON + seuils + strict) — opt-in `voice.verifyEnabled` | `capsule.voice`, `CapsuleManager` | 5 | ✅ S-172
-| US-3 | **Choix de prise** (régénérer + retenir la meilleure) | `capsule.voice`, `CapsuleBuildTask` | 3 | 🟡 À FAIRE
-| US-4 | **Dogfooding** (1 run ASR réel skip-gardé) | feature + steps | 3 | 🟡 À FAIRE
-| US-5 | *(optionnel)* **Karaoké** sur timings ASR | `capsule.viral` | 3 | 🟡 À FAIRE
+| US-3 | **Choix de prise** (`TakeSelector` pur + `VoiceSelectionJson` + tâche `selectBestVoiceTake`, non destructif) | `capsule.voice`, `CapsuleManager` | 3 | ✅ S-173
+| US-4 | **Dogfooding** (`VoiceAsrIntegrationTest`, TTS→ASR réels skip-gardé) | test | 3 | ✅ S-173
+| US-5 | *(optionnel)* **Karaoké** sur timings ASR (port ASR enrichi) | `capsule.viral` | 3 | 🟡 À FAIRE
 |===
 
-*Total* : 5 US ~14 pts — **US-0 ✅ (S-169) + US-1 ✅ (S-170) + US-2 ✅ (S-172)** + 2 à faire (US-3/4) + US-5 optionnel. Contraintes : zéro modèle/port en
+*Total* : 5 US ~14 pts — **US-0 ✅ (S-169) + US-1 ✅ (S-170) + US-2 ✅ (S-172) + US-3 ✅ S-173 + US-4 ✅ S-173** + US-5 optionnel (reste). Contraintes : zéro modèle/port en
 dur ; ASR jamais prérequis de `check` (dégradation + `assumeFalse`).
 
 *US-2 livré S-172* : port `SpeechRecognizer` + adapter `CliSpeechRecognizer` +
@@ -69,6 +70,13 @@ dur ; ASR jamais prérequis de `check` (dégradation + `assumeFalse`).
 tâche `verifyCapsuleVoice` (opt-in, rapport JSON, dégradé si ASR absent, strict) ;
 `VoiceConfig` 4 sources ; BDD `capsule_voice_verification.feature` `@voice-verify`
 (4 scénarios fake ASR, runner dédié 35e `cucumberTestVoiceVerification`).
+
+*US-3 livré S-173* : `TakeSelector` (pur, meilleure prise par diapo) +
+`VoiceSelectionJson` + tâche `selectBestVoiceTake` (opt-in `voice.selectBestTake`,
+non destructif, dégradé si ASR absent) ; 2 scénarios BDD + 8 unit + 4 FT.
+
+*US-4 livré S-173* : `VoiceAsrIntegrationTest` (TTS espeak/piper → ASR whisper réels →
+`FidelityScorer`, skip-gardé).
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)

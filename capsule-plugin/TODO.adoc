@@ -13,6 +13,7 @@
 . [ ] **PRT-01** — prononciation « dit / lu » (`PronunciationLexicon`) + cache par contenu (`slide-NN-<key>.mp3`) — intrusif (`TtsManager`/`CapsuleBuildTask` + tests).
 . [ ] **PRT-02** — QC voix par ASR (EPIC **`CAP-QC-VOICE`** 2/5 : port `SpeechRecognizer` + tâche `verifyCapsuleVoice` livrés S-172 ; reste choix de prise US-3).
 . [x] **PRT-07** ✅ S-168 (US-1) — timeline déterministe (`capsule.timeline` pur : frames entières, contigu, `lead`/`tail`/`avance`) + log observable ; 8 unit + `capsule_timeline.feature` (runner 33e) + 1 FT. Câblage capture/sous-titres = US-2.
+. [x] **PRT-08** ✅ S-173 — planches QC visuelles (`capsule.qc` : `QcBoard`/`BeatsBoardPlanner`/`DitMontreBoardPlanner` purs + `QcBoardRenderer` Java2D→PNG) + tâche `renderQcBoards` (opt-in `qc.boardsEnabled`) ; 5 unit + `capsule_qc_boards.feature` (runner 36e) + 3 FT.
 
 '''
 == 🎤 EPIC CAP-QC-VOICE — QC voix par ASR (cadré S-169, doc `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`)
@@ -20,8 +21,8 @@
 . [x] **US-0** ✅ S-169 — cadrage (audit 7 constats + décisions ; 5 alternatives écartées).
 . [x] **US-1** ✅ S-170 — domaine pur `capsule.voice` (`TextNormalizer`/`WordAligner`/`FidelityScorer`/`SnrEstimator`/`VoiceScore`) ; 19 unit + `capsule_voice_quality.feature` (4 `@voice`, runner 34e).
 . [x] **US-2** ✅ S-172 — port `SpeechRecognizer` (CLI whisper) + tâche `verifyCapsuleVoice` (rapport JSON + seuils + strict ; opt-in `voice.verifyEnabled`) + `VoiceConfig` 4 sources ; +29 unit + 4 FT + BDD `capsule_voice_verification.feature` `@voice-verify` (4 scénarios, runner 35e).
-. [ ] **US-3** — choix de prise (régénérer + retenir la meilleure).
-. [ ] **US-4** — dogfooding ASR réel skip-gardé (la BDD `@voice-verify` des fakes est livrée S-172).
+. [x] **US-3** ✅ S-173 — choix de prise (`TakeSelector` pur + `VoiceSelectionJson` + tâche `selectBestVoiceTake`, opt-in `voice.selectBestTake`, non destructif) ; 8 unit + 4 FT + 2 scénarios BDD.
+. [x] **US-4** ✅ S-173 — `VoiceAsrIntegrationTest` (TTS→ASR réels, skip-gardé).
 . [ ] **US-5** *(optionnel)* — karaoké (`capsule.viral`) sur timings ASR.
 . [x] **PRT-11** ✅ CADUQUE — rendu de contenu maison (Java2D / LaTeX serveur) écarté (§ 8 revue).
 
