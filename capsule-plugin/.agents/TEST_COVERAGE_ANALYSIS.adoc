@@ -1,7 +1,25 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-11
-:session: 153 RENAME metier — vocabulaire FPA/formation neutralisé dans l'OSS
+:session: 154 CAP-VIRAL-E2E US-1 — delivery gate manifeste ↔ fichiers
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 11 octobre 2026 (après session 154)
+
+.Modifications session 154 — CAP-VIRAL-E2E US-1 (delivery gate)
+|===
+| Fichier | Changement | Tests ajoutés
+| `viral/ViralCampaignGate.kt` (nouveau) | Objet pur : `verdict(bundles, exists)` → `ViralCampaignGateResult` sealed (`Valid` / `Invalid(missing)`), vérifie `videoFile` (obligatoire) + `thumbnailFile` non-blanc, ordre de bundle. | +8 `ViralCampaignGateTest`
+| `viral/CampaignBundleSerializer.kt` (modifié) | `parseManifest(json)` — inverse exact de `toManifestJson` (round-trip), refuse un JSON non-tableau. | +3 `ViralCampaignGateTest`
+| `viral/ValidateViralCampaignTask.kt` (nouveau) | Tâche Gradle groupe `verification`, `dependsOn renderViralVariants` : lit le manifeste, appelle la gate, warning dégradé / échec strict. | 0 unit (adaptateur) ; +5 functional
+| `CapsuleManager.kt` (modifié) | `registerValidateViralCampaignTask` + convention `manifestFile`. | 0 (configuration)
+| `capsule_viral_gate.feature` + `CapsuleViralGateSteps.kt` + `CapsuleViralGateCucumberRunner.kt` (nouveaux) | 5 scénarios `@viral-gate` (assets présents, vidéo manquante, thumbnail manquant, thumbnail vide non-violation, round-trip). | 5 scénarios (24e runner `cucumberTestViralGate`)
+| `build.gradle.kts` + `.github/workflows/full-tests.yml` (modifiés) | `CucumberTaskSpec("cucumberTestViralGate")` + étape CI. | 0
+|===
+
+*Totaux S-154* : +10 unit, +5 functional, +5 scénarios BDD. Gates locaux
+(Local = Build) : `compileKotlin` + `compileTestKotlin` +
+`compileFunctionalTestKotlin` VERT ; tâche Cucumber enregistrée. Les suites
+s'exécutent en CI (`Test` + `Full Tests`), preuve = run du push.
 
 == Couverture — 11 octobre 2026 (après session 153)
 

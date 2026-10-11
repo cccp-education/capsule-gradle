@@ -1,6 +1,21 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-11
 
+== Session 154 — CAP-VIRAL-E2E US-0/US-1 : delivery gate manifeste ↔ fichiers ✅
+
+* **Nouvel EPIC CAP-VIRAL-E2E** — clore les 3 dettes e2e du moteur viral
+  (diagnostic S-145). **US-0** cadrage : 3 constats (`thumbnailFor` jamais
+  alimenté, `KaraokeSubtitleBuilder` sans appelant prod, `CampaignBundle.videoFile`
+  = chemin construit non vérifié) → `.agents/CADRAGE_EPIC_CAP_VIRAL_E2E.adoc`.
+* **US-1** — domaine pur `capsule.viral.ViralCampaignGate`
+  (`verdict(bundles, exists)` → `ViralCampaignGateResult` sealed `Valid`/`Invalid(missing)`)
+  + `CampaignBundleSerializer.parseManifest` (round-trip) + tâche
+  `ValidateViralCampaignTask` (groupe `verification`, `dependsOn renderViralVariants`,
+  warning dégradé / échec strict) + `CapsuleManager` wiring.
+* Baby-step DDD/TDD/BDD : 10 unit + 5 functional TestKit + 5 scénarios `@viral-gate`
+  (24e runner `cucumberTestViralGate`, câblé `full-tests.yml`). Local = Build,
+  Tests = CI. Zéro bump, zéro publication.
+
 == Session 153 — RENAME metier : vocabulaire FPA/formation neutralisé dans l'OSS ✅
 
 * **Constat** : RENAME-4 (S-135) avait neutralisé `FPA/AFNOR/REAC/SPD/SPG`, mais

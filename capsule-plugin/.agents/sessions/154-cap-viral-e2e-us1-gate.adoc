@@ -1,0 +1,81 @@
+= Session 154 — CAP-VIRAL-E2E US-0/US-1 (delivery gate)
+:session: 154
+:borough: Détroit
+:date: 2026-10-11
+:epic: CAP-VIRAL-E2E
+:us: US-0 (cadrage) + US-1 (gate manifeste ↔ fichiers)
+
+== Mission
+
+Reprise de capsule-gradle après S-153 (RENAME métier soldé). Le `PROMPT_REPRISE`
+S-154 ne listait que des options **bloquées** (CAP-SHORT US-4 dogfooding = accord
+pilote/LLM metered) ou **opportunistes** (optimisation CI, cadrage publication
+0.0.3). Mission retenue : **clore les 3 dettes e2e** du moteur viral, backloquées
+dans le diagnostic S-145 (`BACKLOG.adoc` § CAP-SHORT) — travail de backlog, hors
+besoin de run metered, hors publication.
+
+== US-0 — Cadrage EPIC CAP-VIRAL-E2E
+
+Audit au code (lecture seule) → 3 constats :
+
+* **C1** `GenerateViralCampaignTask` n'alimente pas `thumbnailFor` (défaut
+  `{ "" }`) → `CampaignBundle.thumbnailFile` toujours vide ; `ViralThumbnailPlanner`
+  (US-11) sans appelant prod.
+* **C2** `CampaignBundle.videoFile` = chemin **construit**, jamais vérifié ; le
+  manifeste est écrit **avant** que `renderViralVariants` ne produise les MP4 →
+  aucune gate « manifeste ↔ fichiers réels ».
+* **C3** `KaraokeSubtitleBuilder` (US-12) sans appelant prod.
+
+Découpage : US-1 (gate, 3 pts) · US-2 (thumbnail prod wiring, 3 pts) · US-3
+(karaoké prod wiring, 3 pts). Doc `.agents/CADRAGE_EPIC_CAP_VIRAL_E2E.adoc`.
+
+== US-1 — Delivery gate (manifeste ↔ fichiers)
+
+Baby-step DDD/TDD/BDD, domaine pur d'abord, câblage = adaptateur mince.
+
+=== Domaine (unit)
+
+* `capsule.viral.ViralCampaignGate` (objet pur) : `verdict(bundles, exists)` →
+  `ViralCampaignGateResult` sealed (`Valid` / `Invalid(missing)`). Vérifie chaque
+  `videoFile` (obligatoire) et `thumbnailFile` non-blanc (optionnel — un thumbnail
+  vide est un rendu valide mais plus faible). Agrège les manques en ordre de bundle.
+* `CampaignBundleSerializer.parseManifest(json)` — inverse exact de
+  `toManifestJson` (round-trip) ; refuse un JSON non-tableau (fail-fast).
+* `ViralCampaignGateTest` : 10 tests (valid, missing video, missing thumbnail,
+  blank thumbnail ignoré, agrégation ordonnée, campagne vide, invariant `Invalid`,
+  round-trip 2 bundles, manifeste vide, non-tableau rejeté).
+
+=== Câblage (functional)
+
+* `ValidateViralCampaignTask` (groupe `verification`, `dependsOn
+  renderViralVariants`) : lit `viral-campaign.json`, reconstruit les bundles,
+  appelle la gate. Manifeste absent/malformé → warning ou échec en strict ;
+  asset manquant → warning (dégradé) ou échec (strict).
+* `CapsuleManager.registerValidateViralCampaignTask` + convention
+  `manifestFile` (`build/capsule/viral/viral-campaign.json`, tolérante si absent).
+* `ValidateViralCampaignFunctionalTest` : 5 tests TestKit (registration groupe
+  `verification`, skip par défaut, assets présents → OK, manquant + strict →
+  échec, manquant non-strict → avertissement). Chaîne `renderViralVariants`/
+  `generateViralCampaign` exclue (`-x`) : gate testée en isolation.
+
+=== BDD (cucumber)
+
+* `capsule_viral_gate.feature` `@viral-gate` : 5 scénarios (assets présents,
+  vidéo manquante, thumbnail manquant, thumbnail vide non-violation, round-trip
+  manifeste) — pur domaine, prédicat d'existence simulé.
+* `CapsuleViralGateSteps` (préfixés « campaign gate »/« campaign manifest »,
+  bug S-088) + `CapsuleViralGateCucumberRunner` (pattern S-082).
+* `CucumberTaskSpec("cucumberTestViralGate")` câblé + `full-tests.yml`.
+
+== Gates
+
+* Local = Build (RÈGLE EAGER) : `compileKotlin` + `compileTestKotlin` +
+  `compileFunctionalTestKotlin` **VERTS** ; tâche Cucumber enregistrée
+  (`gradlew tasks --all`). Les suites s'exécutent en CI — preuve = run du push.
+* `rg` vocabulaire métier (`fpa|formation|formateur|pédagogique`) dans `src/` = 0.
+* Zéro secret. Zéro bump. Zéro publication.
+
+== Reste
+
+* **CAP-VIRAL-E2E US-2** (thumbnail prod) puis **US-3** (karaoké prod).
+* CAP-SHORT US-4 (dogfooding, pilot-only) ; publication `0.0.3` (pilot-only).

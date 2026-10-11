@@ -39,6 +39,36 @@ object CampaignBundleSerializer {
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(array)
     }
 
+    /**
+     * Parses the `viral-campaign.json` manifest written by [toManifestJson] back
+     * into its [CampaignBundle]s — the exact inverse of the manifest writer
+     * (CAP-VIRAL-E2E US-1). The delivery gate ([ViralCampaignGate]) consumes the
+     * reconstructed bundles to verify the referenced assets exist.
+     *
+     * @throws IllegalArgumentException when [json] is not a JSON array.
+     */
+    fun parseManifest(json: String): List<CampaignBundle> {
+        val root = mapper.readTree(json)
+        require(root.isArray) { "viral-campaign.json must be a JSON array, got: ${root.nodeType}" }
+        return root.map { node ->
+            val metadata = node.get("metadata")
+            CampaignBundle(
+                language = node.get("language")?.asText().orEmpty(),
+                platform = ViralPlatform.fromString(node.get("platform")?.asText().orEmpty()),
+                videoFile = node.get("videoFile")?.asText().orEmpty(),
+                thumbnailFile = node.get("thumbnailFile")?.asText().orEmpty(),
+                metadata = MarketCopy(
+                    language = node.get("language")?.asText().orEmpty(),
+                    platform = ViralPlatform.fromString(node.get("platform")?.asText().orEmpty()),
+                    hook = metadata?.get("hook")?.asText().orEmpty(),
+                    title = metadata?.get("title")?.asText().orEmpty(),
+                    caption = metadata?.get("caption")?.asText().orEmpty(),
+                    hashtags = metadata?.get("hashtags")?.map { it.asText() } ?: emptyList(),
+                ),
+            )
+        }
+    }
+
     /** Builds the JSON object node for one [bundle] (shared by both writers). */
     private fun bundleNode(bundle: CampaignBundle): ObjectNode {
         val root: ObjectNode = mapper.createObjectNode()

@@ -1,51 +1,57 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 153
+:session: 155
 :borough: Détroit
-:session_precedente: 152 — CAP-CONTEXT US-4 : `Capsule.jsx` sur tokens du brand book
+:session_precedente: 154 — CAP-VIRAL-E2E US-0/US-1 : delivery gate manifeste ↔ fichiers
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-152 — CAP-CONTEXT US-4 (clôture 4/4)
+=== S-154 — CAP-VIRAL-E2E US-0 + US-1 (delivery gate)
 
-- `Capsule.jsx` lit `var(--capsule-background, <repli>)` (fond) et
-  `var(--accent-color, <repli>)` (barre de progression) au lieu du
-  `PAGE_BACKGROUND` hardcodé. Tokens injectés par `ViralDeckBuilder` (US-2).
-- Garde ressource `CapsuleThemeTemplateTest` (3 tests). **CAP-CONTEXT 4/4 TERMINÉ**.
-- Rapport : `.agents/sessions/152-cap-context-us4-capsule-tokens.adoc`.
+- Nouvel EPIC **CAP-VIRAL-E2E** pour clore les 3 dettes e2e du moteur viral
+  (diagnostic S-145) : thumbnail/karaoké sans usage prod, gate manifeste ↔
+  fichiers manquante.
+- **US-0** cadrage : `.agents/CADRAGE_EPIC_CAP_VIRAL_E2E.adoc`.
+- **US-1** livré : `capsule.viral.ViralCampaignGate` (objet pur) +
+  `CampaignBundleSerializer.parseManifest` (round-trip) + tâche
+  `validateViralCampaign` (groupe `verification`, `dependsOn renderViralVariants`,
+  warning dégradé / échec strict) + `CapsuleManager` wiring. 10 unit +
+  5 functional + 5 scénarios BDD `@viral-gate` (24e runner `cucumberTestViralGate`).
+- Rapport : `.agents/sessions/154-cap-viral-e2e-us1-gate.adoc`.
 
-=== S-151 / S-146→S-150 (contexte)
+=== S-153 (contexte)
 
-- Publication **0.0.2** (local + Central) + consommateurs (racine + workspace-bom 0.0.75).
-- CAP-SHORT : deck (US-1a), orchestration (US-1b), time-fit (US-2), batch (US-3),
-  BDD rendu réel (US-5).
+- RENAME métier SOLDÉ : garde `OssVocabularyGuardTest` + 24 fichiers `src/` +
+  13 docs neutralisés. `rg` = 0.
 
-== Mission Session 153 — priorités
+== Mission Session 155 — priorités
 
-1. **Maintenance RENAME** — résidus métier `pédagogique/formation` dans l'OSS :
-   `build.gradle.kts` (description « capsules video pedagogiques »), `AGENT.adoc`,
-   `doc/CAPSULE_ARCHITECTURE.adoc`, `Capsule.jsx` KDoc (dans le jar),
-   `viral/FileMarketCopySource.kt` KDoc (`#fpa`/`#formation`), fixtures de test.
-   → neutraliser vers « capsule vidéo » générique (`#content`). ~1 pt.
-   **Attention** : re-générer un bump/publication si la description POM change
-   (`build.gradle.kts` name/description) — sinon différer la publication.
-2. **CAP-SHORT US-4** (dogfooding viral réel) = **accord pilote** (run LLM metered).
+1. **CAP-VIRAL-E2E US-2 — thumbnail prod wiring** : produire
+   `<variant.id>-thumb.png` par variante (`ViralThumbnailPlanner` + carte HTML /
+   socle capture) et alimenter `thumbnailFor` dans `GenerateViralCampaignTask`
+   → `CampaignBundle.thumbnailFile` pointe l'asset réel (que la gate US-1 vérifie).
+2. **CAP-VIRAL-E2E US-3 — karaoké prod wiring** : `.ass` mot-à-mot par variante
+   via `KaraokeSubtitleBuilder`.
+3. À défaut : CAP-SHORT US-4 (dogfooding viral réel = **accord pilote**, run LLM
+   metered) ; optimisation CI (optionnel) ; cadrage release `0.0.3` (accord pilote).
 
 == Points d'attention
 
-* **Local = Build, Tests = CI** : `compileKotlin`/`compileTestKotlin` seulement.
-  Le vert de la CI (GitHub Actions) est la preuve.
-* **Publication** : `version = libs.plugins.capsule.get().version` ; `0.0.2` sur
-  Central. Un futur bump = éditer `[versions].capsule` + `publishToMavenLocal` +
-  `publishAggregationToCentralPortal --no-daemon` (+ consommateurs).
-* **English only** : le RENAME vise justement les littéraux français du code/docs.
-* **CAP-CONTEXT** TERMINÉ 4/4 ; **CAP-SHORT** 5/6 + dogfooding.
+* **Local = Build, Tests = CI** : `compileKotlin`/`compileTestKotlin`/
+  `compileFunctionalTestKotlin` seulement. Le vert de la CI est la preuve.
+* **Publication** : version `0.0.2` sur Central. Un bump = éditer
+  `[versions].capsule` + `publishToMavenLocal` + `publishAggregationToCentralPortal
+  --no-daemon` (+ consommateurs racine + `workspace-bom`). **Accord pilote requis.**
+* **English only** : garde `OssVocabularyGuardTest` (toute la surface `src/` +
+  description POM).
 * **Sessions concurrentes** : `git status` à l'ouverture (drift gouvernance).
-* Baby-step DDD/TDD/BDD, RED → GREEN → REFACTOR. Tout nouveau feature cucumber =
-  runner dédié (S-082) + steps préfixés (S-088) + câblage `full-tests.yml`.
+* Baby-step DDD/TDD/BDD ; tout nouveau feature cucumber = runner dédié (S-082) +
+  steps préfixés (S-088) + câblage `full-tests.yml`.
 * Un test nécessitant un binaire doit **skipp** (pending) s'il manque (S-269).
+* Viral = socle FFmpeg (`ViralCaptureStrategy` force `SCREENSHOT`).
 
 == Rappels
 
-* GroupId : `education.cccp` ; Plugin ID : `education.cccp.capsule` ; version **0.0.2** (Central).
-* CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **5/6 + dogfooding**.
+* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.2 (Central).
+* CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **5/6** ; CAP-VIRAL-E2E **1/3**.
+* RENAME métier **SOLDÉ** (S-153) — délivré dans la prochaine release `0.0.3`.

@@ -1,0 +1,101 @@
+= CADRAGE — EPIC CAP-VIRAL-E2E (Détroit / capsule-gradle)
+:session: 154
+:date: 2026-10-11
+
+== Objectif
+
+Clore les **3 dettes e2e** restantes du moteur viral (diagnostic S-145,
+`BACKLOG.adoc` § CAP-SHORT) : le domaine viral existe (CAP-VIRAL 14/14,
+CAP-SHORT 5/6) mais trois briques sont **sans usage en production**.
+
+L'EPIC ne modifie pas le domaine CAP-VIRAL : il **branche** la production là où
+le domaine est déjà complet, pour que le livrable (`CampaignBundle` + MP4
+verticaux + assets) soit **cohérent avec lui-même**.
+
+== Constats (audit au code, S-154)
+
+[cols="1,3,1", options="header"]
+|===
+| # | Constat | Preuve
+
+| C1
+| `GenerateViralCampaignTask` assemble les bundles **sans** passer `thumbnailFor`
+   → le défaut `{ "" }` s'applique → `CampaignBundle.thumbnailFile` **toujours vide**.
+   `ViralThumbnailPlanner` (US-11) existe mais **aucun appelant prod**.
+| `GenerateViralCampaignTask.kt:163-169`, `ViralCampaignAssembler.kt:42`
+
+| C2
+| `CampaignBundle.videoFile` porte un **chemin construit**, jamais un fichier
+   vérifié : `generateViralCampaign` écrit le manifeste **avant** que
+   `renderViralVariants` ne produise les MP4. Aucune **gate** ne vérifie que le
+   manifeste référence des fichiers **réels**.
+| `GenerateViralCampaignTask.kt:168`, `RenderViralVariantsTask.kt`
+
+| C3
+| `KaraokeSubtitleBuilder` (US-12) existe mais **aucun appelant prod** : les
+   sous-titres stylés mot-à-mot ne sont jamais produits.
+| `KaraokeSubtitleBuilder.kt`, `grep` = 0 appelant
+|===
+
+== Décisions
+
+. **Domaine pur d'abord** : chaque US livre un objet pur testable (unit) avant
+  tout câblage Gradle ; le câblage est un **adaptateur mince** (pattern maison).
+. **C1 — gate manifeste ↔ fichiers** (US-1) : nouvel objet pur
+  `ViralCampaignGate` + parseur `CampaignBundleSerializer.parseManifest` (round-trip)
+  + tâche `validateViralCampaign` (groupe `verification`, `dependsOn
+  renderViralVariants`). Vérifie que chaque `videoFile` (et `thumbnailFile`
+  non-blanc) existe et est non vide ; échec en mode strict, avertissement sinon
+  (dégradé — cohérent avec `RenderViralVariantsTask`).
+. **C2 — thumbnail prod** (US-2) : `RenderViralVariantsTask` produit
+  `<variant.id>-thumb.png` (via `ViralThumbnailPlanner` + rendu carte) et
+  `GenerateViralCampaignTask` alimente `thumbnailFor` pour que le bundle pointe
+  l'asset réel. `capsule.chapters.CardRenderer` fournit le HTML ; la capture PNG
+  réutilise le socle existant.
+. **C3 — karaoké prod** (US-3) : le pipeline sous-titres viral produit un `.ass`
+  karaoké par variante via `KaraokeSubtitleBuilder` + `formatAssTimestamp`,
+  câblé dans le chemin de rendu.
+. **Économie d'Encre** : aucun re-rendu d'un asset valide ; la gate est
+  cheap (existence + taille).
+. **English only** : code, Gherkin, commentaires.
+. **Publication** : aucune dans cet EPIC sans accord pilote (Règle 2). Le bump
+  `0.0.3` est un candidat distinct (description POM neutralisée S-153).
+
+== Découpage
+
+[cols="1,4,2,1,2", options="header"]
+|===
+| US | Description | Cibles | Pts | Statut
+
+| US-0
+| Cadrage (audit + décisions)
+| ce document
+| 0
+| ✅ S-154
+
+| US-1
+| **Gate manifeste ↔ fichiers** — `ViralCampaignGate` pur + `parseManifest` +
+   tâche `validateViralCampaign`
+| `capsule.viral`, `CapsuleManager`
+| 3
+| ✅ S-154
+
+| US-2
+| **Thumbnail prod wiring** — produire `<id>-thumb.png` + alimenter
+   `thumbnailFor`
+| `capsule.viral`
+| 3
+| 🟡 À FAIRE
+
+| US-3
+| **Karaoké prod wiring** — `.ass` karaoké par variante
+| `capsule.viral`
+| 3
+| 🟡 À FAIRE
+|===
+
+== Hors scope
+
+* `capsule.copy` (écriture copy) — GBL-006, autre borough.
+* Publication Maven Central (`0.0.3`) — accord pilote.
+* Dogfooding viral réel (CAP-SHORT US-4) — run LLM metered, accord pilote.

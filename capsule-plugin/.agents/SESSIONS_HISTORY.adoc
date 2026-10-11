@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-11 (S-153) — RENAME metier (vocabulaire FPA/formation neutralisé dans l'OSS). Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-11 (S-154) — CAP-VIRAL-E2E US-1 (delivery gate manifeste ↔ fichiers). Rapports détaillés dans `.agents/sessions/`.
 
-== 24 dernières sessions (130-153)
+== Sessions récentes (120-154)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 154 | 2026-10-11 | feat+test | **CAP-VIRAL-E2E US-0/US-1 — delivery gate manifeste ↔ fichiers**. Nouvel EPIC pour clore les 3 dettes e2e du moteur viral (diagnostic S-145). **US-0** : cadrage (3 constats — `thumbnailFor` jamais alimenté, `KaraokeSubtitleBuilder` sans appelant prod, `CampaignBundle.videoFile` = chemin construit non vérifié) → `.agents/CADRAGE_EPIC_CAP_VIRAL_E2E.adoc`. **US-1** : domaine pur `capsule.viral.ViralCampaignGate` (`verdict(bundles, exists)` → `ViralCampaignGateResult` sealed `Valid`/`Invalid(missing)`, ordre de bundle, thumbnail blanc non-violation) + `CampaignBundleSerializer.parseManifest` (round-trip, refuse un JSON non-tableau) + tâche `ValidateViralCampaignTask` (groupe `verification`, `dependsOn renderViralVariants`, warning dégradé / échec strict) + `CapsuleManager` wiring. Baby-step DDD/TDD/BDD : `ViralCampaignGateTest` (10 unit) + `ValidateViralCampaignFunctionalTest` (5 functional TestKit, chaîne `-x`) + `capsule_viral_gate.feature` `@viral-gate` (5 scénarios) + runner dédié 24e `cucumberTestViralGate` câblé `full-tests.yml`. Local = Build, Tests = CI. Zéro bump, zéro publication. Rapport `.agents/sessions/154-cap-viral-e2e-us1-gate.adoc`. | 9/10
 
 | 153 | 2026-10-11 | refactor+test | **RENAME metier — neutralisation du vocabulaire FPA/formation dans l'OSS.** Constat : RENAME-4 (S-135) avait neutralisé `FPA/AFNOR/REAC/SPD/SPG`, mais CAP-VIRAL (S-139→142) et CAP-CONTEXT (S-145) ont réintroduit `FPA`/`formation` dans les fixtures, et la description produit restait « capsules vidéo pédagogiques ». Livrable : garde unit `capsule.ci.OssVocabularyGuardTest` (pattern `ProcessMigrationGuardTest` — verrouille la description POM + **toute la surface `src/`**, regex `(?i)\b(fpa\|formation\|formateur)\b\|p[ée]dagogique`, self-exemption) + **24 fichiers `src/`** neutralisés (6 prod/ressource, 18 fixtures/features) + **13 docs** (description, `AGENT.adoc`, `CAPSULE_ARCHITECTURE.adoc`, `README.md` ×10). Vocabulaire : `FPA→Content`, `formateur→développeur`, `formation→contenu`, `#fpa/#formation→#content`, registre `pédagogique→instructional`, `capsule pédagogique→capsule vidéo`, `CAPSULE_PEDAGOGIQUE.adoc→.agents/CAPSULE_VIDEO.adoc` (lien mort réparé). Baby-step DDD/TDD/BDD (RED par constat `rg`, GREEN après sweep). `rg` = 0 ; compiles VERTS ; CI `Test` + `Full Tests`. **Résidu RENAME SOLDÉ.** Rapport `.agents/sessions/153-rename-metier-oss-vocabulary.adoc`. | 9/10
 

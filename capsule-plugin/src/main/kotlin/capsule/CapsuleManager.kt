@@ -34,6 +34,7 @@ class CapsuleManager(private val project: Project) {
         project.registerGenerateCapsuleChaptersTask()
         project.registerGenerateViralCampaignTask()
         project.registerRenderViralVariantsTask()
+        project.registerValidateViralCampaignTask()
     }
 
     private fun Project.registerExtractSpeakerNotesTask() {
@@ -321,6 +322,30 @@ class CapsuleManager(private val project: Project) {
             task.deckFile.convention(
                 project.layout.file(project.provider {
                     val f = project.layout.buildDirectory.file("capsule/viral/viral-deck.html").get().asFile
+                    if (f.exists()) f else null
+                }),
+            )
+        }
+    }
+
+    private fun Project.registerValidateViralCampaignTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
+        val capsuleExt = project.extensions.findByType(CapsuleExtension::class.java)
+        tasks.register("validateViralCampaign", capsule.viral.ValidateViralCampaignTask::class.java) { task ->
+            task.group = CapsuleMessages.get("task.group.verification", lang)
+            task.description = "Verifies that every asset referenced by the viral campaign manifest exists (delivery contract)."
+            task.dependsOn("renderViralVariants")
+            task.viralEnabled.convention(project.provider {
+                capsuleExt?.viralEnabled?.get()
+                    ?: project.findProperty("capsule.viral.enabled")?.toString()?.toBoolean()
+                    ?: false
+            })
+            task.strict.convention(project.provider {
+                capsuleExt?.strictMode?.get() ?: false
+            })
+            task.manifestFile.convention(
+                project.layout.file(project.provider {
+                    val f = project.layout.buildDirectory.file("capsule/viral/viral-campaign.json").get().asFile
                     if (f.exists()) f else null
                 }),
             )

@@ -1,54 +1,57 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 154
+:session: 155
 :borough: Détroit
-:session_precedente: 153 — RENAME metier : neutralisation du vocabulaire FPA/formation dans l'OSS
+:session_precedente: 154 — CAP-VIRAL-E2E US-0/US-1 : delivery gate manifeste ↔ fichiers
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-153 — RENAME metier (résidu OSS soldé)
+=== S-154 — CAP-VIRAL-E2E US-0 + US-1 (delivery gate)
 
-- **Constat** : le RENAME-4 (S-135) avait neutralisé `FPA/AFNOR/REAC/SPD/SPG`,
-  mais CAP-VIRAL (S-139→142) et CAP-CONTEXT (S-145) ont **réintroduit** `FPA`/
-  `formation` dans les fixtures, et la **description produit** restait
-  « capsules vidéo pédagogiques ».
-- **Livrable** : garde unit `capsule.ci.OssVocabularyGuardTest` (verrouille la
-  description POM + toute la surface `src/` via regex
-  `(?i)\b(fpa|formation|formateur)\b|p[ée]dagogique`) + neutralisation de
-  **24 fichiers `src/`** + **13 docs** (description, `AGENT`, archi, README ×10).
-- Vocabulaire cible (aligné RENAME-4) : `FPA→Content`,
-  `formateur→développeur`, `formation→contenu`, `#fpa/#formation→#content`,
-  registre `pédagogique→instructional`, `capsule pédagogique→capsule vidéo`,
-  `CAPSULE_PEDAGOGIQUE.adoc→.agents/CAPSULE_VIDEO.adoc` (lien mort réparé).
-- Rapport : `.agents/sessions/153-rename-metier-oss-vocabulary.adoc`.
-- Preuve : `rg` = 0 ; `compileKotlin`/`compileTestKotlin`/`compileFunctionalTestKotlin`
-  VERTS ; CI `Test` + `Full Tests` du push. Zéro bump, zéro publication.
+- Nouvel EPIC **CAP-VIRAL-E2E** pour clore les 3 dettes e2e du moteur viral
+  (diagnostic S-145) : thumbnail/karaoké sans usage prod, gate manifeste ↔
+  fichiers manquante.
+- **US-0** cadrage : `.agents/CADRAGE_EPIC_CAP_VIRAL_E2E.adoc`.
+- **US-1** livré : `capsule.viral.ViralCampaignGate` (objet pur) +
+  `CampaignBundleSerializer.parseManifest` (round-trip) + tâche
+  `validateViralCampaign` (groupe `verification`, `dependsOn renderViralVariants`,
+  warning dégradé / échec strict) + `CapsuleManager` wiring. 10 unit +
+  5 functional + 5 scénarios BDD `@viral-gate` (24e runner `cucumberTestViralGate`).
+- Rapport : `.agents/sessions/154-cap-viral-e2e-us1-gate.adoc`.
 
-== Mission Session 154 — priorités
+=== S-153 (contexte)
 
-1. **CAP-SHORT US-4 — dogfooding viral réel (P0)** : 1 produit talaria, socle
-   FFmpeg **et** chemin enrichi Remotion+Manim. **Accord pilote requis** (run
-   LLM metered) — ne pas lancer sans accord explicite.
-2. **Optimisation CI** (optionnel) — `Full Tests` ~30 min (20+ runners pure-domain).
-3. À défaut d'accord pilote : **cadrage** d'un EPIC candidat (ex. publication
-   `capsule 0.0.3` portant la description générique + `Capsule.jsx` ; ou un
-   nouveau besoin issu du backlog racine).
+- RENAME métier SOLDÉ : garde `OssVocabularyGuardTest` + 24 fichiers `src/` +
+  13 docs neutralisés. `rg` = 0.
+
+== Mission Session 155 — priorités
+
+1. **CAP-VIRAL-E2E US-2 — thumbnail prod wiring** : produire
+   `<variant.id>-thumb.png` par variante (`ViralThumbnailPlanner` + carte HTML /
+   socle capture) et alimenter `thumbnailFor` dans `GenerateViralCampaignTask`
+   → `CampaignBundle.thumbnailFile` pointe l'asset réel (que la gate US-1 vérifie).
+2. **CAP-VIRAL-E2E US-3 — karaoké prod wiring** : `.ass` mot-à-mot par variante
+   via `KaraokeSubtitleBuilder`.
+3. À défaut : CAP-SHORT US-4 (dogfooding viral réel = **accord pilote**, run LLM
+   metered) ; optimisation CI (optionnel) ; cadrage release `0.0.3` (accord pilote).
 
 == Points d'attention
 
-* **Local = Build, Tests = CI**. Diagnostic des suites non câblées au push =
-  workflow manuel `cucumber-full.yml`.
-* **Garde vocabulaire** : toute nouvelle fixture prod/test doit rester
-  **générique** — `OssVocabularyGuardTest` échoue si `FPA`/`formation`/`formateur`/
-  `pédagogique` réapparaît dans `src/`.
-* **Viral = socle FFmpeg** (`ViralCaptureStrategy` force `SCREENSHOT`).
+* **Local = Build, Tests = CI** : `compileKotlin`/`compileTestKotlin`/
+  `compileFunctionalTestKotlin` seulement. Le vert de la CI est la preuve.
+* **Publication** : version `0.0.2` sur Central. Un bump = éditer
+  `[versions].capsule` + `publishToMavenLocal` + `publishAggregationToCentralPortal
+  --no-daemon` (+ consommateurs racine + `workspace-bom`). **Accord pilote requis.**
+* **English only** : garde `OssVocabularyGuardTest` (toute la surface `src/` +
+  description POM).
 * **Sessions concurrentes** : `git status` à l'ouverture (drift gouvernance).
-* Baby-step DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
-* English only : code, Gherkin, commentaires.
+* Baby-step DDD/TDD/BDD ; tout nouveau feature cucumber = runner dédié (S-082) +
+  steps préfixés (S-088) + câblage `full-tests.yml`.
+* Un test nécessitant un binaire doit **skipp** (pending) s'il manque (S-269).
+* Viral = socle FFmpeg (`ViralCaptureStrategy` force `SCREENSHOT`).
 
 == Rappels
 
-* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.2.
-* CAP-VIRAL **TERMINÉ 14/14** (S-142) ; CAP-CONTEXT **TERMINÉ 4/4** (S-152) ;
-  CAP-SHORT **5/6** (reste US-4 dogfooding).
-* RENAME metier **SOLDÉ** (S-153) — délivré dans la prochaine release 0.0.3.
+* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.2 (Central).
+* CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **5/6** ; CAP-VIRAL-E2E **1/3**.
+* RENAME métier **SOLDÉ** (S-153) — délivré dans la prochaine release `0.0.3`.

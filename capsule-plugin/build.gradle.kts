@@ -280,6 +280,17 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleViralRenderCucumberRunner",
             timeoutMinutes = 5,
         ),
+        // CAP-VIRAL-E2E US-1 — delivery gate: the campaign manifest references assets
+        // by path; the gate verifies they exist before hand-off to the distribution
+        // layer. Dedicated runner pattern S-082; steps prefixed "campaign gate"/"campaign
+        // manifest" (bug S-088 glue capsule.scenarios shared). Pure domain, no ffmpeg/node.
+        CucumberTaskSpec(
+            name = "cucumberTestViralGate",
+            features = listOf("src/test/features/capsule_viral_gate.feature"),
+            tags = listOf("@viral-gate"),
+            runnerClass = "capsule.scenarios.CapsuleViralGateCucumberRunner",
+            timeoutMinutes = 10,
+        ),
     )
 }
 
