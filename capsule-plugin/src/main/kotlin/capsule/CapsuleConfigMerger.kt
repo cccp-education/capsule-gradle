@@ -45,6 +45,7 @@ object CapsuleConfigMerger {
             strictMode = mergeStrictModeConfig(envConfig.strictMode, propertiesConfig.strictMode, yaml?.strictMode, cliParams),
             context = mergeContextConfig(envConfig.context, propertiesConfig.context, yaml?.context, cliParams),
             validation = mergeValidationConfig(envConfig.validation, propertiesConfig.validation, yaml?.validation, cliParams),
+            qc = mergeQcConfig(envConfig.qc, propertiesConfig.qc, yaml?.qc, cliParams),
             audioPost = mergeAudioPostConfig(envConfig.audioPost, propertiesConfig.audioPost, yaml?.audioPost, cliParams),
             transcript = mergeTranscriptConfig(envConfig.transcript, propertiesConfig.transcript, yaml?.transcript, cliParams),
             remotion = mergeRemotionConfig(envConfig.remotion, propertiesConfig.remotion, yaml?.remotion, cliParams),
@@ -156,6 +157,10 @@ object CapsuleConfigMerger {
                 durationEnabled = env["CAPSULE_VALIDATION_DURATION_ENABLED"]?.toBoolean() ?: false,
                 toleranceSecs = env["CAPSULE_VALIDATION_TOLERANCE_SECS"]?.toDoubleOrNull() ?: 2.0,
                 integrityEnabled = env["CAPSULE_VALIDATION_INTEGRITY_ENABLED"]?.toBoolean() ?: false
+            ),
+            qc = QcConfig(
+                preflightEnabled = env["CAPSULE_QC_PREFLIGHT_ENABLED"]?.toBoolean() ?: false,
+                maxNoteChars = env["CAPSULE_QC_MAX_NOTE_CHARS"]?.toIntOrNull() ?: 500
             ),
             audioPost = AudioPostConfig(
                 bgmEnabled = env["CAPSULE_AUDIO_POST_BGM_ENABLED"]?.toBoolean() ?: false,
@@ -269,6 +274,10 @@ object CapsuleConfigMerger {
                 durationEnabled = props["capsule.validation.durationEnabled"]?.toBoolean() ?: false,
                 toleranceSecs = props["capsule.validation.toleranceSecs"]?.toDoubleOrNull() ?: 2.0,
                 integrityEnabled = props["capsule.validation.integrityEnabled"]?.toBoolean() ?: false
+            ),
+            qc = QcConfig(
+                preflightEnabled = props["capsule.qc.preflightEnabled"]?.toBoolean() ?: false,
+                maxNoteChars = props["capsule.qc.maxNoteChars"]?.toIntOrNull() ?: 500
             ),
             audioPost = AudioPostConfig(
                 bgmEnabled = props["capsule.audioPost.bgmEnabled"]?.toBoolean() ?: false,
@@ -406,6 +415,13 @@ object CapsuleConfigMerger {
             durationEnabled = mergeBoolean(cli, "validation.durationEnabled", yaml?.durationEnabled, props.durationEnabled),
             toleranceSecs = mergeDouble(cli, "validation.toleranceSecs", yaml?.toleranceSecs, props.toleranceSecs),
             integrityEnabled = mergeBoolean(cli, "validation.integrityEnabled", yaml?.integrityEnabled, props.integrityEnabled)
+        )
+    }
+
+    private fun mergeQcConfig(env: QcConfig, props: QcConfig, yaml: QcConfig?, cli: Map<String, Any?>): QcConfig {
+        return QcConfig(
+            preflightEnabled = mergeBoolean(cli, "qc.preflightEnabled", yaml?.preflightEnabled, props.preflightEnabled),
+            maxNoteChars = mergeInt(cli, "qc.maxNoteChars", yaml?.maxNoteChars, props.maxNoteChars)
         )
     }
 

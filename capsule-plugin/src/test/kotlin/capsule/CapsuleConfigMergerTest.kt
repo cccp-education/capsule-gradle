@@ -520,6 +520,19 @@ class CapsuleConfigMergerTest {
     }
 
     @Test
+    fun `qc preflight defaults off and reads from CLI`() {
+        val projectDir = File(tempDir, "qc-preflight").also { it.mkdirs() }
+        val default = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
+        assertEquals(false, default.qc.preflightEnabled, "qc.preflightEnabled should default to false")
+        assertEquals(500, default.qc.maxNoteChars, "qc.maxNoteChars should default to 500")
+        val enabled = CapsuleConfigMerger.merge(
+            projectDir, CapsuleConfig(), mapOf("qc.preflightEnabled" to "true", "qc.maxNoteChars" to "200")
+        )
+        assertEquals(true, enabled.qc.preflightEnabled, "CLI qc.preflightEnabled should be honored")
+        assertEquals(200, enabled.qc.maxNoteChars, "CLI qc.maxNoteChars should be honored")
+    }
+
+    @Test
     fun `merge CLI string integer param is parsed as Int`() {
         val projectDir = File(tempDir, "merge-cli-str-int").also { it.mkdirs() }
         val yamlConfig = CapsuleConfig()

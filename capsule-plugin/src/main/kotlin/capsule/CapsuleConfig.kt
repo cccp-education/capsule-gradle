@@ -25,6 +25,7 @@ data class CapsuleConfig(
     val strictMode: StrictModeConfig = StrictModeConfig(),
     val context: ContextConfig = ContextConfig(),
     val validation: ValidationConfig = ValidationConfig(),
+    val qc: QcConfig = QcConfig(),
     val audioPost: AudioPostConfig = AudioPostConfig(),
     val transcript: TranscriptConfig = TranscriptConfig(),
     val remotion: RemotionConfig = RemotionConfig(),
@@ -32,6 +33,23 @@ data class CapsuleConfig(
     val preview: PreviewConfig = PreviewConfig(),
     val chapters: ChaptersConfig = ChaptersConfig(),
     val viral: ViralConfig = ViralConfig()
+)
+
+/**
+ * Configuration section for content pre-flight (PRT-05).
+ *
+ * When [preflightEnabled] is true, `preflightCapsuleContent` runs a structural
+ * pass over the capsule scripts BEFORE any metered TTS synthesis: over-long
+ * notes and duplicated notes warn, forbidden forms fail. Default is disabled to
+ * preserve backward compatibility.
+ *
+ * @param preflightEnabled `true` to run the pre-flight (default `false`).
+ * @param maxNoteChars     maximum characters per speaker note before a warning
+ *        (default `500`).
+ */
+data class QcConfig(
+    val preflightEnabled: Boolean = false,
+    val maxNoteChars: Int = 500,
 )
 
 data class InputConfig(

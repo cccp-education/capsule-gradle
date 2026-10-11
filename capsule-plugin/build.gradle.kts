@@ -149,6 +149,15 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleRenderSignatureCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // PRT-05 — content pre-flight before metered TTS (structural checks).
+        // Pure-domain runner — no Playwright/FFmpeg (pattern S-082).
+        CucumberTaskSpec(
+            name = "cucumberTestContentPreflight",
+            features = listOf("src/test/features/capsule_content_preflight.feature"),
+            tags = listOf("@qc", "@preflight"),
+            runnerClass = "capsule.scenarios.CapsuleContentPreflightCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // CAP-AUDIO US-4 — audio post-production (BGM + loudness EBU R128 + ducking).
         // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
         // Uses a NoOp processor (no real FFmpeg); validates applyAudioPostIfEnabled

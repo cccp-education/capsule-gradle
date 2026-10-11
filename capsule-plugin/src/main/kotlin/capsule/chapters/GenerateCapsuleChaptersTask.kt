@@ -106,6 +106,22 @@ open class GenerateCapsuleChaptersTask : DefaultTask() {
             cardRenderer.renderOutroCard(outroText.get(), outroFile)
             logger.lifecycle("CAPSULE CHAPTERS → ${outroFile.name} (outro card)")
         }
+
+        // PRT-10 — publication artefacts: YouTube chapter text + a description
+        // free of the characters YouTube rejects.
+        val chaptersTxt = java.io.File(outDir, "chapters.txt")
+        chaptersTxt.writeText(YouTubeChaptersFormatter.format(chapters))
+        val youtubeLines = YouTubeChaptersFormatter.format(chapters).trim().lines().filter { it.isNotBlank() }
+        val description = capsule.publish.VideoDescriptionBuilder.build(
+            title = introText.getOrElse("").ifBlank { "Capsule" },
+            chapterLines = youtubeLines,
+        )
+        java.io.File(outDir, "description.txt").writeText(description.text)
+        logger.lifecycle(
+            "CAPSULE CHAPTERS → chapters.txt ({} line(s)) + description.txt ({} forbidden char(s) stripped)",
+            youtubeLines.size,
+            description.strippedForbiddenChars,
+        )
     }
 
     private fun resolveChapterMarker(): ChapterMarker {

@@ -211,6 +211,17 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val integrityValidationEnabled: Property<Boolean> = objects.property(Boolean::class.java)
         .convention(false)
 
+    /**
+     * PRT-05 — `true` to run the content pre-flight (`preflightCapsuleContent`)
+     * before any metered TTS synthesis. Defaults to false (opt-in).
+     */
+    val qcPreflightEnabled: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
+    /** PRT-05 — maximum characters per speaker note before a `long-note` warning. Defaults to 500. */
+    val qcMaxNoteChars: Property<Int> = objects.property(Int::class.java)
+        .convention(500)
+
     /** CAP-AUDIO — `true` to mix background music under the voice track. Defaults to false (opt-in). */
     val audioPostBgmEnabled: Property<Boolean> = objects.property(Boolean::class.java)
         .convention(false)
@@ -354,6 +365,8 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         durationValidationEnabled = false,
         durationValidationToleranceSecs = 2.0,
         integrityValidationEnabled = false,
+        qcPreflightEnabled = false,
+        qcMaxNoteChars = 500,
         audioPostBgmEnabled = false,
         audioPostBgmFile = "",
         audioPostBgmLevel = -18.0,
@@ -426,6 +439,8 @@ data class CapsuleConventions(
     val durationValidationEnabled: Boolean,
     val durationValidationToleranceSecs: Double,
     val integrityValidationEnabled: Boolean,
+    val qcPreflightEnabled: Boolean,
+    val qcMaxNoteChars: Int,
     val audioPostBgmEnabled: Boolean,
     val audioPostBgmFile: String,
     val audioPostBgmLevel: Double,

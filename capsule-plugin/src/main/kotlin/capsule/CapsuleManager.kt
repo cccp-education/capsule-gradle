@@ -31,6 +31,7 @@ class CapsuleManager(private val project: Project) {
         project.registerGeneratePodcastTask()
         project.registerDistributeCapsuleVideoTask()
         project.registerValidateCapsuleVideoDurationTask()
+        project.registerPreflightCapsuleContentTask()
         project.registerGenerateCapsuleChaptersTask()
         project.registerGenerateViralCampaignTask()
         project.registerRenderViralVariantsTask()
@@ -105,6 +106,28 @@ class CapsuleManager(private val project: Project) {
             task.versioning.set(merged.output.versioning.name)
             task.versionPrefix.set(merged.output.versionPrefix)
             task.format.set(merged.output.format.name)
+        }
+    }
+
+    private fun Project.registerPreflightCapsuleContentTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
+        val capsuleExt = project.extensions.findByType(CapsuleExtension::class.java)
+        tasks.register("preflightCapsuleContent", capsule.qc.PreflightCapsuleContentTask::class.java) { task ->
+            task.group = CapsuleMessages.get("task.group.verification", lang)
+            task.description = "Pre-flight the capsule scripts before any metered TTS synthesis (PRT-05)."
+            task.enabled.set(project.provider {
+                capsuleExt?.qcPreflightEnabled?.get()
+                    ?: project.findProperty("capsule.qc.preflightEnabled")?.toString()?.toBoolean()
+                    ?: false
+            })
+            task.maxNoteChars.set(project.provider {
+                capsuleExt?.qcMaxNoteChars?.get()
+                    ?: project.findProperty("capsule.qc.maxNoteChars")?.toString()?.toIntOrNull()
+                    ?: 500
+            })
+            task.strict.set(project.provider {
+                capsuleExt?.strictMode?.get() ?: false
+            })
         }
     }
 

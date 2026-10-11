@@ -1,0 +1,90 @@
+= Session 167 — CAP-QC : portage prepa → capsule (PRT-05, PRT-10)
+:date: 2026-10-11
+:type: feat+test (portage cross-dépôt, suite)
+:sujet: PRT-05 pré-vol contenu avant TTS + PRT-10 publication (chapitres YouTube texte, description)
+:statut: CLÔTURÉE
+
+== Contexte
+
+Suite de l'EPIC **CAP-QC** (portage utilitaire `prepa_electricite_complet` → capsule),
+ouvert au S-166 (PRT-04/03/09/06 ✅). Méthode inchangée : baby-step DDD/TDD/BDD strict
+(unit → fonctionnel → cucumber) ; toute option nouvelle **opt-in (défaut false)** et câblée
+sur les 4 sources de config. Local = Build, Tests = CI.
+
+== Livrables
+
+=== PRT-05 — Pré-vol contenu avant dépense TTS
+
+Porté de `prepa_electricite_complet/qc_script.py` : refuser une scène incohérente **avant**
+tout appel TTS facturé.
+
+* **Pur** : `capsule.qc.ContentPreflight` — `Severity` (ERROR/WARNING), `PreflightFinding`,
+  `ForbiddenForm(pattern, reason)`, `PreflightRules(maxNoteChars=500, forbidden=[markdown])`,
+  `ContentPreflight.check(slides, rules)`. Contrôles : note trop longue (WARNING), note
+  dupliquée insensible casse/espaces (WARNING), forme interdite (ERROR). (`SlideSegment`
+  garantit déjà titre et note non vides → pas de contrôle `blank`.)
+* **Tâche** : `preflightCapsuleContent` (groupe `verification`), opt-in
+  `qc.preflightEnabled` ; lit les scripts (`CapsuleManager.resolveScriptDir`/`readScriptFiles`),
+  log les findings, échoue sur ERROR (et sur WARNING en `strictMode`). Config `QcConfig`
+  (`qc.preflightEnabled`, `qc.maxNoteChars=500`) sur les 4 sources + push.
+* **Tests** : `ContentPreflightTest` (8 unit) + `PreflightCapsuleContentFunctionalTest`
+  (3 fonctionnels : défaut skip, clean OK, forbidden échoue) + `capsule_content_preflight.feature`
+  (3 scénarios `@qc @preflight`, runner dédié 32e `cucumberTestContentPreflight`) +
+  test merger.
+
+=== PRT-10 — Publication : chapitres YouTube texte + description
+
+Porté de `prepa_electricite_complet/subs.py` (`chapitres.txt`) et `description.py` (garde
+chevrons).
+
+* **Pur** : `capsule.chapters.YouTubeChaptersFormatter` (`format(entries)` → lignes
+  `M:SS Titre` / `H:MM:SS Titre` ; `formatTimestamp`) + `capsule.publish.VideoDescriptionBuilder`
+  (`build(title, chapterLines, tags, header)` → `Result(text, strippedForbiddenChars)`,
+  retire les caractères que YouTube refuse `<`/`>`).
+* **Câblage** : `GenerateCapsuleChaptersTask` écrit désormais `chapters.txt` (format
+  YouTube) et `description.txt` (titre + chapitres + tags, sans caractères interdits) à
+  côté de `chapters.json` et des cartes.
+* **Tests** : `YouTubeChaptersFormatterTest` (4 unit) + `VideoDescriptionBuilderTest`
+  (4 unit) + scénarios ajoutés à `capsule_chapters.feature` (runner `@chapters` existant :
+  `chapters.txt` au format YouTube + `description.txt` sans `<`/`>`).
+* *Réserves* : la **miniature** du chemin pédagogique n'est pas portée (le viral possède
+  déjà `ViralThumbnailBuilder`/`RenderViralThumbnailsTask`) — item optionnel ultérieur.
+
+== Vérifications (Local = Build)
+
+* `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` + `validatePlugins`
+  **VERTS**.
+* Nouveau runner dédié `cucumberTestContentPreflight` (32e) ; scénarios chapters étendus
+  couverts par le runner `@chapters` existant + l'agrégé.
+* Aucune collision de step ; zéro secret ; zéro Python. Zéro bump, zéro publication.
+
+== Fichiers
+
+*Cœurs purs créés* : `qc/ContentPreflight.kt`, `chapters/YouTubeChaptersFormatter.kt`,
+`publish/VideoDescriptionBuilder.kt`. *Tâche créée* : `qc/PreflightCapsuleContentTask.kt`.
+
+*Câblage modifié* : `chapters/GenerateCapsuleChaptersTask` (artefacts publication),
+`CapsuleConfig.kt` (+`QcConfig`), `CapsuleModels.kt` (+2 props, +2 conventions),
+`CapsuleConfigMerger.kt` (+env/props/merge qc), `CapsulePlugin.kt` (+push),
+`CapsuleManager.kt` (+registration).
+
+*Tests créés/étendus* : `qc/ContentPreflightTest`, `chapters/YouTubeChaptersFormatterTest`,
+`publish/VideoDescriptionBuilderTest`, `qc/PreflightCapsuleContentFunctionalTest`,
+`capsule_content_preflight.feature` + `CapsuleContentPreflightSteps` +
+`CapsuleContentPreflightCucumberRunner`, `capsule_chapters.feature` +
+`CapsuleChaptersSteps` (2 scénarios) + `CapsuleConfigMergerTest` (qc).
+
+== Suite (EPIC CAP-QC — reste 3/9)
+
+* **PRT-01** — prononciation « dit / lu » (`PronunciationLexicon`) + cache par contenu
+  (nom de fichier TTS `slide-NN-<key>.mp3`) — **intrusif** (`TtsManager`/`CapsuleBuildTask`
+  + tests).
+* **PRT-02** — QC voix par ASR (EPIC séparé `CAP-QC-VOICE` : port `SpeechRecognizer`).
+* **PRT-07** — timeline déterministe (`capsule.timeline`, frames entières + avance
+  image/voix) — touche la capture, EPIC.
+
+== Leçon
+
+Deux items « publication/porte » sans outil externe portés en une session, toujours en
+opt-in + pur + testés ; l'usage d'un `Result` explicite (caractères retirés comptés) rend
+la contrainte YouTube observable et testable.

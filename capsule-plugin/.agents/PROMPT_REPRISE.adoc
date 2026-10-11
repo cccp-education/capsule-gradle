@@ -1,62 +1,53 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 167
+:session: 168
 :borough: Détroit
-:session_precedente: 166 — CAP-QC : portage prepa → capsule (PRT-04, PRT-03, PRT-09, PRT-06)
+:session_precedente: 167 — CAP-QC : PRT-05 (pré-vol contenu) + PRT-10 (publication)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-166 — CAP-QC (portage utilitaire `prepa` → capsule), 4 items livrés
+=== S-167 — CAP-QC (portage utilitaire `prepa` → capsule), 2 items de plus
 
-- EPIC **CAP-QC** ouvert : portage de l'**utilitaire hors rendu** de
-  `prepa_electricite_complet` (`lion92`), jamais le contenu ni un moteur de rendu (PRT-11
-  CADUQUE). Revue source : `foundry/private/prepa_electricite_complet/code_review.adoc`
-  (`:revision: c`).
-- **PRT-04** intégrité vidéo par **décodage** — `VideoIntegrityChecker` +
-  `VideoIntegrityProbe` ; gate **opt-in** `validation.integrityEnabled` dans
-  `validateCapsuleVideoDuration`.
-- **PRT-03** sous-titres par **beat/cartons** — `SubtitleTextNormalizer` +
-  `SubtitleCartoner` + `SubtitleTimingDistributor` + `SubtitleTimingCalculator.calculateFromCartons` ;
-  **opt-in** `capture.subtitleCartonsEnabled` / `capture.subtitleMaxChars`.
-- **PRT-09** loudness **2 passes** — `LoudnormMeasurement` + `LoudnormAnalysisParser` +
-  `AudioPostCommand.buildTwoPass*` ; **opt-in** `audioPost.twoPassLoudnessEnabled`
-  (single-input, no BGM).
-- **PRT-06** **signature de rendu** — `RenderSignature` ; sidecar `<video>.sig` ;
-  **réutilisation opt-in** `capture.reuseCapturedVideoEnabled` (signature identique **ET**
-  décode OK, PRT-04).
+- **PRT-05** pré-vol contenu avant TTS : `capsule.qc.ContentPreflight` (pur) + tâche
+  `preflightCapsuleContent` (groupe `verification`) ; opt-in `qc.preflightEnabled` /
+  `qc.maxNoteChars` ; note trop longue et dupliquée = warning, forme interdite = error.
+- **PRT-10** publication : `capsule.chapters.YouTubeChaptersFormatter` +
+  `capsule.publish.VideoDescriptionBuilder` (garde `<`/`>`) ; `GenerateCapsuleChaptersTask`
+  écrit `chapters.txt` + `description.txt` (miniature pédagogique non portée — viral couvre).
 - Baby-step DDD/TDD/BDD (unit → fonctionnel → cucumber). Local = Build, Tests = CI.
-  Rapport `.agents/sessions/166-cap-qc-prt-04-03-09-06.adoc`.
+  Rapport `.agents/sessions/167-cap-qc-prt-05-10.adoc`.
 
-== Mission Session 167 — CAP-QC (suite)
+=== S-166 — CAP-QC (PRT-04/03/09/06). Rapport `.agents/sessions/166-cap-qc-prt-04-03-09-06.adoc`.
 
-1. **PRT-05 — pré-vol contenu avant dépense** (léger, zéro outil externe) : porte
-   structurelle `capsule.qc.ContentPreflight` (pur) appelée **avant** la synthèse TTS
-   (notes vides/dupliquées/trop longues, formes interdites). `StrictModeGuard` décide
-   échec/avertissement.
-2. **PRT-10 — publication** : chapitres **YouTube texte** (`MM:SS Titre`) depuis le
-   domaine `chapters` (JSON aujourd'hui) + `DescriptionBuilder` (garde chevrons `<`/`>`)
-   + `ThumbnailPlanner`. Objets purs + tâche.
-3. **PRT-01 — prononciation « dit / lu » + cache par contenu** (intrusif) : lexique
-   phonétique appliqué à la voix seule, cache indexé sur le **texte dit** → nom de
-   fichier `slide-NN-<key>.mp3`. Touche `TtsManager`/`CapsuleBuildTask` + tests. En fin de
-   vague, avec soin.
-4. **PRT-02 — QC voix par ASR** : EPIC séparé **`CAP-QC-VOICE`** (port `SpeechRecognizer`,
-   Whisper) — à cadrer vu l'effort.
-5. **PRT-07 — timeline déterministe** : domaine pur `capsule.timeline` (frames entières,
-   placement échantillon-exact, avance image/voix) — touche la capture. EPIC.
+== Mission Session 168 — CAP-QC (suite, reste 3/9)
+
+1. **PRT-07 — timeline déterministe** (moyen, sans outil externe) : domaine pur
+   `capsule.timeline` (`Timeline`, `TimelineEntry`, `TimelineBuilder`) — durées **snappées
+   sur la grille d'images**, placement échantillon-exact, avance image/voix
+   (`lead/pause/tail/avance`). Consommé par la capture, les sous-titres (PRT-03) et les
+   chapitres. EPIC. Commencer par le **durée → frames** pur, sans toucher la capture.
+2. **PRT-01 — prononciation « dit / lu » + cache par contenu** (intrusif) : lexique
+   phonétique appliqué à la voix seule, cache indexé sur le **texte dit** → nom de fichier
+   `slide-NN-<key>.mp3`. Touche `TtsManager`/`CapsuleBuildTask` et leurs tests. Mettre à
+   jour `SubtitleTextNormalizer` (déjà prêt : paramètre `reversals`).
+3. **PRT-02 — QC voix par ASR** : EPIC séparé **`CAP-QC-VOICE`** (port `SpeechRecognizer`,
+   fidélité mot-à-mot + souffle + choix de prise) — à cadrer.
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
-* Nouvelle option → `Config` + extension + `CapsuleConventions` + merger (4 sources :
-  DSL/CLI/ENV/gradle.properties) + `pushConfigIntoExtension`, **défaut false** (backward
-  compat, zéro régression).
+* Nouvelle option → `Config` + extension + `CapsuleConventions` + merger (4 sources) +
+  `pushConfigIntoExtension`, **défaut false** (backward compat, zéro régression).
 * English only (`OssVocabularyGuardTest`) ; zéro Python ; zéro secret ; baby-step
   DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
 * La CI agrégée (`cucumberTest`, S-163) exécute automatiquement toute nouvelle feature.
+* Rappel : les tâches consommateur (`preflightCapsuleContent`, etc.) ne s'affichent PAS
+  dans le build du plugin lui-même (il n'applique pas `education.cccp.capsule`) — les
+  valider via une functionalTest `GradleRunner` ou un projet consommateur.
 
 == Rappels
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.4** (Central).
-* CAP-QC : PRT-04 ✅ · PRT-03 ✅ · PRT-09 ✅ · PRT-06 ✅ (S-166) ; PRT-01/02/05/07/10 à faire.
+* CAP-QC : PRT-04 ✅ · PRT-03 ✅ · PRT-09 ✅ · PRT-06 ✅ (S-166) · PRT-05 ✅ · PRT-10 ✅ (S-167) ;
+  reste **PRT-07, PRT-01, PRT-02**.
 * Le portage ne touche **jamais** le contenu du cours (œuvre dérivée) — techniques seules.

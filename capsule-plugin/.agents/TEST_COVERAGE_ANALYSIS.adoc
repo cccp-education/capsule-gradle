@@ -1,7 +1,25 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-11
-:session: 166 CAP-QC (portage prepa → capsule : PRT-04, PRT-03, PRT-09, PRT-06)
+:session: 167 CAP-QC (suite : PRT-05 pré-vol contenu, PRT-10 publication)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 11 octobre 2026 (après session 167)
+
+.EPIC CAP-QC (suite) — PRT-05 + PRT-10
+|===
+| Élément | Changement | Tests
+
+| `qc/ContentPreflight.kt` (créé) | PRT-05 — pré-vol pur (note longue/dupliquée = warning, forme interdite = error) | +8 unit (`ContentPreflightTest`)
+| `qc/PreflightCapsuleContentTask.kt` (créé) | Tâche `preflightCapsuleContent` (opt-in `qc.preflightEnabled`) | +3 fonctionnel (`PreflightCapsuleContentFunctionalTest`)
+| `capsule_content_preflight.feature` (créée) | BDD `@qc @preflight` (3 scénarios) | runner 32e `cucumberTestContentPreflight`
+| `CapsuleConfig.kt` / `CapsuleModels.kt` / `CapsuleConfigMerger.kt` / `CapsulePlugin.kt` | `QcConfig` (preflightEnabled, maxNoteChars) 4 sources + push | +1 test merger
+| `chapters/YouTubeChaptersFormatter.kt` + `publish/VideoDescriptionBuilder.kt` (créés) | PRT-10 — chapitres YouTube texte + description (garde `<`/`>`) | +8 unit (`YouTubeChaptersFormatterTest` 4, `VideoDescriptionBuilderTest` 4)
+| `chapters/GenerateCapsuleChaptersTask.kt` (modifié) | Écrit `chapters.txt` + `description.txt` | `capsule_chapters.feature` étendu (2 assertions, `CapsuleChaptersSteps`)
+|===
+
+*Totaux S-167* : +16 unit + 3 fonctionnel + 1 feature dédiée (runner 32e) + 1 feature
+étendue. `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` +
+`validatePlugins` **VERTS**. Local = Build, Tests = CI. Zéro bump.
 
 == Couverture — 11 octobre 2026 (après session 166)
 

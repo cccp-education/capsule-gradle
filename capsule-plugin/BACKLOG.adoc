@@ -1,9 +1,9 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-11 (S-166 — EPIC CAP-QC : portage prepa → capsule, 4/9 items)
+:last_update: 2026-10-11 (S-167 — EPIC CAP-QC : portage prepa → capsule, 6/9 items)
 
 '''
-== 🔌 BACKLOG ACTIF — CAP-QC 🟡 EN COURS 4/9 (S-166)
+== 🔌 BACKLOG ACTIF — CAP-QC 🟡 EN COURS 6/9 (S-167)
 
 _Portage de l'**utilitaire hors rendu** de `prepa_electricite_complet` (usine Python de
 cours vidéo, `lion92`) vers `capsule`. Revue source :
@@ -23,8 +23,8 @@ nouvelle est **opt-in (défaut false)** et câblée sur les **4 sources** de con
 | PRT-03 | **Sous-titres par beat/cartons** (`SubtitleTextNormalizer` + `SubtitleCartoner` + `SubtitleTimingDistributor` + `calculateFromCartons`) — opt-in `capture.subtitleCartonsEnabled`/`subtitleMaxChars` | `capsule`, `CapsuleVideoTask` | 5 | ✅ S-166
 | PRT-09 | **Loudness 2 passes** mesurée + limiteur (`LoudnormMeasurement` + `LoudnormAnalysisParser` + `AudioPostCommand.buildTwoPass*`) — opt-in `audioPost.twoPassLoudnessEnabled` | `capsule.audio` | 3 | ✅ S-166
 | PRT-06 | **Signature de rendu** (`RenderSignature` + sidecar `.sig`) + réutilisation opt-in `capture.reuseCapturedVideoEnabled` (signature + décode OK) | `capsule`, `CapsuleVideoTask` | 3 | ✅ S-166
-| PRT-05 | **Pré-vol contenu avant TTS** (`ContentPreflight` : notes vides/dupliquées/trop longues, formes interdites) | `capsule.qc` | 3 | 🟡 À FAIRE
-| PRT-10 | **Publication** : chapitres **YouTube texte** (`MM:SS Titre`) + `DescriptionBuilder` (garde chevrons) + `ThumbnailPlanner` | `capsule.chapters` | 3 | 🟡 À FAIRE
+| PRT-05 | **Pré-vol contenu avant TTS** (`ContentPreflight` : note longue/dupliquée = warning, forme interdite = error) | `capsule.qc` | 3 | ✅ S-167
+| PRT-10 | **Publication** : chapitres **YouTube texte** (`MM:SS Titre`) + `VideoDescriptionBuilder` (garde chevrons) — miniature pédagogique non portée (le viral couvre) | `capsule.chapters`, `capsule.publish` | 3 | ✅ S-167
 | PRT-01 | **Prononciation « dit / lu »** + cache indexé sur le **texte dit** (nom `slide-NN-<key>.mp3`) | `capsule.voice`, `TtsManager` | 5 | 🟡 À FAIRE (intrusif)
 | PRT-02 | **QC voix par ASR** (fidélité mot-à-mot + souffle + choix de prise) — EPIC **`CAP-QC-VOICE`** | `capsule.voice` + port `SpeechRecognizer` | 8 | 🟡 À FAIRE (EPIC à part)
 | PRT-07 | **Timeline déterministe** (frames entières, placement échantillon-exact, avance image/voix) | `capsule.timeline` | 5 | 🟡 À FAIRE (EPIC)
@@ -33,8 +33,9 @@ nouvelle est **opt-in (défaut false)** et câblée sur les **4 sources** de con
 | ~~PRT-12/13~~ | Vérification exécutable (principe) / DSL schémas métier | — | — | ✅ hors cœur OSS
 |===
 
-*Total* : 9 items portables — **4 ✅ (S-166)** + **5 🟡 à faire** (PRT-05/10/01/02/07).
-Rapport S-166 : `.agents/sessions/166-cap-qc-prt-04-03-09-06.adoc`.
+*Total* : 9 items portables — **6 ✅ (S-166 + S-167)** + **3 🟡 à faire** (PRT-01/02/07).
+Rapports S-166/S-167 : `.agents/sessions/166-cap-qc-prt-04-03-09-06.adoc`,
+`.agents/sessions/167-cap-qc-prt-05-10.adoc`.
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)

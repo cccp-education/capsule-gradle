@@ -127,6 +127,32 @@ class CapsuleChaptersSteps {
         assertTrue(content.contains("card--outro"), "outro.html should have outro CSS class")
     }
 
+    @Then("a chapters.txt file is generated in YouTube format")
+    fun aChaptersTxtFileIsGeneratedInYouTubeFormat() {
+        val chaptersTxt = File(projectDir!!, "build/capsule/chapters/chapters.txt")
+        assertTrue(
+            chaptersTxt.exists(),
+            "Expected chapters.txt to be generated at: ${chaptersTxt.absolutePath}",
+        )
+        val firstLine = chaptersTxt.readText().trim().lines().first()
+        assertTrue(
+            Regex("""^\d+:\d{2} """).containsMatchIn(firstLine),
+            "First line should be 'M:SS Title', got: $firstLine",
+        )
+    }
+
+    @Then("a description.txt file is generated without forbidden characters")
+    fun aDescriptionTxtFileIsGeneratedWithoutForbiddenCharacters() {
+        val descriptionTxt = File(projectDir!!, "build/capsule/chapters/description.txt")
+        assertTrue(
+            descriptionTxt.exists(),
+            "Expected description.txt to be generated at: ${descriptionTxt.absolutePath}",
+        )
+        val content = descriptionTxt.readText()
+        assertFalse(content.contains('<'), "description.txt must not contain '<': $content")
+        assertFalse(content.contains('>'), "description.txt must not contain '>': $content")
+    }
+
     @Then("a chapters.json file is generated with correct entries")
     fun aChaptersJsonFileIsGeneratedWithCorrectEntries() {
         val chaptersFile = File(projectDir!!, "build/capsule/chapters/chapters.json")

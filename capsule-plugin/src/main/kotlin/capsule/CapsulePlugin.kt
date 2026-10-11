@@ -175,6 +175,12 @@ class CapsulePlugin : Plugin<Project> {
         if (!ext.integrityValidationEnabled.isPresent || ext.integrityValidationEnabled.get() == conventions.integrityValidationEnabled) {
             ext.integrityValidationEnabled.set(config.validation.integrityEnabled)
         }
+        if (!ext.qcPreflightEnabled.isPresent || ext.qcPreflightEnabled.get() == conventions.qcPreflightEnabled) {
+            ext.qcPreflightEnabled.set(config.qc.preflightEnabled)
+        }
+        if (!ext.qcMaxNoteChars.isPresent || ext.qcMaxNoteChars.get() == conventions.qcMaxNoteChars) {
+            ext.qcMaxNoteChars.set(config.qc.maxNoteChars)
+        }
 
         // AudioPost section (CAP-AUDIO)
         if (!ext.audioPostBgmEnabled.isPresent || ext.audioPostBgmEnabled.get() == conventions.audioPostBgmEnabled) {

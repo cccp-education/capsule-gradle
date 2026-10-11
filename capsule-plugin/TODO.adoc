@@ -8,8 +8,8 @@
 . [x] **PRT-03** ✅ S-166 — sous-titres par beat/cartons (`SubtitleTextNormalizer` + `SubtitleCartoner` + `SubtitleTimingDistributor` + `SubtitleTimingCalculator.calculateFromCartons` ; opt-in `capture.subtitleCartonsEnabled`/`subtitleMaxChars`) — ~20 unit + `capsule_subtitles_cartons.feature` (4 `@cartons`, runner 30e).
 . [x] **PRT-09** ✅ S-166 — loudness 2 passes (`LoudnormMeasurement` + `LoudnormAnalysisParser` + `AudioPostCommand.buildTwoPass*` ; opt-in `audioPost.twoPassLoudnessEnabled`, single-input) — 8 unit + 1 FT + `capsule_audio_post.feature` étendu (2 scénarios).
 . [x] **PRT-06** ✅ S-166 — signature de rendu (`RenderSignature` + sidecar `.sig` + réutilisation opt-in `capture.reuseCapturedVideoEnabled`) — 5 unit + 1 FT + `capsule_render_signature.feature` (3 `@signature`, runner 31e).
-. [ ] **PRT-05** — pré-vol contenu avant TTS (`capsule.qc.ContentPreflight` : structure + formes interdites) + BDD.
-. [ ] **PRT-10** — publication : chapitres YouTube texte (`MM:SS Titre`) + `DescriptionBuilder` (garde chevrons) + `ThumbnailPlanner` + BDD.
+. [x] **PRT-05** ✅ S-167 — pré-vol contenu avant TTS (`capsule.qc.ContentPreflight` pur + tâche `preflightCapsuleContent` ; opt-in `qc.preflightEnabled`/`qc.maxNoteChars`) — 8 unit + 3 FT + `capsule_content_preflight.feature` (3 `@qc @preflight`, runner 32e).
+. [x] **PRT-10** ✅ S-167 — publication : chapitres YouTube texte (`YouTubeChaptersFormatter`) + `VideoDescriptionBuilder` (garde `<`/`>`) ; `GenerateCapsuleChaptersTask` écrit `chapters.txt` + `description.txt` — 8 unit + `capsule_chapters.feature` étendu.
 . [ ] **PRT-01** — prononciation « dit / lu » (`PronunciationLexicon`) + cache par contenu (`slide-NN-<key>.mp3`) — intrusif (`TtsManager`/`CapsuleBuildTask` + tests).
 . [ ] **PRT-02** — QC voix par ASR (EPIC **`CAP-QC-VOICE`** : port `SpeechRecognizer`, fidélité + souffle + choix de prise) — à cadrer.
 . [ ] **PRT-07** — timeline déterministe (`capsule.timeline`, frames entières + avance image/voix) — touche la capture, EPIC.

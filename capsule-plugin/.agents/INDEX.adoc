@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-11 (S-166 — **EPIC CAP-QC** : portage utilitaire `prepa_electricite_complet` → capsule. 4 items livrés : **PRT-04** intégrité vidéo par décodage (`VideoIntegrityChecker`/`VideoIntegrityProbe`, gate opt-in `validation.integrityEnabled`), **PRT-03** sous-titres par beat/cartons (`SubtitleTextNormalizer`/`SubtitleCartoner`/`SubtitleTimingDistributor`/`calculateFromCartons`, opt-in `capture.subtitleCartonsEnabled`), **PRT-09** loudness 2 passes (`LoudnormMeasurement`/`LoudnormAnalysisParser`/`AudioPostCommand.buildTwoPass*`, opt-in `audioPost.twoPassLoudnessEnabled`), **PRT-06** signature de rendu (`RenderSignature` + sidecar `.sig` + réutilisation opt-in `capture.reuseCapturedVideoEnabled`). Baby-step DDD/TDD/BDD unit/fonctionnel/cucumber ; 4 runners dédiés (`cucumberTestVideoIntegrity`, `cucumberTestSubtitlesCartons`, `cucumberTestRenderSignature` + scénarios loudness). Local = Build, Tests = CI. Zéro bump, zéro publication. Précédent : S-165 correctif dérive dépendances + `capsule-plugin 0.0.4`.)
- _Derniere session terminee_ : 166.
- _Prochaine session_ : 167 — CAP-QC (suite) : PRT-05 (pré-vol contenu), PRT-10 (publication : chapitres YouTube texte, description, miniature), PRT-01 (dit/lu + cache contenu), PRT-02 (QC voix ASR — EPIC séparé), PRT-07 (timeline).
- _Session en cours_ : — (S-166 terminée).
+ _Derniere mise a jour_ : 2026-10-11 (S-167 — **EPIC CAP-QC** (suite) : **PRT-05** pré-vol contenu avant TTS (`qc.ContentPreflight` + tâche `preflightCapsuleContent`, opt-in `qc.preflightEnabled`) ; **PRT-10** publication (`chapters.YouTubeChaptersFormatter` + `publish.VideoDescriptionBuilder` ; `GenerateCapsuleChaptersTask` écrit `chapters.txt` + `description.txt`). Baby-step DDD/TDD/BDD ; runner dédié 32e `cucumberTestContentPreflight`. Local = Build, Tests = CI. Zéro bump. Précédent : S-166 CAP-QC (PRT-04/03/09/06).)
+ _Derniere session terminee_ : 167.
+ _Prochaine session_ : 168 — CAP-QC (reste 3/9) : PRT-07 (timeline déterministe, EPIC), PRT-01 (dit/lu + cache contenu, intrusif), PRT-02 (QC voix ASR — EPIC séparé `CAP-QC-VOICE`).
+ _Session en cours_ : — (S-167 terminée).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -22,11 +22,13 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (156-166)
+== 10 dernières sessions (156-167)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 167 | 2026-10-11 | feat+test | **EPIC CAP-QC (suite) — PRT-05 + PRT-10**. **PRT-05** pré-vol contenu avant TTS : `capsule.qc.ContentPreflight` (pur : `Severity`, `PreflightFinding`, `ForbiddenForm`, `PreflightRules` ; note longue/dupliquée = warning, forme interdite = error) + tâche `preflightCapsuleContent` (groupe `verification`) ; opt-in `qc.preflightEnabled`/`qc.maxNoteChars` (`QcConfig`, 4 sources + push). **PRT-10** publication : `capsule.chapters.YouTubeChaptersFormatter` (`M:SS Titre`/`H:MM:SS Titre`) + `capsule.publish.VideoDescriptionBuilder` (`Result(text, strippedForbiddenChars)`, retire `<`/`>`) ; `GenerateCapsuleChaptersTask` écrit `chapters.txt` + `description.txt`. Baby-step DDD/TDD/BDD : 16 unit + 3 FT + `capsule_content_preflight.feature` (3 `@qc @preflight`, runner dédié 32e `cucumberTestContentPreflight`) + `capsule_chapters.feature` étendu (chapters.txt/description.txt). Compiles + `validatePlugins` VERT. Zéro bump. Rapport `.agents/sessions/167-cap-qc-prt-05-10.adoc`. | 9/10
 
 | 166 | 2026-10-11 | feat+test | **EPIC CAP-QC — portage `prepa` → capsule (4 items)**. **PRT-04** intégrité vidéo par décodage (`VideoIntegrityChecker` pur + `VideoIntegrityProbe` `ffmpeg -f null -` ; gate opt-in `validation.integrityEnabled` dans `validateCapsuleVideoDuration`) — 10 unit + 3 FT + `capsule_video_integrity.feature` (3 `@integrity`, runner 29e). **PRT-03** sous-titres beat/cartons (`SubtitleTextNormalizer`/`SubtitleCartoner`/`SubtitleTimingDistributor`/`SubtitleTimingCalculator.calculateFromCartons` ; opt-in `capture.subtitleCartonsEnabled`/`subtitleMaxChars`) — ~20 unit + `capsule_subtitles_cartons.feature` (4 `@cartons`, runner 30e). **PRT-09** loudness 2 passes (`LoudnormMeasurement`/`LoudnormAnalysisParser`/`AudioPostCommand.buildTwoPass*` ; opt-in `audioPost.twoPassLoudnessEnabled`, single-input) — 8 unit + `capsule_audio_post.feature` étendu + 1 FT. **PRT-06** signature de rendu (`RenderSignature` + sidecar `.sig` + réutilisation opt-in `capture.reuseCapturedVideoEnabled`, signature + décode OK) — 5 unit + `capsule_render_signature.feature` (3 `@signature`, runner 31e) + 1 FT. Config 4 sources + push pour chaque option (défaut false). Compiles VERT, `validatePlugins` VERT. Zéro bump, zéro publication. Rapport `.agents/sessions/166-cap-qc-prt-04-03-09-06.adoc`. | 9/10
 

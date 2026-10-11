@@ -18,6 +18,8 @@ Feature: Capsule chapter markers (CAP-CHAPITRE)
     And a chapters.json file is generated
     And an intro.html card is generated
     And an outro.html card is generated
+    And a chapters.txt file is generated in YouTube format
+    And a description.txt file is generated without forbidden characters
 
   Scenario: Chapters enabled via gradle property with custom text
     Given a Capsule chapters Gradle project with the capsule plugin applied

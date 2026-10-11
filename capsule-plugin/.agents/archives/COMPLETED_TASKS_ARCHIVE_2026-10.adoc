@@ -1,6 +1,17 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-11
 
+== Session 167 — EPIC CAP-QC (suite) : PRT-05 (pré-vol contenu) + PRT-10 (publication) ✅
+
+* **PRT-05** pré-vol contenu avant TTS : `capsule.qc.ContentPreflight` (pur) + tâche
+  `preflightCapsuleContent` (groupe `verification`) ; opt-in `qc.preflightEnabled` /
+  `qc.maxNoteChars` (`QcConfig`, 4 sources + push). 8 unit + 3 FT + `@qc @preflight`
+  (runner 32e) + 1 test merger.
+* **PRT-10** publication : `capsule.chapters.YouTubeChaptersFormatter` +
+  `capsule.publish.VideoDescriptionBuilder` (garde `<`/`>`) ; `GenerateCapsuleChaptersTask`
+  écrit `chapters.txt` + `description.txt`. 8 unit + `capsule_chapters.feature` étendu.
+* Compiles + `validatePlugins` VERTS. Zéro bump. Rapport `.agents/sessions/167-cap-qc-prt-05-10.adoc`.
+
 == Session 166 — EPIC CAP-QC : portage prepa → capsule (PRT-04, PRT-03, PRT-09, PRT-06) ✅
 
 * **PRT-04** intégrité vidéo par décodage : `VideoIntegrityChecker` (pur) + `VideoIntegrityProbe`
