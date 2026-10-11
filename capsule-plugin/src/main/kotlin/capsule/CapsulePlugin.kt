@@ -270,5 +270,28 @@ class CapsulePlugin : Plugin<Project> {
         if (!ext.viralStoryboardFile.isPresent || ext.viralStoryboardFile.get() == conventions.viralStoryboardFile) {
             ext.viralStoryboardFile.set(config.viral.storyboardFile)
         }
+
+        // Voice section (CAP-QC-VOICE US-2)
+        if (!ext.voiceVerifyEnabled.isPresent || ext.voiceVerifyEnabled.get() == conventions.voiceVerifyEnabled) {
+            ext.voiceVerifyEnabled.set(config.voice.verifyEnabled)
+        }
+        if (!ext.voiceMaxWordErrorRate.isPresent || ext.voiceMaxWordErrorRate.get() == conventions.voiceMaxWordErrorRate) {
+            ext.voiceMaxWordErrorRate.set(config.voice.maxWordErrorRate)
+        }
+        if (!ext.voiceMinSnrDb.isPresent || ext.voiceMinSnrDb.get() == conventions.voiceMinSnrDb) {
+            ext.voiceMinSnrDb.set(config.voice.minSnrDb)
+        }
+        if (!ext.voiceSurplusThreshold.isPresent || ext.voiceSurplusThreshold.get() == conventions.voiceSurplusThreshold) {
+            ext.voiceSurplusThreshold.set(config.voice.surplusThreshold)
+        }
+        if (!ext.voiceAsrExecutablePath.isPresent || ext.voiceAsrExecutablePath.get() == conventions.voiceAsrExecutablePath) {
+            ext.voiceAsrExecutablePath.set(config.voice.asrExecutablePath)
+        }
+        if (!ext.voiceAsrModel.isPresent || ext.voiceAsrModel.get() == conventions.voiceAsrModel) {
+            ext.voiceAsrModel.set(config.voice.asrModel)
+        }
+        if (!ext.voiceLanguage.isPresent || ext.voiceLanguage.get() == conventions.voiceLanguage) {
+            ext.voiceLanguage.set(config.voice.language)
+        }
     }
 }

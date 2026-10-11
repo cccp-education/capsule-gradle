@@ -52,7 +52,8 @@ object CapsuleConfigMerger {
             podcast = mergePodcastConfig(envConfig.podcast, propertiesConfig.podcast, yaml?.podcast, cliParams),
             preview = mergePreviewConfig(envConfig.preview, propertiesConfig.preview, yaml?.preview, cliParams),
             chapters = mergeChaptersConfig(envConfig.chapters, propertiesConfig.chapters, yaml?.chapters, cliParams),
-            viral = mergeViralConfig(envConfig.viral, propertiesConfig.viral, yaml?.viral, cliParams)
+            viral = mergeViralConfig(envConfig.viral, propertiesConfig.viral, yaml?.viral, cliParams),
+            voice = mergeVoiceConfig(envConfig.voice, propertiesConfig.voice, yaml?.voice, cliParams)
         )
     }
 
@@ -201,6 +202,15 @@ object CapsuleConfigMerger {
                 cta = env["CAPSULE_VIRAL_CTA"] ?: "",
                 storyboardRequired = env["CAPSULE_VIRAL_STORYBOARD_REQUIRED"]?.toBoolean() ?: true,
                 storyboardFile = env["CAPSULE_VIRAL_STORYBOARD_FILE"] ?: ""
+            ),
+            voice = VoiceConfig(
+                verifyEnabled = env["CAPSULE_VOICE_VERIFY_ENABLED"]?.toBoolean() ?: false,
+                maxWordErrorRate = env["CAPSULE_VOICE_MAX_WORD_ERROR_RATE"]?.toDoubleOrNull() ?: 0.15,
+                minSnrDb = env["CAPSULE_VOICE_MIN_SNR_DB"]?.toDoubleOrNull() ?: 66.0,
+                surplusThreshold = env["CAPSULE_VOICE_SURPLUS_THRESHOLD"]?.toIntOrNull() ?: 3,
+                asrExecutablePath = env["CAPSULE_VOICE_ASR_EXECUTABLE_PATH"] ?: "whisper",
+                asrModel = env["CAPSULE_VOICE_ASR_MODEL"] ?: "",
+                language = env["CAPSULE_VOICE_LANGUAGE"] ?: "fr"
             )
         )
     }
@@ -318,6 +328,15 @@ object CapsuleConfigMerger {
                 cta = props["capsule.viral.cta"] ?: "",
                 storyboardRequired = props["capsule.viral.storyboardRequired"]?.toBoolean() ?: true,
                 storyboardFile = props["capsule.viral.storyboardFile"] ?: ""
+            ),
+            voice = VoiceConfig(
+                verifyEnabled = props["capsule.voice.verifyEnabled"]?.toBoolean() ?: false,
+                maxWordErrorRate = props["capsule.voice.maxWordErrorRate"]?.toDoubleOrNull() ?: 0.15,
+                minSnrDb = props["capsule.voice.minSnrDb"]?.toDoubleOrNull() ?: 66.0,
+                surplusThreshold = props["capsule.voice.surplusThreshold"]?.toIntOrNull() ?: 3,
+                asrExecutablePath = props["capsule.voice.asrExecutablePath"] ?: "whisper",
+                asrModel = props["capsule.voice.asrModel"] ?: "",
+                language = props["capsule.voice.language"] ?: "fr"
             )
         )
     }
@@ -452,6 +471,18 @@ object CapsuleConfigMerger {
             cta = mergeStr(cli, "viral.cta", yaml?.cta, props.cta, env.cta),
             storyboardRequired = mergeBoolean(cli, "viral.storyboardRequired", yaml?.storyboardRequired, props.storyboardRequired),
             storyboardFile = mergeStr(cli, "viral.storyboardFile", yaml?.storyboardFile, props.storyboardFile, env.storyboardFile)
+        )
+    }
+
+    private fun mergeVoiceConfig(env: VoiceConfig, props: VoiceConfig, yaml: VoiceConfig?, cli: Map<String, Any?>): VoiceConfig {
+        return VoiceConfig(
+            verifyEnabled = mergeBoolean(cli, "voice.verifyEnabled", yaml?.verifyEnabled, props.verifyEnabled),
+            maxWordErrorRate = mergeDouble(cli, "voice.maxWordErrorRate", yaml?.maxWordErrorRate, props.maxWordErrorRate),
+            minSnrDb = mergeDouble(cli, "voice.minSnrDb", yaml?.minSnrDb, props.minSnrDb),
+            surplusThreshold = mergeInt(cli, "voice.surplusThreshold", yaml?.surplusThreshold, props.surplusThreshold),
+            asrExecutablePath = mergeStr(cli, "voice.asrExecutablePath", yaml?.asrExecutablePath, props.asrExecutablePath, env.asrExecutablePath),
+            asrModel = mergeStr(cli, "voice.asrModel", yaml?.asrModel, props.asrModel, env.asrModel),
+            language = mergeStr(cli, "voice.language", yaml?.language, props.language, env.language)
         )
     }
 

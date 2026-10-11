@@ -176,6 +176,16 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleVoiceQualityCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // CAP-QC-VOICE US-2 — voice verification orchestration with a fake ASR
+        // (verdict + degraded paths + JSON report). Pure-domain runner — no ASR
+        // binary, no ffmpeg (pattern S-082).
+        CucumberTaskSpec(
+            name = "cucumberTestVoiceVerification",
+            features = listOf("src/test/features/capsule_voice_verification.feature"),
+            tags = listOf("@voice-verify"),
+            runnerClass = "capsule.scenarios.CapsuleVoiceVerificationCucumberRunner",
+            timeoutMinutes = 10,
+        ),
         // CAP-AUDIO US-4 — audio post-production (BGM + loudness EBU R128 + ducking).
         // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
         // Uses a NoOp processor (no real FFmpeg); validates applyAudioPostIfEnabled

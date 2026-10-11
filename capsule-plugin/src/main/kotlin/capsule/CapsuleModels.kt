@@ -321,6 +321,34 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     /** CAP-VIRAL — batch platforms (CSV via `-Pcapsule.viral.platforms`; default = configured preset). */
     val viralPlatforms: ListProperty<String> = objects.listProperty(String::class.java)
 
+    /** CAP-QC-VOICE US-2 — `true` to run the voice-quality QC (`verifyCapsuleVoice`). Defaults to false (opt-in). */
+    val voiceVerifyEnabled: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
+    /** CAP-QC-VOICE US-2 — word error rate ceiling accepted before a take fails. Defaults to 0.15. */
+    val voiceMaxWordErrorRate: Property<Double> = objects.property(Double::class.java)
+        .convention(0.15)
+
+    /** CAP-QC-VOICE US-2 — background headroom floor (dB) before a take fails. Defaults to 66.0. */
+    val voiceMinSnrDb: Property<Double> = objects.property(Double::class.java)
+        .convention(66.0)
+
+    /** CAP-QC-VOICE US-2 — extra transcribed words signalling a hallucination. Defaults to 3. */
+    val voiceSurplusThreshold: Property<Int> = objects.property(Int::class.java)
+        .convention(3)
+
+    /** CAP-QC-VOICE US-2 — the ASR binary (`whisper`, `faster-whisper`…). Defaults to `whisper`. */
+    val voiceAsrExecutablePath: Property<String> = objects.property(String::class.java)
+        .convention("whisper")
+
+    /** CAP-QC-VOICE US-2 — ASR model name (blank = CLI default). Defaults to empty. */
+    val voiceAsrModel: Property<String> = objects.property(String::class.java)
+        .convention("")
+
+    /** CAP-QC-VOICE US-2 — ASR language hint (ISO-639-1). Defaults to `fr`. */
+    val voiceLanguage: Property<String> = objects.property(String::class.java)
+        .convention("fr")
+
     internal val conventions: CapsuleConventions = CapsuleConventions(
         outputDir = "capsule",
         sliderScriptDir = "capsule",
@@ -391,7 +419,14 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         viralHook = "",
         viralCta = "",
         viralStoryboardRequired = true,
-        viralStoryboardFile = ""
+        viralStoryboardFile = "",
+        voiceVerifyEnabled = false,
+        voiceMaxWordErrorRate = 0.15,
+        voiceMinSnrDb = 66.0,
+        voiceSurplusThreshold = 3,
+        voiceAsrExecutablePath = "whisper",
+        voiceAsrModel = "",
+        voiceLanguage = "fr"
     )
 }
 
@@ -465,5 +500,12 @@ data class CapsuleConventions(
     val viralHook: String,
     val viralCta: String,
     val viralStoryboardRequired: Boolean,
-    val viralStoryboardFile: String
+    val viralStoryboardFile: String,
+    val voiceVerifyEnabled: Boolean,
+    val voiceMaxWordErrorRate: Double,
+    val voiceMinSnrDb: Double,
+    val voiceSurplusThreshold: Int,
+    val voiceAsrExecutablePath: String,
+    val voiceAsrModel: String,
+    val voiceLanguage: String
 )

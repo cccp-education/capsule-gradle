@@ -32,7 +32,37 @@ data class CapsuleConfig(
     val podcast: PodcastConfig = PodcastConfig(),
     val preview: PreviewConfig = PreviewConfig(),
     val chapters: ChaptersConfig = ChaptersConfig(),
-    val viral: ViralConfig = ViralConfig()
+    val viral: ViralConfig = ViralConfig(),
+    val voice: VoiceConfig = VoiceConfig()
+)
+
+/**
+ * Configuration section for voice-quality verification (CAP-QC-VOICE US-2).
+ *
+ * When [verifyEnabled] is true, `verifyCapsuleVoice` transcribes every
+ * `slide-NN.mp3` through the ASR port and checks it against the text that was
+ * meant to be spoken: fidelity (word error rate), hallucination (surplus words)
+ * and background headroom (SNR). The ASR binary is **never** a prerequisite of
+ * `check` — when it is absent the task degrades (unless `strictMode`).
+ *
+ * Default is disabled to preserve backward compatibility.
+ *
+ * @param verifyEnabled      `true` to run the QC voice check (default `false`).
+ * @param maxWordErrorRate   word error rate ceiling (default 0.15).
+ * @param minSnrDb           background headroom floor in dB (default 66.0).
+ * @param surplusThreshold   extra transcribed words signalling a hallucination (default 3).
+ * @param asrExecutablePath  the ASR binary (`whisper`, `faster-whisper`…).
+ * @param asrModel           the ASR model name, blank for the CLI default.
+ * @param language           the ASR language hint (ISO-639-1, default `fr`).
+ */
+data class VoiceConfig(
+    val verifyEnabled: Boolean = false,
+    val maxWordErrorRate: Double = 0.15,
+    val minSnrDb: Double = 66.0,
+    val surplusThreshold: Int = 3,
+    val asrExecutablePath: String = "whisper",
+    val asrModel: String = "",
+    val language: String = "fr",
 )
 
 /**

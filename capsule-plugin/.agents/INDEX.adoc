@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-11 (S-171 — **CAP-QC : littérature agentique consolidée** (gouvernance pure, zéro code). Création de `.agents/CADRAGE_EPIC_CAP_QC.adoc` — **document de référence** du portage `prepa_electricite_complet` → capsule : frontière (techniques seules), catalogue `PRT-01`→`PRT-13` et statut, les deux EPICs (`CAP-QC` 7/9, `CAP-QC-VOICE` 1/5), décisions transverses (opt-in défaut false, 4 sources de config, objet pur d'abord, économie d'encre, dégradation/strict, baby-step DDD/TDD/BDD, Local = Build / Tests = CI), reste à faire, traçabilité. `PROMPT_REPRISE` re-préparé (S-172, 3 options). Précédent : S-170 CAP-QC-VOICE US-1.)
- _Derniere session terminee_ : 171.
- _Prochaine session_ : 172 — au choix : A) `CAP-QC-VOICE` US-2 (port `SpeechRecognizer` + tâche `verifyCapsuleVoice` + `VoiceConfig`) ; B) PRT-01 (prononciation dit/lu + cache contenu, intrusif, clôt CAP-QC) ; C) PRT-08 (planches QC visuelles).
- _Session en cours_ : — (S-171 terminée).
+ _Derniere mise a jour_ : 2026-10-12 (S-172 — **CAP-QC-VOICE US-2** : port `SpeechRecognizer` (fun interface) + adapter CLI `CliSpeechRecognizer` (whisper/faster-whisper via `ProcessRunner`, `isAvailable`) + commande pure `SpeechRecognizerCommand` + domaine pur étendu (`VoiceThresholds`/`VoiceVerdict` Pass-Fail-Degraded/`VoiceQualityGate`/`VoiceVerifier`/`VoiceReportJson`) + enveloppe SNR (`RmsEnvelope` pur + `AudioEnvelopeExtractor` ffmpeg→PCM) + tâche `verifyCapsuleVoice` (groupe `verification`, opt-in `voice.verifyEnabled`, seuils, rapport JSON, dégradé si ASR absent, échec en `strict`/seuil) + `VoiceConfig` 4 sources + extension/conventions/push + `CapsuleManager`. +29 unit, +4 functional, BDD `@voice-verify` (4 scénarios fake ASR, runner dédié 35e `cucumberTestVoiceVerification`). Gates locaux VERT. **CAP-QC-VOICE 2/5**, **CAP-QC 7/9**. Précédent : S-171 littérature CAP-QC.)
+ _Derniere session terminee_ : 172.
+ _Prochaine session_ : 173 — au choix : A) `CAP-QC-VOICE` US-3 (choix de prise : régénérer + retenir la meilleure, `audio/choix.json`) ; B) PRT-01 (prononciation dit/lu + cache contenu, intrusif, clôt CAP-QC) ; C) PRT-08 (planches QC visuelles).
+ _Session en cours_ : — (S-172 terminée).
  _Littérature de référence_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage) + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc` (EPIC voix).
 
 '''
@@ -23,11 +23,13 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (160-171)
+== 10 dernières sessions (160-172)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 172 | 2026-10-12 | feat+test | **CAP-QC-VOICE US-2 — port ASR + tâche `verifyCapsuleVoice` + `VoiceConfig`** (cœur de l'EPIC en cours). Port `fun interface SpeechRecognizer { transcribe(audio, language) }` + adapter CLI `CliSpeechRecognizer` (`whisper`/`faster-whisper` via `ProcessRunner`, `isAvailable(path)`, échec → `SpeechRecognizerException` = dégradation) + commande pure `SpeechRecognizerCommand` (`--model`/`--language` omis si blancs, `--output_format txt`, `--output_dir`). Domaine pur étendu : `VoiceThresholds` (0.15/66.0/3) + `VoiceVerdict` sealed (Pass/Fail(reasons)/Degraded(reason)) + `VoiceQualityGate.verdict(score, snrDb, thresholds)` (raisons `word-error-rate`/`surplus`/`snr`/`empty-transcription`) + `VoiceVerifier` (`VoiceTake`/`TakeVerification`/`VoiceReport`, ASR + enveloppe **injectés**, `degraded(...)`, erreur ASR = take dégradé jamais « propre ») + `VoiceReportJson` (Jackson déterministe). Enveloppe SNR : `RmsEnvelope` (PCM s16le → RMS/cadre, cadre partiel jeté) + `AudioEnvelopeExtractor` (ffmpeg → PCM raw mono 16 kHz, `null` = dégradé). Tâche `verifyCapsuleVoice` (groupe `verification`, opt-in `voice.verifyEnabled`, no-op si disabled, skip si aucun take, ASR absent → **rapport dégradé** + warning, échec seulement en `strict`, seuil franchi → `GradleException` actionnable ; seams `recognizerOverride`/`envelopeOverride`/`scriptDirOverride`). `VoiceConfig` 4 sources + 7 propriétés d'extension + `CapsuleConventions` + `pushConfigIntoExtension` + `CapsuleManager`. Clé i18n `task.verifyCapsuleVoice.description` sur 10 langues. Baby-step DDD/TDD/BDD : +29 unit (`VoiceQualityGateTest` 7, `VoiceVerifierTest` 6, `VoiceReportJsonTest` 3, `CliSpeechRecognizerTest` 5, `AudioEnvelopeTest` 7, `CapsuleConfigMergerTest` +1) + 4 functional TestKit (registration, disabled no-op, no-take skip, ASR absent → dégradé `assumeFalse`) + BDD `capsule_voice_verification.feature` `@voice-verify` (4 scénarios fake ASR) + runner dédié 35e `cucumberTestVoiceVerification`. Gates locaux (`compileKotlin`/`compileTestKotlin`/`compileFunctionalTestKotlin`/`validatePlugins`/`assemble`) VERT. Local = Build, Tests = CI ; ASR **jamais** prérequis de `check`. **CAP-QC-VOICE 2/5** (reste US-3/4/5), **CAP-QC 7/9**. Zéro bump, zéro publication, zéro secret. Rapport `.agents/sessions/172-cap-qc-voice-us2.adoc`. | 9/10
 
 | 171 | 2026-10-11 | gouvernance | **CAP-QC : littérature agentique consolidée** (zéro code). Création de `.agents/CADRAGE_EPIC_CAP_QC.adoc` — **document de référence du portage `prepa` → capsule** : frontière (techniques seules ; jamais le contenu ni un moteur de rendu maison), catalogue `PRT-01`→`PRT-13` et statut (7 livrés : PRT-04/03/09/06/05/10/07 ; 2 à faire : PRT-01/08 ; PRT-02 cadré en EPIC `CAP-QC-VOICE` ; PRT-11 CADUQUE ; PRT-12/13 hors cœur OSS), décision « pas de quatrième voie de rendu », **les deux EPICs** (`CAP-QC` 7/9, `CAP-QC-VOICE` 1/5), **6 décisions transverses** (opt-in défaut false ; 4 sources de config ; objet pur d'abord ; économie d'encre ; dégradation/`strictMode` ; baby-step DDD/TDD/BDD ; Local = Build / Tests = CI), reste à faire, traçabilité (S-166→S-170). `PROMPT_REPRISE` re-préparé (S-172, 3 options : A US-2, B PRT-01, C PRT-08). Rapport `.agents/sessions/171-cap-qc-litterature.adoc`. | 8/10
 
@@ -166,7 +168,13 @@ neuf) ; **S-150** ajoute le **23e** runner (`cucumberTestViralRender`, vrai MP4)
 **S-154** le **24e** (`cucumberTestViralGate`) ; **S-155** le **25e**
 (`cucumberTestViralThumbnail`) ; **S-156** le **26e** (`cucumberTestViralKaraoke`) ;
 **S-159** le **27e** (`cucumberTestViralNormalize`) ; **S-160** le **28e**
-(`cucumberTestLlmResilience`).
+(`cucumberTestLlmResilience`) ; **S-166** les **29e→31e** (`cucumberTestVideoIntegrity`/
+`cucumberTestSubtitlesCartons`/`cucumberTestRenderSignature`) ; **S-167** le **32e**
+(`cucumberTestContentPreflight`) ; **S-168** le **33e** (`cucumberTestTimeline`) ;
+**S-170** le **34e** (`cucumberTestVoiceQuality`) ; **S-172** le **35e**
+(`cucumberTestVoiceVerification`).
+**EPICs en cours** : **CAP-QC 🟡 7/9** (reste PRT-01, PRT-08) et **CAP-QC-VOICE 🟡 2/5**
+(reste US-3/4/5) — portage `prepa_electricite_complet` → capsule.
 
 _Décision architecture_ : Docker FFmpeg reporté MVP1 (fausse bonne idée
 pour MVP0 — gain fonctionnel nul, complexité ajoutée). FFmpeg reste local

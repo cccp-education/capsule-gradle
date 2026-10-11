@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-11 (S-166 — EPIC CAP-QC : portage prepa → capsule, PRT-04/03/09/06 ✅.)
+:last_update: 2026-10-12 (S-172 — CAP-QC-VOICE US-2 : port ASR + tâche verifyCapsuleVoice + VoiceConfig ✅.)
 
 '''
 == 🟡 EPIC CAP-QC — portage utilitaire `prepa` → capsule (revue `code_review.adoc` révision c)
@@ -11,7 +11,7 @@
 . [x] **PRT-05** ✅ S-167 — pré-vol contenu avant TTS (`capsule.qc.ContentPreflight` pur + tâche `preflightCapsuleContent` ; opt-in `qc.preflightEnabled`/`qc.maxNoteChars`) — 8 unit + 3 FT + `capsule_content_preflight.feature` (3 `@qc @preflight`, runner 32e).
 . [x] **PRT-10** ✅ S-167 — publication : chapitres YouTube texte (`YouTubeChaptersFormatter`) + `VideoDescriptionBuilder` (garde `<`/`>`) ; `GenerateCapsuleChaptersTask` écrit `chapters.txt` + `description.txt` — 8 unit + `capsule_chapters.feature` étendu.
 . [ ] **PRT-01** — prononciation « dit / lu » (`PronunciationLexicon`) + cache par contenu (`slide-NN-<key>.mp3`) — intrusif (`TtsManager`/`CapsuleBuildTask` + tests).
-. [ ] **PRT-02** — QC voix par ASR (EPIC **`CAP-QC-VOICE`** : port `SpeechRecognizer`, fidélité + souffle + choix de prise) — à cadrer.
+. [ ] **PRT-02** — QC voix par ASR (EPIC **`CAP-QC-VOICE`** 2/5 : port `SpeechRecognizer` + tâche `verifyCapsuleVoice` livrés S-172 ; reste choix de prise US-3).
 . [x] **PRT-07** ✅ S-168 (US-1) — timeline déterministe (`capsule.timeline` pur : frames entières, contigu, `lead`/`tail`/`avance`) + log observable ; 8 unit + `capsule_timeline.feature` (runner 33e) + 1 FT. Câblage capture/sous-titres = US-2.
 
 '''
@@ -19,9 +19,9 @@
 
 . [x] **US-0** ✅ S-169 — cadrage (audit 7 constats + décisions ; 5 alternatives écartées).
 . [x] **US-1** ✅ S-170 — domaine pur `capsule.voice` (`TextNormalizer`/`WordAligner`/`FidelityScorer`/`SnrEstimator`/`VoiceScore`) ; 19 unit + `capsule_voice_quality.feature` (4 `@voice`, runner 34e).
-. [ ] **US-2** — port `SpeechRecognizer` (CLI whisper) + tâche `verifyCapsuleVoice` (rapport JSON + seuils + strict ; opt-in `voice.verifyEnabled`) + `VoiceConfig` 4 sources.
+. [x] **US-2** ✅ S-172 — port `SpeechRecognizer` (CLI whisper) + tâche `verifyCapsuleVoice` (rapport JSON + seuils + strict ; opt-in `voice.verifyEnabled`) + `VoiceConfig` 4 sources ; +29 unit + 4 FT + BDD `capsule_voice_verification.feature` `@voice-verify` (4 scénarios, runner 35e).
 . [ ] **US-3** — choix de prise (régénérer + retenir la meilleure).
-. [ ] **US-4** — BDD `capsule_voice_quality.feature` (fakes zéro-ASR) + dogfooding réel skip-gardé.
+. [ ] **US-4** — dogfooding ASR réel skip-gardé (la BDD `@voice-verify` des fakes est livrée S-172).
 . [ ] **US-5** *(optionnel)* — karaoké (`capsule.viral`) sur timings ASR.
 . [x] **PRT-11** ✅ CADUQUE — rendu de contenu maison (Java2D / LaTeX serveur) écarté (§ 8 revue).
 

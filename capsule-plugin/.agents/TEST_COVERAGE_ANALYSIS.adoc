@@ -1,7 +1,32 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
-:date: 2026-10-11
-:session: 171 CAP-QC : littérature agentique consolidée (gouvernance pure)
+:date: 2026-10-12
+:session: 172 CAP-QC-VOICE US-2 (port ASR + tâche verifyCapsuleVoice + VoiceConfig)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 12 octobre 2026 (après session 172)
+
+.CAP-QC-VOICE US-2 — port ASR + tâche `verifyCapsuleVoice` + `VoiceConfig`
+|===
+| Élément | Changement | Tests
+
+| `voice/VoiceQuality.kt` (créé) | `VoiceThresholds` + `VoiceVerdict` sealed + `VoiceQualityGate` | +7 `VoiceQualityGateTest`
+| `voice/VoiceVerifier.kt` (créé) | `VoiceTake`/`TakeVerification`/`VoiceReport` + orchestration (ASR injecté) | +6 `VoiceVerifierTest`
+| `voice/VoiceReportJson.kt` (créé) | Rapport JSON déterministe (Jackson) | +3 `VoiceReportJsonTest`
+| `voice/SpeechRecognizer.kt` (créé) | Port `fun interface` | (couvert par verifier/BDD)
+| `voice/SpeechRecognizerCommand.kt` (créé) | Argv pur du CLI ASR | +2 `CliSpeechRecognizerTest`
+| `voice/CliSpeechRecognizer.kt` (créé) | Adapter CLI (`ProcessRunner` + `isAvailable`) | +3 `CliSpeechRecognizerTest`
+| `voice/RmsEnvelope.kt` (créé) | PCM s16le → RMS/cadre | +4 `AudioEnvelopeTest`
+| `voice/AudioEnvelopeExtractor.kt` (créé) | ffmpeg → PCM raw → RMS | +3 `AudioEnvelopeTest`
+| `voice/VerifyCapsuleVoiceTask.kt` (créé) | Tâche `verification` (opt-in, rapport, strict, seams) | +4 `VerifyCapsuleVoiceFunctionalTest`
+| `CapsuleConfig*.kt` (`VoiceConfig`) | 4 sources + extension + push | +1 `CapsuleConfigMergerTest`
+| `capsule_voice_verification.feature` (créée) | BDD `@voice-verify` (4 scénarios, fake ASR) | runner 35e `cucumberTestVoiceVerification`
+|===
+
+*Totaux S-172* : **+29 unit** + **+4 functional** + 1 feature BDD dédiée (35e runner).
+`compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` +
+`validatePlugins` + `assemble` **VERTS**. La BDD `@voice-verify` est pure-domain →
+exécutée par le runner **agrégé** `cucumberTest` de la CI `Full Tests` ; l'ASR
+n'est **jamais** un prérequis de `check`.
 
 == Couverture — 11 octobre 2026 (après session 171)
 

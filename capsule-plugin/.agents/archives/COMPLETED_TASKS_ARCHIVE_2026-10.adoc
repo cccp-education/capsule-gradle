@@ -1,5 +1,19 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
-:date: 2026-10-11
+:date: 2026-10-12
+
+== Session 172 — CAP-QC-VOICE US-2 : port ASR + tâche `verifyCapsuleVoice` + `VoiceConfig` ✅
+
+* Port `SpeechRecognizer` + adapter CLI `CliSpeechRecognizer` + commande pure
+  `SpeechRecognizerCommand`. Domaine pur étendu : `VoiceThresholds` + `VoiceVerdict`
+  (Pass/Fail/Degraded) + `VoiceQualityGate` + `VoiceVerifier` + `VoiceReportJson`.
+  Enveloppe SNR : `RmsEnvelope` (pur) + `AudioEnvelopeExtractor` (ffmpeg → PCM).
+  Tâche `verifyCapsuleVoice` (groupe `verification`, opt-in `voice.verifyEnabled`,
+  rapport JSON, dégradé si ASR absent, échec en `strict`/seuil) + `VoiceConfig`
+  4 sources + extension/conventions/push + `CapsuleManager`.
+* +29 unit + 4 functional + BDD `capsule_voice_verification.feature` `@voice-verify`
+  (4 scénarios fake ASR, runner dédié 35e `cucumberTestVoiceVerification`). Gates
+  locaux VERTS. **CAP-QC-VOICE 2/5**, **CAP-QC 7/9**. Zéro bump, zéro publication.
+  Rapport `.agents/sessions/172-cap-qc-voice-us2.adoc`.
 
 == Session 171 — CAP-QC : littérature agentique consolidée ✅
 

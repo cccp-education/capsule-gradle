@@ -1,0 +1,87 @@
+= Rapport de session 172 — CAP-QC-VOICE US-2 (port ASR + tâche `verifyCapsuleVoice` + `VoiceConfig`)
+:session: 172
+:date: 2026-10-12
+:borough: Détroit
+:epic: CAP-QC-VOICE (PRT-02)
+:statut: TERMINÉ
+:methode: baby-step DDD/TDD/BDD (unit → fonctionnel → cucumber)
+
+== Mission
+
+Option A du `PROMPT_REPRISE` S-172 : **cœur de l'EPIC `CAP-QC-VOICE` en cours**.
+Porter le contrôle qualité de voix de `prepa_electricite_complet`
+(`verif_voix.py`) dans un **port ASR** + une **tâche** `verifyCapsuleVoice`
+(rapport JSON + seuils + strict), opt-in, jamais prérequis de `check`.
+
+== Périmètre livré
+
+=== Domaine pur `capsule.voice` (zéro I/O)
+
+|===
+| Fichier | Rôle
+
+| `VoiceQuality.kt` | `VoiceThresholds` (maxWordErrorRate 0.15 / minSnrDb 66.0 / surplusThreshold 3) + `VoiceVerdict` sealed (Pass/Fail(reasons)/Degraded(reason)) + `VoiceQualityGate.verdict(score, snrDb, thresholds)` — raisons stables (`word-error-rate`, `surplus`, `snr`, `empty-transcription`).
+| `SpeechRecognizer.kt` | Port `fun interface SpeechRecognizer { fun transcribe(audio: File, language: String): String }`.
+| `VoiceVerifier.kt` | Orchestration pure : `VoiceTake`/`TakeVerification`/`VoiceReport` + `verify(takes, recognizer, thresholds, language, envelopeProvider)` (ASR et enveloppe **injectés**) + `degraded(...)` (ASR absent). Erreur de reconnaissance = take `Degraded(asr-error)`, jamais un faux « propre ».
+| `VoiceReportJson.kt` | Rapport JSON déterministe (Jackson `ObjectNode`, pattern `CampaignBundleSerializer`) : `degraded`, `thresholds`, `failureCount`, `takes[]` (métriques nullables + `verdict` + `reasons`).
+|===
+
+=== Adaptateurs I/O
+
+|===
+| Fichier | Rôle
+
+| `SpeechRecognizerCommand.kt` | Argv pur (`--model`/`--language` omis si blancs, `--output_format txt`, `--output_dir <owned>`).
+| `CliSpeechRecognizer.kt` | Adapter CLI `whisper`/`faster-whisper` via `ProcessRunner` (anti-interblocage, garde bornée) ; `isAvailable(path)` ; échec → `SpeechRecognizerException` (dégradation).
+| `RmsEnvelope.kt` | Pur : PCM s16le → RMS par cadre (cadre partiel jeté).
+| `AudioEnvelopeExtractor.kt` | I/O : ffmpeg décode en PCM raw mono 16 kHz → `RmsEnvelope` ; dégradation `null` (fichier/ffmpeg absent).
+| `VerifyCapsuleVoiceTask.kt` | Tâche `verification` : no-op si disabled ; skip si aucun take ; ASR absent → rapport **dégradé** (warning, échec seulement en `strict`) ; sinon seuil franchi → `GradleException`. Seams de test `recognizerOverride`/`envelopeOverride`/`scriptDirOverride`.
+|===
+
+=== Config 4 sources
+
+`VoiceConfig` (`verifyEnabled` false, seuils, `asrExecutablePath` `whisper`, `asrModel`, `language`) dans `CapsuleConfig` ; ENV/`gradle.properties`/YAML/CLI + `voice.*` ; 7 propriétés d'extension + `CapsuleConventions` + `pushConfigIntoExtension` ; enregistrement `CapsuleManager.registerVerifyCapsuleVoiceTask`.
+
+=== i18n
+
+Clé `task.verifyCapsuleVoice.description` ajoutée aux **10** `Messages_*.properties`.
+
+== Tests (baby-step)
+
+[cols="1,3,1", options="header"]
+|===
+| Niveau | Contenu | Nombre
+
+| Unit | `VoiceQualityGateTest` (7) + `VoiceVerifierTest` (6) + `VoiceReportJsonTest` (3) + `CliSpeechRecognizerTest` (5) + `AudioEnvelopeTest` (7) + `CapsuleConfigMergerTest` (voice, +1) | +29
+| Functional | `VerifyCapsuleVoiceFunctionalTest` (registration, disabled no-op, no-take skip, ASR absent → dégradé `assumeFalse`) | +4
+| BDD | `capsule_voice_verification.feature` `@voice-verify` (4 scénarios, fake ASR) + `CapsuleVoiceVerificationSteps` + `CapsuleVoiceVerificationCucumberRunner` + `CucumberTaskSpec("cucumberTestVoiceVerification")` (35e runner) | +4 scénarios
+|===
+
+*Local = Build, Tests = CI* : `compileKotlin` + `compileTestKotlin` +
+`compileFunctionalTestKotlin` + `validatePlugins` + `assemble` **VERTS**.
+La BDD `@voice-verify` est **pure-domain** → exécutée par le runner **agrégé**
+`cucumberTest` de la CI `Full Tests` (aucun binaire ASR requis). L'ASR n'est
+**jamais** un prérequis du vert.
+
+== Décisions
+
+* **ASR jamais prérequis** : `isAvailable` + dégradation + `assumeFalse` en FT.
+* **Enveloppe SNR best-effort** : extraction ffmpeg → PCM ; `null` → la vérification SNR est sautée, jamais lue « propre ».
+* **`fun interface` unique** (cadrage S-169 respecté) : la disponibilité est portée par la companion de l'adapter, pas par le port.
+* **Pas de N0** : `VoiceScore`/`SpeechRecognizer` restent capsule-scoped (même arbitrage que la résilience LLM S-162).
+
+== Reste à faire (EPIC CAP-QC-VOICE)
+
+* US-3 — choix de prise (régénérer + retenir la meilleure, `audio/choix.json`).
+* US-4 — dogfooding ASR réel skip-gardé.
+* US-5 *(optionnel)* — karaoké sur timings ASR.
+* PRT-01 (CAP-QC 8/9) et PRT-08 (planches QC) restent ouverts.
+
+== Fichiers
+
+* Créés (prod) : `VoiceQuality.kt`, `SpeechRecognizer.kt`, `VoiceVerifier.kt`, `VoiceReportJson.kt`, `SpeechRecognizerCommand.kt`, `CliSpeechRecognizer.kt`, `RmsEnvelope.kt`, `AudioEnvelopeExtractor.kt`, `VerifyCapsuleVoiceTask.kt`.
+* Créés (test) : 5 tests unit + 1 FT + feature + steps + runner.
+* Modifiés : `CapsuleConfig.kt`, `CapsuleConfigMerger.kt`, `CapsuleModels.kt`, `CapsulePlugin.kt`, `CapsuleManager.kt`, `CapsuleConfigMergerTest.kt`, `build.gradle.kts`, 10 `Messages_*.properties`.
+* **Zéro bump de version, zéro publication, zéro secret.**
+
+_Score : 9/10._

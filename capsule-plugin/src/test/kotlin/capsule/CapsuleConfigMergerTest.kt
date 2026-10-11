@@ -533,6 +533,37 @@ class CapsuleConfigMergerTest {
     }
 
     @Test
+    fun `voice verification defaults off and reads from CLI`() {
+        val projectDir = File(tempDir, "voice-verify").also { it.mkdirs() }
+        val default = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
+        assertEquals(false, default.voice.verifyEnabled, "voice.verifyEnabled should default to false")
+        assertEquals(0.15, default.voice.maxWordErrorRate, "voice.maxWordErrorRate should default to 0.15")
+        assertEquals(66.0, default.voice.minSnrDb, "voice.minSnrDb should default to 66.0")
+        assertEquals(3, default.voice.surplusThreshold, "voice.surplusThreshold should default to 3")
+        assertEquals("whisper", default.voice.asrExecutablePath, "voice.asrExecutablePath should default to whisper")
+
+        val enabled = CapsuleConfigMerger.merge(
+            projectDir, CapsuleConfig(),
+            mapOf(
+                "voice.verifyEnabled" to "true",
+                "voice.maxWordErrorRate" to "0.25",
+                "voice.minSnrDb" to "50.0",
+                "voice.surplusThreshold" to "5",
+                "voice.asrExecutablePath" to "faster-whisper",
+                "voice.asrModel" to "large-v3",
+                "voice.language" to "en",
+            )
+        )
+        assertEquals(true, enabled.voice.verifyEnabled, "CLI voice.verifyEnabled should be honored")
+        assertEquals(0.25, enabled.voice.maxWordErrorRate, "CLI voice.maxWordErrorRate should be honored")
+        assertEquals(50.0, enabled.voice.minSnrDb, "CLI voice.minSnrDb should be honored")
+        assertEquals(5, enabled.voice.surplusThreshold, "CLI voice.surplusThreshold should be honored")
+        assertEquals("faster-whisper", enabled.voice.asrExecutablePath, "CLI voice.asrExecutablePath should be honored")
+        assertEquals("large-v3", enabled.voice.asrModel, "CLI voice.asrModel should be honored")
+        assertEquals("en", enabled.voice.language, "CLI voice.language should be honored")
+    }
+
+    @Test
     fun `merge CLI string integer param is parsed as Int`() {
         val projectDir = File(tempDir, "merge-cli-str-int").also { it.mkdirs() }
         val yamlConfig = CapsuleConfig()
