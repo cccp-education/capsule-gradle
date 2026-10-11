@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-11 (S-168 — EPIC CAP-QC : portage prepa → capsule, 7/9 items)
+:last_update: 2026-10-11 (S-169 — CAP-QC-VOICE : cadrage (PRT-02) ; CAP-QC 7/9)
 
 '''
 == 🔌 BACKLOG ACTIF — CAP-QC 🟡 EN COURS 7/9 (S-168)
@@ -26,7 +26,7 @@ nouvelle est **opt-in (défaut false)** et câblée sur les **4 sources** de con
 | PRT-05 | **Pré-vol contenu avant TTS** (`ContentPreflight` : note longue/dupliquée = warning, forme interdite = error) | `capsule.qc` | 3 | ✅ S-167
 | PRT-10 | **Publication** : chapitres **YouTube texte** (`MM:SS Titre`) + `VideoDescriptionBuilder` (garde chevrons) — miniature pédagogique non portée (le viral couvre) | `capsule.chapters`, `capsule.publish` | 3 | ✅ S-167
 | PRT-01 | **Prononciation « dit / lu »** + cache indexé sur le **texte dit** (nom `slide-NN-<key>.mp3`) | `capsule.voice`, `TtsManager` | 5 | 🟡 À FAIRE (intrusif)
-| PRT-02 | **QC voix par ASR** (fidélité mot-à-mot + souffle + choix de prise) — EPIC **`CAP-QC-VOICE`** | `capsule.voice` + port `SpeechRecognizer` | 8 | 🟡 À FAIRE (EPIC à part)
+| PRT-02 | **QC voix par ASR** (fidélité mot-à-mot + souffle + choix de prise) — EPIC **`CAP-QC-VOICE`** | `capsule.voice` + port `SpeechRecognizer` | 8 | 🟡 CADRÉ → EPIC `CAP-QC-VOICE` (S-169)
 | PRT-07 | **Timeline déterministe** (frames entières, placement exact, avance image/voix) | `capsule.timeline` | 5 | ✅ S-168 (US-1 pur ; câblage capture = US-2)
 
 | ~~PRT-11~~ | Rendu de contenu maison (Java2D / LaTeX serveur) | — | — | ✅ **CADUQUE** (§ 8 revue)
@@ -36,6 +36,30 @@ nouvelle est **opt-in (défaut false)** et câblée sur les **4 sources** de con
 *Total* : 9 items portables — **7 ✅ (S-166→S-168)** + **2 🟡 à faire** (PRT-01, PRT-02).
 Rapports : `.agents/sessions/166-cap-qc-prt-04-03-09-06.adoc`,
 `167-cap-qc-prt-05-10.adoc`, `168-cap-qc-prt-07.adoc`.
+
+'''
+== 🎤 BACKLOG ACTIF — CAP-QC-VOICE 🟡 CADRÉ 0/5 (S-169)
+
+_Contrôle qualité de voix par ASR (PRT-02 du portage `prepa` → capsule). **Prouver que la
+voix synthétisée est juste** : fidélité mot-à-mot (transcription vs texte attendu),
+souffle de fond, choix de prise. Source `prepa` : `verif_voix.py`/`score_voix.py`/
+`rapport_voix.py`/`compare_prises.py`. Doc de cadrage :
+`.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`._
+
+[cols="1,4,3,1,2", options="header"]
+|===
+| US | Objet | Cibles | Pts | Statut
+
+| US-0 | Cadrage (audit 7 constats + décisions) | ce doc | 0 | ✅ S-169
+| US-1 | **Domaine pur** `capsule.voice` (`TextNormalizer`/`WordAligner`/`FidelityScorer`/`SnrEstimator`/`VoiceScore`) | `capsule.voice` | 3 | 🟡 À FAIRE
+| US-2 | **Port + tâche** `SpeechRecognizer` (CLI whisper) + `verifyCapsuleVoice` (rapport JSON + seuils + strict) — opt-in `voice.verifyEnabled` | `capsule.voice`, `CapsuleManager` | 5 | 🟡 À FAIRE
+| US-3 | **Choix de prise** (régénérer + retenir la meilleure) | `capsule.voice`, `CapsuleBuildTask` | 3 | 🟡 À FAIRE
+| US-4 | **BDD + dogfooding** (`capsule_voice_quality.feature`, fakes zéro-ASR + 1 run réel skip-gardé) | feature + steps | 3 | 🟡 À FAIRE
+| US-5 | *(optionnel)* **Karaoké** sur timings ASR | `capsule.viral` | 3 | 🟡 À FAIRE
+|===
+
+*Total* : 5 US ~14 pts — **US-0 ✅ (S-169)** + 4 à faire. Contraintes : zéro modèle/port en
+dur ; ASR jamais prérequis de `check` (dégradation + `assumeTrue`).
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)

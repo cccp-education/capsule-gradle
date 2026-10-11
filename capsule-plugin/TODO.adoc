@@ -13,6 +13,16 @@
 . [ ] **PRT-01** — prononciation « dit / lu » (`PronunciationLexicon`) + cache par contenu (`slide-NN-<key>.mp3`) — intrusif (`TtsManager`/`CapsuleBuildTask` + tests).
 . [ ] **PRT-02** — QC voix par ASR (EPIC **`CAP-QC-VOICE`** : port `SpeechRecognizer`, fidélité + souffle + choix de prise) — à cadrer.
 . [x] **PRT-07** ✅ S-168 (US-1) — timeline déterministe (`capsule.timeline` pur : frames entières, contigu, `lead`/`tail`/`avance`) + log observable ; 8 unit + `capsule_timeline.feature` (runner 33e) + 1 FT. Câblage capture/sous-titres = US-2.
+
+'''
+== 🎤 EPIC CAP-QC-VOICE — QC voix par ASR (cadré S-169, doc `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`)
+
+. [x] **US-0** ✅ S-169 — cadrage (audit 7 constats + décisions ; 5 alternatives écartées).
+. [ ] **US-1** — domaine pur `capsule.voice` (`TextNormalizer`/`WordAligner`/`FidelityScorer`/`SnrEstimator`/`VoiceScore`) + unit + BDD (zéro ASR).
+. [ ] **US-2** — port `SpeechRecognizer` (CLI whisper) + tâche `verifyCapsuleVoice` (rapport JSON + seuils + strict ; opt-in `voice.verifyEnabled`) + `VoiceConfig` 4 sources.
+. [ ] **US-3** — choix de prise (régénérer + retenir la meilleure).
+. [ ] **US-4** — BDD `capsule_voice_quality.feature` (fakes zéro-ASR) + dogfooding réel skip-gardé.
+. [ ] **US-5** *(optionnel)* — karaoké (`capsule.viral`) sur timings ASR.
 . [x] **PRT-11** ✅ CADUQUE — rendu de contenu maison (Java2D / LaTeX serveur) écarté (§ 8 revue).
 
 '''

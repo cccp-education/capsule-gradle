@@ -1,0 +1,62 @@
+= Session 169 — CAP-QC-VOICE : cadrage (PRT-02, QC voix par ASR)
+:date: 2026-10-11
+:type: cadrage (gouvernance pure, zéro code)
+:sujet: Cadrage de l'EPIC CAP-QC-VOICE — contrôle qualité de voix (ASR) porté de prepa
+:statut: CLÔTURÉE
+
+== Contexte
+
+Suite de l'EPIC **CAP-QC** (portage `prepa_electricite_complet` → capsule). S-166→168 ont
+livré PRT-04/03/09/06, PRT-05/10, PRT-07 (CAP-QC **7/9**). Reste **PRT-02** (QC voix par
+ASR), identifié dès la revue comme un **EPIC à part** vu l'effort. Session de **cadrage**
+(gouvernance pure, zéro code, pattern S-057/S-063/S-074).
+
+== Audit au code (constats)
+
+* `TtsEngine` n'a **aucun** contrôle qualité ; `NoOpTtsEngine` écrit un **texte** sous
+  extension audio ; **aucun ASR** dans `src/main` ; le karaoké viral trame les mots
+  **proportionnellement**, sans alignement réel ; pas de normalisation pour **comparer**
+  dit ↔ transcrit ; `synthesizeTtsForScript` ne retente qu'une fois, sans mesure ;
+  `ExternalBinaryAssumption`/`BinaryAvailability` permettent de skipper un binaire absent.
+* Source `prepa` : `verif_voix.py` (fidélité mot-à-mot + souffle), `score_voix.py` /
+  `rapport_voix.py` (normalisation, recollage des sigles), `compare_prises.py` (choix de
+  prise), `verif_voix_par.py` (sharding).
+
+== Décision
+
+* **Domaine pur** `capsule.voice` : `TextNormalizer`, `WordAligner`, `FidelityScorer`,
+  `SnrEstimator`, `VoiceScore`.
+* **Port** `SpeechRecognizer` (adapter CLI whisper, hors JVM, jamais dure) + **tâche**
+  `verifyCapsuleVoice` (groupe `verification`, rapport JSON, seuils, strict).
+* **Choix de prise** : régénérer + retenir la meilleure (fichier de sélection).
+* **Opt-in** `voice.verifyEnabled` (défaut false) + seuils DSL ; `VoiceConfig` 4 sources.
+* **Dégradation** : ASR absent → skip ; `strictMode` → échec ; la CI **ne dépend jamais**
+  de l'ASR pour le vert (`assumeTrue`).
+* **5 US ~14 pts** (US-0 ✅ cadrage ; US-1 domaine pur, US-2 port+tâche, US-3 choix de
+  prise, US-4 BDD + dogfooding, US-5 karaoké optionnel).
+
+*Document* : `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`.
+
+== Vérifications
+
+Gouvernance pure : **zéro code modifié**. Le build du plugin reste la baseline du S-168
+(compiles + `validatePlugins` VERTS ; CI verte au commit S-168). Zéro secret.
+
+== Fichiers
+
+* Créé : `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`.
+* Mis à jour (gouvernance) : `PROMPT_REPRISE.adoc`, `INDEX.adoc`, `SESSIONS_HISTORY.adoc`,
+  `TEST_COVERAGE_ANALYSIS.adoc`, `archives/COMPLETED_TASKS_ARCHIVE_2026-10.adoc`,
+  `BACKLOG.adoc`, `TODO.adoc` ; `code_review.adoc` (prepa) révision g.
+
+== Suite
+
+CAP-QC **7/9** : reste **PRT-01** (prononciation dit/lu + cache par contenu, intrusif) —
+code. Et le nouvel **EPIC CAP-QC-VOICE** (5 US) à démarrer à l'US-1 (domaine pur
+`capsule.voice`, zéro ASR) dès confirmation pilote.
+
+== Leçon
+
+Un EPIC « outil externe » (ASR) se cadre d'abord : l'audit au code fixe la frontière
+(domaine pur = testable sans ASR ; port = skip-gardé) et évite de faire de l'ASR un
+prérequis de `check`.

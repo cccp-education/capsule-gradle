@@ -1,6 +1,13 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-11
 
+== Session 169 — CAP-QC-VOICE : cadrage (PRT-02) ✅
+
+* EPIC **CAP-QC-VOICE** cadré (contrôle qualité de voix par ASR) : domaine pur
+  `capsule.voice` + port `SpeechRecognizer` + tâche `verifyCapsuleVoice` + choix de prise ;
+  opt-in `voice.verifyEnabled`, ASR jamais prérequis de `check`. **5 US ~14 pts** (US-0 ✅).
+  Doc `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`. Gouvernance pure, zéro code.
+
 == Session 168 — EPIC CAP-QC (suite) : PRT-07 timeline déterministe ✅
 
 * Domaine pur `capsule.timeline` (`TimelineConfig`/`TimelineEntry`/`Timeline` +

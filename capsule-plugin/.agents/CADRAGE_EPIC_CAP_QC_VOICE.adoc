@@ -1,0 +1,112 @@
+= CADRAGE — EPIC CAP-QC-VOICE (Détroit / capsule-gradle)
+:session: 169
+:date: 2026-10-11
+:epic: CAP-QC-VOICE (PRT-02 du portage `prepa` → capsule)
+:source: `foundry/private/prepa_electricite_complet` (`verif_voix.py`, `score_voix.py`, `rapport_voix.py`, `compare_prises.py`, `verif_voix_par.py`)
+
+== Objectif
+
+**Prouver que la voix synthétisée est juste.** Capsule produit une narration TTS par
+slide mais ne vérifie **jamais** que ce qui a été prononcé correspond à ce qui était
+écrit. Cet EPIC porte le contrôle qualité de voix du dépôt `prepa` (fidélité par
+reconnaissance de la parole, souffle de fond, choix de prise) dans un domaine pur
+`capsule.voice` + un port ASR.
+
+== Constat — audit au code (S-169)
+
+[cols="1,3", options="header"]
+|===
+| # | Constat
+
+| C1 | `TtsEngine` (`TtsManager.kt`) n'a **aucun** contrôle qualité : `synthesize()` réussit ou lève. Rien ne vérifie le **contenu** produit (fidélité, souffle).
+| C2 | `NoOpTtsEngine.synthesize` écrit un **texte** (`# TTS PLACEHOLDER …`) **sous extension audio** : l'aval consomme un « MP3 » qui n'en est pas un, sans signal explicite de qualité.
+| C3 | **Aucun ASR** dans `src/main` (`grep whisper/transcribe/SpeechRecognizer` = 0). Le seul « audio » analysé est la **durée** (`MediaProbeUtil`).
+| C4 | Le karaoké viral (`KaraokeWordPlanner`) trame les mots **proportionnellement à leur longueur**, pas par alignement réel — aucune source de timings mot-à-mot véridiques.
+| C5 | `SubtitleTextNormalizer` (PRT-03) normalise pour l'**affichage** ; il n'existe pas de normalisation pour **comparer** dit ↔ transcrit (nombres en lettres, symboles mathématiques, accents).
+| C6 | `CapsuleVideoTask.synthesizeTtsForScript` ne retente **qu'une** fois et ne mesure pas la qualité ; `CapsuleBuildTask` ne retente pas du tout.
+| C7 | `ExternalBinaryAssumption` / `BinaryAvailability` existent : un binaire absent (ex. `whisper`) se **skippe** proprement (CI fast vs full).
+|===
+
+*Source `prepa`* : `verif_voix.py` transcrit chaque prise (`faster-whisper` large-v3) et
+compare au texte attendu (distance d'édition **mot à mot** après normalisation ; mots
+**en plus** = hallucination ; RMS de la fenêtre la plus silencieuse = souffle) ;
+`score_voix.py`/`rapport_voix.py` normalisent et recollent les sigles épelés pour
+débruiter les faux positifs ; `compare_prises.py` **choisit la meilleure prise**.
+
+== Décision
+
+* **Domaine pur** `capsule.voice` :
+  - `TextNormalizer` — normalise pour **comparer** (nombres en lettres, symboles, accents,
+    sigles épelés recollés) → `List<String>` de mots ;
+  - `WordAligner` — distance d'édition + liste d'opérations (`~`/`+`/`-`) ;
+  - `FidelityScorer` — `wordErrorRate` + `surplus` (mots en plus) → `VoiceScore` ;
+  - `SnrEstimator` — souffle de fond vs niveau parlé (dB) ;
+  - `VoiceScore(text, asr, wordErrorRate, surplus, snrDb, durationSecs)`.
+* **Port ASR** : `fun interface SpeechRecognizer { fun transcribe(audio: File, language: String): String }`
+  — adapter CLI `whisper`/`faster-whisper` (hors JVM), **jamais** une dépendance dure.
+* **Tâche** `verifyCapsuleVoice` (groupe `verification`) : transcrit chaque
+  `slide-NN.mp3`, score, écrit un **rapport JSON**, **échoue** (ou avertit en dégradé) si
+  `wordErrorRate > maxWordErrorRate` ou `snrDb < minSnrDb` ou `surplus >= surplusThreshold`.
+  Réutilise le patron `VideoDurationValidator` (objet pur + résultat sealed).
+* **Choix de prise** : si une prise échoue le seuil, **régénérer** (`--prise N`, comme
+  `gen_audio.py`) et **retenir la meilleure** (moindre `wordErrorRate`) — fichier de
+  sélection `audio/choix.json` (miroir `compare_prises.py`).
+* **Détection du placeholder NoOp** (C2) : un « MP3 » placeholder transcrit en **vide** →
+  `wordErrorRate` élevé / transcription vide → signal explicite (jamais silencieux).
+* **Opt-in** : `voice.verifyEnabled` (défaut **false**, backward compat) ; seuils
+  configurables (`maxWordErrorRate=0.15`, `minSnrDb=66.0`, `surplusThreshold=3`) ;
+  `VoiceConfig` sur les **4 sources** + `pushConfigIntoExtension`.
+* **Dégradation** : ASR absent → skip (log) ; `strictMode` → échec. En CI rapide, un test
+  d'intégration ASR s'exécute `assumeTrue(ExternalBinaryAssumption)` ; la **CI ne peut pas
+  dépendre** de l'ASR pour le vert (le QC est un **signal**, pas un prérequis de `check`).
+* **Frontière vocabulaire** : `OssVocabularyGuardTest` s'applique (aucun `formation`/`FPA`).
+
+== Alternatives écartées
+
+* **ASR côté codebase N1** — le RAG de codebase ingère du texte, il ne transcrit pas
+  d'audio de capsule ; la responsabilité est capsule (qui produit l'audio).
+* **Contrat N0 MEMPHIS** — `VoiceScore`/`SpeechRecognizer` ne sont pas un contrat **pur
+  sans dépendance Gradle** partagé : c'est un utilitaire de capsule, pas un noyau
+  cross-borough (même arbitrage que la résilience LLM S-162, CADUQUE en N0).
+* **Forced alignment sans ASR** — irréaliste sans modèle acoustique ; l'ASR est la brique
+  standard (le dépôt `prepa` l'a mesuré).
+* **QC par durée seule** — aveugle au contenu (un placeholder, une mauvaise prononciation,
+  une hallucination ont la bonne durée).
+* **Embarquer un modèle en dur** — viole « zéro modèle/port en dur » (SEC-1) ; le modèle,
+  le langage et les seuils restent au DSL.
+
+== Découpage (US)
+
+[cols="1,4,2,1,2", options="header"]
+|===
+| US | Description | Cibles | Pts | Statut
+
+| US-0 | **Cadrage** (audit + décisions) | ce document | 0 | ✅ S-169
+| US-1 | **Domaine pur** — `TextNormalizer` + `WordAligner` + `FidelityScorer` + `SnrEstimator` + `VoiceScore` | `capsule.voice` | 3 | 🟡 À FAIRE
+| US-2 | **Port + tâche** — `SpeechRecognizer` (CLI whisper) + `verifyCapsuleVoice` (rapport JSON + seuils + strict) | `capsule.voice`, `CapsuleManager` | 5 | 🟡 À FAIRE
+| US-3 | **Choix de prise** — régénérer + retenir la meilleure (fichier de sélection) | `capsule.voice`, `CapsuleBuildTask` | 3 | 🟡 À FAIRE
+| US-4 | **BDD + dogfooding** — `capsule_voice_quality.feature` (fakes, zéro ASR) + un run réel skip-gardé | feature + steps | 3 | 🟡 À FAIRE
+| US-5 | *(optionnel)* **Câblage karaoké** — timings mot-à-mot issus de l'ASR (décalage/`confidence`) | `capsule.viral` | 3 | 🟡 À FAIRE
+|===
+
+*Total* : 5 US (~14 pts) — à mener après confirmation pilote (effort ASR hors JVM).
+
+== Risques
+
+[cols="2,3", options="header"]
+|===
+| Risque | Mitigation
+
+| ASR hors JVM (Whisper), coût CPU/mémoire | port + adapter CLI ; `assumeTrue` en CI ; jamais un prérequis de `check`.
+| Faux positifs (mots anglais, sigles) | normalisation + recollage (patterns `score_voix`/`rapport_voix`) ; le QC **signale**, le pilote tranche.
+| 22 langues | modèle ASR paramétrable par langue (DSL) ; pas de modèle en dur.
+| Le QC est un signal, pas une vérité | seuils conservateurs, rapport lisible, dégradation non bloquante par défaut.
+| Frontière DAG | capsule-scoped ; pas de N0 ; pas de dépendance codebase.
+|===
+
+== Non-objectifs
+
+* Ne **pas** faire de l'ASR un prérequis de `check` (le vert CI ne dépend pas d'un modèle).
+* Ne **pas** embarquer de modèle/port/langue en dur.
+* Ne **pas** bloquer la production si l'ASR est absent (dégradé + warning).
+* Ne **pas** toucher le contenu pédagogique (techniques seulement).

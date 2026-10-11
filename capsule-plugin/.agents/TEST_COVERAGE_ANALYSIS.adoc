@@ -1,7 +1,17 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-11
-:session: 168 CAP-QC (suite : PRT-07 timeline déterministe)
+:session: 169 CAP-QC-VOICE : cadrage (gouvernance pure)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 11 octobre 2026 (après session 169)
+
+.Cadrage CAP-QC-VOICE
+|===
+| Élément | Changement | Tests
+| — | **Aucun test modifié.** Session de cadrage (gouvernance pure, zéro code) : ouverture de l'EPIC CAP-QC-VOICE (QC voix par ASR). Le build reste la baseline S-168 (compiles + `validatePlugins` VERTS). | 0
+|===
+
+*Totaux S-169* : 0. La baseline de tests du commit est celle de S-168 (CI verte).
 
 == Couverture — 11 octobre 2026 (après session 168)
 
