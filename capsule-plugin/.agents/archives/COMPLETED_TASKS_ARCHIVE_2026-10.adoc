@@ -1,6 +1,16 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-11
 
+== Session 160 — EPIC LLM-RESILIENCE : dégradation sur erreur LLM transitoire ✅
+
+* Constat dogfooding S-158 (`too many concurrent requests` → `generateViralCampaign`
+  échoue).
+* Garde `capsule.ai.LlmResilience.guarded` (warning + repli sur `Exception`, ne
+  capture pas les `Error`) + adaptateurs à repli sûr (`ChatModelViralHookGenerator`
+  → `null`, `ChatModelTranscriptEnhancer` → template) ; pipeline fail-fast.
+* Baby-step DDD/TDD/BDD : 6 unit + 3 scénarios `@resilience` (28e runner
+  `cucumberTestLlmResilience`). Capsule-scoped. Zéro bump.
+
 == Session 159 — Tâche Gradle `normalizeViralStoryboard` (helper d'authoring) ✅
 
 * Domaine pur `ViralStoryboardNormalizer` (`normalize` → remplit les

@@ -1,0 +1,55 @@
+= Session 160 — EPIC LLM-RESILIENCE (dégradation sur erreur LLM transitoire)
+:session: 160
+:borough: Détroit
+:date: 2026-10-11
+:epic: LLM-RESILIENCE
+:us: US-0 (cadrage) + US-1 (garde partagée + adaptateurs à repli sûr)
+
+== Mission
+
+Le backlog n'a **plus aucun EPIC ouvert**. Le seul candidat pleinement actionnable
+(constat dogfooding S-158) : rendre les adaptateurs LLM de capsule **résilients aux
+erreurs transitoires** (429/503/timeout) — un hoquet d'un LLM cloud facturé ne doit
+pas faire échouer tout un build. Cadrage `.agents/CADRAGE_EPIC_LLM_RESILIENCE.adoc`.
+
+== Livrable
+
+=== Domaine (unit)
+
+* `capsule.ai.LlmResilience` (objet) : `guarded(operation, fallback, block)` —
+  exécute le bloc, **journalise un warning** (jamais silencieux) et retourne le
+  repli sur toute `Exception` ; **ne capture pas** les `Error`.
+* `LlmResilienceTest` : 4 tests (succès, exception runtime → repli, IllegalState →
+  repli, `Error` non avalé).
+
+=== Adaptateurs (unit)
+
+* `ChatModelViralHookGenerator.generate` : l'appel modèle est enveloppé →
+  repli `null` (message du storyboard) sur erreur transitoire.
+  `ViralHookTest` +1 (modèle qui échoue → `null`).
+* `ChatModelTranscriptEnhancer.enhance` : enveloppé → repli `template` déterministe.
+  `TranscriptLlmEnhancerTest` +1 (modèle qui échoue → template).
+* `ChatModelCapsuleLlm` **inchangé** (fail-fast) : le nœud `generateSpeakerNotesNode`
+  exige un contenu non-blanc — pas de repli sûr.
+
+=== BDD (cucumber)
+
+* `capsule_llm_resilience.feature` `@resilience` : 3 scénarios (garde succès,
+  garde échec → repli, générateur de hook → `null`).
+* `CapsuleLlmResilienceSteps` (préfixés « guarded »/« viral hook generator »/
+  « failing chat model », S-088) + `CapsuleLlmResilienceCucumberRunner` (S-082).
+* `CucumberTaskSpec("cucumberTestLlmResilience")` (28e runner) câblé `full-tests.yml`.
+
+== Portée / frontière
+
+* **Capsule-scoped** : seuls les adaptateurs à **repli sûr** dégradent. Le pipeline
+  de contenu reste fail-fast (contenu obligatoire).
+* **Transverse** (slider/planner/codebase) : extraction N0 d'un socle partagé =
+  candidat, hors scope (frontière DAG).
+
+== Gates
+
+* Local = Build (RÈGLE EAGER) : `compileKotlin` + `compileTestKotlin` +
+  `compileFunctionalTestKotlin` **VERTS** ; tâche Cucumber enregistrée. Les suites
+  s'exécutent en CI — preuve = run du push.
+* `rg` vocabulaire métier dans `src/` = 0. Zéro secret, zéro bump, zéro publication.

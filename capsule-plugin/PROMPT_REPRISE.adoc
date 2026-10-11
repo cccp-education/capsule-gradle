@@ -1,39 +1,38 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 160
+:session: 161
 :borough: Détroit
-:session_precedente: 159 — tâche `normalizeViralStoryboard` (helper d'authoring)
+:session_precedente: 160 — EPIC LLM-RESILIENCE (dégradation sur erreur LLM transitoire)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
+=== S-160 — EPIC LLM-RESILIENCE TERMINÉ
+
+- Garde partagée `capsule.ai.LlmResilience.guarded` (warning + repli sur `Exception`,
+  ne capture pas les `Error`) appliquée aux adaptateurs à repli sûr
+  (`ChatModelViralHookGenerator` → `null`, `ChatModelTranscriptEnhancer` → template).
+- Pipeline `ChatModelCapsuleLlm` fail-fast (pas de repli sûr).
+- 6 unit + 3 BDD `@resilience` (28e runner `cucumberTestLlmResilience`).
+- Cadrage `.agents/CADRAGE_EPIC_LLM_RESILIENCE.adoc`. Capsule-scoped.
+- Rapport : `.agents/sessions/160-llm-resilience.adoc`.
+
 === S-159 — tâche `normalizeViralStoryboard`
 
-- Domaine pur `ViralStoryboardNormalizer` (remplit les `enteringTransition`
-  manquantes par rôle ; explicites préservées ; idempotent) + tâche Gradle
-  (groupe `generate`) + wiring. 27e runner `cucumberTestViralNormalize`.
-- Remplace le script Python ad-hoc S-158 (écosystème JVM). Workflow validé en réel :
-  gate rejette → normalize → gate ✅.
-- Rapport : `.agents/sessions/159-normalize-viral-storyboard-task.adoc`.
+- Domaine pur `ViralStoryboardNormalizer` + tâche Gradle (groupe `generate`),
+  27e runner `cucumberTestViralNormalize`. Remplace le script Python ad-hoc S-158.
 
-=== S-158 — CAP-SHORT US-4 (dogfooding viral réel, LLM metered)
+== Mission Session 161
 
-- Chaîne e2e verte (LLM `deepseek-v4.1-flash:cloud:11434`) : MP4 30 s + cover
-  1080×1920 + captions ASS + gate OK. **CAP-SHORT TERMINÉ 6/6.**
+**Tous les EPICs actionnables sont clos.** Restent (accord pilote ou optionnel) :
 
-== Mission Session 160
-
-**Plus aucun EPIC actionnable** : tous les EPICs du backlog sont ✅ TERMINÉ ou
-CADUQUE. Restent (accord pilote ou optionnel) :
-
-1. **Publication `capsule 0.0.3`** (accord pilote) — porte le RENAME S-153 + tout
-   CAP-VIRAL-E2E (S-154→S-156) + `normalizeViralStoryboard` (S-159). Procédure :
-   `[versions].capsule` + `publishToMavenLocal` +
-   `publishAggregationToCentralPortal --no-daemon` + consommateurs (racine +
+1. **Publication `capsule 0.0.3`** (accord pilote) — porte le RENAME S-153 +
+   CAP-VIRAL-E2E (S-154→S-156) + `normalizeViralStoryboard` (S-159) +
+   LLM-RESILIENCE (S-160). Procédure : `[versions].capsule` + `publishToMavenLocal`
+   + `publishAggregationToCentralPortal --no-daemon` + consommateurs (racine +
    `workspace-bom`).
-2. **Candidats** (cadrage requis, `TODO.adoc`) : **LLM resilience** (transverse —
-   dégrader sur erreur de transport LLM, constat S-158) ; **dogfooding Remotion+Manim**
-   (nécessite `manim`).
-3. **Optimisation CI** (optionnel) — `Full Tests` ~30 min.
+2. **Candidats** (`TODO.adoc`) : **dogfooding Remotion+Manim** (nécessite `manim`) ;
+   **extraction N0 résilience transverse** (slider/planner/codebase) ; optimisation CI.
+3. **Publication** = Règle 2 (accord explicite requis).
 
 == Points d'attention
 
@@ -51,12 +50,14 @@ CADUQUE. Restent (accord pilote ou optionnel) :
 * Baby-step DDD/TDD/BDD ; tout nouveau feature cucumber = runner dédié (S-082) +
   steps préfixés (S-088) + câblage `full-tests.yml`. Un test qui isole une tâche
   doit exclure **toutes** ses dépendances productrices (`-x`).
-* Viral = socle FFmpeg (`ViralCaptureStrategy` force `SCREENSHOT`) ; interface IA =
-  codebase N1.
+* Viral = socle FFmpeg ; interface IA = codebase N1 ; résilience LLM = adaptateurs à
+  repli sûr uniquement.
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.2 (Central).
-* CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **6/6** ; CAP-VIRAL-E2E **3/3**.
+* CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **6/6** ; CAP-VIRAL-E2E **3/3** ;
+  LLM-RESILIENCE **1/1**.
 * RENAME métier **SOLDÉ** (S-153) — délivré dans la prochaine release `0.0.3`.
+
 

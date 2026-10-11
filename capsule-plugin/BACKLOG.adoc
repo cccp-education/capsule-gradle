@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-11 (S-159 — tâche `normalizeViralStoryboard` : helper d'authoring reproductible)
+:last_update: 2026-10-11 (S-160 — EPIC LLM-RESILIENCE TERMINÉ : dégradation sur erreur LLM transitoire)
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)
@@ -213,6 +213,34 @@ dans la fenêtre du beat) + `AssKaraokeDocument` (ASS v4.00+ complet, `\k` mot-�
 + `RenderViralSubtitlesTask` (`<id>.ass` par variante, pur texte) + gate étendue
 (vidéo + thumbnail + soustitre) + 10 unit + 5 functional + 4 scénarios BDD `@karaoke`
 (26e runner `cucumberTestViralKaraoke`). Local = Build.
+
+'''
+
+== 🎬 LLM-RESILIENCE ✅ TERMINÉ 1/1 US (S-160)
+
+_Rendre les adaptateurs LLM de capsule **résilients aux erreurs transitoires** du
+LLM cloud (429/503/timeout) : un hoquet d'un service facturé ne doit pas faire
+échouer tout un build. Constat issu du dogfooding S-158 (`too many concurrent
+requests` → `generateViralCampaign` échoue)._
+
+*Cadrage* : `.agents/CADRAGE_EPIC_LLM_RESILIENCE.adoc` (S-160).
+*Charge* : 1 US ~2 pts — **TERMINÉ**.
+
+[cols="1,4,2,1,2", options="header"]
+|===
+| US | Description | Cibles | Pts | Statut
+
+| US-0 | Cadrage (audit + décisions) | `.agents/CADRAGE_EPIC_LLM_RESILIENCE.adoc` | 0 | ✅ S-160
+| US-1 | **Garde partagée + adaptateurs à repli sûr** — `LlmResilience.guarded` (log + repli sur `Exception`, jamais silencieux) appliqué à `ChatModelViralHookGenerator` (repli `null`) et `ChatModelTranscriptEnhancer` (repli template) ; pipeline `ChatModelCapsuleLlm` **fail-fast** (pas de repli sûr) | `capsule.ai`, `capsule.viral`, `capsule.transcript` | 2 | ✅ S-160
+|===
+
+*Livré S-160* : `capsule.ai.LlmResilience` (objet pur, `guarded(operation, fallback,
+block)` — warning + repli sur `Exception`, ne capture pas les `Error`) + les 2
+adaptateurs enveloppés (repli `null` / `template`) + 4 unit (`LlmResilienceTest`) +
+2 unit adaptateurs + 3 scénarios BDD `@resilience` (28e runner
+`cucumberTestLlmResilience`). **Capsule-scoped** : seuls les adaptateurs à repli sûr
+dégradent ; le pipeline de contenu reste fail-fast. Extraction N0 transverse
+(slider/planner/codebase) = candidat hors scope.
 
 '''
 == 🎬 CAP-CONTEXT ✅ TERMINÉ 4/4 US (S-144 cadrage ; US-1/2/3 S-145, US-4 S-152)

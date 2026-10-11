@@ -101,6 +101,7 @@ jobs:
           cucumberTestViralThumbnail
           cucumberTestViralKaraoke
           cucumberTestViralNormalize
+          cucumberTestLlmResilience
           -PrunCucumber
         working-directory: capsule-plugin
         env:

@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-11 (S-159) — tâche `normalizeViralStoryboard` (helper d'authoring). Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-11 (S-160) — EPIC LLM-RESILIENCE (dégradation sur erreur LLM transitoire). Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (120-159)
+== Sessions récentes (120-160)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 160 | 2026-10-11 | feat+test | **EPIC LLM-RESILIENCE — dégradation sur erreur LLM transitoire.** Constat dogfooding S-158 : `too many concurrent requests` faisait échouer `generateViralCampaign`. Garde partagée `capsule.ai.LlmResilience.guarded(operation, fallback, block)` — exécute le bloc, **journalise un warning** (jamais silencieux) et retourne le repli sur toute `Exception` ; **ne capture pas** les `Error`. Appliquée aux adaptateurs à **repli sûr** : `ChatModelViralHookGenerator` (repli `null` → message du storyboard) et `ChatModelTranscriptEnhancer` (repli template). Pipeline `ChatModelCapsuleLlm` **fail-fast** (pas de repli sûr — contenu obligatoire, `require`). Baby-step DDD/TDD/BDD : `LlmResilienceTest` (4 unit) + adaptateurs étendus (+2 unit) + `capsule_llm_resilience.feature` `@resilience` (3 scénarios) + runner dédié 28e `cucumberTestLlmResilience` câblé `full-tests.yml`. Cadrage `.agents/CADRAGE_EPIC_LLM_RESILIENCE.adoc`. **Capsule-scoped** (extraction N0 transverse = candidat). Local = Build, Tests = CI. Zéro bump, zéro publication. | 9/10
 
 | 159 | 2026-10-11 | feat+test | **Tâche Gradle `normalizeViralStoryboard`** — helper d'authoring reproductible remplaçant le script Python ad-hoc de S-158. Domaine pur `ViralStoryboardNormalizer` (`normalize(storyboard)` → remplit les `enteringTransition` manquantes par rôle : `hook→"— (ouverture)"`, `development→"cut"`, `cta→"fade"`, fallback `"cut"` ; explicites préservées ; idempotent) + `NormalizeViralStoryboardTask` (groupe `generate`, lit `-Pcapsule.viral.storyboardFile`, écrit `build/capsule/viral/storyboard.normalized.adoc` ; storyboard absent → warning) + `CapsuleManager` wiring. Baby-step DDD/TDD/BDD : `ViralStoryboardNormalizerTest` (6 unit) + `NormalizeViralStoryboardFunctionalTest` (3 functional TestKit) + `capsule_viral_normalize.feature` `@normalize` (4 scénarios) + runner dédié 27e `cucumberTestViralNormalize` câblé `full-tests.yml`. **Workflow validé en réel** (`/tmp` + `publishToMavenLocal`) : gate rejette un storyboard sans transitions → `normalizeViralStoryboard` (4 remplies) → `generateViralCampaign` gate ✅. Local = Build, Tests = CI. Zéro bump, zéro publication. | 9/10
 

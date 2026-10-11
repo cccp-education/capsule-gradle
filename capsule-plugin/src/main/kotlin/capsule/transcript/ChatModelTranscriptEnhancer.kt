@@ -1,5 +1,6 @@
 package capsule.transcript
 
+import capsule.ai.LlmResilience
 import dev.langchain4j.data.message.UserMessage
 import dev.langchain4j.model.chat.ChatModel
 
@@ -17,14 +18,17 @@ import dev.langchain4j.model.chat.ChatModel
  * when the LLM returns a blank/whitespace-only response, the adapter
  * returns the original [template] unchanged — the caller keeps a valid
  * AsciiDoc article rather than an empty one (economy of ink: a blank LLM
- * answer is not a failure, it is a no-op).
+ * answer is not a failure, it is a no-op). A **transient** LLM error
+ * (transport, 429/503, timeout) also degrades to [template] via [LlmResilience].
  */
 class ChatModelTranscriptEnhancer(private val model: ChatModel) : TranscriptLlmEnhancer {
 
     override fun enhance(template: String, plan: TranscriptPlan): String {
         if (template.isBlank()) return template
         val prompt = TranscriptPromptBuilder.buildEnhancePrompt(plan)
-        val response = model.chat(UserMessage.from(prompt)).aiMessage().text()
-        return response.takeUnless { it.isNullOrBlank() }?.trim()?.plus("\n") ?: template
+        return LlmResilience.guarded("transcript enhancement", template) {
+            val response = model.chat(UserMessage.from(prompt)).aiMessage().text()
+            response.takeUnless { it.isNullOrBlank() }?.trim()?.plus("\n") ?: template
+        }
     }
 }

@@ -322,6 +322,16 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleStoryboardNormalizeCucumberRunner",
             timeoutMinutes = 10,
         ),
+        // LLM resilience — a metered cloud LLM fails transiently (429/503, timeout);
+        // adapters with a safe fallback degrade instead of failing the build. Dedicated
+        // runner pattern S-082; steps prefixed "guarded"/"viral hook generator" (S-088).
+        CucumberTaskSpec(
+            name = "cucumberTestLlmResilience",
+            features = listOf("src/test/features/capsule_llm_resilience.feature"),
+            tags = listOf("@resilience"),
+            runnerClass = "capsule.scenarios.CapsuleLlmResilienceCucumberRunner",
+            timeoutMinutes = 10,
+        ),
     )
 }
 

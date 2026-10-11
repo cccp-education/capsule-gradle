@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-11 (S-159 — **tâche `normalizeViralStoryboard`** : helper d'authoring reproductible remplaçant le script ad-hoc S-158 — domaine pur `ViralStoryboardNormalizer` + tâche Gradle + 27e runner `cucumberTestViralNormalize` ; workflow validé en réel : gate rejette → normalize → gate passe. **Tous les EPICs actionnables sont clos** (CAP-SHORT 6/6 à S-158). Précédent : S-158 dogfooding.)
- _Derniere session terminee_ : 159.
- _Prochaine session_ : 160 — plus aucun EPIC actionnable. Restent : **publication `capsule 0.0.3`** (accord pilote), candidats (LLM resilience, dogfooding Remotion+Manim), optimisation CI (optionnel).
- _Session en cours_ : — (S-159 terminée).
+ _Derniere mise a jour_ : 2026-10-11 (S-160 — **EPIC LLM-RESILIENCE TERMINÉ** : garde partagée `capsule.ai.LlmResilience.guarded` + adaptateurs à repli sûr (`ChatModelViralHookGenerator` → `null`, `ChatModelTranscriptEnhancer` → template) ; pipeline fail-fast ; 6 unit + 3 BDD `@resilience` (28e runner `cucumberTestLlmResilience`). Constat dogfooding S-158. Précédent : S-159 `normalizeViralStoryboard`.)
+ _Derniere session terminee_ : 160.
+ _Prochaine session_ : 161 — restent : **publication `capsule 0.0.3`** (accord pilote), candidat **dogfooding Remotion+Manim** (nécessite `manim`), extraction N0 résilience transverse (candidat), optimisation CI (optionnel).
+ _Session en cours_ : — (S-160 terminée).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -22,11 +22,13 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (149-159)
+== 10 dernières sessions (150-160)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 160 | 2026-10-11 | feat+test | **EPIC LLM-RESILIENCE — dégradation sur erreur LLM transitoire** (constat dogfooding S-158 : `too many concurrent requests` faisait échouer `generateViralCampaign`). Garde partagée `capsule.ai.LlmResilience.guarded(operation, fallback, block)` (warning + repli sur toute `Exception`, jamais silencieux, ne capture pas les `Error`) appliquée aux adaptateurs à **repli sûr** : `ChatModelViralHookGenerator` (repli `null` → message du storyboard) et `ChatModelTranscriptEnhancer` (repli template). Pipeline `ChatModelCapsuleLlm` **fail-fast** (pas de repli sûr — contenu obligatoire). Baby-step DDD/TDD/BDD : `LlmResilienceTest` (4) + adaptateurs étendus (+2) + `capsule_llm_resilience.feature` `@resilience` (3 scénarios) + runner dédié 28e `cucumberTestLlmResilience` câblé `full-tests.yml`. Cadrage `.agents/CADRAGE_EPIC_LLM_RESILIENCE.adoc`. Capsule-scoped (extraction N0 transverse = candidat). Local = Build, Tests = CI. Zéro bump, zéro publication. | 9/10
 
 | 159 | 2026-10-11 | feat+test | **Tâche Gradle `normalizeViralStoryboard`** (helper d'authoring, remplace le script Python ad-hoc S-158). Domaine pur `capsule.viral.ViralStoryboardNormalizer` (`normalize(storyboard)` → remplit les `enteringTransition` manquantes par rôle : `hook→"— (ouverture)"`, `development→"cut"`, `cta→"fade"`, fallback `"cut"` ; explicites préservées ; idempotent) + `NormalizeViralStoryboardTask` (groupe `generate`, lit `-Pcapsule.viral.storyboardFile`, écrit `build/capsule/viral/storyboard.normalized.adoc`) + `CapsuleManager` wiring. Baby-step DDD/TDD/BDD : `ViralStoryboardNormalizerTest` (6 unit) + `NormalizeViralStoryboardFunctionalTest` (3 functional TestKit) + `capsule_viral_normalize.feature` `@normalize` (4 scénarios) + runner dédié 27e `cucumberTestViralNormalize` câblé `full-tests.yml`. **Workflow validé en réel** (`/tmp` + `publishToMavenLocal`) : gate rejette un storyboard sans transitions → `normalizeViralStoryboard` (4 remplies) → gate ✅. Local = Build, Tests = CI. Zéro bump, zéro publication. | 9/10
 
@@ -75,6 +77,7 @@ _Sessions 000-117 archivées_ : rapports dans `.agents/sessions/`, résumé dans
 | **CAP-VIRAL** | **Moteur de campagnes virales YouTube/TikTok** — domaine `capsule.viral` : rendu vertical 9:16, format court 15-60 s, hooks/CTA **ancrés contexte N1**, **storyboard validable** (porte éditoriale), chaîne marketing (amont `capsule.copy` / aval `CampaignBundle`), thumbnail, sous-titres karaoké, batch multi-plateforme, **assemblage bout-en-bout** (`ViralCampaignAssembler`), **socle FFmpeg** (`ViralCaptureStrategy` — Playwright temps réel écarté), **câblage tâche `generateViralCampaign`**. 14 US ~53 pts. Cadrage `.agents/sessions/138-cap-viral-cadrage.adoc`. | ✅ TERMINÉ (S-142) — 14/14 US (wiring + US-7 livrés) | P0
 | CAP-SHORT | **Livraison end-to-end du format court** (YouTube Shorts / TikTok / Reels). **US-1a ✅ S-146**, **US-1b ✅ S-147**, **US-2 ✅ S-148**, **US-3 ✅ S-149**, **US-5 ✅ S-150**, **US-4 ✅ S-158** (dogfooding viral réel, LLM `deepseek-v4.1-flash:cloud:11434`). **6 US ~22 pts**. ~~maintenance RENAME~~ ✅ **SOLDÉE S-153**. Cadré S-143, diagnostic S-145. | ✅ TERMINÉ 6/6 (S-143→S-158) | P0 |
 | CAP-VIRAL-E2E | **Clore les 3 dettes e2e du moteur viral** — gate manifeste ↔ fichiers (US-1 S-154 : `ViralCampaignGate` + `validateViralCampaign`), thumbnail prod wiring (US-2 S-155 : `ViralThumbnailBuilder` + `renderViralThumbnails` + `thumbnailFor`), karaoké prod wiring (US-3 S-156 : `KaraokeWordPlanner` + `AssKaraokeDocument` + `renderViralSubtitles` + `subtitleFile`). Cadrage `.agents/CADRAGE_EPIC_CAP_VIRAL_E2E.adoc`. 3 US ~9 pts. | ✅ TERMINÉ 3/3 (S-154→S-156) | P1 |
+| LLM-RESILIENCE | **Résilience LLM** — dégrader sur erreur transitoire (429/503/timeout) au lieu d'échouer : garde `capsule.ai.LlmResilience.guarded` + adaptateurs à repli sûr (`ChatModelViralHookGenerator` → `null`, `ChatModelTranscriptEnhancer` → template). Cadrage `.agents/CADRAGE_EPIC_LLM_RESILIENCE.adoc`. Extraction N0 transverse = candidat. 1 US ~2 pts. | ✅ TERMINÉ 1/1 (S-160) | P2 |
 | RENAME-OSS | **Neutralisation du vocabulaire métier FPA/formation dans l'OSS** — garde `OssVocabularyGuardTest` (description POM + `src/`) + 24 fichiers `src/` + 13 docs neutralisés. | ✅ TERMINÉ (S-153) | P2 |
 | CAP-CONTEXT | **Contexte du storyboard** — identité visuelle (design system) + QQOQCP + fil conducteur narratif portés dans le domaine `capsule.viral` (`Qqoqcp`/`VisualIdentity`/`NarrativeThread` + champs additifs, builder/parser 3 sections, gate de cohérence) + `Capsule.jsx` sur tokens du brand book (US-4). Squelette : `.agents/CAPSULE_VIDEO.adoc`. 4 US ~10 pts. | ✅ TERMINÉ 4/4 (S-144 cadrage ; US-1/2/3 S-145, US-4 S-152) | P1 |
 | CAP-PODCAST | Extraction audio-only — `PodcastConcatenator` FFmpeg concat MP3 slides, tâche `generateCapsulePodcast`. Domaine `capsule.podcast` 13ème. 3 US ~4 pts | ✅ TERMINÉ (S-127) | P2
@@ -132,14 +135,15 @@ _Details EPICs terminés_ : rapports dans `.agents/sessions/`, détails archivé
 | `.agents/CAPSULE_VIDEO.adoc` | **Littérature agentique** — squelette de storyboard guidé par le contexte (design system + QQOQCP + fil conducteur) | EAGER
 |===
 
-_Total_ : 30 EPICs terminés + **CAP-VIRAL ✅ TERMINÉ (S-142, 14/14 US)** + **CAP-CONTEXT ✅ TERMINÉ 4/4 (S-145→S-152)** + **CAP-SHORT ✅ TERMINÉ 6/6 (S-146→S-158)** + **CAP-VIRAL-E2E ✅ TERMINÉ 3/3 (S-154→S-156)**. **Tous les EPICs actionnables sont clos.** _Baseline courante_ (S-136, exacte) :
+_Total_ : 30 EPICs terminés + **CAP-VIRAL ✅ (S-142, 14/14)** + **CAP-CONTEXT ✅ (S-145→S-152, 4/4)** + **CAP-SHORT ✅ (S-146→S-158, 6/6)** + **CAP-VIRAL-E2E ✅ (S-154→S-156, 3/3)** + **LLM-RESILIENCE ✅ (S-160, 1/1)**. **Tous les EPICs actionnables sont clos.** _Baseline courante_ (S-136, exacte) :
 1166 unit VERT, 75 functional VERT, 21 cucumber dédiés GREEN. **S-145** ajoute le
 **22e** runner dédié (`cucumberTestStoryboardContext`) câblé `full-tests.yml`
 (preuve = CI du push) ; **S-146→S-149** étendent la feature `@viral` (aucun runner
 neuf) ; **S-150** ajoute le **23e** runner (`cucumberTestViralRender`, vrai MP4) ;
 **S-154** le **24e** (`cucumberTestViralGate`) ; **S-155** le **25e**
 (`cucumberTestViralThumbnail`) ; **S-156** le **26e** (`cucumberTestViralKaraoke`) ;
-**S-159** le **27e** (`cucumberTestViralNormalize`).
+**S-159** le **27e** (`cucumberTestViralNormalize`) ; **S-160** le **28e**
+(`cucumberTestLlmResilience`).
 
 _Décision architecture_ : Docker FFmpeg reporté MVP1 (fausse bonne idée
 pour MVP0 — gain fonctionnel nul, complexité ajoutée). FFmpeg reste local

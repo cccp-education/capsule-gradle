@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-11 (S-159 — tâche `normalizeViralStoryboard` : helper d'authoring.)
+:last_update: 2026-10-11 (S-160 — EPIC LLM-RESILIENCE TERMINÉ : dégradation sur erreur LLM transitoire.)
 
 '''
 == ✅ Helper d'authoring — `normalizeViralStoryboard` (S-159)
@@ -81,12 +81,18 @@
 == 🟡 CANDIDATS (hors EPIC, accord pilote requis)
 
 . [ ] **Optimisation CI** (optionnel) — `Full Tests` ~30 min (20 runners pure-domain).
-. [ ] **LLM resilience** (transverse) — dégrader sur erreur de transport LLM plutôt
-  qu'échouer (tous les adaptateurs `ChatModel*`). Constat S-158.
 . [ ] **Dogfooding Remotion + Manim** — pipeline général enrichi (nécessite `manim`).
+. [ ] **Extraction N0 résilience transverse** — socle LLM resilience partagé
+  (slider/planner/codebase) si le besoin se confirme (frontière DAG, candidat).
 
 _Hors scope CAP-VIRAL_ : publication API (N4/GBL-002), écriture copy (GBL-006),
 calendrier + musique + analytics (GBL-002).
+
+'''
+== ✅ LLM-RESILIENCE — dégradation sur erreur LLM transitoire (S-160)
+
+. [x] **US-0** ✅ S-160 — cadrage (`.agents/CADRAGE_EPIC_LLM_RESILIENCE.adoc`) : constat dogfooding S-158, décisions (portée capsule, garde partagée, pipeline fail-fast).
+. [x] **US-1** ✅ S-160 — `capsule.ai.LlmResilience.guarded` + `ChatModelViralHookGenerator`/`ChatModelTranscriptEnhancer` (repli `null`/template) ; 6 unit + 3 BDD `@resilience` (28e runner).
 
 '''
 == ✅ TODO REVERT — Dépin codebase-gradle-plugin (S-136)

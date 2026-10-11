@@ -1,0 +1,59 @@
+= CADRAGE — EPIC LLM-RESILIENCE (Détroit / capsule-gradle)
+:session: 160
+:date: 2026-10-11
+
+== Objectif
+
+Rendre les adaptateurs LLM de capsule **résilients aux erreurs transitoires** du
+LLM cloud (HTTP 429/503, timeouts) : un hoquet d'un service facturé ne doit pas
+faire échouer tout un build de campagne.
+
+== Constat (issu du dogfooding S-158)
+
+Lors du dogfooding viral réel, l'appel LLM a renvoyé `{"error":"too many concurrent
+requests"}` → l'`HttpException` a propagé et **fait échouer** `generateViralCampaign`.
+Or le contrat documenté des adaptateurs est de **dégrader** sur une réponse inexploitable
+(« une réponse LLM blanche est un no-op, pas un échec » — Économie d'Encre). L'erreur
+de **transport** n'était pas couverte.
+
+== Décision
+
+* **Portée** : les adaptateurs qui possèdent un **repli sûr** —
+  `ChatModelViralHookGenerator` (repli `null` → message du storyboard) et
+  `ChatModelTranscriptEnhancer` (repli `template` déterministe).
+* **Hors scope** : `ChatModelCapsuleLlm` (pipeline de génération de contenu) reste
+  **fail-fast** — le nœud `generateSpeakerNotesNode` exige un contenu non-blanc
+  (`require(...)`), il n'existe pas de repli sûr pour un plan de contenu.
+* **Garde partagée** : `capsule.ai.LlmResilience.guarded(operation, fallback, block)`
+  — exécute le bloc, journalise un **warning** (jamais silencieux → une mauvaise
+  configuration reste visible) et retourne le repli sur **toute `Exception`** ;
+  ne capture **pas** les `Error` (OOM, AssertionError).
+* **Sémantique** : identique au repli « réponse blanche » déjà en place — l'échec
+  devient un no-op visible, pas une absence de sortie.
+
+== Alternatives écartées
+
+* **Fail-fast avec retry** — un retry sur 429 n'aide pas (limite de concurrence
+  côté compte) ; le repli est plus utile qu'un build mort.
+* **Classification stricte transport vs erreur permanente** — fragile (hiérarchie
+  d'exceptions langchain4j) pour un gain marginal ; le warning journalisé couvre
+  la visibilité.
+* **Dégrader aussi le pipeline** — pas de repli sûr (contenu obligatoire).
+
+== Découpage
+
+[cols="1,4,2,1,2", options="header"]
+|===
+| US | Description | Cibles | Pts | Statut
+
+| US-0 | Cadrage (audit + décisions) | ce document | 0 | ✅ S-160
+| US-1 | **Garde partagée + adaptateurs à repli sûr** — `LlmResilience.guarded` +
+   `ChatModelViralHookGenerator` + `ChatModelTranscriptEnhancer` | `capsule.ai`,
+   `capsule.viral`, `capsule.transcript` | 2 | ✅ S-160
+|===
+
+== Extension transverse (candidate, hors scope)
+
+Les autres boroughs (slider, planner, codebase) portent des adaptateurs LLM
+similaires. Une extraction N0 d'un socle de résilience partagé (MEMPHIS) est un
+**candidat** si le besoin transverse se confirme — non traité ici (frontière DAG).

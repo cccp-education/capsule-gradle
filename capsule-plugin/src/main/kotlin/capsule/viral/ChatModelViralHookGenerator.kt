@@ -1,5 +1,6 @@
 package capsule.viral
 
+import capsule.ai.LlmResilience
 import dev.langchain4j.data.message.UserMessage
 import dev.langchain4j.model.chat.ChatModel
 
@@ -14,13 +15,16 @@ import dev.langchain4j.model.chat.ChatModel
  *
  * Fallback degraded: a blank/unparseable response returns `null` — the caller
  * falls back to the deck's own content (economy of ink: a blank LLM answer is a
- * no-op, not a failure).
+ * no-op, not a failure). A **transient** LLM error (transport, 429/503, timeout)
+ * also degrades to `null` via [LlmResilience] — a metered cloud hiccup must not
+ * fail the whole campaign build.
  */
 class ChatModelViralHookGenerator(private val model: ChatModel) : ViralHookGenerator {
 
     override fun generate(plan: ViralHookPlan): ViralHook? {
         val prompt = ViralHookPromptBuilder.buildHookPrompt(plan)
-        val response = model.chat(UserMessage.from(prompt)).aiMessage().text()
-        return ViralHookParser.parse(response)
+        return LlmResilience.guarded("viral hook", null) {
+            ViralHookParser.parse(model.chat(UserMessage.from(prompt)).aiMessage().text())
+        }
     }
 }

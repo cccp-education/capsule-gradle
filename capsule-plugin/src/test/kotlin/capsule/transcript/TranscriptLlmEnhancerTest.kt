@@ -138,4 +138,20 @@ class TranscriptLlmEnhancerTest {
         assertTrue(result.contains("== Introduction"), "enriched article should preserve the original headings")
         assertTrue(result.contains("== Further Reading"), "enriched article should include new LLM content")
     }
+
+    /** Fake [ChatModel] whose call always fails (transient cloud error). */
+    private class ThrowingChatModel : ChatModel {
+        override fun doChat(request: ChatRequest): ChatResponse =
+            throw RuntimeException("too many concurrent requests")
+    }
+
+    @Test
+    fun `enhance degrades to the original template on a transient LLM error`() {
+        val original = template()
+        val enhancer = ChatModelTranscriptEnhancer(ThrowingChatModel())
+
+        val result = enhancer.enhance(original, plan())
+
+        assertEquals(original, result, "a transport error must degrade to the template, not fail the build")
+    }
 }

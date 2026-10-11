@@ -178,4 +178,16 @@ class ViralHookTest {
         val generator = ChatModelViralHookGenerator(FakeChatModel("désolé, je ne peux pas"))
         assertNull(generator.generate(plan()))
     }
+
+    /** Fake [ChatModel] whose call always fails (transient cloud error). */
+    private class ThrowingChatModel : ChatModel {
+        override fun doChat(request: ChatRequest): ChatResponse =
+            throw RuntimeException("too many concurrent requests")
+    }
+
+    @Test
+    fun `generator degrades to null on a transient LLM error`() {
+        val generator = ChatModelViralHookGenerator(ThrowingChatModel())
+        assertNull(generator.generate(plan()), "a transport error must degrade to null, not fail the build")
+    }
 }

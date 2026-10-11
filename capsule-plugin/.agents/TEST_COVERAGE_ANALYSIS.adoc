@@ -1,7 +1,23 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-11
-:session: 159 tâche `normalizeViralStoryboard` (helper d'authoring)
+:session: 160 EPIC LLM-RESILIENCE (dégradation sur erreur LLM transitoire)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 11 octobre 2026 (après session 160)
+
+.Modifications session 160 — LLM-RESILIENCE
+|===
+| Fichier | Changement | Tests ajoutés
+| `ai/LlmResilience.kt` (nouveau) | Objet : `guarded(operation, fallback, block)` — warning + repli sur toute `Exception`, ne capture pas les `Error`. | +4 `LlmResilienceTest`
+| `viral/ChatModelViralHookGenerator.kt` (modifié) | Appel modèle enveloppé → repli `null` sur erreur transitoire. | +1 `ViralHookTest`
+| `transcript/ChatModelTranscriptEnhancer.kt` (modifié) | Appel modèle enveloppé → repli template sur erreur transitoire. | +1 `TranscriptLlmEnhancerTest`
+| `capsule_llm_resilience.feature` + `CapsuleLlmResilienceSteps.kt` + `CapsuleLlmResilienceCucumberRunner.kt` (nouveaux) | 3 scénarios `@resilience` (garde succès/échec, générateur de hook → null). | 3 scénarios (28e runner `cucumberTestLlmResilience`)
+| `build.gradle.kts` + `.github/workflows/full-tests.yml` (modifiés) | `CucumberTaskSpec("cucumberTestLlmResilience")` + étape CI. | 0
+|===
+
+*Totaux S-160* : +6 unit, +3 scénarios BDD. Gates locaux (Local = Build) : compiles
+VERT ; tâche Cucumber enregistrée. Les suites s'exécutent en CI (`Test` +
+`Full Tests`), preuve = run du push.
 
 == Couverture — 11 octobre 2026 (après session 159)
 
