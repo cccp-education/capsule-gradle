@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-11 (S-160 — EPIC LLM-RESILIENCE TERMINÉ : dégradation sur erreur LLM transitoire.)
+:last_update: 2026-10-11 (S-161 — dogfooding Remotion+Manim du chemin enrichi.)
 
 '''
 == ✅ Helper d'authoring — `normalizeViralStoryboard` (S-159)
@@ -81,9 +81,13 @@
 == 🟡 CANDIDATS (hors EPIC, accord pilote requis)
 
 . [ ] **Optimisation CI** (optionnel) — `Full Tests` ~30 min (20 runners pure-domain).
-. [ ] **Dogfooding Remotion + Manim** — pipeline général enrichi (nécessite `manim`).
+. [x] **Dogfooding Remotion + Manim** ✅ S-161 — chemin enrichi validé au niveau
+  tâche (Manim via shim Docker `manimcommunity/manim:stable` ; Remotion via
+  `generateCapsuleVideo` + `captureStrategy=remotion`).
 . [ ] **Extraction N0 résilience transverse** — socle LLM resilience partagé
   (slider/planner/codebase) si le besoin se confirme (frontière DAG, candidat).
+. [ ] **Warn per-scene Manim** (constat S-161) — journaliser un warning quand une
+  scène Manim échoue (aujourd'hui `ManimException` avalée par le renderer parallèle).
 
 _Hors scope CAP-VIRAL_ : publication API (N4/GBL-002), écriture copy (GBL-006),
 calendrier + musique + analytics (GBL-002).

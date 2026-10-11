@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-11 (S-160) — EPIC LLM-RESILIENCE (dégradation sur erreur LLM transitoire). Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-11 (S-161) — dogfooding Remotion + Manim (chemin enrichi). Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (120-160)
+== Sessions récentes (120-161)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 161 | 2026-10-11 | dogfooding | **Dogfooding Remotion + Manim** (chemin enrichi, accord pilote). **Manim** : absent et non installable nativement (Python géré par le système, PEP668, pas de `pip`, pas de `sudo` pour les dev headers `pangocairo`/`cairo`) → résolu par un **shim Docker** (`/tmp/opencode/bin/manim` → `docker run … manimcommunity/manim:stable manim "$@"`), pointé par `-Pcapsule.manimExecutablePath`. `generateCapsuleVideo` avec une diapo `[manim:Hello]` → « Manim render complete: **1/1** slides rendered » → `Hello.mp4` H.264 854×480 **2,0 s**, durée sondée, diapo remplacée dans le deck (`ManimSlideReplacer`). **Remotion** : `generateCapsuleVideo` + `captureStrategy("remotion")` → composition matérialisée (`npm install`) → 150 frames @ 30 fps → `capsule.mp4` H.264 1408×792 **5,06 s**. Dégradations TTS `noop` attendues (audio muet). **Constat** : le nom de scène Manim est **sensible à la casse** (`[manim:Hello]` ↔ classe `Hello` ↔ `Hello.py`) — un mismatch fait échouer `findRendered`, la `ManimException` est avalée par le renderer parallèle (slide non animée, visible via « 0/N rendered ») → **candidat « warn per-scene Manim »**. Le chemin enrichi fonctionne de bout en bout avec de vrais binaires. **Aucun code modifié.** Zéro bump. | 8/10
 
 | 160 | 2026-10-11 | feat+test | **EPIC LLM-RESILIENCE — dégradation sur erreur LLM transitoire.** Constat dogfooding S-158 : `too many concurrent requests` faisait échouer `generateViralCampaign`. Garde partagée `capsule.ai.LlmResilience.guarded(operation, fallback, block)` — exécute le bloc, **journalise un warning** (jamais silencieux) et retourne le repli sur toute `Exception` ; **ne capture pas** les `Error`. Appliquée aux adaptateurs à **repli sûr** : `ChatModelViralHookGenerator` (repli `null` → message du storyboard) et `ChatModelTranscriptEnhancer` (repli template). Pipeline `ChatModelCapsuleLlm` **fail-fast** (pas de repli sûr — contenu obligatoire, `require`). Baby-step DDD/TDD/BDD : `LlmResilienceTest` (4 unit) + adaptateurs étendus (+2 unit) + `capsule_llm_resilience.feature` `@resilience` (3 scénarios) + runner dédié 28e `cucumberTestLlmResilience` câblé `full-tests.yml`. Cadrage `.agents/CADRAGE_EPIC_LLM_RESILIENCE.adoc`. **Capsule-scoped** (extraction N0 transverse = candidat). Local = Build, Tests = CI. Zéro bump, zéro publication. | 9/10
 

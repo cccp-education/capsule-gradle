@@ -1,7 +1,21 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-11
-:session: 160 EPIC LLM-RESILIENCE (dégradation sur erreur LLM transitoire)
+:session: 161 dogfooding Remotion + Manim (aucun test modifié)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 11 octobre 2026 (après session 161)
+
+.Dogfooding Remotion + Manim (chemin enrichi)
+|===
+| Élément | Changement | Tests
+| — | **Aucun fichier de test ni de production modifié.** Session de dogfooding
+    (validation du chemin enrichi via consommateurs transitoires `/tmp` ; Manim via
+    shim Docker, Remotion via node). | 0
+|===
+
+*Totaux S-161* : 0. Le chemin Remotion reste couvert par `RemotionCaptureFunctionalTest`
+(fallback NoOp, gated) + CI ; le chemin Manim par `ManimEngineTest` (binaire factice)
++ dogfooding. CI = preuve du push précédent (S-160 `991a5aa` vert).
 
 == Couverture — 11 octobre 2026 (après session 160)
 

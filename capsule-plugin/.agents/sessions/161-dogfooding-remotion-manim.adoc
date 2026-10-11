@@ -1,0 +1,63 @@
+= Session 161 — Dogfooding Remotion + Manim (chemin enrichi)
+:session: 161
+:borough: Détroit
+:date: 2026-10-11
+:epic: (candidat — dogfooding du chemin enrichi)
+:us: —
+
+== Mission
+
+Dernier candidat du backlog : **dogfooding du chemin enrichi Remotion + Manim**
+(`CAP-SHORT`/`CAP-ANIM`), validé en réel. Accord pilote explicite.
+
+== Environnement (contraintes)
+
+* **Manim** : absent, non installable nativement (Python géré par le système,
+  PEP668, pas de `pip`, pas de `sudo` pour les dev headers `pangocairo`/`cairo`).
+  Résolu par un **shim Docker** : `/tmp/opencode/bin/manim` →
+  `docker run --rm -v "$ROOT":"$ROOT" -w "$ROOT" manimcommunity/manim:stable manim "$@"`
+  (image `manimcommunity/manim:stable` = Manim Community v0.22.0, deps natives
+  fournies, zéro sudo), pointé par `-Pcapsule.manimExecutablePath`.
+* **Remotion** : Node 22 présent (`nvm`). `npm install` (composition bundlée par
+  le plugin) + `npx remotion render`.
+
+== Résultats (runs réels)
+
+[cols="1,3", options="header"]
+|===
+| Moteur | Résultat
+
+| **Remotion** (via la tâche)
+| `generateCapsuleVideo` avec `captureStrategy("remotion")` → composition
+   materialisée (`npm install`) → **150 frames @ 30 fps** → `capsule.mp4`
+   → `build/capsules/test.mp4` **H.264 1408×792, 5,06 s**. Audio muet (TTS noop
+   dégradé — attendu).
+| **Manim** (via la tâche)
+| `generateCapsuleVideo` avec une diapo `[manim:Hello]` + `manimExecutablePath`
+   (shim Docker) → « Manim render complete: **1/1** slides rendered » → `Hello.mp4`
+   **H.264 854×480, 2,0 s**, durée sondée 2,0 s, **diapo remplacée** dans le deck.
+   Manim+TTS mux dégradé (TTS noop — attendu).
+|===
+
+*Verdict* : le **chemin enrichi** (capture Remotion frame-par-frame + rendu Manim
+des schémas animés, mixés dans le deck) fonctionne de bout en bout avec de vrais
+binaires. Le socle FFmpeg (viral) reste, lui, validé par le dogfooding S-158.
+
+== Constats
+
+. ⚠️ **Nom de scène Manim sensible à la casse** : `[manim:Hello]` doit correspondre
+  **exactement** au nom de classe **et** de fichier (`Hello.py`). Un mismatch
+  (`[manim:hello]` alors que la classe est `Hello`) fait échouer `findRendered`
+  silencieusement (le MP4 est écrit `Hello.mp4`, cherché `hello.mp4`) → le slide
+  n'est **pas** animé. Visible seulement via le log « 0/N rendered ». **Candidat** :
+  journaliser un warning par scène en échec (`ManimException` avalée par le
+  renderer parallèle).
+. ✅ Dégradations attendues : TTS `noop` → placeholder mp3 illisible par ffmpeg →
+  « video remains silent » (pas un bug).
+. ✅ Le chemin Remotion exige Node + `npm install` (réseau) + un Chromium headless :
+  non exécutable en CI locale (comme documenté par `RemotionCaptureFunctionalTest`).
+
+== Gates
+
+* Dogfooding réel vert (commandes + sorties ci-dessus). **Aucun code modifié**.
+* Zéro secret, zéro bump, zéro publication.

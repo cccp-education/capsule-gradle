@@ -1,63 +1,56 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 161
+:session: 162
 :borough: Détroit
-:session_precedente: 160 — EPIC LLM-RESILIENCE (dégradation sur erreur LLM transitoire)
+:session_precedente: 161 — dogfooding Remotion + Manim (chemin enrichi)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-160 — EPIC LLM-RESILIENCE TERMINÉ
+=== S-161 — dogfooding Remotion + Manim
 
-- Garde partagée `capsule.ai.LlmResilience.guarded` (warning + repli sur `Exception`,
-  ne capture pas les `Error`) appliquée aux adaptateurs à repli sûr
-  (`ChatModelViralHookGenerator` → `null`, `ChatModelTranscriptEnhancer` → template).
-- Pipeline `ChatModelCapsuleLlm` fail-fast (pas de repli sûr).
-- 6 unit + 3 BDD `@resilience` (28e runner `cucumberTestLlmResilience`).
-- Cadrage `.agents/CADRAGE_EPIC_LLM_RESILIENCE.adoc`. Capsule-scoped.
-- Rapport : `.agents/sessions/160-llm-resilience.adoc`.
+- Chemin enrichi validé au niveau tâche : Manim via **shim Docker**
+  (`manimcommunity/manim:stable`, pas de sudo) → 1/1 diapo rendue (MP4 2,0 s) ;
+  Remotion via `generateCapsuleVideo` + `captureStrategy=remotion` (MP4 5,06 s).
+- **Constat** : nom de scène Manim sensible à la casse (`[manim:Hello]` ↔ `Hello.py`) ;
+  un mismatch dégrade silencieusement (candidat « warn per-scene Manim »).
+- Aucun code modifié. Rapport `.agents/sessions/161-dogfooding-remotion-manim.adoc`.
 
-=== S-159 — tâche `normalizeViralStoryboard`
+=== S-160 — EPIC LLM-RESILIENCE
 
-- Domaine pur `ViralStoryboardNormalizer` + tâche Gradle (groupe `generate`),
-  27e runner `cucumberTestViralNormalize`. Remplace le script Python ad-hoc S-158.
+- Garde `capsule.ai.LlmResilience.guarded` + adaptateurs à repli sûr ; pipeline
+  fail-fast. 28e runner `cucumberTestLlmResilience`.
 
-== Mission Session 161
+== Mission Session 162 (accord pilote donné)
 
-**Tous les EPICs actionnables sont clos.** Restent (accord pilote ou optionnel) :
+Enchaîner les candidats restants, dans l'ordre :
 
-1. **Publication `capsule 0.0.3`** (accord pilote) — porte le RENAME S-153 +
-   CAP-VIRAL-E2E (S-154→S-156) + `normalizeViralStoryboard` (S-159) +
-   LLM-RESILIENCE (S-160). Procédure : `[versions].capsule` + `publishToMavenLocal`
-   + `publishAggregationToCentralPortal --no-daemon` + consommateurs (racine +
-   `workspace-bom`).
-2. **Candidats** (`TODO.adoc`) : **dogfooding Remotion+Manim** (nécessite `manim`) ;
-   **extraction N0 résilience transverse** (slider/planner/codebase) ; optimisation CI.
-3. **Publication** = Règle 2 (accord explicite requis).
+1. **Extraction N0 résilience transverse** — socle LLM resilience partagé
+   (MEMPHIS/`workspace-bom`) consommé par slider/planner/codebase (frontière DAG).
+2. **Warn per-scene Manim** (constat S-161) — journaliser un warning quand une scène
+   Manim échoue (aujourd'hui `ManimException` avalée).
+3. **Optimisation CI** (optionnel) — `Full Tests` ~30 min.
+4. **Publication `capsule 0.0.3`** — accord pilote donné : `[versions].capsule` +
+   `publishToMavenLocal` + `publishAggregationToCentralPortal --no-daemon` +
+   consommateurs (racine + `workspace-bom`).
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** : `compileKotlin`/`compileTestKotlin`/
   `compileFunctionalTestKotlin` seulement. Le vert de la CI est la preuve.
-* **Publication** : version `0.0.2` sur Central. **Accord pilote requis** (Règle 2).
-* **Ollama** : port 11434 réservé (hors rotation) + `deepseek-v4.1-flash:cloud`
-  autorisé **uniquement** pour le dogfooding documenté (amendement 2026-10-11) ; les
-  autres boroughs restent 11434-11436 interdits.
-* **Zéro Python** : transformations/outillage en Kotlin (`kotlinc -script`) ou tâche
-  Gradle — jamais Python.
-* **English only** : garde `OssVocabularyGuardTest` (toute la surface `src/` +
-  description POM).
-* **Sessions concurrentes** : `git status` à l'ouverture (drift gouvernance).
-* Baby-step DDD/TDD/BDD ; tout nouveau feature cucumber = runner dédié (S-082) +
-  steps préfixés (S-088) + câblage `full-tests.yml`. Un test qui isole une tâche
-  doit exclure **toutes** ses dépendances productrices (`-x`).
-* Viral = socle FFmpeg ; interface IA = codebase N1 ; résilience LLM = adaptateurs à
-  repli sûr uniquement.
+* **Publication** : version `0.0.2` sur Central → `0.0.3`. Ordre DAG N0→N2.
+* **Ollama** : port 11434 réservé + `deepseek-v4.1-flash:cloud` pour le dogfooding
+  documenté uniquement. **Zéro Python** (outillage Kotlin/Gradle).
+* **English only** : garde `OssVocabularyGuardTest`.
+* **Sessions concurrentes** : `git status` à l'ouverture.
+* Baby-step DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
+  Un test qui isole une tâche doit exclure toutes ses dépendances productrices (`-x`).
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.2 (Central).
 * CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **6/6** ; CAP-VIRAL-E2E **3/3** ;
   LLM-RESILIENCE **1/1**.
-* RENAME métier **SOLDÉ** (S-153) — délivré dans la prochaine release `0.0.3`.
+* RENAME métier **SOLDÉ** (S-153) — délivré dans la release `0.0.3`.
+
 
 

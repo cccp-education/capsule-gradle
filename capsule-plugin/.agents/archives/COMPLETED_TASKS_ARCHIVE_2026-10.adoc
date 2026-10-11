@@ -1,6 +1,14 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-11
 
+== Session 161 — Dogfooding Remotion + Manim (chemin enrichi) ✅
+
+* Chemin enrichi validé au niveau tâche : **Manim** via shim Docker
+  (`manimcommunity/manim:stable`, pas de sudo) → 1/1 diapo rendue (MP4 2,0 s) ;
+  **Remotion** via `generateCapsuleVideo` + `captureStrategy=remotion` (MP4 5,06 s).
+* Constat : nom de scène Manim sensible à la casse (candidat « warn per-scene Manim »).
+* Aucun code modifié. Zéro bump.
+
 == Session 160 — EPIC LLM-RESILIENCE : dégradation sur erreur LLM transitoire ✅
 
 * Constat dogfooding S-158 (`too many concurrent requests` → `generateViralCampaign`
