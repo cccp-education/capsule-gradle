@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-11 (S-169 — CAP-QC-VOICE : cadrage (PRT-02) ; CAP-QC 7/9)
+:last_update: 2026-10-11 (S-170 — CAP-QC-VOICE US-1 : domaine pur `capsule.voice`)
 
 '''
 == 🔌 BACKLOG ACTIF — CAP-QC 🟡 EN COURS 7/9 (S-168)
@@ -38,7 +38,7 @@ Rapports : `.agents/sessions/166-cap-qc-prt-04-03-09-06.adoc`,
 `167-cap-qc-prt-05-10.adoc`, `168-cap-qc-prt-07.adoc`.
 
 '''
-== 🎤 BACKLOG ACTIF — CAP-QC-VOICE 🟡 CADRÉ 0/5 (S-169)
+== 🎤 BACKLOG ACTIF — CAP-QC-VOICE 🟡 EN COURS 1/5 (S-170)
 
 _Contrôle qualité de voix par ASR (PRT-02 du portage `prepa` → capsule). **Prouver que la
 voix synthétisée est juste** : fidélité mot-à-mot (transcription vs texte attendu),
@@ -51,14 +51,14 @@ souffle de fond, choix de prise. Source `prepa` : `verif_voix.py`/`score_voix.py
 | US | Objet | Cibles | Pts | Statut
 
 | US-0 | Cadrage (audit 7 constats + décisions) | ce doc | 0 | ✅ S-169
-| US-1 | **Domaine pur** `capsule.voice` (`TextNormalizer`/`WordAligner`/`FidelityScorer`/`SnrEstimator`/`VoiceScore`) | `capsule.voice` | 3 | 🟡 À FAIRE
+| US-1 | **Domaine pur** `capsule.voice` (`TextNormalizer`/`WordAligner`/`FidelityScorer`/`SnrEstimator`/`VoiceScore`) | `capsule.voice` | 3 | ✅ S-170
 | US-2 | **Port + tâche** `SpeechRecognizer` (CLI whisper) + `verifyCapsuleVoice` (rapport JSON + seuils + strict) — opt-in `voice.verifyEnabled` | `capsule.voice`, `CapsuleManager` | 5 | 🟡 À FAIRE
 | US-3 | **Choix de prise** (régénérer + retenir la meilleure) | `capsule.voice`, `CapsuleBuildTask` | 3 | 🟡 À FAIRE
 | US-4 | **BDD + dogfooding** (`capsule_voice_quality.feature`, fakes zéro-ASR + 1 run réel skip-gardé) | feature + steps | 3 | 🟡 À FAIRE
 | US-5 | *(optionnel)* **Karaoké** sur timings ASR | `capsule.viral` | 3 | 🟡 À FAIRE
 |===
 
-*Total* : 5 US ~14 pts — **US-0 ✅ (S-169)** + 4 à faire. Contraintes : zéro modèle/port en
+*Total* : 5 US ~14 pts — **US-0 ✅ (S-169) + US-1 ✅ (S-170)** + 3 à faire (US-2/3/4). Contraintes : zéro modèle/port en
 dur ; ASR jamais prérequis de `check` (dégradation + `assumeTrue`).
 
 '''

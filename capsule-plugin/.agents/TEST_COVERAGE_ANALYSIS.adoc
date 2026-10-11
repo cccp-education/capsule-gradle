@@ -1,7 +1,24 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-11
-:session: 169 CAP-QC-VOICE : cadrage (gouvernance pure)
+:session: 170 CAP-QC-VOICE US-1 (domaine pur `capsule.voice`)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 11 octobre 2026 (après session 170)
+
+.CAP-QC-VOICE US-1 — domaine pur `capsule.voice`
+|===
+| Élément | Changement | Tests
+
+| `voice/TextNormalizer.kt` (créé) | Normalisation pour comparaison (accents/casse/ponctuation/`œ`) | +6 `TextNormalizerTest`
+| `voice/WordAligner.kt` (créé) | Distance d'édition mot-à-mot + opérations | +5 `WordAlignerTest`
+| `voice/FidelityScorer.kt` (créé) | `VoiceScore` (WER, surplus) + scoring | +5 `FidelityScorerTest`
+| `voice/SnrEstimator.kt` (créé) | SNR `20·log10(voix/fond)` sur cadres RMS | +3 `SnrEstimatorTest`
+| `capsule_voice_quality.feature` (créée) | BDD `@voice` (4 scénarios) | runner 34e `cucumberTestVoiceQuality`
+|===
+
+*Totaux S-170* : +19 unit + 1 feature dédiée (runner 34e). `compileKotlin` +
+`compileTestKotlin` + `compileFunctionalTestKotlin` + `validatePlugins` **VERTS**.
+Local = Build, Tests = CI. Zéro bump.
 
 == Couverture — 11 octobre 2026 (après session 169)
 

@@ -1,0 +1,66 @@
+= Session 170 — CAP-QC-VOICE US-1 : domaine pur `capsule.voice`
+:date: 2026-10-11
+:type: feat+test (EPIC CAP-QC-VOICE, US-1)
+:sujet: Domaine pur de qualité de voix (normalisation, alignement, fidélité, SNR) — zéro ASR
+:statut: CLÔTURÉE
+
+== Contexte
+
+Démarrage de l'EPIC **CAP-QC-VOICE** (cadré S-169, PRT-02 du portage `prepa` → capsule) par
+sa première US : le **domaine pur**, sans aucun ASR ni I/O. Baby-step DDD/TDD/BDD
+(unit + cucumber purs). Local = Build, Tests = CI.
+
+== Livrable — domaine pur `capsule.voice`
+
+Porté de `prepa_electricite_complet/verif_voix.py` / `score_voix.py` / `rapport_voix.py`.
+
+* `TextNormalizer.normalize(text): List<String>` — minuscule, pliage `œ`/`æ`, suppression
+  des diacritiques (NFD + `\p{Mn}`), apostrophes/tirets → espaces, retrait des non
+  `[a-z0-9 ]`, découpage. Le texte attendu et la transcription sont comparés sous cette
+  forme (accents/casse/ponctuation ne créent pas de faux écart).
+* `WordAligner` — `AlignmentOp(kind, reference, hypothesis)`, `OpKind`
+  (MATCH/SUBSTITUTE/DELETE/INSERT), `Alignment(distance, operations)` ; distance
+  d'édition mot-à-mot (Levenshtein) + liste d'opérations lisible (`~`/`+`/`-`).
+* `VoiceScore(wordErrorRate, distance, referenceWordCount, hypothesisWordCount)` +
+  `surplus` (mots en plus = hallucination) ; `FidelityScorer.score(expected, transcribed)`
+  (surcharge sur listes normalisées) — `wordErrorRate = distance / max(1, mots de réf)`.
+* `SnrEstimator.estimate(frameRms): Double` — plancher = RMS du cadre le plus silencieux,
+  niveau voix = RMS des cadres au/au-dessus du 60ᵉ percentile, `20·log10(voix/fond)` (dB).
+  L'extraction des cadres RMS est une I/O laissée à l'US-2.
+
+*Zéro ASR, zéro I/O* : la transcription est une **chaîne** fournie à `FidelityScorer`.
+
+== Tests
+
+* `TextNormalizerTest` (6 unit) + `WordAlignerTest` (5 unit) + `FidelityScorerTest`
+  (5 unit) + `SnrEstimatorTest` (3 unit).
+* `capsule_voice_quality.feature` (4 scénarios `@voice`, runner dédié **34e**
+  `cucumberTestVoiceQuality`) : normalisation, fidélité exacte (WER 0), surplus, substitution.
+
+== Vérifications (Local = Build)
+
+`compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` + `validatePlugins`
+**VERTS** ; tâche `cucumberTestVoiceQuality` enregistrée ; aucune collision de step ;
+zéro secret ; zéro Python. Zéro bump, zéro publication.
+
+== Fichiers
+
+*Créés* : `voice/TextNormalizer.kt`, `voice/WordAligner.kt`, `voice/FidelityScorer.kt`,
+`voice/SnrEstimator.kt`, `test/voice/{TextNormalizer,WordAligner,FidelityScorer,SnrEstimator}Test.kt`,
+`test/features/capsule_voice_quality.feature`, `test/scenarios/CapsuleVoiceQualitySteps.kt`,
+`test/scenarios/CapsuleVoiceQualityCucumberRunner.kt`.
+*Modifié* : `build.gradle.kts` (`CucumberTaskSpec("cucumberTestVoiceQuality")`).
+
+== Suite (EPIC CAP-QC-VOICE — 1/5)
+
+* **US-2** — port `SpeechRecognizer` (adapter CLI whisper, hors JVM) + tâche
+  `verifyCapsuleVoice` (rapport JSON + seuils + strict) ; opt-in `voice.verifyEnabled` ;
+  `VoiceConfig` 4 sources ; extraction des cadres RMS pour `SnrEstimator` ; `assumeTrue`
+  en CI (ASR absent).
+* **US-3** — choix de prise ; **US-4** — BDD + dogfooding ; **US-5** — karaoké (optionnel).
+
+== Leçon
+
+Isoler le QC de voix en **domaine pur** (normalisation + alignement + fidélité + SNR sur
+des nombres) permet de le tester sans le moindre ASR : le port et le binaire ne sont
+qu'une couche de câblage, elle-même skip-gardable en CI.

@@ -18,7 +18,7 @@
 == 🎤 EPIC CAP-QC-VOICE — QC voix par ASR (cadré S-169, doc `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`)
 
 . [x] **US-0** ✅ S-169 — cadrage (audit 7 constats + décisions ; 5 alternatives écartées).
-. [ ] **US-1** — domaine pur `capsule.voice` (`TextNormalizer`/`WordAligner`/`FidelityScorer`/`SnrEstimator`/`VoiceScore`) + unit + BDD (zéro ASR).
+. [x] **US-1** ✅ S-170 — domaine pur `capsule.voice` (`TextNormalizer`/`WordAligner`/`FidelityScorer`/`SnrEstimator`/`VoiceScore`) ; 19 unit + `capsule_voice_quality.feature` (4 `@voice`, runner 34e).
 . [ ] **US-2** — port `SpeechRecognizer` (CLI whisper) + tâche `verifyCapsuleVoice` (rapport JSON + seuils + strict ; opt-in `voice.verifyEnabled`) + `VoiceConfig` 4 sources.
 . [ ] **US-3** — choix de prise (régénérer + retenir la meilleure).
 . [ ] **US-4** — BDD `capsule_voice_quality.feature` (fakes zéro-ASR) + dogfooding réel skip-gardé.

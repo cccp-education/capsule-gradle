@@ -167,6 +167,15 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleTimelineCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // CAP-QC-VOICE US-1 — voice quality pure domain (normalizer + aligner +
+        // fidelity + snr). Pure-domain runner — no ASR/Playwright/FFmpeg (S-082).
+        CucumberTaskSpec(
+            name = "cucumberTestVoiceQuality",
+            features = listOf("src/test/features/capsule_voice_quality.feature"),
+            tags = listOf("@voice"),
+            runnerClass = "capsule.scenarios.CapsuleVoiceQualityCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // CAP-AUDIO US-4 — audio post-production (BGM + loudness EBU R128 + ducking).
         // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
         // Uses a NoOp processor (no real FFmpeg); validates applyAudioPostIfEnabled

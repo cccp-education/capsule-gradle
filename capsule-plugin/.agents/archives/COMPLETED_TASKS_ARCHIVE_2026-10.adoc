@@ -1,6 +1,13 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-11
 
+== Session 170 — CAP-QC-VOICE US-1 : domaine pur `capsule.voice` ✅
+
+* Domaine pur (zéro ASR) : `TextNormalizer` + `WordAligner` + `FidelityScorer`/`VoiceScore`
+  + `SnrEstimator`. 19 unit + `capsule_voice_quality.feature` (`@voice`, runner 34e).
+* Compiles + `validatePlugins` VERTS. Zéro bump. Rapport
+  `.agents/sessions/170-cap-qc-voice-us1-domaine-pur.adoc`.
+
 == Session 169 — CAP-QC-VOICE : cadrage (PRT-02) ✅
 
 * EPIC **CAP-QC-VOICE** cadré (contrôle qualité de voix par ASR) : domaine pur
