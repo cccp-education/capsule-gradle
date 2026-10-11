@@ -1,6 +1,15 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-11
 
+== Session 168 — EPIC CAP-QC (suite) : PRT-07 timeline déterministe ✅
+
+* Domaine pur `capsule.timeline` (`TimelineConfig`/`TimelineEntry`/`Timeline` +
+  `TimelineBuilder`) : durées **snapées sur la grille d'images** (contiguës, min 1 image),
+  `lead`/`tail`/`avance`. `CapsuleVideoTask` journalise `Timeline: N frames …`
+  (observable ; câblage capture = US-2). 8 unit + `@timeline` (runner 33e) + 1 FT.
+* Compiles + `validatePlugins` VERTS. Zéro bump. Rapport
+  `.agents/sessions/168-cap-qc-prt-07.adoc`.
+
 == Session 167 — EPIC CAP-QC (suite) : PRT-05 (pré-vol contenu) + PRT-10 (publication) ✅
 
 * **PRT-05** pré-vol contenu avant TTS : `capsule.qc.ContentPreflight` (pur) + tâche

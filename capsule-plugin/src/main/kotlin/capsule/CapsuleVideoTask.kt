@@ -709,6 +709,21 @@ open class CapsuleVideoTask : DefaultTask() {
 
             val slideDurations = computeSlideDurationsWithManim(parsed, audioDir, manimDurations)
 
+            // PRT-07 — deterministic timeline: durations snapped to integer frames.
+            // Observable here (economy-of-ink reuse and capture/subtitle wiring are
+            // the follow-up US of the timeline EPIC).
+            val timeline = capsule.timeline.TimelineBuilder.build(
+                slideDurations,
+                capsule.timeline.TimelineConfig(fps = capsuleExtension.remotionFps.getOrElse(30)),
+            )
+            logger.lifecycle(
+                "  Timeline: {} frames at {} fps ({} s) for '{}'",
+                timeline.totalFrames,
+                timeline.fps,
+                String.format("%.1f", timeline.totalSeconds),
+                parsed.deckName,
+            )
+
             // Generate subtitles if enabled
             val subtitleFile: File? = if (capsuleExtension.subtitleEnabled.get()) {
                 generateSubtitles(parsed, slideDurations, outDir)

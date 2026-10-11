@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-11 (S-167 — **EPIC CAP-QC** (suite) : **PRT-05** pré-vol contenu avant TTS (`qc.ContentPreflight` + tâche `preflightCapsuleContent`, opt-in `qc.preflightEnabled`) ; **PRT-10** publication (`chapters.YouTubeChaptersFormatter` + `publish.VideoDescriptionBuilder` ; `GenerateCapsuleChaptersTask` écrit `chapters.txt` + `description.txt`). Baby-step DDD/TDD/BDD ; runner dédié 32e `cucumberTestContentPreflight`. Local = Build, Tests = CI. Zéro bump. Précédent : S-166 CAP-QC (PRT-04/03/09/06).)
- _Derniere session terminee_ : 167.
- _Prochaine session_ : 168 — CAP-QC (reste 3/9) : PRT-07 (timeline déterministe, EPIC), PRT-01 (dit/lu + cache contenu, intrusif), PRT-02 (QC voix ASR — EPIC séparé `CAP-QC-VOICE`).
- _Session en cours_ : — (S-167 terminée).
+ _Derniere mise a jour_ : 2026-10-11 (S-168 — **EPIC CAP-QC** (suite) : **PRT-07** timeline déterministe. Domaine pur `capsule.timeline` (`TimelineConfig`/`TimelineEntry`/`Timeline` + `TimelineBuilder`) : durées **snapées sur la grille d'images** (contiguës, min 1 image), `lead`/`tail`/`avance` (le visuel précède la voix) ; `CapsuleVideoTask` journalise `Timeline: N frames …` (observable, câblage capture = US-2). 8 unit + `capsule_timeline.feature` (3 `@timeline`, runner 33e `cucumberTestTimeline`) + 1 FT. Local = Build, Tests = CI. Zéro bump. Précédent : S-167 CAP-QC PRT-05/10.)
+ _Derniere session terminee_ : 168.
+ _Prochaine session_ : 169 — CAP-QC (reste 2/9) : PRT-01 (prononciation dit/lu + cache contenu, intrusif), PRT-02 (QC voix ASR — EPIC séparé `CAP-QC-VOICE`, à cadrer).
+ _Session en cours_ : — (S-168 terminée).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -22,11 +22,13 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (156-167)
+== 10 dernières sessions (157-168)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 168 | 2026-10-11 | feat+test | **EPIC CAP-QC (suite) — PRT-07 timeline déterministe (US-1 pur)**. Porté de `montage_audio.py` : « chaque scène dure un nombre ENTIER d'images ». Domaine pur `capsule.timeline` — `TimelineConfig(fps=30, leadSeconds, tailSeconds, avanceSeconds)` (invariants), `TimelineEntry(slideIndex, startFrame, frameCount>=1, voiceStartFrame>=startFrame)`, `Timeline(fps, entries)` (`totalFrames`/`totalSeconds`), `TimelineBuilder.framesFor`/`secondsFor`/`build`. Modèle ancré voix, contigu : chaque slide occupe les images de son audio (min 1), premier après `lead`, dernier + `tail`, voix d'une slide (hormis la 1re) démarre `avance` images après le visuel. `CapsuleVideoTask` journalise `Timeline: N frames at F fps (Xs)` (observable, sans changer le comportement ; câblage capture/sous-titres = US-2). Baby-step DDD/TDD/BDD : `TimelineBuilderTest` (8 unit) + `capsule_timeline.feature` (3 `@timeline`, runner dédié 33e `cucumberTestTimeline`) + `TimelineFunctionalTest`. Compiles + `validatePlugins` VERT. Zéro bump, zéro secret. Rapport `.agents/sessions/168-cap-qc-prt-07.adoc`. | 9/10
 
 | 167 | 2026-10-11 | feat+test | **EPIC CAP-QC (suite) — PRT-05 + PRT-10**. **PRT-05** pré-vol contenu avant TTS : `capsule.qc.ContentPreflight` (pur : `Severity`, `PreflightFinding`, `ForbiddenForm`, `PreflightRules` ; note longue/dupliquée = warning, forme interdite = error) + tâche `preflightCapsuleContent` (groupe `verification`) ; opt-in `qc.preflightEnabled`/`qc.maxNoteChars` (`QcConfig`, 4 sources + push). **PRT-10** publication : `capsule.chapters.YouTubeChaptersFormatter` (`M:SS Titre`/`H:MM:SS Titre`) + `capsule.publish.VideoDescriptionBuilder` (`Result(text, strippedForbiddenChars)`, retire `<`/`>`) ; `GenerateCapsuleChaptersTask` écrit `chapters.txt` + `description.txt`. Baby-step DDD/TDD/BDD : 16 unit + 3 FT + `capsule_content_preflight.feature` (3 `@qc @preflight`, runner dédié 32e `cucumberTestContentPreflight`) + `capsule_chapters.feature` étendu (chapters.txt/description.txt). Compiles + `validatePlugins` VERT. Zéro bump. Rapport `.agents/sessions/167-cap-qc-prt-05-10.adoc`. | 9/10
 

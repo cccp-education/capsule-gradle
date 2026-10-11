@@ -1,0 +1,67 @@
+= Session 168 — CAP-QC : portage prepa → capsule (PRT-07)
+:date: 2026-10-11
+:type: feat+test (portage cross-dépôt, suite)
+:sujet: PRT-07 timeline déterministe (durées snapées sur la grille d'images)
+:statut: CLÔTURÉE
+
+== Contexte
+
+Suite de l'EPIC **CAP-QC** (portage utilitaire `prepa_electricite_complet` → capsule).
+S-166 (PRT-04/03/09/06) et S-167 (PRT-05/10) livrés. Méthode : baby-step DDD/TDD/BDD
+strict (unit → fonctionnel → cucumber) ; Local = Build, Tests = CI.
+
+== Livrable — PRT-07 timeline déterministe (US-1, pur)
+
+Porté de `prepa_electricite_complet/montage_audio.py` : « chaque scène dure un nombre
+ENTIER d'images […] le son et l'image ne peuvent donc pas dériver, même sur une heure ».
+
+* **Domaine pur** `capsule.timeline` :
+  - `TimelineConfig(fps=30, leadSeconds=0.0, tailSeconds=0.0, avanceSeconds=0.0)` —
+    invariants (fps > 0, durées >= 0) ;
+  - `TimelineEntry(slideIndex, startFrame, frameCount>=1, voiceStartFrame>=startFrame)` ;
+  - `Timeline(fps, entries)` avec `totalFrames`/`totalSeconds` ;
+  - `TimelineBuilder.framesFor/secondsFor` + `build(durations, config)`.
+* **Modèle** : ancré sur la voix, contigu — chaque slide occupe les images de son audio
+  (min 1), le premier après le `lead`, le dernier porte aussi le `tail`, et la voix d'une
+  slide (hormis la première) démarre `avance` images après son visuel (le visuel précède
+  la voix — `AVANCE` de prepa). Défauts 0 → durée = `round(duree × fps)` par slide, total =
+  Σ (comportement neutre).
+* **Câblage observable (sans changer le comportement)** : `CapsuleVideoTask.execute`
+  construit la timeline à partir des `slideDurations` et journalise
+  `Timeline: N frames at F fps (Xs)`. Le câblage capture/sous-titres/économie d'encre est
+  l'**US-2** de l'EPIC timeline.
+* **Tests** : `TimelineBuilderTest` (8 unit : contiguïté, arrondi, lead/tail, avance,
+  durée nulle = 1 image, inverse `framesFor`/`secondsFor`, fps invalide) +
+  `capsule_timeline.feature` (3 scénarios `@timeline`, runner dédié 33e
+  `cucumberTestTimeline`) + `TimelineFunctionalTest` (le log `Timeline:` apparaît).
+
+== Vérifications (Local = Build)
+
+* `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` + `validatePlugins`
+  **VERTS**.
+* Nouveau runner `cucumberTestTimeline` (33e) ; aucune collision de step ; zéro secret ;
+  zéro Python. Zéro bump, zéro publication.
+
+== Fichiers
+
+*Créés* : `timeline/Timeline.kt`, `test/timeline/TimelineBuilderTest.kt`,
+`test/features/capsule_timeline.feature`, `test/scenarios/CapsuleTimelineSteps.kt`,
+`test/scenarios/CapsuleTimelineCucumberRunner.kt`,
+`functionalTest/capsule/TimelineFunctionalTest.kt`.
+
+*Modifiés* : `CapsuleVideoTask.kt` (construction + log de la timeline),
+`build.gradle.kts` (`CucumberTaskSpec("cucumberTestTimeline")`).
+
+== Suite (EPIC CAP-QC — reste 2/9)
+
+* **PRT-01** — prononciation « dit / lu » (`PronunciationLexicon`) + cache indexé sur le
+  **texte dit** (nom de fichier `slide-NN-<key>.mp3`) — **intrusif** (`TtsManager`/
+  `CapsuleBuildTask` + tests) ; `SubtitleTextNormalizer` a déjà le paramètre `reversals`.
+* **PRT-02** — QC voix par ASR (EPIC séparé `CAP-QC-VOICE` : port `SpeechRecognizer`).
+* PRT-07 US-2 (câblage capture/sous-titres) — optionnel, l'EPIC timeline.
+
+== Leçon
+
+Un domaine pur « durée → images » se livre et se teste sans toucher la capture ; un seul
+point d'observation (le log) suffit à l'ancrer sans régression, et laisse l'EPIC ouvert
+pour le câblage.

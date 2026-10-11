@@ -158,6 +158,15 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleContentPreflightCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // PRT-07 — deterministic timeline (integer-frame snapping).
+        // Pure-domain runner — no Playwright/FFmpeg (pattern S-082).
+        CucumberTaskSpec(
+            name = "cucumberTestTimeline",
+            features = listOf("src/test/features/capsule_timeline.feature"),
+            tags = listOf("@timeline"),
+            runnerClass = "capsule.scenarios.CapsuleTimelineCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // CAP-AUDIO US-4 — audio post-production (BGM + loudness EBU R128 + ducking).
         // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
         // Uses a NoOp processor (no real FFmpeg); validates applyAudioPostIfEnabled

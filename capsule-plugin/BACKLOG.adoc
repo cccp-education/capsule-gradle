@@ -1,9 +1,9 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-11 (S-167 — EPIC CAP-QC : portage prepa → capsule, 6/9 items)
+:last_update: 2026-10-11 (S-168 — EPIC CAP-QC : portage prepa → capsule, 7/9 items)
 
 '''
-== 🔌 BACKLOG ACTIF — CAP-QC 🟡 EN COURS 6/9 (S-167)
+== 🔌 BACKLOG ACTIF — CAP-QC 🟡 EN COURS 7/9 (S-168)
 
 _Portage de l'**utilitaire hors rendu** de `prepa_electricite_complet` (usine Python de
 cours vidéo, `lion92`) vers `capsule`. Revue source :
@@ -27,15 +27,15 @@ nouvelle est **opt-in (défaut false)** et câblée sur les **4 sources** de con
 | PRT-10 | **Publication** : chapitres **YouTube texte** (`MM:SS Titre`) + `VideoDescriptionBuilder` (garde chevrons) — miniature pédagogique non portée (le viral couvre) | `capsule.chapters`, `capsule.publish` | 3 | ✅ S-167
 | PRT-01 | **Prononciation « dit / lu »** + cache indexé sur le **texte dit** (nom `slide-NN-<key>.mp3`) | `capsule.voice`, `TtsManager` | 5 | 🟡 À FAIRE (intrusif)
 | PRT-02 | **QC voix par ASR** (fidélité mot-à-mot + souffle + choix de prise) — EPIC **`CAP-QC-VOICE`** | `capsule.voice` + port `SpeechRecognizer` | 8 | 🟡 À FAIRE (EPIC à part)
-| PRT-07 | **Timeline déterministe** (frames entières, placement échantillon-exact, avance image/voix) | `capsule.timeline` | 5 | 🟡 À FAIRE (EPIC)
+| PRT-07 | **Timeline déterministe** (frames entières, placement exact, avance image/voix) | `capsule.timeline` | 5 | ✅ S-168 (US-1 pur ; câblage capture = US-2)
 
 | ~~PRT-11~~ | Rendu de contenu maison (Java2D / LaTeX serveur) | — | — | ✅ **CADUQUE** (§ 8 revue)
 | ~~PRT-12/13~~ | Vérification exécutable (principe) / DSL schémas métier | — | — | ✅ hors cœur OSS
 |===
 
-*Total* : 9 items portables — **6 ✅ (S-166 + S-167)** + **3 🟡 à faire** (PRT-01/02/07).
-Rapports S-166/S-167 : `.agents/sessions/166-cap-qc-prt-04-03-09-06.adoc`,
-`.agents/sessions/167-cap-qc-prt-05-10.adoc`.
+*Total* : 9 items portables — **7 ✅ (S-166→S-168)** + **2 🟡 à faire** (PRT-01, PRT-02).
+Rapports : `.agents/sessions/166-cap-qc-prt-04-03-09-06.adoc`,
+`167-cap-qc-prt-05-10.adoc`, `168-cap-qc-prt-07.adoc`.
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)

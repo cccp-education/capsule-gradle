@@ -12,7 +12,7 @@
 . [x] **PRT-10** ✅ S-167 — publication : chapitres YouTube texte (`YouTubeChaptersFormatter`) + `VideoDescriptionBuilder` (garde `<`/`>`) ; `GenerateCapsuleChaptersTask` écrit `chapters.txt` + `description.txt` — 8 unit + `capsule_chapters.feature` étendu.
 . [ ] **PRT-01** — prononciation « dit / lu » (`PronunciationLexicon`) + cache par contenu (`slide-NN-<key>.mp3`) — intrusif (`TtsManager`/`CapsuleBuildTask` + tests).
 . [ ] **PRT-02** — QC voix par ASR (EPIC **`CAP-QC-VOICE`** : port `SpeechRecognizer`, fidélité + souffle + choix de prise) — à cadrer.
-. [ ] **PRT-07** — timeline déterministe (`capsule.timeline`, frames entières + avance image/voix) — touche la capture, EPIC.
+. [x] **PRT-07** ✅ S-168 (US-1) — timeline déterministe (`capsule.timeline` pur : frames entières, contigu, `lead`/`tail`/`avance`) + log observable ; 8 unit + `capsule_timeline.feature` (runner 33e) + 1 FT. Câblage capture/sous-titres = US-2.
 . [x] **PRT-11** ✅ CADUQUE — rendu de contenu maison (Java2D / LaTeX serveur) écarté (§ 8 revue).
 
 '''
