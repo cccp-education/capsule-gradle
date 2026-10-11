@@ -1,7 +1,20 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-11
-:session: 156 CAP-VIRAL-E2E US-3 — karaoké prod wiring (EPIC TERMINÉ 3/3)
+:session: 158 CAP-SHORT US-4 — dogfooding viral réel (aucun test modifié)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 11 octobre 2026 (après session 158)
+
+.Dogfooding viral réel (CAP-SHORT US-4)
+|===
+| Élément | Changement | Tests
+| — | **Aucun fichier de test ni de production modifié.** Session de dogfooding
+    (validation e2e via consommateur transitoire `/tmp`, LLM cloud réel). | 0
+|===
+
+*Totaux S-158* : 0 test ajouté/modifié. La chaîne e2e validée (MP4 30 s + cover
+1080×1920 + captions ASS + gate OK) est couverte par les suites S-154→S-156
+(unit + functional + BDD). CI = preuve du push précédent (S-157 `3e5c066` vert).
 
 == Couverture — 11 octobre 2026 (après session 156)
 

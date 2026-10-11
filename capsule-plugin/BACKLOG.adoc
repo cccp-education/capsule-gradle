@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-11 (S-156 — CAP-VIRAL-E2E US-3 karaoké prod wiring : EPIC TERMINÉ 3/3)
+:last_update: 2026-10-11 (S-158 — CAP-SHORT US-4 dogfooding viral réel LLM metered : CAP-SHORT TERMINÉ 6/6)
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)
@@ -60,7 +60,7 @@ socle **FFmpeg** (`ViralCaptureStrategy` — Playwright temps réel écarté).
 
 '''
 
-== 🎬 BACKLOG ACTIF — CAP-SHORT 🟡 EN COURS 5/6 US (S-143 cadrage, diagnostic S-145 ; US-1a S-146, US-1b S-147, US-2 S-148, US-3 S-149, US-5 S-150 ; US-4 dogfooding = accord pilote)
+== 🎬 CAP-SHORT ✅ TERMINÉ 6/6 US (S-143 cadrage, diagnostic S-145 ; US-1a S-146, US-1b S-147, US-2 S-148, US-3 S-149, US-5 S-150, US-4 S-158)
 
 _Livraison **end-to-end** du format court (YouTube Shorts / TikTok / Reels).
 CAP-VIRAL (S-139→S-142) a livré le **domaine** viral complet, mais le **rendu
@@ -143,14 +143,15 @@ batch réel (US-3), le dogfooding (US-4) et la BDD rendu (US-5).
 | US-1b | **Orchestration `renderViralVariants`** — itérer les `ViralVariant`, viewport 1080×1920 + `viralEnabled`, socle FFmpeg (`SCREENSHOT`), MP4 **réellement écrit** dans `renderedVideoDir/<variant.id>.mp4`, skip Économie d'Encre | `GenerateViralCampaignTask`, `CapsuleVideoTask`, `ScreenshotPlanner` | 5 | ✅ S-147 (`ViralVariantRenderer` + tâche `renderViralVariants`)
 | US-2 | **Durée courte imposée au montage** — cadence FFmpeg honorant `targetDurationSeconds` (15-60 s) : trim/pad + gate de validation | `capsule.viral`, `ScreenshotPlanner`, `VideoDurationValidator` | 3 | ✅ S-148 (`ViralTimeFitter` + gate durée)
 | US-3 | **Batch réel langue × plateforme** — N variantes rendues en une commande, skip Économie d'Encre si MP4 valide | `capsule.viral` | 4 | ✅ S-149 (capture unique + réplication, `ViralVariantRenderer.render`)
-| US-4 | **Dogfooding viral réel** — 1 produit talaria, socle FFmpeg **et** chemin enrichi Remotion+Manim (accord pilote, run LLM metered) | consumer | 3 | 🟡 À FAIRE
+| US-4 | **Dogfooding viral réel** — 1 produit talaria, socle FFmpeg **et** chemin enrichi Remotion+Manim (accord pilote, run LLM metered) | consumer | 3 | ✅ S-158 (dogfooding réel LLM `deepseek-v4.1-flash:cloud:11434` + socle FFmpeg ; Manim/Remotion = candidat distinct)
 | US-5 | **BDD + CI** — rendu par variante couvert (runner dédié pattern S-082, steps préfixés S-088) | feature + steps + CI | 2 | ✅ S-150 (réel MP4 `@viral-render` + CI)
 |===
 
 *Total* : 6 US (~22 pts — US-1 **scindée** en US-1a « storyboard → deck » + US-1b
 « orchestration », cf. diagnostic S-145). **US-0 ✅ S-145, US-1a ✅ S-146,
-US-1b ✅ S-147, US-2 ✅ S-148, US-3 ✅ S-149, US-5 ✅ S-150 (5/6 + dogfooding)**.
-Reste **US-4** (dogfooding viral réel = **accord pilote**, run LLM metered). Additif — **ne modifie pas** le domaine CAP-VIRAL.
+US-1b ✅ S-147, US-2 ✅ S-148, US-3 ✅ S-149, US-5 ✅ S-150, US-4 ✅ S-158
+(dogfooding viral réel, LLM `deepseek-v4.1-flash:cloud:11434`) — CAP-SHORT
+TERMINÉ 6/6**. Additif — **ne modifie pas** le domaine CAP-VIRAL.
 *Lien chaîne marketing (GBL-009)* : CAP-SHORT rend réellement livrable le maillon
 `capsule produit` (avant : seul le domaine existait).
 

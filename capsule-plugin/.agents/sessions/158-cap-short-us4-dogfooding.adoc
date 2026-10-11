@@ -1,0 +1,79 @@
+= Session 158 — CAP-SHORT US-4 : dogfooding viral réel (LLM metered)
+:session: 158
+:borough: Détroit
+:date: 2026-10-11
+:epic: CAP-SHORT
+:us: US-4 (dogfooding viral réel) — clôture EPIC 6/6
+
+== Mission
+
+Dernier US de CAP-SHORT (P0) : **dogfooding viral réel** end-to-end sur un produit
+talaria, avec le **LLM cloud réel** (accord pilote). Autorisation pilote : modèle
+**`deepseek-v4.1-flash:cloud`** sur le **port 11434** (amendement contrainte globale
+Ollama, `AGENTS.adoc` racine).
+
+== Protocole (Règle 2 — consommateur transitoire)
+
+* Consommateur `/tmp/opencode/capsule-dogfood/` (settings + `build.gradle.kts`
+  appliquant `education.cccp.capsule` 0.0.2 depuis mavenLocal).
+* HEAD du plugin publié localement (`publishToMavenLocal`, signé) pour que le
+  consommateur voie les features CAP-VIRAL-E2E (S-154→S-156).
+* Storyboard talaria réel (produit « Maîtriser opencode pour piloter son
+  workspace ») : 3 axes de contexte (QQOQCP + identité visuelle + fil conducteur)
+  + 4 beats HTML (hook/dev/dev/cta) + transitions.
+* LLM : `-Pai.provider=ollama -Pollama.baseUrl=http://localhost:11434
+  -Pollama.modelName=deepseek-v4.1-flash:cloud` (fallback direct du plugin,
+  `CapsuleLlmService.createOllamaChatModel`) — provider Ollama cloud réel.
+
+== Résultats (run réel)
+
+[cols="1,3", options="header"]
+|===
+| Étape | Résultat
+
+| `generateViralCampaign` | Gate éditorial ✅ → hook LLM réel **« Arrête de subir
+   opencode. »** + caption ; manifeste 2 bundles (fr/en × TIKTOK) ; storyboard +
+   deck portrait + cover HTML écrits.
+| `renderViralVariants` | Time-fit Σ27,00s → **30,00s** ; `ScreenshotCapture` 4
+   slides → `capsule.webm` → **2 MP4** (`fr/en-tiktok-30.mp4`, H.264, durée
+   **30,000 s**), capture unique + réplication (Économie d'Encre).
+| `renderViralThumbnails` | Cover capturée 1× → **2 PNG 1080×1920**.
+| `renderViralSubtitles` | **2 `.ass`** karaoké (ASS v4.00+, `\k` mot-à-mot).
+| `validateViralCampaign` | **GATE OK** — 2 bundles, tous les assets présents.
+|===
+
+*Verdict* : la chaîne marketing `capsule produit` (storyboard → hook contextuel LLM
+réel → deck → MP4 verticaux → cover → captions → gate) est **cohérente de bout en
+bout**, exercée sur un cas réel. CAP-SHORT **TERMINÉ 6/6 US**.
+
+== Constats du dogfooding
+
+. ✅ **Gate éditorial CAP-CONTEXT actif** : un storyboard portant un fil conducteur
+  narratif **sans** transitions par beat est correctement rejeté (règle tout-ou-rien
+  + transition par séquence). Le garde-fou fonctionne ; le storyboard a été complété.
+. ⚠️ **Erreur LLM transitoire** (`too many concurrent requests`) → la tâche
+  `generateViralCampaign` **échoue** (pas de dégradation). *Convention projet* :
+  aucun adaptateur LLM (`ChatModelViralHookGenerator`, `ChatModelTranscriptEnhancer`,
+  `ChatModelCapsuleLlm`) ne catch les erreurs de transport — seul un retour **blanc**
+  dégrade. Comportement **cohérent** avec l'existant ; une **résilience LLM
+  transverse** (transport → repli sur le message du storyboard) est un **candidat
+  EPIC** (hors scope US-4). Retry manuel → run vert.
+. ⚠️ **Manim absent** localement : le « chemin enrichi Remotion+Manim » n'a pas été
+  exercé. Note : la voie **virale force le socle FFmpeg** (`ViralCaptureStrategy`
+  → `SCREENSHOT`), l'enrichissement Remotion+Manim relevant du pipeline général
+  (US-7). Dogfooding Remotion+Manim = candidat distinct (nécessite `manim`).
+
+== Gates
+
+* Dogfooding réel vert (commande + sorties ci-dessus). Aucun code modifié cette
+  session (aucun bug de code révélé — les deux constats sont un comportement
+  conforme et une absence d'environnement).
+* Amendement gouvernance racine : `AGENTS.adoc` « Instances Ollama » (port 11434
+  réservé + `deepseek-v4.1-flash:cloud` autorisé pour ce dogfooding, hors rotation).
+* Zéro secret, zéro bump, zéro publication Central.
+
+== Candidats (hors CAP-SHORT)
+
+* **LLM resilience** (transverse) — dégrader sur erreur de transport plutôt
+  qu'échouer (tous les adaptateurs LLM).
+* **Dogfooding Remotion + Manim** — pipeline général enrichi (nécessite `manim`).

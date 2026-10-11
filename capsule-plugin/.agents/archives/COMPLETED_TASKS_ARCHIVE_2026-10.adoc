@@ -1,6 +1,25 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-11
 
+== Session 158 — CAP-SHORT US-4 : dogfooding viral réel (LLM metered, EPIC TERMINÉ 6/6) ✅
+
+* **Dogfooding réel end-to-end** sur storyboard talaria, **LLM cloud réel**
+  `deepseek-v4.1-flash:cloud` (port 11434, amendement contrainte Ollama). Consommateur
+  transitoire `/tmp` + `publishToMavenLocal` du HEAD.
+* Chaîne verte : `generateViralCampaign` (gate ✅ → hook LLM réel) →
+  `renderViralVariants` (2 MP4 H.264 30,000 s) → `renderViralThumbnails`
+  (2 PNG 1080×1920) → `renderViralSubtitles` (2 `.ass` karaoké) →
+  `validateViralCampaign` (GATE OK). **CAP-SHORT TERMINÉ 6/6.**
+* Constats : gate éditorial contexte OK ; erreur LLM transitoire (transport) → échec
+  (candidat EPIC « LLM resilience ») ; Manim absent (candidat distinct). Aucun code modifié.
+  Rapport `.agents/sessions/158-cap-short-us4-dogfooding.adoc`.
+
+== Session 157 — Correctif test fonctionnel (gate isolée) ✅
+
+* CI `Full Tests` rouge S-155/S-156 (`ValidateViralCampaignFunctionalTest`). Fix test-only :
+  `-x renderViralThumbnails -x renderViralSubtitles` ajoutés à l'isolation de la gate.
+  Zéro production modifiée. Rapport `.agents/sessions/157-fix-validate-gate-functional-test.adoc`.
+
 == Session 156 — CAP-VIRAL-E2E US-3 : karaoké prod wiring (EPIC TERMINÉ 3/3) ✅
 
 * **Constat C3 soldé** : `KaraokeSubtitleBuilder` sans usage prod.

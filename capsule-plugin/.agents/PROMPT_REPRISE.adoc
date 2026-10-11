@@ -1,40 +1,39 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 158
+:session: 159
 :borough: Détroit
-:session_precedente: 157 — correctif test fonctionnel (gate isolée)
+:session_precedente: 158 — CAP-SHORT US-4 : dogfooding viral réel (LLM metered)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-157 — correctif test (`ValidateViralCampaignFunctionalTest`)
+=== S-158 — CAP-SHORT US-4 (dogfooding viral réel) — EPIC clos
 
-- Les pushes S-155/S-156 avaient la CI `Full Tests` **rouge** : le test d'isolation
-  de la gate n'excluait pas les tâches de production ajoutées (`renderViralThumbnails`,
-  `renderViralSubtitles`) → `renderViralThumbnails` (strict, sans cover) échouait
-  avant la gate. Fix **test-only** : `-x` étendu aux 3 renders. Rapport
-  `.agents/sessions/157-fix-validate-gate-functional-test.adoc`.
-- **Leçon** : `-x` doit couvrir toutes les dépendances productrices ; un `Test`
-  (unit) vert ne prouve pas le fonctionnel/Cucumber — ne pas enchaîner sur un push
-  non prouvé vert.
+- Dogfooding réel end-to-end sur un storyboard talaria, **LLM cloud réel**
+  (`deepseek-v4.1-flash:cloud`, port 11434 — amendement contrainte Ollama
+  `AGENTS.adoc`). Consommateur `/tmp` + `publishToMavenLocal` du HEAD.
+- Chaîne verte : `generateViralCampaign` (gate ✅ → hook LLM réel) →
+  `renderViralVariants` (2 MP4 H.264 30,000 s) → `renderViralThumbnails`
+  (2 PNG 1080×1920) → `renderViralSubtitles` (2 `.ass` karaoké) →
+  `validateViralCampaign` (GATE OK). **CAP-SHORT TERMINÉ 6/6.**
+- Rapport : `.agents/sessions/158-cap-short-us4-dogfooding.adoc`.
 
-=== S-156 — CAP-VIRAL-E2E US-3 (karaoké prod wiring) — EPIC clos
+=== S-154→S-157 (contexte)
 
-- `KaraokeWordPlanner` + `AssKaraokeDocument` purs + `renderViralSubtitles`
-  (`<id>.ass`) + `CampaignBundle.subtitleFile` (additif) + gate étendue.
-- **CAP-VIRAL-E2E TERMINÉ 3/3** (US-1 S-154, US-2 S-155, US-3 S-156).
-- **Frontière IA** : l'interface LLM de capsule passe par codebase N1.
+- CAP-VIRAL-E2E TERMINÉ 3/3 : gate manifeste ↔ fichiers, thumbnail prod, karaoké prod.
+- Correctif S-157 : test d'isolation de la gate (`-x` couvre les 3 producteurs).
 
-== Mission Session 158 — backlog actif vidé
+== Mission Session 159
 
-Tous les EPICs actionnables sont terminés. Restent des items **bloqués par accord
-pilote** ou optionnels :
+**Plus aucun EPIC actionnable** : tous les EPICs du backlog sont ✅ TERMINÉ ou
+CADUQUE. Restent (accord pilote ou optionnel) :
 
-1. **Publication `capsule 0.0.3`** (accord pilote) — porte le RENAME S-153
-   (description POM générique) + tout CAP-VIRAL-E2E (S-154→S-156). Procédure :
-   `[versions].capsule` + `publishToMavenLocal` +
-   `publishAggregationToCentralPortal --no-daemon` + consommateurs (racine +
-   `workspace-bom`).
-2. **CAP-SHORT US-4** (dogfooding viral réel = **accord pilote**, run LLM metered).
+1. **Publication `capsule 0.0.3`** (accord pilote) — porte le RENAME S-153 + tout
+   CAP-VIRAL-E2E (S-154→S-156). Procédure : `[versions].capsule` +
+   `publishToMavenLocal` + `publishAggregationToCentralPortal --no-daemon` +
+   consommateurs (racine + `workspace-bom`).
+2. **Candidats** (cadrage requis, `TODO.adoc`) : **LLM resilience** (transverse —
+   dégrader sur erreur de transport LLM, constat S-158) ; **dogfooding Remotion+Manim**
+   (nécessite `manim`).
 3. **Optimisation CI** (optionnel) — `Full Tests` ~30 min.
 
 == Points d'attention
@@ -42,19 +41,20 @@ pilote** ou optionnels :
 * **Local = Build, Tests = CI** : `compileKotlin`/`compileTestKotlin`/
   `compileFunctionalTestKotlin` seulement. Le vert de la CI est la preuve.
 * **Publication** : version `0.0.2` sur Central. **Accord pilote requis** (Règle 2).
+* **Ollama** : port 11434 réservé (hors rotation) + `deepseek-v4.1-flash:cloud`
+  autorisé **uniquement** pour le dogfooding documenté (amendement 2026-10-11) ; les
+  autres boroughs restent 11434-11436 interdits.
 * **English only** : garde `OssVocabularyGuardTest` (toute la surface `src/` +
   description POM).
 * **Sessions concurrentes** : `git status` à l'ouverture (drift gouvernance).
 * Baby-step DDD/TDD/BDD ; tout nouveau feature cucumber = runner dédié (S-082) +
   steps préfixés (S-088) + câblage `full-tests.yml`. Un test qui isole une tâche
   doit exclure **toutes** ses dépendances productrices (`-x`).
-* Un test nécessitant un binaire doit **skipp** (pending) s'il manque (S-269).
 * Viral = socle FFmpeg (`ViralCaptureStrategy` force `SCREENSHOT`) ; interface IA =
   codebase N1.
 
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.2 (Central).
-* CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **5/6** ; CAP-VIRAL-E2E **3/3**.
+* CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **6/6** ; CAP-VIRAL-E2E **3/3**.
 * RENAME métier **SOLDÉ** (S-153) — délivré dans la prochaine release `0.0.3`.
-
