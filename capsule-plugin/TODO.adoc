@@ -1,5 +1,13 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-11 (S-158 — CAP-SHORT US-4 dogfooding viral réel : CAP-SHORT TERMINÉ 6/6.)
+:last_update: 2026-10-11 (S-159 — tâche `normalizeViralStoryboard` : helper d'authoring.)
+
+'''
+== ✅ Helper d'authoring — `normalizeViralStoryboard` (S-159)
+
+. [x] **Domaine pur** `ViralStoryboardNormalizer` (`normalize` → remplit les `enteringTransition` manquantes par rôle : hook/development/cta + fallback ; explicites préservées ; idempotent).
+. [x] **Tâche Gradle** `normalizeViralStoryboard` (groupe `generate`, écrit `build/capsule/viral/storyboard.normalized.adoc`) + wiring `CapsuleManager`.
+. [x] Baby-step DDD/TDD/BDD : 6 unit + 3 functional + 4 BDD `@normalize` (27e runner `cucumberTestViralNormalize`).
+. [x] Remplace le script Python ad-hoc S-158 (écosystème JVM).
 
 '''
 == ✅ CAP-SHORT — rendu short end-to-end (TERMINÉ 6/6, S-143→S-158)

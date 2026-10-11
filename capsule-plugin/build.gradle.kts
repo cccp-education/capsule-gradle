@@ -312,6 +312,16 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleViralKaraokeCucumberRunner",
             timeoutMinutes = 10,
         ),
+        // Storyboard authoring helper — normalize a hand-authored storyboard so every
+        // beat carries an entering transition (editorial gate). Dedicated runner pattern
+        // S-082; steps prefixed "storyboard to normalize"/"normalized" (bug S-088). Pure domain.
+        CucumberTaskSpec(
+            name = "cucumberTestViralNormalize",
+            features = listOf("src/test/features/capsule_viral_normalize.feature"),
+            tags = listOf("@normalize"),
+            runnerClass = "capsule.scenarios.CapsuleStoryboardNormalizeCucumberRunner",
+            timeoutMinutes = 10,
+        ),
     )
 }
 

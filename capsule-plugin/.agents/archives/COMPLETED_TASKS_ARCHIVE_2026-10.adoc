@@ -1,6 +1,15 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-11
 
+== Session 159 — Tâche Gradle `normalizeViralStoryboard` (helper d'authoring) ✅
+
+* Domaine pur `ViralStoryboardNormalizer` (`normalize` → remplit les
+  `enteringTransition` manquantes par rôle ; explicites préservées ; idempotent) +
+  `NormalizeViralStoryboardTask` (groupe `generate`).
+* Remplace le script Python ad-hoc du dogfooding S-158 : reproductible + testé.
+* Baby-step DDD/TDD/BDD : 6 unit + 3 functional + 4 scénarios `@normalize`
+  (27e runner `cucumberTestViralNormalize`). Workflow validé en réel. Zéro bump.
+
 == Session 158 — CAP-SHORT US-4 : dogfooding viral réel (LLM metered, EPIC TERMINÉ 6/6) ✅
 
 * **Dogfooding réel end-to-end** sur storyboard talaria, **LLM cloud réel**

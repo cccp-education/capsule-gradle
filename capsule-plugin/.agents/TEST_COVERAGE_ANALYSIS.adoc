@@ -1,7 +1,24 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-11
-:session: 158 CAP-SHORT US-4 — dogfooding viral réel (aucun test modifié)
+:session: 159 tâche `normalizeViralStoryboard` (helper d'authoring)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 11 octobre 2026 (après session 159)
+
+.Modifications session 159 — tâche `normalizeViralStoryboard`
+|===
+| Fichier | Changement | Tests ajoutés
+| `viral/ViralStoryboardNormalizer.kt` (nouveau) | Objet pur : `normalize(storyboard)` → remplit les `enteringTransition` manquantes par rôle (hook/development/cta + fallback), explicites préservées, idempotent. | +6 `ViralStoryboardNormalizerTest`
+| `viral/NormalizeViralStoryboardTask.kt` (nouveau) | Tâche Gradle groupe `generate` : lit `-Pcapsule.viral.storyboardFile`, normalise, écrit `build/capsule/viral/storyboard.normalized.adoc`. | 0 unit (adaptateur) ; +3 functional
+| `CapsuleManager.kt` (modifié) | `registerNormalizeViralStoryboardTask`. | 0 (configuration)
+| `capsule_viral_normalize.feature` + `CapsuleStoryboardNormalizeSteps.kt` + `CapsuleStoryboardNormalizeCucumberRunner.kt` (nouveaux) | 4 scénarios `@normalize` (fill par rôle, explicite préservée, fallback, idempotence). | 4 scénarios (27e runner `cucumberTestViralNormalize`)
+| `build.gradle.kts` + `.github/workflows/full-tests.yml` (modifiés) | `CucumberTaskSpec("cucumberTestViralNormalize")` + étape CI. | 0
+|===
+
+*Totaux S-159* : +6 unit, +3 functional, +4 scénarios BDD. Gates locaux (Local =
+Build) : compiles VERT ; tâche Cucumber enregistrée. Les suites s'exécutent en CI
+(`Test` + `Full Tests`), preuve = run du push. Workflow validé en réel
+(`/tmp` + `publishToMavenLocal`).
 
 == Couverture — 11 octobre 2026 (après session 158)
 

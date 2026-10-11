@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-11 (S-158) — CAP-SHORT US-4 dogfooding viral réel (LLM metered) ; CAP-SHORT TERMINÉ 6/6. Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-11 (S-159) — tâche `normalizeViralStoryboard` (helper d'authoring). Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (120-158)
+== Sessions récentes (120-159)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 159 | 2026-10-11 | feat+test | **Tâche Gradle `normalizeViralStoryboard`** — helper d'authoring reproductible remplaçant le script Python ad-hoc de S-158. Domaine pur `ViralStoryboardNormalizer` (`normalize(storyboard)` → remplit les `enteringTransition` manquantes par rôle : `hook→"— (ouverture)"`, `development→"cut"`, `cta→"fade"`, fallback `"cut"` ; explicites préservées ; idempotent) + `NormalizeViralStoryboardTask` (groupe `generate`, lit `-Pcapsule.viral.storyboardFile`, écrit `build/capsule/viral/storyboard.normalized.adoc` ; storyboard absent → warning) + `CapsuleManager` wiring. Baby-step DDD/TDD/BDD : `ViralStoryboardNormalizerTest` (6 unit) + `NormalizeViralStoryboardFunctionalTest` (3 functional TestKit) + `capsule_viral_normalize.feature` `@normalize` (4 scénarios) + runner dédié 27e `cucumberTestViralNormalize` câblé `full-tests.yml`. **Workflow validé en réel** (`/tmp` + `publishToMavenLocal`) : gate rejette un storyboard sans transitions → `normalizeViralStoryboard` (4 remplies) → `generateViralCampaign` gate ✅. Local = Build, Tests = CI. Zéro bump, zéro publication. | 9/10
 
 | 158 | 2026-10-11 | dogfooding (LLM metered) | **CAP-SHORT US-4 — dogfooding viral réel** (accord pilote : `deepseek-v4.1-flash:cloud` port 11434 ; amendement contrainte globale Ollama `AGENTS.adoc`). Consommateur transitoire `/tmp` + `publishToMavenLocal` du HEAD. Storyboard talaria réel (3 axes de contexte + 4 beats + transitions). Run réel : `generateViralCampaign` (gate éditorial ✅ → hook LLM réel « Arrête de subir opencode. » → manifeste 2 bundles fr/en×TIKTOK) → `renderViralVariants` (time-fit Σ27,00s→30,00s, 4 slides → 2 MP4 H.264 **30,000 s**) → `renderViralThumbnails` (2 PNG **1080×1920**) → `renderViralSubtitles` (2 `.ass` karaoké `\k` mot-à-mot) → `validateViralCampaign` (**GATE OK**). **CAP-SHORT TERMINÉ 6/6.** Constats : (1) gate éditorial CAP-CONTEXT rejette correctement un storyboard sans transitions ; (2) erreur LLM transitoire (transport, `too many concurrent requests`) échoue la tâche — convention projet, candidat EPIC « LLM resilience » ; (3) Manim absent → dogfooding Remotion+Manim candidat distinct. Aucun code modifié. Zéro bump, zéro publication. | 9/10
 

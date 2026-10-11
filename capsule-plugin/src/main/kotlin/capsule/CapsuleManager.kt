@@ -37,6 +37,7 @@ class CapsuleManager(private val project: Project) {
         project.registerRenderViralThumbnailsTask()
         project.registerRenderViralSubtitlesTask()
         project.registerValidateViralCampaignTask()
+        project.registerNormalizeViralStoryboardTask()
     }
 
     private fun Project.registerExtractSpeakerNotesTask() {
@@ -444,10 +445,30 @@ class CapsuleManager(private val project: Project) {
                 capsuleExt?.strictMode?.get() ?: false
             })
             task.manifestFile.convention(
+                 project.layout.file(project.provider {
+                     val f = project.layout.buildDirectory.file("capsule/viral/viral-campaign.json").get().asFile
+                     if (f.exists()) f else null
+                 }),
+             )
+         }
+     }
+
+    private fun Project.registerNormalizeViralStoryboardTask() {
+        val capsuleExt = project.extensions.findByType(CapsuleExtension::class.java)
+        tasks.register("normalizeViralStoryboard", capsule.viral.NormalizeViralStoryboardTask::class.java) { task ->
+            task.group = CapsuleMessages.get("task.group.generate", CapsuleMessages.resolveLanguage(this))
+            task.description = "Normalize a hand-authored viral storyboard: fill every missing per-beat entering transition (editorial gate)."
+            task.storyboardFile.convention(
                 project.layout.file(project.provider {
-                    val f = project.layout.buildDirectory.file("capsule/viral/viral-campaign.json").get().asFile
-                    if (f.exists()) f else null
+                    val configured = capsuleExt?.viralStoryboardFile?.get().orEmpty()
+                    val path = configured.ifBlank {
+                        project.findProperty("capsule.viral.storyboardFile")?.toString().orEmpty()
+                    }
+                    if (path.isBlank()) null else project.file(path)
                 }),
+            )
+            task.normalizedOutput.convention(
+                project.layout.buildDirectory.file("capsule/viral/storyboard.normalized.adoc"),
             )
         }
     }

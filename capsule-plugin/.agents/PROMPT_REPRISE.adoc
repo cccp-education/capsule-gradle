@@ -1,36 +1,35 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 159
+:session: 160
 :borough: Détroit
-:session_precedente: 158 — CAP-SHORT US-4 : dogfooding viral réel (LLM metered)
+:session_precedente: 159 — tâche `normalizeViralStoryboard` (helper d'authoring)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-158 — CAP-SHORT US-4 (dogfooding viral réel) — EPIC clos
+=== S-159 — tâche `normalizeViralStoryboard`
 
-- Dogfooding réel end-to-end sur un storyboard talaria, **LLM cloud réel**
-  (`deepseek-v4.1-flash:cloud`, port 11434 — amendement contrainte Ollama
-  `AGENTS.adoc`). Consommateur `/tmp` + `publishToMavenLocal` du HEAD.
-- Chaîne verte : `generateViralCampaign` (gate ✅ → hook LLM réel) →
-  `renderViralVariants` (2 MP4 H.264 30,000 s) → `renderViralThumbnails`
-  (2 PNG 1080×1920) → `renderViralSubtitles` (2 `.ass` karaoké) →
-  `validateViralCampaign` (GATE OK). **CAP-SHORT TERMINÉ 6/6.**
-- Rapport : `.agents/sessions/158-cap-short-us4-dogfooding.adoc`.
+- Domaine pur `ViralStoryboardNormalizer` (remplit les `enteringTransition`
+  manquantes par rôle ; explicites préservées ; idempotent) + tâche Gradle
+  (groupe `generate`) + wiring. 27e runner `cucumberTestViralNormalize`.
+- Remplace le script Python ad-hoc S-158 (écosystème JVM). Workflow validé en réel :
+  gate rejette → normalize → gate ✅.
+- Rapport : `.agents/sessions/159-normalize-viral-storyboard-task.adoc`.
 
-=== S-154→S-157 (contexte)
+=== S-158 — CAP-SHORT US-4 (dogfooding viral réel, LLM metered)
 
-- CAP-VIRAL-E2E TERMINÉ 3/3 : gate manifeste ↔ fichiers, thumbnail prod, karaoké prod.
-- Correctif S-157 : test d'isolation de la gate (`-x` couvre les 3 producteurs).
+- Chaîne e2e verte (LLM `deepseek-v4.1-flash:cloud:11434`) : MP4 30 s + cover
+  1080×1920 + captions ASS + gate OK. **CAP-SHORT TERMINÉ 6/6.**
 
-== Mission Session 159
+== Mission Session 160
 
 **Plus aucun EPIC actionnable** : tous les EPICs du backlog sont ✅ TERMINÉ ou
 CADUQUE. Restent (accord pilote ou optionnel) :
 
 1. **Publication `capsule 0.0.3`** (accord pilote) — porte le RENAME S-153 + tout
-   CAP-VIRAL-E2E (S-154→S-156). Procédure : `[versions].capsule` +
-   `publishToMavenLocal` + `publishAggregationToCentralPortal --no-daemon` +
-   consommateurs (racine + `workspace-bom`).
+   CAP-VIRAL-E2E (S-154→S-156) + `normalizeViralStoryboard` (S-159). Procédure :
+   `[versions].capsule` + `publishToMavenLocal` +
+   `publishAggregationToCentralPortal --no-daemon` + consommateurs (racine +
+   `workspace-bom`).
 2. **Candidats** (cadrage requis, `TODO.adoc`) : **LLM resilience** (transverse —
    dégrader sur erreur de transport LLM, constat S-158) ; **dogfooding Remotion+Manim**
    (nécessite `manim`).
@@ -44,6 +43,8 @@ CADUQUE. Restent (accord pilote ou optionnel) :
 * **Ollama** : port 11434 réservé (hors rotation) + `deepseek-v4.1-flash:cloud`
   autorisé **uniquement** pour le dogfooding documenté (amendement 2026-10-11) ; les
   autres boroughs restent 11434-11436 interdits.
+* **Zéro Python** : transformations/outillage en Kotlin (`kotlinc -script`) ou tâche
+  Gradle — jamais Python.
 * **English only** : garde `OssVocabularyGuardTest` (toute la surface `src/` +
   description POM).
 * **Sessions concurrentes** : `git status` à l'ouverture (drift gouvernance).
@@ -58,3 +59,4 @@ CADUQUE. Restent (accord pilote ou optionnel) :
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.2 (Central).
 * CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **6/6** ; CAP-VIRAL-E2E **3/3**.
 * RENAME métier **SOLDÉ** (S-153) — délivré dans la prochaine release `0.0.3`.
+

@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-11 (S-158 — CAP-SHORT US-4 dogfooding viral réel LLM metered : CAP-SHORT TERMINÉ 6/6)
+:last_update: 2026-10-11 (S-159 — tâche `normalizeViralStoryboard` : helper d'authoring reproductible)
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)

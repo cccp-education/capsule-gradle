@@ -1,0 +1,70 @@
+= Session 159 — Tâche Gradle `normalizeViralStoryboard` (helper d'authoring)
+:session: 159
+:borough: Détroit
+:date: 2026-10-11
+:epic: CAP-VIRAL (follow-up S-158)
+:us: —
+
+== Motivation
+
+Le dogfooding S-158 a buté sur le gate éditorial : un storyboard portant un fil
+conducteur narratif **doit** donner une transition à chaque séquence, sinon
+rejet. La transformation « remplir les transitions manquantes » avait été faite par
+un script ad-hoc (Python, hors gouvernance). Demande pilote : en faire une **tâche
+Gradle** reproductible et **couverte par la CI**.
+
+== Livrable
+
+=== Domaine pur (unit)
+
+* `capsule.viral.ViralStoryboardNormalizer` (objet pur) : `normalize(storyboard)`
+  → copie dont chaque beat porte une `enteringTransition` (les explicites sont
+  **préservées**, les manquantes remplies par `defaultFor(role)`) + politique
+  par défaut `hook → "— (ouverture)"`, `development → "cut"`, `cta → "fade"`,
+  fallback `"cut"`. Idempotent, ne touche aucun autre champ.
+* `ViralStoryboardNormalizerTest` : 6 tests (fill par rôle, explicite préservé,
+  fallback rôle inconnu, casse-insensible, aucun autre champ touché, idempotence).
+
+=== Câblage (functional)
+
+* `NormalizeViralStoryboardTask` (groupe `generate`) : lit le storyboard
+  (`-Pcapsule.viral.storyboardFile`), le parse ([ViralStoryboardParser]) → échoue
+  si non-validable, normalise, écrit `build/capsule/viral/storyboard.normalized.adoc`
+  ([ViralStoryboardBuilder]). Storyboard absent → warning dégradé.
+* `CapsuleManager.registerNormalizeViralStoryboardTask`.
+* `NormalizeViralStoryboardFunctionalTest` : 3 tests TestKit (registration,
+  storyboard absent → warning, écriture : 3 transitions remplies + valeurs).
+
+=== BDD (cucumber)
+
+* `capsule_viral_normalize.feature` `@normalize` : 4 scénarios (remplissage par
+  rôle, transition explicite préservée, fallback rôle inconnu, idempotence).
+* `CapsuleStoryboardNormalizeSteps` (préfixés « storyboard to normalize »/
+  « normalized », S-088) + `CapsuleStoryboardNormalizeCucumberRunner` (S-082).
+* `CucumberTaskSpec("cucumberTestViralNormalize")` (27e runner) câblé
+  `full-tests.yml`.
+
+=== Validation réelle (workflow d'authoring)
+
+Consommateur `/tmp` + `publishToMavenLocal` du HEAD :
+
+----
+1) generateViralCampaign (storyboard brut, 3 axes, durées valides, sans transitions)
+   → REJET du gate : « beat 2/3/4 has no entering transition »
+2) normalizeViralStoryboard → « 4 transition(s) filled »
+3) generateViralCampaign (storyboard normalisé, hook explicite = zéro LLM)
+   → gate ✅ → 1 bundle fr×TIKTOK
+----
+
+La tâche remplace le script ad-hoc de S-158, de façon reproductible et testée.
+
+== Gates
+
+* Local = Build (RÈGLE EAGER) : compiles VERT ; tâche Cucumber enregistrée. Les
+  suites s'exécutent en CI — preuve = run du push.
+* `rg` vocabulaire métier dans `src/` = 0. Zéro secret, zéro bump, zéro publication.
+
+== Note gouvernance
+
+Le `python3` heredoc de S-158 (édition de storyboard) est **remplacé** par cette
+tâche Gradle (écosystème JVM) ; plus aucune invocation Python dans les sessions.
