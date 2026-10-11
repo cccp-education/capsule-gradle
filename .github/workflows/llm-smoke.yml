@@ -1,0 +1,58 @@
+name: LLM Smoke (Ollama, cached)
+
+# Non-gating, on-demand validation that the cached Ollama setup works: the
+# Docker image and the model weights are restored from the GitHub Actions cache
+# instead of being re-downloaded on every run. Dispatch it manually, or wire the
+# `setup-ollama` composite action into an integration job when an LLM-backed
+# test needs a real model.
+#
+# Port/model follow the workspace CI convention (AGENTS.adoc): a dedicated CI
+# port, a light model. Environment variables OLLAMA_TEST_PORT / OLLAMA_TEST_MODEL
+# are exported so future `@integration` tests can `assumeTrue(isOllamaReady(port))`.
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: 'Ollama model to make available (small CI model).'
+        required: false
+        default: 'qwen3.5:0.8b'
+
+jobs:
+  llm-smoke:
+    name: Ollama smoke (cached image + model)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      OLLAMA_TEST_PORT: "11466"
+      OLLAMA_TEST_MODEL: ${{ github.event.inputs.model }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+
+      # Gradle cache (wrapper + dependencies + build cache) so no job re-downloads
+      # the toolchain or the dependency graph.
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Setup Ollama (cached image + model)
+        uses: ./.github/actions/setup-ollama
+        with:
+          model: ${{ github.event.inputs.model }}
+          port: "11466"
+
+      - name: Verify the model answers
+        run: |
+          docker exec ollama ollama run "$OLLAMA_TEST_MODEL" "Reply with the single word: ok" \
+            || (echo "model $OLLAMA_TEST_MODEL did not answer" >&2; exit 1)
+
+      - name: Cache summary
+        if: always()
+        run: du -sh ~/.ollama/models 2>/dev/null || true

@@ -18,7 +18,12 @@ jobs:
         with:
           java-version: '25'
           distribution: 'temurin'
-          cache: gradle
+
+      # Gradle cache (wrapper + dependencies + build cache) — shared with the
+      # other workflows via the same cache key, so the toolchain and the full
+      # dependency graph are never re-downloaded.
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Install ffmpeg + espeak
         run: |
