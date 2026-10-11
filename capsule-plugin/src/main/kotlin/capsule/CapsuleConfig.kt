@@ -83,6 +83,7 @@ data class VoiceConfig(
 data class QcConfig(
     val preflightEnabled: Boolean = false,
     val maxNoteChars: Int = 500,
+    val boardsEnabled: Boolean = false,
 )
 
 data class InputConfig(

@@ -186,6 +186,15 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleVoiceVerificationCucumberRunner",
             timeoutMinutes = 10,
         ),
+        // PRT-08 — visual QC boards (beats + dit-vs-montre). Pure-domain runner —
+        // planners + Java2D renderer, no ffmpeg/Chromium (pattern S-082).
+        CucumberTaskSpec(
+            name = "cucumberTestQcBoards",
+            features = listOf("src/test/features/capsule_qc_boards.feature"),
+            tags = listOf("@qc-boards"),
+            runnerClass = "capsule.scenarios.CapsuleQcBoardsCucumberRunner",
+            timeoutMinutes = 10,
+        ),
         // CAP-AUDIO US-4 — audio post-production (BGM + loudness EBU R128 + ducking).
         // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
         // Uses a NoOp processor (no real FFmpeg); validates applyAudioPostIfEnabled

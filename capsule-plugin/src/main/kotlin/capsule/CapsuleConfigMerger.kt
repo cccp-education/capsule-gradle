@@ -161,7 +161,8 @@ object CapsuleConfigMerger {
             ),
             qc = QcConfig(
                 preflightEnabled = env["CAPSULE_QC_PREFLIGHT_ENABLED"]?.toBoolean() ?: false,
-                maxNoteChars = env["CAPSULE_QC_MAX_NOTE_CHARS"]?.toIntOrNull() ?: 500
+                maxNoteChars = env["CAPSULE_QC_MAX_NOTE_CHARS"]?.toIntOrNull() ?: 500,
+                boardsEnabled = env["CAPSULE_QC_BOARDS_ENABLED"]?.toBoolean() ?: false
             ),
             audioPost = AudioPostConfig(
                 bgmEnabled = env["CAPSULE_AUDIO_POST_BGM_ENABLED"]?.toBoolean() ?: false,
@@ -288,7 +289,8 @@ object CapsuleConfigMerger {
             ),
             qc = QcConfig(
                 preflightEnabled = props["capsule.qc.preflightEnabled"]?.toBoolean() ?: false,
-                maxNoteChars = props["capsule.qc.maxNoteChars"]?.toIntOrNull() ?: 500
+                maxNoteChars = props["capsule.qc.maxNoteChars"]?.toIntOrNull() ?: 500,
+                boardsEnabled = props["capsule.qc.boardsEnabled"]?.toBoolean() ?: false
             ),
             audioPost = AudioPostConfig(
                 bgmEnabled = props["capsule.audioPost.bgmEnabled"]?.toBoolean() ?: false,
@@ -442,7 +444,8 @@ object CapsuleConfigMerger {
     private fun mergeQcConfig(env: QcConfig, props: QcConfig, yaml: QcConfig?, cli: Map<String, Any?>): QcConfig {
         return QcConfig(
             preflightEnabled = mergeBoolean(cli, "qc.preflightEnabled", yaml?.preflightEnabled, props.preflightEnabled),
-            maxNoteChars = mergeInt(cli, "qc.maxNoteChars", yaml?.maxNoteChars, props.maxNoteChars)
+            maxNoteChars = mergeInt(cli, "qc.maxNoteChars", yaml?.maxNoteChars, props.maxNoteChars),
+            boardsEnabled = mergeBoolean(cli, "qc.boardsEnabled", yaml?.boardsEnabled, props.boardsEnabled)
         )
     }
 

@@ -525,11 +525,13 @@ class CapsuleConfigMergerTest {
         val default = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
         assertEquals(false, default.qc.preflightEnabled, "qc.preflightEnabled should default to false")
         assertEquals(500, default.qc.maxNoteChars, "qc.maxNoteChars should default to 500")
+        assertEquals(false, default.qc.boardsEnabled, "qc.boardsEnabled should default to false")
         val enabled = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf("qc.preflightEnabled" to "true", "qc.maxNoteChars" to "200")
+            projectDir, CapsuleConfig(), mapOf("qc.preflightEnabled" to "true", "qc.maxNoteChars" to "200", "qc.boardsEnabled" to "true")
         )
         assertEquals(true, enabled.qc.preflightEnabled, "CLI qc.preflightEnabled should be honored")
         assertEquals(200, enabled.qc.maxNoteChars, "CLI qc.maxNoteChars should be honored")
+        assertEquals(true, enabled.qc.boardsEnabled, "CLI qc.boardsEnabled should be honored")
     }
 
     @Test

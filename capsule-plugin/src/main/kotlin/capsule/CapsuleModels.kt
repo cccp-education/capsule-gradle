@@ -222,6 +222,10 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val qcMaxNoteChars: Property<Int> = objects.property(Int::class.java)
         .convention(500)
 
+    /** PRT-08 — `true` to render the visual QC boards (`renderQcBoards`). Defaults to false (opt-in). */
+    val qcBoardsEnabled: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
     /** CAP-AUDIO — `true` to mix background music under the voice track. Defaults to false (opt-in). */
     val audioPostBgmEnabled: Property<Boolean> = objects.property(Boolean::class.java)
         .convention(false)
@@ -399,6 +403,7 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         integrityValidationEnabled = false,
         qcPreflightEnabled = false,
         qcMaxNoteChars = 500,
+        qcBoardsEnabled = false,
         audioPostBgmEnabled = false,
         audioPostBgmFile = "",
         audioPostBgmLevel = -18.0,
@@ -481,6 +486,7 @@ data class CapsuleConventions(
     val integrityValidationEnabled: Boolean,
     val qcPreflightEnabled: Boolean,
     val qcMaxNoteChars: Int,
+    val qcBoardsEnabled: Boolean,
     val audioPostBgmEnabled: Boolean,
     val audioPostBgmFile: String,
     val audioPostBgmLevel: Double,

@@ -32,6 +32,7 @@ class CapsuleManager(private val project: Project) {
         project.registerDistributeCapsuleVideoTask()
         project.registerValidateCapsuleVideoDurationTask()
         project.registerPreflightCapsuleContentTask()
+        project.registerRenderQcBoardsTask()
         project.registerVerifyCapsuleVoiceTask()
         project.registerSelectBestVoiceTakeTask()
         project.registerGenerateCapsuleChaptersTask()
@@ -130,6 +131,21 @@ class CapsuleManager(private val project: Project) {
             task.strict.set(project.provider {
                 capsuleExt?.strictMode?.get() ?: false
             })
+        }
+    }
+
+    private fun Project.registerRenderQcBoardsTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
+        val capsuleExt = project.extensions.findByType(CapsuleExtension::class.java)
+        tasks.register("renderQcBoards", capsule.qc.RenderQcBoardsTask::class.java) { task ->
+            task.group = CapsuleMessages.get("task.group.verification", lang)
+            task.description = CapsuleMessages.get("task.renderQcBoards.description", lang)
+            task.enabled.set(project.provider {
+                capsuleExt?.qcBoardsEnabled?.get()
+                    ?: project.findProperty("capsule.qc.boardsEnabled")?.toString()?.toBoolean()
+                    ?: false
+            })
+            task.outputDir.convention(project.layout.buildDirectory.dir("capsule/qc"))
         }
     }
 

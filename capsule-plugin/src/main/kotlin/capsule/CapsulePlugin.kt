@@ -181,6 +181,9 @@ class CapsulePlugin : Plugin<Project> {
         if (!ext.qcMaxNoteChars.isPresent || ext.qcMaxNoteChars.get() == conventions.qcMaxNoteChars) {
             ext.qcMaxNoteChars.set(config.qc.maxNoteChars)
         }
+        if (!ext.qcBoardsEnabled.isPresent || ext.qcBoardsEnabled.get() == conventions.qcBoardsEnabled) {
+            ext.qcBoardsEnabled.set(config.qc.boardsEnabled)
+        }
 
         // AudioPost section (CAP-AUDIO)
         if (!ext.audioPostBgmEnabled.isPresent || ext.audioPostBgmEnabled.get() == conventions.audioPostBgmEnabled) {
