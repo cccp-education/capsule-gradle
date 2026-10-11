@@ -1,7 +1,17 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-11
-:session: 170 CAP-QC-VOICE US-1 (domaine pur `capsule.voice`)
+:session: 171 CAP-QC : littérature agentique consolidée (gouvernance pure)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 11 octobre 2026 (après session 171)
+
+.Littérature agentique CAP-QC
+|===
+| Élément | Changement | Tests
+| — | **Aucun test modifié.** Session de gouvernance pure : création du document de référence `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage `prepa` → capsule) + `PROMPT_REPRISE` re-préparé. Le build reste la baseline S-170 (compiles + `validatePlugins` VERTS). | 0
+|===
+
+*Totaux S-171* : 0. La baseline de tests du commit est celle de S-170 (CI verte).
 
 == Couverture — 11 octobre 2026 (après session 170)
 

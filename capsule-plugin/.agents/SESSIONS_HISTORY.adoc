@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-11 (S-170) — CAP-QC-VOICE US-1 : domaine pur `capsule.voice`. Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-11 (S-171) — CAP-QC : littérature agentique consolidée. Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (120-170)
+== Sessions récentes (120-171)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 171 | 2026-10-11 | gouvernance | **CAP-QC : littérature agentique consolidée** (gouvernance pure, zéro code). Création de `.agents/CADRAGE_EPIC_CAP_QC.adoc` — **document de référence du portage `prepa_electricite_complet` → capsule** : objet/origine ; **frontière** (techniques seules ; jamais le contenu — œuvre dérivée — ni un moteur de rendu maison ; portage capsule-scoped, pas de N0 ; `OssVocabularyGuardTest`) ; **catalogue `PRT-01`→`PRT-13`** avec statut (livrés S-166→S-168 : PRT-04/03/09/06/05/10/07 ; à faire : PRT-01/08 ; cadré en EPIC : PRT-02 ; CADUQUE : PRT-11 ; hors cœur OSS : PRT-12/13) ; **décision fondatrice** « pas de quatrième voie de rendu » (les 3 voies passent par Chromium ; pré-rasteriser en CI si besoin) ; **les deux EPICs** (`CAP-QC` 7/9 ; `CAP-QC-VOICE` 1/5) ; **6 décisions transverses** (opt-in défaut false ; 4 sources de config ; objet pur d'abord ; économie d'encre ; dégradation/`strictMode` ; baby-step DDD/TDD/BDD ; Local = Build / Tests = CI) ; reste à faire ; **traçabilité** S-166→S-170 ; références. `PROMPT_REPRISE` re-préparé → S-172 (3 options : A `CAP-QC-VOICE` US-2, B PRT-01, C PRT-08). `INDEX`/`SESSIONS_HISTORY`/`TEST_COVERAGE`/`BACKLOG`/`TODO`/archive synchronisés ; `code_review.adoc` (prepa) `:revision: i`. Zéro code. Rapport `.agents/sessions/171-cap-qc-litterature.adoc`. | 8/10
 
 | 170 | 2026-10-11 | feat+test | **CAP-QC-VOICE US-1 — domaine pur `capsule.voice`** (zéro ASR). Porté de `prepa_electricite_complet` (`verif_voix.py`/`score_voix.py`/`rapport_voix.py`). `TextNormalizer.normalize(text)` → `List<String>` (minuscule, pliage `œ`/`æ`, diacritiques NFD supprimés, apostrophes/tirets → espaces, non `[a-z0-9 ]` retirés, découpage). `WordAligner.align(ref, hyp)` → `Alignment(distance, operations)` : Levenshtein mot-à-mot + `AlignmentOp(kind, reference, hypothesis)` / `OpKind` MATCH/SUBSTITUTE/DELETE/INSERT. `VoiceScore(wordErrorRate, distance, referenceWordCount, hypothesisWordCount)` + `surplus` (mots en plus = hallucination) ; `FidelityScorer.score(expected, transcribed)` (WER = distance / max(1, mots de réf)). `SnrEstimator.estimate(frameRms)` (plancher = cadres RMS min, voix = RMS des cadres ≥ 60ᵉ percentile, `20·log10(voix/fond)` dB). **Zéro ASR** : la transcription est une chaîne fournie. Baby-step DDD/TDD/BDD : `TextNormalizerTest` (6) + `WordAlignerTest` (5) + `FidelityScorerTest` (5) + `SnrEstimatorTest` (3) + `capsule_voice_quality.feature` (4 `@voice`, runner dédié 34e `cucumberTestVoiceQuality`). Compiles + `validatePlugins` VERT. Local = Build, Tests = CI. Zéro bump, zéro secret. Rapport `.agents/sessions/170-cap-qc-voice-us1-domaine-pur.adoc`. | 9/10
 

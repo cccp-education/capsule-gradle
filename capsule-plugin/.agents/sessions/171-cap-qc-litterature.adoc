@@ -1,0 +1,54 @@
+= Session 171 — CAP-QC : littérature agentique consolidée (gouvernance pure)
+:date: 2026-10-11
+:type: gouvernance pure (zéro code)
+:sujet: Consolidation de la littérature agentique du portage prepa → capsule (EPIC CAP-QC)
+:statut: CLÔTURÉE
+
+== Contexte
+
+Après S-166→S-170 (CAP-QC 7/9, CAP-QC-VOICE 1/5), le plan du portage vivait surtout dans la
+revue source (`prepa_electricite_complet/code_review.adoc`) et le `BACKLOG` de capsule — sans
+**document de littérature agentique** côté capsule. Session de **consolidation** (gouvernance
+pure, zéro code).
+
+== Livrable — `.agents/CADRAGE_EPIC_CAP_QC.adoc`
+
+Document vivant de référence, structuré : objet/origine ; **frontière** (techniques seules,
+jamais le contenu ni un moteur de rendu maison) ; **catalogue `PRT-01`→`PRT-13`** avec statut
+(7 livrés, 2 à faire, 1 cadré en EPIC, PRT-11 CADUQUE, PRT-12/13 hors cœur OSS) ; **décision
+fondatrice** « pas de quatrième voie de rendu » ; les **deux EPICs** (`CAP-QC` 7/9,
+`CAP-QC-VOICE` 1/5) ; **6 décisions transverses** (opt-in défaut false, 4 sources de config,
+objet pur d'abord, économie d'encre, dégradation/strict, baby-step DDD/TDD/BDD, Local = Build /
+Tests = CI) ; **reste à faire** ; **traçabilité** (sessions/rapports) ; références.
+
+== Mises à jour de gouvernance
+
+* `PROMPT_REPRISE.adoc` re-préparé → session **172** : trois options (A : `CAP-QC-VOICE`
+  US-2 port ASR + tâche ; B : PRT-01 intrusif ; C : PRT-08 planches QC), points d'attention
+  et rappels.
+* `INDEX.adoc` (en-tête + table) et `SESSIONS_HISTORY.adoc` : session 171.
+* `TEST_COVERAGE_ANALYSIS.adoc` : section 171 (0 test — gouvernance pure).
+* `BACKLOG.adoc` : renvoi au document de littérature dans les sections `CAP-QC` et
+  `CAP-QC-VOICE`.
+* `archives/COMPLETED_TASKS_ARCHIVE_2026-10.adoc` : session 171.
+* `code_review.adoc` (source `prepa`) : `:revision: i`.
+
+== Vérifications
+
+Gouvernance pure : **zéro code modifié**. Le build reste la baseline du S-170 (compiles +
+`validatePlugins` VERTS ; CI verte au commit S-170). Zéro secret.
+
+== Fichiers
+
+* Créé : `.agents/CADRAGE_EPIC_CAP_QC.adoc`.
+* Mis à jour : `.agents/PROMPT_REPRISE.adoc`, `.agents/INDEX.adoc`,
+  `.agents/SESSIONS_HISTORY.adoc`, `.agents/TEST_COVERAGE_ANALYSIS.adoc`,
+  `.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-10.adoc`,
+  `.agents/sessions/171-cap-qc-litterature.adoc`, `BACKLOG.adoc` ;
+  `code_review.adoc` (prepa).
+
+== Suite
+
+`CAP-QC` 7/9 · `CAP-QC-VOICE` 1/5. Prochaine session (172) : `CAP-QC-VOICE` US-2 (port ASR) ou
+PRT-01 (clôt CAP-QC) ou PRT-08 (planches QC) — au choix du pilote. Vue d'ensemble :
+`.agents/CADRAGE_EPIC_CAP_QC.adoc`.

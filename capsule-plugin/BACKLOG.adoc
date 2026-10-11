@@ -1,9 +1,10 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-11 (S-170 — CAP-QC-VOICE US-1 : domaine pur `capsule.voice`)
+:last_update: 2026-10-11 (S-171 — littérature agentique CAP-QC consolidée ; CAP-QC 7/9, CAP-QC-VOICE 1/5)
 
 '''
 == 🔌 BACKLOG ACTIF — CAP-QC 🟡 EN COURS 7/9 (S-168)
+_📖 Littérature de référence : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage `prepa` → capsule : frontière, catalogue PRT, décisions, reste à faire)._
 
 _Portage de l'**utilitaire hors rendu** de `prepa_electricite_complet` (usine Python de
 cours vidéo, `lion92`) vers `capsule`. Revue source :
@@ -39,6 +40,7 @@ Rapports : `.agents/sessions/166-cap-qc-prt-04-03-09-06.adoc`,
 
 '''
 == 🎤 BACKLOG ACTIF — CAP-QC-VOICE 🟡 EN COURS 1/5 (S-170)
+_📖 Littérature : `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`._
 
 _Contrôle qualité de voix par ASR (PRT-02 du portage `prepa` → capsule). **Prouver que la
 voix synthétisée est juste** : fidélité mot-à-mot (transcription vs texte attendu),

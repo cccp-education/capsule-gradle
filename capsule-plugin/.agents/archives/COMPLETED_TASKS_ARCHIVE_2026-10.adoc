@@ -1,6 +1,13 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-11
 
+== Session 171 — CAP-QC : littérature agentique consolidée ✅
+
+* Document de référence `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage `prepa` → capsule) :
+  frontière, catalogue `PRT-01`→`PRT-13`, deux EPICs (`CAP-QC` 7/9, `CAP-QC-VOICE` 1/5),
+  décisions transverses, reste à faire, traçabilité. `PROMPT_REPRISE` → S-172.
+* Gouvernance pure, zéro code. Rapport `.agents/sessions/171-cap-qc-litterature.adoc`.
+
 == Session 170 — CAP-QC-VOICE US-1 : domaine pur `capsule.voice` ✅
 
 * Domaine pur (zéro ASR) : `TextNormalizer` + `WordAligner` + `FidelityScorer`/`VoiceScore`

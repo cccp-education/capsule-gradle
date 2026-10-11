@@ -1,0 +1,131 @@
+= CADRAGE — EPIC CAP-QC (littérature agentique — portage `prepa_electricite_complet` → capsule)
+:session: 171
+:date: 2026-10-11
+:toc:
+:toclevels: 3
+:statut: document vivant
+:epic: CAP-QC (+ EPIC dérivé CAP-QC-VOICE)
+:source_revue: `foundry/private/prepa_electricite_complet/code_review.adoc` (`:revision: i`)
+:cible: `capsule-gradle/capsule-plugin` (Détroit, N2, `0.0.4`, Apache 2.0)
+
+[abstract]
+--
+Ce document est la **littérature agentique de référence** de l'EPIC `CAP-QC` : le portage de
+l'**utilitaire hors rendu** du dépôt Python `prepa_electricite_complet` (usine de cours
+vidéo, `lion92`) vers le plugin Gradle `capsule`. Il fixe la **frontière** (ce qu'on porte,
+ce qu'on ne porte pas), le **catalogue des portages** (`PRT-01`→`PRT-13`) et son statut, les
+**deux EPICs** (`CAP-QC` et son dérivé `CAP-QC-VOICE`), les **décisions transverses**, et le
+**reste à faire**. Il complète `BACKLOG.adoc` (statut détaillé) et `PROMPT_REPRISE.adoc`
+(mission courante).
+--
+
+== 1. Objet et origine
+
+La revue de code de `prepa_electricite_complet` (`code_review.adoc`) a identifié des
+**techniques** — jamais du code, jamais du contenu — qui manquent à `capsule` et qui
+relèvent du **contrôle qualité et de l'intégrité** de la fabrication vidéo. Le dépôt source
+est une usine Python de cours vidéo (18 chapitres) : synthèse vocale, QC de voix par
+reconnaissance de la parole, sous-titres, tableau noir LaTeX, timeline, contrôle qualité
+visuel, publication. Le portage retient l'**utilitaire** et laisse le **contenu**.
+
+== 2. Frontière — ce qu'on porte, ce qu'on ne porte pas
+
+* *On porte* : les **techniques** de fabrication/contrôle vidéo, en **réécriture Kotlin**
+  (objets purs + ports/adapters).
+* *On ne porte pas* : le **contenu** du cours (œuvre dérivée d'un manuel) ; le **moteur de
+  rendu maison** (Java2D / LaTeX serveur — PRT-11 **CADUQUE**, cf. § 4 et `code_review.adoc`) ;
+  un contrat N0 MEMPHIS (le portage est **capsule-scoped**, comme la résilience LLM S-162).
+* *Licence* : `prepa` n'a pas de LICENSE → **idées/patrons seulement**, jamais de code
+  recopié ; `OssVocabularyGuardTest` verrouille la généricité (aucun `formation`/`FPA`).
+
+== 3. Catalogue des portages (PRT)
+
+[cols="1,4,2,1,2", options="header"]
+|===
+| ID | Technique source (`prepa`) | Cible capsule | Effort | Statut
+
+| PRT-01 | Prononciation « dit / lu » + cache par contenu | `capsule.voice`, `TtsManager` | M | 🟡 À FAIRE (intrusif)
+| PRT-02 | QC voix par ASR (fidélité + souffle + choix de prise) | `capsule.voice` + port ASR | L | ✅ cadré → **EPIC `CAP-QC-VOICE`**
+| PRT-03 | Sous-titres par beat/cartons + normalisation d'affichage | `capsule.subtitle` | M | ✅ S-166
+| PRT-04 | Intégrité vidéo par **décodage** | `capsule.validation` | S | ✅ S-166
+| PRT-05 | Pré-vol contenu avant dépense TTS | `capsule.qc` | M | ✅ S-167
+| PRT-06 | Signature de rendu (économie d'encre par contenu) | `capsule`, `CapsuleVideoTask` | M | ✅ S-166
+| PRT-07 | Timeline déterministe (frames entières) | `capsule.timeline` | L | ✅ S-168
+| PRT-08 | Planches QC « beats » / « dit vs montré » | `capsule.qc` | M | 🟡 À FAIRE
+| PRT-09 | Loudness 2 passes mesurée + limiteur | `capsule.audio` | S | ✅ S-166
+| PRT-10 | Chapitres YouTube texte + description | `capsule.chapters`, `capsule.publish` | S–M | ✅ S-167
+| PRT-11 | Rendu de contenu maison (Java2D / LaTeX serveur) | — | L | ✅ **CADUQUE**
+| PRT-12 | Vérification exécutable (principe) | — | — | 🟡 principe, hors cœur OSS
+| PRT-13 | DSL de schémas électriques (conventions FR) | — | L | 🟡 domaine métier, hors cœur OSS
+|===
+
+*PRT-02* a été promu en EPIC dédié (`CAP-QC-VOICE`) ; *PRT-11* est écarté (le navigateur +
+Remotion + Manim couvrent, cf. `code_review.adoc` § 8).
+
+== 4. Décision fondatrice — pas de quatrième voie de rendu
+
+Les trois voies de capture (`PLAYWRIGHT`, `SCREENSHOT`, `REMOTION`) dépendent **toutes** de
+Chromium (`REMOTION` via `@remotion/renderer`). Un moteur Java2D + JLatexMath serait un
+**navigateur en moins bien** ; les bénéfices prêtés sont déjà couverts. Décision : porter
+l'utilitaire **hors rendu** ; si un serveur sans navigateur est requis, **pré-rasteriser en
+CI** (Chromium au build, FFmpeg au runtime). Détail : `code_review.adoc` § 8.
+
+== 5. EPICs
+
+=== 5.1 `CAP-QC` — portage utilitaire (7/9)
+
+Sessions S-166→S-168. Livré : PRT-04, PRT-03, PRT-09, PRT-06 (S-166) ; PRT-10, PRT-05
+(S-167) ; PRT-07 (S-168). Reste : **PRT-01** (intrusif), **PRT-08** (planches QC visuelles).
+
+=== 5.2 `CAP-QC-VOICE` — QC voix par ASR (1/5, EPIC dérivé de PRT-02)
+
+Cadré S-169 (`.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`). Livré : **US-1** domaine pur
+`capsule.voice` (S-170). Reste : US-2 (port `SpeechRecognizer` + tâche `verifyCapsuleVoice`
++ `VoiceConfig`), US-3 (choix de prise), US-4 (BDD/dogfooding), US-5 (karaoké, optionnel).
+
+== 6. Décisions transverses (invariants de tous les portages)
+
+. **Opt-in** : toute option nouvelle est un `Property` **défaut false** → backward compat,
+   zéro régression.
+. **4 sources de config** : DSL `capsule {}` > CLI `-Pcapsule.*` > `gradle.properties` > ENV
+   (`CapsuleConfig` + extension + `CapsuleConventions` + `CapsuleConfigMerger` + `pushConfigIntoExtension`).
+. **Objet pur d'abord** : la décision est un objet **sans I/O** (testable sans outil externe) ;
+   l'I/O vit dans un port/adapter (`TtsEngine`, `ManimEngine`, `SpeechRecognizer`…).
+. **Économie d'encre** : ne pas refaire ce qui a déjà produit un artefact valide (PRT-06
+   signature + PRT-04 décodage).
+. **Dégradation** : un outil absent dégrade (warning), `strictMode` → échec ; un outil
+   externe (ASR) n'est **jamais** un prérequis de `check` (`assumeTrue` en CI).
+. **Méthode** : baby-step **DDD/TDD/BDD** (unit → fonctionnel → cucumber) ; runner Cucumber
+   dédié par feature (S-082), steps préfixés (S-088). **Local = Build, Tests = CI**.
+
+== 7. Reste à faire
+
+1. **PRT-01** — prononciation « dit / lu » (`PronunciationLexicon`) + cache indexé sur le
+   **texte dit** (nom `slide-NN-<key8>.mp3`) ; intrusif (`TtsManager`/`CapsuleBuildTask`),
+   probablement opt-in. Clôt `CAP-QC` (8/9).
+2. **PRT-08** — planches QC « beats » et « dit vs montré » (`capsule.qc` + rendu Java2D).
+3. **CAP-QC-VOICE US-2** — port `SpeechRecognizer` + tâche `verifyCapsuleVoice` + `VoiceConfig`.
+4. **CAP-QC-VOICE US-3/4/5** — choix de prise, BDD/dogfooding, karaoké (optionnel).
+
+== 8. Traçabilité
+
+[cols="1,3,3", options="header"]
+|===
+| Session | Rapport | Contenu
+
+| S-166 | `.agents/sessions/166-cap-qc-prt-04-03-09-06.adoc` | PRT-04, PRT-03, PRT-09, PRT-06
+| S-167 | `.agents/sessions/167-cap-qc-prt-05-10.adoc` | PRT-05, PRT-10
+| S-168 | `.agents/sessions/168-cap-qc-prt-07.adoc` | PRT-07
+| S-169 | `.agents/sessions/169-cap-qc-voice-cadrage.adoc` | cadrage CAP-QC-VOICE
+| S-170 | `.agents/sessions/170-cap-qc-voice-us1-domaine-pur.adoc` | CAP-QC-VOICE US-1
+|===
+
+== 9. Références
+
+* Revue source (plan détaillé) : `foundry/private/prepa_electricite_complet/code_review.adoc`.
+* Cadrage de l'EPIC voix : `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`.
+* Statut détaillé : `BACKLOG.adoc` (EPICs `CAP-QC`, `CAP-QC-VOICE`), `TODO.adoc`.
+* Mission courante : `PROMPT_REPRISE.adoc`.
+
+_Document d'analyse (lecture seule sur la source). Aucun code source de `prepa` n'est
+recopié — seules des techniques sont citées._

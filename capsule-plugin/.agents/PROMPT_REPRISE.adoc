@@ -1,42 +1,62 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 171
+:session: 172
 :borough: Détroit
-:session_precedente: 170 — CAP-QC-VOICE US-1 : domaine pur `capsule.voice`
+:session_precedente: 171 — CAP-QC : littérature agentique consolidée (gouvernance pure)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
+_littérature_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage `prepa` → capsule, vue d'ensemble).
 
 == Contexte Hérité
 
-=== S-170 — CAP-QC-VOICE US-1 : domaine pur `capsule.voice` (zéro ASR)
+=== S-171 — CAP-QC : littérature agentique consolidée (gouvernance pure, zéro code)
 
-- Porté de `prepa` (`verif_voix.py`/`score_voix.py`/`rapport_voix.py`), **pur** :
-  `TextNormalizer.normalize`, `WordAligner` (`Alignment`/`AlignmentOp`/`OpKind`),
-  `VoiceScore` + `FidelityScorer.score`, `SnrEstimator.estimate` (SNR sur cadres RMS).
-- Tests : 19 unit + `capsule_voice_quality.feature` (4 `@voice`, runner 34e
-  `cucumberTestVoiceQuality`).
-- Baby-step DDD/TDD/BDD. Local = Build, Tests = CI. Rapport
-  `.agents/sessions/170-cap-qc-voice-us1-domaine-pur.adoc`.
+- Création de `.agents/CADRAGE_EPIC_CAP_QC.adoc` : la **littérature de référence** du portage
+  — frontière (techniques seules), catalogue `PRT-01`→`PRT-13` et statut, les deux EPICs
+  (`CAP-QC` 7/9, `CAP-QC-VOICE` 1/5), décisions transverses (opt-in, 4 sources, objet pur
+  d'abord, économie d'encre, dégradation, baby-step DDD/TDD/BDD), reste à faire, traçabilité.
+- `PROMPT_REPRISE` re-préparé ; INDEX/BACKLOG/TODO synchronisés.
 
-=== S-169 — CAP-QC-VOICE cadrage (`.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`).
+=== S-166→S-170 — CAP-QC + CAP-QC-VOICE
 
-== Mission Session 171 — CAP-QC-VOICE (suite)
+- S-166 : PRT-04 (intégrité décodage), PRT-03 (sous-titres cartons), PRT-09 (loudness 2
+  passes), PRT-06 (signature).
+- S-167 : PRT-05 (pré-vol contenu), PRT-10 (chapitres YouTube texte + description).
+- S-168 : PRT-07 (timeline déterministe).
+- S-169 : cadrage EPIC `CAP-QC-VOICE`.
+- S-170 : `CAP-QC-VOICE` US-1 (domaine pur `capsule.voice`).
+- Rapports : `.agents/sessions/166…170-*.adoc`.
 
-1. **US-2 — port `SpeechRecognizer` + tâche `verifyCapsuleVoice`** (cœur de l'EPIC).
-   - Port : `fun interface SpeechRecognizer { fun transcribe(audio: File, language: String): String }`
-     + adapter CLI (`whisper`/`faster-whisper`) ; **jamais** une dépendance dure ; binaire
-     absent → dégradé.
-   - Extraction des **cadres RMS** depuis l'audio (I/O) pour alimenter `SnrEstimator`.
-   - Tâche `verifyCapsuleVoice` (groupe `verification`) : transcrit chaque `slide-NN.mp3`,
-     `FidelityScorer.score`, écrit un **rapport JSON**, échoue si `wordErrorRate >
-     maxWordErrorRate` ou `surplus >= surplusThreshold` ou `snrDb < minSnrDb` ; dégradé si
-     ASR absent ; `strictMode` → échec.
-   - Config `VoiceConfig` (`verifyEnabled` défaut false, `maxWordErrorRate=0.15`,
-     `minSnrDb=66.0`, `surplusThreshold=3`, `asrExecutablePath`, `model`, `language`) sur
-     les **4 sources** + `pushConfigIntoExtension` ; enregistrement `CapsuleManager`.
-   - Tests : unit (scorer/tâche via seam) + functional (TestKit, ASR absente → skip) +
-     BDD `@voice-verify` (fakes, zéro ASR). **Ne jamais** faire de l'ASR un prérequis de
-     `check` ; `assumeTrue(ExternalBinaryAssumption)` en CI.
-2. Sinon : **PRT-01** (prononciation dit/lu + cache contenu, intrusif, clôt CAP-QC).
-3. Ensuite : US-3 (choix de prise), US-4 (BDD + dogfooding), US-5 (karaoké, optionnel).
+== Mission Session 172 — au choix du pilote
+
+=== Option A — CAP-QC-VOICE US-2 (cœur de l'EPIC en cours)
+
+Port `SpeechRecognizer` + tâche `verifyCapsuleVoice`.
+1. **Port** : `fun interface SpeechRecognizer { fun transcribe(audio: File, language: String): String }`
+   + adapter CLI (`whisper`/`faster-whisper`), **jamais** dépendance dure ; binaire absent →
+   dégradé.
+2. **Cadres RMS** : extraire l'enveloppe (I/O) pour alimenter `SnrEstimator`.
+3. **Tâche** `verifyCapsuleVoice` (groupe `verification`) : transcrit chaque `slide-NN.mp3`,
+   `FidelityScorer.score`, écrit un **rapport JSON** ; échoue si `wordErrorRate >
+   maxWordErrorRate` ou `surplus >= surplusThreshold` ou `snrDb < minSnrDb` ; dégradé si ASR
+   absent ; `strictMode` → échec.
+4. **Config** `VoiceConfig` (`verifyEnabled` false, `maxWordErrorRate=0.15`, `minSnrDb=66.0`,
+   `surplusThreshold=3`, `asrExecutablePath`, `model`, `language`) sur les **4 sources** +
+   push ; enregistrement `CapsuleManager`.
+5. **Tests** : unit (scorer/tâche via seam) ; BDD `@voice-verify` (fakes, zéro ASR) ;
+   functional TestKit (ASR absente → skip `assumeTrue`). **Jamais** l'ASR prérequis de `check`.
+
+=== Option B — PRT-01 (clôt CAP-QC → 8/9, intrusif)
+
+Prononciation « dit / lu » + cache par contenu : `capsule.voice.PronunciationLexicon` (pur) ;
+`TtsEngine.synthesize` reçoit le **texte dit** ; cache indexé sur le texte dit → nom
+`slide-NN-<key8>.mp3` ; lookup `CapsuleBuildTask`/`CapsuleVideoTask` ; `SubtitleTextNormalizer.reversals`
+(round-trip). **Opt-in** (`tts.pronunciationEnabled`) pour ne pas casser le nommage
+`slide-NN.mp3` et ses tests.
+
+=== Option C — PRT-08 (planches QC visuelles)
+
+`capsule.qc` + rendu Java2D : planches « beats » (état final de chaque slide) et « dit vs
+montré » (image du master à ~60 % d'une prise + texte dit). S'appuie sur `capsule.timeline`
+(PRT-07) et les sous-titres (PRT-03).
 
 == Points d'attention
 
@@ -51,6 +71,6 @@ _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 == Rappels
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.4** (Central).
-* CAP-QC 7/9 (reste PRT-01) ; **CAP-QC-VOICE 1/5** (US-0 cadrage ✅, US-1 domaine pur ✅ ;
-  reste US-2/3/4/5).
+* `CAP-QC` **7/9** (reste PRT-01, PRT-08). `CAP-QC-VOICE` **1/5** (reste US-2/3/4/5).
+* Littérature : `.agents/CADRAGE_EPIC_CAP_QC.adoc` + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`.
 * Le portage ne touche **jamais** le contenu du cours (œuvre dérivée) — techniques seules.
