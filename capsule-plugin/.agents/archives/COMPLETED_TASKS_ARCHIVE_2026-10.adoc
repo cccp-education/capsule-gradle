@@ -1,6 +1,14 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-11
 
+== Session 163 — Warn per-scene Manim + optimisation CI ✅
+
+* Warn per-scene Manim : le `NoOpManimParallelRenderer` journalise un warning par
+  scène en échec (constat S-161). `ManimParallelRendererTest` +1.
+* Optimisation CI : `full-tests.yml` utilise le runner **agrégé** `cucumberTest`
+  (+ `cucumberTestViralRender`) au lieu des 24 runners dédiés (~18 min → quelques
+  minutes). Zéro bump.
+
 == Session 162 — Extraction N0 résilience transverse : cadrage (CADUQUE) ✅
 
 * Audit : besoin transverse réel (≥ 5 boroughs, ≥ 8 adaptateurs `model.chat(...)`).

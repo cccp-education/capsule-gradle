@@ -124,6 +124,29 @@ class ManimParallelRendererTest {
         assertTrue(results.isEmpty(), "Slides with missing script should be skipped")
     }
 
+    @Test
+    fun `noop renderer surfaces a failed scene as a warning, not a silent skip`() {
+        // Regression (S-161 dogfooding): a ManimException used to be swallowed by the
+        // noop renderer, so a misnamed scene lost its animation invisibly. The slide is
+        // still skipped (graceful), but the failure is now logged (observability).
+        val renderer = NoOpManimParallelRenderer()
+        val tmpDir = File.createTempFile("manim-parallel-warn", "")
+        tmpDir.delete()
+        tmpDir.mkdirs()
+        tmpDir.deleteOnExit()
+
+        val failingEngine = ManimEngineImpl(ManimConfig(executablePath = "/nonexistent/path/manim"))
+        val slides = listOf(
+            SlideSegment(1, "Fail", "Note", type = SlideType.MANIM, manimScene = "FailScene")
+        )
+        val scriptsDir = tmpDir.resolve("manim-scripts")
+        scriptsDir.mkdirs()
+        File(scriptsDir, "FailScene.py").writeText("# FailScene")
+
+        val results = renderer.renderAll(slides, failingEngine, scriptsDir, tmpDir.resolve("output"))
+        assertTrue(results.isEmpty(), "A failed render is skipped, never crashes")
+    }
+
     // ─── ManimParallelRendererImpl (without real manim) ─────────────────
 
     @Test

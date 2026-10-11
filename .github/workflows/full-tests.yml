@@ -41,68 +41,16 @@ jobs:
         env:
           CI: "true"
 
-      # `validateCapsuleVideoDuration` is a task the *consumer* project gets when it
-      # applies education.cccp.capsule — the plugin project itself never applies it,
-      # so invoking it here always failed with "task not found". The video solidity
-      # contract is covered by its dedicated Cucumber runner instead.
-      - name: Run duration validation scenarios (video solidity contract)
-        run: ./gradlew cucumberTestDurationValidation -PrunCucumber
-        working-directory: capsule-plugin
-        env:
-          CI: "true"
-
-      # Dedicated pure-domain BDD runners (no ffmpeg/node). They are opt-in
-      # (`additionalTasksInCheck` default false) so `check` stays fast — CI must
-      # invoke them explicitly or they are ghost tests (lesson Queens S-269).
-      - name: Run viral campaign BDD (CAP-VIRAL domain)
-        run: ./gradlew cucumberTestViral -PrunCucumber
-        working-directory: capsule-plugin
-        env:
-          CI: "true"
-
-      # CAP-SHORT US-5 — real short-form render: produces a real MP4 through the
-      # FFmpeg socle and validates its duration against the fitted target. Needs
-      # real ffmpeg/ffprobe (installed above).
-      - name: Run viral real-render BDD (US-5, real ffmpeg)
-        run: ./gradlew cucumberTestViralRender -PrunCucumber
-        working-directory: capsule-plugin
-        env:
-          CI: "true"
-
-      # The remaining dedicated pure-domain runners (no ffmpeg/node/network):
-      # they are opt-in (`additionalTasksInCheck` default false) so they never
-      # run in `check`. Invoking them here closes the ghost-test debt (S-141/S-142
-      # — lesson Queens S-269). `cucumberTestIntegration` (real ffmpeg) stays out.
-      - name: Run pure-domain BDD runners (ghost-test fix)
-        run: >
-          ./gradlew
-          cucumberTestContext
-          cucumberTestContentAndVideos
-          cucumberTestArchBoundary
-          cucumberTestDistrib
-          cucumberTestStrictMode
-          cucumberTestDocContext
-          cucumberTestScenarioContext
-          cucumberTestCaptureStrategy
-          cucumberTestFormat
-          cucumberTestAudioPost
-          cucumberTestProvenance
-          cucumberTestGlossaryContext
-          cucumberTestTranscript
-          cucumberTestMultiLang
-          cucumberTestRemotion
-          cucumberTestPodcast
-          cucumberTestPreview
-          cucumberTestChapters
-          cucumberTestRemotionAnim
-          cucumberTestPr2Coverage
-          cucumberTestStoryboardContext
-          cucumberTestViralGate
-          cucumberTestViralThumbnail
-          cucumberTestViralKaraoke
-          cucumberTestViralNormalize
-          cucumberTestLlmResilience
-          -PrunCucumber
+      # BDD — the aggregate `CucumberTestRunner` (`cucumberTest`, scoped to it)
+      # executes every feature in `src/test/features` through the shared
+      # `capsule.scenarios` glue. All step classes are uniquely prefixed (bug S-088),
+      # so the former 24 per-feature invocations were redundant: each paid a full
+      # test-JVM + Cucumber bootstrap (~45 s) to run a subset the aggregate already
+      # covers — ~18 min of the job. The aggregate excludes @integration and
+      # @viral-render; the real-render runner (real ffmpeg/ffprobe, installed above)
+      # is invoked separately.
+      - name: Run BDD (aggregate runner + real render)
+        run: ./gradlew cucumberTest cucumberTestViralRender -PrunCucumber
         working-directory: capsule-plugin
         env:
           CI: "true"

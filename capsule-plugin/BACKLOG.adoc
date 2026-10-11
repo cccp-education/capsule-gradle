@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-11 (S-160 — EPIC LLM-RESILIENCE TERMINÉ : dégradation sur erreur LLM transitoire)
+:last_update: 2026-10-11 (S-163 — warn per-scene Manim + optimisation CI via runner agrégé)
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)

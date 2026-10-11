@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-11 (S-162 — extraction N0 résilience transverse : cadrage, verdict CADUQUE.)
+:last_update: 2026-10-11 (S-163 — warn per-scene Manim + optimisation CI via runner agrégé.)
 
 '''
 == ✅ Helper d'authoring — `normalizeViralStoryboard` (S-159)
@@ -80,17 +80,10 @@
 '''
 == 🟡 CANDIDATS (hors EPIC, accord pilote requis)
 
-. [ ] **Optimisation CI** (optionnel) — `Full Tests` ~30 min (20 runners pure-domain).
-. [x] **Dogfooding Remotion + Manim** ✅ S-161 — chemin enrichi validé au niveau
-  tâche (Manim via shim Docker `manimcommunity/manim:stable` ; Remotion via
-  `generateCapsuleVideo` + `captureStrategy=remotion`).
-. [x] **Extraction N0 résilience transverse** — **CADUQUE** (S-162, cadrage) :
-  `guarded` est un utilitaire à effet de bord (logging Gradle), pas un contrat pur
-  N0 ; coût disproportionné (5 boroughs). Voir
-  `.agents/CADRAGE_EPIC_LLM_RESILIENCE_N0.adoc`. Réouverture = module utilitaire
-  Gradle partagé (cross-borough), hors périmètre capsule.
-. [ ] **Warn per-scene Manim** (constat S-161) — journaliser un warning quand une
-  scène Manim échoue (aujourd'hui `ManimException` avalée par le renderer parallèle).
+. [x] **Optimisation CI** ✅ S-163 — `full-tests.yml` s'appuie sur le runner **agrégé** `cucumberTest` (+ `cucumberTestViralRender`) au lieu des 24 runners dédiés (~18 min → quelques minutes).
+. [x] **Dogfooding Remotion + Manim** ✅ S-161 — chemin enrichi validé au niveau tâche (Manim via shim Docker ; Remotion via `generateCapsuleVideo` + `captureStrategy=remotion`).
+. [x] **Warn per-scene Manim** ✅ S-163 — le `NoOpManimParallelRenderer` journalise un warning par scène en échec (script manquant / `ManimException`) au lieu d'avaler silencieusement.
+. [x] **Extraction N0 résilience transverse** — **CADUQUE** (S-162, cadrage) : voir `.agents/CADRAGE_EPIC_LLM_RESILIENCE_N0.adoc`.
 
 _Hors scope CAP-VIRAL_ : publication API (N4/GBL-002), écriture copy (GBL-006),
 calendrier + musique + analytics (GBL-002).

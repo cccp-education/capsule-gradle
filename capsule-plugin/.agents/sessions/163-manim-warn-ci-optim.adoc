@@ -1,0 +1,60 @@
+= Session 163 — Warn per-scene Manim + optimisation CI
+:session: 163
+:borough: Détroit
+:date: 2026-10-11
+:epic: (corrections candidates)
+:us: —
+
+== Mission
+
+Deux corrections candidates (accord pilote) : (1) le constat S-161 « warn per-scene
+Manim » ; (2) l'optimisation CI (le job `Full Tests` ~26 min).
+
+== 1. Warn per-scene Manim (constat S-161)
+
+Le `NoOpManimParallelRenderer` (utilisé quand `parallelism=1`) **avalait
+silencieusement** les `ManimException` (et les scripts manquants) : une scène
+Manim mal nommée perdait son animation **invisiblement** (seul le log générique
+« 0/N rendered » était visible). Le renderer parallèle (`ManimParallelRendererImpl`)
+avertissait déjà.
+
+**Correctif** : le renderer NoOp journalise désormais un **warning par scène** en
+échec (script manquant ou `ManimException`), avec le nom de scène et la raison. Le
+renderer parallèle avertit aussi désormais sur script manquant. Comportement de
+dégradation inchangé (la diapo est skippée, jamais de crash).
+
+`ManimParallelRendererTest` +1 (le NoOp surface l'échec sans crash). Local = Build.
+
+== 2. Optimisation CI
+
+**Profil mesuré** (run vert `38149327791`) : `Full Tests` ~26 min, dominé par
+l'étape « pure-domain BDD runners » = **17m47s** (24 tâches Cucumber dédiées, ~45 s
+chacune : un JVM de test + bootstrap Cucumber par feature).
+
+**Constat** : ces 24 runners sont **redondants** avec le runner **agrégé**
+`CucumberTestRunner` (`cucumberTest`, scopé à l'agrégé) qui exécute **toutes** les
+features de `src/test/features` via le glue partagé `capsule.scenarios` (toutes les
+steps sont préfixées de façon unique — bug S-088 — donc aucun risque de doublon de
+step). L'agrégé exclut `@integration` et `@viral-render`.
+
+**Correctif** : `full-tests.yml` remplace les 4 étapes (duration, viral, real-render,
+liste des 24 runners) par **une seule** :
+`./gradlew cucumberTest cucumberTestViralRender -PrunCucumber` (agrégé + rendu réel).
+
+*Gain attendu* : ~18 min → quelques minutes (une tâche au lieu de 24).
+*Couverture* : identique **ou supérieure** (l'agrégé exécute en plus les features
+jamais invoquées en CI par un runner dédié : `capsule.feature`, `capsule_ai.feature`,
+`capsule_speaker_notes.feature`, `consolidated_capsule_model.feature`,
+`cucumber_skip.feature`, `parallel_capture_timeout.feature`,
+`translate_and_extract_speaker_notes.feature`). **Preuve = CI du push** (l'agrégé
+est le garde bloquant). Si l'agrégé révèle un échec préexistant sur une feature
+jusqu'ici non couverte, il est traité en correction (leçon S-243/S-269 : une CI qui
+n'exécute pas masque la dette).
+
+Les 24 tâches `cucumberTest<Feature>` restent définies (usage local opt-in), seule
+la CI change.
+
+== Gates
+
+* Local = Build : `compileKotlin` + `compileTestKotlin` **VERTS**. Preuve CI = push.
+* `rg` vocabulaire métier dans `src/` = 0. Zéro secret, zéro bump, zéro publication.

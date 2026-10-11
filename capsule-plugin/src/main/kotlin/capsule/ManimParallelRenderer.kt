@@ -51,6 +51,8 @@ interface ManimParallelRenderer {
  */
 class NoOpManimParallelRenderer : ManimParallelRenderer {
 
+    private val logger = Logging.getLogger(NoOpManimParallelRenderer::class.java)
+
     override fun isAvailable(): Boolean = true
 
     override fun name(): String = "noop-parallel-renderer"
@@ -65,7 +67,12 @@ class NoOpManimParallelRenderer : ManimParallelRenderer {
         for (seg in slides) {
             val sceneName = seg.manimScene ?: continue
             val scriptPath = scriptsDir.resolve("$sceneName.py")
-            if (!scriptPath.exists()) continue
+            if (!scriptPath.exists()) {
+                // A missing script is an authoring error (scene name must match the
+                // file/class, case-sensitive) — never skip it silently.
+                logger.warn("    Manim render skipped: no script '{}.py' under {} (scene: {})", sceneName, scriptsDir, sceneName)
+                continue
+            }
 
             val sceneOutputDir = File(outputDir, sceneName)
             sceneOutputDir.mkdirs()
@@ -73,8 +80,10 @@ class NoOpManimParallelRenderer : ManimParallelRenderer {
             try {
                 val rendered = manimEngine.render(sceneName, scriptPath, sceneOutputDir)
                 results[seg.index] = rendered
-            } catch (_: ManimException) {
-                // Skip slides with ManimException (e.g., binary not available)
+            } catch (e: ManimException) {
+                // Skip the slide but surface the reason — the animation is lost, and
+                // "N/M rendered" alone hides *which* scene failed and why.
+                logger.warn("    Manim render failed for scene '{}': {}", sceneName, e.message)
             }
         }
         return results
@@ -117,7 +126,10 @@ class ManimParallelRendererImpl(
                 executor.submit(Callable {
                     val sceneName = seg.manimScene ?: return@Callable null
                     val scriptPath = scriptsDir.resolve("$sceneName.py")
-                    if (!scriptPath.exists()) return@Callable null
+                    if (!scriptPath.exists()) {
+                        logger.warn("    Manim render skipped: no script '{}.py' under {} (scene: {})", sceneName, scriptsDir, sceneName)
+                        return@Callable null
+                    }
 
                     val sceneOutputDir = File(outputDir, sceneName)
                     sceneOutputDir.mkdirs()

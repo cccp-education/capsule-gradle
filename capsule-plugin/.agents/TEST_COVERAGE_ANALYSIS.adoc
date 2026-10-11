@@ -1,7 +1,19 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-11
-:session: 161 dogfooding Remotion + Manim (aucun test modifié)
+:session: 163 warn per-scene Manim + optimisation CI
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 11 octobre 2026 (après session 163)
+
+.Modifications session 163
+|===
+| Fichier | Changement | Tests ajoutés
+| `ManimParallelRenderer.kt` (modifié) | `NoOpManimParallelRenderer` + `ManimParallelRendererImpl` : journalisent un warning par scène en échec (script manquant / `ManimException`) au lieu d'avaler silencieusement. Dégradation inchangée. | +1 `ManimParallelRendererTest`
+| `.github/workflows/full-tests.yml` (modifié) | BDD : runner **agrégé** `cucumberTest` (+ `cucumberTestViralRender`) au lieu des 24 + 3 runners dédiés. | 0 (couvre les mêmes features + celles non CI-couvertes)
+|===
+
+*Totaux S-163* : +1 unit. Optimisation CI : ~18 min de runners dédiés remplacés par
+l'agrégé (couverture identique ou supérieure). Preuve = CI du push.
 
 == Couverture — 11 octobre 2026 (après session 161)
 

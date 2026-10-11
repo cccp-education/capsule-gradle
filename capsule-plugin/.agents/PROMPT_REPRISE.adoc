@@ -1,50 +1,53 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 163
+:session: 164
 :borough: Détroit
-:session_precedente: 162 — extraction N0 résilience transverse (cadrage, CADUQUE)
+:session_precedente: 163 — warn per-scene Manim + optimisation CI
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-162 — extraction N0 résilience transverse : CADUQUE
+=== S-163 — warn per-scene Manim + optimisation CI
 
-- Audit : besoin transverse réel (≥ 5 boroughs, ≥ 8 adaptateurs `model.chat(...)`).
-- Verdict **CADUQUE** : `guarded` = utilitaire à effet de bord (logging Gradle), pas
-  un contrat pur N0 ; coût disproportionné. Conserver capsule-scoped (S-160).
-- Doc `.agents/CADRAGE_EPIC_LLM_RESILIENCE_N0.adoc`. Aucun code modifié.
+- `NoOpManimParallelRenderer` journalise un **warning par scène** en échec (constat
+  S-161) ; dégradation inchangée. `ManimParallelRendererTest` +1.
+- `full-tests.yml` s'appuie sur le runner **agrégé** `cucumberTest`
+  (+ `cucumberTestViralRender`) au lieu des 24 runners dédiés (~18 min → quelques
+  minutes). Preuve = CI du push.
+- Rapport `.agents/sessions/163-manim-warn-ci-optim.adoc`.
 
-=== S-161 — dogfooding Remotion + Manim
+=== S-162 — extraction N0 résilience : CADUQUE. S-161 — dogfooding Remotion+Manim.
 
-- Chemin enrichi validé (Manim via shim Docker, Remotion via node). Constat :
-  nom de scène Manim sensible à la casse → candidat « warn per-scene Manim ».
+== Mission Session 164 — PUBLICATION capsule 0.0.3 (accord pilote donné)
 
-== Mission Session 163 (accord pilote donné)
+Publier `capsule-plugin 0.0.3` sur Maven Central. Contenu depuis 0.0.2 : RENAME
+métier (S-153) + CAP-VIRAL-E2E (S-154→S-156) + `normalizeViralStoryboard` (S-159)
++ LLM-RESILIENCE (S-160) + warn per-scene Manim (S-163).
 
-Enchaîner les candidates restants, dans l'ordre :
+Procédure (méthode nmcp standard) :
 
-1. **Warn per-scene Manim** (constat S-161) — journaliser un warning quand une scène
-   Manim échoue (aujourd'hui `ManimException` avalée par le renderer parallèle).
-   Cibles `ManimParallelRenderer` (NoOp + Impl). ~1 pt.
-2. **Optimisation CI** (optionnel) — `Full Tests` ~30 min.
-3. **Publication `capsule 0.0.3`** — accord pilote donné : `[versions].capsule` +
-   `publishToMavenLocal` + `publishAggregationToCentralPortal --no-daemon` +
-   consommateurs (racine + `workspace-bom`).
+. `[versions].capsule` : `0.0.2` → `0.0.3` (`gradle/libs.versions.toml`).
+. Garde `CapsulePluginPublicationTest` (si présente) : réaligner.
+. `./gradlew publishToMavenLocal` (artefacts signés) — vérifier.
+4. `./gradlew publishAggregationToCentralPortal --no-daemon` (bundle, AUTOMATIC).
+. Propagation repo1 (`repo1.maven.org`) HTTP 200 sur jar/pom/module.
+. **Consommateurs** : racine `capsule-gradle` (`capsule = 0.0.3`) +
+   MEMPHIS `workspace-bom` (`capsule-plugin = 0.0.3`) + BOM bump + publication.
+7. Vérifier que la description POM est la version neutralisée (RENAME S-153).
 
 == Points d'attention
 
-* **Local = Build, Tests = CI** : compiles seulement. Le vert de la CI est la preuve.
-* **Publication** : version `0.0.2` sur Central → `0.0.3`. Ordre DAG N0→N2.
-* **Ollama** : port 11434 réservé + `deepseek-v4.1-flash:cloud` (dogfooding documenté).
-* **Zéro Python** (outillage Kotlin/Gradle). **English only** (`OssVocabularyGuardTest`).
-* Baby-step DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
-  Un test qui isole une tâche doit exclure toutes ses dépendances productrices (`-x`).
+* **Local = Build, Tests = CI**. Publication = méthode nmcp `README`/AGENTS racine.
+* Ordre DAG : N0/N1 déjà Central ; capsule N2 peut être publié.
+* **English only** (`OssVocabularyGuardTest`). **Zéro Python**. **Zéro secret**.
+* Baby-step ; un test qui isole une tâche exclut toutes ses dépendances (`-x`).
 
 == Rappels
 
-* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.2 (Central).
+* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version **0.0.2** (Central).
 * CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **6/6** ; CAP-VIRAL-E2E **3/3** ;
   LLM-RESILIENCE **1/1**.
 * RENAME métier **SOLDÉ** (S-153) — délivré dans la release `0.0.3`.
+
 
 
 
