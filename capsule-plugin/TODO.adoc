@@ -1,5 +1,5 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-11 (S-161 — dogfooding Remotion+Manim du chemin enrichi.)
+:last_update: 2026-10-11 (S-162 — extraction N0 résilience transverse : cadrage, verdict CADUQUE.)
 
 '''
 == ✅ Helper d'authoring — `normalizeViralStoryboard` (S-159)
@@ -84,8 +84,11 @@
 . [x] **Dogfooding Remotion + Manim** ✅ S-161 — chemin enrichi validé au niveau
   tâche (Manim via shim Docker `manimcommunity/manim:stable` ; Remotion via
   `generateCapsuleVideo` + `captureStrategy=remotion`).
-. [ ] **Extraction N0 résilience transverse** — socle LLM resilience partagé
-  (slider/planner/codebase) si le besoin se confirme (frontière DAG, candidat).
+. [x] **Extraction N0 résilience transverse** — **CADUQUE** (S-162, cadrage) :
+  `guarded` est un utilitaire à effet de bord (logging Gradle), pas un contrat pur
+  N0 ; coût disproportionné (5 boroughs). Voir
+  `.agents/CADRAGE_EPIC_LLM_RESILIENCE_N0.adoc`. Réouverture = module utilitaire
+  Gradle partagé (cross-borough), hors périmètre capsule.
 . [ ] **Warn per-scene Manim** (constat S-161) — journaliser un warning quand une
   scène Manim échoue (aujourd'hui `ManimException` avalée par le renderer parallèle).
 

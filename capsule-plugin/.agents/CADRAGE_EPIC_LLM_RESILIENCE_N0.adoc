@@ -1,0 +1,57 @@
+= CADRAGE — EPIC LLM-RESILIENCE-N0 (extraction transverse) — verdict
+:session: 162
+:date: 2026-10-11
+:statut: CADUQUE (recommandation) — à confirmer par le pilote
+
+== Question posée (candidat S-160)
+
+Extraire le socle de résilience LLM (`LlmResilience.guarded`, S-160, capsule-scoped)
+en **artefact N0 partagé** (MEMPHIS) pour que slider/planner/codebase (et autres)
+le consomment — DRY de la garde.
+
+== Audit (besoin transverse ?)
+
+Adaptateurs LLM appelant `model.chat(...)` sans garde de transport (fail-fast),
+recensés cross-borough :
+
+[cols="1,3", options="header"]
+|===
+| Borough | Site
+| slider | `slider.pipeline.ChatModelDeckLlm`, `slider.ai.RagTasks` (×2), `OllamaLanguageModelAdapter`
+| planner | `planning.llm.PlanningLlmService`, `planning.adapter.KoogIntentionPlannerAdapter`
+| plantuml | `plantuml.service.LlmService`
+| bakery | `bakery.llm.OllamaLlmService`
+| document | `document.generation.OllamaDocumentLlmProvider`, `document.translation.*`
+|===
+
+Le besoin transverse est **réel** (≥ 5 boroughs, ≥ 8 sites).
+
+== Verdict : CADUQUE (recommandation)
+
+Deux raisons décisives :
+
+. **`guarded` n'est pas un contrat, c'est un utilitaire avec effet de bord.** Il
+  journalise via `org.gradle.api.logging.Logging`. Or les artefacts N0 de MEMPHIS
+  (`agent-contracts`, `codebase-contracts`, …, `ocr-contracts`, `runtime-contracts`)
+  sont des **contrats purs, sans dépendance Gradle**. Mettre `guarded` en N0
+  forcerait soit une **dépendance Gradle dans N0** (rupture de pureté), soit une
+  **abstraction de logging** dédiée (sur-ingénierie pour 35 lignes).
+. **Coût disproportionné.** ~35 lignes (`try/catch` + log) ; extraction = nouveau
+  module MEMPHIS + publication Central + bump BOM + adoption sur 5 boroughs
+  (multi-session, cross-borough), pour un gain DRY marginal. La doctrine du projet
+  tolère explicitement la **duplication verbatim N2** (cf. pipeline graphs
+  `CapsulePipelineGraph` ≈ `DeckPipelineGraph`) et réserve N0 aux **contrats**.
+
+== Recommandation
+
+* **Conserver capsule-scoped** (S-160) — livré, testé, suffisant.
+* Si le besoin transverse se confirme, un **socle d'utilitaires Gradle partagé**
+  (hors `contracts`, p. ex. un module `*-gradle-utils` ou une convention ABIDJAN)
+  serait le bon contenant — mais c'est un **EPIC transverse dédié** (MEMPHIS/ABIDJAN),
+  hors périmètre capsule, à planifier en session cross-borough.
+
+== Décision
+
+**CADUQUE** pour l'extraction en N0 « contracts ». Réouvertures possibles :
+(a) un module utilitaire Gradle partagé (cross-borough), ou (b) un garde sans
+logging (contrat pur) — non recommandé (perte de visibilité de l'erreur).

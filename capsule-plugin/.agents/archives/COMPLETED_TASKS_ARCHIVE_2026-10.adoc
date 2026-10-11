@@ -1,6 +1,13 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-11
 
+== Session 162 — Extraction N0 résilience transverse : cadrage (CADUQUE) ✅
+
+* Audit : besoin transverse réel (≥ 5 boroughs, ≥ 8 adaptateurs `model.chat(...)`).
+* Verdict **CADUQUE** : `guarded` = utilitaire à effet de bord (logging Gradle), pas
+  un contrat pur N0 ; coût disproportionné. Conserver capsule-scoped (S-160).
+* Doc `.agents/CADRAGE_EPIC_LLM_RESILIENCE_N0.adoc`. Aucun code modifié. Zéro bump.
+
 == Session 161 — Dogfooding Remotion + Manim (chemin enrichi) ✅
 
 * Chemin enrichi validé au niveau tâche : **Manim** via shim Docker

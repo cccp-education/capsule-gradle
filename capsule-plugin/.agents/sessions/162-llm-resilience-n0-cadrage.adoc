@@ -1,0 +1,38 @@
+= Session 162 — Extraction N0 résilience transverse : cadrage (verdict CADUQUE)
+:session: 162
+:borough: Détroit
+:date: 2026-10-11
+:epic: LLM-RESILIENCE-N0 (candidat)
+:us: US-0 (cadrage + audit) — verdict recommandé CADUQUE
+
+== Mission
+
+Candidat du backlog (S-160) : extraire le socle de résilience LLM
+(`LlmResilience.guarded`) en **artefact N0 partagé** (MEMPHIS) pour DRY transverse.
+
+== Audit (besoin transverse réel)
+
+Adaptateurs LLM fail-fast sur erreur de transport recensés sur ≥ 5 boroughs
+(slider ×3, planner ×2, plantuml ×1, bakery ×1, document ×2). Le besoin existe.
+
+== Verdict : CADUQUE (recommandation, à confirmer pilote)
+
+. **`guarded` n'est pas un contrat** : il journalise via `org.gradle.api.logging`.
+   Les artefacts N0 MEMPHIS sont des **contrats purs sans dépendance Gradle**.
+   L'extraire en N0 = dépendance Gradle en N0 (rupture) **ou** abstraction de
+   logging (sur-ingénierie).
+. **Coût disproportionné** : ~35 lignes ; extraction = module MEMPHIS + publication
+   Central + bump BOM + adoption 5 boroughs. La doctrine tolère la **duplication
+   verbatim N2** et réserve N0 aux contrats.
+
+Cadrage complet : `.agents/CADRAGE_EPIC_LLM_RESILIENCE_N0.adoc`.
+
+== Recommandation
+
+Conserver **capsule-scoped** (S-160, livré/testé). Un futur socle transverse, si le
+besoin se confirme, relève d'un **module utilitaire Gradle partagé** (hors
+`contracts`), EPIC cross-borough dédié (MEMPHIS/ABIDJAN) — hors périmètre capsule.
+
+== Gates
+
+* Aucun code modifié (cadrage + audit). Zéro secret, zéro bump, zéro publication.

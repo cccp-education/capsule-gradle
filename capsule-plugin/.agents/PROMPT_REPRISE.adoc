@@ -1,47 +1,41 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 162
+:session: 163
 :borough: Détroit
-:session_precedente: 161 — dogfooding Remotion + Manim (chemin enrichi)
+:session_precedente: 162 — extraction N0 résilience transverse (cadrage, CADUQUE)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
+=== S-162 — extraction N0 résilience transverse : CADUQUE
+
+- Audit : besoin transverse réel (≥ 5 boroughs, ≥ 8 adaptateurs `model.chat(...)`).
+- Verdict **CADUQUE** : `guarded` = utilitaire à effet de bord (logging Gradle), pas
+  un contrat pur N0 ; coût disproportionné. Conserver capsule-scoped (S-160).
+- Doc `.agents/CADRAGE_EPIC_LLM_RESILIENCE_N0.adoc`. Aucun code modifié.
+
 === S-161 — dogfooding Remotion + Manim
 
-- Chemin enrichi validé au niveau tâche : Manim via **shim Docker**
-  (`manimcommunity/manim:stable`, pas de sudo) → 1/1 diapo rendue (MP4 2,0 s) ;
-  Remotion via `generateCapsuleVideo` + `captureStrategy=remotion` (MP4 5,06 s).
-- **Constat** : nom de scène Manim sensible à la casse (`[manim:Hello]` ↔ `Hello.py`) ;
-  un mismatch dégrade silencieusement (candidat « warn per-scene Manim »).
-- Aucun code modifié. Rapport `.agents/sessions/161-dogfooding-remotion-manim.adoc`.
+- Chemin enrichi validé (Manim via shim Docker, Remotion via node). Constat :
+  nom de scène Manim sensible à la casse → candidat « warn per-scene Manim ».
 
-=== S-160 — EPIC LLM-RESILIENCE
+== Mission Session 163 (accord pilote donné)
 
-- Garde `capsule.ai.LlmResilience.guarded` + adaptateurs à repli sûr ; pipeline
-  fail-fast. 28e runner `cucumberTestLlmResilience`.
+Enchaîner les candidates restants, dans l'ordre :
 
-== Mission Session 162 (accord pilote donné)
-
-Enchaîner les candidats restants, dans l'ordre :
-
-1. **Extraction N0 résilience transverse** — socle LLM resilience partagé
-   (MEMPHIS/`workspace-bom`) consommé par slider/planner/codebase (frontière DAG).
-2. **Warn per-scene Manim** (constat S-161) — journaliser un warning quand une scène
-   Manim échoue (aujourd'hui `ManimException` avalée).
-3. **Optimisation CI** (optionnel) — `Full Tests` ~30 min.
-4. **Publication `capsule 0.0.3`** — accord pilote donné : `[versions].capsule` +
+1. **Warn per-scene Manim** (constat S-161) — journaliser un warning quand une scène
+   Manim échoue (aujourd'hui `ManimException` avalée par le renderer parallèle).
+   Cibles `ManimParallelRenderer` (NoOp + Impl). ~1 pt.
+2. **Optimisation CI** (optionnel) — `Full Tests` ~30 min.
+3. **Publication `capsule 0.0.3`** — accord pilote donné : `[versions].capsule` +
    `publishToMavenLocal` + `publishAggregationToCentralPortal --no-daemon` +
    consommateurs (racine + `workspace-bom`).
 
 == Points d'attention
 
-* **Local = Build, Tests = CI** : `compileKotlin`/`compileTestKotlin`/
-  `compileFunctionalTestKotlin` seulement. Le vert de la CI est la preuve.
+* **Local = Build, Tests = CI** : compiles seulement. Le vert de la CI est la preuve.
 * **Publication** : version `0.0.2` sur Central → `0.0.3`. Ordre DAG N0→N2.
-* **Ollama** : port 11434 réservé + `deepseek-v4.1-flash:cloud` pour le dogfooding
-  documenté uniquement. **Zéro Python** (outillage Kotlin/Gradle).
-* **English only** : garde `OssVocabularyGuardTest`.
-* **Sessions concurrentes** : `git status` à l'ouverture.
+* **Ollama** : port 11434 réservé + `deepseek-v4.1-flash:cloud` (dogfooding documenté).
+* **Zéro Python** (outillage Kotlin/Gradle). **English only** (`OssVocabularyGuardTest`).
 * Baby-step DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
   Un test qui isole une tâche doit exclure toutes ses dépendances productrices (`-x`).
 
@@ -51,6 +45,7 @@ Enchaîner les candidats restants, dans l'ordre :
 * CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **6/6** ; CAP-VIRAL-E2E **3/3** ;
   LLM-RESILIENCE **1/1**.
 * RENAME métier **SOLDÉ** (S-153) — délivré dans la release `0.0.3`.
+
 
 
 

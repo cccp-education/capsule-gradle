@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-11 (S-161 — **dogfooding Remotion + Manim** du chemin enrichi : Manim via shim Docker (`manimcommunity/manim:stable`), Remotion via `generateCapsuleVideo` + `captureStrategy=remotion` → MP4 réels ; constat « nom de scène Manim sensible à la casse ». Précédent : S-160 LLM-RESILIENCE.)
- _Derniere session terminee_ : 161.
- _Prochaine session_ : 162 — candidats/accord pilote : **extraction N0 résilience transverse**, **warn per-scene Manim**, **optimisation CI**, puis **publication `capsule 0.0.3`** (accord pilote donné).
- _Session en cours_ : — (S-161 terminée).
+ _Derniere mise a jour_ : 2026-10-11 (S-162 — **extraction N0 résilience transverse : CADUQUE** (cadrage+audit : `guarded` = utilitaire à effet de bord logging, pas un contrat pur N0 ; coût disproportionné 5 boroughs). Précédent : S-161 dogfooding Remotion+Manim.)
+ _Derniere session terminee_ : 162.
+ _Prochaine session_ : 163 — candidats/accord pilote : **warn per-scene Manim**, **optimisation CI**, puis **publication `capsule 0.0.3`** (accord pilote donné).
+ _Session en cours_ : — (S-162 terminée).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -22,11 +22,13 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (151-161)
+== 10 dernières sessions (152-162)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 162 | 2026-10-11 | cadrage | **Extraction N0 résilience transverse — CADUQUE** (candidat S-160). Audit : le besoin transverse est réel (≥ 5 boroughs, ≥ 8 adaptateurs `model.chat(...)` fail-fast : slider, planner, plantuml, bakery, document). **Verdict CADUQUE** : (1) `LlmResilience.guarded` n'est **pas un contrat** — il journalise via `org.gradle.api.logging`, or les artefacts N0 MEMPHIS sont des contrats **purs sans dépendance Gradle** (l'extraire = dépendance Gradle en N0, ou abstraction de logging sur-ingénierie) ; (2) coût disproportionné (~35 lignes ; module MEMPHIS + publication Central + bump BOM + adoption 5 boroughs) — la doctrine tolère la duplication verbatim N2 et réserve N0 aux contrats. **Recommandation** : conserver capsule-scoped (S-160) ; réouverture = module utilitaire Gradle partagé cross-borough (hors périmètre capsule). Doc `.agents/CADRAGE_EPIC_LLM_RESILIENCE_N0.adoc`. Aucun code modifié. | 7/10
 
 | 161 | 2026-10-11 | dogfooding | **Dogfooding Remotion + Manim** (chemin enrichi, accord pilote). **Manim** : absent/non installable nativement (PEP668, pas de sudo) → **shim Docker** (`manimcommunity/manim:stable`) pointé par `-Pcapsule.manimExecutablePath` ; `generateCapsuleVideo` avec une diapo `[manim:Hello]` → « Manim render complete: **1/1** » → `Hello.mp4` H.264 854×480 **2,0 s**, diapo remplacée. **Remotion** : `generateCapsuleVideo` + `captureStrategy("remotion")` → composition `npm install` → 150 frames @30 fps → `capsule.mp4` H.264 1408×792 **5,06 s**. Dégradations TTS `noop` attendues (audio muet). **Constat** : le nom de scène Manim est sensible à la casse (`[manim:Hello]` ↔ `Hello.py`) — un mismatch dégrade silencieusement (candidat « warn per-scene Manim »). **Aucun code modifié.** Zéro bump. | 8/10
 

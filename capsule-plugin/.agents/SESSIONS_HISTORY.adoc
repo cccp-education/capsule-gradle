@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-11 (S-161) — dogfooding Remotion + Manim (chemin enrichi). Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-11 (S-162) — extraction N0 résilience transverse (cadrage, CADUQUE). Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (120-161)
+== Sessions récentes (120-162)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 162 | 2026-10-11 | cadrage | **Extraction N0 résilience transverse — CADUQUE** (candidat S-160). Audit : besoin transverse réel (≥ 5 boroughs, ≥ 8 adaptateurs `model.chat(...)` fail-fast — slider `ChatModelDeckLlm`/`RagTasks`, planner `PlanningLlmService`, plantuml `LlmService`, bakery, document). **Verdict CADUQUE** : (1) `LlmResilience.guarded` n'est **pas un contrat** (effet de bord `org.gradle.api.logging`) alors que les artefacts N0 MEMPHIS sont des contrats purs sans Gradle — l'extraire = dépendance Gradle en N0, ou abstraction de logging sur-ingénierie ; (2) coût disproportionné (~35 lignes ; module MEMPHIS + publication Central + bump BOM + 5 boroughs) — la doctrine tolère la duplication verbatim N2 et réserve N0 aux contrats. Recommandation : conserver capsule-scoped (S-160) ; réouverture = module utilitaire Gradle partagé cross-borough. Doc `.agents/CADRAGE_EPIC_LLM_RESILIENCE_N0.adoc`. Aucun code modifié. | 7/10
 
 | 161 | 2026-10-11 | dogfooding | **Dogfooding Remotion + Manim** (chemin enrichi, accord pilote). **Manim** : absent et non installable nativement (Python géré par le système, PEP668, pas de `pip`, pas de `sudo` pour les dev headers `pangocairo`/`cairo`) → résolu par un **shim Docker** (`/tmp/opencode/bin/manim` → `docker run … manimcommunity/manim:stable manim "$@"`), pointé par `-Pcapsule.manimExecutablePath`. `generateCapsuleVideo` avec une diapo `[manim:Hello]` → « Manim render complete: **1/1** slides rendered » → `Hello.mp4` H.264 854×480 **2,0 s**, durée sondée, diapo remplacée dans le deck (`ManimSlideReplacer`). **Remotion** : `generateCapsuleVideo` + `captureStrategy("remotion")` → composition matérialisée (`npm install`) → 150 frames @ 30 fps → `capsule.mp4` H.264 1408×792 **5,06 s**. Dégradations TTS `noop` attendues (audio muet). **Constat** : le nom de scène Manim est **sensible à la casse** (`[manim:Hello]` ↔ classe `Hello` ↔ `Hello.py`) — un mismatch fait échouer `findRendered`, la `ManimException` est avalée par le renderer parallèle (slide non animée, visible via « 0/N rendered ») → **candidat « warn per-scene Manim »**. Le chemin enrichi fonctionne de bout en bout avec de vrais binaires. **Aucun code modifié.** Zéro bump. | 8/10
 
