@@ -34,3 +34,16 @@ Feature: Voice quality verification (CAP-QC-VOICE US-2)
     Then the voice verification has no failure
     And the voice verification is degraded
     And the voice verification take 1 is DEGRADED
+
+  Scenario: The best take is selected among a slide's candidates
+    Given a voice verification candidate 1 named "slide-01-1.mp3" expecting "le chat noir" transcribed "le chat noir"
+    And a voice verification candidate 1 named "slide-01-2.mp3" expecting "le chat noir" transcribed "le chien blanc"
+    When the best voice take is selected
+    Then the chosen voice take for slide 1 is "slide-01-1.mp3"
+    And the chosen voice take count for slide 1 is 2
+
+  Scenario: A faithful candidate beats a degraded one
+    Given a voice verification candidate 1 named "slide-01-1.mp3" expecting "bonjour" transcribed "bonjour"
+    And a degraded voice verification candidate 1 named "slide-01-2.mp3"
+    When the best voice take is selected
+    Then the chosen voice take for slide 1 is "slide-01-1.mp3"

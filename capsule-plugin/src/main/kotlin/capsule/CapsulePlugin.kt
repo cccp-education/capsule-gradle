@@ -293,5 +293,8 @@ class CapsulePlugin : Plugin<Project> {
         if (!ext.voiceLanguage.isPresent || ext.voiceLanguage.get() == conventions.voiceLanguage) {
             ext.voiceLanguage.set(config.voice.language)
         }
+        if (!ext.voiceSelectBestTake.isPresent || ext.voiceSelectBestTake.get() == conventions.voiceSelectBestTake) {
+            ext.voiceSelectBestTake.set(config.voice.selectBestTake)
+        }
     }
 }

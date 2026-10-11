@@ -33,6 +33,7 @@ class CapsuleManager(private val project: Project) {
         project.registerValidateCapsuleVideoDurationTask()
         project.registerPreflightCapsuleContentTask()
         project.registerVerifyCapsuleVoiceTask()
+        project.registerSelectBestVoiceTakeTask()
         project.registerGenerateCapsuleChaptersTask()
         project.registerGenerateViralCampaignTask()
         project.registerRenderViralVariantsTask()
@@ -189,6 +190,54 @@ class CapsuleManager(private val project: Project) {
                 }
             })
             task.reportFile.convention(project.layout.buildDirectory.file("capsule/voice-report.json"))
+        }
+    }
+
+    private fun Project.registerSelectBestVoiceTakeTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
+        val capsuleExt = project.extensions.findByType(CapsuleExtension::class.java)
+        tasks.register("selectBestVoiceTake", capsule.voice.SelectBestVoiceTakeTask::class.java) { task ->
+            task.group = CapsuleMessages.get("task.group.verification", lang)
+            task.description = CapsuleMessages.get("task.selectBestVoiceTake.description", lang)
+            task.enabled.set(project.provider {
+                capsuleExt?.voiceSelectBestTake?.get()
+                    ?: project.findProperty("capsule.voice.selectBestTake")?.toString()?.toBoolean()
+                    ?: false
+            })
+            task.maxWordErrorRate.set(project.provider {
+                capsuleExt?.voiceMaxWordErrorRate?.get() ?: 0.15
+            })
+            task.minSnrDb.set(project.provider {
+                capsuleExt?.voiceMinSnrDb?.get() ?: 66.0
+            })
+            task.surplusThreshold.set(project.provider {
+                capsuleExt?.voiceSurplusThreshold?.get() ?: 3
+            })
+            task.asrExecutablePath.set(project.provider {
+                capsuleExt?.voiceAsrExecutablePath?.get() ?: "whisper"
+            })
+            task.asrModel.set(project.provider {
+                capsuleExt?.voiceAsrModel?.get() ?: ""
+            })
+            task.language.set(project.provider {
+                capsuleExt?.voiceLanguage?.get() ?: "fr"
+            })
+            task.strict.set(project.provider {
+                capsuleExt?.strictMode?.get() ?: false
+            })
+            task.ffmpegPath.set(project.provider {
+                capsuleExt?.ffmpegExecutablePath?.get() ?: "ffmpeg"
+            })
+            task.audioFiles.from(project.provider {
+                val capDir = project.layout.buildDirectory.dir(
+                    capsuleExt?.outputDir?.get() ?: "capsule"
+                ).get().asFile
+                val audioDirs = capDir.listFiles { f -> f.isDirectory }?.toList() ?: emptyList()
+                audioDirs.flatMap { dir ->
+                    dir.listFiles { f -> f.name.endsWith(".mp3") }?.toList() ?: emptyList()
+                }
+            })
+            task.selectionFile.convention(project.layout.buildDirectory.file("capsule/voice-selection.json"))
         }
     }
 

@@ -54,6 +54,8 @@ data class CapsuleConfig(
  * @param asrExecutablePath  the ASR binary (`whisper`, `faster-whisper`…).
  * @param asrModel           the ASR model name, blank for the CLI default.
  * @param language           the ASR language hint (ISO-639-1, default `fr`).
+ * @param selectBestTake     `true` to run the take selection (`selectBestVoiceTake`,
+ *        US-3) when a slide was synthesised more than once (default `false`).
  */
 data class VoiceConfig(
     val verifyEnabled: Boolean = false,
@@ -63,6 +65,7 @@ data class VoiceConfig(
     val asrExecutablePath: String = "whisper",
     val asrModel: String = "",
     val language: String = "fr",
+    val selectBestTake: Boolean = false,
 )
 
 /**

@@ -1,8 +1,13 @@
 package capsule.scenarios
 
+import capsule.voice.FidelityScorer
 import capsule.voice.SpeechRecognizer
 import capsule.voice.SpeechRecognizerException
+import capsule.voice.TakeSelector
+import capsule.voice.TakeVerification
+import capsule.voice.VoiceQualityGate
 import capsule.voice.VoiceReport
+import capsule.voice.VoiceSelection
 import capsule.voice.VoiceTake
 import capsule.voice.VoiceThresholds
 import capsule.voice.VoiceVerdict
@@ -28,6 +33,9 @@ class CapsuleVoiceVerificationSteps {
     private var recognitionFails: Boolean = false
     private var asrUnavailable: Boolean = false
     private var report: VoiceReport? = null
+
+    private val candidates = mutableListOf<TakeVerification>()
+    private var selections: List<VoiceSelection> = emptyList()
 
     @Given("a voice verification take {int} expecting {string}")
     fun aVoiceVerificationTake(index: Int, expected: String) {
@@ -106,5 +114,58 @@ class CapsuleVoiceVerificationSteps {
             }
         }
         assertTrue(reason in reasons, "expected reason '$reason' in $reasons")
+    }
+
+    @Given("a voice verification candidate {int} named {string} expecting {string} transcribed {string}")
+    fun aVoiceVerificationCandidate(index: Int, name: String, expected: String, spoken: String) {
+        candidates.add(candidateVerification(index, name, expected, spoken))
+    }
+
+    @Given("a degraded voice verification candidate {int} named {string}")
+    fun aDegradedVoiceVerificationCandidate(index: Int, name: String) {
+        candidates.add(
+            TakeVerification(
+                deckName = "demo",
+                slideIndex = index,
+                audioFile = name,
+                expectedText = "bonjour",
+                transcript = "",
+                wordErrorRate = null,
+                surplus = null,
+                snrDb = null,
+                verdict = VoiceVerdict.Degraded(VoiceVerifier.REASON_ASR_ERROR),
+            )
+        )
+    }
+
+    @When("the best voice take is selected")
+    fun theBestVoiceTakeIsSelected() {
+        selections = TakeSelector.selectBySlide(candidates.toList())
+    }
+
+    @Then("the chosen voice take for slide {int} is {string}")
+    fun theChosenVoiceTakeForSlideIs(index: Int, name: String) {
+        assertEquals(name, selections.first { it.slideIndex == index }.chosenAudioFile)
+    }
+
+    @Then("the chosen voice take count for slide {int} is {int}")
+    fun theChosenVoiceTakeCountForSlideIs(index: Int, count: Int) {
+        assertEquals(count, selections.first { it.slideIndex == index }.candidateCount)
+    }
+
+    private fun candidateVerification(index: Int, name: String, expected: String, spoken: String): TakeVerification {
+        val thresholds = VoiceThresholds()
+        val score = FidelityScorer.score(expected, spoken)
+        return TakeVerification(
+            deckName = "demo",
+            slideIndex = index,
+            audioFile = name,
+            expectedText = expected,
+            transcript = spoken,
+            wordErrorRate = score.wordErrorRate,
+            surplus = score.surplus,
+            snrDb = null,
+            verdict = VoiceQualityGate.verdict(score, null, thresholds),
+        )
     }
 }

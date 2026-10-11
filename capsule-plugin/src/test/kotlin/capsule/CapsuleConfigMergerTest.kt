@@ -541,6 +541,7 @@ class CapsuleConfigMergerTest {
         assertEquals(66.0, default.voice.minSnrDb, "voice.minSnrDb should default to 66.0")
         assertEquals(3, default.voice.surplusThreshold, "voice.surplusThreshold should default to 3")
         assertEquals("whisper", default.voice.asrExecutablePath, "voice.asrExecutablePath should default to whisper")
+        assertEquals(false, default.voice.selectBestTake, "voice.selectBestTake should default to false")
 
         val enabled = CapsuleConfigMerger.merge(
             projectDir, CapsuleConfig(),
@@ -552,9 +553,11 @@ class CapsuleConfigMergerTest {
                 "voice.asrExecutablePath" to "faster-whisper",
                 "voice.asrModel" to "large-v3",
                 "voice.language" to "en",
+                "voice.selectBestTake" to "true",
             )
         )
         assertEquals(true, enabled.voice.verifyEnabled, "CLI voice.verifyEnabled should be honored")
+        assertEquals(true, enabled.voice.selectBestTake, "CLI voice.selectBestTake should be honored")
         assertEquals(0.25, enabled.voice.maxWordErrorRate, "CLI voice.maxWordErrorRate should be honored")
         assertEquals(50.0, enabled.voice.minSnrDb, "CLI voice.minSnrDb should be honored")
         assertEquals(5, enabled.voice.surplusThreshold, "CLI voice.surplusThreshold should be honored")

@@ -210,7 +210,8 @@ object CapsuleConfigMerger {
                 surplusThreshold = env["CAPSULE_VOICE_SURPLUS_THRESHOLD"]?.toIntOrNull() ?: 3,
                 asrExecutablePath = env["CAPSULE_VOICE_ASR_EXECUTABLE_PATH"] ?: "whisper",
                 asrModel = env["CAPSULE_VOICE_ASR_MODEL"] ?: "",
-                language = env["CAPSULE_VOICE_LANGUAGE"] ?: "fr"
+                language = env["CAPSULE_VOICE_LANGUAGE"] ?: "fr",
+                selectBestTake = env["CAPSULE_VOICE_SELECT_BEST_TAKE"]?.toBoolean() ?: false
             )
         )
     }
@@ -336,7 +337,8 @@ object CapsuleConfigMerger {
                 surplusThreshold = props["capsule.voice.surplusThreshold"]?.toIntOrNull() ?: 3,
                 asrExecutablePath = props["capsule.voice.asrExecutablePath"] ?: "whisper",
                 asrModel = props["capsule.voice.asrModel"] ?: "",
-                language = props["capsule.voice.language"] ?: "fr"
+                language = props["capsule.voice.language"] ?: "fr",
+                selectBestTake = props["capsule.voice.selectBestTake"]?.toBoolean() ?: false
             )
         )
     }
@@ -482,7 +484,8 @@ object CapsuleConfigMerger {
             surplusThreshold = mergeInt(cli, "voice.surplusThreshold", yaml?.surplusThreshold, props.surplusThreshold),
             asrExecutablePath = mergeStr(cli, "voice.asrExecutablePath", yaml?.asrExecutablePath, props.asrExecutablePath, env.asrExecutablePath),
             asrModel = mergeStr(cli, "voice.asrModel", yaml?.asrModel, props.asrModel, env.asrModel),
-            language = mergeStr(cli, "voice.language", yaml?.language, props.language, env.language)
+            language = mergeStr(cli, "voice.language", yaml?.language, props.language, env.language),
+            selectBestTake = mergeBoolean(cli, "voice.selectBestTake", yaml?.selectBestTake, props.selectBestTake)
         )
     }
 

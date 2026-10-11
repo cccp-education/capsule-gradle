@@ -349,6 +349,10 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val voiceLanguage: Property<String> = objects.property(String::class.java)
         .convention("fr")
 
+    /** CAP-QC-VOICE US-3 — `true` to select the best take among candidates (`selectBestVoiceTake`). Defaults to false. */
+    val voiceSelectBestTake: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
     internal val conventions: CapsuleConventions = CapsuleConventions(
         outputDir = "capsule",
         sliderScriptDir = "capsule",
@@ -426,7 +430,8 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         voiceSurplusThreshold = 3,
         voiceAsrExecutablePath = "whisper",
         voiceAsrModel = "",
-        voiceLanguage = "fr"
+        voiceLanguage = "fr",
+        voiceSelectBestTake = false
     )
 }
 
@@ -507,5 +512,6 @@ data class CapsuleConventions(
     val voiceSurplusThreshold: Int,
     val voiceAsrExecutablePath: String,
     val voiceAsrModel: String,
-    val voiceLanguage: String
+    val voiceLanguage: String,
+    val voiceSelectBestTake: Boolean
 )
