@@ -1,0 +1,71 @@
+= Session 155 — CAP-VIRAL-E2E US-2 (thumbnail prod wiring)
+:session: 155
+:borough: Détroit
+:date: 2026-10-11
+:epic: CAP-VIRAL-E2E
+:us: US-2 (thumbnail prod wiring)
+
+== Mission
+
+Continuation de l'EPIC CAP-VIRAL-E2E après US-1 (S-154). US-2 clôt le constat
+C1 du cadrage : `GenerateViralCampaignTask` n'alimentait pas `thumbnailFor`
+(défaut `{ "" }`) → `CampaignBundle.thumbnailFile` toujours vide, et
+`ViralThumbnailPlanner` (US-11) sans usage prod.
+
+== Architecture — frontière IA
+
+Rappel pilote : **l'interface IA de capsule passe par codebase N1** (contexte
+augmenté). Aucun appel LLM direct n'est introduit. Le texte de la couverture est
+le **hook contextuel** déjà résolu via `ChatModelViralHookGenerator` ←
+`project.aiProvider` (codebase `LlmBuildService` + contexte augmenté), avec repli
+sur le beat hook du storyboard. Le build de la couverture reste **pur** (HTML),
+sans LLM.
+
+== Livrable
+
+=== Domaine pur (unit)
+
+* `capsule.viral.ViralThumbnailBuilder` (objet pur) : `build(plan)` → HTML
+  portrait (hook en grand, label plateforme, HTML échappé, déterministe) +
+  convention de nommage `fileNameFor(variantId)` = `<id>-thumb.png`.
+* `ViralThumbnailBuilderTest` : 6 tests (portrait, label plateforme, échappement
+  HTML, langue, déterminisme, nommage).
+
+=== Câblage (functional)
+
+* `GenerateViralCampaignTask` : nouvel `@OutputFile thumbnailOutput`
+  (`build/capsule/viral/viral-thumbnail.html`) écrit via
+  `ViralThumbnailPlanner.plan` + `ViralThumbnailBuilder` (overlay = hook
+  contextuel), et `thumbnailFor` alimenté → `CampaignBundle.thumbnailFile` pointe
+  `<variant.id>-thumb.png`.
+* `RenderViralThumbnailsTask` (groupe `generate`, `dependsOn
+  generateViralCampaign`) : capture la couverture HTML → `slide-0.png` (socle
+  FFmpeg screenshot, `previewOnly=true`) **une fois**, puis réplique en
+  `<variant.id>-thumb.png` par variante (Économie d'Encre : skip si présent).
+  Warning dégradé / échec strict.
+* `CapsuleManager` : `registerRenderViralThumbnailsTask` + `validateViralCampaign`
+  `dependsOn renderViralVariants, renderViralThumbnails` (le gate US-1 vérifie
+  désormais aussi les couvertures).
+* `RenderViralThumbnailsFunctionalTest` : 5 tests TestKit (registration,
+  skip par défaut, économie d'encre sur covers présentes, cover manquante →
+  warning, capture réelle → PNG par variante, gatée `assumePlaywrightAvailable`).
+
+=== BDD (cucumber)
+
+* `capsule_viral_thumbnail.feature` `@thumbnail` : 4 scénarios (hook beat sur
+  document portrait, repli message, échappement HTML, convention de nommage).
+* `CapsuleViralThumbnailSteps` (préfixés « viral cover »/« viral thumbnail »,
+  S-088) + `CapsuleViralThumbnailCucumberRunner` (S-082).
+* `CucumberTaskSpec("cucumberTestViralThumbnail")` câblé + `full-tests.yml`.
+
+== Gates
+
+* Local = Build (RÈGLE EAGER) : `compileKotlin` + `compileTestKotlin` +
+  `compileFunctionalTestKotlin` **VERTS** ; tâche Cucumber enregistrée. Les
+  suites s'exécutent en CI — preuve = run du push.
+* `rg` vocabulaire métier dans `src/` = 0. Zéro secret. Zéro bump. Zéro publication.
+
+== Reste
+
+* **CAP-VIRAL-E2E US-3** (karaoké prod wiring) — dernier US de l'EPIC.
+* CAP-SHORT US-4 (dogfooding, pilot-only) ; publication `0.0.3` (pilot-only).

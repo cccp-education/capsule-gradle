@@ -1,12 +1,12 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-11 (S-154 — CAP-VIRAL-E2E US-1 : gate manifeste ↔ fichiers ; US-2/US-3 À FAIRE.)
+:last_update: 2026-10-11 (S-155 — CAP-VIRAL-E2E US-2 : thumbnail prod wiring ; US-3 À FAIRE.)
 
 '''
 == 🟡 CAP-VIRAL-E2E — clore les 3 dettes e2e du moteur viral (cadré S-154, P1)
 
 . [x] **US-0** ✅ S-154 — cadrage (3 constats : thumbnail/karaoké sans usage prod, gate manifeste↔fichiers manquante). Doc `.agents/CADRAGE_EPIC_CAP_VIRAL_E2E.adoc`.
 . [x] **US-1** ✅ S-154 — gate manifeste ↔ fichiers (`ViralCampaignGate` pur + `parseManifest` + tâche `validateViralCampaign` groupe `verification` ; 10 unit + 5 functional + 5 BDD `@viral-gate`).
-. [ ] **US-2** — thumbnail prod wiring (produire `<id>-thumb.png` + alimenter `thumbnailFor`).
+. [x] **US-2** ✅ S-155 — thumbnail prod wiring (`ViralThumbnailBuilder` pur + cover HTML + tâche `renderViralThumbnails` `<id>-thumb.png` + `thumbnailFor` alimenté ; 6 unit + 5 functional + 4 BDD `@thumbnail`).
 . [ ] **US-3** — karaoké prod wiring (`.ass` mot-à-mot par variante via `KaraokeSubtitleBuilder`).
 
 '''

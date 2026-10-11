@@ -129,6 +129,15 @@ abstract class GenerateViralCampaignTask : DefaultTask() {
     @get:OutputFile
     abstract val manifestOutput: RegularFileProperty
 
+    /**
+     * Capturable portrait cover HTML (CAP-VIRAL-E2E US-2). Derived from the
+     * storyboard by [ViralThumbnailPlanner] + [ViralThumbnailBuilder]; the input
+     * `renderViralThumbnails` captures into `<variant.id>-thumb.png` and the
+     * manifest's [CampaignBundle.thumbnailFile] references.
+     */
+    @get:OutputFile
+    abstract val thumbnailOutput: RegularFileProperty
+
     @get:ServiceReference
     abstract val llmService: Property<LlmBuildService>
 
@@ -166,6 +175,7 @@ abstract class GenerateViralCampaignTask : DefaultTask() {
             hook = hook,
             copySource = copySource,
             videoPathFor = { variant -> File(videoDir, "${variant.id}.mp4").absolutePath },
+            thumbnailFor = { variant -> File(videoDir, ViralThumbnailBuilder.fileNameFor(variant.id)).absolutePath },
         )
 
         val storyboardOut = storyboardOutput.get().asFile
@@ -175,6 +185,15 @@ abstract class GenerateViralCampaignTask : DefaultTask() {
         val deckOut = deckOutput.get().asFile
         deckOut.parentFile.mkdirs()
         deckOut.writeText(ViralDeckBuilder.build(storyboard))
+
+        val coverOut = thumbnailOutput.get().asFile
+        coverOut.parentFile.mkdirs()
+        // The cover overlays the context-anchored hook (US-4) when present — the hook
+        // is resolved through codebase N1 (LlmBuildService + augmented context), never
+        // an LLM called by capsule; falls back to the storyboard hook beat else.
+        val coverPlan = ViralThumbnailPlanner.plan(storyboard)
+        val coverOverlay = hook?.hook?.takeIf { it.isNotBlank() } ?: coverPlan.overlayText
+        coverOut.writeText(ViralThumbnailBuilder.build(coverPlan.copy(overlayText = coverOverlay)))
 
         val manifestOut = manifestOutput.get().asFile
         manifestOut.parentFile.mkdirs()

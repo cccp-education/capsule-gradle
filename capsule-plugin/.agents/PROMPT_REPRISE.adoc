@@ -1,38 +1,34 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 155
+:session: 156
 :borough: Détroit
-:session_precedente: 154 — CAP-VIRAL-E2E US-0/US-1 : delivery gate manifeste ↔ fichiers
+:session_precedente: 155 — CAP-VIRAL-E2E US-2 : thumbnail prod wiring
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-154 — CAP-VIRAL-E2E US-0 + US-1 (delivery gate)
+=== S-155 — CAP-VIRAL-E2E US-2 (thumbnail prod wiring)
 
-- Nouvel EPIC **CAP-VIRAL-E2E** pour clore les 3 dettes e2e du moteur viral
-  (diagnostic S-145) : thumbnail/karaoké sans usage prod, gate manifeste ↔
-  fichiers manquante.
-- **US-0** cadrage : `.agents/CADRAGE_EPIC_CAP_VIRAL_E2E.adoc`.
-- **US-1** livré : `capsule.viral.ViralCampaignGate` (objet pur) +
-  `CampaignBundleSerializer.parseManifest` (round-trip) + tâche
-  `validateViralCampaign` (groupe `verification`, `dependsOn renderViralVariants`,
-  warning dégradé / échec strict) + `CapsuleManager` wiring. 10 unit +
-  5 functional + 5 scénarios BDD `@viral-gate` (24e runner `cucumberTestViralGate`).
-- Rapport : `.agents/sessions/154-cap-viral-e2e-us1-gate.adoc`.
+- Domaine pur `capsule.viral.ViralThumbnailBuilder` (`build(plan)` → HTML portrait
+  échappé, `fileNameFor` = `<id>-thumb.png`) + `GenerateViralCampaignTask.thumbnailOutput`
+  (cover HTML, overlay = **hook contextuel résolu via codebase N1**) + `thumbnailFor`
+  alimenté + `RenderViralThumbnailsTask` (capture la cover une fois, réplique
+  `<id>-thumb.png`, Économie d'Encre) + `validateViralCampaign` dépend des 2 renders.
+- 6 unit + 5 functional + 4 BDD `@thumbnail` (25e runner `cucumberTestViralThumbnail`).
+- **Frontière IA** : capsule ne parle jamais à un LLM en direct — tout passe par
+  codebase N1 (`LlmBuildService` + contexte augmenté).
+- Rapport : `.agents/sessions/155-cap-viral-e2e-us2-thumbnail.adoc`.
 
-=== S-153 (contexte)
+=== S-154 (contexte) — CAP-VIRAL-E2E US-1 (gate manifeste ↔ fichiers)
 
-- RENAME métier SOLDÉ : garde `OssVocabularyGuardTest` + 24 fichiers `src/` +
-  13 docs neutralisés. `rg` = 0.
+- `ViralCampaignGate` pur + `CampaignBundleSerializer.parseManifest` + tâche
+  `validateViralCampaign` (groupe `verification`). 24e runner `cucumberTestViralGate`.
 
-== Mission Session 155 — priorités
+== Mission Session 156 — priorités
 
-1. **CAP-VIRAL-E2E US-2 — thumbnail prod wiring** : produire
-   `<variant.id>-thumb.png` par variante (`ViralThumbnailPlanner` + carte HTML /
-   socle capture) et alimenter `thumbnailFor` dans `GenerateViralCampaignTask`
-   → `CampaignBundle.thumbnailFile` pointe l'asset réel (que la gate US-1 vérifie).
-2. **CAP-VIRAL-E2E US-3 — karaoké prod wiring** : `.ass` mot-à-mot par variante
-   via `KaraokeSubtitleBuilder`.
-3. À défaut : CAP-SHORT US-4 (dogfooding viral réel = **accord pilote**, run LLM
+1. **CAP-VIRAL-E2E US-3 — karaoké prod wiring** (dernier US de l'EPIC) : produire
+   un `.ass` mot-à-mot par variante via `KaraokeSubtitleBuilder` +
+   `formatAssTimestamp`, câblé dans le chemin de rendu viral. Cibles `capsule.viral`.
+2. À défaut : CAP-SHORT US-4 (dogfooding viral réel = **accord pilote**, run LLM
    metered) ; optimisation CI (optionnel) ; cadrage release `0.0.3` (accord pilote).
 
 == Points d'attention
@@ -53,5 +49,6 @@ _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.2 (Central).
-* CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **5/6** ; CAP-VIRAL-E2E **1/3**.
+* CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **5/6** ; CAP-VIRAL-E2E **2/3**
+  (reste US-3 karaoké).
 * RENAME métier **SOLDÉ** (S-153) — délivré dans la prochaine release `0.0.3`.

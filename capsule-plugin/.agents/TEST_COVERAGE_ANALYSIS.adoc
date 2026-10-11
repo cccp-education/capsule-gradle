@@ -1,7 +1,24 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-11
-:session: 154 CAP-VIRAL-E2E US-1 — delivery gate manifeste ↔ fichiers
+:session: 155 CAP-VIRAL-E2E US-2 — thumbnail prod wiring
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 11 octobre 2026 (après session 155)
+
+.Modifications session 155 — CAP-VIRAL-E2E US-2 (thumbnail prod wiring)
+|===
+| Fichier | Changement | Tests ajoutés
+| `viral/ViralThumbnailBuilder.kt` (nouveau) | Objet pur : `build(plan)` → HTML portrait `section.cover` (hook en grand, label plateforme, HTML échappé, déterministe) + `fileNameFor` (`<id>-thumb.png`). | +6 `ViralThumbnailBuilderTest`
+| `viral/GenerateViralCampaignTask.kt` (modifié) | `@OutputFile thumbnailOutput` (cover HTML) + `thumbnailFor` alimenté (overlay = hook contextuel codebase N1). | 0 (adaptateur, couvert par functional)
+| `viral/RenderViralThumbnailsTask.kt` (nouveau) | Tâche `renderViralThumbnails` (groupe `generate`, `dependsOn generateViralCampaign`) : capture la cover une fois (socle FFmpeg screenshot `previewOnly`) puis réplique `<id>-thumb.png`, Économie d'Encre, seam `captureFactory`. | 0 unit (adaptateur) ; +5 functional
+| `CapsuleManager.kt` (modifié) | `registerRenderViralThumbnailsTask` + `validateViralCampaign` dépend des 2 renders. | 0 (configuration)
+| `capsule_viral_thumbnail.feature` + `CapsuleViralThumbnailSteps.kt` + `CapsuleViralThumbnailCucumberRunner.kt` (nouveaux) | 4 scénarios `@thumbnail` (hook beat, repli message, échappement HTML, nommage). | 4 scénarios (25e runner `cucumberTestViralThumbnail`)
+| `build.gradle.kts` + `.github/workflows/full-tests.yml` (modifiés) | `CucumberTaskSpec("cucumberTestViralThumbnail")` + étape CI. | 0
+|===
+
+*Totaux S-155* : +6 unit, +5 functional, +4 scénarios BDD. Gates locaux
+(Local = Build) : compiles VERT ; tâche Cucumber enregistrée. Les suites
+s'exécutent en CI (`Test` + `Full Tests`), preuve = run du push.
 
 == Couverture — 11 octobre 2026 (après session 154)
 

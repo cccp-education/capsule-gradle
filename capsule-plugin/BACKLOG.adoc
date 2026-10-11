@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-11 (S-154 — CAP-VIRAL-E2E US-1 : gate manifeste ↔ fichiers livrée ; 1/3 US)
+:last_update: 2026-10-11 (S-155 — CAP-VIRAL-E2E US-2 : thumbnail prod wiring livré ; 2/3 US)
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)
@@ -115,8 +115,9 @@ le test fonctionnel n'assère aucune vidéo.
   Économie d'Encre).
 . ✅ **Durée 15-60 s** non imposée au montage (time-fit trim/pad/pacing manquant).
   **RÉSOLU S-148** (`ViralTimeFitter.fit` + gate durée).
-. 🟠 **Thumbnail** — `ViralThumbnailPlanner` sans **usage prod** (`thumbnailFor = { "" }`).
-  → suivi **CAP-VIRAL-E2E US-2**.
+. ✅ **Thumbnail** — `ViralThumbnailPlanner` sans **usage prod** (`thumbnailFor = { "" }`).
+  **RÉSOLU S-155** (`ViralThumbnailBuilder` + `renderViralThumbnails`,
+  CAP-VIRAL-E2E US-2).
 . 🟠 **Sous-titres karaoké** — `KaraokeSubtitleBuilder` sans **usage prod**.
   → suivi **CAP-VIRAL-E2E US-3**.
 . ✅ **Manifeste ↔ fichiers réels** — `CampaignBundle.videoFile` pointe un
@@ -170,7 +171,7 @@ training-gradle, pas ici.** Rapport `.agents/sessions/153-rename-metier-oss-voca
 
 '''
 
-== 🎬 CAP-VIRAL-E2E 🟡 EN COURS 1/3 US (cadrage + US-1 S-154 ; US-2/US-3 À FAIRE)
+== 🎬 CAP-VIRAL-E2E 🟡 EN COURS 2/3 US (US-1 S-154, US-2 S-155 ; US-3 À FAIRE)
 
 _Clore les **3 dettes e2e** restantes du moteur viral (diagnostic S-145) : le
 domaine viral existe (CAP-VIRAL 14/14, CAP-SHORT 5/6) mais trois briques sont
@@ -178,7 +179,7 @@ domaine viral existe (CAP-VIRAL 14/14, CAP-SHORT 5/6) mais trois briques sont
 est déjà complet, sans modifier CAP-VIRAL._
 
 *Cadrage* : `.agents/CADRAGE_EPIC_CAP_VIRAL_E2E.adoc` (S-154).
-*Charge* : 3 US ~9 pts — **US-1 ✅ S-154**.
+*Charge* : 3 US ~9 pts — **US-1 ✅ S-154, US-2 ✅ S-155**.
 
 [cols="1,4,2,1,2", options="header"]
 |===
@@ -186,7 +187,7 @@ est déjà complet, sans modifier CAP-VIRAL._
 
 | US-0 | Cadrage (audit des 3 dettes e2e + décisions) | `.agents/CADRAGE_EPIC_CAP_VIRAL_E2E.adoc` | 0 | ✅ S-154
 | US-1 | **Gate manifeste ↔ fichiers** — `ViralCampaignGate` pur + `CampaignBundleSerializer.parseManifest` + tâche `validateViralCampaign` (groupe `verification`) | `capsule.viral`, `CapsuleManager` | 3 | ✅ S-154
-| US-2 | **Thumbnail prod wiring** — produire `<id>-thumb.png` + alimenter `thumbnailFor` (bundle → asset réel) | `capsule.viral` | 3 | 🟡 À FAIRE
+| US-2 | **Thumbnail prod wiring** — `ViralThumbnailBuilder` pur + cover HTML (`thumbnailOutput`) + tâche `renderViralThumbnails` (`<id>-thumb.png`) + `thumbnailFor` alimenté | `capsule.viral`, `CapsuleManager` | 3 | ✅ S-155
 | US-3 | **Karaoké prod wiring** — `.ass` mot-à-mot par variante via `KaraokeSubtitleBuilder` | `capsule.viral` | 3 | 🟡 À FAIRE
 |===
 
@@ -195,6 +196,14 @@ est déjà complet, sans modifier CAP-VIRAL._
 un JSON non-tableau) + `ValidateViralCampaignTask` (`dependsOn renderViralVariants`,
 warning dégradé / échec strict) + 10 unit + 5 functional + 5 scénarios BDD
 `@viral-gate` (24e runner `cucumberTestViralGate`). Local = Build, Tests = CI.
+
+*US-2 livré* : `ViralThumbnailBuilder` (HTML portrait pur, `fileNameFor`) +
+`GenerateViralCampaignTask.thumbnailOutput` (cover HTML, overlay = hook contextuel
+résolu **via codebase N1**) + `thumbnailFor` alimenté +
+`RenderViralThumbnailsTask` (capture la cover **une fois**, réplique en
+`<id>-thumb.png`, Économie d'Encre) + `validateViralCampaign` dépend des deux
+renders + 6 unit + 5 functional + 4 scénarios BDD `@thumbnail` (25e runner
+`cucumberTestViralThumbnail`). Zéro appel LLM direct (frontière codebase). Local = Build.
 
 '''
 == 🎬 CAP-CONTEXT ✅ TERMINÉ 4/4 US (S-144 cadrage ; US-1/2/3 S-145, US-4 S-152)

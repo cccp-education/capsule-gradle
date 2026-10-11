@@ -1,6 +1,18 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-11
 
+== Session 155 — CAP-VIRAL-E2E US-2 : thumbnail prod wiring ✅
+
+* **Constat C1 soldé** : `GenerateViralCampaignTask` n'alimentait pas `thumbnailFor`
+  (`CampaignBundle.thumbnailFile` toujours vide, `ViralThumbnailPlanner` sans usage prod).
+* **Livré** : `ViralThumbnailBuilder` (HTML portrait pur + `fileNameFor`) +
+  `thumbnailOutput` (cover HTML, overlay = hook contextuel résolu via codebase N1) +
+  `thumbnailFor` alimenté + `RenderViralThumbnailsTask` (capture la cover une fois,
+  réplique `<id>-thumb.png`, Économie d'Encre) + `validateViralCampaign` dépend des
+  2 renders. **Frontière IA codebase respectée** (zéro LLM direct).
+* Baby-step DDD/TDD/BDD : 6 unit + 5 functional + 4 scénarios `@thumbnail`
+  (25e runner `cucumberTestViralThumbnail`). Local = Build, Tests = CI. Zéro bump.
+
 == Session 154 — CAP-VIRAL-E2E US-0/US-1 : delivery gate manifeste ↔ fichiers ✅
 
 * **Nouvel EPIC CAP-VIRAL-E2E** — clore les 3 dettes e2e du moteur viral

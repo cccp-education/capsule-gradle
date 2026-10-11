@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-11 (S-154) — CAP-VIRAL-E2E US-1 (delivery gate manifeste ↔ fichiers). Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-11 (S-155) — CAP-VIRAL-E2E US-2 (thumbnail prod wiring). Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (120-154)
+== Sessions récentes (120-155)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 155 | 2026-10-11 | feat+test | **CAP-VIRAL-E2E US-2 — thumbnail prod wiring** (clôt le constat C1 : `thumbnailFile` toujours vide, `ViralThumbnailPlanner` sans usage prod). Domaine pur `capsule.viral.ViralThumbnailBuilder` (`build(plan)` → HTML portrait échappé, `fileNameFor` = `<id>-thumb.png`) + `GenerateViralCampaignTask.thumbnailOutput` (cover HTML, overlay = **hook contextuel résolu via codebase N1**, repli beat) + `thumbnailFor` alimenté + `RenderViralThumbnailsTask` (groupe `generate` : capture la cover **une fois** via le socle FFmpeg screenshot `previewOnly`, réplique par variante, Économie d'Encre) + `validateViralCampaign` `dependsOn renderViralVariants, renderViralThumbnails`. Baby-step DDD/TDD/BDD : `ViralThumbnailBuilderTest` (6 unit) + `RenderViralThumbnailsFunctionalTest` (5 functional TestKit, capture réelle gatée `assumePlaywrightAvailable`) + `capsule_viral_thumbnail.feature` `@thumbnail` (4 scénarios) + runner dédié 25e `cucumberTestViralThumbnail` câblé `full-tests.yml`. **Frontière IA codebase respectée** (zéro appel LLM direct). Local = Build, Tests = CI. Zéro bump, zéro publication. | 9/10
 
 | 154 | 2026-10-11 | feat+test | **CAP-VIRAL-E2E US-0/US-1 — delivery gate manifeste ↔ fichiers**. Nouvel EPIC pour clore les 3 dettes e2e du moteur viral (diagnostic S-145). **US-0** : cadrage (3 constats — `thumbnailFor` jamais alimenté, `KaraokeSubtitleBuilder` sans appelant prod, `CampaignBundle.videoFile` = chemin construit non vérifié) → `.agents/CADRAGE_EPIC_CAP_VIRAL_E2E.adoc`. **US-1** : domaine pur `capsule.viral.ViralCampaignGate` (`verdict(bundles, exists)` → `ViralCampaignGateResult` sealed `Valid`/`Invalid(missing)`, ordre de bundle, thumbnail blanc non-violation) + `CampaignBundleSerializer.parseManifest` (round-trip, refuse un JSON non-tableau) + tâche `ValidateViralCampaignTask` (groupe `verification`, `dependsOn renderViralVariants`, warning dégradé / échec strict) + `CapsuleManager` wiring. Baby-step DDD/TDD/BDD : `ViralCampaignGateTest` (10 unit) + `ValidateViralCampaignFunctionalTest` (5 functional TestKit, chaîne `-x`) + `capsule_viral_gate.feature` `@viral-gate` (5 scénarios) + runner dédié 24e `cucumberTestViralGate` câblé `full-tests.yml`. Local = Build, Tests = CI. Zéro bump, zéro publication. Rapport `.agents/sessions/154-cap-viral-e2e-us1-gate.adoc`. | 9/10
 

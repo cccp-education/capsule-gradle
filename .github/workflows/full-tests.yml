@@ -98,6 +98,7 @@ jobs:
           cucumberTestPr2Coverage
           cucumberTestStoryboardContext
           cucumberTestViralGate
+          cucumberTestViralThumbnail
           -PrunCucumber
         working-directory: capsule-plugin
         env:

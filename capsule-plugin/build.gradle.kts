@@ -291,6 +291,17 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleViralGateCucumberRunner",
             timeoutMinutes = 10,
         ),
+        // CAP-VIRAL-E2E US-2 — campaign cover: planned from the storyboard (hook beat,
+        // else message) and rendered as a capturable portrait document. Dedicated runner
+        // pattern S-082; steps prefixed "viral cover"/"viral thumbnail" (bug S-088).
+        // Pure domain (planner + builder), no ffmpeg/Chromium.
+        CucumberTaskSpec(
+            name = "cucumberTestViralThumbnail",
+            features = listOf("src/test/features/capsule_viral_thumbnail.feature"),
+            tags = listOf("@thumbnail"),
+            runnerClass = "capsule.scenarios.CapsuleViralThumbnailCucumberRunner",
+            timeoutMinutes = 10,
+        ),
     )
 }
 

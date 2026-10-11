@@ -85,7 +85,7 @@ verticaux + assets) soit **cohérent avec lui-même**.
    `thumbnailFor`
 | `capsule.viral`
 | 3
-| 🟡 À FAIRE
+| ✅ S-155
 
 | US-3
 | **Karaoké prod wiring** — `.ass` karaoké par variante
