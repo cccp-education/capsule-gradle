@@ -51,6 +51,11 @@ class AudioPostProcessorImpl(
 
         outputFile.parentFile.mkdirs()
 
+        // PRT-09 — opt-in two-pass loudness (exact), single-input only (no BGM).
+        if (config.twoPassLoudnessEnabled && bgmFile == null) {
+            return processTwoPass(videoFile, outputFile, config)
+        }
+
         val argv = AudioPostCommand.buildArgv(videoFile, bgmFile, outputFile, config, ffmpegPath)
 
         return try {
@@ -62,6 +67,35 @@ class AudioPostProcessorImpl(
             outputFile.exists() && outputFile.length() > 0
         } catch (e: Exception) {
             logger.warn("ffmpeg audio post error: {}", e.message)
+            false
+        }
+    }
+
+    /**
+     * PRT-09 — two-pass loudness: pass 1 measures (no output file), pass 2
+     * normalises with the measured values. Degrades to `false` (keep original)
+     * when the measurement cannot be read or ffmpeg fails — never a hard error.
+     */
+    private fun processTwoPass(videoFile: File, outputFile: File, config: AudioPostConfig): Boolean {
+        return try {
+            val measured = capsule.ProcessRunner.run(
+                AudioPostCommand.loudnormMeasureArgs(videoFile, config, ffmpegPath),
+            )
+            val measurement = LoudnormAnalysisParser.parse(measured.output)
+            if (measurement == null) {
+                logger.warn("Audio post: two-pass loudness measurement unavailable — keeping original")
+                return false
+            }
+            val result = capsule.ProcessRunner.run(
+                AudioPostCommand.buildTwoPassArgv(videoFile, outputFile, config, measurement, ffmpegPath),
+            )
+            if (!result.isSuccess) {
+                logger.warn("ffmpeg two-pass audio post failed (exit {}): {}", result.exitCode, result.tail())
+                return false
+            }
+            outputFile.exists() && outputFile.length() > 0
+        } catch (e: Exception) {
+            logger.warn("ffmpeg two-pass audio post error: {}", e.message)
             false
         }
     }

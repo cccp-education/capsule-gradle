@@ -7,6 +7,7 @@ import capsule.feed.CapsuleScriptReader
 import capsule.feed.SlideSegment
 import capsule.feed.SlideType
 import capsule.multilang.MultiLanguageResolver
+import capsule.validation.VideoIntegrityProbe
 import capsule.viral.ViralViewport
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
@@ -41,6 +42,9 @@ open class CapsuleVideoTask : DefaultTask() {
          * Configurable via the [CapsuleExtension.captureTimeoutMinutes] DSL (CR-2.3).
          */
         const val DEFAULT_CAPTURE_TIMEOUT_MILLIS: Long = 5 * 60 * 1000L
+
+        /** PRT-06 — sidecar suffix holding the render signature next to a video. */
+        internal const val SIGNATURE_SUFFIX: String = ".sig"
 
         private const val AUDIO_INJECT_SCRIPT = """
 <!-- CAPSULE-GRADLE: Autoplay audio injection -->
@@ -664,10 +668,6 @@ open class CapsuleVideoTask : DefaultTask() {
 
         for (script in scripts) {
             val parsed = CapsuleScriptReader.read(script)
-            val audioDir = outDir.resolve(parsed.deckName)
-            audioDir.mkdirs()
-
-            synthesizeTtsForScript(parsed, audioDir, engine)
 
             val deckFile = deckFiles.find { it.nameWithoutExtension.startsWith(parsed.deckName) }
                 ?: deckFiles.firstOrNull()
@@ -675,6 +675,29 @@ open class CapsuleVideoTask : DefaultTask() {
                 logger.warn("No matching deck HTML found for '{}'", parsed.deckName)
                 continue
             }
+
+            // PRT-06 — render signature: capture engine + deck/narration content +
+            // a coarse timeline fingerprint. An unchanged deck can skip a re-capture.
+            val signature = RenderSignature.of(
+                engineFingerprint = capsuleExtension.captureStrategy.get().name.lowercase(),
+                contentFingerprint = deckFile.readText() + "\u0001" + script.readText(),
+                timelineFingerprint = capsuleExtension.slideDurationSeconds.get().toString(),
+            )
+
+            val audioDir = outDir.resolve(parsed.deckName)
+            audioDir.mkdirs()
+
+            // PRT-06 — opt-in reuse: skip the whole capture when the produced video
+            // is unchanged (signature) and still decodes (PRT-04).
+            if (capsuleExtension.reuseCapturedVideoEnabled.getOrElse(false)) {
+                val existing = findFinalVideo(outDir, parsed.deckName)
+                if (existing != null && isReusable(existing, signature)) {
+                    logger.lifecycle("CAPSULE REUSE → {} (signature unchanged, decode OK)", existing.name)
+                    continue
+                }
+            }
+
+            synthesizeTtsForScript(parsed, audioDir, engine)
 
             val modifiedDeck = injectAudio(deckFile, parsed, audioDir)
             val videoOutputDir = outDir.resolve(parsed.deckName).resolve("video")
@@ -700,13 +723,46 @@ open class CapsuleVideoTask : DefaultTask() {
             } else {
                 captureDeckSequential(parsed, finalDeckFile, videoOutputDir, audioDir, outDir, slideDurations, subtitleFile)
             }
+
+            // PRT-06 — record the signature next to the produced video.
+            findFinalVideo(outDir, parsed.deckName)?.let { produced ->
+                File(produced.absolutePath + SIGNATURE_SUFFIX).writeText(signature)
+            }
         }
+    }
+
+    /**
+     * PRT-06 — the produced final video for [deckName] in [outDir], whatever the
+     * capture engine's container (WebM for the browser engines, MP4 for Remotion).
+     */
+    private fun findFinalVideo(outDir: File, deckName: String): File? =
+        listOf("webm", "mp4").map { outDir.resolve("$deckName.$it") }.firstOrNull { it.exists() }
+
+    /**
+     * PRT-06 — a video is reusable only when the stored signature matches AND the
+     * file still decodes (PRT-04): a broken container keeps its signature but must
+     * not be served.
+     */
+    private fun isReusable(video: File, signature: String): Boolean {
+        val signatureFile = File(video.absolutePath + SIGNATURE_SUFFIX)
+        if (!signatureFile.exists() || signatureFile.readText().trim() != signature) return false
+        return VideoIntegrityProbe.probe(video, capsuleExtension.ffmpegExecutablePath.get()).isClean
     }
 
     internal fun generateSubtitles(parsed: CapsuleScript, slideDurations: List<Double>, outDir: File): File? {
         val format = SubtitleFormat.fromString(capsuleExtension.subtitleFormat.get())
         val generator = resolveSubtitleGenerator(format)
-        val entries = SubtitleTimingCalculator.calculate(parsed.segments, slideDurations)
+        // PRT-03 — optional carton subdivision (one readable cue per carton);
+        // default keeps the historical one-cue-per-slide behaviour.
+        val entries = if (capsuleExtension.subtitleCartonsEnabled.getOrElse(false)) {
+            SubtitleTimingCalculator.calculateFromCartons(
+                parsed.segments,
+                slideDurations,
+                capsuleExtension.subtitleMaxChars.getOrElse(SubtitleCartoner.DEFAULT_MAX_CHARS),
+            )
+        } else {
+            SubtitleTimingCalculator.calculate(parsed.segments, slideDurations)
+        }
         val content = generator.generate(entries)
         val subtitleFile = outDir.resolve("${parsed.deckName}${format.fileExtension}")
         subtitleFile.writeText(content)
@@ -796,7 +852,8 @@ open class CapsuleVideoTask : DefaultTask() {
     internal fun applyAudioPostIfEnabled(finalVideo: File) {
         val bgmEnabled = capsuleExtension.audioPostBgmEnabled.get()
         val duckingEnabled = capsuleExtension.audioPostDuckingEnabled.get()
-        if (!bgmEnabled && !duckingEnabled) return
+        val twoPassLoudnessEnabled = capsuleExtension.audioPostTwoPassLoudnessEnabled.getOrElse(false)
+        if (!bgmEnabled && !duckingEnabled && !twoPassLoudnessEnabled) return
 
         if (!finalVideo.exists()) {
             logger.warn("Audio post: final video not found ('{}') — skipping", finalVideo.name)
@@ -818,7 +875,8 @@ open class CapsuleVideoTask : DefaultTask() {
             bgmFile = capsuleExtension.audioPostBgmFile.get(),
             bgmLevel = capsuleExtension.audioPostBgmLevel.get(),
             loudnessTarget = capsuleExtension.audioPostLoudnessTarget.get(),
-            duckingEnabled = duckingEnabled
+            duckingEnabled = duckingEnabled,
+            twoPassLoudnessEnabled = twoPassLoudnessEnabled
         )
 
         val tmpFile = File(finalVideo.absolutePath + ".audiopost.${finalVideo.extension}")

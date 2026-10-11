@@ -1,0 +1,129 @@
+= Session 166 — CAP-QC : portage `prepa` → capsule (PRT-04, PRT-03, PRT-09, PRT-06)
+:date: 2026-10-11
+:type: feat+test (portage cross-dépôt)
+:sujet: Reprise du portage `prepa_electricite_complet` → `capsule` (EPIC CAP-QC) — 4 items livrés
+:statut: CLÔTURÉE
+
+== Contexte
+
+Reprise du portage établi dans
+`foundry/private/prepa_electricite_complet/code_review.adoc` (revue de l'usine Python de
+cours vidéo `lion92/prepa_electricite_complet` → pistes Kotlin pour `capsule`). La
+méthode retenue : ne porter que l'**utilitaire hors rendu** (QC, sous-titres, intégrité,
+timeline, audio), jamais le contenu, jamais un moteur de rendu maison (PRT-11 CADUQUE).
+
+Capsule était propre au S-165 (backlog vidé, `capsule-plugin 0.0.4`). Baby-step
+DDD/TDD/BDD strict : **unit → fonctionnel → cucumber**, à chaque item. `Local = Build,
+Tests = CI` : seule la compilation est prouvée en local, les suites s'exécutent en CI
+(`full-tests.yml` = `test functionalTest` + `cucumberTest` agrégé).
+
+== Re-revue capsule (S-165) — deltas
+
+* Backlog propre vidé (CAP-SHORT 6/6, CAP-VIRAL-E2E 3/3, LLM-RESILIENCE) ; `0.0.4` publié.
+* Points de la revue périmés corrigés : le **karaoké mot-à-mot n'est plus orphelin**
+  (câblé au viral S-156) ; compteurs (16 sous-paquets, 152 sources, 36 features).
+* `code_review.adoc` passe en `:revision: c` (delta capsule + PRT-04 amorcé).
+
+== Livrables — EPIC CAP-QC (4 items)
+
+=== PRT-04 — Intégrité vidéo par décodage
+
+Un clip abîmé garde une durée valide (MOOV dupliqué) et casse la concaténation ; le seul
+contrôle qui l'attrape est de **décoder**.
+
+* **Pur** : `capsule.validation.VideoIntegrityChecker` (`IntegrityResult` sealed
+  `Clean`/`Corrupt` ; `verdict(exitCode, stderr)` — propre **seulement** si exit 0 **et**
+  stderr vide) + `VideoIntegrityProbe` (`ffmpeg -v error -i <file> -f null -` ; fichier
+  absent/vide = `Corrupt` sans lancer ffmpeg).
+* **Câblage** : `validateCapsuleVideoDuration` gagne un gate intégrité opt-in
+  (`validation.integrityEnabled`, défaut false) en plus de la durée ; `GradleException`
+  actionable. Config 4 sources (DSL/CLI `-Pcapsule.validation.integrityEnabled`/ENV/
+  gradle.properties) + push extension.
+* **Tests** : `VideoIntegrityCheckerTest` (6 unit) + `VideoIntegrityProbeTest` (4 unit,
+  seam `ProcessRunner.commandInterceptor`) + `capsule_video_integrity.feature` (3
+  scénarios `@validation @integrity`, runner dédié 29e `cucumberTestVideoIntegrity`) + 3
+  fonctionnels (`ValidateCapsuleVideoDurationFunctionalTest`).
+
+=== PRT-03 — Sous-titres par beat (cartons)
+
+Les sous-titres viennent du **texte source**, découpés en cartons lisibles, avec un
+timing réparti au prorata de la longueur.
+
+* **Pur** : `SubtitleTextNormalizer` (`spokenToDisplay` — strip markdown `**`, recollage
+  des sigles épelés `A P I`→`API` ; `reversals` prêt pour PRT-01) +
+  `SubtitleCartoner` (`split(text, maxChars=42)` — mots + fin de phrase, jamais un mot
+  coupé) + `SubtitleTimingDistributor` (`distribute(cartons, start, duration)` — ranges
+  contigus) + `SubtitleTimingCalculator.calculateFromCartons(...)` (un cue par carton,
+  indices séquentiels ; `calculate` conservé).
+* **Câblage** : `CapsuleVideoTask.generateSubtitles` branche sur
+  `capture.subtitleCartonsEnabled` (défaut false) + `capture.subtitleMaxChars=42` ;
+  config 4 sources + push.
+* **Tests** : `SubtitleCartonsTest` (~20 unit) + `capsule_subtitles_cartons.feature` (4
+  scénarios `@subtitle @cartons`, runner dédié 30e `cucumberTestSubtitlesCartons`) +
+  test merger.
+
+=== PRT-09 — Loudness 2 passes mesurée + limiteur
+
+* **Pur** : `audio.LoudnormMeasurement` + `LoudnormAnalysisParser` (parse le bloc JSON
+  `loudnorm` de la sortie fusionnée, sans Jackson) + `AudioPostCommand.loudnormMeasureArgs`
+  (passe 1, `-f null -`), `buildTwoPassLoudnorm` (loudnorm `linear` + `measured_*` +
+  `volume` + `alimiter limit=0.63:level=disabled` + `aresample=48000`) et
+  `buildTwoPassArgv`.
+* **Câblage** : `AudioPostProcessorImpl` chemin 2 passes **opt-in**
+  (`audioPost.twoPassLoudnessEnabled`, défaut false), **single-input only** (no BGM) ;
+  dégradation `false` si mesure illisible/ffmpeg en échec. Config 4 sources + push.
+* **Tests** : `LoudnormAnalysisParserTest` (4 unit) + `AudioPostCommandTwoPassTest` (4
+  unit) + `AudioPostConfigTest` étendu + `capsule_audio_post.feature` étendu (2 scénarios
+  `@audio @post`, steps `CapsuleAudioLoudnessSteps`) + 1 fonctionnel.
+
+=== PRT-06 — Signature de rendu (économie d'encre par contenu)
+
+* **Pur** : `RenderSignature.of(engine, content, timeline)` → SHA-256 hex tronqué (16).
+* **Câblage** : `CapsuleVideoTask` écrit un sidecar `<video>.sig` après une capture ; la
+  **réutilisation** est opt-in (`capture.reuseCapturedVideoEnabled`, défaut false) et
+  n'a lieu que si la signature correspond **ET** que la vidéo décode (PRT-04). Config 4
+  sources + push.
+* **Tests** : `RenderSignatureTest` (5 unit) + `capsule_render_signature.feature` (3
+  scénarios `@capture @signature`, runner dédié 31e `cucumberTestRenderSignature`) +
+  `RenderSignatureFunctionalTest` (sidecar écrit + stable) + test merger.
+
+== Vérifications (Local = Build)
+
+* `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` **VERTS**.
+* `validatePlugins` **VERT** (nouvelles propriétés conformes).
+* 4 tâches Cucumber dédiées enregistrées : `cucumberTestVideoIntegrity`,
+  `cucumberTestSubtitlesCartons`, `cucumberTestRenderSignature` (+ les scénarios loudness
+  ajoutés à `capsule_audio_post.feature`, exécutés par `cucumberTestAudioPost` / l'agrégé).
+* Aucune collision de step (grep `@Given/@When/@Then/@And` sur `capsule.scenarios`).
+* Zéro secret, zéro Python. Aucun bump de version, aucune publication.
+
+== Fichiers (41)
+
+*Cœurs purs créés* : `validation/VideoIntegrityChecker.kt`,
+`validation/VideoIntegrityProbe.kt`, `SubtitleTextNormalizer.kt`, `SubtitleCartoner.kt`,
+`SubtitleTimingDistributor.kt`, `audio/LoudnormMeasurement.kt`,
+`audio/LoudnormAnalysisParser.kt`, `RenderSignature.kt`.
+
+*Câblage modifié* : `CapsuleVideoTask.kt` (generateSubtitles + audio post + reuse),
+`SubtitleTimingCalculator.kt`, `ValidateCapsuleVideoDurationTask.kt`,
+`audio/AudioPostCommand.kt`, `audio/AudioPostConfig.kt`, `audio/AudioPostProcessorImpl.kt`,
+`CapsuleConfig.kt`, `CapsuleModels.kt`, `CapsuleConfigMerger.kt`, `CapsulePlugin.kt`,
+`CapsuleManager.kt`, `build.gradle.kts`.
+
+*Tests créés* : `VideoIntegrityCheckerTest`, `VideoIntegrityProbeTest`,
+`SubtitleCartonsTest`, `audio/LoudnormAnalysisParserTest`,
+`audio/AudioPostCommandTwoPassTest`, `RenderSignatureTest`,
+`RenderSignatureFunctionalTest`, 3 features + 3 steps + 3 runners + `CapsuleAudioLoudnessSteps`.
+
+== Suite (EPIC CAP-QC)
+
+Restent : **PRT-01** (prononciation « dit/lu » + cache par contenu — intrusif : change le
+nom du fichier TTS), **PRT-02** (QC voix par ASR — EPIC à part), **PRT-05** (pré-vol
+contenu avant TTS), **PRT-07** (timeline déterministe), **PRT-10** (publication :
+chapitres YouTube texte, description, miniature).
+
+== Leçon
+
+Le portage « technique pure + câblage opt-in (défaut false) + tests » permet d'absorber
+quatre items d'un dépôt externe en une session sans changer le comportement par défaut
+(zéro régression) — la CI est la seule preuve, la compilation locale le seul garde-fou.

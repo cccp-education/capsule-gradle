@@ -1,7 +1,30 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-11
-:session: 165 correctif dérive dépendances + capsule-plugin 0.0.4
+:session: 166 CAP-QC (portage prepa → capsule : PRT-04, PRT-03, PRT-09, PRT-06)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 11 octobre 2026 (après session 166)
+
+.EPIC CAP-QC — 4 items portés (`prepa_electricite_complet` → capsule)
+|===
+| Élément | Changement | Tests
+
+| `validation/VideoIntegrityChecker.kt` + `VideoIntegrityProbe.kt` (créés) | PRT-04 — décision pure + sonde `ffmpeg -f null -` | +10 unit (`VideoIntegrityCheckerTest` 6, `VideoIntegrityProbeTest` 4)
+| `validation/ValidateCapsuleVideoDurationTask.kt` (modifié) | Gate intégrité opt-in `validation.integrityEnabled` | +3 fonctionnel (`ValidateCapsuleVideoDurationFunctionalTest`)
+| `capsule_video_integrity.feature` (créée) | BDD `@validation @integrity` (3 scénarios) | runner 29e `cucumberTestVideoIntegrity`
+| `SubtitleTextNormalizer.kt` / `SubtitleCartoner.kt` / `SubtitleTimingDistributor.kt` (créés) + `SubtitleTimingCalculator.calculateFromCartons` | PRT-03 — normalisation + cartons + répartition | +20 unit (`SubtitleCartonsTest`)
+| `CapsuleVideoTask.generateSubtitles` (modifié) | Opt-in `capture.subtitleCartonsEnabled`/`subtitleMaxChars` | +1 test merger
+| `capsule_subtitles_cartons.feature` (créée) | BDD `@subtitle @cartons` (4 scénarios) | runner 30e `cucumberTestSubtitlesCartons`
+| `audio/LoudnormMeasurement.kt` / `LoudnormAnalysisParser.kt` (créés) + `AudioPostCommand.buildTwoPass*` | PRT-09 — mesure + chaîne 2 passes | +8 unit (`LoudnormAnalysisParserTest` 4, `AudioPostCommandTwoPassTest` 4)
+| `audio/AudioPostConfig.kt` / `AudioPostProcessorImpl.kt` (modifiés) | Opt-in `audioPost.twoPassLoudnessEnabled` (single-input) | +1 `AudioPostConfigTest` + 1 FT `AudioPostFunctionalTest` + `capsule_audio_post.feature` étendu (2 scénarios, `CapsuleAudioLoudnessSteps`)
+| `RenderSignature.kt` (créé) | PRT-06 — fingerprint SHA-256 | +5 unit (`RenderSignatureTest`)
+| `CapsuleVideoTask` (modifié) | Sidecar `.sig` + réutilisation opt-in `capture.reuseCapturedVideoEnabled` | +1 FT `RenderSignatureFunctionalTest` + 1 test merger
+| `capsule_render_signature.feature` (créée) | BDD `@capture @signature` (3 scénarios) | runner 31e `cucumberTestRenderSignature`
+|===
+
+*Totaux S-166* : ~43 unit + 4 fonctionnel + 3 features dédiées + 1 feature étendue.
+`compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` + `validatePlugins`
+**VERTS**. Local = Build, Tests = CI (preuve = CI du push). Zéro bump, zéro publication.
 
 == Couverture — 11 octobre 2026 (après session 165)
 

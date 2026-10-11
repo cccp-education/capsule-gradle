@@ -32,5 +32,6 @@ data class AudioPostConfig(
     val bgmFile: String = "",
     val bgmLevel: Double = -18.0,
     val loudnessTarget: Double = -16.0,
-    val duckingEnabled: Boolean = false
+    val duckingEnabled: Boolean = false,
+    val twoPassLoudnessEnabled: Boolean = false
 )

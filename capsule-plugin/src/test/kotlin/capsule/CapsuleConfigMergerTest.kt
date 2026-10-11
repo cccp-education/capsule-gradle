@@ -495,6 +495,31 @@ class CapsuleConfigMergerTest {
     }
 
     @Test
+    fun `subtitle cartons default off with maxChars 42 and CLI overrides`() {
+        val projectDir = File(tempDir, "subtitle-cartons").also { it.mkdirs() }
+        val default = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
+        assertEquals(false, default.capture.subtitleCartonsEnabled, "subtitleCartonsEnabled should default to false")
+        assertEquals(42, default.capture.subtitleMaxChars, "subtitleMaxChars should default to 42")
+        val overridden = CapsuleConfigMerger.merge(
+            projectDir, CapsuleConfig(),
+            mapOf("capture.subtitleCartonsEnabled" to "true", "capture.subtitleMaxChars" to "30")
+        )
+        assertEquals(true, overridden.capture.subtitleCartonsEnabled, "CLI subtitleCartonsEnabled should be honored")
+        assertEquals(30, overridden.capture.subtitleMaxChars, "CLI subtitleMaxChars should be honored")
+    }
+
+    @Test
+    fun `reuse captured video defaults off and reads from CLI`() {
+        val projectDir = File(tempDir, "reuse-capture").also { it.mkdirs() }
+        val default = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
+        assertEquals(false, default.capture.reuseCapturedVideoEnabled, "reuseCapturedVideoEnabled should default to false")
+        val enabled = CapsuleConfigMerger.merge(
+            projectDir, CapsuleConfig(), mapOf("capture.reuseCapturedVideoEnabled" to "true")
+        )
+        assertEquals(true, enabled.capture.reuseCapturedVideoEnabled, "CLI reuseCapturedVideoEnabled should be honored")
+    }
+
+    @Test
     fun `merge CLI string integer param is parsed as Int`() {
         val projectDir = File(tempDir, "merge-cli-str-int").also { it.mkdirs() }
         val yamlConfig = CapsuleConfig()
@@ -1240,6 +1265,18 @@ class CapsuleConfigMergerTest {
         val config = CapsuleConfigMerger.loadFromEnvironment()
         assertEquals(false, config.validation.durationEnabled, "env default validation.durationEnabled should be false")
         assertEquals(2.0, config.validation.toleranceSecs, 0.001, "env default validation.toleranceSecs should be 2.0")
+        assertEquals(false, config.validation.integrityEnabled, "env default validation.integrityEnabled should be false")
+    }
+
+    @Test
+    fun `validation integrityEnabled is read from CLI and defaults to false`() {
+        val projectDir = File(tempDir, "validation-integrity").also { it.mkdirs() }
+        val default = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
+        assertEquals(false, default.validation.integrityEnabled, "integrityEnabled should default to false")
+        val overridden = CapsuleConfigMerger.merge(
+            projectDir, CapsuleConfig(), mapOf("validation.integrityEnabled" to "true")
+        )
+        assertEquals(true, overridden.validation.integrityEnabled, "CLI integrityEnabled=true should be honored")
     }
 
     // ─── AudioPostConfig (CAP-AUDIO US-1) ─────────────────────────

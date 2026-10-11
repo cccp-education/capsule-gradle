@@ -1,46 +1,62 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 166
+:session: 167
 :borough: Détroit
-:session_precedente: 165 — correctif dérive dépendances + capsule-plugin 0.0.4
+:session_precedente: 166 — CAP-QC : portage prepa → capsule (PRT-04, PRT-03, PRT-09, PRT-06)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-165 — correctif dérive + 0.0.4
+=== S-166 — CAP-QC (portage utilitaire `prepa` → capsule), 4 items livrés
 
-- Le catalogue **interne** du plugin épinglait `workspace-bom 0.0.43` (POM 0.0.3
-  importait une BOM périmée). Aligné sur BOM `0.0.79` (+ codebase 0.0.17, slider
-  0.0.19, koog 1.3.0, jackson 2.21.2, langchain4j 1.22). Bump **0.0.4**.
-- Central bundle `59e4597a` (repo1 200) ; POM 0.0.4 importe `workspace-bom:0.0.79`.
-- Consommateurs : racine `capsule = 0.0.4` ; MEMPHIS BOM/catalog **0.0.80** (bundle
-  `14bccf1d`, capsule-plugin 0.0.4).
-- Rapport `.agents/sessions/165-fix-dep-drift-0.0.4.adoc`.
+- EPIC **CAP-QC** ouvert : portage de l'**utilitaire hors rendu** de
+  `prepa_electricite_complet` (`lion92`), jamais le contenu ni un moteur de rendu (PRT-11
+  CADUQUE). Revue source : `foundry/private/prepa_electricite_complet/code_review.adoc`
+  (`:revision: c`).
+- **PRT-04** intégrité vidéo par **décodage** — `VideoIntegrityChecker` +
+  `VideoIntegrityProbe` ; gate **opt-in** `validation.integrityEnabled` dans
+  `validateCapsuleVideoDuration`.
+- **PRT-03** sous-titres par **beat/cartons** — `SubtitleTextNormalizer` +
+  `SubtitleCartoner` + `SubtitleTimingDistributor` + `SubtitleTimingCalculator.calculateFromCartons` ;
+  **opt-in** `capture.subtitleCartonsEnabled` / `capture.subtitleMaxChars`.
+- **PRT-09** loudness **2 passes** — `LoudnormMeasurement` + `LoudnormAnalysisParser` +
+  `AudioPostCommand.buildTwoPass*` ; **opt-in** `audioPost.twoPassLoudnessEnabled`
+  (single-input, no BGM).
+- **PRT-06** **signature de rendu** — `RenderSignature` ; sidecar `<video>.sig` ;
+  **réutilisation opt-in** `capture.reuseCapturedVideoEnabled` (signature identique **ET**
+  décode OK, PRT-04).
+- Baby-step DDD/TDD/BDD (unit → fonctionnel → cucumber). Local = Build, Tests = CI.
+  Rapport `.agents/sessions/166-cap-qc-prt-04-03-09-06.adoc`.
 
-=== S-164 — publication 0.0.3. S-163 — warn Manim + optim CI.
+== Mission Session 167 — CAP-QC (suite)
 
-== Mission Session 166
-
-**Backlog actif vidé.** Seul candidat : **extraction N0 résilience transverse**
-(CADUQUE, S-162 ; réouverture = module utilitaire Gradle partagé cross-borough,
-hors périmètre capsule). Sinon : tout nouveau besoin du backlog racine.
+1. **PRT-05 — pré-vol contenu avant dépense** (léger, zéro outil externe) : porte
+   structurelle `capsule.qc.ContentPreflight` (pur) appelée **avant** la synthèse TTS
+   (notes vides/dupliquées/trop longues, formes interdites). `StrictModeGuard` décide
+   échec/avertissement.
+2. **PRT-10 — publication** : chapitres **YouTube texte** (`MM:SS Titre`) depuis le
+   domaine `chapters` (JSON aujourd'hui) + `DescriptionBuilder` (garde chevrons `<`/`>`)
+   + `ThumbnailPlanner`. Objets purs + tâche.
+3. **PRT-01 — prononciation « dit / lu » + cache par contenu** (intrusif) : lexique
+   phonétique appliqué à la voix seule, cache indexé sur le **texte dit** → nom de
+   fichier `slide-NN-<key>.mp3`. Touche `TtsManager`/`CapsuleBuildTask` + tests. En fin de
+   vague, avec soin.
+4. **PRT-02 — QC voix par ASR** : EPIC séparé **`CAP-QC-VOICE`** (port `SpeechRecognizer`,
+   Whisper) — à cadrer vu l'effort.
+5. **PRT-07 — timeline déterministe** : domaine pur `capsule.timeline` (frames entières,
+   placement échantillon-exact, avance image/voix) — touche la capture. EPIC.
 
 == Points d'attention
 
-* **Local = Build, Tests = CI**. Publication = méthode nmcp (AGENTS racine).
-* Le catalogue **interne** du plugin doit rester aligné sur le catalogue workspace
-  (BOM) — vérifier au fil des bumps MEMPHIS.
-* **English only** (`OssVocabularyGuardTest`). **Zéro Python**. **Zéro secret**.
-* Baby-step DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
+* **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
+* Nouvelle option → `Config` + extension + `CapsuleConventions` + merger (4 sources :
+  DSL/CLI/ENV/gradle.properties) + `pushConfigIntoExtension`, **défaut false** (backward
+  compat, zéro régression).
+* English only (`OssVocabularyGuardTest`) ; zéro Python ; zéro secret ; baby-step
+  DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
+* La CI agrégée (`cucumberTest`, S-163) exécute automatiquement toute nouvelle feature.
 
 == Rappels
 
-* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version **0.0.4** (Central).
-* CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **6/6** ; CAP-VIRAL-E2E **3/3** ;
-  LLM-RESILIENCE **1/1**.
-
-
-
-
-
-
-
+* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.4** (Central).
+* CAP-QC : PRT-04 ✅ · PRT-03 ✅ · PRT-09 ✅ · PRT-06 ✅ (S-166) ; PRT-01/02/05/07/10 à faire.
+* Le portage ne touche **jamais** le contenu du cours (œuvre dérivée) — techniques seules.

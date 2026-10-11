@@ -2,6 +2,7 @@ package capsule.validation
 
 import capsule.MediaProbeUtil
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
@@ -55,20 +56,52 @@ abstract class ValidateCapsuleVideoDurationTask : DefaultTask() {
     @get:Input
     abstract val toleranceSecs: Property<Double>
 
-    /** Master switch — when false, the task is a no-op. */
+    /** Master switch for the duration check — when false, that check is skipped. */
     @get:Input
     abstract val durationEnabled: Property<Boolean>
 
+    /**
+     * PRT-04 — when true, the master media must fully DECODE
+     * (`ffmpeg -f null -`), not merely exist with a plausible duration.
+     * Defaults to false (opt-in, backward compat).
+     */
+    @get:Input
+    abstract val integrityEnabled: Property<Boolean>
+
+    /** ffmpeg executable used by the integrity decode probe. */
+    @get:Input
+    abstract val ffmpegPath: Property<String>
+
     @TaskAction
     fun run() {
-        if (!durationEnabled.get()) {
-            logger.lifecycle("CAPSULE VALIDATION → skipped (durationEnabled=false)")
+        val integrity = integrityEnabled.getOrElse(false)
+        val duration = durationEnabled.getOrElse(false)
+
+        if (!integrity && !duration) {
+            logger.lifecycle("CAPSULE VALIDATION → skipped (durationEnabled=false, integrityEnabled=false)")
             return
         }
 
         val video = videoFile.asFile.get()
         if (!video.exists()) {
             logger.warn("CAPSULE VALIDATION → video file not found: {}. Run 'generateCapsuleVideo' first.", video.absolutePath)
+            return
+        }
+
+        // PRT-04 — decode-validity gate: a broken container keeps a valid
+        // duration, so the duration check alone cannot see it.
+        if (integrity) {
+            when (val result = VideoIntegrityProbe.probe(video, ffmpegPath.getOrElse("ffmpeg"))) {
+                is IntegrityResult.Clean ->
+                    logger.lifecycle("CAPSULE INTEGRITY → OK ({})", video.name)
+                is IntegrityResult.Corrupt -> {
+                    logger.error("CAPSULE INTEGRITY → FAIL ({}): {}", video.name, result.stderrTail)
+                    throw GradleException("Video integrity check failed for '${video.name}': ${result.stderrTail}")
+                }
+            }
+        }
+
+        if (!duration) {
             return
         }
 

@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-11 (S-165 — **correctif dérive dépendances + `capsule-plugin 0.0.4`** : le catalogue interne épinglait `workspace-bom 0.0.43` → aligné `0.0.79` (+ codebase 0.0.17, slider 0.0.19, koog 1.3.0, jackson 2.21.2, langchain4j 1.22). POM 0.0.4 importe `workspace-bom:0.0.79` ; Central bundle `59e4597a` ; consommateurs racine (`0.0.4`) + MEMPHIS BOM **0.0.80** (bundle `14bccf1d`). Précédent : S-164 publication 0.0.3.)
- _Derniere session terminee_ : 165.
- _Prochaine session_ : 166 — backlog actif vidé. Le seul candidat restant est l'**extraction N0 résilience transverse** (CADUQUE ; réouverture = module utilitaire cross-borough).
- _Session en cours_ : — (S-165 terminée).
+ _Derniere mise a jour_ : 2026-10-11 (S-166 — **EPIC CAP-QC** : portage utilitaire `prepa_electricite_complet` → capsule. 4 items livrés : **PRT-04** intégrité vidéo par décodage (`VideoIntegrityChecker`/`VideoIntegrityProbe`, gate opt-in `validation.integrityEnabled`), **PRT-03** sous-titres par beat/cartons (`SubtitleTextNormalizer`/`SubtitleCartoner`/`SubtitleTimingDistributor`/`calculateFromCartons`, opt-in `capture.subtitleCartonsEnabled`), **PRT-09** loudness 2 passes (`LoudnormMeasurement`/`LoudnormAnalysisParser`/`AudioPostCommand.buildTwoPass*`, opt-in `audioPost.twoPassLoudnessEnabled`), **PRT-06** signature de rendu (`RenderSignature` + sidecar `.sig` + réutilisation opt-in `capture.reuseCapturedVideoEnabled`). Baby-step DDD/TDD/BDD unit/fonctionnel/cucumber ; 4 runners dédiés (`cucumberTestVideoIntegrity`, `cucumberTestSubtitlesCartons`, `cucumberTestRenderSignature` + scénarios loudness). Local = Build, Tests = CI. Zéro bump, zéro publication. Précédent : S-165 correctif dérive dépendances + `capsule-plugin 0.0.4`.)
+ _Derniere session terminee_ : 166.
+ _Prochaine session_ : 167 — CAP-QC (suite) : PRT-05 (pré-vol contenu), PRT-10 (publication : chapitres YouTube texte, description, miniature), PRT-01 (dit/lu + cache contenu), PRT-02 (QC voix ASR — EPIC séparé), PRT-07 (timeline).
+ _Session en cours_ : — (S-166 terminée).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -22,11 +22,13 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (155-165)
+== 10 dernières sessions (156-166)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 166 | 2026-10-11 | feat+test | **EPIC CAP-QC — portage `prepa` → capsule (4 items)**. **PRT-04** intégrité vidéo par décodage (`VideoIntegrityChecker` pur + `VideoIntegrityProbe` `ffmpeg -f null -` ; gate opt-in `validation.integrityEnabled` dans `validateCapsuleVideoDuration`) — 10 unit + 3 FT + `capsule_video_integrity.feature` (3 `@integrity`, runner 29e). **PRT-03** sous-titres beat/cartons (`SubtitleTextNormalizer`/`SubtitleCartoner`/`SubtitleTimingDistributor`/`SubtitleTimingCalculator.calculateFromCartons` ; opt-in `capture.subtitleCartonsEnabled`/`subtitleMaxChars`) — ~20 unit + `capsule_subtitles_cartons.feature` (4 `@cartons`, runner 30e). **PRT-09** loudness 2 passes (`LoudnormMeasurement`/`LoudnormAnalysisParser`/`AudioPostCommand.buildTwoPass*` ; opt-in `audioPost.twoPassLoudnessEnabled`, single-input) — 8 unit + `capsule_audio_post.feature` étendu + 1 FT. **PRT-06** signature de rendu (`RenderSignature` + sidecar `.sig` + réutilisation opt-in `capture.reuseCapturedVideoEnabled`, signature + décode OK) — 5 unit + `capsule_render_signature.feature` (3 `@signature`, runner 31e) + 1 FT. Config 4 sources + push pour chaque option (défaut false). Compiles VERT, `validatePlugins` VERT. Zéro bump, zéro publication. Rapport `.agents/sessions/166-cap-qc-prt-04-03-09-06.adoc`. | 9/10
 
 | 165 | 2026-10-11 | fix+release | **Correctif dérive dépendances + `capsule-plugin 0.0.4`**. Le POM 0.0.3 importait `workspace-bom:0.0.43` (catalogue interne du plugin périmé, idem 0.0.2). Alignement sur la BOM courante (valeurs catalogue workspace MEMPHIS 0.0.79) : `workspace-bom 0.0.43 → 0.0.79`, `codebase(+gradle-plugin) 0.0.14 → 0.0.17`, `slider 0.0.18 → 0.0.19`, `koog 1.0.0 → 1.3.0`, `jackson 2.18.3 → 2.21.2`, `langchain4j → 1.22.0` (BOM). Bump `0.0.3 → 0.0.4`. Compiles VERT. **Publication Central** bundle `59e4597a-bbaf-4027-88fa-aa40be5e564a` (AUTOMATIC), propagation repo1 200 ; POM 0.0.4 importe `workspace-bom:0.0.79` (vérifié). **Consommateurs** : racine `capsule = 0.0.4` ; MEMPHIS BOM/catalog **0.0.80** (bundle `14bccf1d`, capsule-plugin 0.0.4, repo1 200 ×2). Rapport `.agents/sessions/165-fix-dep-drift-0.0.4.adoc`. | 9/10
 

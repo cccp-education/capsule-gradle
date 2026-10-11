@@ -146,4 +146,34 @@ class AudioPostFunctionalTest {
             "Expected audio post step log when duckingEnabled=true. Output: ${result.output.take(800)}"
         )
     }
+
+    @Test
+    fun `audio post two-pass enabled with NoOp processor degrades and keeps original WebM`() {
+        setupBuild("""
+            capsule {
+                ttsEngine = "noop"
+                outputDir = "capsules"
+                audioPostTwoPassLoudnessEnabled = true
+                ffmpegExecutablePath = "noop"
+            }
+        """.trimIndent())
+        writeScriptAndDeck()
+
+        val result = GradleRunner.create()
+            .forwardOutput()
+            .withPluginClasspath()
+            .withArguments("generateCapsuleVideo")
+            .withProjectDir(projectDir)
+            .build()
+
+        val capFile = projectDir.resolve("build/capsules/audiopost-test.webm")
+        assertTrue(
+            capFile.exists(),
+            "Video must be produced (degraded — original kept) when two-pass audio post degrades"
+        )
+        assertTrue(
+            result.output.contains("Audio post:"),
+            "Expected audio post step log when twoPassLoudnessEnabled=true. Output: ${result.output.take(800)}"
+        )
+    }
 }

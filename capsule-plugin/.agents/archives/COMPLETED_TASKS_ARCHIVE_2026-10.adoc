@@ -1,6 +1,22 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-11
 
+== Session 166 — EPIC CAP-QC : portage prepa → capsule (PRT-04, PRT-03, PRT-09, PRT-06) ✅
+
+* **PRT-04** intégrité vidéo par décodage : `VideoIntegrityChecker` (pur) + `VideoIntegrityProbe`
+  (`ffmpeg -v error -i <f> -f null -`) ; gate opt-in `validation.integrityEnabled` dans
+  `validateCapsuleVideoDuration`. 10 unit + 3 FT + `@integrity` (runner 29e).
+* **PRT-03** sous-titres par beat/cartons : `SubtitleTextNormalizer` + `SubtitleCartoner` +
+  `SubtitleTimingDistributor` + `SubtitleTimingCalculator.calculateFromCartons` ; opt-in
+  `capture.subtitleCartonsEnabled`/`subtitleMaxChars`. ~20 unit + `@cartons` (runner 30e).
+* **PRT-09** loudness 2 passes : `LoudnormMeasurement` + `LoudnormAnalysisParser` +
+  `AudioPostCommand.buildTwoPass*` ; opt-in `audioPost.twoPassLoudnessEnabled`. 8 unit + 1 FT +
+  `capsule_audio_post.feature` étendu.
+* **PRT-06** signature de rendu : `RenderSignature` + sidecar `.sig` + réutilisation opt-in
+  `capture.reuseCapturedVideoEnabled`. 5 unit + 1 FT + `@signature` (runner 31e).
+* Config 4 sources + push pour chaque option (défaut false). Compiles + `validatePlugins` VERTS.
+  Zéro bump, zéro publication. Rapport `.agents/sessions/166-cap-qc-prt-04-03-09-06.adoc`.
+
 == Session 165 — Correctif dérive dépendances + capsule-plugin 0.0.4 ✅
 
 * Catalogue interne du plugin aligné sur la BOM courante (`workspace-bom` 0.0.43 →

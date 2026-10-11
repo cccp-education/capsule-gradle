@@ -67,6 +67,9 @@ data class CaptureConfig(
     val subtitleBurnInFontColor: String = "&H00FFFFFF",
     val subtitleBurnInOutlineColor: String = "&H00000000",
     val subtitleBurnInPosition: String = "bottom",
+    val subtitleCartonsEnabled: Boolean = false,
+    val subtitleMaxChars: Int = 42,
+    val reuseCapturedVideoEnabled: Boolean = false,
     val strategy: CaptureStrategy = CaptureStrategy.PLAYWRIGHT
 )
 
@@ -241,10 +244,14 @@ data class ManimConfig(
  * @param toleranceSecs    the tolerance threshold in seconds
  *        (default `2.0` — realistic for ffmpeg mux drift and
  *        Playwright capture latency).
+ * @param integrityEnabled `true` to enable decode-validity validation: the
+ *        final media must fully DECODE (PRT-04 — a broken container keeps a
+ *        plausible duration yet cannot be reused). Default `false`.
  */
 data class ValidationConfig(
     val durationEnabled: Boolean = false,
-    val toleranceSecs: Double = 2.0
+    val toleranceSecs: Double = 2.0,
+    val integrityEnabled: Boolean = false
 )
 
 /**

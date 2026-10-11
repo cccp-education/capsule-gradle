@@ -127,6 +127,14 @@ class CapsuleManager(private val project: Project) {
                     ?: project.findProperty("capsule.validation.toleranceSecs")?.toString()?.toDoubleOrNull()
                     ?: 2.0
             })
+            task.integrityEnabled.set(project.provider {
+                capsuleExt?.integrityValidationEnabled?.get()
+                    ?: project.findProperty("capsule.validation.integrityEnabled")?.toString()?.toBoolean()
+                    ?: false
+            })
+            task.ffmpegPath.set(project.provider {
+                capsuleExt?.ffmpegExecutablePath?.get() ?: "ffmpeg"
+            })
             task.videoFile.convention(
                 project.layout.buildDirectory.file(
                     project.provider {

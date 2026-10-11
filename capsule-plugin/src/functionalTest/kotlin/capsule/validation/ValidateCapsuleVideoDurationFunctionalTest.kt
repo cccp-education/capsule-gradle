@@ -85,4 +85,51 @@ class ValidateCapsuleVideoDurationFunctionalTest {
             "Expected graceful skip when video file is missing, got: ${result.output}"
         )
     }
+
+    @Test
+    fun `integrity enabled with a corrupt video fails the build`() {
+        setupBuild("""
+            capsule {
+                integrityValidationEnabled = true
+                outputDir = "capsules"
+            }
+        """.trimIndent())
+        val capDir = projectDir.resolve("build/capsules").also { it.mkdirs() }
+        capDir.resolve("demo.webm").writeText("not-a-real-media-container")
+
+        val result = GradleRunner.create()
+            .forwardOutput()
+            .withPluginClasspath()
+            .withArguments("validateCapsuleVideoDuration")
+            .withProjectDir(projectDir)
+            .buildAndFail()
+
+        assertTrue(
+            result.output.contains("Video integrity check failed") || result.output.contains("CAPSULE INTEGRITY"),
+            "Expected an integrity failure, got: ${result.output}"
+        )
+    }
+
+    @Test
+    fun `integrity disabled by default is a no-op skip`() {
+        setupBuild("""
+            capsule {
+                outputDir = "capsules"
+            }
+        """.trimIndent())
+        val capDir = projectDir.resolve("build/capsules").also { it.mkdirs() }
+        capDir.resolve("demo.webm").writeText("not-a-real-media-container")
+
+        val result = GradleRunner.create()
+            .forwardOutput()
+            .withPluginClasspath()
+            .withArguments("validateCapsuleVideoDuration")
+            .withProjectDir(projectDir)
+            .build()
+
+        assertTrue(
+            result.output.contains("skipped") || result.output.contains("integrityEnabled=false"),
+            "Expected skip log when integrity is disabled by default, got: ${result.output}"
+        )
+    }
 }

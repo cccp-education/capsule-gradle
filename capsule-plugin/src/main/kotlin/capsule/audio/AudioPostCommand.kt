@@ -104,4 +104,77 @@ object AudioPostCommand {
 
         return argv
     }
+
+    // ─── PRT-09 — two-pass loudness (exact) ────────────────────────────────
+
+    /**
+     * First-pass `loudnorm` argv that only MEASURES (PRT-09): it decodes the
+     * input, writes the JSON metrics to the (merged) output and produces no file
+     * (`-f null -`). The five numbers are re-injected on the second pass via
+     * [buildTwoPassLoudnorm].
+     *
+     * Ported from `prepa_electricite_complet/assemble.py`, which measures once
+     * then normalises with the measured values plus a make-up gain and a limiter.
+     */
+    fun loudnormMeasureArgs(videoFile: File, config: AudioPostConfig, ffmpegPath: String): List<String> =
+        listOf(
+            ffmpegPath, "-hide_banner", "-i", videoFile.absolutePath,
+            "-af", "loudnorm=I=${config.loudnessTarget}:TP=$TWO_PASS_TP:LRA=11:print_format=json",
+            "-f", "null", "-",
+        )
+
+    /**
+     * Second-pass filter chain built from the [measured] values (PRT-09):
+     * loudnorm in `linear` mode using the measured metrics, then a fixed make-up
+     * gain, then a limiter placed BEFORE the encoder (the peak rises again after
+     * loudnorm), then a 48 kHz resample.
+     *
+     * @param gainDb make-up gain applied after loudnorm; loudnorm `linear`
+     *        caps below the target, so a fixed gain finishes the rise.
+     * @param limit  the limiter ceiling (linear, 0..1); `0.63` ≈ -4 dBFS.
+     */
+    fun buildTwoPassLoudnorm(
+        config: AudioPostConfig,
+        measured: LoudnormMeasurement,
+        gainDb: Double = DEFAULT_MAKEUP_GAIN_DB,
+        limit: Double = DEFAULT_LIMITER_LIMIT,
+    ): String =
+        "loudnorm=I=${config.loudnessTarget}:TP=$TWO_PASS_TP:LRA=11:" +
+            "measured_I=${fmt(measured.inputI)}:measured_TP=${fmt(measured.inputTp)}:" +
+            "measured_LRA=${fmt(measured.inputLra)}:measured_thresh=${fmt(measured.inputThresh)}:" +
+            "offset=${fmt(measured.targetOffset)}:linear=true," +
+            "volume=${fmt(gainDb)}dB,alimiter=limit=${fmt(limit)}:level=disabled,aresample=48000"
+
+    /**
+     * Full argv for the two-pass path (PRT-09).
+     *
+     * Only the **single-input** (no BGM) case is supported here: with BGM the mix
+     * must be measured first, which the existing single-pass complex graph
+     * ([buildArgv]) already covers. The caller must therefore only route to this
+     * path when BGM is disabled.
+     */
+    fun buildTwoPassArgv(
+        videoFile: File,
+        outputFile: File,
+        config: AudioPostConfig,
+        measured: LoudnormMeasurement,
+        ffmpegPath: String,
+    ): List<String> = listOf(
+        ffmpegPath, "-y", "-i", videoFile.absolutePath,
+        "-af", buildTwoPassLoudnorm(config, measured),
+        "-c:v", "copy", "-c:a", "libvorbis", "-shortest",
+        outputFile.absolutePath,
+    )
+
+    private fun fmt(value: Double): String =
+        String.format(java.util.Locale.US, "%.2f", value)
+
+    /** True-peak target used by the two-pass chain (reference value). */
+    const val TWO_PASS_TP: String = "-2"
+
+    /** Make-up gain applied after loudnorm (reference value, dB). */
+    const val DEFAULT_MAKEUP_GAIN_DB: Double = 1.7
+
+    /** Limiter ceiling before the encoder (reference value, linear). */
+    const val DEFAULT_LIMITER_LIMIT: Double = 0.63
 }

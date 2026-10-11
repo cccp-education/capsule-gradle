@@ -120,6 +120,35 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleDurationValidationCucumberRunner",
             timeoutMinutes = 30,
         ),
+        // PRT-04 — video integrity by decode (a broken container keeps a valid
+        // duration). Dedicated runner so it never runs the full Playwright suite
+        // (pattern S-082). Uses the real ffmpeg decode probe on a fake (corrupt)
+        // file — the failure path is robust whether ffmpeg is present or absent.
+        CucumberTaskSpec(
+            name = "cucumberTestVideoIntegrity",
+            features = listOf("src/test/features/capsule_video_integrity.feature"),
+            tags = listOf("@validation", "@integrity"),
+            runnerClass = "capsule.scenarios.CapsuleVideoIntegrityCucumberRunner",
+            timeoutMinutes = 30,
+        ),
+        // PRT-03 — subtitle cartons (one readable cue per carton + proportional
+        // timing). Pure-domain runner — no Playwright/FFmpeg (pattern S-082).
+        CucumberTaskSpec(
+            name = "cucumberTestSubtitlesCartons",
+            features = listOf("src/test/features/capsule_subtitles_cartons.feature"),
+            tags = listOf("@subtitle", "@cartons"),
+            runnerClass = "capsule.scenarios.CapsuleSubtitlesCartonsCucumberRunner",
+            timeoutMinutes = 30,
+        ),
+        // PRT-06 — render signature (economy-of-ink reuse fingerprint).
+        // Pure-domain runner — no Playwright/FFmpeg (pattern S-082).
+        CucumberTaskSpec(
+            name = "cucumberTestRenderSignature",
+            features = listOf("src/test/features/capsule_render_signature.feature"),
+            tags = listOf("@capture", "@signature"),
+            runnerClass = "capsule.scenarios.CapsuleRenderSignatureCucumberRunner",
+            timeoutMinutes = 30,
+        ),
         // CAP-AUDIO US-4 — audio post-production (BGM + loudness EBU R128 + ducking).
         // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
         // Uses a NoOp processor (no real FFmpeg); validates applyAudioPostIfEnabled

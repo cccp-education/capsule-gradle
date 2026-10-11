@@ -141,6 +141,26 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val subtitleBurnInPosition: Property<String> = objects.property(String::class.java)
         .convention("bottom")
 
+    /**
+     * PRT-03 — when true, the speaker note is split into readable "cartons"
+     * (cues) instead of one cue per slide, with the slide duration distributed
+     * across them proportionally. Defaults to false (backward compat).
+     */
+    val subtitleCartonsEnabled: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
+    /** PRT-03 — maximum characters per subtitle carton. Defaults to 42. */
+    val subtitleMaxChars: Property<Int> = objects.property(Int::class.java)
+        .convention(42)
+
+    /**
+     * PRT-06 — `true` to reuse a previously captured deck video when its render
+     * signature is unchanged AND the file still decodes. Defaults to false
+     * (opt-in — a re-capture always happens unless explicitly enabled).
+     */
+    val reuseCapturedVideoEnabled: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
     /** CAP-CR3-3 — capture strategy: PLAYWRIGHT (real-time recording) or SCREENSHOT (PNG+FFmpeg per slide). Defaults to PLAYWRIGHT. */
     val captureStrategy: Property<CaptureStrategy> = objects.property(CaptureStrategy::class.java)
         .convention(CaptureStrategy.PLAYWRIGHT)
@@ -183,6 +203,14 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val durationValidationToleranceSecs: Property<Double> = objects.property(Double::class.java)
         .convention(2.0)
 
+    /**
+     * PRT-04 — decode-validity validation: a media file must actually DECODE, not
+     * merely exist with a plausible duration. Defaults to false (opt-in, backward
+     * compat). See `.agents` / the prepa code-review PRT-04.
+     */
+    val integrityValidationEnabled: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
     /** CAP-AUDIO — `true` to mix background music under the voice track. Defaults to false (opt-in). */
     val audioPostBgmEnabled: Property<Boolean> = objects.property(Boolean::class.java)
         .convention(false)
@@ -201,6 +229,14 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
 
     /** CAP-AUDIO — `true` to lower BGM when voice speaks (sidechain compression). Defaults to false. */
     val audioPostDuckingEnabled: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
+    /**
+     * PRT-09 — `true` to normalise loudness in TWO passes (measure then apply,
+     * exact) instead of a single approximate pass. Single-input (no BGM) only.
+     * Defaults to false (backward compat).
+     */
+    val audioPostTwoPassLoudnessEnabled: Property<Boolean> = objects.property(Boolean::class.java)
         .convention(false)
 
     /** CAP-TRANSCRIPT — `true` to generate an AsciiDoc transcript article from the capsule. Defaults to false (opt-in). */
@@ -301,6 +337,9 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         subtitleBurnInFontColor = "&H00FFFFFF",
         subtitleBurnInOutlineColor = "&H00000000",
         subtitleBurnInPosition = "bottom",
+        subtitleCartonsEnabled = false,
+        subtitleMaxChars = 42,
+        reuseCapturedVideoEnabled = false,
         captureStrategy = CaptureStrategy.PLAYWRIGHT,
         outputFormat = OutputFormat.WEBM,
         ffmpegExecutablePath = "ffmpeg",
@@ -314,11 +353,13 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         manimParallelRenderThreads = 4,
         durationValidationEnabled = false,
         durationValidationToleranceSecs = 2.0,
+        integrityValidationEnabled = false,
         audioPostBgmEnabled = false,
         audioPostBgmFile = "",
         audioPostBgmLevel = -18.0,
         audioPostLoudnessTarget = -16.0,
         audioPostDuckingEnabled = false,
+        audioPostTwoPassLoudnessEnabled = false,
         transcriptEnabled = false,
         transcriptStrategy = TranscriptStrategy.TEMPLATE,
         remotionProjectDir = "capsule/remotion",
@@ -368,6 +409,9 @@ data class CapsuleConventions(
     val subtitleBurnInFontColor: String,
     val subtitleBurnInOutlineColor: String,
     val subtitleBurnInPosition: String,
+    val subtitleCartonsEnabled: Boolean,
+    val subtitleMaxChars: Int,
+    val reuseCapturedVideoEnabled: Boolean,
     val captureStrategy: CaptureStrategy,
     val outputFormat: OutputFormat,
     val ffmpegExecutablePath: String,
@@ -381,11 +425,13 @@ data class CapsuleConventions(
     val manimParallelRenderThreads: Int,
     val durationValidationEnabled: Boolean,
     val durationValidationToleranceSecs: Double,
+    val integrityValidationEnabled: Boolean,
     val audioPostBgmEnabled: Boolean,
     val audioPostBgmFile: String,
     val audioPostBgmLevel: Double,
     val audioPostLoudnessTarget: Double,
     val audioPostDuckingEnabled: Boolean,
+    val audioPostTwoPassLoudnessEnabled: Boolean,
     val transcriptEnabled: Boolean,
     val transcriptStrategy: TranscriptStrategy,
     val remotionProjectDir: String,

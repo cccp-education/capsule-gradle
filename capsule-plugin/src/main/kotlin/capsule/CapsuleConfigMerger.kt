@@ -120,6 +120,9 @@ object CapsuleConfigMerger {
                 subtitleBurnInFontColor = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_FONT_COLOR"] ?: "&H00FFFFFF",
                 subtitleBurnInOutlineColor = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_OUTLINE_COLOR"] ?: "&H00000000",
                 subtitleBurnInPosition = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_POSITION"] ?: "bottom",
+                subtitleCartonsEnabled = env["CAPSULE_CAPTURE_SUBTITLE_CARTONS_ENABLED"]?.toBoolean() ?: false,
+                subtitleMaxChars = env["CAPSULE_CAPTURE_SUBTITLE_MAX_CHARS"]?.toIntOrNull() ?: 42,
+                reuseCapturedVideoEnabled = env["CAPSULE_CAPTURE_REUSE_CAPTURED_VIDEO_ENABLED"]?.toBoolean() ?: false,
                 strategy = CaptureStrategy.fromString(env["CAPSULE_CAPTURE_STRATEGY"])
             ),
             distrib = DistribConfig(
@@ -151,14 +154,16 @@ object CapsuleConfigMerger {
             ),
             validation = ValidationConfig(
                 durationEnabled = env["CAPSULE_VALIDATION_DURATION_ENABLED"]?.toBoolean() ?: false,
-                toleranceSecs = env["CAPSULE_VALIDATION_TOLERANCE_SECS"]?.toDoubleOrNull() ?: 2.0
+                toleranceSecs = env["CAPSULE_VALIDATION_TOLERANCE_SECS"]?.toDoubleOrNull() ?: 2.0,
+                integrityEnabled = env["CAPSULE_VALIDATION_INTEGRITY_ENABLED"]?.toBoolean() ?: false
             ),
             audioPost = AudioPostConfig(
                 bgmEnabled = env["CAPSULE_AUDIO_POST_BGM_ENABLED"]?.toBoolean() ?: false,
                 bgmFile = env["CAPSULE_AUDIO_POST_BGM_FILE"] ?: "",
                 bgmLevel = env["CAPSULE_AUDIO_POST_BGM_LEVEL"]?.toDoubleOrNull() ?: -18.0,
                 loudnessTarget = env["CAPSULE_AUDIO_POST_LOUDNESS_TARGET"]?.toDoubleOrNull() ?: -16.0,
-                duckingEnabled = env["CAPSULE_AUDIO_POST_DUCKING_ENABLED"]?.toBoolean() ?: false
+                duckingEnabled = env["CAPSULE_AUDIO_POST_DUCKING_ENABLED"]?.toBoolean() ?: false,
+                twoPassLoudnessEnabled = env["CAPSULE_AUDIO_POST_TWO_PASS_LOUDNESS_ENABLED"]?.toBoolean() ?: false
             ),
             transcript = TranscriptConfig(
                 enabled = env["CAPSULE_TRANSCRIPT_ENABLED"]?.toBoolean() ?: false,
@@ -228,6 +233,9 @@ object CapsuleConfigMerger {
                 subtitleBurnInFontColor = props["capsule.capture.subtitleBurnInFontColor"] ?: "&H00FFFFFF",
                 subtitleBurnInOutlineColor = props["capsule.capture.subtitleBurnInOutlineColor"] ?: "&H00000000",
                 subtitleBurnInPosition = props["capsule.capture.subtitleBurnInPosition"] ?: "bottom",
+                subtitleCartonsEnabled = props["capsule.capture.subtitleCartonsEnabled"]?.toBoolean() ?: false,
+                subtitleMaxChars = props["capsule.capture.subtitleMaxChars"]?.toIntOrNull() ?: 42,
+                reuseCapturedVideoEnabled = props["capsule.capture.reuseCapturedVideoEnabled"]?.toBoolean() ?: false,
                 strategy = CaptureStrategy.fromString(props["capsule.capture.strategy"])
             ),
             distrib = DistribConfig(
@@ -259,14 +267,16 @@ object CapsuleConfigMerger {
             ),
             validation = ValidationConfig(
                 durationEnabled = props["capsule.validation.durationEnabled"]?.toBoolean() ?: false,
-                toleranceSecs = props["capsule.validation.toleranceSecs"]?.toDoubleOrNull() ?: 2.0
+                toleranceSecs = props["capsule.validation.toleranceSecs"]?.toDoubleOrNull() ?: 2.0,
+                integrityEnabled = props["capsule.validation.integrityEnabled"]?.toBoolean() ?: false
             ),
             audioPost = AudioPostConfig(
                 bgmEnabled = props["capsule.audioPost.bgmEnabled"]?.toBoolean() ?: false,
                 bgmFile = props["capsule.audioPost.bgmFile"] ?: "",
                 bgmLevel = props["capsule.audioPost.bgmLevel"]?.toDoubleOrNull() ?: -18.0,
                 loudnessTarget = props["capsule.audioPost.loudnessTarget"]?.toDoubleOrNull() ?: -16.0,
-                duckingEnabled = props["capsule.audioPost.duckingEnabled"]?.toBoolean() ?: false
+                duckingEnabled = props["capsule.audioPost.duckingEnabled"]?.toBoolean() ?: false,
+                twoPassLoudnessEnabled = props["capsule.audioPost.twoPassLoudnessEnabled"]?.toBoolean() ?: false
             ),
             transcript = TranscriptConfig(
                 enabled = props["capsule.transcript.enabled"]?.toBoolean() ?: false,
@@ -350,6 +360,9 @@ object CapsuleConfigMerger {
             subtitleBurnInFontColor = mergeStr(cli, "capture.subtitleBurnInFontColor", yaml?.subtitleBurnInFontColor, props.subtitleBurnInFontColor, env.subtitleBurnInFontColor),
             subtitleBurnInOutlineColor = mergeStr(cli, "capture.subtitleBurnInOutlineColor", yaml?.subtitleBurnInOutlineColor, props.subtitleBurnInOutlineColor, env.subtitleBurnInOutlineColor),
             subtitleBurnInPosition = mergeStr(cli, "capture.subtitleBurnInPosition", yaml?.subtitleBurnInPosition, props.subtitleBurnInPosition, env.subtitleBurnInPosition),
+            subtitleCartonsEnabled = mergeBoolean(cli, "capture.subtitleCartonsEnabled", yaml?.subtitleCartonsEnabled, props.subtitleCartonsEnabled),
+            subtitleMaxChars = mergeInt(cli, "capture.subtitleMaxChars", yaml?.subtitleMaxChars, props.subtitleMaxChars),
+            reuseCapturedVideoEnabled = mergeBoolean(cli, "capture.reuseCapturedVideoEnabled", yaml?.reuseCapturedVideoEnabled, props.reuseCapturedVideoEnabled),
             strategy = mergeCaptureStrategy(cli, "capture.strategy", yaml?.strategy, props.strategy)
         )
     }
@@ -391,7 +404,8 @@ object CapsuleConfigMerger {
     private fun mergeValidationConfig(env: ValidationConfig, props: ValidationConfig, yaml: ValidationConfig?, cli: Map<String, Any?>): ValidationConfig {
         return ValidationConfig(
             durationEnabled = mergeBoolean(cli, "validation.durationEnabled", yaml?.durationEnabled, props.durationEnabled),
-            toleranceSecs = mergeDouble(cli, "validation.toleranceSecs", yaml?.toleranceSecs, props.toleranceSecs)
+            toleranceSecs = mergeDouble(cli, "validation.toleranceSecs", yaml?.toleranceSecs, props.toleranceSecs),
+            integrityEnabled = mergeBoolean(cli, "validation.integrityEnabled", yaml?.integrityEnabled, props.integrityEnabled)
         )
     }
 
@@ -401,7 +415,8 @@ object CapsuleConfigMerger {
             bgmFile = mergeStr(cli, "audioPost.bgmFile", yaml?.bgmFile, props.bgmFile, env.bgmFile),
             bgmLevel = mergeDouble(cli, "audioPost.bgmLevel", yaml?.bgmLevel, props.bgmLevel),
             loudnessTarget = mergeDouble(cli, "audioPost.loudnessTarget", yaml?.loudnessTarget, props.loudnessTarget),
-            duckingEnabled = mergeBoolean(cli, "audioPost.duckingEnabled", yaml?.duckingEnabled, props.duckingEnabled)
+            duckingEnabled = mergeBoolean(cli, "audioPost.duckingEnabled", yaml?.duckingEnabled, props.duckingEnabled),
+            twoPassLoudnessEnabled = mergeBoolean(cli, "audioPost.twoPassLoudnessEnabled", yaml?.twoPassLoudnessEnabled, props.twoPassLoudnessEnabled)
         )
     }
 

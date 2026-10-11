@@ -23,6 +23,7 @@ class AudioPostConfigTest {
         assertEquals(-18.0, config.bgmLevel, 0.001, "bgmLevel should default to -18.0 dB")
         assertEquals(-16.0, config.loudnessTarget, 0.001, "loudnessTarget should default to -16.0 LUFS EBU R128")
         assertFalse(config.duckingEnabled, "duckingEnabled should default to false")
+        assertFalse(config.twoPassLoudnessEnabled, "twoPassLoudnessEnabled should default to false (single-pass backward compat)")
     }
 
     @Test

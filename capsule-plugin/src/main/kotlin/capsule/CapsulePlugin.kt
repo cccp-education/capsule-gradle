@@ -132,6 +132,9 @@ class CapsulePlugin : Plugin<Project> {
         if (ext.subtitleBurnInFontColor.get() == conventions.subtitleBurnInFontColor) ext.subtitleBurnInFontColor.set(config.capture.subtitleBurnInFontColor)
         if (ext.subtitleBurnInOutlineColor.get() == conventions.subtitleBurnInOutlineColor) ext.subtitleBurnInOutlineColor.set(config.capture.subtitleBurnInOutlineColor)
         if (ext.subtitleBurnInPosition.get() == conventions.subtitleBurnInPosition) ext.subtitleBurnInPosition.set(config.capture.subtitleBurnInPosition)
+        if (ext.subtitleCartonsEnabled.get() == conventions.subtitleCartonsEnabled) ext.subtitleCartonsEnabled.set(config.capture.subtitleCartonsEnabled)
+        if (ext.subtitleMaxChars.get() == conventions.subtitleMaxChars) ext.subtitleMaxChars.set(config.capture.subtitleMaxChars)
+        if (ext.reuseCapturedVideoEnabled.get() == conventions.reuseCapturedVideoEnabled) ext.reuseCapturedVideoEnabled.set(config.capture.reuseCapturedVideoEnabled)
         if (!ext.captureStrategy.isPresent || ext.captureStrategy.get() == conventions.captureStrategy) ext.captureStrategy.set(config.capture.strategy)
 
         // Output format (CAP-MP4)
@@ -169,6 +172,9 @@ class CapsulePlugin : Plugin<Project> {
         if (!ext.durationValidationToleranceSecs.isPresent || ext.durationValidationToleranceSecs.get() == conventions.durationValidationToleranceSecs) {
             ext.durationValidationToleranceSecs.set(config.validation.toleranceSecs)
         }
+        if (!ext.integrityValidationEnabled.isPresent || ext.integrityValidationEnabled.get() == conventions.integrityValidationEnabled) {
+            ext.integrityValidationEnabled.set(config.validation.integrityEnabled)
+        }
 
         // AudioPost section (CAP-AUDIO)
         if (!ext.audioPostBgmEnabled.isPresent || ext.audioPostBgmEnabled.get() == conventions.audioPostBgmEnabled) {
@@ -185,6 +191,9 @@ class CapsulePlugin : Plugin<Project> {
         }
         if (!ext.audioPostDuckingEnabled.isPresent || ext.audioPostDuckingEnabled.get() == conventions.audioPostDuckingEnabled) {
             ext.audioPostDuckingEnabled.set(config.audioPost.duckingEnabled)
+        }
+        if (!ext.audioPostTwoPassLoudnessEnabled.isPresent || ext.audioPostTwoPassLoudnessEnabled.get() == conventions.audioPostTwoPassLoudnessEnabled) {
+            ext.audioPostTwoPassLoudnessEnabled.set(config.audioPost.twoPassLoudnessEnabled)
         }
 
         // Remotion section (CAP-ANIM)

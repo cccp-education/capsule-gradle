@@ -1,6 +1,40 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-11 (S-165 — correctif dérive dépendances + publication capsule-plugin 0.0.4)
+:last_update: 2026-10-11 (S-166 — EPIC CAP-QC : portage prepa → capsule, 4/9 items)
+
+'''
+== 🔌 BACKLOG ACTIF — CAP-QC 🟡 EN COURS 4/9 (S-166)
+
+_Portage de l'**utilitaire hors rendu** de `prepa_electricite_complet` (usine Python de
+cours vidéo, `lion92`) vers `capsule`. Revue source :
+`foundry/private/prepa_electricite_complet/code_review.adoc` (révision c). **Ne porter que
+des techniques** — jamais le contenu du cours (œuvre dérivée d'un manuel), jamais un
+moteur de rendu maison (PRT-11 **CADUQUE** : le navigateur + Remotion + Manim suffisent)._
+
+*Méthode* : baby-step DDD/TDD/BDD strict (unit → fonctionnel → cucumber) ; toute option
+nouvelle est **opt-in (défaut false)** et câblée sur les **4 sources** de config
+(DSL/CLI/ENV/gradle.properties) + `pushConfigIntoExtension`.
+
+[cols="1,4,3,1,2", options="header"]
+|===
+| ID | Objet | Cibles | Pts | Statut
+
+| PRT-04 | **Intégrité vidéo par décodage** (`ffmpeg -v error -f null -`) — gate opt-in `validation.integrityEnabled` | `capsule.validation` | 3 | ✅ S-166
+| PRT-03 | **Sous-titres par beat/cartons** (`SubtitleTextNormalizer` + `SubtitleCartoner` + `SubtitleTimingDistributor` + `calculateFromCartons`) — opt-in `capture.subtitleCartonsEnabled`/`subtitleMaxChars` | `capsule`, `CapsuleVideoTask` | 5 | ✅ S-166
+| PRT-09 | **Loudness 2 passes** mesurée + limiteur (`LoudnormMeasurement` + `LoudnormAnalysisParser` + `AudioPostCommand.buildTwoPass*`) — opt-in `audioPost.twoPassLoudnessEnabled` | `capsule.audio` | 3 | ✅ S-166
+| PRT-06 | **Signature de rendu** (`RenderSignature` + sidecar `.sig`) + réutilisation opt-in `capture.reuseCapturedVideoEnabled` (signature + décode OK) | `capsule`, `CapsuleVideoTask` | 3 | ✅ S-166
+| PRT-05 | **Pré-vol contenu avant TTS** (`ContentPreflight` : notes vides/dupliquées/trop longues, formes interdites) | `capsule.qc` | 3 | 🟡 À FAIRE
+| PRT-10 | **Publication** : chapitres **YouTube texte** (`MM:SS Titre`) + `DescriptionBuilder` (garde chevrons) + `ThumbnailPlanner` | `capsule.chapters` | 3 | 🟡 À FAIRE
+| PRT-01 | **Prononciation « dit / lu »** + cache indexé sur le **texte dit** (nom `slide-NN-<key>.mp3`) | `capsule.voice`, `TtsManager` | 5 | 🟡 À FAIRE (intrusif)
+| PRT-02 | **QC voix par ASR** (fidélité mot-à-mot + souffle + choix de prise) — EPIC **`CAP-QC-VOICE`** | `capsule.voice` + port `SpeechRecognizer` | 8 | 🟡 À FAIRE (EPIC à part)
+| PRT-07 | **Timeline déterministe** (frames entières, placement échantillon-exact, avance image/voix) | `capsule.timeline` | 5 | 🟡 À FAIRE (EPIC)
+
+| ~~PRT-11~~ | Rendu de contenu maison (Java2D / LaTeX serveur) | — | — | ✅ **CADUQUE** (§ 8 revue)
+| ~~PRT-12/13~~ | Vérification exécutable (principe) / DSL schémas métier | — | — | ✅ hors cœur OSS
+|===
+
+*Total* : 9 items portables — **4 ✅ (S-166)** + **5 🟡 à faire** (PRT-05/10/01/02/07).
+Rapport S-166 : `.agents/sessions/166-cap-qc-prt-04-03-09-06.adoc`.
 
 '''
 == 🎬 BACKLOG ACTIF — CAP-VIRAL ✅ TERMINÉ (S-142)
