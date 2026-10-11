@@ -1,0 +1,50 @@
+= Session 157 — CAP-VIRAL-E2E : correctif test fonctionnel (gate isolée)
+:session: 157
+:borough: Détroit
+:date: 2026-10-11
+:epic: CAP-VIRAL-E2E (correctif post-clôture)
+:us: —
+
+== Constat (CI rouge S-155 / S-156)
+
+Le job `Full Tests` des pushes S-155 (`f83aa7e`) et S-156 (`84b3ea0`) est **rouge** :
+`ValidateViralCampaignFunctionalTest > enabled with a missing asset fails when
+strict() FAILED` (1 échec / 95 puis 100 tests). Le job `Test` (unit) est vert pour
+les deux.
+
+== Cause racine
+
+Le test d'isolation de la gate (S-154) invoque `validateViralCampaign` en excluant
+la chaîne de production (`-x renderViralVariants -x generateViralCampaign`) pour ne
+tester **que** la gate contre un manifeste écrit à la main. Or :
+
+* **S-155** a ajouté `renderViralThumbnails` aux dépendances de `validateViralCampaign` ;
+* **S-156** a ajouté `renderViralSubtitles`.
+
+Ces tâches, **non exclues** par le test, se sont mises à tourner dans le projet
+consommateur : `renderViralThumbnails` avec `strictMode=true` et **sans cover**
+échoue **avant** la gate, avec « no cover » — le test attendait « missing asset ».
+La gate n'était donc plus isolée.
+
+== Correctif
+
+`ValidateViralCampaignFunctionalTest.runner()` exclut désormais **les trois**
+tâches de production (`renderViralVariants`, `renderViralThumbnails`,
+`renderViralSubtitles`) en plus de `generateViralCampaign`. Test-only, zéro
+production modifiée. Les 4 scénarios du test (registration, skip, assets présents,
+manquant strict/non-strict) redeviennent hermétiques au graphe de production.
+
+== Leçon
+
+Une tâche dont les **dépendances de production** changent (ajout d'un renderer)
+doit **mettre à jour les tests qui l'isolent** : `-x` doit couvrir **toutes** les
+dépendances productrices, pas seulement celles connues au cadrage. Corollaire
+méthodologique confirmé (S-269) : **ne pas enchaîner sur un push non prouvé vert
+par la CI** — le job `Test` vert (unit) ne prouve ni le fonctionnel ni le Cucumber
+(ici les étapes Cucumber ont été *skippées* après l'échec fonctionnel).
+
+== Gates
+
+* Local = Build : compiles VERT. Preuve = CI du push (Test + Full Tests, y compris
+  les runners `@thumbnail`/`@karaoke` et le capture réel).
+* Zéro secret, zéro bump, zéro publication, zéro production modifiée.

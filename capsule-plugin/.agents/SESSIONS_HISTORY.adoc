@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-11 (S-156) — CAP-VIRAL-E2E US-3 (karaoké prod wiring, EPIC TERMINÉ 3/3). Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-11 (S-157) — correctif test fonctionnel `ValidateViralCampaignFunctionalTest` (isolation de la gate). Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (120-156)
+== Sessions récentes (120-157)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 157 | 2026-10-11 | fix | **Correctif test fonctionnel — gate isolée.** CI `Full Tests` rouge sur les pushes S-155 (`f83aa7e`) et S-156 (`84b3ea0`) : `ValidateViralCampaignFunctionalTest > enabled with a missing asset fails when strict() FAILED` (1/95 puis 1/100). Cause racine : le test d'isolation de la gate excluait `renderViralVariants` + `generateViralCampaign` mais **pas** `renderViralThumbnails` (ajouté aux deps en S-155) ni `renderViralSubtitles` (S-156) → `renderViralThumbnails` (strict, sans cover) échouait **avant** la gate avec « no cover », l'assertion attendant « missing asset ». Fix **test-only** : `runner()` exclut désormais les 3 tâches de production (`-x renderViralThumbnails -x renderViralSubtitles`) en plus de `renderViralVariants`/`generateViralCampaign`. Leçon : `-x` doit couvrir **toutes** les dépendances productrices ; `Test` (unit) vert ne prouve ni le fonctionnel ni le Cucumber (étapes Cucumber *skippées* après l'échec fonctionnel) — ne pas enchaîner sur un push non prouvé vert par la CI (corollaire S-269). Zéro production modifiée, zéro bump, zéro secret. | 8/10
 
 | 156 | 2026-10-11 | feat+test | **CAP-VIRAL-E2E US-3 — karaoké prod wiring** (clôt le constat C3 : `KaraokeSubtitleBuilder` sans usage prod). Domaine pur `KaraokeLine` + `KaraokeWordPlanner` (`plan(beats)` → une ligne par beat, mots timés proportionnellement dans la fenêtre) + `AssKaraokeDocument` (ASS v4.00+ complet, un `Dialogue` par ligne avec `\k` mot-à-mot) + `CampaignBundle.subtitleFile` (additif, `hasSubtitle`) + `CampaignBundleSerializer` + `ViralCampaignGate` étendue (vidéo + thumbnail + soustitre) + `ViralCampaignAssembler.subtitleFor` + `GenerateViralCampaignTask.subtitleFor` + `RenderViralSubtitlesTask` (groupe `generate`, `<id>.ass` par variante, **pur texte** — zéro Chromium/FFmpeg, Économie d'Encre) + `validateViralCampaign` dépend des 3 renders. Baby-step DDD/TDD/BDD : `KaraokeWordPlannerTest` (5 unit) + `AssKaraokeDocumentTest` (5 unit) + `RenderViralSubtitlesFunctionalTest` (5 functional TestKit) + `ViralCampaignGateTest` étendu (+2) + `capsule_viral_karaoke.feature` `@karaoke` (4 scénarios) + runner dédié 26e `cucumberTestViralKaraoke` câblé `full-tests.yml`. **CAP-VIRAL-E2E TERMINÉ 3/3.** Local = Build, Tests = CI. Zéro bump, zéro publication. | 9/10
 

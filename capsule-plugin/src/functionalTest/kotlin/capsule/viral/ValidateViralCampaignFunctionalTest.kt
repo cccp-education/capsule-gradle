@@ -58,7 +58,13 @@ class ValidateViralCampaignFunctionalTest {
     private fun runner(vararg args: String) = GradleRunner.create()
         .forwardOutput()
         .withPluginClasspath()
-        .withArguments(*args, "-x", "renderViralVariants", "-x", "generateViralCampaign")
+        .withArguments(
+            *args,
+            "-x", "renderViralVariants",
+            "-x", "renderViralThumbnails",
+            "-x", "renderViralSubtitles",
+            "-x", "generateViralCampaign",
+        )
         .withProjectDir(projectDir)
 
     @Test

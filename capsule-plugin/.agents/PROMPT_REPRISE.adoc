@@ -1,29 +1,30 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 157
+:session: 158
 :borough: Détroit
-:session_precedente: 156 — CAP-VIRAL-E2E US-3 : karaoké prod wiring (EPIC TERMINÉ 3/3)
+:session_precedente: 157 — correctif test fonctionnel (gate isolée)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
+=== S-157 — correctif test (`ValidateViralCampaignFunctionalTest`)
+
+- Les pushes S-155/S-156 avaient la CI `Full Tests` **rouge** : le test d'isolation
+  de la gate n'excluait pas les tâches de production ajoutées (`renderViralThumbnails`,
+  `renderViralSubtitles`) → `renderViralThumbnails` (strict, sans cover) échouait
+  avant la gate. Fix **test-only** : `-x` étendu aux 3 renders. Rapport
+  `.agents/sessions/157-fix-validate-gate-functional-test.adoc`.
+- **Leçon** : `-x` doit couvrir toutes les dépendances productrices ; un `Test`
+  (unit) vert ne prouve pas le fonctionnel/Cucumber — ne pas enchaîner sur un push
+  non prouvé vert.
+
 === S-156 — CAP-VIRAL-E2E US-3 (karaoké prod wiring) — EPIC clos
 
-- `KaraokeLine` + `KaraokeWordPlanner` (mots timés proportionnellement dans la
-  fenêtre du beat) + `AssKaraokeDocument` (ASS v4.00+ complet, `\k` mot-à-mot) +
-  `CampaignBundle.subtitleFile` (additif) + `GenerateViralCampaignTask.subtitleFor`
-  + `RenderViralSubtitlesTask` (`<id>.ass` par variante, pur texte) + gate étendue.
-- 10 unit + 5 functional + 4 BDD `@karaoke` (26e runner `cucumberTestViralKaraoke`).
+- `KaraokeWordPlanner` + `AssKaraokeDocument` purs + `renderViralSubtitles`
+  (`<id>.ass`) + `CampaignBundle.subtitleFile` (additif) + gate étendue.
 - **CAP-VIRAL-E2E TERMINÉ 3/3** (US-1 S-154, US-2 S-155, US-3 S-156).
-- Rapport : `.agents/sessions/156-cap-viral-e2e-us3-karaoke.adoc`.
+- **Frontière IA** : l'interface LLM de capsule passe par codebase N1.
 
-=== S-154/S-155 (contexte)
-
-- US-1 : `ViralCampaignGate` + `validateViralCampaign` (24e runner).
-- US-2 : `ViralThumbnailBuilder` + `renderViralThumbnails` (25e runner).
-- **Frontière IA** : l'interface LLM de capsule passe par codebase N1
-  (`LlmBuildService` + contexte augmenté) — jamais d'appel direct.
-
-== Mission Session 157 — backlog actif vidé
+== Mission Session 158 — backlog actif vidé
 
 Tous les EPICs actionnables sont terminés. Restent des items **bloqués par accord
 pilote** ou optionnels :
@@ -45,7 +46,8 @@ pilote** ou optionnels :
   description POM).
 * **Sessions concurrentes** : `git status` à l'ouverture (drift gouvernance).
 * Baby-step DDD/TDD/BDD ; tout nouveau feature cucumber = runner dédié (S-082) +
-  steps préfixés (S-088) + câblage `full-tests.yml`.
+  steps préfixés (S-088) + câblage `full-tests.yml`. Un test qui isole une tâche
+  doit exclure **toutes** ses dépendances productrices (`-x`).
 * Un test nécessitant un binaire doit **skipp** (pending) s'il manque (S-269).
 * Viral = socle FFmpeg (`ViralCaptureStrategy` force `SCREENSHOT`) ; interface IA =
   codebase N1.
@@ -55,3 +57,4 @@ pilote** ou optionnels :
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version 0.0.2 (Central).
 * CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **5/6** ; CAP-VIRAL-E2E **3/3**.
 * RENAME métier **SOLDÉ** (S-153) — délivré dans la prochaine release `0.0.3`.
+
