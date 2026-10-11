@@ -1,52 +1,48 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 164
+:session: 165
 :borough: Détroit
-:session_precedente: 163 — warn per-scene Manim + optimisation CI
+:session_precedente: 164 — publication capsule-plugin 0.0.3 (Maven Central) + consommateurs
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Contexte Hérité
 
-=== S-163 — warn per-scene Manim + optimisation CI
+=== S-164 — publication 0.0.3
 
-- `NoOpManimParallelRenderer` journalise un **warning par scène** en échec (constat
-  S-161) ; dégradation inchangée. `ManimParallelRendererTest` +1.
-- `full-tests.yml` s'appuie sur le runner **agrégé** `cucumberTest`
-  (+ `cucumberTestViralRender`) au lieu des 24 runners dédiés (~18 min → quelques
-  minutes). Preuve = CI du push.
-- Rapport `.agents/sessions/163-manim-warn-ci-optim.adoc`.
+- `capsule-plugin 0.0.3` publié sur Maven Central (bundle `e040491f`, AUTOMATIC),
+  propagation repo1 HTTP 200. Description POM neutralisée (RENAME S-153).
+- Consommateurs : racine `capsule = 0.0.3` ; MEMPHIS `workspace-bom` catalog
+  `capsule-plugin 0.0.3` + BOM/catalog `0.0.79` (bundle `019cd3b5`).
+- Contenu : RENAME S-153 + CAP-VIRAL-E2E S-154→S-156 + `normalizeViralStoryboard`
+  S-159 + LLM-RESILIENCE S-160 + warn Manim S-163.
+- Rapport `.agents/sessions/164-publication-0.0.3.adoc`.
+
+=== S-163 — warn per-scene Manim + optimisation CI (Full Tests ~26 → ~18,5 min).
 
 === S-162 — extraction N0 résilience : CADUQUE. S-161 — dogfooding Remotion+Manim.
 
-== Mission Session 164 — PUBLICATION capsule 0.0.3 (accord pilote donné)
+== Mission Session 165
 
-Publier `capsule-plugin 0.0.3` sur Maven Central. Contenu depuis 0.0.2 : RENAME
-métier (S-153) + CAP-VIRAL-E2E (S-154→S-156) + `normalizeViralStoryboard` (S-159)
-+ LLM-RESILIENCE (S-160) + warn per-scene Manim (S-163).
+**Backlog actif vidé** : tous les EPICs sont terminés, la publication 0.0.3 faite.
+Il ne reste :
 
-Procédure (méthode nmcp standard) :
-
-. `[versions].capsule` : `0.0.2` → `0.0.3` (`gradle/libs.versions.toml`).
-. Garde `CapsulePluginPublicationTest` (si présente) : réaligner.
-. `./gradlew publishToMavenLocal` (artefacts signés) — vérifier.
-4. `./gradlew publishAggregationToCentralPortal --no-daemon` (bundle, AUTOMATIC).
-. Propagation repo1 (`repo1.maven.org`) HTTP 200 sur jar/pom/module.
-. **Consommateurs** : racine `capsule-gradle` (`capsule = 0.0.3`) +
-   MEMPHIS `workspace-bom` (`capsule-plugin = 0.0.3`) + BOM bump + publication.
-7. Vérifier que la description POM est la version neutralisée (RENAME S-153).
+1. **Extraction N0 résilience transverse** — CADUQUE (S-162). Réouverture = **module
+   utilitaire Gradle partagé** cross-borough (MEMPHIS/ABIDJAN), hors périmètre capsule.
+2. Tout nouveau besoin issu du backlog racine / d'une découverte de session.
 
 == Points d'attention
 
-* **Local = Build, Tests = CI**. Publication = méthode nmcp `README`/AGENTS racine.
-* Ordre DAG : N0/N1 déjà Central ; capsule N2 peut être publié.
+* **Local = Build, Tests = CI**. Publication = méthode nmcp (AGENTS racine).
 * **English only** (`OssVocabularyGuardTest`). **Zéro Python**. **Zéro secret**.
-* Baby-step ; un test qui isole une tâche exclut toutes ses dépendances (`-x`).
+* Baby-step DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
+  Un test qui isole une tâche exclut toutes ses dépendances productrices (`-x`).
+* Viral = socle FFmpeg ; interface IA = codebase N1.
 
 == Rappels
 
-* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version **0.0.2** (Central).
+* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version **0.0.3** (Central).
 * CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **6/6** ; CAP-VIRAL-E2E **3/3** ;
   LLM-RESILIENCE **1/1**.
-* RENAME métier **SOLDÉ** (S-153) — délivré dans la release `0.0.3`.
+
 
 
 

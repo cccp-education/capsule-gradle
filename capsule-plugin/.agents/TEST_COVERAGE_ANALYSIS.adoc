@@ -1,7 +1,18 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-11
-:session: 163 warn per-scene Manim + optimisation CI
+:session: 164 publication 0.0.3 (aucun test modifié)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 11 octobre 2026 (après session 164)
+
+.Publication capsule-plugin 0.0.3
+|===
+| Élément | Changement | Tests
+| — | **Aucun test modifié.** Release : bump `[versions].capsule` 0.0.2 → 0.0.3 ; publication Central + consommateurs (racine, MEMPHIS BOM 0.0.79). | 0
+|===
+
+*Totaux S-164* : 0. La baseline de tests du commit est celle de S-163 (CI verte).
+Publication vérifiée par propagation repo1 (HTTP 200).
 
 == Couverture — 11 octobre 2026 (après session 163)
 

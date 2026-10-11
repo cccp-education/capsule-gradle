@@ -1,0 +1,38 @@
+= Session 164 — Publication `capsule-plugin 0.0.3` (Maven Central)
+:session: 164
+:borough: Détroit
+:date: 2026-10-11
+:epic: Publication
+:us: —
+
+== Mission
+
+Publier `capsule-plugin 0.0.3` sur Maven Central (accord pilote). Contenu depuis
+0.0.2 : RENAME métier (S-153) + CAP-VIRAL-E2E (S-154→S-156) + `normalizeViralStoryboard`
+(S-159) + LLM-RESILIENCE (S-160) + warn per-scene Manim (S-163).
+
+== Procédure (méthode nmcp)
+
+. Bump `[versions].capsule` `0.0.2` → `0.0.3` (`capsule-plugin/gradle/libs.versions.toml`).
+   `version = libs.plugins.capsule.get().version` → **0.0.3**.
+. `publishToMavenLocal` — artefacts 0.0.3 (jar + sources + javadoc + module) signés
+   OK ; **description POM** = « Generation automatisee de capsules video depuis des
+   decks reveal.js » (neutralisée RENAME S-153).
+3. `publishAggregationToCentralPortal --no-daemon` → **bundle
+   `e040491f-0578-4ceb-b8ed-24ef8e549b5f`** (AUTOMATIC).
+4. **Propagation repo1** : `capsule-plugin-0.0.3.pom` → HTTP **200**.
+
+== Consommateurs
+
+. **Racine** `foundry/public/capsule-gradle/gradle/libs.versions.toml` : `capsule`
+   0.0.2 → **0.0.3**.
+2. **MEMPHIS** `workspace-bom` : `capsule-plugin` 0.0.2 → **0.0.3** + BOM/catalog
+   0.0.78 → **0.0.79** ; publié (bundle **`019cd3b5-0ad5-458b-9c31-e241c7e6cec0`**,
+   AUTOMATIC) ; propagation repo1 `workspace-bom/0.0.79` + `workspace-catalog/0.0.79`
+   → HTTP **200**. POM BOM 0.0.79 contraint bien `capsule-plugin 0.0.3`. Voir
+   `workspace-bom/.agents/sessions/282-*.adoc`.
+
+== Gates
+
+* Local = Build : `compileKotlin` VERT ; zéro référence `0.0.2` résiduelle dans le
+  code. Propagation repo1 vérifiée (HTTP 200). Zéro secret.

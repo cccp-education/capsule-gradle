@@ -1,6 +1,14 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-11
 
+== Session 164 — Publication capsule-plugin 0.0.3 (Maven Central) ✅
+
+* Bump `[versions].capsule` 0.0.2 → 0.0.3 ; `publishAggregationToCentralPortal`
+  bundle `e040491f-0578-4ceb-b8ed-24ef8e549b5f` (AUTOMATIC) ; propagation repo1 200.
+* Consommateurs : racine `capsule = 0.0.3` ; MEMPHIS `workspace-bom` catalog
+  `capsule-plugin 0.0.3` + BOM/catalog `0.0.79` (bundle `019cd3b5`, repo1 200 ×2).
+* Zéro test modifié.
+
 == Session 163 — Warn per-scene Manim + optimisation CI ✅
 
 * Warn per-scene Manim : le `NoOpManimParallelRenderer` journalise un warning par
