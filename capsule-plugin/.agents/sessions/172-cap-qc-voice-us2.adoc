@@ -70,6 +70,24 @@ La BDD `@voice-verify` est **pure-domain** → exécutée par le runner **agrég
 * **`fun interface` unique** (cadrage S-169 respecté) : la disponibilité est portée par la companion de l'adapter, pas par le port.
 * **Pas de N0** : `VoiceScore`/`SpeechRecognizer` restent capsule-scoped (même arbitrage que la résilience LLM S-162).
 
+== Découverte — baseline CI ROUGE depuis S-166 (corrigée)
+
+Au contrôle CI post-push, la CI `Test` **et** `Full Tests` étaient **rouges depuis
+S-166** (bloquées à l'étape `test`, jamais arrivées à `functionalTest`/`cucumberTest`) :
+`1438 tests, 3 failed`. Trois **bugs de test** (sources correctes), S-166 et S-170 :
+
+. `FidelityScorerTest` — `referenceWordCount` attendu `1` pour une référence vide ;
+  `normalize("")` rend `[]` → `0`. Assertion corrigée (`0`).
+. `AudioPostCommandTwoPassTest` — `args.contains("print_format=json")` cherchait un
+  élément exact alors que le filtre est un seul argument ; corrigé en
+  `args.any { it.contains("print_format=json") }`.
+. `SubtitleCartonsTest` — le test construisait un `SlideSegment` à note **blanche**,
+  interdit par l'invariant du domaine (throw) ; le cas atteignable est une note qui
+  se **normalise** en vide (`**` → markdown retiré). Note du test corrigée.
+
+Correction **test-only** (chemin CI rouge → compilation → re-push, règle EAGER).
+Aucune source de production touchée.
+
 == Reste à faire (EPIC CAP-QC-VOICE)
 
 * US-3 — choix de prise (régénérer + retenir la meilleure, `audio/choix.json`).

@@ -43,6 +43,6 @@ class FidelityScorerTest {
         val score = FidelityScorer.score("", "hallucination")
         assertEquals(1.0, score.wordErrorRate, 1e-9)
         assertEquals(1, score.surplus)
-        assertEquals(1, score.referenceWordCount)
+        assertEquals(0, score.referenceWordCount)
     }
 }

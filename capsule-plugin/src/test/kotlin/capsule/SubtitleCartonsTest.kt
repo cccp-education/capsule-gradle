@@ -172,9 +172,12 @@ class SubtitleCartonsTest {
     }
 
     @Test
-    fun `blank note consumes its duration without a cue`() {
+    fun `a note with no displayable text consumes its duration without a cue`() {
+        // SlideSegment forbids a blank speakerNote, so the reachable "no cue"
+        // case is a note that normalises to nothing (markdown emphasis only):
+        // it still consumes its duration, the next slide must not start earlier.
         val entries = SubtitleTimingCalculator.calculateFromCartons(
-            listOf(slide(0, "   "), slide(1, "bonjour")),
+            listOf(slide(0, "**"), slide(1, "bonjour")),
             listOf(2.0, 3.0),
             maxChars = 42,
         )

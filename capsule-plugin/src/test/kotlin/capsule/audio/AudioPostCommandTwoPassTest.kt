@@ -46,7 +46,7 @@ class AudioPostCommandTwoPassTest {
     fun `measure argv decodes to null with loudnorm json`() {
         val args = AudioPostCommand.loudnormMeasureArgs(File("/tmp/x.webm"), config, "ffmpeg")
         assertEquals("ffmpeg", args.first())
-        assertTrue(args.contains("print_format=json"), args.toString())
+        assertTrue(args.any { it.contains("print_format=json") }, args.toString())
         assertTrue(args.containsAll(listOf("-f", "null", "-")), args.toString())
     }
 
