@@ -23,3 +23,11 @@ Feature: Capsule output format distribution (CAP-MP4 US-3)
     Then the format distribution build output contains "CAPSULE DISTRIB"
     And the format distribution copies video file "demo.webm" to the versioned destination
     And the format distribution copies video file "demo.mp4" to the versioned destination
+
+  Scenario: MP4 conversion tags the output as BT.709 when enabled
+    Given the MP4 conversion command with bt709 enabled
+    Then the MP4 conversion argv contains the bt709 color flags
+
+  Scenario: MP4 conversion argv is unchanged when bt709 is disabled
+    Given the MP4 conversion command with bt709 disabled
+    Then the MP4 conversion argv contains no color flags

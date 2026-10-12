@@ -142,6 +142,7 @@ class CapsulePlugin : Plugin<Project> {
 
         // Output format (CAP-MP4)
         if (!ext.outputFormat.isPresent || ext.outputFormat.get() == conventions.outputFormat) ext.outputFormat.set(config.output.format)
+        if (!ext.outputBt709.isPresent || ext.outputBt709.get() == conventions.outputBt709) ext.outputBt709.set(config.output.bt709)
 
         // Distrib section
         if (ext.ffmpegExecutablePath.get() == conventions.ffmpegExecutablePath) ext.ffmpegExecutablePath.set(config.distrib.ffmpegExecutablePath)

@@ -22,7 +22,7 @@ nouvelle est **opt-in (défaut false)** et câblée sur les **4 sources** de con
 
 | PRT-04 | **Intégrité vidéo par décodage** (`ffmpeg -v error -f null -`) — gate opt-in `validation.integrityEnabled` | `capsule.validation` | 3 | ✅ S-166
 | PRT-03 | **Sous-titres par beat/cartons** (`SubtitleTextNormalizer` + `SubtitleCartoner` + `SubtitleTimingDistributor` + `calculateFromCartons`) — opt-in `capture.subtitleCartonsEnabled`/`subtitleMaxChars` | `capsule`, `CapsuleVideoTask` | 5 | ✅ S-166
-| PRT-09 | **Loudness 2 passes** mesurée + limiteur (`LoudnormMeasurement` + `LoudnormAnalysisParser` + `AudioPostCommand.buildTwoPass*`) — opt-in `audioPost.twoPassLoudnessEnabled` | `capsule.audio` | 3 | ✅ S-166
+| PRT-09 | **Loudness 2 passes** mesurée + limiteur (`LoudnormMeasurement` + `LoudnormAnalysisParser` + `AudioPostCommand.buildTwoPass*`) — opt-in `audioPost.twoPassLoudnessEnabled` ; **+ colorimétrie BT.709** (`Mp4ConversionCommand`, opt-in `output.bt709`) | `capsule.audio`, `capsule` | 3 | ✅ S-166 / ✅ S-179 (bt709)
 | PRT-06 | **Signature de rendu** (`RenderSignature` + sidecar `.sig`) + réutilisation opt-in `capture.reuseCapturedVideoEnabled` (signature + décode OK) | `capsule`, `CapsuleVideoTask` | 3 | ✅ S-166
 | PRT-05 | **Pré-vol contenu avant TTS** (`ContentPreflight` : note longue/dupliquée = warning, forme interdite = error) | `capsule.qc` | 3 | ✅ S-167
 | PRT-10 | **Publication** : chapitres **YouTube texte** (`MM:SS Titre`) + `VideoDescriptionBuilder` (garde chevrons) — miniature pédagogique non portée (le viral couvre) | `capsule.chapters`, `capsule.publish` | 3 | ✅ S-167
@@ -400,6 +400,14 @@ propagation repo1 HTTP 200 confirmée). Contenu : re-pin catalogue interne `work
 0.0.81 → 0.0.82` + sync littérature/backlog (gouvernance). Consommateur racine
 `capsule = 0.0.7` ; **MEMPHIS** `workspace-bom`/`workspace-catalog` **0.0.83**
 (bundle `6727405a-6c6e-490c-a5dc-a3a82b42fd8a`, capsule-plugin 0.0.7).
+
+`education.cccp:capsule-plugin:0.0.8` publié via nmcp (Session 179, bundle
+**`e8f61dd5-4f82-4346-aa63-d84c475fccdf`**, AUTOMATIC). Contenu : résidus `prepa`
+portés en **Kotlin** — **R1 (PRT-09)** colorimétrie **BT.709** (`Mp4ConversionCommand`
+pur + `output.bt709`, opt-in) ; **R2 (PRT-02)** nombres en lettres (`NumberSpeller` pur
+intégré à `FidelityScorer`, zéro `num2words`) + re-pin `workspace-bom 0.0.82 → 0.0.83`.
+Consommateur racine `capsule = 0.0.8` ; **MEMPHIS** `workspace-bom`/`workspace-catalog`
+**0.0.84** (bundle `8b3663cf-3d23-4480-ac88-3a53171f91d4`, capsule-plugin 0.0.8).
 
 '''
 == 📚 README i18n ✅ TERMINE (Session 041)

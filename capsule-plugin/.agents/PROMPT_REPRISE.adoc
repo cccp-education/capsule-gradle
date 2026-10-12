@@ -1,44 +1,43 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 179
+:session: 180
 :borough: Détroit
-:session_precedente: 178 — sync littérature/backlog + release `capsule-plugin 0.0.7`
+:session_precedente: 179 — résidus `prepa` (BT.709 + nombres) + release `capsule-plugin 0.0.8`
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`.
 
 == Contexte Hérité
 
-=== S-178 — sync + release 0.0.7 (livré)
+=== S-179 — résidus `prepa` + release 0.0.8 (livré)
 
-- Audit code réel ↔ docs : **19 domaines** (corrigé de « 20 »), **38 `CucumberTaskSpec`**,
-  **44 features**, wrapper Gradle **9.8.1**.
-- `README.md` master synchronisé (version `0.0.7`, Gradle 9.8.1, koog 1.3.0,
-  Jackson 2.21.2, codebase 0.0.17, slider 0.0.19, comptes de tests → CI).
-- Pin catalogue interne `workspace-bom 0.0.81 → 0.0.82` ; bump `capsule 0.0.6 → 0.0.7`.
-- Central `0.0.7` (AUTOMATIC) ; consommateur racine `capsule = 0.0.7` ; MEMPHIS
-  BOM/catalog **0.0.83** (bundle `6727405a-…`).
-- Rapport `.agents/sessions/178-sync-litterature-release-0.0.7.adoc`.
+- **R1 (PRT-09)** colorimétrie **BT.709** : objet pur `Mp4ConversionCommand` + wiring
+  4 sources (`output.bt709`, défaut false) + impl + `resolveFormatConverter(bt709)`.
+- **R2 (PRT-02)** **nombres en lettres** : `capsule.voice.NumberSpeller` (Kotlin pur, FR)
+  intégré à `FidelityScorer.score` (aucun `num2words`).
+- Baby-step : 3 + 7 unit, `CapsuleConfigMergerTest` +3, BDD `capsule_format.feature` +2
+  scénarios + `capsule_voice_quality.feature` +1.
+- Gates locaux VERTS ; Central `0.0.8` (bundle `e8f61dd5-…`) ; racine `capsule = 0.0.8` ;
+  MEMPHIS BOM/catalog **0.0.84** (bundle `8b3663cf-…`).
+- Rapport `.agents/sessions/179-prt09-bt709-prt02-numbers.adoc`.
 
-=== S-177 — release 0.0.6 + sync marqueurs littérature + cache CI Playwright.
+=== S-178 — sync littérature/backlog + release 0.0.7. S-177 — release 0.0.6 + cache CI.
 
-== Mission Session 179 — backlog EPICs vidé
+== Mission Session 180 — backlog EPICs vidé
 
-* **A)** Dette/maintenance : traductions `README.plugin/*.md` (9 langues, encore
-  `0.0.1-SNAPSHOT` — dérive multi-langue) ; couverture Kover.
+* **A)** Dette/maintenance : traductions `README.plugin/*.md` (9 langues, `0.0.1-SNAPSHOT`).
 * **B)** Toute nouvelle demande pilote (cadrer + implémenter en baby-step).
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
-* Nouvelle option → `Config` + extension + `CapsuleConventions` + merger (4 sources) +
-  `pushConfigIntoExtension`, **défaut false** (backward compat).
-* **English only** (`OssVocabularyGuardTest`) ; zéro Python ; zéro secret ; baby-step
-  DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
-* CI : caches Gradle (`setup-gradle@v4`) + Playwright (`.github/actions/setup-playwright`)
-  + Ollama (`.github/actions/setup-ollama`).
-* Catalogue **interne** aligné BOM `0.0.82` — vérifier au fil des bumps MEMPHIS.
+* Nouvelle option → `Config` + extension + `CapsuleConventions` + merger + `pushConfigIntoExtension`,
+  **défaut false** (backward compat).
+* **English only** (`OssVocabularyGuardTest`) ; zéro Python ; zéro secret ; baby-step DDD/TDD/BDD ;
+  runner dédié par feature (S-082), steps préfixés (S-088).
+* **Aucun Python dans le dépôt** (les `.py` = provenance KDoc + scènes Manim externes).
+* Catalogue **interne** aligné BOM `0.0.83`.
 
 == Rappels
 
-* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.7** (Central).
-* MEMPHIS BOM/catalog **0.0.83**. `CAP-QC` **9/9 ✅**, `CAP-QC-VOICE` **5/5 ✅**.
+* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.8** (Central).
+* MEMPHIS BOM/catalog **0.0.84**. `CAP-QC` **9/9 ✅**, `CAP-QC-VOICE` **5/5 ✅** (résidus soldés S-179).
   Backlog actionnable **vidé**.

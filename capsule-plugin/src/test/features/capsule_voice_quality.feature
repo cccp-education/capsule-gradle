@@ -29,6 +29,13 @@ Feature: Voice quality pure domain (CAP-QC-VOICE US-1)
     When the voice fidelity is scored
     Then the voice word error rate is greater than 0.0
 
+  Scenario: Numbers in the reference match their spelled form in the transcription
+    Given the expected voice narration "il y a 42 pommes"
+    And the transcribed voice narration "il y a quarante deux pommes"
+    When the voice fidelity is scored
+    Then the voice word error rate is 0.0
+    And the voice surplus word count is 0
+
   Scenario: Acronyms and symbols are spelled for the voice
     Given the voice narration "the API is 50%"
     When the voice narration is pronounced

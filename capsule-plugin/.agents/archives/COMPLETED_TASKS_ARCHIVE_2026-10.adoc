@@ -1,6 +1,20 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 179 — Résidus `prepa` (BT.709 + nombres) en Kotlin + release `capsule-plugin 0.0.8` ✅
+
+* **R1 (PRT-09)** : objet pur `capsule.Mp4ConversionCommand` (colorimétrie BT.709) + wiring
+  4 sources `output.bt709` (défaut false, backward compat) + impl + `resolveFormatConverter(bt709)`.
+  3 unit + merger +3 ; BDD `capsule_format.feature` +2 scénarios.
+* **R2 (PRT-02)** : `capsule.voice.NumberSpeller` (Kotlin pur, FR) intégré à `FidelityScorer`
+  (aucun `num2words`). 7 unit ; BDD `capsule_voice_quality.feature` +1 scénario.
+* Clarification pilote : `find -name "*.py"` = **0** dans le dépôt (les `.py` = provenance
+  KDoc + scènes Manim externes + fixtures).
+* Pin `workspace-bom 0.0.82 → 0.0.83` ; bump `0.0.7 → 0.0.8` ; Central `0.0.8`
+  (bundle `e8f61dd5-4f82-4346-aa63-d84c475fccdf`) ; racine `capsule = 0.0.8`.
+* MEMPHIS S-287 : BOM/catalog **0.0.84** (bundle `8b3663cf-3d23-4480-ac88-3a53171f91d4`).
+* Rapport `.agents/sessions/179-prt09-bt709-prt02-numbers.adoc`.
+
 == Session 178 — Sync littérature/backlog ↔ code réel + release `capsule-plugin 0.0.7` ✅
 
 * Audit code réel : 19 domaines (`src/main/kotlin/capsule`), 38 `CucumberTaskSpec`,

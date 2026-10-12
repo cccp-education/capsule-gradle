@@ -991,9 +991,9 @@ class CapsuleManager(private val project: Project) {
          *   (degraded mode — WebM kept, backward compat)
          */
         @JvmStatic
-        fun resolveFormatConverter(ffmpegPath: String = "ffmpeg", strict: Boolean = false): VideoFormatConverter {
+        fun resolveFormatConverter(ffmpegPath: String = "ffmpeg", strict: Boolean = false, bt709: Boolean = false): VideoFormatConverter {
             if (ffmpegPath == "noop") return NoOpVideoFormatConverter()
-            val converter = VideoFormatConverterImpl(ffmpegPath)
+            val converter = VideoFormatConverterImpl(ffmpegPath, bt709)
             return if (converter.isAvailable()) {
                 converter
             } else {

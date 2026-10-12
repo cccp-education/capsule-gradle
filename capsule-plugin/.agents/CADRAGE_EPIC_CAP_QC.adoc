@@ -108,6 +108,10 @@ S-169→S-174). Rappel des livraisons : PRT-01 ✅ S-174 (prononciation dit/lu +
 PRT-08 ✅ S-173 (planches QC visuelles `capsule.qc`) ; `CAP-QC-VOICE` US-2 ✅ S-172,
 US-3/US-4 ✅ S-173, US-5 ✅ S-174.
 
+**Résidus soldés S-179** : PRT-09 **colorimétrie BT.709** (`Mp4ConversionCommand` pur +
+`output.bt709`, opt-in) ; PRT-02 **nombres en lettres** (`capsule.voice.NumberSpeller`
+pur intégré à `FidelityScorer`, zéro `num2words`). Release `0.0.8`.
+
 == 8. Traçabilité
 
 [cols="1,3,3", options="header"]

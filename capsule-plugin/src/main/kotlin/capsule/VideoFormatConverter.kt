@@ -39,7 +39,8 @@ interface VideoFormatConverter {
  * LMS/YouTube/OF compatibility.
  */
 class VideoFormatConverterImpl(
-    private val ffmpegPath: String = "ffmpeg"
+    private val ffmpegPath: String = "ffmpeg",
+    private val bt709: Boolean = false,
 ) : VideoFormatConverter {
 
     private val logger = Logging.getLogger(VideoFormatConverterImpl::class.java)
@@ -58,14 +59,7 @@ class VideoFormatConverterImpl(
         if (!isAvailable()) return false
         if (!webmFile.exists()) return false
         mp4File.parentFile.mkdirs()
-        val cmd = mutableListOf(
-            ffmpegPath, "-y",
-            "-i", webmFile.absolutePath,
-            "-c:v", "libx264",
-            "-c:a", "aac",
-            "-movflags", "+faststart",
-            mp4File.absolutePath
-        )
+        val cmd = Mp4ConversionCommand.buildArgv(ffmpegPath, webmFile, mp4File, bt709)
         return try {
             val result = ProcessRunner.run(cmd)
             if (!result.isSuccess) {

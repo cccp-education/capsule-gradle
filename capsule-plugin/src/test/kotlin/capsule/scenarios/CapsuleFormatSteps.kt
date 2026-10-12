@@ -1,5 +1,6 @@
 package capsule.scenarios
 
+import capsule.Mp4ConversionCommand
 import io.cucumber.java.en.And
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
@@ -31,6 +32,29 @@ class CapsuleFormatSteps {
     private var projectDir: File? = null
     private var destRoot: File? = null
     private var lastBuildOutput: String = ""
+    private var mp4Argv: List<String> = emptyList()
+
+    @Given("the MP4 conversion command with bt709 enabled")
+    fun theMp4ConversionCommandWithBt709Enabled() {
+        mp4Argv = Mp4ConversionCommand.buildArgv("ffmpeg", File("/tmp/in.webm"), File("/tmp/out.mp4"), bt709 = true)
+    }
+
+    @Given("the MP4 conversion command with bt709 disabled")
+    fun theMp4ConversionCommandWithBt709Disabled() {
+        mp4Argv = Mp4ConversionCommand.buildArgv("ffmpeg", File("/tmp/in.webm"), File("/tmp/out.mp4"), bt709 = false)
+    }
+
+    @Then("the MP4 conversion argv contains the bt709 color flags")
+    fun theMp4ConversionArgvContainsTheBt709ColorFlags() {
+        Assertions.assertEquals("bt709", mp4Argv[mp4Argv.indexOf("-color_primaries") + 1])
+        Assertions.assertEquals("bt709", mp4Argv[mp4Argv.indexOf("-color_trc") + 1])
+        Assertions.assertEquals("bt709", mp4Argv[mp4Argv.indexOf("-colorspace") + 1])
+    }
+
+    @Then("the MP4 conversion argv contains no color flags")
+    fun theMp4ConversionArgvContainsNoColorFlags() {
+        Assertions.assertFalse(mp4Argv.contains("-colorspace"), "argv must not declare a color space: $mp4Argv")
+    }
 
     @Given("a capsule format distribution project with a fake WebM {string} in the build output directory")
     fun aCapsuleFormatProjectWithAFakeWebM(webmName: String) {

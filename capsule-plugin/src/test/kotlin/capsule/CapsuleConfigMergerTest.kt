@@ -1206,6 +1206,32 @@ class CapsuleConfigMergerTest {
         assertEquals(OutputFormat.WEBM, config.format, "OutputConfig.format default should be WEBM")
     }
 
+    // ─── output.bt709 (PRT-09 residual — BT.709 colorimetry) ─────────
+
+    @Test
+    fun `output bt709 defaults to false`() {
+        val config = OutputConfig()
+        assertEquals(false, config.bt709, "OutputConfig.bt709 default should be false")
+    }
+
+    @Test
+    fun `output bt709 is read from gradle properties`() {
+        val projectDir = File(tempDir, "output-bt709-props").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.output.bt709=true
+        """.trimIndent())
+        val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
+        assertEquals(true, config.output.bt709, "props should set output.bt709=true")
+    }
+
+    @Test
+    fun `output bt709 CLI overrides YAML`() {
+        val projectDir = File(tempDir, "output-bt709-cli").also { it.mkdirs() }
+        val yamlConfig = CapsuleConfig(output = OutputConfig(bt709 = false))
+        val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, mapOf("output.bt709" to true))
+        assertEquals(true, merged.output.bt709, "CLI output.bt709 should win over YAML")
+    }
+
     @Test
     fun `loadFromGradleProperties reads capsule output format mp4`() {
         val projectDir = File(tempDir, "fmt-props-mp4").also { it.mkdirs() }

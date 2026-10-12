@@ -3,6 +3,24 @@
 :session: 176 Câblage dit↔lu (sous-titres + karaoké)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
 
+== Couverture — 12 octobre 2026 (après session 179)
+
+.Résidus `prepa` en Kotlin (BT.709 + nombres)
+|===
+| Élément | Changement | Tests
+
+| `capsule/Mp4ConversionCommand.kt` (créé) | argv MP4 pur + colorimétrie BT.709 | +3 `Mp4ConversionCommandTest`
+| `capsule/VideoFormatConverter.kt` (étendu) | impl consomme l'objet pur + `bt709` | (couvert unit)
+| `CapsuleConfigMerger`/`CapsuleConfig`/`CapsuleModels`/`CapsulePlugin`/`CapsuleManager`/`CapsuleVideoTask` | wiring `output.bt709` 4 sources | +3 `CapsuleConfigMergerTest`
+| `capsule/voice/NumberSpeller.kt` (créé) | orthographe française des entiers (pur) | +7 `NumberSpellerTest`
+| `capsule/voice/FidelityScorer.kt` (étendu) | numéros épelés avant normalisation | 1 scénario BDD `capsule_voice_quality.feature`
+| `capsule_format.feature` (étendue) | bt709 activé/désactivé | +2 scénarios BDD (`CapsuleFormatSteps`)
+|===
+
+*Totaux S-179* : **+3 unit** (`Mp4ConversionCommandTest`) + **+7 unit** (`NumberSpellerTest`)
++ **+3 unit** (`CapsuleConfigMergerTest`) + 3 scénarios BDD. Gates locaux (compiles ×3 +
+`validatePlugins` + `assemble`) VERTS ; preuve = CI `Full Tests`.
+
 == Couverture — 12 octobre 2026 (après session 178)
 
 *S-177/S-178 (release `0.0.6`/`0.0.7`, sync gouvernance, cache CI Playwright)* :

@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-12 (S-178 — **Sync littérature/backlog ↔ code réel + release `capsule-plugin 0.0.7`** : audit (19 domaines, 38 `CucumberTaskSpec`, 44 features, Gradle 9.8.1) ; `README.md` master synchronisé (version/deps/comptes) ; pin catalogue interne `workspace-bom 0.0.81 → 0.0.82` ; bump `0.0.6 → 0.0.7` ; Central `0.0.7` (AUTOMATIC) ; consommateur racine `capsule = 0.0.7` ; MEMPHIS S-286 BOM/catalog `0.0.83` bundle `6727405a-…`. Précédent : S-177 release 0.0.6 + cache CI Playwright.)
- _Derniere session terminee_ : 178.
- _Prochaine session_ : 179 — backlog EPICs vidé ; au choix : A) maintenance/dette (traductions `README.plugin/*.md`, Kover) ; B) toute nouvelle demande pilote.
- _Session en cours_ : — (S-178 terminée).
+ _Derniere mise a jour_ : 2026-10-12 (S-179 — **Résidus `prepa` en Kotlin + release `capsule-plugin 0.0.8`** : **R1 PRT-09** colorimétrie **BT.709** (`Mp4ConversionCommand` pur + wiring `output.bt709` 4 sources) ; **R2 PRT-02** **nombres en lettres** (`capsule.voice.NumberSpeller` pur intégré à `FidelityScorer`, zéro `num2words`). Pin `workspace-bom 0.0.82 → 0.0.83` ; bump `0.0.7 → 0.0.8` ; Central `0.0.8` bundle `e8f61dd5-…` ; racine `capsule = 0.0.8` ; MEMPHIS S-287 BOM/catalog `0.0.84` bundle `8b3663cf-…`. Précédent : S-178 sync littérature + release 0.0.7.)
+ _Derniere session terminee_ : 179.
+ _Prochaine session_ : 180 — backlog EPICs vidé ; au choix : A) maintenance/dette (traductions `README.plugin/*.md`, Kover) ; B) toute nouvelle demande pilote.
+ _Session en cours_ : — (S-179 terminée).
  _Littérature de référence_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage) + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc` (EPIC voix).
 
 '''
@@ -23,11 +23,13 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (169-178)
+== 10 dernières sessions (170-179)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 179 | 2026-10-12 | feat+release | **Résidus `prepa` portés en Kotlin + release `capsule-plugin 0.0.8`.** Clarification pilote « je vois du python » : **zéro `.py`** dans le dépôt (les `.py` = provenance KDoc + scènes Manim externes). **R1 (PRT-09)** colorimétrie **BT.709** : objet pur `capsule.Mp4ConversionCommand.buildArgv(..., bt709)` (argv ffmpeg `libx264/aac/+faststart` + 3 flags couleur quand activé, byte-identique sinon) + wiring **4 sources** (`OutputConfig.bt709`, env/props/merge, `CapsuleExtension.outputBt709`, `CapsuleConventions`, `pushConfigIntoExtension`, `resolveFormatConverter(bt709)`, `CapsuleVideoTask`). **R2 (PRT-02)** nombres en lettres : `capsule.voice.NumberSpeller` (Kotlin pur, `french(n)` 0→milliards) intégré à `FidelityScorer.score` → « 42 » ≡ « quarante deux » (zéro `num2words`). Baby-step DDD/TDD/BDD : `Mp4ConversionCommandTest` (3) + `NumberSpellerTest` (7) + `CapsuleConfigMergerTest` (+3) + BDD `capsule_format.feature` +2 scénarios + `capsule_voice_quality.feature` +1. Gates locaux VERTS ; Central `0.0.8` bundle `e8f61dd5-4f82-4346-aa63-d84c475fccdf` ; racine `capsule = 0.0.8` ; MEMPHIS S-287 BOM/catalog **0.0.84** (bundle `8b3663cf-…`). Rapport `.agents/sessions/179-prt09-bt709-prt02-numbers.adoc`. | 9/10
 
 | 178 | 2026-10-12 | sync+release | **Sync littérature/backlog ↔ code réel + release `capsule-plugin 0.0.7`** (accord pilote). Audit factuel : **19 domaines** (corrigé de « 20 »), **38 `CucumberTaskSpec`**, **44 features**, wrapper Gradle **9.8.1**. `README.md` master synchronisé (version `0.0.7`, Gradle 9.8.1, koog 1.3.0, Jackson 2.21.2, codebase 0.0.17, slider 0.0.19, comptes de tests → baseline CI). Pin `workspace-bom 0.0.81 → 0.0.82` ; bump `0.0.6 → 0.0.7` ; `assemble`/`publishToMavenLocal` VERTS (POM 0.0.7 importe BOM 0.0.82) ; Central **`0.0.7`** (AUTOMATIC ; bundle id non capturé — preuve = propagation repo1). Consommateur racine `capsule = 0.0.7` ; MEMPHIS S-286 BOM/catalog **`0.0.83`** (bundle `6727405a-…`) + garde `PlatformCatalogAlignmentTest` ré-alignée. Dette constatée : traductions `README.plugin/*.md` (9 langues) encore `0.0.1-SNAPSHOT`. Rapport `.agents/sessions/178-sync-litterature-release-0.0.7.adoc`. | 9/10
 
@@ -191,9 +193,9 @@ sont clos.**
 **Cache CI** : `.github/actions/setup-ollama` (image Docker + modèle) + Gradle
 (`gradle/actions/setup-gradle@v4`).
 
-**Release courante** : `capsule-plugin **0.0.7**` (Central, S-178) — catalogue interne
-aligné BOM `0.0.82` ; MEMPHIS BOM/catalog **0.0.83**. Publications précédentes :
-`0.0.6` (S-177, bundle `240d55fa-…`), `0.0.5` (S-175).
+**Release courante** : `capsule-plugin **0.0.8**` (Central, S-179) — catalogue interne
+aligné BOM `0.0.83` ; MEMPHIS BOM/catalog **0.0.84**. Publications précédentes :
+`0.0.7` (S-178), `0.0.6` (S-177, bundle `240d55fa-…`), `0.0.5` (S-175).
 
 _Décision architecture_ : Docker FFmpeg reporté MVP1 (fausse bonne idée
 pour MVP0 — gain fonctionnel nul, complexité ajoutée). FFmpeg reste local

@@ -236,7 +236,9 @@ data class OutputConfig(
     val videoDestinationDir: String = "office/videos",
     val versioning: VersioningStrategy = VersioningStrategy.TIMESTAMP,
     val versionPrefix: String = "v",
-    val format: OutputFormat = OutputFormat.WEBM
+    val format: OutputFormat = OutputFormat.WEBM,
+    /** PRT-09 residual — tag the MP4 as BT.709 (broadcast colorimetry). Opt-in, default false. */
+    val bt709: Boolean = false
 )
 
 data class ManimConfig(

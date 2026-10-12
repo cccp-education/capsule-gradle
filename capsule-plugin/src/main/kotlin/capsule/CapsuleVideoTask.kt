@@ -952,7 +952,11 @@ open class CapsuleVideoTask : DefaultTask() {
             return finalVideo
         }
         val ffmpegPath = capsuleExtension.ffmpegExecutablePath.get()
-        val converter = CapsuleManager.resolveFormatConverter(ffmpegPath, strict = capsuleExtension.strictMode.get())
+        val converter = CapsuleManager.resolveFormatConverter(
+            ffmpegPath,
+            strict = capsuleExtension.strictMode.get(),
+            bt709 = capsuleExtension.outputBt709.getOrElse(false),
+        )
         if (converter !is NoOpVideoFormatConverter) {
             logger.lifecycle("Format conversion: {} (available, ffmpeg={})", converter.name(), ffmpegPath)
         } else if (format != OutputFormat.WEBM) {

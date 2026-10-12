@@ -1,5 +1,15 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-12 (S-178 — sync littérature/backlog ↔ code réel + release `capsule-plugin 0.0.7` ; MEMPHIS BOM/catalog `0.0.83`.)
+:last_update: 2026-10-12 (S-179 — résidus `prepa` (BT.709 + nombres en Kotlin) + release `capsule-plugin 0.0.8` ; MEMPHIS BOM/catalog `0.0.84`.)
+
+'''
+== ✅ Résidus `prepa` en Kotlin + release `capsule-plugin 0.0.8` (S-179)
+
+. [x] **R1 (PRT-09)** colorimétrie **BT.709** — objet pur `Mp4ConversionCommand` + wiring `output.bt709` (4 sources, défaut false) + impl + `resolveFormatConverter(bt709)` ; 3 unit + merger +3 + BDD `capsule_format.feature` +2.
+. [x] **R2 (PRT-02)** nombres en lettres — `capsule.voice.NumberSpeller` (Kotlin pur, FR) intégré à `FidelityScorer.score` (zéro `num2words`) ; 7 unit + BDD `capsule_voice_quality.feature` +1.
+. [x] Clarification pilote : `find -name "*.py"` = **0** dans le dépôt (les `.py` = provenance KDoc + scènes Manim externes).
+. [x] Pin BOM `0.0.82 → 0.0.83` ; bump `0.0.7 → 0.0.8` ; Central `0.0.8` (bundle `e8f61dd5-…`) ; racine `capsule = 0.0.8`.
+. [x] MEMPHIS S-287 : BOM/catalog `0.0.84` (capsule-plugin 0.0.8, bundle `8b3663cf-…`).
+. [ ] 🟡 **Dette** : traductions `README.plugin/*.md` (9 langues) encore `0.0.1-SNAPSHOT`.
 
 '''
 == ✅ Sync littérature/backlog ↔ code réel + release `capsule-plugin 0.0.7` (S-178)

@@ -92,6 +92,10 @@ débruiter les faux positifs ; `compare_prises.py` **choisit la meilleure prise*
 *Total* : 5 US (~14 pts) — **TERMINÉ 5/5** (US-0 S-169, US-1 S-170, US-2 S-172,
 US-3/US-4 S-173, US-5 S-174).
 
+*Résidu soldé S-179* : **nombres en lettres** (`NumberSpeller`, Kotlin pur) intégré à
+`FidelityScorer.score` — « 42 » ≡ « quarante deux » avant comparaison (remplace le
+`num2words` du `prepa`). Release `0.0.8`.
+
 == Risques
 
 [cols="2,3", options="header"]

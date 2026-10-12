@@ -199,6 +199,14 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         outputFormat.set(OutputFormat.fromString(value))
     }
 
+    /**
+     * PRT-09 residual — tag the MP4 as BT.709 (broadcast colorimetry:
+     * `-color_primaries bt709 -color_trc bt709 -colorspace bt709`). Opt-in,
+     * defaults to false (backward compat — argv unchanged when disabled).
+     */
+    val outputBt709: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
     /** CAP-CR3-1 — duration validation: probe video duration and compare to audio sum. Defaults to false. */
     val durationValidationEnabled: Property<Boolean> = objects.property(Boolean::class.java)
         .convention(false)
@@ -394,6 +402,7 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         reuseCapturedVideoEnabled = false,
         captureStrategy = CaptureStrategy.PLAYWRIGHT,
         outputFormat = OutputFormat.WEBM,
+        outputBt709 = false,
         ffmpegExecutablePath = "ffmpeg",
         distribOutputWidth = 1080,
         distribOutputHeight = 1920,
@@ -478,6 +487,7 @@ data class CapsuleConventions(
     val reuseCapturedVideoEnabled: Boolean,
     val captureStrategy: CaptureStrategy,
     val outputFormat: OutputFormat,
+    val outputBt709: Boolean,
     val ffmpegExecutablePath: String,
     val distribOutputWidth: Int,
     val distribOutputHeight: Int,

@@ -31,9 +31,18 @@ data class VoiceScore(
  */
 object FidelityScorer {
 
-    /** Scores the raw [expected] text against the raw [transcribed] text. */
-    fun score(expected: String, transcribed: String): VoiceScore =
-        score(TextNormalizer.normalize(expected), TextNormalizer.normalize(transcribed))
+    /**
+     * Scores the raw [expected] text against the raw [transcribed] text.
+     *
+     * PRT-02 residual: integer numerals are spelled ([NumberSpeller]) before
+     * normalisation, so "il y a 42 pommes" and "il y a quarante deux pommes"
+     * compare equal instead of producing a false difference.
+     */
+    fun score(expected: String, transcribed: String, language: String = "fr"): VoiceScore =
+        score(
+            TextNormalizer.normalize(NumberSpeller.spell(expected, language)),
+            TextNormalizer.normalize(NumberSpeller.spell(transcribed, language)),
+        )
 
     /** Scores already-normalised word lists. */
     fun score(referenceWords: List<String>, hypothesisWords: List<String>): VoiceScore {

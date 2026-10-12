@@ -1,0 +1,78 @@
+= Rapport de session 179 — Résidus `prepa` : colorimétrie BT.709 + nombres en lettres (Kotlin)
+:session: 179
+:date: 2026-10-12
+:borough: Détroit (capsule-gradle)
+:statut: TERMINÉ (2 résidus portés + release `0.0.8`)
+:methode: baby-step DDD/TDD/BDD (objet pur → unit → BDD) ; release DAG N0→N2
+
+== Objet
+
+Demande pilote : *« je vois du python […] cela doit être porté en kotlin »*. Audit :
+**zéro fichier `.py`** dans le dépôt (les `.py` vus = citations de provenance en KDoc
++ scènes **Manim** fournies par l'utilisateur, outil externe derrière un port ; jamais du
+code Python du plugin). Deux **résidus réels** du portage `prepa` restaient non portés,
+soldés ici **en Kotlin**.
+
+== R1 — PRT-09 : colorimétrie BT.709 (objet pur + wiring)
+
+Le review `prepa` (PRT-09) prévoyait la colorimétrie **bt709** ; l'encode MP4 de capsule
+ne l'émettait pas.
+
+* **Objet pur** `capsule.Mp4ConversionCommand.buildArgv(ffmpegPath, input, output, bt709)`
+  (mirror `AudioPostCommand`/`SubtitleBurnInCommand`) : argv ffmpeg `libx264/aac/+faststart` ;
+  quand `bt709=true`, ajoute `-color_primaries bt709 -color_trc bt709 -colorspace bt709`.
+  Quand `false`, argv **byte-identique** à l'historique (backward compat).
+* `VideoFormatConverterImpl(ffmpegPath, bt709)` consomme l'objet pur (fin de l'argv inline).
+* **Config 4 sources** : `OutputConfig.bt709` ; `mergeOutputConfig` (`mergeBoolean`) ;
+  loaders env (`CAPSULE_OUTPUT_BT709`) + props (`capsule.output.bt709`) ;
+  `CapsuleExtension.outputBt709` ; `CapsuleConventions.outputBt709=false` ;
+  `CapsulePlugin.pushConfigIntoExtension` ; `resolveFormatConverter(..., bt709)` ;
+  `CapsuleVideoTask.convertFormatIfEnabled` passe le flag.
+* **Tests** : `Mp4ConversionCommandTest` (3 unit : default sans flags, bt709 présent,
+  ordre avant la sortie) + `CapsuleConfigMergerTest` (+3 : défaut false, props, CLI>YAML) ;
+  BDD `capsule_format.feature` +2 scénarios (bt709 activé / désactivé) + 4 steps.
+
+== R2 — PRT-02 : nombres en lettres (Kotlin pur, zéro `num2words`)
+
+Le QC voix `prepa` développait les nombres (`num2words`) avant comparaison ; le
+`TextNormalizer` de capsule ne le faisait pas → faux positifs WER sur les nombres.
+
+* **Objet pur** `capsule.voice.NumberSpeller` — `spell(text, language="fr")` remplace
+  chaque entier par son orthographe française (`french(n)` : unités/dizaines/`soixante-dix`/
+  `quatre-vingts`/centaines avec pluriel/`mille` invariable/millions/milliards). Autres
+  langues → identité.
+* Intégré dans `FidelityScorer.score(expected, transcribed, language="fr")` : les deux
+  côtés sont épelés avant normalisation → « il y a 42 pommes » ≡ « il y a quarante deux pommes ».
+  `TextNormalizer` **inchangé** (contrat `keeps digits` préservé).
+* **Tests** : `NumberSpellerTest` (7 unit : irrégularités 70/80/90, pluriels, milliers,
+  phrase, autre langue, scoring fidélité à WER 0) ; BDD `capsule_voice_quality.feature`
+  +1 scénario (aucun step neuf).
+
+== Release
+
+* Pin catalogue interne `workspace-bom 0.0.82 → 0.0.83` ; bump `capsule 0.0.7 → 0.0.8`.
+* `compileKotlin`/`compileTestKotlin`/`compileFunctionalTestKotlin`/`validatePlugins`/`assemble`
+  VERTS ; `publishToMavenLocal` VERT (POM 0.0.8 importe `workspace-bom:0.0.83`).
+* Central `education.cccp:capsule-plugin:0.0.8` bundle **`e8f61dd5-4f82-4346-aa63-d84c475fccdf`**
+  (AUTOMATIC) — propagation repo1 **HTTP 200 confirmée**. Consommateur racine `capsule = 0.0.8`.
+* MEMPHIS S-287 : BOM/catalog **0.0.84** (capsule-plugin 0.0.8, bundle
+  `8b3663cf-3d23-4480-ac88-3a53171f91d4`) + garde ré-alignée.
+
+== Clarification Python
+
+* `find . -name "*.py"` (dépôt capsule) = **0**.
+* Les `*.py` cités en KDoc = **traçabilité** de technique (PRT) ; les `Scene*.py` = scènes
+  **Manim** (outil tiers Python, invoqué comme binaire, jamais importé) ; fixtures de test.
+* Aucun Python ajouté. Le portage R1/R2 est intégralement **Kotlin**.
+
+== Fichiers
+
+* Prod : `Mp4ConversionCommand.kt` (créé), `VideoFormatConverter.kt`, `CapsuleConfig.kt`,
+  `CapsuleConfigMerger.kt`, `CapsuleModels.kt`, `CapsulePlugin.kt`, `CapsuleManager.kt`,
+  `CapsuleVideoTask.kt`, `voice/NumberSpeller.kt` (créé), `voice/FidelityScorer.kt`.
+* Tests : `Mp4ConversionCommandTest.kt`, `voice/NumberSpellerTest.kt`, `CapsuleConfigMergerTest.kt`,
+  `scenarios/CapsuleFormatSteps.kt`, `capsule_format.feature`, `capsule_voice_quality.feature`.
+* Gouvernance : ce rapport, `PROMPT_REPRISE`, `INDEX`, `SESSIONS_HISTORY`, archive,
+  `BACKLOG`, `TODO`, `TEST_COVERAGE_ANALYSIS`.
+
+_Score : 9/10 (2 résidus du portage `prepa` soldés en Kotlin + release DAG)._

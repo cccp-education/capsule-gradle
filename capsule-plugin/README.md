@@ -3,13 +3,13 @@
 
 > Developer & contributor guide for the `capsule-plugin` Gradle plugin.
 
-[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.7&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
+[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.8&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
 [![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/education.cccp.capsule.svg?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/education.cccp.capsule)
 [![CI](https://img.shields.io/github/actions/workflow/status/cheroliv/capsule-gradle/test.yml?branch=main&label=CI)](https://github.com/cheroliv/capsule-gradle/actions/workflows/test.yml)
 [![Coverage](https://img.shields.io/static/v1?label=coverage&message=Kover&color=blue)]()
 [![License](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=License)](../LICENSE)
 
-- **Version**: `0.0.7` (Maven Central) · **Group**: `education.cccp` · **Plugin ID**: `education.cccp.capsule`
+- **Version**: `0.0.8` (Maven Central) · **Group**: `education.cccp` · **Plugin ID**: `education.cccp.capsule`
 - **Toolchain**: Java 25 · Kotlin 2.4.10 · Gradle 9.8.1
 - **Build**: `./gradlew build -x test` · **Tests**: `./gradlew check` (unit + functional via TestKit; Cucumber via `-PrunCucumber`) · **Coverage**: `./gradlew koverReport`
 
@@ -229,7 +229,7 @@ jobs:
 
 ## Publication (NMCP)
 
-**Published to Maven Central** — version `0.0.7` (previous `0.0.6`, `0.0.5`, …). The POM is configured via
+**Published to Maven Central** — version `0.0.8` (previous `0.0.7`, `0.0.6`, `0.0.5`, …). The POM is configured via
 `maven-publish` and `signing` plugins:
 
 - POM: name "Capsule Gradle Plugin", description "Generation automatisee de capsules video
