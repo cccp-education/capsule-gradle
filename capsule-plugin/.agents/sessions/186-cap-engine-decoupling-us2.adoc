@@ -1,0 +1,87 @@
+= Session 186 — CAP-ENGINE-DECOUPLING US-2 (port `VideoEngine` + adapter reveal.js)
+:session: 186
+:date: 2026-10-12
+:type: refactor+test (extraction moteur, additif)
+:borough: Détroit / capsule-gradle
+:toc:
+
+== Objectif
+
+Livrer **US-2** de l'EPIC `CAP-ENGINE-DECOUPLING` : extraire le **moteur**
+reveal.js/Playwright de `CapsuleVideoTask` (1250 l.) derrière le **port neutre**
+`capsule.kernel.VideoEngine`, avec un adapter `capsule.adapter.revealjs`. Le noyau
+parle `segment`/`visual`/`engine` ; le vocabulaire reveal/slide/deck/Playwright
+reste confiné à l'adapter. Additif, backward-compat.
+
+== Méthode
+
+Baby-step DDD/TDD/BDD strict (unit → fonctionnel → cucumber). **Local = Build /
+Tests = CI** (compiles ×3 + `assemble` + `validatePlugins` uniquement en local).
+
+== Livrables
+
+=== Port neutre `capsule.kernel.VideoEngine` (créé)
+
+[cols="1,3", options="header"]
+|===
+| Fichier | Rôle
+| `VideoEngine.kt` | `interface VideoEngine { name(); isAvailable(); render(request); close() }` + `VideoRenderRequest` (`name`, `visual: VisualSource`, `segments: List<VideoSegment>`, `slideDurations`, `outputDir`, viewport, `parallel`, `timeoutMillis`) + `VideoRenderResult(produced: File?, failedSegments: List<Int>)`. Zéro import Playwright/reveal/Gradle.
+|===
+
+=== Adapter `capsule.adapter.revealjs` (créé)
+
+[cols="1,3", options="header"]
+|===
+| Fichier | Rôle
+| `RevealJsDeckHtml.kt` | **Pur** : `singleSlideHtml(deckHtml, index)` (extraction `<section>` standalone), `SINGLE_SLIDE_VISIBILITY_CSS`, `AUDIO_INJECT_SCRIPT`, `hasDataCapsuleSlide`, `injectAudioScript`, `injectDataSlideAudio`, `injectSequentialAudio`. Toute la manipulation DOM reveal.js.
+| `RevealJsEngineAdapter.kt` | Implémente `VideoEngine`. **Résolution** du moteur Playwright/Screenshot/Remotion (`CaptureResolver` + `ViralCaptureStrategy` + `StrictModeGuard`), **orchestration** parallèle (`singleSlideHtml` par slide, un moteur par worker) et séquentielle (deck entier), **concat** FFmpeg. Construit depuis `RevealJsCaptureSettings` (snapshot config, sans extension Gradle) + `captureProvider` injectable (fake en test).
+|===
+
+=== Migration `CapsuleVideoTask` (1250 → **999 l.**, −251)
+
+* `createSingleSlideHtml` / `concatWebmFiles` → **délégués** (`RevealJsDeckHtml` / `RevealJsEngineAdapter.concat`), signatures conservées (call-sites tests intacts).
+* `resolvePlaywrightCapture` → construit l'adapter (`revealJsAdapter`) et délègue.
+* `captureDeckSequential` / `captureSlideParallel` → capture déléguée à l'adapter, **post-processing conservé** dans la tâche (mix audio, burn-in sous-titres, audio post, conversion format — engine-agnostiques).
+* `captureDeckParallel` inchangé (appelle `captureSlideParallel`).
+* `injectAudio` → logique de string déléguée à `RevealJsDeckHtml`, I/O conservées.
+* Suppression : `AUDIO_INJECT_SCRIPT`, `SINGLE_SLIDE_VISIBILITY_CSS`, `injectAudioSequentialFallback`, imports `Executors`/`Future`/`TimeUnit`/`TimeoutException`.
+
+=== Tests (nouveaux)
+
+[cols="2,1", options="header"]
+|===
+| Test | Scénarios
+| `capsule/adapter/revealjs/RevealJsDeckHtmlTest.kt` | 7 (extraction single-slide, hors-bornes, marqueur, injection data-audio, script, fallback séquentiel)
+| `capsule/adapter/revealjs/RevealJsEngineAdapterTest.kt` | 5 (provider injecté, render whole-source, render parallèle — segment en échec rapporté non fatal, concat vide, surface)
+| `capsule_engine_adapter.feature` + `CapsuleEngineAdapterSteps` + `CapsuleEngineAdapterCucumberRunner` | 4 scénarios `@engine-adapter` (runner dédié **42e** `cucumberTestEngineAdapter`, S-082/S-088)
+|===
+
+== Gates locaux (Local = Build)
+
+* `compileKotlin` / `compileTestKotlin` / `compileFunctionalTestKotlin` **VERTS**.
+* `assemble` + `validatePlugins` **VERTS**.
+* Tâches `cucumberTestEngineAdapter` + `cucumberTestKernelModel` **enregistrées**.
+* Zéro secret. Zéro bump, zéro publication.
+
+== Décisions clés
+
+[cols="1,4", options="header"]
+|===
+| # | Décision
+| D-186-1 | Port `VideoEngine` **neutre** dans `capsule.kernel` (`render(request)` → `VideoRenderResult`).
+| D-186-2 | Adapter `RevealJsEngineAdapter` construit depuis un **snapshot de config** (`RevealJsCaptureSettings`), pas l'extension Gradle → testable, noyau intact.
+| D-186-3 | Le **post-processing** (audio/burn-in/audio-post/format) reste dans la tâche : engine-agnostique.
+| D-186-4 | API publique/test de `CapsuleVideoTask` conservée par **délégation** (zéro rupture des call-sites).
+| D-186-5 | Segment en échec **rapporté** (`failedSegments`), jamais fatal (dégradation préservée).
+|===
+
+== Suite
+
+* US-3 : port `SegmentSource` + `RevealJsSpeakerNoteSource` (extraire le parser speaker-notes + contrat `-script.txt`).
+* US-4 : isoler `capsule.kernel` + **garde d'architecture** (test frontière) — `capsule.adapter.revealjs` = seul dépositaire du vocabulaire reveal.
+* US-5 : extraction N1 `video-kernel` (accord pilote).
+
+== Statut
+
+`CAP-ENGINE-DECOUPLING` **US-2 ✅ S-186** (US-0 ✅ S-184, US-1 ✅ S-185 ; US-3→5 🟡 À FAIRE).
+Le moteur reveal.js/Playwright est désormais derrière un port neutre, prêt pour un 2ᵉ moteur (HyperFrames).

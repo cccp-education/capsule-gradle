@@ -1,7 +1,22 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-12
-:session: 185 CAP-ENGINE-DECOUPLING US-1 (modèle neutre + alias additif)
+:session: 186 CAP-ENGINE-DECOUPLING US-2 (port VideoEngine + adapter reveal.js)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 12 octobre 2026 (après session 186)
+
+.Extraction moteur reveal.js derrière le port `VideoEngine` (CAP-ENGINE-DECOUPLING US-2)
+|===
+| Élément | Changement | Tests
+
+| `capsule/kernel/VideoEngine.kt` (créé) | port neutre + `VideoRenderRequest`/`VideoRenderResult` | (couvert via adapter)
+| `capsule/adapter/revealjs/RevealJsDeckHtml.kt` (créé) | extraction single-slide + injection audio reveal (pur) | +7 `RevealJsDeckHtmlTest`
+| `capsule/adapter/revealjs/RevealJsEngineAdapter.kt` (créé) | résolution capture + orchestration parallèle/séquentielle + concat | +5 `RevealJsEngineAdapterTest` (fake capture)
+| `capsule/CapsuleVideoTask.kt` (retravaillé, −251 l.) | délégation capture/HTML à l'adapter, post-processing conservé | suites existantes (CapsulePluginTest, CaptureSlideParallelTest) via API préservée
+| `capsule_engine_adapter.feature` (créé) | 4 scénarios `@engine-adapter` | `CapsuleEngineAdapterSteps` + `CapsuleEngineAdapterCucumberRunner` (`cucumberTestEngineAdapter`, 42e)
+|===
+
+
 
 == Couverture — 12 octobre 2026 (après session 185)
 

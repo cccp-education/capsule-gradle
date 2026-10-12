@@ -311,6 +311,17 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleKernelModelCucumberRunner",
             timeoutMinutes = 10,
         ),
+        // CAP-ENGINE-DECOUPLING US-2 — reveal.js engine adapter (deck HTML +
+        // capture orchestration behind the neutral VideoEngine port).
+        // Dedicated runner pattern S-082; steps prefixed "engine adapter"/"reveal deck".
+        // Pure domain — fake capture, no Gradle/FFmpeg/Playwright.
+        CucumberTaskSpec(
+            name = "cucumberTestEngineAdapter",
+            features = listOf("src/test/features/capsule_engine_adapter.feature"),
+            tags = listOf("@engine-adapter"),
+            runnerClass = "capsule.scenarios.CapsuleEngineAdapterCucumberRunner",
+            timeoutMinutes = 10,
+        ),
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task

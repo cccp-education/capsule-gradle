@@ -1,41 +1,39 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 186
+:session: 187
 :borough: Détroit
-:session_precedente: 185 — CAP-ENGINE-DECOUPLING US-1 (modèle neutre + alias additif) ✅
+:session_precedente: 186 — CAP-ENGINE-DECOUPLING US-2 (port VideoEngine + adapter reveal.js) ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`.
 
 == Contexte Hérité
 
-=== S-185 — CAP-ENGINE-DECOUPLING US-1 ✅ (modèle neutre, additif)
+=== S-186 — CAP-ENGINE-DECOUPLING US-2 ✅ (extraction moteur)
 
-- Noyau neutre créé `capsule.kernel` : `VideoKind`, `VideoSegment`, `VideoScript`,
-  `VisualSource`/`FileVisualSource`, `VideoProductionEntry`, `VideoProductionPlan`.
-- Alias additifs : `SlideSegment`/`CapsuleScript` (feed),
-  `CapsuleVideoEntry`/`CapsuleVideoPlan` (multilang) + accesseurs legacy
-  (`speakerNote`/`manimScene`/`type`/`deckName`/`deckFile`).
-- `SlideType` (HTML/MANIM) **conservé** (sérialisation storyboard viral + marqueurs
-  `-script.txt`) + mapping `SlideType ↔ VideoKind`.
-- Constructions migrées vers le vocabulaire neutre ; lectures couvertes par compat.
-- Tests : +20 unit (kernel + mapping) + BDD `@kernel-model` (runner dédié 41e
-  `cucumberTestKernelModel`). Compiles + `assemble` + `validatePlugins` VERTS.
-- Zéro bump, zéro publication, zéro secret.
+- Port neutre `capsule.kernel.VideoEngine` (+ `VideoRenderRequest`/`VideoRenderResult`).
+- `capsule.adapter.revealjs` : `RevealJsDeckHtml` (pur : single-slide extraction,
+  audio injection, CSS/script) + `RevealJsEngineAdapter` (résolution Playwright/
+  Screenshot/Remotion + orchestration parallèle/séquentielle + concat FFmpeg),
+  construit depuis `RevealJsCaptureSettings` (snapshot config) + `captureProvider`.
+- `CapsuleVideoTask` **1250 → 999 l.** (−251) : capture déléguée à l'adapter ;
+  post-processing (audio/burn-in/audio-post/format) conservé ; API publique/test
+  préservée par délégation (`createSingleSlideHtml`, `concatWebmFiles`,
+  `captureSlideParallel`, `captureDeckSequential/Parallel`, `injectAudio`).
+- Tests : +12 unit (`RevealJsDeckHtmlTest` 7, `RevealJsEngineAdapterTest` 5) +
+  BDD `@engine-adapter` (runner dédié **42e** `cucumberTestEngineAdapter`).
+- Gates locaux VERTS (compiles ×3 + assemble + validatePlugins). Zéro bump.
 
-== Mission Session 186 — CAP-ENGINE-DECOUPLING US-2
+== Mission Session 187 — CAP-ENGINE-DECOUPLING US-3
 
-Extraire le port `VideoEngine` + adapter `RevealJsEngineAdapter` : déplacer la
-capture Playwright (`PlaywrightManager`, `HtmlSectionParser`, `createSingleSlideHtml`,
-`CaptureResolver`) hors de `CapsuleVideoTask.kt` (1248 l.) vers
-`capsule.adapter.revealjs`, derrière le port neutre `capsule.kernel.VideoEngine`.
-Additif, backward-compat. Baby-step DDD/TDD/BDD strict (unit → fonctionnel → cucumber).
+Extraire le port `SegmentSource` + adapter `RevealJsSpeakerNoteSource` : déplacer
+le parser speaker-notes AsciiDoc reveal.js + le contrat `-script.txt` vers
+`capsule.adapter.revealjs`. Additif, backward-compat. Baby-step DDD/TDD/BDD strict.
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
-* **Règle 6 — ZÉRO secret** dans le code, les logs, les tests.
-* **Règle 7 — capsule consomme slider** sans modifier le deck source.
+* **Règle 6 — ZÉRO secret**. **Règle 7 — capsule consomme slider** (deck lecture seule).
 * Le noyau parle `segment`/`visual`/`engine` — **jamais** `slide`/`deck`/`reveal`/`Playwright`.
-* Ne pas casser le plugin mature (917 unit + 60 functional + 41 runners Cucumber).
+* Ne pas casser le plugin mature (917 unit + 60 functional + **42 runners**).
 * **English only** code/Gherkin (`OssVocabularyGuardTest`) ; **zéro Python** ;
   runner dédié par feature (S-082), steps préfixés (S-088).
 * Catalogue **interne** aligné BOM `0.0.86`.
@@ -44,4 +42,4 @@ Additif, backward-compat. Baby-step DDD/TDD/BDD strict (unit → fonctionnel →
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.10** (Central).
 * MEMPHIS BOM/catalog **0.0.86**. Tous les EPICs antérieurs sont clos/caduques.
-* **CAP-ENGINE-DECOUPLING** 🟡 EN COURS (US-0 ✅ S-184 ; **US-1 ✅ S-185** ; US-2→5 À FAIRE).
+* **CAP-ENGINE-DECOUPLING** 🟡 EN COURS (US-0 ✅ S-184 ; US-1 ✅ S-185 ; **US-2 ✅ S-186** ; US-3→5 À FAIRE).

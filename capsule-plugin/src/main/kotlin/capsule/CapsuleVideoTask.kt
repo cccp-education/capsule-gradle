@@ -1,5 +1,8 @@
 package capsule
 
+import capsule.adapter.revealjs.RevealJsCaptureSettings
+import capsule.adapter.revealjs.RevealJsDeckHtml
+import capsule.adapter.revealjs.RevealJsEngineAdapter
 import capsule.audio.AudioPostConfig
 import capsule.audio.NoOpAudioPostProcessor
 import capsule.feed.CapsuleScript
@@ -8,6 +11,8 @@ import capsule.feed.SlideSegment
 import capsule.feed.SlideType
 import capsule.feed.deckName
 import capsule.feed.type
+import capsule.kernel.FileVisualSource
+import capsule.kernel.VideoRenderRequest
 import capsule.multilang.MultiLanguageResolver
 import capsule.voice.PronunciationLexicon
 import capsule.validation.VideoIntegrityProbe
@@ -19,11 +24,6 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
 import java.io.File
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
-import java.util.concurrent.atomic.AtomicInteger
 
 @DisableCachingByDefault(because = "Filesystem-bound: injects audio into HTML deck and captures video via Playwright")
 open class CapsuleVideoTask : DefaultTask() {
@@ -49,127 +49,26 @@ open class CapsuleVideoTask : DefaultTask() {
         /** PRT-06 — sidecar suffix holding the render signature next to a video. */
         internal const val SIGNATURE_SUFFIX: String = ".sig"
 
-        private const val AUDIO_INJECT_SCRIPT = """
-<!-- CAPSULE-GRADLE: Autoplay audio injection -->
-<script>
-(function() {
-  var currentAudio = null;
-  var sections = document.querySelectorAll('.reveal .slides section[data-audio]');
-  var audios = [];
-  sections.forEach(function(sec) {
-    var src = sec.getAttribute('data-audio');
-    if (src) {
-      var audio = new Audio(src.replace('file://', ''));
-      audio.id = 'audio-' + audios.length;
-      document.body.appendChild(audio);
-      audios.push(audio);
-    }
-  });
-  function playSlideAudio(idx) {
-    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
-    currentAudio = audios[idx];
-    if (currentAudio) {
-      currentAudio.currentTime = 0;
-      currentAudio.play().catch(function(e) { console.warn('Audio play failed:', e); });
-    }
-  }
-  if (typeof Reveal !== 'undefined') {
-    Reveal.on('slidechanged', function(event) {
-      playSlideAudio(event.indexh);
-    });
-    if (audios.length > 0) playSlideAudio(0);
-  }
-})();
-</script>
-"""
-
-        @JvmStatic
-        fun concatWebmFiles(webmFiles: List<File>, outputFile: File, ffmpegPath: String = "ffmpeg"): Boolean {
-            if (webmFiles.isEmpty()) return false
-            val concatList = File(outputFile.parentFile, "concat-${System.currentTimeMillis()}.txt")
-            concatList.writeText(webmFiles.joinToString("\n") { "file '${it.absolutePath.replace("'", "'\\''")}'" })
-            val success = try {
-                val result = ProcessRunner.run(
-                    listOf(
-                        ffmpegPath, "-y", "-f", "concat", "-safe", "0",
-                        "-i", concatList.absolutePath, "-c", "copy", outputFile.absolutePath,
-                    )
-                )
-                result.isSuccess && outputFile.exists()
-            } catch (e: Exception) {
-                false
-            } finally {
-                concatList.delete()
-            }
-            if (success) {
-                webmFiles.forEach { it.delete() }
-            }
-            return success
-        }
-
         /**
-         * Extracts a single slide from a reveal.js deck HTML and produces a standalone HTML document
-         * that can be rendered independently by Playwright/ScreenshotCapture.
+         * Concatenates per-slide video files via the FFmpeg concat demuxer.
          *
-         * @param deckHtml The full deck HTML source
-         * @param slideIndex 0-based index of the section within `.slides` container
-         * @return Standalone HTML with only the requested slide, preserving head, styles, and scripts
+         * Delegates to the reveal.js adapter (CAP-ENGINE-DECOUPLING US-2); kept
+         * on this companion for backward compatibility of existing call-sites.
          */
-        /**
-         * Forces the one extracted slide to be visible whatever the deck's own
-         * stylesheet does with `.slides section` (reveal.css hides every slide
-         * but the current one, and positions them absolutely).
-         */
-        internal const val SINGLE_SLIDE_VISIBILITY_CSS: String =
-            ".reveal .slides section{display:block!important;visibility:visible!important;" +
-                "opacity:1!important;transform:none!important;position:relative!important;top:0!important;left:0!important}"
-
         @JvmStatic
-        fun createSingleSlideHtml(deckHtml: String, slideIndex: Int): String {
-            val headSection = HtmlSectionParser.headMarkup(deckHtml)
+        fun concatWebmFiles(webmFiles: List<File>, outputFile: File, ffmpegPath: String = "ffmpeg"): Boolean =
+            RevealJsEngineAdapter.concat(webmFiles, outputFile, ffmpegPath)
 
-            // Gourmand à dessein : la forme paresseuse s'arrête au premier
-            // `</div>` imbriqué, ce qui tronque silencieusement tout deck dont
-            // les diapos contiennent un `<div>` — le `</div>` du conteneur est
-            // le dernier. Le compte de sections tombait alors faux et
-            // l'extraction rendait le deck entier au lieu de la diapo demandée.
-            // Même règle que RemotionCapture.slidesMarkup, dont c'est la source.
-            val slidesContent = HtmlSectionParser.slidesMarkup(deckHtml)
-                ?: return deckHtml
-
-            // Extract top-level <section> elements (may contain nested <section> for vertical stacks)
-            val topLevelSections = HtmlSectionParser.extractTopLevelSections(slidesContent)
-
-            if (slideIndex < 0 || slideIndex >= topLevelSections.size) {
-                return deckHtml
-            }
-
-            val targetSection = topLevelSections[slideIndex]
-
-            return buildString {
-                appendLine("<!DOCTYPE html>")
-                appendLine("<html>")
-                appendLine(headSection)
-                appendLine("<body>")
-                appendLine("""<div class="reveal">""")
-                appendLine("""  <div class="slides">""")
-                appendLine("    $targetSection")
-                appendLine("  </div>")
-                appendLine("</div>")
-                // No reveal.js is pulled in here. The deck already carries whatever
-                // presentation runtime it was built with, in the <head> preserved
-                // above; fetching a second, different copy from a CDN made it
-                // re-layout the page — titles and captions ended up off-screen —
-                // and made parallel capture depend on network access. A single
-                // extracted slide needs no runtime at all, only to be visible, so
-                // the deck's own rules are overridden with one inline stylesheet.
-                appendLine("<style>")
-                appendLine(SINGLE_SLIDE_VISIBILITY_CSS)
-                appendLine("</style>")
-                appendLine("</body>")
-                appendLine("</html>")
-            }.trimIndent()
-        }
+        /**
+         * Extracts a single slide from a reveal.js deck HTML into a standalone
+         * document.
+         *
+         * Delegates to [RevealJsDeckHtml] (CAP-ENGINE-DECOUPLING US-2); kept on
+         * this companion for backward compatibility of existing call-sites.
+         */
+        @JvmStatic
+        fun createSingleSlideHtml(deckHtml: String, slideIndex: Int): String =
+            RevealJsDeckHtml.singleSlideHtml(deckHtml, slideIndex)
 
     }
 
@@ -203,59 +102,44 @@ open class CapsuleVideoTask : DefaultTask() {
         )
     }
 
-    private fun resolvePlaywrightCapture(slideDurations: List<Double>): PlaywrightCapture {
-        if (playwrightCapture != null) return playwrightCapture!!
+    /**
+     * Builds the reveal.js engine adapter from the current extension state
+     * (CAP-ENGINE-DECOUPLING US-2). The Playwright/Screenshot/Remotion engine
+     * resolution and capture orchestration now live in the adapter; the task
+     * keeps only its config snapshot and post-processing.
+     *
+     * @param captureProvider optional fake engine supplier (tests); when `null`
+     *        the adapter resolves the real engine from the settings.
+     */
+    private fun revealJsAdapter(captureProvider: (() -> PlaywrightCapture)? = null): RevealJsEngineAdapter =
+        RevealJsEngineAdapter(
+            settings = RevealJsCaptureSettings(
+                playwrightTimeout = capsuleExtension.playwrightTimeout.get(),
+                defaultSlideDuration = capsuleExtension.slideDurationSeconds.get(),
+                configuredStrategy = capsuleExtension.captureStrategy.get(),
+                viralEnabled = capsuleExtension.viralEnabled.getOrElse(false),
+                strict = capsuleExtension.strictMode.get(),
+                ffmpegPath = capsuleExtension.ffmpegExecutablePath.get(),
+                parallelThreads = capsuleExtension.parallelCaptureThreads.get(),
+                previewOnly = capsuleExtension.previewOnly.get(),
+                chromiumPath = capsuleExtension.chromiumExecutablePath.get(),
+                remotionProjectDir = project.layout.buildDirectory
+                    .dir(capsuleExtension.remotionProjectDir.get()).get().asFile,
+                remotionNodePath = capsuleExtension.remotionNodeExecutablePath.get(),
+                remotionConcurrency = capsuleExtension.remotionConcurrency.get(),
+                remotionFps = capsuleExtension.remotionFps.get(),
+                // Manim writes under <mediaDir>/videos/<module>/<quality>/ ;
+                // the quality directory depends on the resolution asked for,
+                // so every leaf is offered rather than one guessed path.
+                manimSources = manimVideoDirs(),
+            ),
+            logger = logger,
+            captureProvider = captureProvider,
+        )
 
-        val defaultDur = capsuleExtension.slideDurationSeconds.get()
-        val strategy = capsule.viral.ViralCaptureStrategy.resolve(
-            configured = capsuleExtension.captureStrategy.get(),
-            viralEnabled = capsuleExtension.viralEnabled.getOrElse(false),
-        )
-        val resolved = CaptureResolver.resolve(
-            strategy = strategy,
-            strict = capsuleExtension.strictMode.get(),
-            playwrightFactory = {
-                PlaywrightCaptureImpl(
-                    timeout = capsuleExtension.playwrightTimeout.get(),
-                    defaultSlideDuration = defaultDur
-                )
-            },
-            screenshotFactory = {
-                ScreenshotCaptureImpl(
-                    timeout = capsuleExtension.playwrightTimeout.get(),
-                    ffmpegPath = capsuleExtension.ffmpegExecutablePath.get(),
-                    encodeParallelism = capsuleExtension.parallelCaptureThreads.get(),
-                    previewOnly = capsuleExtension.previewOnly.get(),
-                )
-            },
-            noOpCapture = NoOpPlaywrightCapture(),
-            enginePath = capsuleExtension.chromiumExecutablePath.get(),
-            remotionFactory = {
-                RemotionCaptureImpl(
-                    projectDir = project.layout.buildDirectory
-                        .dir(capsuleExtension.remotionProjectDir.get()).get().asFile,
-                    nodeExecutablePath = capsuleExtension.remotionNodeExecutablePath.get(),
-                    concurrency = capsuleExtension.remotionConcurrency.get(),
-                    fps = capsuleExtension.remotionFps.get(),
-                    // Manim writes under <mediaDir>/videos/<module>/<quality>/ ;
-                    // the quality directory depends on the resolution asked for,
-                    // so every leaf is offered rather than one guessed path.
-                    manimSources = manimVideoDirs(),
-                )
-            },
-        )
-        if (resolved.isAvailable()) {
-            val totalSecs = slideDurations.sum()
-            logger.lifecycle(
-                "Capture: {} strategy ({} slides, {}s total)",
-                strategy.name.lowercase(),
-                slideDurations.size,
-                String.format("%.1f", totalSecs)
-            )
-        } else {
-            logger.warn("{} not available, falling back to noop capture", strategy.name.lowercase())
-        }
-        return resolved
+    private fun resolvePlaywrightCapture(slideDurations: List<Double>): PlaywrightCapture {
+        playwrightCapture?.let { return it }
+        return revealJsAdapter().resolveCapture(slideDurations)
     }
 
     internal fun resolveTtsEngine(): TtsEngine {
@@ -575,21 +459,25 @@ open class CapsuleVideoTask : DefaultTask() {
         slideDurations: List<Double>,
         subtitleFile: File?
     ) {
-        val deckCapture = resolvePlaywrightCapture(slideDurations)
         val (viewportWidth, viewportHeight) = resolveViewport()
-        try {
-            deckCapture.capture(
-                deckHtmlPath = finalDeckFile.absolutePath,
-                outputDir = videoOutputDir,
-                viewportWidth = viewportWidth,
-                viewportHeight = viewportHeight,
-                slideDurations = slideDurations
+        val adapter = revealJsAdapter(playwrightCapture?.let { { it } })
+        val result = try {
+            adapter.render(
+                VideoRenderRequest(
+                    name = parsed.deckName,
+                    visual = FileVisualSource(finalDeckFile),
+                    segments = parsed.segments,
+                    slideDurations = slideDurations,
+                    outputDir = videoOutputDir,
+                    viewportWidth = viewportWidth,
+                    viewportHeight = viewportHeight,
+                    parallel = false,
+                    timeoutMillis = DEFAULT_CAPTURE_TIMEOUT_MILLIS,
+                )
             )
         } catch (e: CapturingException) {
             logger.error("Playwright capture failed for '{}': {}", parsed.deckName, e.message)
             throw e
-        } finally {
-            deckCapture.close()
         }
 
         if (capsuleExtension.previewOnly.get()) {
@@ -598,16 +486,12 @@ open class CapsuleVideoTask : DefaultTask() {
             return
         }
 
-        // SCREENSHOT strategy leaves the per-slide `slide-N.<ext>` next to the
-        // concatenated `capsule.<ext>`, and listFiles() order is unspecified:
-        // always prefer the concatenated file, never a single slide.
-        val ext = deckCapture.outputExtension()
-        val produced = videoOutputDir.listFiles { f -> f.name.endsWith(".$ext") }?.toList().orEmpty()
-        val generatedVideo = produced.firstOrNull { it.name == "${RemotionPlanner.FINAL_VIDEO_BASENAME}.$ext" }
-            ?: produced.firstOrNull { !it.name.startsWith("slide-") }
-            ?: produced.firstOrNull()
+        // The adapter already picks the concatenated deck video over a single
+        // slide (SCREENSHOT leaves `slide-N.<ext>` next to `capsule.<ext>`, and
+        // listFiles() order is unspecified).
+        val generatedVideo = result.produced
         if (generatedVideo != null) {
-            val finalVideo = outDir.resolve("${parsed.deckName}.$ext")
+            val finalVideo = outDir.resolve("${parsed.deckName}.${generatedVideo.extension}")
             generatedVideo.copyTo(finalVideo, overwrite = true)
             mixAudioWithVideo(finalVideo, audioDir, parsed.segments)
             burnInSubtitlesIfEnabled(finalVideo, subtitleFile)
@@ -1013,93 +897,23 @@ open class CapsuleVideoTask : DefaultTask() {
         captureFactory: (() -> PlaywrightCapture)? = null,
         captureTimeoutMillis: Long = DEFAULT_CAPTURE_TIMEOUT_MILLIS
     ): Int {
-        val executor = Executors.newFixedThreadPool(capsuleExtension.parallelCaptureThreads.get())
-        val futures = mutableListOf<Future<File?>>()
-        val failedSlides = mutableListOf<Int>()
         val slideDurations = computeSlideDurations(parsed, audioDir)
-
-        // One capture engine per worker thread, reused across that thread's slides.
-        // Resolving per slide launched a browser for the availability probe and a
-        // second one for the capture itself — two Chromium instances per slide,
-        // which is what saturated the driver and made this mode unusable.
-        val engines = java.util.concurrent.ConcurrentLinkedQueue<PlaywrightCapture>()
-        val threadEngine = ThreadLocal.withInitial {
-            (captureFactory?.invoke() ?: resolvePlaywrightCapture(slideDurations))
-                .also { engines.add(it) }
-        }
-
-        // Read the deck HTML once for createSingleSlideHtml extraction
-        val deckHtml = File(deckHtmlPath).readText()
-
-        for ((idx, seg) in parsed.segments.withIndex()) {
-            val slideDir = outputDir.resolve("slide-${String.format("%02d", seg.index)}")
-            futures.add(executor.submit<File?> {
-                val capture = threadEngine.get()
-                try {
-                    // Create a standalone HTML for this specific slide
-                    val singleSlideHtml = createSingleSlideHtml(deckHtml, idx)
-                    val singleSlideFile = slideDir.resolve("slide.html")
-                    slideDir.mkdirs()
-                    singleSlideFile.writeText(singleSlideHtml)
-
-                    capture.capture(singleSlideFile.absolutePath, slideDir, viewportWidth, viewportHeight, listOf(slideDurations[idx]))
-                    // No capture engine writes a file called `slide.webm`: Playwright
-                    // names its recording with a random id, ScreenshotCaptureImpl emits
-                    // `capsule.webm`. Take whatever WebM landed in the slide directory.
-                    val slideExt = capture.outputExtension()
-                    val produced = slideDir.listFiles { f -> f.name.endsWith(".$slideExt") }?.toList().orEmpty()
-                    val source = produced.firstOrNull {
-                        it.name == "${RemotionPlanner.FINAL_VIDEO_BASENAME}.$slideExt"
-                    }
-                        ?: produced.firstOrNull { !it.name.startsWith("slide-") }
-                        ?: produced.firstOrNull()
-                    if (source != null && source.exists()) {
-                        val target = outputDir.resolve("slide-${String.format("%02d", seg.index)}.$slideExt")
-                        source.copyTo(target, overwrite = true)
-                        target
-                    } else null
-                } catch (e: Exception) {
-                    // Degraded mode: a failing slide is reported, never fatal for the whole deck.
-                    logger.warn("  Slide {} capture failed: {}", seg.index, e.message)
-                    synchronized(failedSlides) { failedSlides.add(seg.index) }
-                    null
-                }
-            })
-        }
-
-        val webmFiles = try {
-            futures.mapNotNull { future ->
-                try {
-                    future.get(captureTimeoutMillis, TimeUnit.MILLISECONDS)
-                } catch (e: TimeoutException) {
-                    logger.error(
-                        "Parallel capture timed out after {} ms — aborting. Shutting down executor.",
-                        captureTimeoutMillis
-                    )
-                    throw e
-                }
-            }
-        } finally {
-            executor.shutdownNow()
-            engines.forEach { engine ->
-                runCatching { engine.close() }
-                    .onFailure { logger.info("Capture engine close failed: {}", it.message) }
-            }
-        }
-
-        if (failedSlides.isNotEmpty()) {
-            logger.error(
-                "{} slide(s) failed to capture: {} — resulting video may be incomplete",
-                failedSlides.size, failedSlides.sorted().joinToString(", ")
+        val provider = captureFactory ?: playwrightCapture?.let { { it } }
+        val adapter = revealJsAdapter(provider)
+        val result = adapter.render(
+            VideoRenderRequest(
+                name = parsed.deckName,
+                visual = FileVisualSource(File(deckHtmlPath)),
+                segments = parsed.segments,
+                slideDurations = slideDurations,
+                outputDir = outputDir,
+                viewportWidth = viewportWidth,
+                viewportHeight = viewportHeight,
+                parallel = true,
+                timeoutMillis = captureTimeoutMillis,
             )
-        }
-
-        if (webmFiles.isNotEmpty()) {
-            val finalVideo = outputDir.resolve("${parsed.deckName}.${webmFiles.first().extension}")
-            concatWebmFiles(webmFiles, finalVideo, capsuleExtension.ffmpegExecutablePath.get())
-        }
-
-        return failedSlides.size
+        )
+        return result.failedSegments.size
     }
 
     internal fun injectAudio(deckFile: File, script: CapsuleScript, audioDir: File): File {
@@ -1107,96 +921,31 @@ open class CapsuleVideoTask : DefaultTask() {
         val injectedDir = project.layout.buildDirectory.dir("capsule/injected").get().asFile
         injectedDir.mkdirs()
 
-        val hasAudio = script.segments.any { seg ->
-            val idx = String.format("%02d", seg.index)
-            val audioFile = audioDir.resolve("slide-$idx.mp3")
-            audioFile.exists()
+        val audioPathByIndex = script.segments.associate { seg ->
+            seg.index to audioDir.resolve("slide-${String.format("%02d", seg.index)}.mp3").absolutePath
         }
+        val hasAudio = audioPathByIndex.values.any { File(it).exists() }
 
+        val outFile = injectedDir.resolve(deckFile.name)
         if (!hasAudio) {
-            val outFile = injectedDir.resolve(deckFile.name)
             outFile.writeText(originalHtml)
             return outFile
         }
 
-        // Le repli séquentiel réécrit le deck de zéro : construire d'abord la
-        // version par `data-capsule-slide` puis la jeter était du travail perdu,
-        // et relisait le fichier une seconde fois.
-        val hasDataCapsuleSlide = originalHtml.contains("data-capsule-slide=")
-        if (!hasDataCapsuleSlide) {
-            return injectAudioSequentialFallback(originalHtml, script, audioDir, injectedDir, deckFile.name)
+        // The reveal.js-specific HTML manipulation lives in the adapter
+        // (CAP-ENGINE-DECOUPLING US-2). The sequential fallback rewrites the deck
+        // from scratch: building the `data-capsule-slide` version first and
+        // discarding it was wasted work, and re-read the file a second time.
+        val injectedHtml = if (!RevealJsDeckHtml.hasDataCapsuleSlide(originalHtml)) {
+            val orderedPaths = script.segments.map { audioPathByIndex.getValue(it.index) }
+            val withAudio = RevealJsDeckHtml.injectSequentialAudio(originalHtml, orderedPaths)
+            RevealJsDeckHtml.injectAudioScript(withAudio, markerSuffix = "sequential fallback")
+        } else {
+            val withAudio = RevealJsDeckHtml.injectDataSlideAudio(originalHtml, audioPathByIndex)
+            RevealJsDeckHtml.injectAudioScript(withAudio)
         }
 
-        val injectedHtml = originalHtml.lines().map { line ->
-            if (line.contains("<section") && !line.contains("</section>")) {
-                var mutableLine = line
-                for (seg in script.segments) {
-                    if (line.contains("data-capsule-slide=\"${seg.index}\"") || line.contains("data-capsule-slide='${seg.index}'")) {
-                        val idx = String.format("%02d", seg.index)
-                        val audioPath = audioDir.resolve("slide-$idx.mp3").absolutePath
-                        mutableLine = mutableLine.replace(
-                            "<section",
-                            "<section data-audio=\"file://$audioPath\""
-                        )
-                        break
-                    }
-                }
-                mutableLine
-            } else {
-                line
-            }
-        }.joinToString("\n")
-
-        val injected = injectedHtml.replace(
-            "</body>",
-            "$AUDIO_INJECT_SCRIPT</body>"
-        )
-
-        val outFile = injectedDir.resolve(deckFile.name)
-        outFile.writeText(injected)
-        return outFile
-    }
-
-    private fun injectAudioSequentialFallback(
-        originalHtml: String,
-        script: CapsuleScript,
-        audioDir: File,
-        injectedDir: File,
-        deckFileName: String
-    ): File {
-        val sections = HtmlSectionParser.findTopLevelSectionOpenTags(originalHtml)
-
-        val injectedHtml = buildString {
-            var lastEnd = 0
-            var slideIdx = 0
-            for (match in sections) {
-                append(originalHtml.substring(lastEnd, match.range.first))
-                var tag = match.value
-                if (slideIdx < script.segments.size) {
-                    val seg = script.segments[slideIdx]
-                    val idx = String.format("%02d", seg.index)
-                    val audioPath = audioDir.resolve("slide-$idx.mp3").absolutePath
-                    tag = tag.replace("<section", "<section data-audio=\"file://$audioPath\"")
-                }
-                append(tag)
-                lastEnd = match.range.last + 1
-                slideIdx++
-            }
-            append(originalHtml.substring(lastEnd))
-        }
-
-        val sequentialScript = AUDIO_INJECT_SCRIPT.replace(
-            "<!-- CAPSULE-GRADLE: Autoplay audio injection -->",
-            "<!-- CAPSULE-GRADLE: Autoplay audio injection (sequential fallback) -->"
-        )
-
-        val injected = injectedHtml.replace(
-            "</body>",
-            "$sequentialScript</body>"
-        )
-
-        val outFile = injectedDir.resolve(deckFileName)
-        outFile.writeText(injected)
+        outFile.writeText(injectedHtml)
         return outFile
     }
 

@@ -1,6 +1,19 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 186 — `CAP-ENGINE-DECOUPLING` US-2 ✅ (port `VideoEngine` + adapter reveal.js)
+
+* Port neutre `capsule.kernel.VideoEngine` + `VideoRenderRequest`/`VideoRenderResult`.
+* `capsule.adapter.revealjs` : `RevealJsDeckHtml` (pur — single-slide extraction,
+  injection audio reveal) + `RevealJsEngineAdapter` (résolution Playwright/Screenshot/
+  Remotion + orchestration parallèle/séquentielle + concat FFmpeg), construit depuis
+  `RevealJsCaptureSettings` + `captureProvider` injectable.
+* `CapsuleVideoTask` **1250 → 999 l.** (−251) ; API publique/test préservée par
+  délégation ; post-processing engine-agnostique conservé.
+* Tests : +12 unit + BDD `@engine-adapter` (4 scénarios, runner **42e** `cucumberTestEngineAdapter`).
+* Gates locaux (Local = Build) : compiles ×3 + `assemble` + `validatePlugins` VERTS.
+  Zéro bump, zéro publication, zéro secret. Rapport `.agents/sessions/186-cap-engine-decoupling-us2.adoc`.
+
 == Session 185 — `CAP-ENGINE-DECOUPLING` US-1 ✅ (modèle neutre + alias additif)
 
 * Noyau engine-agnostique `capsule.kernel` créé : `VideoKind` (`VISUAL`/`ANIMATION`),
