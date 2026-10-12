@@ -1,6 +1,27 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 184 — Cadrage EPIC `CAP-ENGINE-DECOUPLING` ✅
+
+* Gouvernance pure, zéro code (patron S-057/S-063). Découpler le **métier** vidéo du
+  **moteur** reveal.js/slider + **préparer la mutualisation** avec `hyperframes-gradle`.
+  Décision pilote : **ne pas attendre le seuil « factoriser à 3 »**.
+* Review code des deux boroughs : **capsule 190 fichiers / 20 domaines / 31 tâches** vs
+  **hyperframes 16 / 3 / 3** (écart outillage ~10:1). Point chaud : `CapsuleVideoTask.kt`
+  (**1248 l.**) mêlant noyau (TTS/audio/sous-titres) + adapter reveal.js
+  (`.reveal .slides section[data-audio]`, Playwright, `createSingleSlideHtml`,
+  `HtmlSectionParser`, `ManimSlideReplacer`).
+* **Reclassification du « non-transférable »** : presque tout est **récupérable** ;
+  couplage slider limité à la capture reveal.js + parser speaker-notes + swap Manim +
+  champs deck du contrat N3.
+* Décisions D1→D7 : modèle neutre `VideoSegment`/`VideoScript`/`VideoProductionEntry` ;
+  ports `SegmentSource` + `VideoEngine` ; package `capsule.kernel` + garde d'architecture ;
+  adapter `capsule.adapter.revealjs` ; cible N1 `education.cccp:video-kernel`
+  (**pas N0**, cf. S-162). Roadmap 6 US (US-0 ✅ → US-5).
+* Doc `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`. Rapport
+  `.agents/sessions/184-cap-engine-decoupling-cadrage.adoc`. Côté Watts :
+  `.agents/CADRAGE_EPIC_HF_KERNEL_ADAPTER.adoc`.
+
 == Session 183 — Cadrage EPIC `KOOG-PIPELINE-DEDUP` → CADUQUE ✅
 
 * Gouvernance pure, zéro code (patron S-057/S-063). Audit du TODO dormant
