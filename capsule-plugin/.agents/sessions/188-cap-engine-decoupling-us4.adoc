@@ -57,6 +57,12 @@ dépendre de contrats purs, pas d'une lib utilitaire).
 * `assemble` + `validatePlugins` **VERTS**.
 * Tâche `cucumberTestKernelBoundary` **enregistrée**. Zéro secret. Zéro bump.
 
+=== Preuve CI (commit `f7cd284`)
+
+* **Test** (Fast Tests PR Gate) : ✅ **success** — run `38317519289` (2m54s).
+* **Full Tests** (binaries réels + duration validation) : ✅ **success** — run
+  `38317519361` (23m50s). **Vert du premier coup** (la garde passe en CI).
+
 == Décisions clés
 
 [cols="1,4", options="header"]
