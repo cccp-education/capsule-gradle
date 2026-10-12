@@ -395,6 +395,12 @@ alignement catalogue interne `workspace-bom 0.0.79 → 0.0.81`. Consommateur rac
 (bundle `524c2a15-9090-4457-bc03-8d565e7acb7a`, capsule-plugin 0.0.6) + garde
 `PlatformCatalogAlignmentTest` ré-alignée.
 
+`education.cccp:capsule-plugin:0.0.7` publié via nmcp (Session 178, AUTOMATIC,
+propagation repo1 HTTP 200 confirmée). Contenu : re-pin catalogue interne `workspace-bom
+0.0.81 → 0.0.82` + sync littérature/backlog (gouvernance). Consommateur racine
+`capsule = 0.0.7` ; **MEMPHIS** `workspace-bom`/`workspace-catalog` **0.0.83**
+(bundle `6727405a-6c6e-490c-a5dc-a3a82b42fd8a`, capsule-plugin 0.0.7).
+
 '''
 == 📚 README i18n ✅ TERMINE (Session 041)
 
@@ -676,11 +682,12 @@ _Total_ : 30 EPICs terminés (0 TODO). _Baseline courante_ (S-136, exacte) :
 * English only : code, Gherkin, commentaires
 * Économie d'encre = skip si artefact existe et valide (AGENT.adoc Loi)
 * `build.gradle.kts` — 38 `CucumberTaskSpec` (dont l'agrégé `cucumberTest`)
-* Conventions `education.cccp.build.*` 0.0.7 (mavenLocal) ; catalogue interne aligné
-  `workspace-bom 0.0.79` (codebase 0.0.17, slider 0.0.19) — S-165
-* 20 domaines DDD : ai, anim, audio, chapters, ci, context, feed, i18n, multilang,
+* Conventions `education.cccp.build.*` 0.0.7 ; catalogue interne aligné
+  `workspace-bom 0.0.82` (codebase 0.0.17, slider 0.0.19, koog 1.3.0,
+  jackson 2.21.2) — S-177
+* **19** domaines DDD : ai, anim, audio, chapters, ci, context, feed, i18n, multilang,
   pipeline, podcast, preview, publish, qc, timeline, transcript, validation, viral,
-  voice (+ support). `capsule.preview` clos S-128 ; `capsule.voice` (CAP-QC-VOICE),
+  voice. `capsule.preview` clos S-128 ; `capsule.voice` (CAP-QC-VOICE),
   `capsule.qc` (PRT-08), `capsule.timeline` (PRT-07) clos S-168→S-174.
 * `ProcessRunner` (nouveau S-131) remplace `ProcessBuilder.waitFor()` répandu
   — anti-interblocage tube 64 Kio + délai de garde. 14 appelants migrés + couverts (S-132).

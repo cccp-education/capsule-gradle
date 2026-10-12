@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-12 (S-177) — release `capsule-plugin 0.0.6` + alignement catalogue. Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-12 (S-178) — sync littérature/backlog ↔ code réel + release `capsule-plugin 0.0.7`. Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (121-177)
+== Sessions récentes (122-178)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 178 | 2026-10-12 | sync+release | **Sync littérature/backlog ↔ code réel + release `capsule-plugin 0.0.7`.** Audit : **19 domaines** (corrigé de « 20 »), **38 `CucumberTaskSpec`**, **44 features**, Gradle **9.8.1**. `README.md` master synchronisé (0.0.7, Gradle 9.8.1, koog 1.3.0, Jackson 2.21.2, codebase 0.0.17, slider 0.0.19). Pin BOM `0.0.81 → 0.0.82` ; bump `0.0.6 → 0.0.7` ; Central `0.0.7` (AUTOMATIC) ; racine `capsule = 0.0.7` ; MEMPHIS BOM/catalog **0.0.83** (bundle `6727405a-…`). Dette : traductions `README.plugin/*.md` encore `0.0.1-SNAPSHOT`. | 9/10
 
 | 177 | 2026-10-12 | release | **Release `capsule-plugin 0.0.6` + alignement catalogue** (option A maintenance). Catalogue interne `workspace-bom 0.0.79 → 0.0.81` ; bump `0.0.5 → 0.0.6` (contenu S-176 PRT-01 dit↔lu, CI-vert run `38233947596`) ; `assemble`/`publishToMavenLocal` VERTS ; Central bundle **`240d55fa-fcac-4933-ad27-3c1bb3937dea`** (AUTOMATIC). Consommateur racine `capsule = 0.0.6`. **MEMPHIS S-285** : BOM/catalog **`0.0.82`** (capsule-plugin 0.0.6, bundle `524c2a15-…`) + garde `PlatformCatalogAlignmentTest` ré-alignée + dérive `bakery-plugin` `0.0.25 → 0.0.26` corrigée. Cadrage `diag-agent → PlantUML` (S-177 `0b36ab1`) **reverté** — HTOWN a produit `PLT-AGENT` (S-228/S-229). Zéro code produit modifié. | 9/10
 

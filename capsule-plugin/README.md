@@ -3,15 +3,15 @@
 
 > Developer & contributor guide for the `capsule-plugin` Gradle plugin.
 
-[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.1-SNAPSHOT&color=orange)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
+[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.7&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
 [![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/education.cccp.capsule.svg?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/education.cccp.capsule)
 [![CI](https://img.shields.io/github/actions/workflow/status/cheroliv/capsule-gradle/test.yml?branch=main&label=CI)](https://github.com/cheroliv/capsule-gradle/actions/workflows/test.yml)
 [![Coverage](https://img.shields.io/static/v1?label=coverage&message=Kover&color=blue)]()
 [![License](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=License)](../LICENSE)
 
-- **Version**: `0.0.1-SNAPSHOT` (non publié) · **Group**: `education.cccp` · **Plugin ID**: `education.cccp.capsule`
-- **Toolchain**: Java 25 · Kotlin 2.4.10 · Gradle 9.6.1
-- **Build**: `./gradlew build -x test` · **Tests**: `./gradlew check` (917 unit + 67 functional PASS, Cucumber via `-PrunCucumber`) · **Coverage**: `./gradlew koverReport`
+- **Version**: `0.0.7` (Maven Central) · **Group**: `education.cccp` · **Plugin ID**: `education.cccp.capsule`
+- **Toolchain**: Java 25 · Kotlin 2.4.10 · Gradle 9.8.1
+- **Build**: `./gradlew build -x test` · **Tests**: `./gradlew check` (unit + functional via TestKit; Cucumber via `-PrunCucumber`) · **Coverage**: `./gradlew koverReport`
 
 🌐 Languages: **EN** | [中文](README.plugin/README.zh.md) | [हिन्दी](README.plugin/README.hi.md) | [Español](README.plugin/README.es.md) | [Français](README.plugin/README.fr.md) | [العربية](README.plugin/README.ar.md) | [বাংলা](README.plugin/README.bn.md) | [Português](README.plugin/README.pt.md) | [Русский](README.plugin/README.ru.md) | [اردو](README.plugin/README.ur.md)
 
@@ -119,7 +119,7 @@ capsule-plugin/
 
 ## N2 dependency
 
-`capsule-gradle` consumes `slider-gradle` (`education.cccp:slider:0.0.16`) via `compileOnly`.
+`capsule-gradle` consumes `slider-gradle` (`education.cccp:slider:0.0.19`) via `compileOnly`.
 The contract is file-based — capsule reads the deck HTML and script text files produced by slider,
 never modifies them. CapsulePlugin auto-applies `education.cccp.slider` at runtime if available.
 
@@ -133,14 +133,14 @@ for tests (zero network, zero pool).
 | Library | Version | Role |
 |---------|---------|------|
 | **Playwright** | 1.52.0 | Headless Chromium — reveal.js control + video capture (JVM native, zero npm) |
-| **koog-agents** | 1.0.0 | Kotlin DSL for agent orchestration (StateGraph / ConditionalEdges) — `CapsulePipelineGraph` |
-| **Jackson** | 2.18.3 | YAML config + JSON serialization (databind, kotlin, dataformat-yaml) |
+| **koog-agents** | 1.3.0 | Kotlin DSL for agent orchestration (StateGraph / ConditionalEdges) — `CapsulePipelineGraph` |
+| **Jackson** | 2.21.2 | YAML config + JSON serialization (databind, kotlin, dataformat-yaml) |
 | **Kover** | 0.9.8 | Coverage reports (XML + HTML, wired into `check`) |
 | **Cucumber** | 7.34.3 | BDD tests (cucumber-java, junit-platform-engine, picocontainer) |
 | **Kotlin** | 2.4.10 | Plugin DSL |
-| **codebase-plugin** | 0.0.8 | N1 LLM socle — LlmBuildService bridge (`capsule.ai`) |
+| **codebase-plugin** | 0.0.17 | N1 LLM socle — LlmBuildService bridge (`capsule.ai`) |
 | **codebase-contracts** | 0.0.2 | N0 contracts — CompositeContext / ContextChannel / ChannelBudget (`capsule.context`) |
-| **slider** | 0.0.16 | compileOnly — reveal.js deck + capsule script source |
+| **slider** | 0.0.19 | compileOnly — reveal.js deck + capsule script source |
 
 External tools (not Maven dependencies):
 - **Piper** — local offline TTS engine (default)
@@ -154,13 +154,13 @@ External tools (not Maven dependencies):
 | Task | Scope | Details |
 |------|-------|---------|
 | `test` | JUnit5 unit tests | Excludes `capsule.scenarios.**`. `@integration` tests are *not* filtered out: they self-skip when the external tool (Chromium, espeak, FFmpeg, Manim) is missing |
-| `cucumberTest` | Cucumber BDD | 132 scenarios over 22 `.feature` files, `forkEvery = 1`, `maxParallelForks = 1`, heap 1g. Skipped unless `-PrunCucumber` or `CI=true` (CR-10) |
+| `cucumberTest` | Cucumber BDD | features under `src/test/features` (44 `.feature` files), `forkEvery = 1`, `maxParallelForks = 1`, heap 1g. Skipped unless `-PrunCucumber` or `CI=true` (CR-10) |
 | `functionalTest` | Gradle TestKit | Plugin application functional tests |
 | `check` | All | Depends on `test` + `cucumberTest` + `functionalTest` |
 
-Cucumber tags: `@ai`, `@architecture`, `@audio`, `@boundary`, `@burnin`, `@capsule`, `@capture`, `@ci`, `@config`, `@context`, `@cross-borough`, `@distrib`, `@docs`, `@duration`, `@feed`, `@format`, `@glossary`, `@i18n`, `@integration`, `@logging`, `@manim`, `@model`, `@multilang`, `@no-yaml`, `@parallel`, `@pipeline`, `@post`, `@provenance`, `@rag`, `@scenario`, `@sequential`, `@strategy`, `@strict`, `@style`, `@subtitles`, `@timeout`, `@transcript`, `@translation`, `@tts`, `@validation`, `@versioning`, `@vtt`, `@wiring`. 14 dedicated `cucumberTest*` tasks isolate one feature each (see `cucumberConventions` in `build.gradle.kts`).
+Cucumber tags: `@ai`, `@architecture`, `@audio`, `@boundary`, `@burnin`, `@capsule`, `@capture`, `@ci`, `@config`, `@context`, `@cross-borough`, `@distrib`, `@docs`, `@duration`, `@feed`, `@format`, `@glossary`, `@i18n`, `@integration`, `@logging`, `@manim`, `@model`, `@multilang`, `@no-yaml`, `@parallel`, `@pipeline`, `@post`, `@provenance`, `@rag`, `@scenario`, `@sequential`, `@strategy`, `@strict`, `@style`, `@subtitles`, `@timeout`, `@transcript`, `@translation`, `@tts`, `@validation`, `@versioning`, `@vtt`, `@wiring`. 38 dedicated `cucumberTest*` tasks isolate one feature each (see `CucumberTaskSpec` in `build.gradle.kts`).
 
-Test totals: **917 unit + 67 functional PASS** (session 118 baseline; cucumber skipped by default since CR-10).
+Test baseline: the authoritative green is the CI `Full Tests` workflow on `main` (unit + functional TestKit + aggregate/real-render Cucumber; the diagnostic `cucumberTest` is skipped by default since CR-10).
 
 ## LLM content pipeline (CAP-ARCH-3)
 
@@ -229,7 +229,7 @@ jobs:
 
 ## Publication (NMCP)
 
-**Non publié** — version `0.0.1-SNAPSHOT`. The POM is configured for Maven Central via
+**Published to Maven Central** — version `0.0.7` (previous `0.0.6`, `0.0.5`, …). The POM is configured via
 `maven-publish` and `signing` plugins:
 
 - POM: name "Capsule Gradle Plugin", description "Generation automatisee de capsules video

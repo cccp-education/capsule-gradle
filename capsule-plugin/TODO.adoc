@@ -1,5 +1,16 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-12 (S-177 — release `capsule-plugin 0.0.6` + alignement catalogue ; MEMPHIS BOM/catalog `0.0.82`.)
+:last_update: 2026-10-12 (S-178 — sync littérature/backlog ↔ code réel + release `capsule-plugin 0.0.7` ; MEMPHIS BOM/catalog `0.0.83`.)
+
+'''
+== ✅ Sync littérature/backlog ↔ code réel + release `capsule-plugin 0.0.7` (S-178)
+
+. [x] Audit code réel : 19 domaines, 38 `CucumberTaskSpec`, 44 `.feature`, wrapper Gradle 9.8.1.
+. [x] `BACKLOG.adoc` : « 20 domaines » → **19** + catalogue `0.0.79 → 0.0.82`.
+. [x] `README.md` master synchronisé (version `0.0.7`, deps, comptes → baseline CI).
+. [x] Pin `workspace-bom 0.0.81 → 0.0.82` ; bump `0.0.6 → 0.0.7` ; `assemble`/`publishToMavenLocal` VERTS.
+. [x] Central `0.0.7` (AUTOMATIC) ; consommateur racine `capsule = 0.0.7`.
+. [x] MEMPHIS S-286 : BOM/catalog `0.0.83` (capsule-plugin 0.0.7, bundle `6727405a-…`) + garde ré-alignée.
+. [ ] 🟡 **Dette** : traductions `README.plugin/*.md` (9 langues) encore `0.0.1-SNAPSHOT` — synchroniser sur le master `0.0.7`.
 
 '''
 == ✅ Release `capsule-plugin 0.0.6` + alignement catalogue (S-177)

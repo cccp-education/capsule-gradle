@@ -1,0 +1,81 @@
+= Rapport de session 178 — Sync littérature/backlog + release `capsule-plugin 0.0.7`
+:session: 178
+:date: 2026-10-12
+:borough: Détroit (capsule-gradle)
+:statut: TERMINÉ (sync gouvernance + release DAG N0→N2)
+:methode: audit code réel ↔ docs, puis pin/bump/publish/consommateurs (accord pilote)
+
+== Mission
+
+Demande pilote : **synchroniser le backlog et la littérature agentique avec l'état
+du code réel**, puis **pin/bump/publier** (local + Central), **mettre à jour les
+consommateurs**, et **clôturer**.
+
+== 1. Audit code réel ↔ documentation
+
+Faits extraits du code (source de vérité) :
+
+[cols="2,2", options="header"]
+|===
+| Fait code | Source
+
+| **19** domaines DDD | `find src/main/kotlin/capsule -maxdepth 1 -type d` (ai, anim, audio, chapters, ci, context, feed, i18n, multilang, pipeline, podcast, preview, publish, qc, timeline, transcript, validation, viral, voice)
+| **38** `CucumberTaskSpec` | `grep -c CucumberTaskSpec( build.gradle.kts)`
+| **44** fichiers `*.feature` | `ls src/test/features | wc -l`
+| Gradle wrapper **9.8.1** | `gradle-wrapper.properties`
+| deps N1/N0 : codebase **0.0.17**, slider **0.0.19**, koog **1.3.0**, jackson **2.21.2** | `gradle/libs.versions.toml`
+|===
+
+**Dérives corrigées** :
+* `BACKLOG.adoc` : « 20 domaines DDD (+ support) » → **19 domaines** (le sous-dossier
+  `support` n'existe pas côté `src/main`) ; catalogue `workspace-bom 0.0.79` → **0.0.82**.
+* `README.md` (master, source des traductions) : version `0.0.1-SNAPSHOT` →
+  **`0.0.7`** (badge + ligne + section publication) ; Gradle `9.6.1` → `9.8.1` ;
+  koog `1.0.0` → `1.3.0` ; Jackson `2.18.3` → `2.21.2` ; codebase-plugin `0.0.8`
+  → `0.0.17` ; slider `0.0.16` → `0.0.19` ; « 132 scénarios / 22 features /
+  14 runners » → **44 `.feature` / 38 `CucumberTaskSpec`** ; comptes de tests figés
+  remplacés par un renvoi au baseline **CI `Full Tests`**.
+* Dette constatée (documentée, non traitée) : les **9 traductions** `README.plugin/*.md`
+  portent encore `0.0.1-SNAPSHOT` et des versions de deps divergentes (dérive
+  multi-langue, chantier dédié).
+
+(Littérature `.agents/` et marqueurs périmés déjà synchronisés en S-177.)
+
+== 2. Pin + bump
+
+* Catalogue interne `gradle/libs.versions.toml` : `workspace-bom 0.0.81 → 0.0.82`
+  (re-pin sur la BOM courante MEMPHIS, publiée S-285).
+* Bump `[versions].capsule 0.0.6 → 0.0.7`.
+* `compileKotlin`/`compileTestKotlin`/`assemble` VERTS ; `publishToMavenLocal` VERT
+  (POM `0.0.7` importe `workspace-bom:0.0.82`).
+
+== 3. Publication
+
+* **Capsule** `education.cccp:capsule-plugin:0.0.7` → Central (AUTOMATIC). _(bundle
+  id non capturé — sortie console tronquée ; preuve = propagation repo1)._
+* **MEMPHIS S-286** : BOM/catalog `0.0.82 → 0.0.83` (capsule-plugin 0.0.7), bundle
+  **`6727405a-6c6e-490c-a5dc-a3a82b42fd8a`** (AUTOMATIC) + garde
+  `PlatformCatalogAlignmentTest` ré-alignée (`0.0.82 → 0.0.83`).
+
+== 4. Consommateurs
+
+* Racine `foundry/public/capsule-gradle` : `capsule = 0.0.7` (`./gradlew tasks` VERT).
+* MEMPHIS `workspace-bom`/`workspace-catalog` **0.0.83** (capsule-plugin 0.0.7).
+
+== 5. Propagation (repo1)
+
+**Confirmée** (polling fin de session) : `capsule-plugin/0.0.7` HTTP 200 +
+`workspace-bom/0.0.83` HTTP 200 + `workspace-catalog/0.0.83` HTTP 200.
+
+== Fichiers
+
+* `capsule-plugin/gradle/libs.versions.toml` (BOM 0.0.82, capsule 0.0.7)
+* `capsule-gradle/gradle/libs.versions.toml` (racine 0.0.7)
+* `capsule-plugin/README.md` (sync master)
+* `capsule-plugin/BACKLOG.adoc` (domaines, catalogue)
+* `workspace-bom/gradle/libs.versions.toml` (0.0.83, capsule 0.0.7)
+* `workspace-bom/agent-contracts/src/test/.../PlatformCatalogAlignmentTest.kt`
+* Gouvernance : ce rapport, `PROMPT_REPRISE`, `INDEX`, `SESSIONS_HISTORY`,
+  archive, `TODO`.
+
+_Score : 9/10 (sync factuelle + release DAG + consommateurs)._

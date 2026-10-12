@@ -1,34 +1,29 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 178
+:session: 179
 :borough: Détroit
-:session_precedente: 177 — release `capsule-plugin 0.0.6` + alignement catalogue
+:session_precedente: 178 — sync littérature/backlog + release `capsule-plugin 0.0.7`
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`.
 
 == Contexte Hérité
 
-=== S-177 — release 0.0.6 (livré)
+=== S-178 — sync + release 0.0.7 (livré)
 
-- Option A (maintenance/release, accord pilote) : backlog capsule vidé.
-- Catalogue interne aligné `workspace-bom 0.0.79 → 0.0.81` ; bump `capsule 0.0.5 → 0.0.6`
-  (contenu S-176 PRT-01 dit↔lu, déjà CI-vert run `38233947596`).
-- Publication Central bundle `240d55fa-fcac-4933-ad27-3c1bb3937dea` (AUTOMATIC).
-- Consommateur racine `capsule = 0.0.6` ; MEMPHIS (S-285) BOM/catalog `0.0.82`
-  (capsule-plugin 0.0.6, bundle `524c2a15-9090-4457-bc03-8d565e7acb7a`) + garde
-  `PlatformCatalogAlignmentTest` ré-alignée (dérive bakery `0.0.25 → 0.0.26` corrigée).
-- Rapport `.agents/sessions/177-publication-0.0.6.adoc`.
+- Audit code réel ↔ docs : **19 domaines** (corrigé de « 20 »), **38 `CucumberTaskSpec`**,
+  **44 features**, wrapper Gradle **9.8.1**.
+- `README.md` master synchronisé (version `0.0.7`, Gradle 9.8.1, koog 1.3.0,
+  Jackson 2.21.2, codebase 0.0.17, slider 0.0.19, comptes de tests → CI).
+- Pin catalogue interne `workspace-bom 0.0.81 → 0.0.82` ; bump `capsule 0.0.6 → 0.0.7`.
+- Central `0.0.7` (AUTOMATIC) ; consommateur racine `capsule = 0.0.7` ; MEMPHIS
+  BOM/catalog **0.0.83** (bundle `6727405a-…`).
+- Rapport `.agents/sessions/178-sync-litterature-release-0.0.7.adoc`.
 
-=== S-176 — câblage dit↔lu (livré). S-175 — publication 0.0.5.
+=== S-177 — release 0.0.6 + sync marqueurs littérature + cache CI Playwright.
 
-=== S-177 (tentative révoquée)
+== Mission Session 179 — backlog EPICs vidé
 
-Le cadrage cross-borough `diag-agent → PlantUML` avait été committé (`0b36ab1`)
-puis **reverté** (`2bf1451`) : **HTOWN** a produit son propre cadrage (`PLT-AGENT`,
-S-228/S-229). Travail capsule **nul et non avenu** — ne pas le reprendre.
-
-== Mission Session 178 — backlog EPICs vidé
-
-* **A)** Dette/maintenance capsule (couverture Kover, README, drift catalogue résiduel).
+* **A)** Dette/maintenance : traductions `README.plugin/*.md` (9 langues, encore
+  `0.0.1-SNAPSHOT` — dérive multi-langue) ; couverture Kover.
 * **B)** Toute nouvelle demande pilote (cadrer + implémenter en baby-step).
 
 == Points d'attention
@@ -38,11 +33,12 @@ S-228/S-229). Travail capsule **nul et non avenu** — ne pas le reprendre.
   `pushConfigIntoExtension`, **défaut false** (backward compat).
 * **English only** (`OssVocabularyGuardTest`) ; zéro Python ; zéro secret ; baby-step
   DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
-* CI : cache Ollama (`.github/actions/setup-ollama`) ; Gradle `setup-gradle@v4`.
-* Catalogue **interne** aligné BOM `0.0.81` — vérifier au fil des bumps MEMPHIS.
+* CI : caches Gradle (`setup-gradle@v4`) + Playwright (`.github/actions/setup-playwright`)
+  + Ollama (`.github/actions/setup-ollama`).
+* Catalogue **interne** aligné BOM `0.0.82` — vérifier au fil des bumps MEMPHIS.
 
 == Rappels
 
-* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.6** (Central, propagation repo1 HTTP 200 confirmée).
-* MEMPHIS BOM/catalog **0.0.82**. `CAP-QC` **9/9 ✅**. `CAP-QC-VOICE` **5/5 ✅**.
+* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.7** (Central).
+* MEMPHIS BOM/catalog **0.0.83**. `CAP-QC` **9/9 ✅**, `CAP-QC-VOICE` **5/5 ✅**.
   Backlog actionnable **vidé**.
