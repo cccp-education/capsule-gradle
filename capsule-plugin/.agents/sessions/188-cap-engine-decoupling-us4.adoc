@@ -1,0 +1,77 @@
+= Session 188 — CAP-ENGINE-DECOUPLING US-4 (isolation `capsule.kernel` + garde d'architecture)
+:session: 188
+:date: 2026-10-12
+:type: refactor+test (frontière d'architecture)
+:borough: Détroit / capsule-gradle
+:toc:
+
+== Objectif
+
+Livrer **US-4** de l'EPIC `CAP-ENGINE-DECOUPLING` : garantir que le **noyau
+engine-agnostique** `capsule.kernel` reste isolé, par une **garde d'architecture**
+(test frontière, pattern `OssVocabularyGuardTest` / `ProcessMigrationGuardTest`).
+Corrige une fuite de vocabulaire révélée par la garde.
+
+== Méthode
+
+Baby-step DDD/TDD/BDD strict (unit → fonctionnel → cucumber). **Local = Build /
+Tests = CI** (compiles ×3 + `assemble` + `validatePlugins` uniquement en local).
+
+== Livrables
+
+=== Neutralisation d'une fuite de vocabulaire (kernel)
+
+`VideoRenderRequest.slideDurations` (introduit en US-2) violait D7 (« le noyau
+parle segment/visual/engine, jamais slide »). Renommé **`segmentDurations`**
+(kernel + adapter `RevealJsEngineAdapter` + named-args `CapsuleVideoTask`) ;
+l'adapter traduit vers `PlaywrightCapture.capture(slideDurations = …)` (paramètre
+de l'interface de capture, hors noyau). Ajout d'un invariant kernel
+(`segmentDurations.size == segments.size`).
+
+=== Garde d'architecture (créée)
+
+[cols="1,3", options="header"]
+|===
+| Fichier | Rôle
+| `capsule/ci/KernelBoundaryAudit.kt` | Audit statique partagé : (1) **imports** du noyau limités à `java.`/`kotlin.`/`contracts.`/`capsule.kernel.` ; (2) **vocabulaire de code** (commentaires retirés) sans `slide`/`deck`/`reveal`/`playwright`/`data-audio`/`data-capsule-slide`/`asciidoc`/`processbuilder`/`org.gradle`.
+| `capsule/ci/KernelBoundaryTest.kt` | Garde unit (2 tests : imports whitelistés, code neutre).
+| `capsule_kernel_boundary.feature` + `CapsuleKernelBoundarySteps` + `CapsuleKernelBoundaryCucumberRunner` | BDD `@kernel-boundary` (2 scénarios, runner dédié **44e** `cucumberTestKernelBoundary`, S-082/S-088).
+|===
+
+*Preuve d'isolation* : le seul import non-JDK du noyau est le contrat N0
+`contracts.i18n.*` (purs, sans Gradle/Playwright) — conforme à D5 (le noyau peut
+dépendre de contrats purs, pas d'une lib utilitaire).
+
+=== Tests (nouveaux)
+
+[cols="2,1", options="header"]
+|===
+| Test | Scénarios
+| `capsule/ci/KernelBoundaryTest.kt` | 2 (imports whitelistés ; vocabulaire neutre)
+| `capsule_kernel_boundary.feature` + steps | 2 scénarios `@kernel-boundary` (runner 44e)
+|===
+
+== Gates locaux (Local = Build)
+
+* `compileKotlin` / `compileTestKotlin` / `compileFunctionalTestKotlin` **VERTS**.
+* `assemble` + `validatePlugins` **VERTS**.
+* Tâche `cucumberTestKernelBoundary` **enregistrée**. Zéro secret. Zéro bump.
+
+== Décisions clés
+
+[cols="1,4", options="header"]
+|===
+| # | Décision
+| D-188-1 | Garde **statique** (imports + vocabulaire code, commentaires exclus) — le noyau reste le seul endroit neutre.
+| D-188-2 | Renommage `slideDurations` → `segmentDurations` : le kernel ne porte aucun token de rendu (même en code).
+| D-188-3 | Audit partagé `KernelBoundaryAudit` (DRY unit + BDD) ; le noyau peut dépendre de `contracts.*` (N0 purs) — cf. D5.
+|===
+
+== Suite
+
+* US-5 : extraction N1 `education.cccp:video-kernel` (module + publication) — **accord pilote requis**.
+  Le noyau est désormais isolé et gardé ; l'extraction consiste à le matérialiser en artefact N1.
+
+== Statut
+
+`CAP-ENGINE-DECOUPLING` **US-4 ✅ S-188** (US-0 ✅ S-184, US-1 ✅ S-185, US-2 ✅ S-186, US-3 ✅ S-187 ; US-5 🟡 À FAIRE — accord pilote).

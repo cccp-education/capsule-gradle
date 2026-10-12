@@ -159,7 +159,7 @@ class CapsuleEngineAdapterSteps {
             name = name,
             visual = FileVisualSource(deck),
             segments = segments,
-            slideDurations = segments.map { 1.0 },
+            segmentDurations = segments.map { 1.0 },
             outputDir = File(workDir, "out-$name-$parallel").apply { mkdirs() },
             viewportWidth = 1920,
             viewportHeight = 1080,

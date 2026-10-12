@@ -1,7 +1,21 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-12
-:session: 187 CAP-ENGINE-DECOUPLING US-3 (port SegmentSource + adapter speaker-notes)
+:session: 188 CAP-ENGINE-DECOUPLING US-4 (isolation capsule.kernel + garde d'architecture)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 12 octobre 2026 (après session 188)
+
+.Garde d'architecture du noyau engine-agnostique (CAP-ENGINE-DECOUPLING US-4)
+|===
+| Élément | Changement | Tests
+
+| `capsule/kernel/VideoEngine.kt` | `slideDurations` → `segmentDurations` + invariant `size == segments.size` | +2 `KernelBoundaryTest` (indirect)
+| `capsule/ci/KernelBoundaryAudit.kt` (créé) | audit statique imports + vocabulaire du noyau | (couvert via guard)
+| `capsule/ci/KernelBoundaryTest.kt` (créé) | garde unit (imports whitelistés ; code neutre) | 2 tests
+| `capsule_kernel_boundary.feature` (créé) | 2 scénarios `@kernel-boundary` | `CapsuleKernelBoundarySteps` + `CapsuleKernelBoundaryCucumberRunner` (`cucumberTestKernelBoundary`, 44e)
+|===
+
+
 
 == Couverture — 12 octobre 2026 (après session 187)
 

@@ -1,43 +1,43 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 188
+:session: 189
 :borough: Détroit
-:session_precedente: 187 — CAP-ENGINE-DECOUPLING US-3 (port SegmentSource + adapter speaker-notes) ✅
+:session_precedente: 188 — CAP-ENGINE-DECOUPLING US-4 (isolation capsule.kernel + garde d'architecture) ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`.
 
 == Contexte Hérité
 
-=== S-187 — CAP-ENGINE-DECOUPLING US-3 ✅ (extraction source)
+=== S-188 — CAP-ENGINE-DECOUPLING US-4 ✅ (frontière d'architecture)
 
-- Port neutre `capsule.kernel.SegmentSource` (`name()` + `segments(source: File): List<VideoSegment>`).
-- `capsule.adapter.revealjs` : `RevealJsSpeakerNoteParser` (AsciiDoc `== Title` +
-  `[NOTE.speaker]` → `VideoScript`), `RevealJsScriptContract` (`-script.txt`
-  write/read, marqueurs `[manim:]`/`[html]`), `RevealJsSpeakerNoteSource`
-  (implémente `SegmentSource`).
-- Compat `capsule.feed` par **délégation** : `AsciidocSpeakerNoteParser`,
-  `CapsuleScriptWriter`, `CapsuleScriptReader` (API préservée).
-- Tests : +8 unit + BDD `@segment-source` (runner dédié **43e** `cucumberTestSegmentSource`).
-- Gates locaux VERTS (compiles ×3 + assemble + validatePlugins). Zéro bump.
+- Garde statique `capsule.ci.KernelBoundaryAudit` + `KernelBoundaryTest` :
+  imports du noyau limités à `java./kotlin./contracts./capsule.kernel.`, et
+  vocabulaire de code (commentaires exclus) sans
+  `slide/deck/reveal/playwright/data-audio/...`.
+- Fuite corrigée : `VideoRenderRequest.slideDurations` → **`segmentDurations`**
+  (+ invariant `segmentDurations.size == segments.size`).
+- BDD `@kernel-boundary` (runner dédié **44e** `cucumberTestKernelBoundary`).
 
-=== S-186 — US-2 ✅ (extraction moteur)
+=== S-187 — US-3 ✅ (extraction source)
 
-- Port `capsule.kernel.VideoEngine` + adapter `capsule.adapter.revealjs`
-  (`RevealJsDeckHtml` pur + `RevealJsEngineAdapter`) ; `CapsuleVideoTask` 1250 → 999 l.
+- Port `capsule.kernel.SegmentSource` + adapter speaker-notes reveal
+  (`RevealJsSpeakerNoteParser`/`RevealJsScriptContract`/`RevealJsSpeakerNoteSource`) ; compat `capsule.feed` par délégation.
 
-== Mission Session 188 — CAP-ENGINE-DECOUPLING US-4
+== Mission Session 189 — CAP-ENGINE-DECOUPLING US-5 (accord pilote)
 
-Isoler `capsule.kernel` + poser la **garde d'architecture** (test frontière,
-pattern `bakery` `I18nClientNoDirectHttpBoundaryTest`) : `capsule.kernel` ne doit
-importer **ni** `playwright`, **ni** `reveal`, **ni** AsciiDoc/`capsule.feed`,
-**ni** `org.gradle`, **ni** `capsule.adapter.*`. Vérifier aussi `capsule.adapter.revealjs`
-= seul dépositaire du vocabulaire reveal/Playwright. Baby-step DDD/TDD/BDD strict.
+Préparer l'**extraction N1** `education.cccp:video-kernel` : matérialiser
+`capsule.kernel` (modèle neutre + ports `VideoEngine`/`SegmentSource`) en un
+module N1 publié sur Maven Central, consommé par capsule (et plus tard par
+hyperframes/Watts). **Accord pilote explicite requis** (publication + bump BOM).
+Le noyau est déjà isolé et gardé (US-4) — l'extraction est un geste de
+matérialisation.
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
+* **Règle 2 — PUBLISH** : interdiction sans permission (accord pilote requis).
 * **Règle 6 — ZÉRO secret**. **Règle 7 — capsule consomme slider**.
 * Le noyau parle `segment`/`visual`/`engine` — **jamais** `slide`/`deck`/`reveal`/`Playwright`.
-* Ne pas casser le plugin mature (917 unit + 60 functional + **43 runners**).
+* Ne pas casser le plugin mature (917 unit + 60 functional + **44 runners**).
 * **English only** code/Gherkin (`OssVocabularyGuardTest`) ; **zéro Python** ;
   runner dédié par feature (S-082), steps préfixés (S-088).
 * Catalogue **interne** aligné BOM `0.0.86`.
@@ -46,4 +46,4 @@ importer **ni** `playwright`, **ni** `reveal`, **ni** AsciiDoc/`capsule.feed`,
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.10** (Central).
 * MEMPHIS BOM/catalog **0.0.86**. Tous les EPICs antérieurs sont clos/caduques.
-* **CAP-ENGINE-DECOUPLING** 🟡 EN COURS (US-0 ✅ S-184 ; US-1 ✅ S-185 ; US-2 ✅ S-186 ; **US-3 ✅ S-187** ; US-4→5 À FAIRE).
+* **CAP-ENGINE-DECOUPLING** 🟡 EN COURS (US-0 ✅ S-184 ; US-1 ✅ S-185 ; US-2 ✅ S-186 ; US-3 ✅ S-187 ; **US-4 ✅ S-188** ; US-5 À FAIRE — accord pilote).

@@ -1,6 +1,15 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 188 — `CAP-ENGINE-DECOUPLING` US-4 ✅ (isolation `capsule.kernel` + garde d'architecture)
+
+* Fuite corrigée : `VideoRenderRequest.slideDurations` → `segmentDurations` (+ invariant).
+* Garde statique `capsule.ci.KernelBoundaryAudit` + `KernelBoundaryTest` (imports +
+  vocabulaire neutre du noyau).
+* BDD `@kernel-boundary` (runner **44e** `cucumberTestKernelBoundary`).
+* Gates locaux (Local = Build) : compiles ×3 + `assemble` + `validatePlugins` VERTS.
+  Zéro bump, zéro publication, zéro secret. Rapport `.agents/sessions/188-cap-engine-decoupling-us4.adoc`.
+
 == Session 187 — `CAP-ENGINE-DECOUPLING` US-3 ✅ (port `SegmentSource` + adapter speaker-notes)
 
 * Port neutre `capsule.kernel.SegmentSource` (`segments(source: File): List<VideoSegment>`).

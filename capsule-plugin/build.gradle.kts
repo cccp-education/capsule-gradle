@@ -333,6 +333,17 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleSegmentSourceCucumberRunner",
             timeoutMinutes = 10,
         ),
+        // CAP-ENGINE-DECOUPLING US-4 — kernel architecture boundary guard
+        // (capsule.kernel imports only java/kotlin/contracts; no renderer vocabulary).
+        // Dedicated runner pattern S-082; steps prefixed "engine-neutral kernel"/"kernel".
+        // Pure static audit — no Gradle/FFmpeg/Playwright.
+        CucumberTaskSpec(
+            name = "cucumberTestKernelBoundary",
+            features = listOf("src/test/features/capsule_kernel_boundary.feature"),
+            tags = listOf("@kernel-boundary"),
+            runnerClass = "capsule.scenarios.CapsuleKernelBoundaryCucumberRunner",
+            timeoutMinutes = 10,
+        ),
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task

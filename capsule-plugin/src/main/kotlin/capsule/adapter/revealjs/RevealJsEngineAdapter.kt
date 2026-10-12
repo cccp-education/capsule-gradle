@@ -76,19 +76,19 @@ class RevealJsEngineAdapter(
     }
 
     /** A fresh capture engine — one per parallel worker thread. */
-    fun newCapture(slideDurations: List<Double>): PlaywrightCapture =
-        captureProvider?.invoke() ?: resolveFromSettings(slideDurations)
+    fun newCapture(segmentDurations: List<Double>): PlaywrightCapture =
+        captureProvider?.invoke() ?: resolveFromSettings(segmentDurations)
 
     /** A single engine reused across a whole-source render. */
-    fun resolveCapture(slideDurations: List<Double>): PlaywrightCapture =
-        captureProvider?.invoke() ?: (cachedCapture ?: resolveFromSettings(slideDurations).also { cachedCapture = it })
+    fun resolveCapture(segmentDurations: List<Double>): PlaywrightCapture =
+        captureProvider?.invoke() ?: (cachedCapture ?: resolveFromSettings(segmentDurations).also { cachedCapture = it })
 
     /**
      * Resolves the capture engine for the configured strategy, applying the
      * viral rule and the strict-mode guard. Falls back to noop when the engine
      * is unavailable and strict mode is off.
      */
-    private fun resolveFromSettings(slideDurations: List<Double>): PlaywrightCapture {
+    private fun resolveFromSettings(segmentDurations: List<Double>): PlaywrightCapture {
         val strategy = ViralCaptureStrategy.resolve(
             configured = settings.configuredStrategy,
             viralEnabled = settings.viralEnabled,
@@ -123,11 +123,11 @@ class RevealJsEngineAdapter(
             },
         )
         if (resolved.isAvailable()) {
-            val totalSecs = slideDurations.sum()
+            val totalSecs = segmentDurations.sum()
             logger.lifecycle(
                 "Capture: {} strategy ({} slides, {}s total)",
                 strategy.name.lowercase(),
-                slideDurations.size,
+                segmentDurations.size,
                 String.format("%.1f", totalSecs),
             )
         } else {
@@ -148,14 +148,14 @@ class RevealJsEngineAdapter(
      * post-processes the produced file (audio mix, subtitles, format).
      */
     private fun renderWholeSource(request: VideoRenderRequest): VideoRenderResult {
-        val capture = resolveCapture(request.slideDurations)
+        val capture = resolveCapture(request.segmentDurations)
         try {
             capture.capture(
                 deckHtmlPath = request.visual.file.absolutePath,
                 outputDir = request.outputDir,
                 viewportWidth = request.viewportWidth,
                 viewportHeight = request.viewportHeight,
-                slideDurations = request.slideDurations,
+                slideDurations = request.segmentDurations,
             )
         } finally {
             capture.close()
@@ -186,7 +186,7 @@ class RevealJsEngineAdapter(
         // per slide, which saturated the driver and made this mode unusable.
         val engines = ConcurrentLinkedQueue<PlaywrightCapture>()
         val threadEngine = ThreadLocal.withInitial {
-            newCapture(request.slideDurations).also { engines.add(it) }
+            newCapture(request.segmentDurations).also { engines.add(it) }
         }
 
         val deckHtml = request.visual.file.readText()
@@ -207,7 +207,7 @@ class RevealJsEngineAdapter(
                         slideDir,
                         request.viewportWidth,
                         request.viewportHeight,
-                        listOf(request.slideDurations[idx]),
+                        listOf(request.segmentDurations[idx]),
                     )
                     // No capture engine writes a file called `slide.webm`:
                     // Playwright names its recording with a random id,

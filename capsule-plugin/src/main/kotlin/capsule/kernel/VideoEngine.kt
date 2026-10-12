@@ -45,7 +45,7 @@ interface VideoEngine {
  *                           the produced video (`<name>.<ext>`).
  * @property visual          the engine-neutral visual source to render.
  * @property segments        ordered narration segments (drives the output order).
- * @property slideDurations  per-segment duration in seconds, aligned with
+ * @property segmentDurations per-segment duration in seconds, aligned with
  *                           [segments] by index.
  * @property outputDir       directory the engine writes produced files into.
  * @property viewportWidth   capture viewport width in pixels.
@@ -59,13 +59,20 @@ data class VideoRenderRequest(
     val name: String,
     val visual: VisualSource,
     val segments: List<VideoSegment>,
-    val slideDurations: List<Double>,
+    val segmentDurations: List<Double>,
     val outputDir: File,
     val viewportWidth: Int,
     val viewportHeight: Int,
     val parallel: Boolean,
     val timeoutMillis: Long,
-)
+) {
+    init {
+        require(segmentDurations.size == segments.size) {
+            "VideoRenderRequest.segmentDurations must align with segments " +
+                "(got ${segmentDurations.size} durations for ${segments.size} segments)"
+        }
+    }
+}
 
 /**
  * Outcome of a [VideoEngine] render.
