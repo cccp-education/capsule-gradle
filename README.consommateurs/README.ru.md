@@ -1,14 +1,14 @@
-<!-- translated from README.md rev 0.0.8 -->
+<!-- translated from README.md rev 0.0.10 -->
 # capsule-gradle — Руководство пользователя
 
 > Плагин Gradle, который превращает колоду reveal.js в синхронизированную видеокапсулу — озвучка TTS, захват, субтитры, конвертация формата, пост-обработка звука и короткий/вирусный конвейер — без ручной постпродакшн-работы.
 
-[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.8&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
+[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.10&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
 [![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/education.cccp.capsule.svg?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/education.cccp.capsule)
 [![CI](https://img.shields.io/github/actions/workflow/status/cheroliv/capsule-gradle/test.yml?branch=main&label=CI)](https://github.com/cheroliv/capsule-gradle/actions/workflows/test.yml)
 [![Лицензия](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=%D0%9B%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F)](../LICENSE)
 
-- **Версия**: `0.0.8` (Maven Central) · **Группа**: `education.cccp` · **ID плагина**: `education.cccp.capsule`
+- **Версия**: `0.0.10` (Maven Central) · **Группа**: `education.cccp` · **ID плагина**: `education.cccp.capsule`
 - **Требуется**: Java 25+ · Gradle 9.8+
 - **Документация**: [внутреннее устройство плагина](../capsule-plugin/README.md) · [архитектура конвейера](../capsule-plugin/doc/CAPSULE_ARCHITECTURE.adoc)
 
@@ -39,6 +39,7 @@
 - **Gradle** 9.8+
 - **Piper** — локальный офлайн TTS (движок по умолчанию)
 - **espeak / espeak-ng** — резервный TTS (`espeak-ng` используется автоматически, если `espeak` отсутствует)
+- **Fish Audio** — опциональный облачный TTS с **клонированным голосом** (движок `fish`); пул ключей хранится в игнорируемом git `fish.yaml`
 - **Chromium** — загружается Playwright автоматически при первом запуске
 - **FFmpeg** — перекадрирование 9:16, burn-in субтитров, конвертация в MP4, аудио-пост
 - **Manim** — опционально, для анимированных математических слайдов
@@ -50,7 +51,7 @@
 
 ```gradle
 plugins {
-    id("education.cccp.capsule") version "0.0.8"
+    id("education.cccp.capsule") version "0.0.10"
 }
 ```
 
@@ -61,7 +62,7 @@ capsule {
     outputDir.set("capsules")
     sliderScriptDir.set("capsule")
     deckSourceDir.set("docs/asciidocRevealJs")
-    ttsEngine.set("espeak")   // "piper" (по умолчанию) или "espeak"
+    ttsEngine.set("espeak")   // "piper" (по умолчанию), "espeak" или "fish" (Fish Audio cloud, клонированный голос)
 }
 ```
 

@@ -1,14 +1,14 @@
-<!-- translated from README.md rev 0.0.8 -->
+<!-- translated from README.md rev 0.0.10 -->
 # capsule-gradle — Guide du consommateur
 
 > Plugin Gradle qui transforme un deck reveal.js en capsule vidéo synchronisée — voix off TTS, capture, sous-titres, conversion de format, audio post et une chaîne court/viral — sans post-production humaine.
 
-[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.8&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
+[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.10&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
 [![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/education.cccp.capsule.svg?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/education.cccp.capsule)
 [![CI](https://img.shields.io/github/actions/workflow/status/cheroliv/capsule-gradle/test.yml?branch=main&label=CI)](https://github.com/cheroliv/capsule-gradle/actions/workflows/test.yml)
 [![Licence](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=Licence)](../LICENSE)
 
-- **Version** : `0.0.8` (Maven Central) · **Groupe** : `education.cccp` · **ID plugin** : `education.cccp.capsule`
+- **Version** : `0.0.10` (Maven Central) · **Groupe** : `education.cccp` · **ID plugin** : `education.cccp.capsule`
 - **Prérequis** : Java 25+ · Gradle 9.8+
 - **Docs** : [internes du plugin](../capsule-plugin/README.md) · [architecture du pipeline](../capsule-plugin/doc/CAPSULE_ARCHITECTURE.adoc)
 
@@ -39,6 +39,7 @@ Fait partie de l'écosystème multi-plugins CCCP Education (`groupId: education.
 - **Gradle** 9.8+
 - **Piper** — TTS local hors-ligne (moteur par défaut)
 - **espeak / espeak-ng** — TTS de repli (`espeak-ng` est utilisé automatiquement si `espeak` est absent)
+- **Fish Audio** — TTS cloud optionnel avec **voix clonée** (moteur `fish`) ; le pool de clés vit dans un `fish.yaml` ignoré par git
 - **Chromium** — téléchargé automatiquement par Playwright au premier lancement
 - **FFmpeg** — recadrage 9:16, burn-in des sous-titres, conversion MP4, audio post
 - **Manim** — optionnel, pour les slides mathématiques animés
@@ -50,7 +51,7 @@ Fait partie de l'écosystème multi-plugins CCCP Education (`groupId: education.
 
 ```gradle
 plugins {
-    id("education.cccp.capsule") version "0.0.8"
+    id("education.cccp.capsule") version "0.0.10"
 }
 ```
 
@@ -61,7 +62,7 @@ capsule {
     outputDir.set("capsules")
     sliderScriptDir.set("capsule")
     deckSourceDir.set("docs/asciidocRevealJs")
-    ttsEngine.set("espeak")   // "piper" (défaut) ou "espeak"
+    ttsEngine.set("espeak")   // "piper" (défaut), "espeak", ou "fish" (Fish Audio cloud, voix clonée)
 }
 ```
 

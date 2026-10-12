@@ -1,9 +1,9 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-12 (S-182 — **EPIC `CAP-FISH-AUDIO` : US-0→US-4 livrées + release `capsule-plugin 0.0.9`** (Central, bundle `a2d32777`) : moteur TTS cloud **Fish Audio** (voix clonée) = 4e `TtsEngine` ; config `fish-audio` (pool de clés) membre de `CapsuleConfig`, clé en `fish.yaml` gitignoré ; **BDD `@fish`** (moteur mocké). MEMPHIS BOM/catalog `0.0.85`. Reste US-5 (traductions + dogfooding metered).)
+:last_update: 2026-10-12 (S-182 — **EPIC `CAP-FISH-AUDIO` TERMINÉ 6/6 US** : moteur TTS cloud **Fish Audio** (voix clonée) = 4e `TtsEngine`. Releases `capsule-plugin 0.0.9` puis **`0.0.10`** (fix chemin absolu) ; **dogfooding réel** (prise MP3 via la clé de `fish.yaml`) ; BDD `@fish` ; README EN + traductions `0.0.10`. MEMPHIS BOM/catalog `0.0.86`.)
 
 '''
-== 🐟 CAP-FISH-AUDIO — 🟡 EN COURS (S-182 : US-0→US-4 ✅ + release 0.0.9)
+== ✅ CAP-FISH-AUDIO — TERMINÉ 6/6 US (S-182)
 _📖 Littérature de référence : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`._
 
 _Réintroduire le moteur TTS **Fish Audio** (`https://api.fish.audio`, voix clonée)
@@ -30,7 +30,7 @@ dégradation propre si absent.
 | US-2 | **`FishAudioTtsEngine`** — `HttpClient` JDK + JSON + `Bearer` + `model` + `format: wav` → `wavToMp3`, retries, cache sha1 du texte dit ; **seam HTTP injectable** (test = stub `HttpServer` ou `piper`, **jamais Fish réel**) | `capsule` (`TtsManager`) | 5 | ✅ S-182
 | US-3 | **Wiring** — `resolveTtsEngine()` (`fish`/`fish-audio`) + `TtsConfig` 6 champs Fish (4 sources) + extension/conventions/push + scaffold | `CapsuleVideoTask`, `CapsuleConfig*`, `CapsuleScaffoldTask` | 3 | ✅ S-182
 | US-4 | **BDD `@fish`** — `capsule_fish_audio.feature` (5 scénarios, moteur mocké via transport fake — **jamais Fish réel**) + runner dédié `cucumberTestFishAudio` | `src/test/features` | 3 | ✅ S-182
-| US-5 | **Docs + dogfooding metered** — README EN (tâches/config Fish) ✅ ; traductions (9×2) + run réel (accord pilote) restent | docs, consumer | 3 | 🟡 EN livré S-182
+| US-5 | **Docs + dogfooding metered** — README EN + traductions (9×2) `0.0.10` ✅ ; **dogfooding réel Fish** (voix clonée, 1 prise MP3 via la clé de `fish.yaml`) ✅ | docs, consumer | 3 | ✅ S-182
 |===
 
 '''
@@ -448,6 +448,15 @@ Consommateur racine `capsule = 0.0.8` ; **MEMPHIS** `workspace-bom`/`workspace-c
 → `wavToMp3`, retries ; jeton `fish`/`fish-audio`). POM importe `workspace-bom:0.0.83`.
 Consommateur racine `capsule = 0.0.9` ; **MEMPHIS** `workspace-bom`/`workspace-catalog`
 **0.0.85** (bundle `e64d3224-0eca-48a4-ab82-da12cca35815`, capsule-plugin 0.0.9).
+
+`education.cccp:capsule-plugin:0.0.10` publié via nmcp (Session 182, bundle
+**`cb26c4e9-67fb-44c1-9b5c-e72f9c679a6f`**, AUTOMATIC). **Correctif** : `fishAudioConfigPath`
+en chemin **absolu** était préfixé par le `projectDir` (`File(projectDir, abs)` → chemin
+inexistant) → pool de clés vide. Remplacement par `project.file(...)` (absolu **et** relatif)
+dans `CapsulePlugin`/`CapsuleBuildTask`/`CapsuleVideoTask`. **Révélé par le dogfooding réel**
+(prise MP3 `slide-01.mp3` 3,89 s via la clé de `fish.yaml`). Consommateur racine `capsule = 0.0.10` ;
+**MEMPHIS** `workspace-bom`/`workspace-catalog` **0.0.86** (bundle `fd0fdbf9-240e-4f17-8c60-5679b6de9a04`,
+capsule-plugin 0.0.10).
 
 '''
 == 📚 README i18n ✅ TERMINE (Session 041) — **régénéré fidèle au code (S-180/S-181)**

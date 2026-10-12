@@ -1,15 +1,15 @@
-<!-- translated from README.md rev 0.0.8 -->
+<!-- translated from README.md rev 0.0.10 -->
 # capsule-gradle — Internes du Plugin
 
 > Guide développeur et contributeur pour le plugin Gradle `capsule-plugin`.
 
-[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.8&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
+[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.10&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
 [![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/education.cccp.capsule.svg?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/education.cccp.capsule)
 [![CI](https://img.shields.io/github/actions/workflow/status/cheroliv/capsule-gradle/test.yml?branch=main&label=CI)](https://github.com/cheroliv/capsule-gradle/actions/workflows/test.yml)
 [![Couverture](https://img.shields.io/static/v1?label=couverture&message=Kover&color=blue)]()
 [![Licence](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=Licence)](../../LICENSE)
 
-- **Version** : `0.0.8` (Maven Central) · **Groupe** : `education.cccp` · **ID plugin** : `education.cccp.capsule`
+- **Version** : `0.0.10` (Maven Central) · **Groupe** : `education.cccp` · **ID plugin** : `education.cccp.capsule`
 - **Toolchain** : Java 25 · Kotlin 2.4.10 · Gradle 9.8.1
 - **Build** : `./gradlew build -x test` · **Tests** : `./gradlew check` (unitaires + fonctionnels via TestKit ; Cucumber via `-PrunCucumber`) · **Couverture** : `./gradlew koverReport`
 
@@ -43,7 +43,7 @@ capsule-plugin/
     │   ├── CapsuleConfigMerger.kt       # fusion 4 sources (CLI > YAML > gradle.properties > ENV)
     │   ├── CapsuleConfigLogger.kt       # journalisation structurée de la config (CR-8)
     │   ├── Capsule{Messages}*.kt        # résolution des ressources i18n (10 langues)
-    │   ├── TtsManager.kt                # intégration TTS Piper + espeak
+    │   ├── TtsManager.kt                # intégration TTS Piper + espeak + Fish Audio
     │   ├── PlaywrightManager.kt         # capture Chromium headless
     │   ├── CaptureResolver.kt           # dispatching PLAYWRIGHT / SCREENSHOT / REMOTION
     │   ├── ScreenshotPlanner.kt         # plan pur : PNG par slide → WebM → concat demuxer
@@ -228,7 +228,7 @@ catalogue), `.github/actions/setup-ollama` (image + modèles).
 
 ## Publication (NMCP)
 
-**Publié sur Maven Central** — version `0.0.8` (précédentes `0.0.7`, `0.0.6`, `0.0.5`, …).
+**Publié sur Maven Central** — version `0.0.10` (précédentes `0.0.7`, `0.0.6`, `0.0.5`, …).
 Le POM est configuré via `maven-publish` et `signing` :
 
 - POM : nom "Capsule Gradle Plugin", description "Generation automatisee de capsules video

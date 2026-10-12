@@ -1,14 +1,14 @@
-<!-- translated from README.md rev 0.0.8 -->
+<!-- translated from README.md rev 0.0.10 -->
 # capsule-gradle — 用户指南
 
 > 将 reveal.js 演示文稿转换为同步视频胶囊的 Gradle 插件——TTS 配音、捕获、字幕、格式转换、音频后期以及短视频/病毒式流水线，无需人工后期制作。
 
-[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.8&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
+[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.10&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
 [![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/education.cccp.capsule.svg?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/education.cccp.capsule)
 [![CI](https://img.shields.io/github/actions/workflow/status/cheroliv/capsule-gradle/test.yml?branch=main&label=CI)](https://github.com/cheroliv/capsule-gradle/actions/workflows/test.yml)
 [![许可证](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=%E8%AE%B8%E5%8F%AF%E8%AF%81)](../LICENSE)
 
-- **版本**：`0.0.8`（Maven Central） · **组**：`education.cccp` · **插件 ID**：`education.cccp.capsule`
+- **版本**：`0.0.10`（Maven Central） · **组**：`education.cccp` · **插件 ID**：`education.cccp.capsule`
 - **要求**：Java 25+ · Gradle 9.8+
 - **文档**：[插件内部](../capsule-plugin/README.md) · [流水线架构](../capsule-plugin/doc/CAPSULE_ARCHITECTURE.adoc)
 
@@ -38,6 +38,7 @@ CCCP Education 多插件生态系统的一部分（`groupId: education.cccp`）�
 - **Gradle** 9.8+
 - **Piper** — 本地离线 TTS（默认引擎）
 - **espeak / espeak-ng** — TTS 回退（当缺少 `espeak` 时自动使用 `espeak-ng`）
+- **Fish Audio** — 可选云端 TTS，使用**克隆语音**（引擎 `fish`）；密钥池保存在被 git 忽略的 `fish.yaml` 中
 - **Chromium** — 首次运行时由 Playwright 自动下载
 - **FFmpeg** — 9:16 重新裁切、字幕烧录、MP4 转换、音频后期
 - **Manim** — 可选，用于动画数学幻灯片
@@ -49,7 +50,7 @@ CCCP Education 多插件生态系统的一部分（`groupId: education.cccp`）�
 
 ```gradle
 plugins {
-    id("education.cccp.capsule") version "0.0.8"
+    id("education.cccp.capsule") version "0.0.10"
 }
 ```
 
@@ -60,7 +61,7 @@ capsule {
     outputDir.set("capsules")
     sliderScriptDir.set("capsule")
     deckSourceDir.set("docs/asciidocRevealJs")
-    ttsEngine.set("espeak")   // "piper"（默认）或 "espeak"
+    ttsEngine.set("espeak")   // "piper"（默认）、"espeak" 或 "fish"（Fish Audio 云端，克隆语音）
 }
 ```
 

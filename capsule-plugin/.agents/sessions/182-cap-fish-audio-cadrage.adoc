@@ -1,9 +1,9 @@
-= Session 182 — CAP-FISH-AUDIO (cadrage + US-1→US-4 + release 0.0.9)
+= Session 182 — CAP-FISH-AUDIO (TERMINÉ 6/6 : cadrage + US-1→US-5 + releases 0.0.9/0.0.10)
 :session: 182
 :borough: Détroit
 :date: 2026-10-12
 :epic: CAP-FISH-AUDIO
-:us: US-0 (cadrage) + US-1 (modèle/chargement) + US-2 (engine) + US-3 (wiring) + US-4 (BDD) + release 0.0.9 ; US-5 partiel (EN docs)
+:us: US-0 (cadrage) + US-1 (modèle/chargement) + US-2 (engine) + US-3 (wiring) + US-4 (BDD) + US-5 (docs + dogfooding réel) + releases 0.0.9/0.0.10
 
 == Mission
 
@@ -128,13 +128,28 @@ US-5 docs+dogfooding. Détail : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
 * `CapsuleFishAudioCucumberRunner` + `CucumberTaskSpec("cucumberTestFishAudio")` — couvert
   par l'agrégat `cucumberTest` en CI.
 
-== US-5 (partiel) — documentation EN
+== US-5 livrée — documentation (EN + traductions) + dogfooding metered
 
-* `README.md` (racine) + `capsule-plugin/README.md` : version `0.0.9`, Fish Audio dans les
-  requirements, la config DSL (`ttsFishVoice`/`ttsFishModel`/`ttsFishFormat`/
-  `ttsFishTemperature`/`ttsFishTopP`/`ttsFishEndpoint`/`fishAudioConfigPath`) et le
-  troubleshooting.
-* Reste : traductions (9×2) + dogfooding metered (accord pilote).
+* `README.md` (racine) + `capsule-plugin/README.md` : version `0.0.10`, Fish Audio
+  (requirements, config DSL, troubleshooting) ; **traductions (9×2)** synchronisées
+  (`README.consommateurs/` + `README.plugin/`).
+* **Dogfooding réel** (accord pilote) : consommateur transitoire `/tmp/opencode/capsule-fish-dogfood`,
+  `generateCapsule` avec `tts.engine=fish` + voix clonée `daa792a2…`, clé lue par le plugin
+  depuis `fish.yaml` (jamais ouverte par l'agent) → **prise MP3 réelle** `slide-01.mp3`
+  (3,89 s, MP3 101 kbps, vs 114 o du noop).
+
+== Bug révélé par le dogfooding + correctif (release `0.0.10`)
+
+* **Constat** : `fishAudioConfigPath` en chemin **absolu** était passé à
+  `File(projectDir, abs)` → Java **préfixe** le chemin absolu par le projectDir → fichier
+  introuvable → pool de clés vide → repli noop silencieux. (Le chemin relatif par défaut
+  `fish.yaml` fonctionnait ; mes tests unitaires passaient car ils lisent un fichier direct.)
+* **Correctif** : `project.file(...)` (résout absolu **et** relatif) dans `CapsulePlugin`,
+  `CapsuleBuildTask`, `CapsuleVideoTask`.
+* **Release `capsule-plugin 0.0.10`** (Central bundle `cb26c4e9-67fb-44c1-9b5c-e72f9c679a6f`,
+  AUTOMATIC) ; consommateur racine `0.0.10` ; **MEMPHIS** BOM/catalog `0.0.86`
+  (bundle `fd0fdbf9-240e-4f17-8c60-5679b6de9a04`). Le dogfooding **valide** le correctif
+  (`TTS engine: fish` + MP3 réel).
 
 == Gates
 
@@ -148,5 +163,5 @@ US-5 docs+dogfooding. Détail : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
 
 == Prochaine session
 
-**S-183 — CAP-FISH-AUDIO US-5** : traductions README (9×2) + dogfooding metered (accord
-pilote) ; ou maintenance. L'EPIC est fonctionnel (US-0→US-4 ✅, release `0.0.9`).
+**S-183 — au choix** (backlog actionnable vidé) : A) maintenance/dette ; B) nouvelle demande
+pilote. **EPIC `CAP-FISH-AUDIO` TERMINÉ 6/6** (releases `0.0.9` + `0.0.10`).

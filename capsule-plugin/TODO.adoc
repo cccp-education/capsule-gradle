@@ -12,7 +12,7 @@ _📖 Littérature : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`._
 . [x] **US-3** ✅ S-182 — wiring `resolveTtsEngine()` (`fish`/`fish-audio`) + `TtsConfig` 6 champs Fish (4 sources) + extension/conventions/scaffold (+3 unit).
 > **Release `capsule-plugin 0.0.9`** ✅ S-182 (Central bundle `a2d32777`) + consommateur racine `0.0.9` + MEMPHIS BOM/catalog `0.0.85` (bundle `e64d3224`).
 . [x] **US-4** ✅ S-182 — BDD `@fish` (`capsule_fish_audio.feature` 5 scénarios, moteur mocké, jamais Fish réel) + runner dédié `cucumberTestFishAudio`.
-. [ ] **US-5** — docs : README EN ✅ S-182 ; **traductions (9×2)** + dogfooding metered (accord pilote) restent.
+. [x] **US-5** ✅ S-182 — docs : README EN + traductions (9×2) `0.0.10` ; **dogfooding réel** (prise MP3 via la clé de `fish.yaml`) → bug `fishAudioConfigPath` absolu corrigé (release `0.0.10`). **EPIC CAP-FISH-AUDIO TERMINÉ 6/6.**
 
 '''
 == ✅ README consommateur (racine) + traductions (S-181)

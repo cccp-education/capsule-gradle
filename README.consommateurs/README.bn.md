@@ -1,14 +1,14 @@
-<!-- translated from README.md rev 0.0.8 -->
+<!-- translated from README.md rev 0.0.10 -->
 # capsule-gradle — ব্যবহারকারী নির্দেশিকা
 
 > একটি Gradle প্লাগইন যা reveal.js ডেককে সিঙ্ক্রোনাইজড ভিডিও ক্যাপসুলে রূপান্তর করে — TTS ভয়েস-ওভার, ক্যাপচার, সাবটাইটেল, ফরম্যাট রূপান্তর, অডিও পোস্ট এবং একটি শর্ট-ফর্ম/ভাইরাল পাইপলাইন — কোনো মানব পোস্ট-প্রোডাকশন ছাড়াই।
 
-[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.8&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
+[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.10&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
 [![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/education.cccp.capsule.svg?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/education.cccp.capsule)
 [![CI](https://img.shields.io/github/actions/workflow/status/cheroliv/capsule-gradle/test.yml?branch=main&label=CI)](https://github.com/cheroliv/capsule-gradle/actions/workflows/test.yml)
 [![লাইসেন্স](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=%E0%A6%B2%E0%A6%BE%E0%A6%87%E0%A6%B8%E0%A7%87%E0%A6%A8%E0%A7%8D%E0%A6%B8)](../LICENSE)
 
-- **সংস্করণ**: `0.0.8` (Maven Central) · **গ্রুপ**: `education.cccp` · **প্লাগইন ID**: `education.cccp.capsule`
+- **সংস্করণ**: `0.0.10` (Maven Central) · **গ্রুপ**: `education.cccp` · **প্লাগইন ID**: `education.cccp.capsule`
 - **আবশ্যক**: Java 25+ · Gradle 9.8+
 - **ডকস**: [প্লাগইন অভ্যন্তরীণ](../capsule-plugin/README.md) · [পাইপলাইন আর্কিটেকচার](../capsule-plugin/doc/CAPSULE_ARCHITECTURE.adoc)
 
@@ -39,6 +39,7 @@ CCCP Education বহু-প্লাগইন ইকোসিস্টেমে
 - **Gradle** 9.8+
 - **Piper** — স্থানীয় অফলাইন TTS (ডিফল্ট ইঞ্জিন)
 - **espeak / espeak-ng** — TTS ফলব্যাক (`espeak` অনুপস্থিত থাকলে `espeak-ng` স্বয়ংক্রিয়ভাবে ব্যবহৃত হয়)
+- **Fish Audio** — ঐচ্ছিক ক্লাউড TTS, **ক্লোন করা ভয়েস** সহ (ইঞ্জিন `fish`); কী পুলটি git-অবহেলিত `fish.yaml`-এ থাকে
 - **Chromium** — প্রথম রানে Playwright দ্বারা স্বয়ংক্রিয় ডাউনলোড
 - **FFmpeg** — 9:16 রিক্রপ, সাবটাইটেল burn-in, MP4 রূপান্তর, অডিও পোস্ট
 - **Manim** — ঐচ্ছিক, অ্যানিমেটেড গাণিতিক স্লাইডের জন্য
@@ -50,7 +51,7 @@ CCCP Education বহু-প্লাগইন ইকোসিস্টেমে
 
 ```gradle
 plugins {
-    id("education.cccp.capsule") version "0.0.8"
+    id("education.cccp.capsule") version "0.0.10"
 }
 ```
 
@@ -61,7 +62,7 @@ capsule {
     outputDir.set("capsules")
     sliderScriptDir.set("capsule")
     deckSourceDir.set("docs/asciidocRevealJs")
-    ttsEngine.set("espeak")   // "piper" (ডিফল্ট) বা "espeak"
+    ttsEngine.set("espeak")   // "piper" (ডিফল্ট), "espeak" বা "fish" (Fish Audio ক্লাউড, ক্লোন ভয়েস)
 }
 ```
 

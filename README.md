@@ -3,12 +3,12 @@
 
 > Gradle plugin that turns a reveal.js deck into a synchronised video capsule — TTS voice-over, capture, subtitles, format conversion, audio post and a short-form/viral pipeline — without human post-production.
 
-[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.9&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
+[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.10&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
 [![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/education.cccp.capsule.svg?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/education.cccp.capsule)
 [![CI](https://img.shields.io/github/actions/workflow/status/cheroliv/capsule-gradle/test.yml?branch=main&label=CI)](https://github.com/cheroliv/capsule-gradle/actions/workflows/test.yml)
 [![License](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=License)](LICENSE)
 
-- **Version**: `0.0.9` (Maven Central) · **Group**: `education.cccp` · **Plugin ID**: `education.cccp.capsule`
+- **Version**: `0.0.10` (Maven Central) · **Group**: `education.cccp` · **Plugin ID**: `education.cccp.capsule`
 - **Requires**: Java 25+ · Gradle 9.8+
 - **Docs**: [plugin internals](capsule-plugin/README.md) · [pipeline architecture](capsule-plugin/doc/CAPSULE_ARCHITECTURE.adoc)
 
@@ -51,7 +51,7 @@ Part of the CCCP Education multi-plugin ecosystem (`groupId: education.cccp`).
 
 ```gradle
 plugins {
-    id("education.cccp.capsule") version "0.0.9"
+    id("education.cccp.capsule") version "0.0.10"
 }
 ```
 

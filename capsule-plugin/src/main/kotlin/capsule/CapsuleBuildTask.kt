@@ -82,7 +82,7 @@ open class CapsuleBuildTask : DefaultTask() {
             }
             "fish", "fish-audio" -> {
                 val keys = CapsuleConfigLoader.loadFishAudio(
-                    File(project.projectDir, capsuleExtension.fishAudioConfigPath.get())
+                    project.file(capsuleExtension.fishAudioConfigPath.get())
                 )
                 val params = FishAudioParams(
                     voice = capsuleExtension.ttsFishVoice.get(),

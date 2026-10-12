@@ -1,15 +1,15 @@
-<!-- translated from README.md rev 0.0.8 -->
+<!-- translated from README.md rev 0.0.10 -->
 # capsule-gradle — 插件内部
 
 > `capsule-plugin` Gradle 插件的开发者与贡献者指南。
 
-[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.8&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
+[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.10&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
 [![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/education.cccp.capsule.svg?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/education.cccp.capsule)
 [![CI](https://img.shields.io/github/actions/workflow/status/cheroliv/capsule-gradle/test.yml?branch=main&label=CI)](https://github.com/cheroliv/capsule-gradle/actions/workflows/test.yml)
 [![覆盖率](https://img.shields.io/static/v1?label=%E8%A6%86%E7%9B%96%E7%8E%87&message=Kover&color=blue)]()
 [![许可证](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=%E8%AE%B8%E5%8F%AF%E8%AF%81)](../../LICENSE)
 
-- **版本**：`0.0.8`（Maven Central） · **组**：`education.cccp` · **插件 ID**：`education.cccp.capsule`
+- **版本**：`0.0.10`（Maven Central） · **组**：`education.cccp` · **插件 ID**：`education.cccp.capsule`
 - **工具链**：Java 25 · Kotlin 2.4.10 · Gradle 9.8.1
 - **构建**：`./gradlew build -x test` · **测试**：`./gradlew check`（单元 + 通过 TestKit 的功能测试；Cucumber 加 `-PrunCucumber`） · **覆盖率**：`./gradlew koverReport`
 
@@ -42,7 +42,7 @@ capsule-plugin/
     │   ├── CapsuleConfigMerger.kt       # 4 源合并（CLI > YAML > gradle.properties > ENV）
     │   ├── CapsuleConfigLogger.kt       # 结构化配置日志（CR-8）
     │   ├── Capsule{Messages}*.kt        # i18n 资源解析（10 种语言）
-    │   ├── TtsManager.kt                # Piper + espeak TTS 集成
+    │   ├── TtsManager.kt                # Piper + espeak + Fish Audio TTS 集成
     │   ├── PlaywrightManager.kt         # 无头 Chromium 捕获
     │   ├── CaptureResolver.kt           # PLAYWRIGHT / SCREENSHOT / REMOTION 分发
     │   ├── ScreenshotPlanner.kt         # 纯计划：每张幻灯片 PNG → WebM → concat demuxer
@@ -225,7 +225,7 @@ export GRADLE_OPTS="-Xmx2g"   # 本地构建
 
 ## 发布（NMCP）
 
-**已发布到 Maven Central** — 版本 `0.0.8`（此前 `0.0.7`、`0.0.6`、`0.0.5`……）。
+**已发布到 Maven Central** — 版本 `0.0.10`（此前 `0.0.7`、`0.0.6`、`0.0.5`……）。
 POM 通过 `maven-publish` 与 `signing` 配置：
 
 - POM：name "Capsule Gradle Plugin"，description "Generation automatisee de capsules video

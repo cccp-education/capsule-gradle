@@ -1,14 +1,14 @@
-<!-- translated from README.md rev 0.0.8 -->
+<!-- translated from README.md rev 0.0.10 -->
 # capsule-gradle — دليل المستخدم
 
 > إضافة Gradle تحوّل عرض reveal.js إلى كبسولة فيديو متزامنة — تعليق TTS، التقاط، ترجمات، تحويل صيغة، ما بعد الصوت وخط قصير/فيروسي — دون أي ما بعد إنتاج بشري.
 
-[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.8&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
+[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.10&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
 [![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/education.cccp.capsule.svg?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/education.cccp.capsule)
 [![CI](https://img.shields.io/github/actions/workflow/status/cheroliv/capsule-gradle/test.yml?branch=main&label=CI)](https://github.com/cheroliv/capsule-gradle/actions/workflows/test.yml)
 [![الرخصة](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=%D8%A7%D9%84%D8%B1%D8%AE%D8%B5%D8%A9)](../LICENSE)
 
-- **الإصدار**: `0.0.8` (Maven Central) · **المجموعة**: `education.cccp` · **معرّف الإضافة**: `education.cccp.capsule`
+- **الإصدار**: `0.0.10` (Maven Central) · **المجموعة**: `education.cccp` · **معرّف الإضافة**: `education.cccp.capsule`
 - **يتطلّب**: Java 25+ · Gradle 9.8+
 - **الوثائق**: [داخليّات الإضافة](../capsule-plugin/README.md) · [معمارية خط الأنابيب](../capsule-plugin/doc/CAPSULE_ARCHITECTURE.adoc)
 
@@ -38,6 +38,7 @@
 - **Gradle** 9.8+
 - **Piper** — TTS محلي دون اتصال (المحرّك الافتراضي)
 - **espeak / espeak-ng** — TTS احتياطي (يُستخدم `espeak-ng` تلقائيًا عند غياب `espeak`)
+- **Fish Audio** — خدمة TTS سحابية اختيارية بصوت **مستنسخ** (المحرك `fish`)؛ مجموعة المفاتيح في ملف `fish.yaml` مستثنى من git
 - **Chromium** — يُنزّله Playwright تلقائيًا عند أول تشغيل
 - **FFmpeg** — إعادة قصّ 9:16، burn-in للترجمات، تحويل MP4، ما بعد الصوت
 - **Manim** — اختياري، للشرائح الرياضية المتحرّكة
@@ -49,7 +50,7 @@
 
 ```gradle
 plugins {
-    id("education.cccp.capsule") version "0.0.8"
+    id("education.cccp.capsule") version "0.0.10"
 }
 ```
 
@@ -60,7 +61,7 @@ capsule {
     outputDir.set("capsules")
     sliderScriptDir.set("capsule")
     deckSourceDir.set("docs/asciidocRevealJs")
-    ttsEngine.set("espeak")   // "piper" (الافتراضي) أو "espeak"
+    ttsEngine.set("espeak")   // "piper" (الافتراضي) أو "espeak" أو "fish" (Fish Audio سحابي، صوت مستنسخ)
 }
 ```
 

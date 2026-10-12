@@ -39,9 +39,14 @@
   `CapsuleFishAudioSteps` (moteur **mocké** via transport fake — **jamais Fish réel**) +
   `CapsuleFishAudioCucumberRunner` + `CucumberTaskSpec("cucumberTestFishAudio")` (couvert
   par l'agrégat `cucumberTest`).
-* **US-5 partiel** : README EN (racine `README.md` + `capsule-plugin/README.md`) `0.0.9`
-  avec Fish Audio (requirements, config DSL, troubleshooting). Reste : traductions (9×2)
-  + dogfooding metered (accord pilote).
+* **US-5 livrée** : README EN (racine + plugin) + **traductions (9×2)** `0.0.10` avec Fish
+  Audio ; **dogfooding réel** (accord pilote) — `generateCapsule` `tts.engine=fish` sur
+  consommateur `/tmp`, clé lue par le plugin depuis `fish.yaml` → **prise MP3 réelle**
+  `slide-01.mp3` (3,89 s). Le dogfooding **révèle un bug** : `fishAudioConfigPath` absolu
+  préfixé par le `projectDir` (`File(projectDir, abs)` → introuvable) → pool vide ;
+  **fix** `project.file(...)` (3 sites) → **release `capsule-plugin 0.0.10`** (Central bundle
+  `cb26c4e9-67fb-44c1-9b5c-e72f9c679a6f`, AUTOMATIC) + MEMPHIS BOM/catalog `0.0.86`
+  (bundle `fd0fdbf9-240e-4f17-8c60-5679b6de9a04`). **EPIC CAP-FISH-AUDIO TERMINÉ 6/6.**
 * `fish.yaml` **non lu** (gitignoré) ; schéma pris de `fish_example.yaml` (clé factice).
 * Rapport `.agents/sessions/182-cap-fish-audio-cadrage.adoc`.
 

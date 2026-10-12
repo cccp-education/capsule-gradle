@@ -33,7 +33,7 @@ class CapsulePlugin : Plugin<Project> {
             // git-ignored file, never in the committed capsule-context.yml. When
             // present it overrides the (usually empty) `fish-audio` member.
             val fishKeys = CapsuleConfigLoader.loadFishAudio(
-                File(project.projectDir, capsuleExt.fishAudioConfigPath.get())
+                project.file(capsuleExt.fishAudioConfigPath.get())
             )
 
             // Collect CLI -P params prefixed with "capsule."

@@ -1,14 +1,14 @@
-<!-- translated from README.md rev 0.0.8 -->
+<!-- translated from README.md rev 0.0.10 -->
 # capsule-gradle — उपभोक्ता मार्गदर्शिका
 
 > एक Gradle प्लगइन जो reveal.js डेक को सिंक्रनाइज़्ड वीडियो कैप्सूल में बदलता है — TTS वॉइस-ओवर, कैप्चर, सबटाइटल, फ़ॉर्मैट रूपांतरण, ऑडियो पोस्ट और एक शॉर्ट-फ़ॉर्म/वायरल पाइपलाइन — बिना मानवीय पोस्ट-प्रोडक्शन के।
 
-[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.8&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
+[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.10&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
 [![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/education.cccp.capsule.svg?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/education.cccp.capsule)
 [![CI](https://img.shields.io/github/actions/workflow/status/cheroliv/capsule-gradle/test.yml?branch=main&label=CI)](https://github.com/cheroliv/capsule-gradle/actions/workflows/test.yml)
 [![लाइसेंस](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=%E0%A4%B2%E0%A4%BE%E0%A4%87%E0%A4%B8%E0%A5%87%E0%A4%82%E0%A4%B8)](../LICENSE)
 
-- **संस्करण**: `0.0.8` (Maven Central) · **समूह**: `education.cccp` · **प्लगइन ID**: `education.cccp.capsule`
+- **संस्करण**: `0.0.10` (Maven Central) · **समूह**: `education.cccp` · **प्लगइन ID**: `education.cccp.capsule`
 - **आवश्यक**: Java 25+ · Gradle 9.8+
 - **दस्तावेज़**: [प्लगइन आंतरिक](../capsule-plugin/README.md) · [पाइपलाइन आर्किटेक्चर](../capsule-plugin/doc/CAPSULE_ARCHITECTURE.adoc)
 
@@ -39,6 +39,7 @@ CCCP Education बहु-प्लगइन पारिस्थितिकी
 - **Gradle** 9.8+
 - **Piper** — स्थानीय ऑफ़लाइन TTS (डिफ़ॉल्ट इंजन)
 - **espeak / espeak-ng** — TTS फ़ॉलबैक (`espeak` अनुपस्थित होने पर `espeak-ng` स्वतः उपयोग होता है)
+- **Fish Audio** — वैकल्पिक क्लाउड TTS, **क्लोन की गई आवाज़** के साथ (इंजन `fish`); कुंजी पूल git-अवहेलित `fish.yaml` में रहता है
 - **Chromium** — पहले रन पर Playwright द्वारा स्वतः डाउनलोड
 - **FFmpeg** — 9:16 रीक्रॉप, सबटाइटल burn-in, MP4 रूपांतरण, ऑडियो पोस्ट
 - **Manim** — वैकल्पिक, एनिमेटेड गणितीय स्लाइड हेतु
@@ -50,7 +51,7 @@ CCCP Education बहु-प्लगइन पारिस्थितिकी
 
 ```gradle
 plugins {
-    id("education.cccp.capsule") version "0.0.8"
+    id("education.cccp.capsule") version "0.0.10"
 }
 ```
 
@@ -61,7 +62,7 @@ capsule {
     outputDir.set("capsules")
     sliderScriptDir.set("capsule")
     deckSourceDir.set("docs/asciidocRevealJs")
-    ttsEngine.set("espeak")   // "piper" (डिफ़ॉल्ट) या "espeak"
+    ttsEngine.set("espeak")   // "piper" (डिफ़ॉल्ट), "espeak" या "fish" (Fish Audio क्लाउड, क्लोन आवाज़)
 }
 ```
 

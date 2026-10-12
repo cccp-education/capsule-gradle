@@ -1,14 +1,14 @@
-<!-- translated from README.md rev 0.0.8 -->
+<!-- translated from README.md rev 0.0.10 -->
 # capsule-gradle — صارف رہنمائی
 
 > ایک Gradle پلگ ان جو reveal.js ڈیک کو ہم آہنگ ویڈیو کیپسول میں بدلتا ہے — TTS وائس اوور، کیپچر، سب ٹائٹلز، فارمیٹ تبدیلی، آڈیو پوسٹ اور ایک مختصر/وائرل پائپ لائن — بغیر کسی انسانی پوسٹ پروڈکشن کے۔
 
-[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.8&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
+[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.10&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
 [![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/education.cccp.capsule.svg?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/education.cccp.capsule)
 [![CI](https://img.shields.io/github/actions/workflow/status/cheroliv/capsule-gradle/test.yml?branch=main&label=CI)](https://github.com/cheroliv/capsule-gradle/actions/workflows/test.yml)
 [![لائسنس](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=%D9%84%D8%A7%D8%A6%D8%B3%D9%86%D8%B3)](../LICENSE)
 
-- **ورژن**: `0.0.8` (Maven Central) · **گروپ**: `education.cccp` · **پلگ ان ID**: `education.cccp.capsule`
+- **ورژن**: `0.0.10` (Maven Central) · **گروپ**: `education.cccp` · **پلگ ان ID**: `education.cccp.capsule`
 - **درکار**: Java 25+ · Gradle 9.8+
 - **دستاویزات**: [پلگ ان کے اندرونی معاملات](../capsule-plugin/README.md) · [پائپ لائن آرکیٹیکچر](../capsule-plugin/doc/CAPSULE_ARCHITECTURE.adoc)
 
@@ -38,6 +38,7 @@ CCCP Education کثیر پلگ ان ماحولیاتی نظام کا حصہ (`gr
 - **Gradle** 9.8+
 - **Piper** — مقامی آف لائن TTS (طے شدہ انجن)
 - **espeak / espeak-ng** — TTS فال بیک (`espeak` نہ ہونے پر `espeak-ng` خودکار استعمال ہوتا ہے)
+- **Fish Audio** — اختیاری کلاؤڈ TTS، **کلون شدہ آواز** کے ساتھ (انجن `fish`)؛ کلیدوں کا پول git سے مستثنیٰ `fish.yaml` میں رہتا ہے
 - **Chromium** — پہلی بار چلانے پر Playwright خودکار ڈاؤن لوڈ کرتا ہے
 - **FFmpeg** — 9:16 دوبارہ کراپ، سب ٹائٹل burn-in، MP4 تبدیلی، آڈیو پوسٹ
 - **Manim** — اختیاری، متحرک ریاضیاتی سلائیڈوں کے لیے
@@ -49,7 +50,7 @@ CCCP Education کثیر پلگ ان ماحولیاتی نظام کا حصہ (`gr
 
 ```gradle
 plugins {
-    id("education.cccp.capsule") version "0.0.8"
+    id("education.cccp.capsule") version "0.0.10"
 }
 ```
 
@@ -60,7 +61,7 @@ capsule {
     outputDir.set("capsules")
     sliderScriptDir.set("capsule")
     deckSourceDir.set("docs/asciidocRevealJs")
-    ttsEngine.set("espeak")   // "piper" (طے شدہ) یا "espeak"
+    ttsEngine.set("espeak")   // "piper" (طے شدہ), "espeak" یا "fish" (Fish Audio کلاؤڈ، کلون شدہ آواز)
 }
 ```
 

@@ -1,40 +1,36 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 :session: 183
 :borough: Détroit
-:session_precedente: 182 — cadrage EPIC CAP-FISH-AUDIO (gouvernance pure)
+:session_precedente: 182 — CAP-FISH-AUDIO (cadrage + US-1→US-5 + releases 0.0.9/0.0.10)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
 
 == Contexte Hérité
 
-=== S-182 — cadrage EPIC CAP-FISH-AUDIO + US-1 (livré)
+=== S-182 — CAP-FISH-AUDIO TERMINÉ 6/6 (cadrage + US-1→US-5 + releases)
 
-- EPIC `CAP-FISH-AUDIO` cadré : réintroduire le moteur TTS cloud **Fish Audio**
-  (voix clonée `prepa`) comme **4e `TtsEngine`** additif.
-- Décisions actées (validées pilote) : config `fish-audio` = **membre de
-  `CapsuleConfig`** (`@JsonProperty("fish-audio")`) ; **pool de clés** = valeur du
-  membre (`fish.yaml` gitignoré, chargé + fusionné) ; voix/modèle/format/
-  temperature/topP/endpoint dans `tts`.
-- **US-1→US-3 livrées** (S-182) : `FishAudioKey` (rédaction du secret) + membre
+- EPIC `CAP-FISH-AUDIO` cadré puis livré : moteur TTS cloud **Fish Audio** (voix
+  clonée `prepa`) comme **4e `TtsEngine`** additif.
+- Décisions : config `fish-audio` = **membre de `CapsuleConfig`** (`@JsonProperty("fish-audio")`)
+  ; **pool de clés** = valeur du membre (`fish.yaml` gitignoré, chargé + fusionné) ;
+  voix/modèle/format/temperature/topP/endpoint dans `tts`.
+- **US-1→US-5 livrées** : `FishAudioKey` (rédaction du secret) + membre
   `CapsuleConfig.fishAudio` + `CapsuleConfigLoader.loadFishAudio` ; `FishAudioTtsEngine`
   (seam HTTP injectable + `HttpClient` JDK + JSON + `Bearer` + `format: wav` →
   `wavToMp3`, retries) ; wiring `TtsConfig` 6 champs Fish (4 sources) + extension/
-  conventions/push/scaffold + `resolveTtsEngine` (`fish`/`fish-audio`).
-- **Release `capsule-plugin 0.0.9`** (Central bundle `a2d32777`, AUTOMATIC) +
-  consommateur racine `0.0.9` + MEMPHIS BOM/catalog `0.0.85` (bundle `e64d3224`).
-- 6 US ~17 pts (US-0→US-3 ✅). Doc `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
+  conventions/push/scaffold + `resolveTtsEngine` (`fish`/`fish-audio`) ; BDD `@fish`
+  (moteur mocké) ; README EN + traductions (9×2) ; **dogfooding réel** (prise MP3).
+- **Releases `capsule-plugin 0.0.9` + `0.0.10`** (Central bundles `a2d32777` / `cb26c4e9`) —
+  le 0.0.10 corrige un bug révélé par le dogfooding (`fishAudioConfigPath` **absolu**
+  préfixé par `projectDir` → `project.file(...)`). Consommateur racine `0.0.10` ;
+  MEMPHIS BOM/catalog `0.0.85` puis `0.0.86`.
+- **EPIC `CAP-FISH-AUDIO` TERMINÉ 6/6 US.** Doc `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
 - Rapport `.agents/sessions/182-*.adoc`.
 
-== Mission Session 183 — CAP-FISH-AUDIO US-4
+== Mission Session 183 — au choix (backlog actionnable vidé)
 
-* **US-4** — **BDD `@fish`** (baby-step BDD, **zéro réseau réel**) :
-  1. `capsule_fish_audio.feature` `@fish` + runner dédié + steps préfixés (S-088).
-  2. Scénarios sur **stub HTTP** (`com.sun.net.httpserver.HttpServer`) : engine
-     `fish` sélectionné, body/en-têtes corrects, dégradation sans clé (→ noop),
-     `strictMode`, échec après retries. **Jamais Fish réel** (moteur mocké ou `piper`).
-  3. `CucumberTaskSpec("cucumberTestFishAudio")` câblé `full-tests.yml`.
-* Reste US-5 (docs/traductions + dogfooding meteron, accord pilote).
-* Gates : `compileTestKotlin` VERT (Local = Build, **Tests = CI**).
+* **A)** Maintenance / dette (couverture Kover, docs restantes).
+* **B)** Toute nouvelle demande pilote (cadrer + implémenter en baby-step).
 
 == Points d'attention
 
@@ -51,8 +47,8 @@ _littérature_ : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
 
 == Rappels
 
-* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.9** (Central).
-* MEMPHIS BOM/catalog **0.0.85**. `CAP-QC` **9/9 ✅**, `CAP-QC-VOICE` **5/5 ✅**,
+* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.10** (Central).
+* MEMPHIS BOM/catalog **0.0.86**. `CAP-QC` **9/9 ✅**, `CAP-QC-VOICE` **5/5 ✅**,
   `CAP-VIRAL`/`CAP-SHORT`/`CAP-VIRAL-E2E`/`CAP-CONTEXT`/`LLM-RESILIENCE` ✅.
-* **CAP-FISH-AUDIO 🟡 EN COURS** (S-182) : US-0→US-3 ✅ (release `0.0.9`) — reste
-  US-4 (BDD) + US-5 (docs).
+* **CAP-FISH-AUDIO ✅ TERMINÉ 6/6** (S-182) — releases `0.0.9` + `0.0.10` ;
+  **tous les EPICs actionnables sont clos.**

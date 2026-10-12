@@ -1,15 +1,15 @@
-<!-- translated from README.md rev 0.0.8 -->
+<!-- translated from README.md rev 0.0.10 -->
 # capsule-gradle — Внутреннее устройство плагина
 
 > Руководство для разработчиков и контрибьюторов плагина Gradle `capsule-plugin`.
 
-[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.8&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
+[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.10&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
 [![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/education.cccp.capsule.svg?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/education.cccp.capsule)
 [![CI](https://img.shields.io/github/actions/workflow/status/cheroliv/capsule-gradle/test.yml?branch=main&label=CI)](https://github.com/cheroliv/capsule-gradle/actions/workflows/test.yml)
 [![Покрытие](https://img.shields.io/static/v1?label=%D0%BF%D0%BE%D0%BA%D1%80%D1%8B%D1%82%D0%B8%D0%B5&message=Kover&color=blue)]()
 [![Лицензия](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=%D0%9B%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F)](../../LICENSE)
 
-- **Версия**: `0.0.8` (Maven Central) · **Группа**: `education.cccp` · **ID плагина**: `education.cccp.capsule`
+- **Версия**: `0.0.10` (Maven Central) · **Группа**: `education.cccp` · **ID плагина**: `education.cccp.capsule`
 - **Toolchain**: Java 25 · Kotlin 2.4.10 · Gradle 9.8.1
 - **Сборка**: `./gradlew build -x test` · **Тесты**: `./gradlew check` (юнит + функциональные через TestKit; Cucumber через `-PrunCucumber`) · **Покрытие**: `./gradlew koverReport`
 
@@ -43,7 +43,7 @@ capsule-plugin/
     │   ├── CapsuleConfigMerger.kt       # слияние 4 источников (CLI > YAML > gradle.properties > ENV)
     │   ├── CapsuleConfigLogger.kt       # структурированный лог конфига (CR-8)
     │   ├── Capsule{Messages}*.kt        # разрешение ресурсов i18n (10 языков)
-    │   ├── TtsManager.kt                # интеграция TTS Piper + espeak
+    │   ├── TtsManager.kt                # интеграция TTS Piper + espeak + Fish Audio
     │   ├── PlaywrightManager.kt         # захват Chromium headless
     │   ├── CaptureResolver.kt           # выбор PLAYWRIGHT / SCREENSHOT / REMOTION
     │   ├── ScreenshotPlanner.kt         # чистый план: PNG на слайд → WebM → concat demuxer
@@ -228,7 +228,7 @@ export GRADLE_OPTS="-Xmx2g"   # локальные сборки
 
 ## Публикация (NMCP)
 
-**Опубликовано в Maven Central** — версия `0.0.8` (предыдущие `0.0.7`, `0.0.6`, `0.0.5`, …).
+**Опубликовано в Maven Central** — версия `0.0.10` (предыдущие `0.0.7`, `0.0.6`, `0.0.5`, …).
 POM настраивается через `maven-publish` и `signing`:
 
 - POM: name "Capsule Gradle Plugin", description "Generation automatisee de capsules video
