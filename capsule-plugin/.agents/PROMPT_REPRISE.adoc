@@ -39,18 +39,20 @@ _littérature_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` + `.agents/CADRAGE_EPIC_CAP_
 
 == Mission Session 176 — suite de consommation (backlog EPICs vidé)
 
-=== Option A — Consommateur MEMPHIS (cross-borough)
+=== ✅ Consommateur MEMPHIS — FAIT (MEMPHIS S-284)
 
-Aligner `foundry/public/workspace-bom` catalogue `capsule-plugin = 0.0.5` + bump BOM
-(+ catalog) puis publier (accord pilote). Ordre DAG : capsule 0.0.5 déjà Central.
+`workspace-bom`/`workspace-catalog` **0.0.81** publiés Central (bundle `8bbfe706-…`,
+AUTOMATIC) : catalogue `capsule-plugin = 0.0.5`, garde `PlatformCatalogAlignmentTest`
+ré-alignée (`0.0.77` → `0.0.81`). Propagation repo1 vérifiée (POM BOM contraint
+`capsule-plugin 0.0.5` ; toml catalog `capsule-plugin = "0.0.5"`).
 
-=== Option B — Câblage PRT-01 côté karaoké/sous-titres
+=== Option A — Câblage PRT-01 côté karaoké/sous-titres
 
 Brancher `PronunciationLexicon.reversals()` dans la génération des sous-titres
 (le texte affiché reste la forme « lue ») et documenter le round-trip dit↔lu de bout
 en bout.
 
-=== Option C — Dette / maintenance
+=== Option B — Dette / maintenance
 
 Revoir les points d'attention du BACKLOG (drift catalogue de version, docs README,
 couverture Kover).
@@ -67,5 +69,5 @@ couverture Kover).
 
 == Rappels
 
-* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.4** (Central).
+* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.5** (Central, propagée).
 * `CAP-QC` **9/9 ✅**. `CAP-QC-VOICE` **5/5 ✅**.
