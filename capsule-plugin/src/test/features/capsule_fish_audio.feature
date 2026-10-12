@@ -17,6 +17,7 @@ Feature: Fish Audio cloud TTS engine
 
   Scenario: Without a key the engine is unavailable
     Given a Fish Audio engine without a key
+    When the engine synthesises "Bonjour"
     Then the Fish Audio engine is unavailable
     And synthesising fails with "no API key"
 
