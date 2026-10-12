@@ -105,7 +105,8 @@ object CapsuleConfigMerger {
                 fallbackEnabled = env["CAPSULE_TTS_FALLBACK_ENABLED"]?.toBoolean() ?: true,
                 espeakVoice = env["CAPSULE_TTS_ESPEAK_VOICE"] ?: "fr",
                 espeakSpeed = env["CAPSULE_TTS_ESPEAK_SPEED"]?.toIntOrNull() ?: 150,
-                language = env["CAPSULE_TTS_LANGUAGE"] ?: "fr"
+                language = env["CAPSULE_TTS_LANGUAGE"] ?: "fr",
+                pronunciationEnabled = env["CAPSULE_TTS_PRONUNCIATION_ENABLED"]?.toBoolean() ?: false
             ),
             capture = CaptureConfig(
                 viewportWidth = env["CAPSULE_CAPTURE_VIEWPORT_WIDTH"]?.toIntOrNull() ?: 1408,
@@ -233,7 +234,8 @@ object CapsuleConfigMerger {
                 fallbackEnabled = props["capsule.tts.fallbackEnabled"]?.toBoolean() ?: true,
                 espeakVoice = props["capsule.tts.espeakVoice"] ?: "fr",
                 espeakSpeed = props["capsule.tts.espeakSpeed"]?.toIntOrNull() ?: 150,
-                language = props["capsule.tts.language"] ?: "fr"
+                language = props["capsule.tts.language"] ?: "fr",
+                pronunciationEnabled = props["capsule.tts.pronunciationEnabled"]?.toBoolean() ?: false
             ),
             capture = CaptureConfig(
                 viewportWidth = props["capsule.capture.viewportWidth"]?.toIntOrNull() ?: 1408,
@@ -372,7 +374,8 @@ object CapsuleConfigMerger {
             fallbackEnabled = mergeBoolean(cli, "tts.fallbackEnabled", yaml?.fallbackEnabled, props.fallbackEnabled),
             espeakVoice = mergeStr(cli, "tts.espeakVoice", yaml?.espeakVoice, props.espeakVoice, env.espeakVoice),
             espeakSpeed = mergeInt(cli, "tts.espeakSpeed", yaml?.espeakSpeed, props.espeakSpeed),
-            language = mergeStr(cli, "tts.language", yaml?.language, props.language, env.language)
+            language = mergeStr(cli, "tts.language", yaml?.language, props.language, env.language),
+            pronunciationEnabled = mergeBoolean(cli, "tts.pronunciationEnabled", yaml?.pronunciationEnabled, props.pronunciationEnabled)
         )
     }
 

@@ -93,6 +93,10 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val ttsLanguage: Property<String> = objects.property(String::class.java)
         .convention("fr")
 
+    /** PRT-01 — `true` to speak the "dit/lu" pronunciation form and key the TTS cache on the spoken text. Defaults to false. */
+    val ttsPronunciationEnabled: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(false)
+
     val manimExecutablePath: Property<String> = objects.property(String::class.java)
         .convention("manim")
 
@@ -370,6 +374,7 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         espeakVoice = "fr",
         espeakSpeed = 150,
         ttsLanguage = "fr",
+        ttsPronunciationEnabled = false,
         viewportWidth = 1408,
         viewportHeight = 792,
         playwrightTimeout = 120_000.0,
@@ -453,6 +458,7 @@ data class CapsuleConventions(
     val espeakVoice: String,
     val espeakSpeed: Int,
     val ttsLanguage: String,
+    val ttsPronunciationEnabled: Boolean,
     val viewportWidth: Int,
     val viewportHeight: Int,
     val playwrightTimeout: Double,

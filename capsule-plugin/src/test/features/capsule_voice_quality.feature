@@ -28,3 +28,8 @@ Feature: Voice quality pure domain (CAP-QC-VOICE US-1)
     And the transcribed voice narration "le chien noir"
     When the voice fidelity is scored
     Then the voice word error rate is greater than 0.0
+
+  Scenario: Acronyms and symbols are spelled for the voice
+    Given the voice narration "the API is 50%"
+    When the voice narration is pronounced
+    Then the pronounced voice text is "the A P I is 50 pour cent"

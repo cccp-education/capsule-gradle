@@ -1,6 +1,7 @@
 package capsule.scenarios
 
 import capsule.voice.FidelityScorer
+import capsule.voice.PronunciationLexicon
 import capsule.voice.TextNormalizer
 import capsule.voice.VoiceScore
 import io.cucumber.java.en.Given
@@ -21,6 +22,7 @@ class CapsuleVoiceQualitySteps {
     private var transcribed: String = ""
     private var normalized: List<String> = emptyList()
     private var score: VoiceScore? = null
+    private var pronounced: String = ""
 
     @Given("the voice narration {string}")
     fun theVoiceNarration(text: String) {
@@ -65,5 +67,15 @@ class CapsuleVoiceQualitySteps {
     @Then("the voice surplus word count is {int}")
     fun theVoiceSurplusWordCountIs(value: Int) {
         assertEquals(value, score!!.surplus)
+    }
+
+    @When("the voice narration is pronounced")
+    fun theVoiceNarrationIsPronounced() {
+        pronounced = PronunciationLexicon.spoken(narration)
+    }
+
+    @Then("the pronounced voice text is {string}")
+    fun thePronouncedVoiceTextIs(expected: String) {
+        assertEquals(expected, pronounced)
     }
 }

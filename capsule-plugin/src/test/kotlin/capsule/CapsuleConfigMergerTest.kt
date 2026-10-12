@@ -535,6 +535,17 @@ class CapsuleConfigMergerTest {
     }
 
     @Test
+    fun `tts pronunciation defaults off and reads from CLI`() {
+        val projectDir = File(tempDir, "tts-pronunciation").also { it.mkdirs() }
+        val default = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
+        assertEquals(false, default.tts.pronunciationEnabled, "tts.pronunciationEnabled should default to false")
+        val enabled = CapsuleConfigMerger.merge(
+            projectDir, CapsuleConfig(), mapOf("tts.pronunciationEnabled" to "true")
+        )
+        assertEquals(true, enabled.tts.pronunciationEnabled, "CLI tts.pronunciationEnabled should be honored")
+    }
+
+    @Test
     fun `voice verification defaults off and reads from CLI`() {
         val projectDir = File(tempDir, "voice-verify").also { it.mkdirs() }
         val default = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())

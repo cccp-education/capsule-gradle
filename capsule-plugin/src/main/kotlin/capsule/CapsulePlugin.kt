@@ -116,6 +116,9 @@ class CapsulePlugin : Plugin<Project> {
         if (ext.espeakVoice.get() == conventions.espeakVoice) ext.espeakVoice.set(config.tts.espeakVoice)
         if (ext.espeakSpeed.get() == conventions.espeakSpeed) ext.espeakSpeed.set(config.tts.espeakSpeed)
         if (ext.ttsLanguage.get() == conventions.ttsLanguage) ext.ttsLanguage.set(config.tts.language)
+        if (ext.ttsPronunciationEnabled.get() == conventions.ttsPronunciationEnabled) {
+            ext.ttsPronunciationEnabled.set(config.tts.pronunciationEnabled)
+        }
 
         // Capture section
         if (ext.viewportWidth.get() == conventions.viewportWidth) ext.viewportWidth.set(config.capture.viewportWidth)

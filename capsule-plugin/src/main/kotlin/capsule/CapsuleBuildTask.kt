@@ -2,6 +2,7 @@ package capsule
 
 import capsule.feed.CapsuleScriptReader
 import capsule.multilang.MultiLanguageResolver
+import capsule.voice.PronunciationLexicon
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.Internal
@@ -108,6 +109,15 @@ open class CapsuleBuildTask : DefaultTask() {
         val engine = resolveTtsEngine()
         logger.lifecycle("TTS engine: {}", engine.name())
 
+        // PRT-01 — "dit / lu": when enabled, the voice speaks the pronunciation form
+        // (acronyms spelled, symbols expanded) and the cache is indexed on the
+        // spoken text (a sidecar `<file>.key`), so editing a pronunciation
+        // re-synthesises only the affected takes.
+        val pronunciation = capsuleExtension.ttsPronunciationEnabled.get()
+        if (pronunciation) {
+            logger.lifecycle("TTS pronunciation (dit/lu) enabled — cache indexed on the spoken text")
+        }
+
         val cores = Runtime.getRuntime().availableProcessors()
         val executor = Executors.newFixedThreadPool(cores)
         val synthesized = AtomicInteger(0)
@@ -123,6 +133,8 @@ open class CapsuleBuildTask : DefaultTask() {
             for (seg in parsed.segments) {
                 val idx = String.format("%02d", seg.index)
                 val ttsFile = deckOutputDir.resolve("slide-$idx.mp3")
+                val spoken = if (pronunciation) PronunciationLexicon.spoken(seg.speakerNote) else seg.speakerNote
+                val cacheKey = if (pronunciation) PronunciationLexicon.cacheKey(spoken) else null
 
                 futures.add(executor.submit {
                     try {
@@ -132,14 +144,18 @@ open class CapsuleBuildTask : DefaultTask() {
                         // sait pas reproduire. Sans ce garde-fou, la relance du
                         // rendu remplace en silence la voix par le repli piper, et
                         // rien dans le journal ne dit qu'une piste a été perdue.
-                        if (ttsFile.exists() && ttsFile.length() > 0) {
+                        // PRT-01 : le cache n'est « frais » que si la clé du texte
+                        // dit correspond (mode prononciation), sinon on conserve
+                        // l'existant comme avant.
+                        if (ttsFile.exists() && ttsFile.length() > 0 && cacheFresh(ttsFile, cacheKey)) {
                             skipped.incrementAndGet()
                             logger.lifecycle("  TTS ↷ {} (déjà présent, conservé)", ttsFile.name)
                             return@submit
                         }
-                        engine.synthesize(seg.speakerNote, ttsFile)
+                        engine.synthesize(spoken, ttsFile)
+                        if (cacheKey != null) writeCacheKey(ttsFile, cacheKey)
                         synthesized.incrementAndGet()
-                        logger.lifecycle("  TTS → {} ({} chars)", ttsFile.name, seg.speakerNote.length)
+                        logger.lifecycle("  TTS → {} ({} chars)", ttsFile.name, spoken.length)
                     } catch (e: TtsException) {
                         failed.incrementAndGet()
                         logger.error("  TTS FAILED slide {}: {}", seg.index, e.message)
@@ -165,5 +181,25 @@ open class CapsuleBuildTask : DefaultTask() {
             "TTS generation: {} synthesized, {} kept, {} failed, {} engine, {} cores",
             synthesized.get(), skipped.get(), failed.get(), engine.name(), cores
         )
+    }
+
+    /**
+     * PRT-01 — whether an existing take may be reused: always (no key, backward
+     * compat), else only when the sidecar `<file>.key` matches [cacheKey].
+     */
+    private fun cacheFresh(ttsFile: File, cacheKey: String?): Boolean {
+        if (cacheKey == null) return true
+        val keyFile = File(ttsFile.parentFile, ttsFile.name + CACHE_KEY_SUFFIX)
+        return keyFile.isFile && keyFile.readText().trim() == cacheKey
+    }
+
+    /** PRT-01 — records the spoken-text key next to the synthesised take. */
+    private fun writeCacheKey(ttsFile: File, cacheKey: String) {
+        File(ttsFile.parentFile, ttsFile.name + CACHE_KEY_SUFFIX).writeText(cacheKey)
+    }
+
+    companion object {
+        /** PRT-01 — sidecar suffix holding the spoken-text cache key. */
+        const val CACHE_KEY_SUFFIX: String = ".key"
     }
 }

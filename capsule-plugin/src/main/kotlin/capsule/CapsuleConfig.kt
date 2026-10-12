@@ -101,7 +101,13 @@ data class TtsConfig(
     val fallbackEnabled: Boolean = true,
     val espeakVoice: String = "fr",
     val espeakSpeed: Int = 150,
-    val language: String = "fr"
+    val language: String = "fr",
+    /**
+     * PRT-01 — `true` to speak the "dit / lu" pronunciation form (acronyms spelled,
+     * symbols expanded) and index the TTS cache on the spoken text (`<file>.key`).
+     * Defaults to false (backward compat — the display text is spoken verbatim).
+     */
+    val pronunciationEnabled: Boolean = false
 )
 
 data class CaptureConfig(
