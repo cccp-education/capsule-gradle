@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-12 (S-188) — CAP-ENGINE-DECOUPLING US-4 (isolation capsule.kernel + garde d'architecture). Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-12 (S-189) — CAP-ENGINE-DECOUPLING US-5 (extraction N1 video-kernel) — EPIC TERMINÉ. Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (126-188)
+== Sessions récentes (126-189)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 189 | 2026-10-12 | refactor+release | **CAP-ENGINE-DECOUPLING US-5 ✅ — extraction N1 `video-kernel` — EPIC TERMINÉ 6/6.** Nouveau borough **`video-kernel-gradle`** : noyau engine-agnostique `capsule.kernel` extrait (modèle + ports `VideoEngine`/`SegmentSource`) + garde de frontière, publié **`education.cccp:video-kernel:0.0.1`** (Maven Central, Apache 2.0, signé GPG). Capsule consomme `implementation(libs.video.kernel)` ; noyau in-repo (`src/main/kotlin/capsule/kernel/`) supprimé, ainsi que les tests unitaires noyau, la garde `KernelBoundary*` et la BDD `@kernel-boundary`/spec `cucumberTestKernelBoundary` (déplacés dans le borough) ; `SlideTypeMappingTest` (compat `capsule.feed`) et BDD `@kernel-model` conservés (testent l'artefact consommé). Gates locaux (Local = Build) : compiles ×3 + `assemble` + `validatePlugins` VERTS. **Blocage admin** : dépôt GitHub `cccp-education/video-kernel-gradle` non créable par le token de session → dépôt initialisé **localement** (commit `cffab2b`), remote + CI à activer. | 9/10
 
 | 188 | 2026-10-12 | refactor+test | **CAP-ENGINE-DECOUPLING US-4 ✅ — isolation `capsule.kernel` + garde d'architecture.** Fuite de vocabulaire noyau corrigée : `VideoRenderRequest.slideDurations` → **`segmentDurations`** (+ invariant `size == segments.size`), l'adapter traduit vers `PlaywrightCapture.capture(slideDurations=…)` (hors noyau). Garde statique : `capsule.ci.KernelBoundaryAudit` (audit partagé — imports du noyau limités à `java.`/`kotlin.`/`contracts.`/`capsule.kernel.` ; vocabulaire de code commentaires exclus sans `slide`/`deck`/`reveal`/`playwright`/`data-audio`/`data-capsule-slide`/`asciidoc`/`processbuilder`/`org.gradle`) + `KernelBoundaryTest` (2 tests). Preuve d'isolation : seul import non-JDK du noyau = contrat N0 pur `contracts.i18n.*` (conforme D5). BDD `capsule_kernel_boundary.feature` `@kernel-boundary` (2 scénarios, runner dédié **44e** `cucumberTestKernelBoundary`, S-082/S-088). Gates locaux (Local = Build) : compiles ×3 + `assemble` + `validatePlugins` VERTS. Zéro bump, zéro publication, zéro secret. | 9/10
 

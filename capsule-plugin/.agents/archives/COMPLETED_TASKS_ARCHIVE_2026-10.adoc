@@ -1,6 +1,14 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 189 — `CAP-ENGINE-DECOUPLING` US-5 ✅ (extraction N1 `video-kernel`) — EPIC TERMINÉ
+
+* Nouveau borough `video-kernel-gradle` ; noyau extrait + publié `education.cccp:video-kernel:0.0.1`
+  (Maven Central).
+* Capsule consomme `implementation(libs.video.kernel)` ; noyau in-repo supprimé.
+* **EPIC CAP-ENGINE-DECOUPLING TERMINÉ 6/6** (S-184→S-189).
+* Rapport `.agents/sessions/189-cap-engine-decoupling-us5.adoc`.
+
 == Session 188 — `CAP-ENGINE-DECOUPLING` US-4 ✅ (isolation `capsule.kernel` + garde d'architecture)
 
 * Fuite corrigée : `VideoRenderRequest.slideDurations` → `segmentDurations` (+ invariant).

@@ -1,0 +1,75 @@
+= Session 189 — CAP-ENGINE-DECOUPLING US-5 (extraction N1 `video-kernel`)
+:session: 189
+:date: 2026-10-12
+:type: refactor+release (extraction N1, publication, accord pilote)
+:borough: Détroit / capsule-gradle
+:toc:
+
+== Objectif
+
+Livrer **US-5** (dernière) de l'EPIC `CAP-ENGINE-DECOUPLING` : matérialiser le
+**noyau engine-agnostique** `capsule.kernel` en un artefact **N1**
+`education.cccp:video-kernel:0.0.1` publié sur Maven Central, consommé par
+capsule. **Accord pilote** (publication + création de borough).
+
+== Méthode
+
+Baby-step DDD/TDD strict. **Local = Build / Tests = CI**. Publication nmcp.
+
+== Livrables
+
+=== Nouveau borough N1 `video-kernel-gradle` (créé)
+
+* Build autonome `video-kernel-plugin/` (wrapper Gradle 9.8.1, nmcp 1.5.0,
+  conventions `education.cccp.build.publishing:0.0.7`, Kotlin 2.4.10, toolchain JDK 25).
+* Noyau extrait : `VideoKind`, `VideoSegment`, `VideoScript`, `VisualSource`/
+  `FileVisualSource`, `VideoProductionEntry`, `VideoProductionPlan`, `VideoEngine`,
+  `SegmentSource` (package `capsule.kernel` conservé).
+* Garde de frontière `capsule.ci.KernelBoundaryAudit`/`KernelBoundaryTest` (déplacée).
+* Tests unitaires du noyau (4 fichiers).
+* **Publication `education.cccp:video-kernel:0.0.1`** (Maven Central, Apache 2.0, signé GPG).
+* Gouvernance `.agents/` + CI `.github/workflows/test.yml` + README.
+
+=== Consommateur capsule (retravaillé)
+
+* `gradle/libs.versions.toml` : `video-kernel = "0.0.1"` + entrée `libs.video.kernel`.
+* `build.gradle.kts` : `implementation(libs.video.kernel)`.
+* **Suppression** du noyau in-repo `src/main/kotlin/capsule/kernel/`.
+* **Suppression** des éléments déplacés : tests unitaires noyau
+  (`src/test/kotlin/capsule/kernel/`), garde (`capsule/ci/KernelBoundary*`),
+  BDD `@kernel-boundary` (feature+steps+runner) + spec `cucumberTestKernelBoundary`.
+* Conservés : `SlideTypeMappingTest` (compat `capsule.feed`) et BDD `@kernel-model`
+  (teste l'artefact consommé), `RevealJsEngineAdapter`/`CapsuleVideoTask` importent
+  désormais `capsule.kernel.*` depuis l'artefact.
+
+== Gates locaux (Local = Build)
+
+* `compileKotlin` / `compileTestKotlin` / `compileFunctionalTestKotlin` **VERTS**
+  (résolution `video-kernel` depuis mavenLocal).
+* `assemble` + `validatePlugins` **VERTS**.
+* Zéro secret. Zéro bump capsule (la prochaine release capsule portera la dépendance).
+
+== Décisions clés
+
+[cols="1,4", options="header"]
+|===
+| # | Décision
+| D-189-1 | Cible **N1** lib utilitaire (pas N0) — cf. D5 / S-162.
+| D-189-2 | Package `capsule.kernel` conservé à l'extraction (zéro cascade d'imports) ; promotion neutre `video.kernel.*` = backlog VK-2 du borough.
+| D-189-3 | Garde d'architecture **déplacée** dans le borough (elle scanne les sources du noyau).
+| D-189-4 | `implementation(libs.video.kernel)` (usage interne) — pas de bump capsule immédiat.
+|===
+
+== Blocage (à traiter par un admin)
+
+La création du dépôt **GitHub** `github.com/cccp-education/video-kernel-gradle` a
+été **refusée** par le token de session (`cheroliv cannot create a repository for
+cccp-education`). Le dépôt est **initialisé localement** (commit `cffab2b`) ; le
+remote + la CI seront activés dès qu'un admin aura créé le dépôt.
+
+== Statut
+
+**`CAP-ENGINE-DECOUPLING` US-5 ✅ S-189 — EPIC TERMINÉ 6/6** (US-0 ✅ S-184,
+US-1 ✅ S-185, US-2 ✅ S-186, US-3 ✅ S-187, US-4 ✅ S-188, US-5 ✅ S-189).
+Le noyau est extrait, publié (`video-kernel:0.0.1`) et consommé ; un 2ᵉ moteur
+(HyperFrames) peut l'implémenter.

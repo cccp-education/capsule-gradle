@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-12 (S-188 — **`CAP-ENGINE-DECOUPLING` US-4 ✅** : garde d'architecture `capsule.kernel` + fuite `slideDurations → segmentDurations` corrigée. Précédents : S-187 US-3 SegmentSource ; S-186 US-2 VideoEngine ; S-185 US-1 modèle neutre ; S-184 cadrage.)
+:last_update: 2026-10-12 (S-189 — **`CAP-ENGINE-DECOUPLING` US-5 ✅ — EPIC TERMINÉ 6/6** : extraction N1 `education.cccp:video-kernel:0.0.1` (nouveau borough `video-kernel-gradle`) ; capsule consomme `libs.video.kernel`.)
 
 '''
 == ✅ CAP-FISH-AUDIO — TERMINÉ 6/6 US (S-182)
@@ -47,7 +47,7 @@ cible probable N1 `codebase.koog.pipeline`. Note : `pipeline-contracts` (MEMPHIS
 contrat **release-notes**, sans rapport._
 
 '''
-== 🟡 CAP-ENGINE-DECOUPLING — EN COURS (US-4 ✅ S-188)
+== ✅ CAP-ENGINE-DECOUPLING — TERMINÉ 6/6 (S-184→S-189)
 _📖 Littérature : `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`._
 
 _Découpler le **métier** vidéo du **moteur** reveal.js/slider, isoler un noyau
@@ -58,7 +58,7 @@ Décision pilote : **ne pas attendre le seuil « factoriser à 3 »**. La review
 « non-transférable » : presque tout est **récupérable** ; le couplage slider se limite
 à la **capture reveal.js**, le **parser speaker-notes**, le **swap de slides Manim** et
 les **champs deck/slide** du contrat N3. Cible d'extraction : N1 `education.cccp:video-kernel`
-(lib utilitaire, **pas N0** — cf. S-162 LLM-RESILIENCE N0 CADUQUE). 6 US (US-0 ✅ S-184, US-1 ✅ S-185, US-2 ✅ S-186, US-3 ✅ S-187, US-4 ✅ S-188, US-5 🟡 accord pilote)._
+(lib utilitaire, **pas N0** — cf. S-162 LLM-RESILIENCE N0 CADUQUE). 6 US (US-0 ✅ S-184, US-1 ✅ S-185, US-2 ✅ S-186, US-3 ✅ S-187, US-4 ✅ S-188, US-5 ✅ S-189) — **EPIC TERMINÉ 6/6**._
 
 [cols="1,3,1,1", options="header"]
 |===
@@ -68,7 +68,7 @@ les **champs deck/slide** du contrat N3. Cible d'extraction : N1 `education.cccp
 | US-2 | Port `VideoEngine` + adapter `RevealJsEngineAdapter` (extraire Playwright de `CapsuleVideoTask`) — `capsule.kernel.VideoEngine` + `capsule.adapter.revealjs` (`RevealJsDeckHtml` pur + `RevealJsEngineAdapter`) ; tâche **1250 → 999 l.**, délégation (API test préservée) | ✅ S-186 | L
 | US-3 | Port `SegmentSource` + `RevealJsSpeakerNoteSource` — `capsule.kernel.SegmentSource` + adapter `RevealJsSpeakerNoteParser`/`RevealJsScriptContract`/`RevealJsSpeakerNoteSource` ; compat `capsule.feed` par délégation | ✅ S-187 | M
 | US-4 | Isoler `capsule.kernel` + garde d'architecture (test frontière) — `KernelBoundaryAudit`/`KernelBoundaryTest` (imports + vocabulaire neutre) ; fuite `slideDurations → segmentDurations` corrigée | ✅ S-188 | M
-| US-5 | Préparer l'extraction N1 `video-kernel` (module + publication) — accord pilote | 🟡 À FAIRE | L
+| US-5 | Préparer l'extraction N1 `video-kernel` (module + publication) — nouveau borough `video-kernel-gradle` + publication `education.cccp:video-kernel:0.0.1` (Central) ; capsule consomme `implementation(libs.video.kernel)` | ✅ S-189 | L
 |===
 
 '''

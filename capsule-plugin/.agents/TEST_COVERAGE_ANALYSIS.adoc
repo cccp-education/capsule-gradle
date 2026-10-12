@@ -1,7 +1,20 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-12
-:session: 188 CAP-ENGINE-DECOUPLING US-4 (isolation capsule.kernel + garde d'architecture)
+:session: 189 CAP-ENGINE-DECOUPLING US-5 (extraction N1 video-kernel)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 12 octobre 2026 (après session 189)
+
+.Extraction du noyau en artefact N1 (CAP-ENGINE-DECOUPLING US-5)
+|===
+| Élément | Changement | Tests
+
+| `capsule/kernel/**` (supprimé) | extrait vers le borough `video-kernel-gradle` (`education.cccp:video-kernel:0.0.1`) | tests noyau + garde `KernelBoundaryTest` déplacés dans le borough
+| `build.gradle.kts` + `libs.versions.toml` | `implementation(libs.video.kernel)` | compiles capsule (résolution mavenLocal/Central)
+| `capsule/feed/CapsuleFeedModels.kt` + adapter/task | imports `capsule.kernel.*` via l'artefact | suites existantes (SlideTypeMappingTest, @kernel-model conservés)
+|===
+
+
 
 == Couverture — 12 octobre 2026 (après session 188)
 

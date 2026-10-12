@@ -1,49 +1,40 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 189
+:session: 190
 :borough: Détroit
-:session_precedente: 188 — CAP-ENGINE-DECOUPLING US-4 (isolation capsule.kernel + garde d'architecture) ✅
+:session_precedente: 189 — CAP-ENGINE-DECOUPLING US-5 (extraction N1 video-kernel) ✅ — EPIC TERMINÉ 6/6
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`.
 
 == Contexte Hérité
 
-=== S-188 — CAP-ENGINE-DECOUPLING US-4 ✅ (frontière d'architecture)
+=== S-189 — CAP-ENGINE-DECOUPLING US-5 ✅ (extraction N1)
 
-- Garde statique `capsule.ci.KernelBoundaryAudit` + `KernelBoundaryTest` :
-  imports du noyau limités à `java./kotlin./contracts./capsule.kernel.`, et
-  vocabulaire de code (commentaires exclus) sans
-  `slide/deck/reveal/playwright/data-audio/...`.
-- Fuite corrigée : `VideoRenderRequest.slideDurations` → **`segmentDurations`**
-  (+ invariant `segmentDurations.size == segments.size`).
-- BDD `@kernel-boundary` (runner dédié **44e** `cucumberTestKernelBoundary`).
+- Nouveau borough **`video-kernel-gradle`** : noyau `capsule.kernel` extrait +
+  garde de frontière, publié **`education.cccp:video-kernel:0.0.1`** (Maven Central).
+- Capsule consomme `implementation(libs.video.kernel)` ; noyau in-repo supprimé
+  (+ ses tests/guard/BDD `@kernel-boundary` déplacés).
+- **Blocage admin** : le dépôt GitHub `cccp-education/video-kernel-gradle` n'a pas
+  pu être créé (token sans droit d'org) — dépôt initialisé **localement**
+  (commit `cffab2b`), remote + CI à activer.
+- **`CAP-ENGINE-DECOUPLING` TERMINÉ 6/6.**
 
-=== S-187 — US-3 ✅ (extraction source)
+== Mission Session 190 — au choix (pilote)
 
-- Port `capsule.kernel.SegmentSource` + adapter speaker-notes reveal
-  (`RevealJsSpeakerNoteParser`/`RevealJsScriptContract`/`RevealJsSpeakerNoteSource`) ; compat `capsule.feed` par délégation.
-
-== Mission Session 189 — CAP-ENGINE-DECOUPLING US-5 (accord pilote)
-
-Préparer l'**extraction N1** `education.cccp:video-kernel` : matérialiser
-`capsule.kernel` (modèle neutre + ports `VideoEngine`/`SegmentSource`) en un
-module N1 publié sur Maven Central, consommé par capsule (et plus tard par
-hyperframes/Watts). **Accord pilote explicite requis** (publication + bump BOM).
-Le noyau est déjà isolé et gardé (US-4) — l'extraction est un geste de
-matérialisation.
+* A) **Release capsule** (bump version + Central) intégrant la dépendance `video-kernel`.
+* B) Suivre les items du borough `video-kernel` : VK-1 (hyperframes/Watts),
+  VK-2 (package neutre `video.kernel.*`), VK-3 (entrée BOM MEMPHIS).
+* C) Nouvelle demande pilote.
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
-* **Règle 2 — PUBLISH** : interdiction sans permission (accord pilote requis).
-* **Règle 6 — ZÉRO secret**. **Règle 7 — capsule consomme slider**.
-* Le noyau parle `segment`/`visual`/`engine` — **jamais** `slide`/`deck`/`reveal`/`Playwright`.
-* Ne pas casser le plugin mature (917 unit + 60 functional + **44 runners**).
-* **English only** code/Gherkin (`OssVocabularyGuardTest`) ; **zéro Python** ;
-  runner dédié par feature (S-082), steps préfixés (S-088).
-* Catalogue **interne** aligné BOM `0.0.86`.
+* **Règle 2 — PUBLISH** : accord pilote. **Règle 6 — ZÉRO secret**.
+* La CI capsule résout `video-kernel` **depuis Maven Central** (mavenLocal vide en CI).
+* **English only** ; **zéro Python** ; runner dédié par feature (S-082), steps préfixés (S-088).
+* Catalogue **interne** aligné BOM `0.0.86` (entrée `video-kernel` non encore dans la BOM).
 
 == Rappels
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.10** (Central).
-* MEMPHIS BOM/catalog **0.0.86**. Tous les EPICs antérieurs sont clos/caduques.
-* **CAP-ENGINE-DECOUPLING** 🟡 EN COURS (US-0 ✅ S-184 ; US-1 ✅ S-185 ; US-2 ✅ S-186 ; US-3 ✅ S-187 ; **US-4 ✅ S-188** ; US-5 À FAIRE — accord pilote).
+* MEMPHIS BOM/catalog **0.0.86**. `education.cccp:video-kernel:0.0.1` (Central).
+* Tous les EPICs sont clos ; `CAP-ENGINE-DECOUPLING` **TERMINÉ 6/6 (S-184→S-189)**.

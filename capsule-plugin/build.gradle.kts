@@ -333,17 +333,8 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleSegmentSourceCucumberRunner",
             timeoutMinutes = 10,
         ),
-        // CAP-ENGINE-DECOUPLING US-4 — kernel architecture boundary guard
-        // (capsule.kernel imports only java/kotlin/contracts; no renderer vocabulary).
-        // Dedicated runner pattern S-082; steps prefixed "engine-neutral kernel"/"kernel".
-        // Pure static audit — no Gradle/FFmpeg/Playwright.
-        CucumberTaskSpec(
-            name = "cucumberTestKernelBoundary",
-            features = listOf("src/test/features/capsule_kernel_boundary.feature"),
-            tags = listOf("@kernel-boundary"),
-            runnerClass = "capsule.scenarios.CapsuleKernelBoundaryCucumberRunner",
-            timeoutMinutes = 10,
-        ),
+        // US-4 kernel boundary guard moved to the video-kernel borough (it scans the
+        // capsule.kernel sources, now owned there).
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task
@@ -532,6 +523,8 @@ dependencies {
 
     // N0 contracts — i18n (LanguageCatalog 10 languages, cross-borough translation alliance)
     implementation(libs.i18n.contracts)
+    // N1 engine-neutral video kernel (model + ports), extracted (US-5).
+    implementation(libs.video.kernel)
 
     // N0 contracts — codebase context (CompositeContext/ContextChannel/ChannelBudget, CAP-ARCH-2)
     implementation(libs.codebase.contracts)
