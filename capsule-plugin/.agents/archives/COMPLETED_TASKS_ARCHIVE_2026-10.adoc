@@ -1,6 +1,16 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 180 — README fidèles au code + traductions (EN source de vérité) ✅
+
+* `README.md` (EN, master) réécrit fidèle au code : config **18 sections**, layout
+  **19 domaines**, section tâches Gradle, CI réelle (4 workflows + caches), publication
+  (signature exécutée, `0.0.8`), statut EPICs (tous clos), deps, liens corrigés.
+* 9 traductions régénérées (`README.plugin/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md`,
+  en-tête `rev 0.0.8`, switcher/liens corrigés). Dette `0.0.1-SNAPSHOT` **résorbée**.
+* Documentaire : aucun artefact publié, aucun bump.
+* Rapport `.agents/sessions/180-readme-sync-i18n.adoc`.
+
 == Session 179 — Résidus `prepa` (BT.709 + nombres) en Kotlin + release `capsule-plugin 0.0.8` ✅
 
 * **R1 (PRT-09)** : objet pur `capsule.Mp4ConversionCommand` (colorimétrie BT.709) + wiring

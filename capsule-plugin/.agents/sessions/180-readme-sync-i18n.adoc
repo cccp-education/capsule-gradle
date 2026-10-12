@@ -1,0 +1,58 @@
+= Rapport de session 180 — README fidèles au code + traductions (EN = source de vérité)
+:session: 180
+:date: 2026-10-12
+:borough: Détroit (capsule-gradle)
+:statut: TERMINÉ (documentation — 10 fichiers)
+:methode: sync code réel → master EN → 9 traductions
+
+== Objet
+
+Demande pilote : *« mets à jour les README pour qu'ils soient fidèles à l'état du code,
+et fais les traductions une fois que tu as ta langue source de vérité qui sera l'anglais »*.
+
+Le `README.md` (**anglais = source de vérité**) était périmé sur plusieurs sections ; les
+9 traductions `README.plugin/*.md` portaient encore `0.0.1-SNAPSHOT` (dette notée S-179).
+
+== Audit code réel ↔ README (dérives corrigées)
+
+* **Sections de config** : « 11 » → **18** (`input`, `tts`, `capture`, `distrib`, `manim`,
+  `output`, `strictMode`, `context`, `validation`, `qc`, `audioPost`, `transcript`,
+  `remotion`, `podcast`, `preview`, `chapters`, `viral`, `voice`).
+* **Layout du module** : arbre refait — 19 domaines (`ai`, `anim`, `audio`, `chapters`, `ci`,
+  `context`, `feed`, `i18n`, `multilang`, `pipeline`, `podcast`, `preview`, `publish`, `qc`,
+  `timeline`, `transcript`, `validation`, `viral`, `voice`) + fichiers racine réels
+  (`Mp4ConversionCommand`, `RenderSignature`, `Remotion*`, `ProcessRunner`, `FileReplace`…).
+* **Tâches** : section « Gradle tasks » ajoutée (pipeline, LLM, contexte, sortie, qualité,
+  viral, composite feed — 27 tâches + composite).
+* **CI** : section refaite — 4 workflows réels (`test.yml` fast `./gradlew test` ;
+  `full-tests.yml` ffmpeg/espeak + `test functionalTest` + `cucumberTest cucumberTestViralRender` ;
+  `cucumber-full.yml` diagnostic ; `llm-smoke.yml` Ollama) + caches (`setup-gradle`,
+  `setup-playwright`, `setup-ollama`). L'ancien texte disait à tort `test.yml` → `check`.
+* **Publication** : « signing configured but not executed » → **exécutée** ; version `0.0.8`.
+* **Statut EPICs** : table périmée (CAP-28 « TODO », CAP-VIRAL absent) remplacée par le
+  résumé réel (tous clos) + renvoi à `.agents/INDEX.adoc`.
+* **Dépendances** : ajout `langchain4j 1.22.0`, `i18n-contracts 0.0.4` ; versions alignées
+  (koog 1.3.0, Jackson 2.21.2, codebase 0.0.17, slider 0.0.19).
+* **Liens** : corrigés (master `doc/…` ; traductions `../doc/…`, `../../LICENSE`).
+
+== Livrable
+
+* `README.md` (EN, master) réécrit — 276 lignes.
+* 9 traductions régénérées depuis le master : `README.plugin/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md`
+  (~276 lignes chacune). En-tête `translated from README.md rev 0.0.8` ; switcher de langues
+  corrigé (`../README.md` pour l'anglais, frères pour les autres).
+
+== Décisions
+
+* **Anglais = source unique de vérité** (`README.md`) ; les 9 fichiers sont des traductions
+  fidèles de sa révision `0.0.8`.
+* **Pas de bump/publication** : le README n'est **pas** un artefact publié (ni POM, ni JAR,
+  ni sourcesJar). Session purement documentaire — commit/push du dépôt uniquement.
+
+== Fichiers
+
+* `capsule-plugin/README.md` + `capsule-plugin/README.plugin/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md`
+* Gouvernance : ce rapport, `PROMPT_REPRISE`, `INDEX`, `SESSIONS_HISTORY`, archive,
+  `BACKLOG`, `TODO`.
+
+_Score : 9/10 (documentation fidèle au code, 10 langues, dette résorbée)._

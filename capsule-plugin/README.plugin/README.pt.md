@@ -1,131 +1,211 @@
-<!-- translated from README.md rev 0.0.1-SNAPSHOT -->
-# capsule-gradle — Interior do Plugin
+<!-- translated from README.md rev 0.0.8 -->
+# capsule-gradle — Interiores do Plugin
 
-> Guia para programadores e contribuintes do plugin Gradle `capsule-plugin`.
+> Guia para desenvolvedores e contribuidores do plugin Gradle `capsule-plugin`.
 
-[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.1-SNAPSHOT&color=orange)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
+[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.8&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
 [![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/education.cccp.capsule.svg?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/education.cccp.capsule)
 [![CI](https://img.shields.io/github/actions/workflow/status/cheroliv/capsule-gradle/test.yml?branch=main&label=CI)](https://github.com/cheroliv/capsule-gradle/actions/workflows/test.yml)
-[![Coverage](https://img.shields.io/static/v1?label=coverage&message=Kover&color=blue)]()
-[![License](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=License)](../LICENSE)
+[![Cobertura](https://img.shields.io/static/v1?label=cobertura&message=Kover&color=blue)]()
+[![Licença](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=Licen%C3%A7a)](../../LICENSE)
 
-- **Versão**: `0.0.1-SNAPSHOT` (não publicado) · **Grupo**: `education.cccp` · **ID do plugin**: `education.cccp.capsule`
-- **Toolchain**: Java 24 · Kotlin 2.3.20 · Gradle 9.5
-- **Build**: `./gradlew build -x test` · **Testes**: `./gradlew check` (195 unitários + 22 Cucumber PASS) · **Cobertura**: `./gradlew koverReport`
+- **Versão**: `0.0.8` (Maven Central) · **Grupo**: `education.cccp` · **ID do plugin**: `education.cccp.capsule`
+- **Toolchain**: Java 25 · Kotlin 2.4.10 · Gradle 9.8.1
+- **Build**: `./gradlew build -x test` · **Testes**: `./gradlew check` (unitários + funcionais via TestKit; Cucumber com `-PrunCucumber`) · **Cobertura**: `./gradlew koverReport`
 
-🌐 Languages: [English](README.md) | [中文](README.zh.md) | [हिन्दी](README.hi.md) | [Español](README.es.md) | [Français](README.fr.md) | [العربية](README.ar.md) | [বাংলা](README.bn.md) | **Português** | [Русский](README.ru.md) | [اردو](README.ur.md)
+🌐 Idiomas: [English](../README.md) | [中文](README.zh.md) | [हिन्दी](README.hi.md) | [Español](README.es.md) | [Français](README.fr.md) | [العربية](README.ar.md) | [বাংলা](README.bn.md) | **Português** | [Русский](README.ru.md) | [اردو](README.ur.md)
 
 ---
 
-## Disposição dos módulos
+## O que faz
+
+`capsule-gradle` transforma um deck reveal.js (produzido pelo `slider-gradle`) numa
+cápsula de vídeo sincronizada — narração TTS por slide, captura de vídeo, legendas,
+conversão de formato, pós-produção de áudio, controle de qualidade e um pipeline
+vertical curto/viral — sem pós-produção humana. É um plugin Gradle N2
+(consumido pelo runner N3, nunca é o próprio N3).
+
+## Estrutura do módulo
 
 ```
 capsule-plugin/
 ├── build.gradle.kts
 ├── settings.gradle.kts
-├── gradle/libs.versions.toml          # catálogo de versões
-├── doc/
-│   └── CAPSULE_ARCHITECTURE.adoc      # arquitetura do pipeline (PlantUML)
+├── gradle/libs.versions.toml            # catálogo de versões interno
+├── doc/CAPSULE_ARCHITECTURE.adoc        # arquitetura do pipeline (PlantUML)
 └── src/
     ├── main/kotlin/capsule/
-    │   ├── CapsulePlugin.kt           # ponto de entrada — aplica slider, regista tarefas, fusão de config
-    │   ├── CapsuleManager.kt          # registo de tarefas + parsing de script + métodos factory
-    │   ├── CapsuleModels.kt           # DSL CapsuleExtension + CapsuleConventions + modelos de dados
-    │   ├── CapsuleConfig.kt           # config imutável (5 secções: input, tts, capture, distrib, manim)
-    │   ├── CapsuleConfigLoader.kt     # carregador YAML com resolução de env ${VAR}
-    │   ├── CapsuleConfigMerger.kt     # fusão de 4 fontes (CLI > YAML > props > ENV)
-    │   ├── CapsuleScriptTask.kt       # generateCapsuleScript
-    │   ├── CapsuleBuildTask.kt        # generateCapsule (síntese TTS)
-    │   ├── CapsuleVideoTask.kt        # generateCapsuleVideo (injeção de áudio + captura Playwright)
-    │   ├── CapsuleDistribTask.kt     # deployCapsule (recorte 9:16 FFmpeg)
-    │   ├── CapsuleCompositeContextTask.kt  # collectCapsuleContext (exportação JSON N3)
-    │   ├── CapsuleParseContextTask.kt # transformCapsuleContext + collectCapsuleRetrieve
-    │   ├── CapsuleScaffoldTask.kt    # scaffoldCapsuleContext
-    │   ├── TtsManager.kt             # integração TTS Piper + espeak
-    │   ├── PlaywrightManager.kt      # captura Chromium headless
-    │   ├── ManimEngine.kt            # renderização Manim (NoOp/Impl)
-    │   ├── ManimSlideReplacer.kt     # substituição HTML→vídeo embed
-    │   ├── ManimVideoMixer.kt        # mux MP4 Manim + áudio TTS
-    │   ├── ManimParallelRenderer.kt  # renderização Manim paralela
-    │   ├── SubtitleModels.kt         # modelos de dados de legendas
-    │   ├── SubtitleTimingCalculator.kt
-    │   ├── SrtGenerator.kt           # geração de legendas SRT
-    │   ├── VttGenerator.kt           # geração de legendas VTT
-    │   ├── SubtitleBurnInService.kt  # burn-in de legendas FFmpeg
-    │   ├── HtmlSectionParser.kt       # parsing HTML de apresentação reveal.js
-    │   ├── AudioConversionUtil.kt    # conversão WAV→MP3
-    │   ├── MediaProbeUtil.kt         # probing de duração ffprobe
-    │   └── LanguageVoiceMapping.kt    # mapeamento de vozes FR/EN/ES/DE
+    │   ├── CapsulePlugin.kt             # ponto de entrada — aplica slider, registra tarefas, funde a config
+    │   ├── CapsuleManager.kt            # registro de tarefas + fábricas de motores (resolve*)
+    │   ├── CapsuleModels.kt             # DSL CapsuleExtension + CapsuleConventions
+    │   ├── CapsuleConfig.kt             # config imutável — 18 seções
+    │   ├── CapsuleConfigLoader.kt       # carregador YAML com resolução de env ${VAR}
+    │   ├── CapsuleConfigMerger.kt       # fusão de 4 fontes (CLI > YAML > gradle.properties > ENV)
+    │   ├── CapsuleConfigLogger.kt       # log estruturado da config (CR-8)
+    │   ├── Capsule{Messages}*.kt        # resolução de recursos i18n (10 idiomas)
+    │   ├── TtsManager.kt                # integração TTS Piper + espeak
+    │   ├── PlaywrightManager.kt         # captura Chromium headless
+    │   ├── CaptureResolver.kt           # despacho PLAYWRIGHT / SCREENSHOT / REMOTION
+    │   ├── ScreenshotPlanner.kt         # plano puro: PNG por slide → WebM → concat demuxer
+    │   ├── Remotion*.kt                 # estratégia de captura Remotion (Node/@remotion/renderer)
+    │   ├── Manim{Engine,SlideReplacer,VideoMixer,ParallelRenderer}.kt  # enriquecimento Manim
+    │   ├── Mp4ConversionCommand.kt      # argv FFmpeg puro para WebM→MP4 (+ BT.709, opt-in)
+    │   ├── VideoFormatConverter.kt      # transcodificação WebM → MP4/H.264 (CAP-MP4)
+    │   ├── FormatConversion.kt          # despacho WEBM / MP4 / BOTH
+    │   ├── VideoDestinationResolver.kt  # destino versionado (TIMESTAMP / INCREMENTAL)
+    │   ├── Subtitle{BurnInCommand,BurnInService,Cartoner,TextNormalizer,
+    │   │            TimingCalculator,TimingDistributor,Models}.kt + SrtGenerator.kt + VttGenerator.kt
+    │   ├── Html{SectionParser,Escape}.kt
+    │   ├── AudioConversionUtil.kt       # conversão WAV→MP3
+    │   ├── MediaProbeUtil.kt            # sondagem de duração via ffprobe
+    │   ├── RenderSignature.kt           # assinatura de render + reuso .sig (PRT-06)
+    │   ├── ProcessRunner.kt / FileReplace.kt / StrictModeGuard.kt
+    │   ├── ai/            # ponte LLM para o LlmBuildService do codebase (CapsuleLlmService, capsuleAiSmokeTest)
+    │   ├── anim/          # porte do timing Remotion (RemotionTiming)
+    │   ├── audio/         # CAP-AUDIO: AudioPostCommand (argv puro), AudioPostProcessor (+NoOp), BGM/loudnorm/ducking
+    │   ├── chapters/      # marcadores de capítulo, CardRenderer, YouTubeChaptersFormatter
+    │   ├── ci/            # CucumberTestGuard (CR-10), ProcessMigrationGuard, OssVocabularyGuard
+    │   ├── context/       # contexto aumentado: CapsuleContext(Builder), loaders Doc/Scenario/Glossary, ProvenanceTracker
+    │   ├── feed/          # contrato de extração de notas do orador (SLD-11) + registrars compostos
+    │   ├── i18n/          # CapsuleMessages (bundles de 10 idiomas)
+    │   ├── multilang/     # CAP-29: MultiLanguageResolver, VoiceMapping, CapsuleVideoPlan(ner), runner AllLanguages
+    │   ├── pipeline/      # CAP-ARCH-3: grafo koog CapsulePipelineGraph, CapsuleState, CapsuleLlm (+ChatModel), ContentPlanValidator
+    │   ├── podcast/       # CAP-PODCAST: PodcastConcatenator (+Impl/NoOp), PodcastConcatCommand
+    │   ├── preview/       # dry-run (capture.previewOnly — apenas PNG)
+    │   ├── publish/       # VideoDescriptionBuilder (guarda do YouTube)
+    │   ├── qc/            # CAP-QC: ContentPreflight (PRT-05), QcBoard/planejadores + RenderQcBoardsTask (PRT-08)
+    │   ├── timeline/      # PRT-07: timeline determinística (quadros inteiros, lead/tail/avance)
+    │   ├── transcript/    # CAP-TRANSCRIPT: TranscriptPlan/Builder, ChatModelTranscriptEnhancer
+    │   ├── validation/    # VideoDurationValidator + VideoIntegrityChecker (PRT-04)
+    │   ├── viral/         # CAP-VIRAL: storyboard, deck builder, campaign bundle/gate, thumbnail, karaokê
+    │   └── voice/         # CAP-QC-VOICE: TextNormalizer, WordAligner, FidelityScorer, SnrEstimator,
+    │                      #   PronunciationLexicon, NumberSpeller, SpeechRecognizer (porta), TakeSelector
+    ├── main/resources/capsule/
+    │   ├── i18n/Messages[_xx].properties   # 10 idiomas + base
+    │   └── remotion/                        # composição Remotion (Capsule.jsx, Root.jsx, render.mjs)
     ├── test/kotlin/capsule/
-    │   ├── CapsulePluginTest.kt
-    │   ├── scenarios/                 # step definitions Cucumber BDD + runners
-    │   │   ├── CapsuleStepDefinitions.kt
-    │   │   ├── CucumberTestRunner.kt
-    │   │   └── CucumberIntegrationTestRunner.kt
-    │   └── *Test.kt                   # 17 classes de testes unitários
-    ├── test/features/
-    │   └── capsule.feature            # 22 cenários Cucumber
-    └── functionalTest/kotlin/capsule/
-        └── CapsulePluginFunctionalTest.kt
+    │   ├── scenarios/                       # definições de steps Cucumber + runners por feature
+    │   └── **/*Test.kt                      # testes unitários
+    ├── test/features/                       # *.feature — cenários Cucumber (44 arquivos)
+    └── functionalTest/kotlin/capsule/       # testes funcionais Gradle TestKit
 ```
 
-## Dependência N2
+## Tarefas Gradle
 
-`capsule-gradle` consome `slider-gradle` (`education.cccp:slider:0.0.6`) via `compileOnly`.
-O contrato é baseado em ficheiros — capsule lê o HTML da apresentação e os ficheiros de texto
-de script produzidos pelo slider, nunca os modifica. CapsulePlugin aplica automaticamente
-`education.cccp.slider` em runtime se disponível.
+| Grupo | Tarefas |
+|-------|---------|
+| Pipeline principal | `generateCapsuleScript`, `generateCapsule` (TTS), `generateCapsuleVideo` (injeção de áudio + captura), `generateCapsuleVideoAllLanguages`, `deployCapsule` (recorte 9:16), `distributeCapsuleVideo` (destino versionado) |
+| Conteúdo LLM | `generateCapsuleContent`, `capsuleAiSmokeTest`, `collectCapsuleAugmentedContext`, `generateCapsuleContentAndVideos` |
+| Contexto | `collectCapsuleContext`, `transformCapsuleContext`, `collectCapsuleRetrieve`, `scaffoldCapsuleContext` |
+| Saída | `generateCapsuleTranscript`, `generateCapsuleChapters`, `generateCapsulePodcast`, `validateCapsuleVideoDuration` |
+| Qualidade (opt-in) | `preflightCapsuleContent`, `renderQcBoards`, `verifyCapsuleVoice`, `selectBestVoiceTake` |
+| Viral (opt-in) | `generateViralCampaign`, `normalizeViralStoryboard`, `renderViralVariants`, `renderViralThumbnails`, `renderViralSubtitles`, `validateViralCampaign` |
+| Composto feed | `translateAndExtractSpeakerNotes`, `translateAndGenerateCapsuleVideos` |
 
-## Bibliotecas principais
+## Dependências
+
+`capsule-gradle` consome `slider-gradle` (`education.cccp:slider:0.0.19`) com `compileOnly` —
+um contrato baseado em arquivos (capsule lê o HTML do deck e o texto do script, nunca os modifica).
+`CapsulePlugin` aplica automaticamente `education.cccp.slider` em tempo de execução se disponível.
+
+Desde CAP-ARCH-1, capsule também consome o socle LLM do codebase
+(`education.cccp:codebase-plugin`) como `implementation` — a ponte `LlmBuildService`
+fornece o `ChatModel` usado por `generateCapsuleContent`, com um fallback mock-LLM via
+`-Pollama.baseUrl` para os testes (zero rede, zero pool).
 
 | Biblioteca | Versão | Papel |
-|---------|---------|------|
-| **Playwright** | 1.52.0 | Chromium headless — controlo reveal.js + captura de vídeo (JVM nativo, zero npm) |
-| **koog-agents** | 0.8.0 | DSL Kotlin para orquestração de agentes (StateGraph / ConditionalEdges) |
-| **Jackson** | 2.18.3 | Config YAML + serialização JSON (databind, kotlin, dataformat-yaml) |
-| **Kover** | 0.9.8 | Relatórios de cobertura (XML + HTML, integrados em `check`) |
+|------------|--------|-------|
+| **Playwright** | 1.52.0 | Chromium headless — controle do reveal.js + captura de vídeo (JVM nativo, zero npm) |
+| **koog-agents** | 1.3.0 | DSL Kotlin para orquestração de agentes (StateGraph / ConditionalEdges) — `CapsulePipelineGraph` |
+| **langchain4j** | 1.22.0 | Adaptadores `ChatModel` (ponte LLM, enriquecedor de transcrição) — versão via BOM |
+| **Jackson** | 2.21.2 | Config YAML + serialização JSON (databind, kotlin, dataformat-yaml) |
+| **Kover** | 0.9.8 | Relatórios de cobertura (XML + HTML, integrados no `check`) |
 | **Cucumber** | 7.34.3 | Testes BDD (cucumber-java, junit-platform-engine, picocontainer) |
-| **Kotlin** | 2.3.20 | DSL do plugin |
-| **slider** | 0.0.6 | compileOnly — apresentação reveal.js + script cápsula fonte |
+| **Kotlin** | 2.4.10 | DSL do plugin |
+| **codebase-plugin** | 0.0.17 | Socle LLM N1 — ponte `LlmBuildService` (`capsule.ai`) |
+| **codebase-contracts** | 0.0.2 | Contratos N0 — CompositeContext / ContextChannel / ChannelBudget (`capsule.context`) |
+| **i18n-contracts** | 0.0.4 | Contratos N0 — `LanguageCatalog` / `TranslationService` (`capsule.i18n`) |
+| **slider** | 0.0.19 | compileOnly — deck reveal.js + fonte do script de capsule |
 
-Ferramentas externas (não dependências Maven):
-- **Piper** — motor TTS local offline (padrão)
-- **espeak** — motor TTS de recurso
-- **FFmpeg** — recorte 9:16 (`deployCapsule`) e burn-in de legendas
-- **Manim** — renderização de animação matemática (opcional, `[manim:SceneName]` no script)
-- **Chromium** — auto-descarregado pelo Playwright na primeira execução
+Ferramentas externas (não são dependências Maven): **Piper** (TTS local offline, padrão),
+**espeak-ng** (motor TTS de fallback), **FFmpeg** (recorte, burn-in, MP4, áudio pós),
+**Manim** (esquemas animados opcionais, `[manim:SceneName]`), **Chromium** (baixado
+automaticamente pelo Playwright na primeira execução), **Node** (estratégia Remotion).
+
+## Configuração
+
+`CapsuleConfig` tem **18 seções**: `input`, `tts`, `capture`, `distrib`, `manim`,
+`output`, `strictMode`, `context`, `validation`, `qc`, `audioPost`, `transcript`,
+`remotion`, `podcast`, `preview`, `chapters`, `viral`, `voice`.
+
+Cada valor é resolvido a partir de **4 fontes** (precedência **CLI > YAML > gradle.properties > ENV**):
+
+```bash
+# CLI
+./gradlew generateCapsuleVideo -Poutput.format=mp4 -Pcapture.previewOnly=true
+
+# gradle.properties / ENV
+capsule.output.format=mp4
+CAPSULE_OUTPUT_FORMAT=mp4
+```
+
+Novas capacidades são **opt-in (`false` por padrão)** para compatibilidade retroativa.
 
 ## Matriz de testes
 
-| Tarefa | Âmbito | Detalhes |
-|------|-------|---------|
-| `test` | Testes unitários JUnit5 | Exclui a etiqueta `@integration` e `capsule.scenarios.**` |
-| `cucumberTest` | BDD Cucumber | 22 cenários, `forkEvery = 1`, `maxParallelForks = 1`, heap 1g |
+| Tarefa | Escopo | Detalhes |
+|--------|--------|----------|
+| `test` | Testes unitários JUnit5 | Exclui `capsule.scenarios.**`. Os testes `@integration` *não* são filtrados: auto-skip quando falta a ferramenta externa (Chromium, espeak, FFmpeg, Manim) |
+| `cucumberTest` | Cucumber BDD | features em `src/test/features` (44 arquivos `.feature`), `forkEvery = 1`, `maxParallelForks = 1`, heap 1g. Ignorado exceto com `-PrunCucumber` ou `CI=true` (CR-10) |
 | `functionalTest` | Gradle TestKit | Testes funcionais de aplicação do plugin |
-| `check` | Todos | Depende de `test` + `cucumberTest` + `functionalTest` |
+| `check` | Tudo | Depende de `test` + `cucumberTest` + `functionalTest` |
 
-Etiquetas Cucumber: `@integration`, `@manim`, `@config`, `@tts`, `@subtitles`, `@burnin`, `@style`, `@parallel`。
+Tags Cucumber: `@ai`, `@architecture`, `@audio`, `@boundary`, `@burnin`, `@capsule`, `@capture`, `@ci`, `@config`, `@context`, `@cross-borough`, `@distrib`, `@docs`, `@duration`, `@feed`, `@format`, `@glossary`, `@i18n`, `@integration`, `@logging`, `@manim`, `@model`, `@multilang`, `@no-yaml`, `@parallel`, `@pipeline`, `@post`, `@provenance`, `@rag`, `@scenario`, `@sequential`, `@strategy`, `@strict`, `@style`, `@subtitles`, `@timeout`, `@transcript`, `@translation`, `@tts`, `@validation`, `@versioning`, `@vtt`, `@wiring`. **38** tarefas `cucumberTest*` dedicadas isolam uma feature cada (`CucumberTaskSpec` em `build.gradle.kts`).
 
-Total de testes: **195 unitários + 22 Cucumber = 217 PASS** (baseline sessão 029)。
+Base de testes: o verde de referência é o workflow CI `Full Tests` em `main`
+(unitários + TestKit funcional + Cucumber agregado/render real; o `cucumberTest`
+de diagnóstico é ignorado por padrão desde CR-10).
 
-## Ajuste JVM
+## Pipeline de conteúdo LLM (CAP-ARCH-3)
+
+`generateCapsuleContent` orquestra o `CapsulePipelineGraph` do koog numa única invocação:
+
+```
+propose-context → validate-context → generate-speaker-notes
+```
+
+- **Entradas**: deck fonte `.adoc` (`-Pdeck.file=<caminho>` ou o primeiro `.adoc` em `slides/misc`),
+  contexto aumentado opcional de `collectCapsuleAugmentedContext`
+  (`build/capsule/augmented-context.txt`), idioma alvo (`-Pdeck.language`, padrão `fr`).
+- **Saídas** (declaradas → Economia de Tinta via UP-TO-DATE): notas do orador enriquecidas
+  `build/capsule/<deckName>-speaker-notes.adoc` + script TTS `build/capsule/<deckName>-script.txt`.
+- **LLM**: resolvido via o `LlmBuildService` do codebase; os testes injetam um servidor Ollama
+  simulado com `-Pollama.baseUrl=http://localhost:<port>` (roteado por prompt: propose → JSON do
+  plano de conteúdo, generate → AsciiDoc enriquecido). Zero rede, zero pool nos testes.
+
+```bash
+./gradlew generateCapsuleContent \
+  -Pdeck.file=slides/misc/my-deck.adoc \
+  -Pdeck.language=en
+```
+
+## Ajuste da JVM
 
 Os testes Cucumber usam `maxHeapSize = "1g"` com `forkEvery = 1` (JVM nova por cenário)
 e `maxParallelForks = 1` (execução sequencial para estabilidade).
 
-Para builds locais:
 ```bash
-export GRADLE_OPTS="-Xmx2g"
+export GRADLE_OPTS="-Xmx2g"   # builds locais
 ```
 
 ## Comandos de build
 
 ```bash
-./gradlew build                       # build completo (compila + testa)
-./gradlew build -x test               # só compilar
+./gradlew build                       # build completo (compila + testes)
+./gradlew build -x test               # só compilação
 ./gradlew check                       # todos os testes (unitários + Cucumber + funcionais)
-./gradlew test                        # só JUnit5 unitários
-./gradlew cucumberTest                # BDD Cucumber
+./gradlew test                        # só unitários JUnit5
+./gradlew cucumberTest -PrunCucumber  # Cucumber BDD (runner agregado)
 ./gradlew functionalTest              # Gradle TestKit
 ./gradlew koverReport                 # relatórios de cobertura (XML + HTML)
 ./gradlew publishToMavenLocal         # publicação local
@@ -133,76 +213,63 @@ export GRADLE_OPTS="-Xmx2g"
 
 ## Pipeline CI
 
-`.github/workflows/test.yml` define um job:
-1. **Build & Test** — `./gradlew check` em cada push/PR para main/master (≤ 15 min, JDK 24 Temurin, action setup Gradle)
+Quatro workflows em `.github/workflows/`:
 
-```yaml
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with: { java-version: '24', distribution: 'temurin' }
-      - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew check
-        working-directory: capsule-plugin
-```
+| Workflow | Gatilho | Job |
+|----------|---------|-----|
+| `test.yml` — Fast Tests (portão PR) | push / PR | JDK 25 + Gradle em cache → `./gradlew test` (unitários) |
+| `full-tests.yml` — Full Tests | push | ffmpeg + espeak, **Chromium Playwright em cache**, Gradle em cache → `./gradlew test functionalTest`, depois `./gradlew cucumberTest cucumberTestViralRender -PrunCucumber` |
+| `cucumber-full.yml` — diagnóstico | manual (`workflow_dispatch`) | `cucumberTest` completo (não bloqueante) |
+| `llm-smoke.yml` — Ollama smoke | manual | imagem + modelo Ollama em cache, verifica que o modelo responde |
+
+Cache: `gradle/actions/setup-gradle@v4` (wrapper + dependências + build cache),
+`.github/actions/setup-playwright` (Chromium, chave derivada da versão `playwright` do
+catálogo), `.github/actions/setup-ollama` (imagem + modelos).
 
 ## Publicação (NMCP)
 
-**Não publicado** — versão `0.0.1-SNAPSHOT`. O POM está configurado para Maven Central via
-os plugins `maven-publish` e `signing`:
+**Publicado no Maven Central** — versão `0.0.8` (anteriores `0.0.7`, `0.0.6`, `0.0.5`, …).
+O POM é configurado com `maven-publish` e `signing`:
 
 - POM: nome "Capsule Gradle Plugin", descrição "Generation automatisee de capsules video
   depuis des decks reveal.js", URL `github.com/cheroliv/capsule-gradle/`
-- Assinatura: `useGpgCmd()` (configurado mas ainda não executado)
-- Alvo de publicação: `publishToMavenLocal` disponível; NMCP `publishAggregationToCentralPortal`
-  requer credenciais em `~/.gradle/gradle.properties`
+- Assinatura: `useGpgCmd()` (executada na publicação)
+- Agregação NMCP: `publishAggregationToCentralPortal` (credenciais em `~/.gradle/gradle.properties`)
 
-Para publicar quando estiver pronto:
 ```bash
+./gradlew publishToMavenLocal
 ./gradlew publishAggregationToCentralPortal --no-daemon
 ```
 
-## Documentos de arquitetura
+## Documentos de arquitetura e governança
 
-- [CAPSULE_ARCHITECTURE.adoc](../capsule-plugin/doc/CAPSULE_ARCHITECTURE.adoc) — Arquitetura
-  do pipeline com diagramas PlantUML (pipeline global, componentes, sequência, implantação)
-- [.agents/INDEX.adoc](../capsule-plugin/.agents/INDEX.adoc) — EPICs, roadmap e governação
-- [AGENT.adoc](../capsule-plugin/AGENT.adoc) — Regras absolutas (7 regras, Lei da Economia de Tinta)
-- [CODE_REVIEW.adoc](../capsule-plugin/CODE_REVIEW.adoc) — Code review (10 EPICs acionáveis CR-1→CR-10)
+- [doc/CAPSULE_ARCHITECTURE.adoc](../doc/CAPSULE_ARCHITECTURE.adoc) — arquitetura do pipeline (PlantUML)
+- [.agents/INDEX.adoc](../.agents/INDEX.adoc) — EPICs, roadmap e painel de governança
+- [AGENT.adoc](../AGENT.adoc) — regras absolutas (incl. a Lei da Economia de Tinta)
+- [BACKLOG.adoc](../BACKLOG.adoc) — estado detalhado dos EPICs
 
-## Estado dos EPICs
-
-CAP-0 a CAP-25 terminados. EPICs ativos (ver `.agents/INDEX.adoc`):
-
-| EPIC | Descrição | Estado |
-|------|-------------|--------|
-| CR-1 | Refatorizar `CapsuleVideoTask.execute()` (218→76 linhas) | ✅ Terminado (sessão 040) |
-| CR-2 | Thread safety + timeout `captureSlideParallel` | ⬜ TODO |
-| CR-3 | Tratamento de erros TTS — degradação assinalada | ⬜ TODO |
-| CR-4 | Segurança HTML escape — `injectSubtitleTrack` | ⬜ TODO |
-| CR-5 | DRY `CapsuleConfigMerger` (~76 linhas duplicadas) | ⬜ TODO |
-| CAP-27 | VTT burn-in (atualmente só SRT) | ⬜ TODO |
-| CAP-28 | Gaps de cobertura — PiperTtsEngine 31%, ManimEngineImpl 25% | ⬜ TODO |
+Todos os EPICs estão fechados: `CAP-VIRAL` (14/14), `CAP-SHORT` (6/6), `CAP-VIRAL-E2E` (3/3),
+`CAP-CONTEXT` (4/4), `CAP-QC` (9/9), `CAP-QC-VOICE` (5/5), `LLM-RESILIENCE` (1/1),
+`CAP-ARCH`, `CAP-29`, `CAP-MP4`, `CAP-AUDIO`, `CAP-TRANSCRIPT`, `CAP-PODCAST`,
+`CAP-GLOSSARY`, `CAP-PROVENANCE`, `CAP-27`, `CAP-28`, `RENAME`, e o conjunto de revisão
+CR-1→CR-10. O backlog acionável está vazio (ver `.agents/INDEX.adoc`).
 
 ## Contribuir
 
 1. O build compila: `./gradlew build -x test`
-2. Todos os testes verdes: `./gradlew check`
-3. Seguir as 7 regras absolutas (ver [AGENT.adoc](../capsule-plugin/AGENT.adoc)):
+2. Todos os testes verdes: `./gradlew check` (ou `-PrunCucumber` para BDD)
+3. Respeitar as regras absolutas (ver [AGENT.adoc](../AGENT.adoc)):
    - Sem commits/push sem permissão
    - DAG N2 — importável por N3, nunca importa N3
-   - Capsule consome slider (só leitura, nunca modifica a apresentação fonte)
+   - Capsule consome slider (somente leitura, nunca modifica o deck fonte)
    - Zero segredos/tokens no código
-4. Respeitar a Lei da Economia de Tinta — nunca re-executar operações dispendiosas (TTS, captura Playwright)
-   quando já existe um artefacto válido para a mesma entrada
+4. Respeitar a Lei da Economia de Tinta — nunca re-executar uma operação custosa
+   (TTS, captura Playwright) quando já existe um artefato válido para a mesma entrada
+5. Baby-step DDD/TDD/BDD — um arquivo de cada vez; unitário → funcional → Cucumber
 
 ## Licença
 
-Apache License 2.0 — consulte [LICENSE](../LICENSE)。
+Apache License 2.0 — ver [LICENSE](../../LICENSE).
 
 ---
 

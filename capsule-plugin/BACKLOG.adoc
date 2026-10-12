@@ -410,9 +410,12 @@ Consommateur racine `capsule = 0.0.8` ; **MEMPHIS** `workspace-bom`/`workspace-c
 **0.0.84** (bundle `8b3663cf-3d23-4480-ac88-3a53171f91d4`, capsule-plugin 0.0.8).
 
 '''
-== 📚 README i18n ✅ TERMINE (Session 041)
+== 📚 README i18n ✅ TERMINE (Session 041) — **régénéré fidèle au code (S-180)**
 
-20 fichiers README créés (10 langues × consumer + plugin).
+`README.md` **anglais = source de vérité** (réécrit S-180 : config 18 sections, 19 domaines,
+tâches, CI réelle 4 workflows + caches, publication, statut EPICs, deps, liens) + **9 traductions**
+`README.plugin/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md` (en-tête `rev 0.0.8`). Dette
+`0.0.1-SNAPSHOT` résorbée. Le README n'étant pas un artefact publié, aucun bump.
 
 '''
 == BACKLOG ACTIF — EPICs en cours ✅ VIDE (tous EPICs terminés/CADUQUES, S-133)
