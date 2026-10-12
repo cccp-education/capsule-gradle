@@ -82,14 +82,15 @@ débruiter les faux positifs ; `compare_prises.py` **choisit la meilleure prise*
 | US | Description | Cibles | Pts | Statut
 
 | US-0 | **Cadrage** (audit + décisions) | ce document | 0 | ✅ S-169
-| US-1 | **Domaine pur** — `TextNormalizer` + `WordAligner` + `FidelityScorer` + `SnrEstimator` + `VoiceScore` | `capsule.voice` | 3 | 🟡 À FAIRE
-| US-2 | **Port + tâche** — `SpeechRecognizer` (CLI whisper) + `verifyCapsuleVoice` (rapport JSON + seuils + strict) | `capsule.voice`, `CapsuleManager` | 5 | 🟡 À FAIRE
-| US-3 | **Choix de prise** — régénérer + retenir la meilleure (fichier de sélection) | `capsule.voice`, `CapsuleBuildTask` | 3 | 🟡 À FAIRE
-| US-4 | **BDD + dogfooding** — `capsule_voice_quality.feature` (fakes, zéro ASR) + un run réel skip-gardé | feature + steps | 3 | 🟡 À FAIRE
-| US-5 | *(optionnel)* **Câblage karaoké** — timings mot-à-mot issus de l'ASR (décalage/`confidence`) | `capsule.viral` | 3 | 🟡 À FAIRE
+| US-1 | **Domaine pur** — `TextNormalizer` + `WordAligner` + `FidelityScorer` + `SnrEstimator` + `VoiceScore` | `capsule.voice` | 3 | ✅ S-170
+| US-2 | **Port + tâche** — `SpeechRecognizer` (CLI whisper) + `verifyCapsuleVoice` (rapport JSON + seuils + strict) | `capsule.voice`, `CapsuleManager` | 5 | ✅ S-172
+| US-3 | **Choix de prise** — régénérer + retenir la meilleure (fichier de sélection) | `capsule.voice`, `CapsuleBuildTask` | 3 | ✅ S-173
+| US-4 | **BDD + dogfooding** — `capsule_voice_quality.feature` (fakes, zéro ASR) + un run réel skip-gardé | feature + steps | 3 | ✅ S-173
+| US-5 | *(optionnel)* **Câblage karaoké** — timings mot-à-mot issus de l'ASR (décalage/`confidence`) | `capsule.viral` | 3 | ✅ S-174
 |===
 
-*Total* : 5 US (~14 pts) — à mener après confirmation pilote (effort ASR hors JVM).
+*Total* : 5 US (~14 pts) — **TERMINÉ 5/5** (US-0 S-169, US-1 S-170, US-2 S-172,
+US-3/US-4 S-173, US-5 S-174).
 
 == Risques
 

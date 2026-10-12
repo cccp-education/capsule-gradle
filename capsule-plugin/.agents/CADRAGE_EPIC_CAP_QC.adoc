@@ -3,10 +3,10 @@
 :date: 2026-10-11
 :toc:
 :toclevels: 3
-:statut: document vivant
+:statut: document vivant — **portage TERMINÉ** (CAP-QC 9/9, CAP-QC-VOICE 5/5 ; capsule `0.0.6`)
 :epic: CAP-QC (+ EPIC dérivé CAP-QC-VOICE)
 :source_revue: `foundry/private/prepa_electricite_complet/code_review.adoc` (`:revision: i`)
-:cible: `capsule-gradle/capsule-plugin` (Détroit, N2, `0.0.4`, Apache 2.0)
+:cible: `capsule-gradle/capsule-plugin` (Détroit, N2, `0.0.6`, Apache 2.0)
 
 [abstract]
 --
@@ -15,8 +15,8 @@ l'**utilitaire hors rendu** du dépôt Python `prepa_electricite_complet` (usine
 vidéo, `lion92`) vers le plugin Gradle `capsule`. Il fixe la **frontière** (ce qu'on porte,
 ce qu'on ne porte pas), le **catalogue des portages** (`PRT-01`→`PRT-13`) et son statut, les
 **deux EPICs** (`CAP-QC` et son dérivé `CAP-QC-VOICE`), les **décisions transverses**, et le
-**reste à faire**. Il complète `BACKLOG.adoc` (statut détaillé) et `PROMPT_REPRISE.adoc`
-(mission courante).
+**bilan** (**portage TERMINÉ**). Il complète `BACKLOG.adoc` (statut détaillé) et
+`PROMPT_REPRISE.adoc` (mission courante).
 --
 
 == 1. Objet et origine
@@ -44,19 +44,19 @@ visuel, publication. Le portage retient l'**utilitaire** et laisse le **contenu*
 |===
 | ID | Technique source (`prepa`) | Cible capsule | Effort | Statut
 
-| PRT-01 | Prononciation « dit / lu » + cache par contenu | `capsule.voice`, `TtsManager` | M | 🟡 À FAIRE (intrusif)
+| PRT-01 | Prononciation « dit / lu » + cache par contenu | `capsule.voice`, `TtsManager` | M | ✅ S-174
 | PRT-02 | QC voix par ASR (fidélité + souffle + choix de prise) | `capsule.voice` + port ASR | L | ✅ cadré → **EPIC `CAP-QC-VOICE`**
 | PRT-03 | Sous-titres par beat/cartons + normalisation d'affichage | `capsule.subtitle` | M | ✅ S-166
 | PRT-04 | Intégrité vidéo par **décodage** | `capsule.validation` | S | ✅ S-166
 | PRT-05 | Pré-vol contenu avant dépense TTS | `capsule.qc` | M | ✅ S-167
 | PRT-06 | Signature de rendu (économie d'encre par contenu) | `capsule`, `CapsuleVideoTask` | M | ✅ S-166
 | PRT-07 | Timeline déterministe (frames entières) | `capsule.timeline` | L | ✅ S-168
-| PRT-08 | Planches QC « beats » / « dit vs montré » | `capsule.qc` | M | 🟡 À FAIRE
+| PRT-08 | Planches QC « beats » / « dit vs montré » | `capsule.qc` | M | ✅ S-173
 | PRT-09 | Loudness 2 passes mesurée + limiteur | `capsule.audio` | S | ✅ S-166
 | PRT-10 | Chapitres YouTube texte + description | `capsule.chapters`, `capsule.publish` | S–M | ✅ S-167
 | PRT-11 | Rendu de contenu maison (Java2D / LaTeX serveur) | — | L | ✅ **CADUQUE**
-| PRT-12 | Vérification exécutable (principe) | — | — | 🟡 principe, hors cœur OSS
-| PRT-13 | DSL de schémas électriques (conventions FR) | — | L | 🟡 domaine métier, hors cœur OSS
+| PRT-12 | Vérification exécutable (principe) | — | — | ➖ hors cœur OSS (écarté)
+| PRT-13 | DSL de schémas électriques (conventions FR) | — | L | ➖ domaine métier, hors cœur OSS (écarté)
 |===
 
 *PRT-02* a été promu en EPIC dédié (`CAP-QC-VOICE`) ; *PRT-11* est écarté (le navigateur +
@@ -72,16 +72,18 @@ CI** (Chromium au build, FFmpeg au runtime). Détail : `code_review.adoc` § 8.
 
 == 5. EPICs
 
-=== 5.1 `CAP-QC` — portage utilitaire (7/9)
+=== 5.1 `CAP-QC` — portage utilitaire (**9/9 — TERMINÉ**)
 
 Sessions S-166→S-168. Livré : PRT-04, PRT-03, PRT-09, PRT-06 (S-166) ; PRT-10, PRT-05
-(S-167) ; PRT-07 (S-168). Reste : **PRT-01** (intrusif), **PRT-08** (planches QC visuelles).
+(S-167) ; PRT-07 (S-168). **PRT-01** ✅ S-174 (prononciation dit/lu + cache par contenu),
+**PRT-08** ✅ S-173 (planches QC visuelles). **EPIC TERMINÉ 9/9.**
 
-=== 5.2 `CAP-QC-VOICE` — QC voix par ASR (1/5, EPIC dérivé de PRT-02)
+=== 5.2 `CAP-QC-VOICE` — QC voix par ASR (**5/5 — TERMINÉ**, EPIC dérivé de PRT-02)
 
 Cadré S-169 (`.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`). Livré : **US-1** domaine pur
-`capsule.voice` (S-170). Reste : US-2 (port `SpeechRecognizer` + tâche `verifyCapsuleVoice`
-+ `VoiceConfig`), US-3 (choix de prise), US-4 (BDD/dogfooding), US-5 (karaoké, optionnel).
+`capsule.voice` (S-170), **US-2** port `SpeechRecognizer` + tâche `verifyCapsuleVoice` +
+`VoiceConfig` (S-172), **US-3** choix de prise (S-173), **US-4** dogfooding ASR (S-173),
+**US-5** karaoké sur timings ASR (S-174). **EPIC TERMINÉ 5/5.**
 
 == 6. Décisions transverses (invariants de tous les portages)
 
@@ -98,14 +100,13 @@ Cadré S-169 (`.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`). Livré : **US-1** domai
 . **Méthode** : baby-step **DDD/TDD/BDD** (unit → fonctionnel → cucumber) ; runner Cucumber
    dédié par feature (S-082), steps préfixés (S-088). **Local = Build, Tests = CI**.
 
-== 7. Reste à faire
+== 7. Reste à faire — aucun (portage TERMINÉ)
 
-1. **PRT-01** — prononciation « dit / lu » (`PronunciationLexicon`) + cache indexé sur le
-   **texte dit** (nom `slide-NN-<key8>.mp3`) ; intrusif (`TtsManager`/`CapsuleBuildTask`),
-   probablement opt-in. Clôt `CAP-QC` (8/9).
-2. **PRT-08** — planches QC « beats » et « dit vs montré » (`capsule.qc` + rendu Java2D).
-3. **CAP-QC-VOICE US-2** — port `SpeechRecognizer` + tâche `verifyCapsuleVoice` + `VoiceConfig`.
-4. **CAP-QC-VOICE US-3/4/5** — choix de prise, BDD/dogfooding, karaoké (optionnel).
+**Aucun — portage `prepa` TERMINÉ** (`CAP-QC` 9/9 S-166→S-174 ; `CAP-QC-VOICE` 5/5
+S-169→S-174). Rappel des livraisons : PRT-01 ✅ S-174 (prononciation dit/lu +
+`PronunciationLexicon` + cache indexé sur le texte dit, opt-in `tts.pronunciationEnabled`) ;
+PRT-08 ✅ S-173 (planches QC visuelles `capsule.qc`) ; `CAP-QC-VOICE` US-2 ✅ S-172,
+US-3/US-4 ✅ S-173, US-5 ✅ S-174.
 
 == 8. Traçabilité
 

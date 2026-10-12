@@ -307,8 +307,10 @@ _Notes sur l'exemple_ :
 | câbler
 |===
 
-*Statut* : cadrage **documentaire** (ce fichier). Le portage code est une
-décision à prendre (EPIC CAP-SHORT ou EPIC dédié « CAP-CONTEXT »).
+*Statut* : **porté dans le code — TERMINÉ** (EPIC **CAP-CONTEXT** 4/4 :
+US-1/2/3 ✅ S-145 — types `Qqoqcp`/`VisualIdentity`/`NarrativeThread` + builder/parser
+3 sections + gate de cohérence ; US-4 ✅ S-152 — `Capsule.jsx` sur les tokens du brand
+book). Ce document reste la **littérature de référence** du squelette.
 
 == 7. Références
 

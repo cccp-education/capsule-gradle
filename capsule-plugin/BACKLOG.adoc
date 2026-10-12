@@ -4,7 +4,7 @@
 
 '''
 == ✅ CAP-QC — TERMINÉ 9/9 (S-174)
-_📖 Littérature de référence : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage `prepa` → capsule : frontière, catalogue PRT, décisions, reste à faire)._
+_📖 Littérature de référence : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage `prepa` → capsule : frontière, catalogue PRT, décisions — **portage TERMINÉ 9/9**)._
 
 _Portage de l'**utilitaire hors rendu** de `prepa_electricite_complet` (usine Python de
 cours vidéo, `lion92`) vers `capsule`. Revue source :

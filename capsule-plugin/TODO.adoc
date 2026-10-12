@@ -114,7 +114,7 @@
 . [x] **US-4** ✅ S-152 — `Capsule.jsx` lit les tokens du brand book (`--capsule-background`/`--accent-color`) au lieu du `PAGE_BACKGROUND` hardcodé.
 
 '''
-== 🟡 CANDIDATS (hors EPIC, accord pilote requis)
+== ✅ CANDIDATS (traités — hors EPIC)
 
 . [x] **Optimisation CI** ✅ S-163 — `full-tests.yml` s'appuie sur le runner **agrégé** `cucumberTest` (+ `cucumberTestViralRender`) au lieu des 24 runners dédiés. **Gain mesuré** : étape BDD 17m47s → 12m23s, job ~26 min → ~18,5 min (couverture supérieure).
 . [x] **Dogfooding Remotion + Manim** ✅ S-161 — chemin enrichi validé au niveau tâche (Manim via shim Docker ; Remotion via `generateCapsuleVideo` + `captureStrategy=remotion`).

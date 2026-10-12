@@ -62,6 +62,24 @@ Contexte : le commit `feat(s176)` (`4216898`) est en avance sur `0.0.5` publié 
 * Dérive `bakery-plugin` de la garde MEMPHIS corrigée au passage (garde dormante
   hors CI `runAllTests`, mais assertion fausse).
 
+== Sync littérature agentique (gouvernance)
+
+À la demande pilote, lecture **intégrale** de la littérature agentique (cadrages +
+`CAPSULE_VIDEO.adoc`) et synchronisation des **marqueurs périmés** (`🟡 À FAIRE`
+contredisant l'INDEX/BACKLOG « TERMINÉ » — faux positif type étape 7) :
+
+* `.agents/CADRAGE_EPIC_CAP_QC.adoc` : PRT-01 `🟡 → ✅ S-174`, PRT-08 `🟡 → ✅ S-173`,
+  PRT-12/13 `🟡 → ➖ hors cœur OSS`, § 5.1 `7/9 → 9/9`, § 5.2 `1/5 → 5/5`, § 7 « Reste
+  à faire — aucun », en-tête `:statut:`/`:cible:` (0.0.6).
+* `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc` : US-1→US-5 `🟡 → ✅` (S-170/S-172/S-173/S-174),
+  total « TERMINÉ 5/5 ».
+* `.agents/CAPSULE_VIDEO.adoc` : § 6 statut → **porté dans le code (CAP-CONTEXT 4/4)**.
+* `TODO.adoc` : en-tête CANDIDATS `🟡 → ✅` ; `BACKLOG.adoc` : renvoi littérature
+  « portage TERMINÉ ».
+
+Les `🟡` restants (`TODO` CR-8/9/10/CAP-CR3-4, `CODE_REVIEW.adoc`) sont des **légendes
+de priorité/qualité** sur des items déjà `[x]`, pas des statuts.
+
 == Bonus CI — cache des ressources récurrentes
 
 Constat (demande pilote) : les caches **Gradle** (`gradle/actions/setup-gradle@v4`) et
