@@ -1,17 +1,17 @@
-= Session 182 — Cadrage EPIC CAP-FISH-AUDIO + US-1
+= Session 182 — CAP-FISH-AUDIO (cadrage + US-1→US-3 + release 0.0.9)
 :session: 182
 :borough: Détroit
 :date: 2026-10-12
 :epic: CAP-FISH-AUDIO
-:us: US-0 (cadrage) + US-1 (modèle + chargement)
+:us: US-0 (cadrage) + US-1 (modèle/chargement) + US-2 (engine) + US-3 (wiring) + release 0.0.9
 
 == Mission
 
 Demande pilote : **réintroduire dans `capsule` le support du moteur TTS cloud
 Fish Audio**, comme dans l'usine `prepa_electricite_complet`. Le pilote dispose
 d'une clé API dans `fish.yaml` (gitignoré) et demande un **mappage Jackson** pour
-la configuration `fish-audio`. Session de cadrage : établir le périmètre, les
-décisions et le découpage, **sans écrire de code**.
+la configuration `fish-audio`. Session : cadrage (décisions + découpage) **puis**
+implémentation US-1→US-3 et publication de la release `0.0.9`.
 
 == Protocole
 
@@ -61,7 +61,7 @@ décisions et le découpage, **sans écrire de code**.
 
 == Découpage (6 US ~17 pts)
 
-US-0 cadrage ✅ · US-1 modèle+chargement ✅ · US-2 engine · US-3 wiring · US-4 BDD ·
+US-0 cadrage ✅ · US-1 modèle+chargement ✅ · US-2 engine ✅ · US-3 wiring ✅ · US-4 BDD ·
 US-5 docs+dogfooding. Détail : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
 
 == US-1 livrée — modèle + chargement (baby-step DDD/TDD, zéro réseau)
@@ -84,11 +84,45 @@ US-5 docs+dogfooding. Détail : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
   inconnu ignoré, mapping `CapsuleConfig`, merger, exemple committé).
 * `fish_example.yaml` (committé, clé factice) = schéma ; `fish.yaml` **non lu**.
 
+== US-2 livrée — `FishAudioTtsEngine` (baby-step DDD/TDD, zéro réseau réel)
+
+* `FishAudioTransport.kt` — `FishAudioResponse` (status/body, `isSuccess`) +
+  `fun interface FishAudioTransport` (**seam HTTP** injectable) +
+  `HttpClientFishAudioTransport` (`java.net.http.HttpClient` JDK, zéro dépendance).
+* `FishAudioTtsEngine.kt` — `FishAudioParams` (voice/model/format/temperature/topP/
+  endpoint) + `FishAudioTtsEngine : TtsEngine` : POST JSON
+  `{text, reference_id, format, temperature, top_p}`, en-têtes `authorization: Bearer`
+  + `model`, `format: wav` → `AudioConversionUtil.wavToMp3`, retries bornés, écriture
+  atomique `FileReplace.moveOver`. `isAvailable()` = au moins une clé non blanche.
+* Tests (8) : `FishAudioTtsEngineTest` sur **stub transport** (jamais Fish réel) —
+  availability, body/en-têtes exacts, retry, échec borné, clé absente, voix blanche,
+  non-fuite du secret.
+
+== US-3 livrée — wiring (baby-step DDD/TDD)
+
+* `TtsConfig` 6 champs Fish (`fishVoice`/`fishModel`/`fishFormat`/`fishTemperature`/
+  `fishTopP`/`fishEndpoint`) + `CapsuleConfigMerger` (ENV/props/YAML/CLI).
+* `CapsuleExtension` 6 propriétés + `CapsuleConventions` + `pushConfigIntoExtension` +
+  bloc `tts` commenté dans `CapsuleScaffoldTask`.
+* `resolveTtsEngine()` — jeton `fish`/`fish-audio` dans `CapsuleBuildTask` et
+  `CapsuleVideoTask` (charge `fish.yaml` via `CapsuleConfigLoader.loadFishAudio`,
+  `NoOpTtsEngine` si pool vide, `StrictModeGuard`).
+* Tests (3) : `FishAudioTtsConfigTest` (défauts `prepa`, YAML, override CLI).
+
+== Release `capsule-plugin 0.0.9`
+
+* Bump `capsule 0.0.8 → 0.0.9` ; `publishToMavenLocal` **VERT** (POM importe
+  `workspace-bom:0.0.83`) ; Central bundle **`a2d32777-7456-49bc-92f5-8b132149246e`**
+  (AUTOMATIC).
+* Consommateur racine `capsule = 0.0.9` ; **MEMPHIS** BOM/catalog **`0.0.85`**
+  (bundle `e64d3224-0eca-48a4-ab82-da12cca35815`, capsule-plugin 0.0.9 ; garde
+  `PlatformCatalogAlignmentTest` alignée).
+
 == Gates
 
 * `compileKotlin` + `compileTestKotlin` **VERT** (Local = Build, **Tests = CI**).
-* **CI VERTE** (commit `96d4b19`) : `Test` run `38278207740` (Fast Tests 3m31s) +
-  `Full Tests` run `38278207708` (Full Test Suite 19m50s — unit + functional + BDD).
+* **CI VERTE** (US-1, commit `96d4b19`) : `Test` run `38278207740` (Fast Tests 3m31s) +
+  `Full Tests` run `38278207708` (19m50s). US-2/US-3 : CI du commit poussé.
 * **Zéro secret** : `fish.yaml` non lu/commité ; `fish_example.yaml` = clé factice.
 * Gouvernance synchronisée : `BACKLOG.adoc`, `.agents/INDEX.adoc`,
   `PROMPT_REPRISE.adoc` (×2), `TODO.adoc`, `.agents/SESSIONS_HISTORY.adoc`,
@@ -96,6 +130,6 @@ US-5 docs+dogfooding. Détail : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
 
 == Prochaine session
 
-**S-183 — CAP-FISH-AUDIO US-2** : `FishAudioTtsEngine` (`HttpClient` JDK + JSON +
-`Bearer` + `format: wav` → `wavToMp3`, retries, cache sha1 du texte dit ; unit sur
-stub HTTP `HttpServer`, zéro réseau réel).
+**S-183 — CAP-FISH-AUDIO US-4** : BDD `@fish` sur **stub HTTP** (jamais Fish réel) +
+runner dédié `cucumberTestFishAudio` câblé `full-tests.yml`. Reste US-5 (docs +
+dogfooding metered, accord pilote).

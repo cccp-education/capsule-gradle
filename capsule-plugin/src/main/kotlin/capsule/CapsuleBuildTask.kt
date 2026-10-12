@@ -80,6 +80,38 @@ open class CapsuleBuildTask : DefaultTask() {
                     NoOpTtsEngine()
                 }
             }
+            "fish", "fish-audio" -> {
+                val keys = CapsuleConfigLoader.loadFishAudio(
+                    File(project.projectDir, capsuleExtension.fishAudioConfigPath.get())
+                )
+                val params = FishAudioParams(
+                    voice = capsuleExtension.ttsFishVoice.get(),
+                    model = capsuleExtension.ttsFishModel.get(),
+                    format = capsuleExtension.ttsFishFormat.get(),
+                    temperature = capsuleExtension.ttsFishTemperature.get(),
+                    topP = capsuleExtension.ttsFishTopP.get(),
+                    endpoint = capsuleExtension.ttsFishEndpoint.get(),
+                )
+                val engine = FishAudioTtsEngine(
+                    params, keys, ffmpegPath = capsuleExtension.ffmpegExecutablePath.get(),
+                )
+                if (engine.isAvailable()) {
+                    logger.lifecycle("TTS engine: fish (voice={})", params.voice)
+                    engine
+                } else {
+                    logger.warn(
+                        "Fish Audio: no key in {} — falling back to noop placeholder",
+                        capsuleExtension.fishAudioConfigPath.get(),
+                    )
+                    StrictModeGuard.requireAvailable(
+                        strict = capsuleExtension.strictMode.get(),
+                        engineName = "fish",
+                        isAvailable = false,
+                        path = capsuleExtension.fishAudioConfigPath.get()
+                    )
+                    NoOpTtsEngine()
+                }
+            }
             "noop" -> {
                 logger.lifecycle("TTS engine: noop (placeholder)")
                 NoOpTtsEngine()

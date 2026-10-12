@@ -1,9 +1,9 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-12 (S-182 — **EPIC `CAP-FISH-AUDIO` CADRÉ + US-1 livrée** : moteur TTS cloud **Fish Audio** (voix clonée) = 4e `TtsEngine` ; config `fish-audio` (pool de clés) membre de `CapsuleConfig`, clé en `fish.yaml` gitignoré. 6 US ~17 pts, US-0 ✅ + US-1 ✅.)
+:last_update: 2026-10-12 (S-182 — **EPIC `CAP-FISH-AUDIO` : US-0→US-3 livrées + release `capsule-plugin 0.0.9`** (Central, bundle `a2d32777`) : moteur TTS cloud **Fish Audio** (voix clonée) = 4e `TtsEngine` ; config `fish-audio` (pool de clés) membre de `CapsuleConfig`, clé en `fish.yaml` gitignoré. MEMPHIS BOM/catalog `0.0.85` (bundle `e64d3224`). Reste US-4 (BDD) + US-5 (docs).)
 
 '''
-== 🐟 CAP-FISH-AUDIO — 🟡 EN COURS (S-182 : US-0 ✅ + US-1 ✅)
+== 🐟 CAP-FISH-AUDIO — 🟡 EN COURS (S-182 : US-0→US-3 ✅ + release 0.0.9)
 _📖 Littérature de référence : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`._
 
 _Réintroduire le moteur TTS **Fish Audio** (`https://api.fish.audio`, voix clonée)
@@ -27,8 +27,8 @@ dégradation propre si absent.
 
 | US-0 | Cadrage (audit + décisions) | ce doc | 0 | ✅ S-182
 | US-1 | **Modèle + chargement** — `FishAudioKey` + membre `CapsuleConfig.fishAudio` (`@JsonProperty("fish-audio")`) + chargement pool depuis `fish.yaml` + rédaction secret | `CapsuleConfig`, `CapsuleConfigLoader`, `CapsulePlugin` | 3 | ✅ S-182
-| US-2 | **`FishAudioTtsEngine`** — `HttpClient` JDK + JSON + `Bearer` + `model` + `format: wav` → `wavToMp3`, retries, cache sha1 du texte dit ; **seam HTTP injectable** (test = stub `HttpServer` ou `piper`, **jamais Fish réel**) | `capsule` (`TtsManager`) | 5 | 🟡 À FAIRE
-| US-3 | **Wiring** — `resolveTtsEngine()` (`fish`/`fish-audio`) + `TtsConfig` 6 champs Fish (4 sources) + extension/conventions/push + scaffold | `CapsuleVideoTask`, `CapsuleConfig*`, `CapsuleScaffoldTask` | 3 | 🟡 À FAIRE
+| US-2 | **`FishAudioTtsEngine`** — `HttpClient` JDK + JSON + `Bearer` + `model` + `format: wav` → `wavToMp3`, retries, cache sha1 du texte dit ; **seam HTTP injectable** (test = stub `HttpServer` ou `piper`, **jamais Fish réel**) | `capsule` (`TtsManager`) | 5 | ✅ S-182
+| US-3 | **Wiring** — `resolveTtsEngine()` (`fish`/`fish-audio`) + `TtsConfig` 6 champs Fish (4 sources) + extension/conventions/push + scaffold | `CapsuleVideoTask`, `CapsuleConfig*`, `CapsuleScaffoldTask` | 3 | ✅ S-182
 | US-4 | **BDD `@fish`** — stub HTTP (engine choisi, body/env, dégradation, strict, cache) + runner dédié | `src/test/features` | 3 | 🟡 À FAIRE
 | US-5 | **Docs + dogfooding metered** — README/traductions + run réel (accord pilote) | docs, consumer | 3 | 🟡 À FAIRE
 |===
@@ -439,6 +439,15 @@ pur + `output.bt709`, opt-in) ; **R2 (PRT-02)** nombres en lettres (`NumberSpell
 intégré à `FidelityScorer`, zéro `num2words`) + re-pin `workspace-bom 0.0.82 → 0.0.83`.
 Consommateur racine `capsule = 0.0.8` ; **MEMPHIS** `workspace-bom`/`workspace-catalog`
 **0.0.84** (bundle `8b3663cf-3d23-4480-ac88-3a53171f91d4`, capsule-plugin 0.0.8).
+
+`education.cccp:capsule-plugin:0.0.9` publié via nmcp (Session 182, bundle
+**`a2d32777-7456-49bc-92f5-8b132149246e`**, AUTOMATIC, en propagation). Contenu :
+**CAP-FISH-AUDIO** US-1→US-3 — moteur TTS cloud **Fish Audio** (voix clonée) comme
+4e `TtsEngine` (config `fish-audio` = pool de clés membre de `CapsuleConfig`, clé en
+`fish.yaml` gitignoré, voix/modèle/format dans `tts`, `HttpClient` JDK, `format: wav`
+→ `wavToMp3`, retries ; jeton `fish`/`fish-audio`). POM importe `workspace-bom:0.0.83`.
+Consommateur racine `capsule = 0.0.9` ; **MEMPHIS** `workspace-bom`/`workspace-catalog`
+**0.0.85** (bundle `e64d3224-0eca-48a4-ab82-da12cca35815`, capsule-plugin 0.0.9).
 
 '''
 == 📚 README i18n ✅ TERMINE (Session 041) — **régénéré fidèle au code (S-180/S-181)**

@@ -117,7 +117,23 @@ data class TtsConfig(
      * symbols expanded) and index the TTS cache on the spoken text (`<file>.key`).
      * Defaults to false (backward compat — the display text is spoken verbatim).
      */
-    val pronunciationEnabled: Boolean = false
+    val pronunciationEnabled: Boolean = false,
+    /**
+     * CAP-FISH-AUDIO — the cloned voice id (`reference_id`) for the `fish` engine.
+     * Empty by default: the `fish` engine requires it (fail-fast otherwise). The
+     * API key lives apart, in the git-ignored `fish.yaml`.
+     */
+    val fishVoice: String = "",
+    /** CAP-FISH-AUDIO — the Fish model header (default `speech-1.6`). */
+    val fishModel: String = "speech-1.6",
+    /** CAP-FISH-AUDIO — the requested container (default `wav` — MP3 adds a compression generation). */
+    val fishFormat: String = "wav",
+    /** CAP-FISH-AUDIO — sampling temperature (default `0.85`, warm register). */
+    val fishTemperature: Double = 0.85,
+    /** CAP-FISH-AUDIO — nucleus sampling (default `0.88`). */
+    val fishTopP: Double = 0.88,
+    /** CAP-FISH-AUDIO — the TTS endpoint (default `https://api.fish.audio/v1/tts`). */
+    val fishEndpoint: String = "https://api.fish.audio/v1/tts"
 )
 
 data class CaptureConfig(

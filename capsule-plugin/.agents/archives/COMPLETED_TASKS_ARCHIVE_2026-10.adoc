@@ -21,6 +21,19 @@
   `CapsuleExtension.fishAudioConfigPath` (défaut `fish.yaml`) + wiring `CapsulePlugin`.
   8 unit (`FishAudioKeyTest` + `FishAudioConfigLoaderTest`, garde non-fuite + exemple
   committé). `compileKotlin`/`compileTestKotlin` VERT (Local = Build, Tests = CI).
+* **US-2 livrée** : `FishAudioTransport` (seam HTTP) + `HttpClientFishAudioTransport` +
+  `FishAudioParams` + `FishAudioTtsEngine` (`Bearer` + `model` + JSON
+  `{text,reference_id,format,temperature,top_p}` → `wavToMp3`, retries bornés, écriture
+  atomique `FileReplace.moveOver`). 8 unit (`FishAudioTtsEngineTest`, stub transport —
+  **jamais Fish réel**).
+* **US-3 livrée** : `TtsConfig` 6 champs Fish (4 sources merger) + `CapsuleExtension`
+  6 props + `CapsuleConventions` + `pushConfigIntoExtension` + scaffold +
+  `resolveTtsEngine` (`fish`/`fish-audio`) dans `CapsuleBuildTask`/`CapsuleVideoTask`.
+  3 unit (`FishAudioTtsConfigTest`).
+* **Release `capsule-plugin 0.0.9`** : Central bundle `a2d32777-7456-49bc-92f5-8b132149246e`
+  (AUTOMATIC) ; consommateur racine `capsule = 0.0.9` ; **MEMPHIS** BOM/catalog `0.0.85`
+  (bundle `e64d3224-0eca-48a4-ab82-da12cca35815`, capsule-plugin 0.0.9). Reste US-4 (BDD)
+  + US-5 (docs).
 * `fish.yaml` **non lu** (gitignoré) ; schéma pris de `fish_example.yaml` (clé factice).
 * Rapport `.agents/sessions/182-cap-fish-audio-cadrage.adoc`.
 

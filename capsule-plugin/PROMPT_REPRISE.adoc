@@ -15,30 +15,26 @@ _littérature_ : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
   `CapsuleConfig`** (`@JsonProperty("fish-audio")`) ; **pool de clés** = valeur du
   membre (`fish.yaml` gitignoré, chargé + fusionné) ; voix/modèle/format/
   temperature/topP/endpoint dans `tts`.
-- **US-1 livrée** : `FishAudioKey` (`toString()` → `(key=***)`) + membre
-  `CapsuleConfig.fishAudio` + `CapsuleConfigLoader.loadFishAudio` + merger (secret
-  YAML seul) + `CapsuleExtension.fishAudioConfigPath` (défaut `fish.yaml`) +
-  wiring `CapsulePlugin`. 8 unit + compiles VERT.
-- 6 US ~17 pts (US-0 ✅ + US-1 ✅). Doc `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
-- Aucun artefact publié → pas de bump. Rapport `.agents/sessions/182-*.adoc`.
+- **US-1→US-3 livrées** (S-182) : `FishAudioKey` (rédaction du secret) + membre
+  `CapsuleConfig.fishAudio` + `CapsuleConfigLoader.loadFishAudio` ; `FishAudioTtsEngine`
+  (seam HTTP injectable + `HttpClient` JDK + JSON + `Bearer` + `format: wav` →
+  `wavToMp3`, retries) ; wiring `TtsConfig` 6 champs Fish (4 sources) + extension/
+  conventions/push/scaffold + `resolveTtsEngine` (`fish`/`fish-audio`).
+- **Release `capsule-plugin 0.0.9`** (Central bundle `a2d32777`, AUTOMATIC) +
+  consommateur racine `0.0.9` + MEMPHIS BOM/catalog `0.0.85` (bundle `e64d3224`).
+- 6 US ~17 pts (US-0→US-3 ✅). Doc `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
+- Rapport `.agents/sessions/182-*.adoc`.
 
-== Mission Session 183 — CAP-FISH-AUDIO US-2
+== Mission Session 183 — CAP-FISH-AUDIO US-4
 
-* **US-2** — **`FishAudioTtsEngine implements TtsEngine`** (baby-step DDD/TDD,
-  zéro réseau réel) :
-  1. `HttpClient` JDK + corps JSON (Jackson) + en-têtes `authorization: Bearer` +
-     `model`.
-  2. `format: wav` (comme `prepa` : le mp3 par défaut ajoute une compression) puis
-     `AudioConversionUtil.wavToMp3`.
-  3. Retries bornés (transitoires) + écriture atomique (`.part` → `os.replace`).
-  4. `isAvailable()` = au moins une clé non blanche ; `language()` inchangé.
-  5. Cache **indexé sur le texte dit** (sha1) — Économie d'Encre (aligné PRT-01).
-  6. Unit sur **stub HTTP** (`com.sun.net.httpserver.HttpServer`, patron des tests
-     LLM) : body/env corrects, dégradation sans clé, cache, garde « aucune clé
-     dans les logs ». **Aucun test n'appelle Fish réel** — moteur mocké (seam HTTP)
-     ou `piper` en test.
-* Gates : `compileKotlin` + `compileTestKotlin` VERT (Local = Build, **Tests = CI**).
-* Ne pas toucher US-3 (wiring) — une US par session (baby-step).
+* **US-4** — **BDD `@fish`** (baby-step BDD, **zéro réseau réel**) :
+  1. `capsule_fish_audio.feature` `@fish` + runner dédié + steps préfixés (S-088).
+  2. Scénarios sur **stub HTTP** (`com.sun.net.httpserver.HttpServer`) : engine
+     `fish` sélectionné, body/en-têtes corrects, dégradation sans clé (→ noop),
+     `strictMode`, échec après retries. **Jamais Fish réel** (moteur mocké ou `piper`).
+  3. `CucumberTaskSpec("cucumberTestFishAudio")` câblé `full-tests.yml`.
+* Reste US-5 (docs/traductions + dogfooding meteron, accord pilote).
+* Gates : `compileTestKotlin` VERT (Local = Build, **Tests = CI**).
 
 == Points d'attention
 
@@ -55,7 +51,8 @@ _littérature_ : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
 
 == Rappels
 
-* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.8** (Central).
-* MEMPHIS BOM/catalog **0.0.84**. `CAP-QC` **9/9 ✅**, `CAP-QC-VOICE` **5/5 ✅**,
+* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.9** (Central).
+* MEMPHIS BOM/catalog **0.0.85**. `CAP-QC` **9/9 ✅**, `CAP-QC-VOICE` **5/5 ✅**,
   `CAP-VIRAL`/`CAP-SHORT`/`CAP-VIRAL-E2E`/`CAP-CONTEXT`/`LLM-RESILIENCE` ✅.
-* **CAP-FISH-AUDIO 🟡 CADRÉ** (S-182) : 6 US ~17 pts — **seul EPIC actionnable ouvert.**
+* **CAP-FISH-AUDIO 🟡 EN COURS** (S-182) : US-0→US-3 ✅ (release `0.0.9`) — reste
+  US-4 (BDD) + US-5 (docs).

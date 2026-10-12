@@ -59,6 +59,13 @@ tts:
   # espeakVoice: fr
   # espeakSpeed: 150
   # language: fr
+  # Fish Audio (engine: fish) — the API key pool lives in the git-ignored fish.yaml
+  # fishVoice: <cloned voice reference_id>
+  # fishModel: speech-1.6
+  # fishFormat: wav
+  # fishTemperature: 0.85
+  # fishTopP: 0.88
+  # fishEndpoint: https://api.fish.audio/v1/tts
 
 capture:
   # viewportWidth: 1408

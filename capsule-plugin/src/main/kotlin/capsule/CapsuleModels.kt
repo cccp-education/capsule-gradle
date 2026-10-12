@@ -106,6 +106,30 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val ttsPronunciationEnabled: Property<Boolean> = objects.property(Boolean::class.java)
         .convention(false)
 
+    /** CAP-FISH-AUDIO — cloned voice id (`reference_id`) for the `fish` engine. Defaults to empty (required by fish). */
+    val ttsFishVoice: Property<String> = objects.property(String::class.java)
+        .convention("")
+
+    /** CAP-FISH-AUDIO — the Fish model header. Defaults to `speech-1.6`. */
+    val ttsFishModel: Property<String> = objects.property(String::class.java)
+        .convention("speech-1.6")
+
+    /** CAP-FISH-AUDIO — the requested container. Defaults to `wav`. */
+    val ttsFishFormat: Property<String> = objects.property(String::class.java)
+        .convention("wav")
+
+    /** CAP-FISH-AUDIO — sampling temperature. Defaults to 0.85. */
+    val ttsFishTemperature: Property<Double> = objects.property(Double::class.java)
+        .convention(0.85)
+
+    /** CAP-FISH-AUDIO — nucleus sampling (`top_p`). Defaults to 0.88. */
+    val ttsFishTopP: Property<Double> = objects.property(Double::class.java)
+        .convention(0.88)
+
+    /** CAP-FISH-AUDIO — the Fish Audio TTS endpoint. Defaults to `https://api.fish.audio/v1/tts`. */
+    val ttsFishEndpoint: Property<String> = objects.property(String::class.java)
+        .convention("https://api.fish.audio/v1/tts")
+
     val manimExecutablePath: Property<String> = objects.property(String::class.java)
         .convention("manim")
 
@@ -392,6 +416,12 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
         espeakSpeed = 150,
         ttsLanguage = "fr",
         ttsPronunciationEnabled = false,
+        ttsFishVoice = "",
+        ttsFishModel = "speech-1.6",
+        ttsFishFormat = "wav",
+        ttsFishTemperature = 0.85,
+        ttsFishTopP = 0.88,
+        ttsFishEndpoint = "https://api.fish.audio/v1/tts",
         viewportWidth = 1408,
         viewportHeight = 792,
         playwrightTimeout = 120_000.0,
@@ -477,6 +507,12 @@ data class CapsuleConventions(
     val espeakSpeed: Int,
     val ttsLanguage: String,
     val ttsPronunciationEnabled: Boolean,
+    val ttsFishVoice: String,
+    val ttsFishModel: String,
+    val ttsFishFormat: String,
+    val ttsFishTemperature: Double,
+    val ttsFishTopP: Double,
+    val ttsFishEndpoint: String,
     val viewportWidth: Int,
     val viewportHeight: Int,
     val playwrightTimeout: Double,

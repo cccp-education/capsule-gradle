@@ -128,6 +128,14 @@ class CapsulePlugin : Plugin<Project> {
             ext.ttsPronunciationEnabled.set(config.tts.pronunciationEnabled)
         }
 
+        // CAP-FISH-AUDIO — TTS section (the key pool lives apart, in fish.yaml)
+        if (ext.ttsFishVoice.get() == conventions.ttsFishVoice) ext.ttsFishVoice.set(config.tts.fishVoice)
+        if (ext.ttsFishModel.get() == conventions.ttsFishModel) ext.ttsFishModel.set(config.tts.fishModel)
+        if (ext.ttsFishFormat.get() == conventions.ttsFishFormat) ext.ttsFishFormat.set(config.tts.fishFormat)
+        if (ext.ttsFishTemperature.get() == conventions.ttsFishTemperature) ext.ttsFishTemperature.set(config.tts.fishTemperature)
+        if (ext.ttsFishTopP.get() == conventions.ttsFishTopP) ext.ttsFishTopP.set(config.tts.fishTopP)
+        if (ext.ttsFishEndpoint.get() == conventions.ttsFishEndpoint) ext.ttsFishEndpoint.set(config.tts.fishEndpoint)
+
         // Capture section
         if (ext.viewportWidth.get() == conventions.viewportWidth) ext.viewportWidth.set(config.capture.viewportWidth)
         if (ext.viewportHeight.get() == conventions.viewportHeight) ext.viewportHeight.set(config.capture.viewportHeight)

@@ -110,7 +110,13 @@ object CapsuleConfigMerger {
                 espeakVoice = env["CAPSULE_TTS_ESPEAK_VOICE"] ?: "fr",
                 espeakSpeed = env["CAPSULE_TTS_ESPEAK_SPEED"]?.toIntOrNull() ?: 150,
                 language = env["CAPSULE_TTS_LANGUAGE"] ?: "fr",
-                pronunciationEnabled = env["CAPSULE_TTS_PRONUNCIATION_ENABLED"]?.toBoolean() ?: false
+                pronunciationEnabled = env["CAPSULE_TTS_PRONUNCIATION_ENABLED"]?.toBoolean() ?: false,
+                fishVoice = env["CAPSULE_TTS_FISH_VOICE"] ?: "",
+                fishModel = env["CAPSULE_TTS_FISH_MODEL"] ?: "speech-1.6",
+                fishFormat = env["CAPSULE_TTS_FISH_FORMAT"] ?: "wav",
+                fishTemperature = env["CAPSULE_TTS_FISH_TEMPERATURE"]?.toDoubleOrNull() ?: 0.85,
+                fishTopP = env["CAPSULE_TTS_FISH_TOP_P"]?.toDoubleOrNull() ?: 0.88,
+                fishEndpoint = env["CAPSULE_TTS_FISH_ENDPOINT"] ?: "https://api.fish.audio/v1/tts"
             ),
             capture = CaptureConfig(
                 viewportWidth = env["CAPSULE_CAPTURE_VIEWPORT_WIDTH"]?.toIntOrNull() ?: 1408,
@@ -240,7 +246,13 @@ object CapsuleConfigMerger {
                 espeakVoice = props["capsule.tts.espeakVoice"] ?: "fr",
                 espeakSpeed = props["capsule.tts.espeakSpeed"]?.toIntOrNull() ?: 150,
                 language = props["capsule.tts.language"] ?: "fr",
-                pronunciationEnabled = props["capsule.tts.pronunciationEnabled"]?.toBoolean() ?: false
+                pronunciationEnabled = props["capsule.tts.pronunciationEnabled"]?.toBoolean() ?: false,
+                fishVoice = props["capsule.tts.fishVoice"] ?: "",
+                fishModel = props["capsule.tts.fishModel"] ?: "speech-1.6",
+                fishFormat = props["capsule.tts.fishFormat"] ?: "wav",
+                fishTemperature = props["capsule.tts.fishTemperature"]?.toDoubleOrNull() ?: 0.85,
+                fishTopP = props["capsule.tts.fishTopP"]?.toDoubleOrNull() ?: 0.88,
+                fishEndpoint = props["capsule.tts.fishEndpoint"] ?: "https://api.fish.audio/v1/tts"
             ),
             capture = CaptureConfig(
                 viewportWidth = props["capsule.capture.viewportWidth"]?.toIntOrNull() ?: 1408,
@@ -381,7 +393,13 @@ object CapsuleConfigMerger {
             espeakVoice = mergeStr(cli, "tts.espeakVoice", yaml?.espeakVoice, props.espeakVoice, env.espeakVoice),
             espeakSpeed = mergeInt(cli, "tts.espeakSpeed", yaml?.espeakSpeed, props.espeakSpeed),
             language = mergeStr(cli, "tts.language", yaml?.language, props.language, env.language),
-            pronunciationEnabled = mergeBoolean(cli, "tts.pronunciationEnabled", yaml?.pronunciationEnabled, props.pronunciationEnabled)
+            pronunciationEnabled = mergeBoolean(cli, "tts.pronunciationEnabled", yaml?.pronunciationEnabled, props.pronunciationEnabled),
+            fishVoice = mergeStr(cli, "tts.fishVoice", yaml?.fishVoice, props.fishVoice, env.fishVoice),
+            fishModel = mergeStr(cli, "tts.fishModel", yaml?.fishModel, props.fishModel, env.fishModel),
+            fishFormat = mergeStr(cli, "tts.fishFormat", yaml?.fishFormat, props.fishFormat, env.fishFormat),
+            fishTemperature = mergeDouble(cli, "tts.fishTemperature", yaml?.fishTemperature, props.fishTemperature),
+            fishTopP = mergeDouble(cli, "tts.fishTopP", yaml?.fishTopP, props.fishTopP),
+            fishEndpoint = mergeStr(cli, "tts.fishEndpoint", yaml?.fishEndpoint, props.fishEndpoint, env.fishEndpoint)
         )
     }
 
