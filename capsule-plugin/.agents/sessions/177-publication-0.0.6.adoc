@@ -42,10 +42,8 @@ Contexte : le commit `feat(s176)` (`4216898`) est en avance sur `0.0.5` publié 
 
 == Propagation (repo1)
 
-Vérifiée en fin de session (polling) : `capsule-plugin 0.0.6`,
-`workspace-bom 0.0.82`, `workspace-catalog 0.0.82`. Si encore en propagation au
-moment de la clôture, la preuve = run CI du push (le contenu source est déjà
-CI-vert S-176).
+**Confirmée** (polling fin de session) : `capsule-plugin 0.0.6` HTTP 200,
+`workspace-bom 0.0.82` HTTP 200, `workspace-catalog 0.0.82` HTTP 200.
 
 == Contenu `0.0.6` (depuis `0.0.5`)
 

@@ -43,6 +43,6 @@ S-228/S-229). Travail capsule **nul et non avenu** — ne pas le reprendre.
 
 == Rappels
 
-* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.6** (Central, en propagation).
+* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.6** (Central, propagation repo1 HTTP 200 confirmée).
 * MEMPHIS BOM/catalog **0.0.82**. `CAP-QC` **9/9 ✅**. `CAP-QC-VOICE` **5/5 ✅**.
   Backlog actionnable **vidé**.
