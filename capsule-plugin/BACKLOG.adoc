@@ -654,16 +654,20 @@ _Total_ : 30 EPICs terminés (0 TODO). _Baseline courante_ (S-136, exacte) :
 '''
 == Points d'attention
 
-* 1166 unit VERT (S-135 baseline exacte, vérifiée stash A/B), 75 functional VERT, 21 cucumber dédiés GREEN
+* Baseline CI verte : unit + `functionalTest` + BDD agrégé + real render
+  (`Full Tests` run `38224893199`, commit `34b4086`). Local = Build, Tests = CI.
 * Baby-step DDD/TDD/BDD : RED → GREEN → REFACTOR (unit → functional → cucumber)
 * Tout nouveau feature cucumber nécessite un runner dédié (bug S-082) + steps
   préfixés par feature (bug S-088 glue `capsule.scenarios` partagée)
 * English only : code, Gherkin, commentaires
 * Économie d'encre = skip si artefact existe et valide (AGENT.adoc Loi)
-* `build.gradle.kts` — 21 `CucumberTaskSpec` actifs
-* Conventions 0.0.3 (mavenLocal), BOM 0.0.27, codebase 0.0.14 (lib + plugin Gradle alignés, dépin S-136), slider 0.0.18
-* 14 domaines DDD : feed, pipeline, ai, context, multilang, validation, audio,
-  i18n, ci, transcript, remotion, podcast, support + preview. `capsule.preview` clos S-128.
+* `build.gradle.kts` — 38 `CucumberTaskSpec` (dont l'agrégé `cucumberTest`)
+* Conventions `education.cccp.build.*` 0.0.7 (mavenLocal) ; catalogue interne aligné
+  `workspace-bom 0.0.79` (codebase 0.0.17, slider 0.0.19) — S-165
+* 20 domaines DDD : ai, anim, audio, chapters, ci, context, feed, i18n, multilang,
+  pipeline, podcast, preview, publish, qc, timeline, transcript, validation, viral,
+  voice (+ support). `capsule.preview` clos S-128 ; `capsule.voice` (CAP-QC-VOICE),
+  `capsule.qc` (PRT-08), `capsule.timeline` (PRT-07) clos S-168→S-174.
 * `ProcessRunner` (nouveau S-131) remplace `ProcessBuilder.waitFor()` répandu
   — anti-interblocage tube 64 Kio + délai de garde. 14 appelants migrés + couverts (S-132).
 * `FileReplace.moveOver` (nouveau S-131) = déplacement honnête (zéro perte
@@ -694,7 +698,7 @@ _Total_ : 30 EPICs terminés (0 TODO). _Baseline courante_ (S-136, exacte) :
 == Rappels
 
 * GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`
-* 1166 unit VERT (S-135 baseline exacte), 75 functional VERT, cucumber dédiés GREEN
+* CI verte : unit + `functionalTest` + BDD agrégé + real render (`Full Tests` run `38224893199`)
 * `cucumberTest` skippé par défaut (CR-10), `cucumberTestIntegration` skippé
   par défaut (Playwright gate S-121)
 * DSL 4 sources pattern : ENV < props < YAML < CLI
