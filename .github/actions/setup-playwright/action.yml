@@ -1,0 +1,33 @@
+name: Setup Playwright (cached Chromium)
+description: >-
+  Resolve the Playwright version from the version catalog, restore the cached
+  browser download (`~/.cache/ms-playwright`), then install Chromium + system
+  deps. The cache key is derived from the catalog so a version bump refreshes
+  it automatically — no hardcoded Playwright version (anti-drift).
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve Playwright version from the catalog
+      id: version
+      shell: bash
+      working-directory: capsule-plugin
+      run: |
+        set -euo pipefail
+        v=$(sed -n 's/^playwright = "\([^"]*\)".*/\1/p' gradle/libs.versions.toml)
+        test -n "$v" || { echo "playwright version not found in gradle/libs.versions.toml" >&2; exit 1; }
+        echo "value=$v" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Playwright browsers
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ steps.version.outputs.value }}
+
+    - name: Install Chromium + system deps
+      shell: bash
+      working-directory: capsule-plugin
+      run: |
+        set -euo pipefail
+        npx --yes playwright@${{ steps.version.outputs.value }} install chromium
+        npx --yes playwright@${{ steps.version.outputs.value }} install-deps chromium

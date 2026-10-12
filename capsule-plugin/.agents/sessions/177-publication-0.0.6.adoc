@@ -62,6 +62,19 @@ Contexte : le commit `feat(s176)` (`4216898`) est en avance sur `0.0.5` publié 
 * Dérive `bakery-plugin` de la garde MEMPHIS corrigée au passage (garde dormante
   hors CI `runAllTests`, mais assertion fausse).
 
+== Bonus CI — cache des ressources récurrentes
+
+Constat (demande pilote) : les caches **Gradle** (`gradle/actions/setup-gradle@v4`) et
+**Ollama** (`.github/actions/setup-ollama`) étaient en place, mais **Playwright
+Chromium** (~170 Mo) était **re-téléchargé à chaque run** de `full-tests.yml` et
+`cucumber-full.yml`.
+
+Livré : action composite `.github/actions/setup-playwright/action.yml` (pattern
+`setup-ollama`) — résout la version `playwright` depuis `gradle/libs.versions.toml`
+(anti-drift, **zéro version hardcodée**), cache `~/.cache/ms-playwright` clé
+`playwright-${{ runner.os }}-<version>`, puis `install chromium` + `install-deps`.
+Les deux workflows l'utilisent. CI-only, zéro code produit.
+
 == Fichiers
 
 * `capsule-plugin/gradle/libs.versions.toml` (BOM 0.0.81 + capsule 0.0.6)
@@ -70,5 +83,7 @@ Contexte : le commit `feat(s176)` (`4216898`) est en avance sur `0.0.5` publié 
 * `workspace-bom/agent-contracts/src/test/.../PlatformCatalogAlignmentTest.kt` (ré-alignée)
 * Gouvernance : ce rapport, `PROMPT_REPRISE`, `INDEX`, `SESSIONS_HISTORY`,
   `archives/COMPLETED_TASKS_ARCHIVE_2026-10.adoc`, `BACKLOG`, `TODO`.
+* CI : `.github/actions/setup-playwright/action.yml` (créé) + `full-tests.yml` +
+  `cucumber-full.yml` (cache Playwright).
 
 _Score : 9/10 (release DAG complet + alignement catalogue + correction de dérive)._

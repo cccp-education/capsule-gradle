@@ -30,12 +30,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ffmpeg espeak espeak-data
 
-      - name: Install Playwright Chromium
-        run: |
-          cd capsule-plugin
-          ./gradlew --version
-          npx playwright install chromium
-          npx playwright install-deps chromium
+      # Playwright Chromium is cached via the composite action (key derived from
+      # the catalog `playwright` version) — avoids re-downloading the browser
+      # (~170 MB) on every run.
+      - name: Setup Playwright (cached Chromium)
+        uses: ./.github/actions/setup-playwright
 
       # Unit + functionalTest (real binaries installed). The full `cucumberTest`
       # Playwright suite is NOT part of this green baseline — it carries a
