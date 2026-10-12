@@ -49,6 +49,14 @@ Baby-step DDD/TDD strict. **Local = Build / Tests = CI**. Publication nmcp.
 * `assemble` + `validatePlugins` **VERTS**.
 * Zéro secret. Zéro bump capsule (la prochaine release capsule portera la dépendance).
 
+=== Preuve CI (commit `ce7fdf7`)
+
+* **Test** (Fast Tests PR Gate) : ✅ **success** — run `38321982827` (3m9s).
+* **Full Tests** : ✅ **success** — run `38321982920` (24m15s) — résolution
+  `education.cccp:video-kernel:0.0.1` **depuis Maven Central** (HTTP 200).
+* Borough `video-kernel` : CI `Test` ✅ (run `38321797962`, 1m14s), dépôt
+  `github.com/cccp-education/video-kernel-gradle`.
+
 == Décisions clés
 
 [cols="1,4", options="header"]
