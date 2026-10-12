@@ -1,46 +1,48 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 166
+:session: 178
 :borough: Détroit
-:session_precedente: 165 — correctif dérive dépendances + capsule-plugin 0.0.4
+:session_precedente: 177 — release `capsule-plugin 0.0.6` + alignement catalogue
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
+_littérature_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`.
 
 == Contexte Hérité
 
-=== S-165 — correctif dérive + 0.0.4
+=== S-177 — release 0.0.6 (livré)
 
-- Le catalogue **interne** du plugin épinglait `workspace-bom 0.0.43` (POM 0.0.3
-  importait une BOM périmée). Aligné sur BOM `0.0.79` (+ codebase 0.0.17, slider
-  0.0.19, koog 1.3.0, jackson 2.21.2, langchain4j 1.22). Bump **0.0.4**.
-- Central bundle `59e4597a` (repo1 200) ; POM 0.0.4 importe `workspace-bom:0.0.79`.
-- Consommateurs : racine `capsule = 0.0.4` ; MEMPHIS BOM/catalog **0.0.80** (bundle
-  `14bccf1d`, capsule-plugin 0.0.4).
-- Rapport `.agents/sessions/165-fix-dep-drift-0.0.4.adoc`.
+- Option A (maintenance/release, accord pilote) : backlog capsule vidé.
+- Catalogue interne aligné `workspace-bom 0.0.79 → 0.0.81` ; bump `capsule 0.0.5 → 0.0.6`
+  (contenu S-176 PRT-01 dit↔lu, déjà CI-vert run `38233947596`).
+- Publication Central bundle `240d55fa-fcac-4933-ad27-3c1bb3937dea` (AUTOMATIC).
+- Consommateur racine `capsule = 0.0.6` ; MEMPHIS (S-285) BOM/catalog `0.0.82`
+  (capsule-plugin 0.0.6, bundle `524c2a15-9090-4457-bc03-8d565e7acb7a`) + garde
+  `PlatformCatalogAlignmentTest` ré-alignée (dérive bakery `0.0.25 → 0.0.26` corrigée).
+- Rapport `.agents/sessions/177-publication-0.0.6.adoc`.
 
-=== S-164 — publication 0.0.3. S-163 — warn Manim + optim CI.
+=== S-176 — câblage dit↔lu (livré). S-175 — publication 0.0.5.
 
-== Mission Session 166
+=== S-177 (tentative révoquée)
 
-**Backlog actif vidé.** Seul candidat : **extraction N0 résilience transverse**
-(CADUQUE, S-162 ; réouverture = module utilitaire Gradle partagé cross-borough,
-hors périmètre capsule). Sinon : tout nouveau besoin du backlog racine.
+Le cadrage cross-borough `diag-agent → PlantUML` avait été committé (`0b36ab1`)
+puis **reverté** (`2bf1451`) : **HTOWN** a produit son propre cadrage (`PLT-AGENT`,
+S-228/S-229). Travail capsule **nul et non avenu** — ne pas le reprendre.
+
+== Mission Session 178 — backlog EPICs vidé
+
+* **A)** Dette/maintenance capsule (couverture Kover, README, drift catalogue résiduel).
+* **B)** Toute nouvelle demande pilote (cadrer + implémenter en baby-step).
 
 == Points d'attention
 
-* **Local = Build, Tests = CI**. Publication = méthode nmcp (AGENTS racine).
-* Le catalogue **interne** du plugin doit rester aligné sur le catalogue workspace
-  (BOM) — vérifier au fil des bumps MEMPHIS.
-* **English only** (`OssVocabularyGuardTest`). **Zéro Python**. **Zéro secret**.
-* Baby-step DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
+* **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
+* Nouvelle option → `Config` + extension + `CapsuleConventions` + merger (4 sources) +
+  `pushConfigIntoExtension`, **défaut false** (backward compat).
+* **English only** (`OssVocabularyGuardTest`) ; zéro Python ; zéro secret ; baby-step
+  DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
+* CI : cache Ollama (`.github/actions/setup-ollama`) ; Gradle `setup-gradle@v4`.
+* Catalogue **interne** aligné BOM `0.0.81` — vérifier au fil des bumps MEMPHIS.
 
 == Rappels
 
-* GroupId : `education.cccp`, Plugin ID : `education.cccp.capsule`, version **0.0.4** (Central).
-* CAP-VIRAL **14/14** ; CAP-CONTEXT **4/4** ; CAP-SHORT **6/6** ; CAP-VIRAL-E2E **3/3** ;
-  LLM-RESILIENCE **1/1**.
-
-
-
-
-
-
-
+* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.6** (Central, en propagation).
+* MEMPHIS BOM/catalog **0.0.82**. `CAP-QC` **9/9 ✅**. `CAP-QC-VOICE` **5/5 ✅**.
+  Backlog actionnable **vidé**.

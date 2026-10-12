@@ -1,5 +1,16 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-12 (S-174 — CAP-QC ✅ 9/9 + CAP-QC-VOICE ✅ 5/5 : portage `prepa` TERMINÉ.)
+:last_update: 2026-10-12 (S-177 — release `capsule-plugin 0.0.6` + alignement catalogue ; MEMPHIS BOM/catalog `0.0.82`.)
+
+'''
+== ✅ Release `capsule-plugin 0.0.6` + alignement catalogue (S-177)
+
+. [x] Catalogue interne `gradle/libs.versions.toml` : `workspace-bom 0.0.79 → 0.0.81`.
+. [x] Bump `[versions].capsule = 0.0.5 → 0.0.6` (contenu S-176 PRT-01 dit↔lu).
+. [x] `compileKotlin`/`compileTestKotlin`/`compileFunctionalTestKotlin`/`assemble` VERTS ; `publishToMavenLocal` VERT (POM 0.0.6 importe `workspace-bom:0.0.81`).
+. [x] Publication Central bundle `240d55fa-fcac-4933-ad27-3c1bb3937dea` (AUTOMATIC).
+. [x] Consommateur racine `capsule = 0.0.6` (`./gradlew tasks` VERT).
+. [x] MEMPHIS (S-285) : catalogue `capsule-plugin 0.0.6` + BOM/catalog `0.0.81 → 0.0.82` ; garde `PlatformCatalogAlignmentTest` ré-alignée + dérive `bakery-plugin` (`0.0.25 → 0.0.26`) corrigée ; bundle Central `524c2a15-9090-4457-bc03-8d565e7acb7a`.
+. [x] Le cadrage `diag-agent → PlantUML` (S-177 `0b36ab1`) est **reverté** — HTOWN a produit `PLT-AGENT` (S-228/S-229) ; travail capsule nul et non avenu.
 
 '''
 == ✅ EPIC CAP-QC — portage utilitaire `prepa` → capsule — TERMINÉ 9/9 (S-174)

@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-12 (S-174 — CAP-QC ✅ 9/9 + CAP-QC-VOICE ✅ 5/5 : portage `prepa` TERMINÉ. Tous les EPICs actionnables clos.)
+:last_update: 2026-10-12 (S-177 — release `capsule-plugin 0.0.6` + alignement catalogue BOM `0.0.81` ; MEMPHIS BOM/catalog `0.0.82`. Tous les EPICs actionnables clos.)
 
 '''
 == ✅ CAP-QC — TERMINÉ 9/9 (S-174)
@@ -386,6 +386,14 @@ langchain4j 1.22) — le POM 0.0.4 importe `workspace-bom:0.0.79` (0.0.3 importa
 CAP-QC complet (PRT-01→08) + CAP-QC-VOICE complet (US-1→5) + infra cache CI.
 Consommateur racine `capsule = 0.0.5`. **Suite** : MEMPHIS BOM/catalog →
 `capsule-plugin 0.0.5` + bump BOM.
+
+`education.cccp:capsule-plugin:0.0.6` publié via nmcp (Session 177, bundle
+**`240d55fa-fcac-4933-ad27-3c1bb3937dea`**, AUTOMATIC, en propagation). Contenu :
+S-176 PRT-01 dit↔lu (sous-titres + karaoké, opt-in `tts.pronunciationEnabled`) +
+alignement catalogue interne `workspace-bom 0.0.79 → 0.0.81`. Consommateur racine
+`capsule = 0.0.6` ; **MEMPHIS** `workspace-bom`/`workspace-catalog` **0.0.82**
+(bundle `524c2a15-9090-4457-bc03-8d565e7acb7a`, capsule-plugin 0.0.6) + garde
+`PlatformCatalogAlignmentTest` ré-alignée.
 
 '''
 == 📚 README i18n ✅ TERMINE (Session 041)

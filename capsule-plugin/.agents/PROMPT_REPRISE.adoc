@@ -1,72 +1,48 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 177
+:session: 178
 :borough: Détroit
-:session_precedente: 176 — câblage dit↔lu (sous-titres + karaoké)
+:session_precedente: 177 — release `capsule-plugin 0.0.6` + alignement catalogue
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`.
 
 == Contexte Hérité
 
-=== S-176 — câblage dit↔lu (livré)
+=== S-177 — release 0.0.6 (livré)
 
-- `CapsuleVideoTask.generateSubtitles` applique `PronunciationLexicon.reversals()`
-  (opt-in `tts.pronunciationEnabled`) : chemin cartons + chemin plain.
-- `KaraokeWordPlanner.plan(beats, timings, reversals)` + `RenderViralSubtitlesTask`.
-- Round-trip prouvé (sigle exact, symbole réversé) ; +2 unit + 1 scénario BDD.
+- Option A (maintenance/release, accord pilote) : backlog capsule vidé.
+- Catalogue interne aligné `workspace-bom 0.0.79 → 0.0.81` ; bump `capsule 0.0.5 → 0.0.6`
+  (contenu S-176 PRT-01 dit↔lu, déjà CI-vert run `38233947596`).
+- Publication Central bundle `240d55fa-fcac-4933-ad27-3c1bb3937dea` (AUTOMATIC).
+- Consommateur racine `capsule = 0.0.6` ; MEMPHIS (S-285) BOM/catalog `0.0.82`
+  (capsule-plugin 0.0.6, bundle `524c2a15-9090-4457-bc03-8d565e7acb7a`) + garde
+  `PlatformCatalogAlignmentTest` ré-alignée (dérive bakery `0.0.25 → 0.0.26` corrigée).
+- Rapport `.agents/sessions/177-publication-0.0.6.adoc`.
 
-=== S-175 — publication (livré)
+=== S-176 — câblage dit↔lu (livré). S-175 — publication 0.0.5.
 
-- `capsule-plugin 0.0.5` publié Maven Central (bundle `da475207-…`, AUTOMATIC) ;
-  consommateur racine `capsule = 0.0.5` ; tâches `verifyCapsuleVoice`/
-  `selectBestVoiceTake`/`renderQcBoards` visibles depuis la racine.
+=== S-177 (tentative révoquée)
 
-=== S-174 — clôture des deux EPICs (livré, CI verte)
+Le cadrage cross-borough `diag-agent → PlantUML` avait été committé (`0b36ab1`)
+puis **reverté** (`2bf1451`) : **HTOWN** a produit son propre cadrage (`PLT-AGENT`,
+S-228/S-229). Travail capsule **nul et non avenu** — ne pas le reprendre.
 
-- **CAP-QC-VOICE US-5** : `TimedWord` + `WordTimingsJson` (parse whisper) +
-  `KaraokeWordPlanner.plan(beats, timings)` (timings mesurés clampés + repli
-  proportionnel) + `RenderViralSubtitlesTask.wordTimingsFile`. +5 unit + 1 scénario BDD.
-- **CAP-QC PRT-01** : `PronunciationLexicon` (pur : `spoken`/`reversals`/`cacheKey`) +
-  cache TTS indexé sur le texte dit (sidecar `<file>.key`, opt-in
-  `tts.pronunciationEnabled`, non intrusif — nommage `slide-NN.mp3` inchangé).
-  +6 unit + merger + 1 scénario BDD.
-- Gates : compiles + `validatePlugins` VERTS ; **CI `Test` + `Full Tests` VERTES**
-  (run `38224893199`).
+== Mission Session 178 — backlog EPICs vidé
 
-=== S-173 — chaînage (US-3/US-4/PRT-08 + cache CI)
-
-- Cache CI `.github/actions/setup-ollama` (image Docker + modèle) + Gradle durci.
-- US-3 `selectBestVoiceTake`, US-4 `VoiceAsrIntegrationTest`, PRT-08 `renderQcBoards`.
-
-== État des EPICs
-
-* **CAP-QC ✅ 9/9** — portage `prepa` **TERMINÉ** (PRT-04/03/09/06/05/10/07/08/01).
-* **CAP-QC-VOICE ✅ 5/5** — **TERMINÉ** (cadrage, domaine pur, port+tâche, choix de
-  prise, dogfooding, karaoké timings ASR).
-* **Tous les EPICs actionnables du backlog sont clos.**
-
-== Mission Session 177 — backlog EPICs vidé
-
-=== ✅ Consommation (FAIT)
-
-* MEMPHIS S-284 : `workspace-bom`/`catalog` **0.0.81** (capsule-plugin 0.0.5), propagation vérifiée.
-* S-176 : câblage dit↔lu sous-titres + karaoké (opt-in `tts.pronunciationEnabled`).
-
-=== Option A — Dette / maintenance
-
-Revoir les points d'attention du BACKLOG (drift catalogue de version, docs README,
-couverture Kover).
+* **A)** Dette/maintenance capsule (couverture Kover, README, drift catalogue résiduel).
+* **B)** Toute nouvelle demande pilote (cadrer + implémenter en baby-step).
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
 * Nouvelle option → `Config` + extension + `CapsuleConventions` + merger (4 sources) +
   `pushConfigIntoExtension`, **défaut false** (backward compat).
-* English only (`OssVocabularyGuardTest`) ; zéro Python ; zéro secret ; baby-step
+* **English only** (`OssVocabularyGuardTest`) ; zéro Python ; zéro secret ; baby-step
   DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
-* CI : cache Ollama (image + modèle) via `.github/actions/setup-ollama` ; Gradle via
-  `gradle/actions/setup-gradle@v4`.
+* CI : cache Ollama (`.github/actions/setup-ollama`) ; Gradle `setup-gradle@v4`.
+* Catalogue **interne** aligné BOM `0.0.81` — vérifier au fil des bumps MEMPHIS.
 
 == Rappels
 
-* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.5** (Central, propagée).
-* `CAP-QC` **9/9 ✅**. `CAP-QC-VOICE` **5/5 ✅**.
+* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.6** (Central, en propagation).
+* MEMPHIS BOM/catalog **0.0.82**. `CAP-QC` **9/9 ✅**. `CAP-QC-VOICE` **5/5 ✅**.
+  Backlog actionnable **vidé**.

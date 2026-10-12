@@ -1,6 +1,22 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 177 — Release `capsule-plugin 0.0.6` + alignement catalogue ✅
+
+* Option A (maintenance/release, accord pilote `local/central/bump/pin/git`).
+* Catalogue interne `workspace-bom 0.0.79 → 0.0.81` ; bump `capsule 0.0.5 → 0.0.6`
+  (contenu S-176 PRT-01 dit↔lu, CI-vert run `38233947596`).
+* `assemble`/`publishToMavenLocal` VERTS ; Central bundle
+  **`240d55fa-fcac-4933-ad27-3c1bb3937dea`** (AUTOMATIC).
+* Consommateur racine `capsule = 0.0.6` (`./gradlew tasks` VERT).
+* **MEMPHIS S-285** : BOM/catalog **`0.0.82`** (capsule-plugin 0.0.6, bundle
+  `524c2a15-9090-4457-bc03-8d565e7acb7a`) + garde `PlatformCatalogAlignmentTest`
+  ré-alignée (`0.0.81 → 0.0.82`) + dérive pré-existante corrigée (`bakery-plugin`
+  `0.0.25 → 0.0.26`, garde dormante hors CI `runAllTests`).
+* Le cadrage `diag-agent → PlantUML` (S-177 `0b36ab1`) est **reverté** (`2bf1451`) :
+  HTOWN a produit `PLT-AGENT` (S-228/S-229). Travail capsule nul et non avenu.
+* Rapport `.agents/sessions/177-publication-0.0.6.adoc`.
+
 == Session 176 — Câblage dit↔lu (sous-titres + karaoké) ✅
 
 * `CapsuleVideoTask.generateSubtitles` applique `PronunciationLexicon.reversals()`
