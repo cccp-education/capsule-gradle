@@ -64,6 +64,13 @@ des `VideoSegment`.
 `File("fallback-script.txt").nameWithoutExtension` = `"fallback-script"`, pas
 `"fallback"`. Correctif test-only (assertion).
 
+=== Preuve CI (commit `bc58126`)
+
+* **Test** (Fast Tests PR Gate) : ✅ **success** — run `38314853787` (3m40s).
+* **Full Tests** (binaries réels + duration validation) : ✅ **success** — run
+  `38314853850` (21m40s). Run initial `38314428803` rouge (1 assertion) →
+  correctif test-only → re-push → vert.
+
 == Décisions clés
 
 [cols="1,4", options="header"]
