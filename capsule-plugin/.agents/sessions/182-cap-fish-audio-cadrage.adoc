@@ -87,6 +87,8 @@ US-5 docs+dogfooding. Détail : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
 == Gates
 
 * `compileKotlin` + `compileTestKotlin` **VERT** (Local = Build, **Tests = CI**).
+* **CI VERTE** (commit `96d4b19`) : `Test` run `38278207740` (Fast Tests 3m31s) +
+  `Full Tests` run `38278207708` (Full Test Suite 19m50s — unit + functional + BDD).
 * **Zéro secret** : `fish.yaml` non lu/commité ; `fish_example.yaml` = clé factice.
 * Gouvernance synchronisée : `BACKLOG.adoc`, `.agents/INDEX.adoc`,
   `PROMPT_REPRISE.adoc` (×2), `TODO.adoc`, `.agents/SESSIONS_HISTORY.adoc`,
