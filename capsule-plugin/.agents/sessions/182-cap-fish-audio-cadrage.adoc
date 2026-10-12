@@ -1,9 +1,9 @@
-= Session 182 — CAP-FISH-AUDIO (cadrage + US-1→US-3 + release 0.0.9)
+= Session 182 — CAP-FISH-AUDIO (cadrage + US-1→US-4 + release 0.0.9)
 :session: 182
 :borough: Détroit
 :date: 2026-10-12
 :epic: CAP-FISH-AUDIO
-:us: US-0 (cadrage) + US-1 (modèle/chargement) + US-2 (engine) + US-3 (wiring) + release 0.0.9
+:us: US-0 (cadrage) + US-1 (modèle/chargement) + US-2 (engine) + US-3 (wiring) + US-4 (BDD) + release 0.0.9 ; US-5 partiel (EN docs)
 
 == Mission
 
@@ -118,6 +118,24 @@ US-5 docs+dogfooding. Détail : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
   (bundle `e64d3224-0eca-48a4-ab82-da12cca35815`, capsule-plugin 0.0.9 ; garde
   `PlatformCatalogAlignmentTest` alignée).
 
+== US-4 livrée — BDD `@fish` (moteur mocké, jamais Fish réel)
+
+* `capsule_fish_audio.feature` `@fish` — 5 scénarios : POST + body/en-têtes exacts,
+  engine indisponible sans clé, retry sur `503` puis succès, échec après les tentatives
+  bornées, non-fuite du secret.
+* `CapsuleFishAudioSteps` — moteur **mocké** via un transport fake (aucun réseau, aucune
+  clé) ; steps préfixés (bug S-088).
+* `CapsuleFishAudioCucumberRunner` + `CucumberTaskSpec("cucumberTestFishAudio")` — couvert
+  par l'agrégat `cucumberTest` en CI.
+
+== US-5 (partiel) — documentation EN
+
+* `README.md` (racine) + `capsule-plugin/README.md` : version `0.0.9`, Fish Audio dans les
+  requirements, la config DSL (`ttsFishVoice`/`ttsFishModel`/`ttsFishFormat`/
+  `ttsFishTemperature`/`ttsFishTopP`/`ttsFishEndpoint`/`fishAudioConfigPath`) et le
+  troubleshooting.
+* Reste : traductions (9×2) + dogfooding metered (accord pilote).
+
 == Gates
 
 * `compileKotlin` + `compileTestKotlin` **VERT** (Local = Build, **Tests = CI**).
@@ -130,6 +148,5 @@ US-5 docs+dogfooding. Détail : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
 
 == Prochaine session
 
-**S-183 — CAP-FISH-AUDIO US-4** : BDD `@fish` sur **stub HTTP** (jamais Fish réel) +
-runner dédié `cucumberTestFishAudio` câblé `full-tests.yml`. Reste US-5 (docs +
-dogfooding metered, accord pilote).
+**S-183 — CAP-FISH-AUDIO US-5** : traductions README (9×2) + dogfooding metered (accord
+pilote) ; ou maintenance. L'EPIC est fonctionnel (US-0→US-4 ✅, release `0.0.9`).

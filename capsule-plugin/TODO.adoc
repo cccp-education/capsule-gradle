@@ -11,8 +11,8 @@ _📖 Littérature : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`._
 . [x] **US-2** ✅ S-182 — `FishAudioTtsEngine` (`FishAudioTransport` seam + `HttpClient` JDK + JSON + `Bearer` + `format: wav` → `wavToMp3`, retries ; 8 unit stub, jamais Fish réel).
 . [x] **US-3** ✅ S-182 — wiring `resolveTtsEngine()` (`fish`/`fish-audio`) + `TtsConfig` 6 champs Fish (4 sources) + extension/conventions/scaffold (+3 unit).
 > **Release `capsule-plugin 0.0.9`** ✅ S-182 (Central bundle `a2d32777`) + consommateur racine `0.0.9` + MEMPHIS BOM/catalog `0.0.85` (bundle `e64d3224`).
-. [ ] **US-4** — BDD `@fish` (stub HTTP) + runner dédié.
-. [ ] **US-5** — docs/traductions + dogfooding metered (accord pilote).
+. [x] **US-4** ✅ S-182 — BDD `@fish` (`capsule_fish_audio.feature` 5 scénarios, moteur mocké, jamais Fish réel) + runner dédié `cucumberTestFishAudio`.
+. [ ] **US-5** — docs : README EN ✅ S-182 ; **traductions (9×2)** + dogfooding metered (accord pilote) restent.
 
 '''
 == ✅ README consommateur (racine) + traductions (S-181)

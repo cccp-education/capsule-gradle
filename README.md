@@ -3,12 +3,12 @@
 
 > Gradle plugin that turns a reveal.js deck into a synchronised video capsule — TTS voice-over, capture, subtitles, format conversion, audio post and a short-form/viral pipeline — without human post-production.
 
-[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.8&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
+[![Maven Central](https://img.shields.io/static/v1?label=Maven%20Central&message=0.0.9&color=green)](https://central.sonatype.com/artifact/education.cccp/capsule-plugin)
 [![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/education.cccp.capsule.svg?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/education.cccp.capsule)
 [![CI](https://img.shields.io/github/actions/workflow/status/cheroliv/capsule-gradle/test.yml?branch=main&label=CI)](https://github.com/cheroliv/capsule-gradle/actions/workflows/test.yml)
 [![License](https://img.shields.io/github/license/cheroliv/capsule-gradle?label=License)](LICENSE)
 
-- **Version**: `0.0.8` (Maven Central) · **Group**: `education.cccp` · **Plugin ID**: `education.cccp.capsule`
+- **Version**: `0.0.9` (Maven Central) · **Group**: `education.cccp` · **Plugin ID**: `education.cccp.capsule`
 - **Requires**: Java 25+ · Gradle 9.8+
 - **Docs**: [plugin internals](capsule-plugin/README.md) · [pipeline architecture](capsule-plugin/doc/CAPSULE_ARCHITECTURE.adoc)
 
@@ -26,7 +26,7 @@ short-form (viral) pipeline.
 ```
 AsciiDoc source → slider-gradle → reveal.js deck + speaker script
                                         ↓
-        capsule-gradle → TTS (Piper/espeak) → audio injection → capture → WebM/MP4
+        capsule-gradle → TTS (Piper/espeak/Fish Audio) → audio injection → capture → WebM/MP4
                                         ↓                          ↓
                                 Manim animation (optional)   FFmpeg 9:16 recrop (optional)
 ```
@@ -39,6 +39,7 @@ Part of the CCCP Education multi-plugin ecosystem (`groupId: education.cccp`).
 - **Gradle** 9.8+
 - **Piper** — local offline TTS (default engine)
 - **espeak / espeak-ng** — TTS fallback (`espeak-ng` is used automatically when `espeak` is absent)
+- **Fish Audio** — optional cloud TTS with a **cloned voice** (engine `fish`); the API key pool lives in a git-ignored `fish.yaml`
 - **Chromium** — auto-downloaded by Playwright on first run
 - **FFmpeg** — 9:16 recrop, subtitle burn-in, MP4 conversion, audio post
 - **Manim** — optional, for animated mathematical slides
@@ -50,7 +51,7 @@ Part of the CCCP Education multi-plugin ecosystem (`groupId: education.cccp`).
 
 ```gradle
 plugins {
-    id("education.cccp.capsule") version "0.0.8"
+    id("education.cccp.capsule") version "0.0.9"
 }
 ```
 
@@ -61,7 +62,7 @@ capsule {
     outputDir.set("capsules")
     sliderScriptDir.set("capsule")
     deckSourceDir.set("docs/asciidocRevealJs")
-    ttsEngine.set("espeak")   // "piper" (default) or "espeak"
+    ttsEngine.set("espeak")   // "piper" (default), "espeak", or "fish" (Fish Audio cloud, cloned voice)
 }
 ```
 
@@ -96,7 +97,7 @@ tasks.named("generateCapsuleVideo") {
 | Task | Group | Description |
 |------|-------|-------------|
 | `generateCapsuleScript` | generate | Reads the `*-script.txt` produced by slider and validates the capsule script |
-| `generateCapsule` | generate | Synthesises the TTS audio files (Piper/espeak), one per slide |
+| `generateCapsule` | generate | Synthesises the TTS audio files (Piper/espeak/Fish Audio), one per slide |
 | `generateCapsuleVideo` | generate | Injects the TTS audio into the deck HTML then captures the video |
 | `generateCapsuleVideoAllLanguages` | generate | One localized capsule per target language (`LanguageCatalog`) |
 | `extractSpeakerNotes` | capsule | Parses AsciiDoc speaker notes into the plain-text `*-script.txt` contract |
@@ -146,13 +147,22 @@ capsule {
     deckSourceDir.set("docs/asciidocRevealJs")
 
     // TTS
-    ttsEngine.set("piper")                 // "piper" (default) or "espeak"
+    ttsEngine.set("piper")                 // "piper" (default), "espeak", or "fish"
     ttsVoice.set("fr_FR-siwis-medium")
     piperExecutablePath.set("piper")
     ttsFallbackEnabled.set(true)
     espeakVoice.set("fr")
     espeakSpeed.set(150)
     ttsLanguage.set("fr")                  // 22 languages (LanguageCatalog)
+
+    // TTS — Fish Audio (engine "fish"; the API key pool is in the git-ignored fish.yaml)
+    ttsFishVoice.set("<cloned voice reference_id>")
+    ttsFishModel.set("speech-1.6")
+    ttsFishFormat.set("wav")
+    ttsFishTemperature.set(0.85)
+    ttsFishTopP.set(0.88)
+    ttsFishEndpoint.set("https://api.fish.audio/v1/tts")
+    fishAudioConfigPath.set("fish.yaml")   // the key file (never committed)
 
     // Capture / output
     viewportWidth.set(1408)
@@ -255,6 +265,7 @@ a slide lands on a reading rhythm instead of the whole slide appearing at once. 
 |---------|-----|
 | Playwright Chromium not found | run once to auto-download, or set `chromiumExecutablePath` |
 | Piper TTS produces no audio | check `piperExecutablePath`, ensure the voice model is installed |
+| Fish Audio falls back to noop | set `ttsEngine` to `fish`, provide a cloned voice (`ttsFishVoice`) and a key pool in the git-ignored `fish.yaml` |
 | `deployCapsule` fails | verify FFmpeg is on `PATH` (`ffmpeg -version`) |
 | Manim slides not rendered | set `manimExecutablePath` to `noop` to test without Manim |
 | Video capture timeout | increase `playwrightTimeout` (default 120000 ms) |

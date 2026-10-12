@@ -407,6 +407,17 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleLlmResilienceCucumberRunner",
             timeoutMinutes = 10,
         ),
+        // CAP-FISH-AUDIO US-4 — Fish Audio engine BDD. Fish Audio is NEVER called:
+        // the HTTP transport is a fake returning canned bytes. Dedicated runner
+        // pattern S-082; steps prefixed "Fish Audio"/"the transport"/"the request"
+        // (bug S-088 glue capsule.scenarios shared). Pure domain, no network/ffmpeg.
+        CucumberTaskSpec(
+            name = "cucumberTestFishAudio",
+            features = listOf("src/test/features/capsule_fish_audio.feature"),
+            tags = listOf("@fish"),
+            runnerClass = "capsule.scenarios.CapsuleFishAudioCucumberRunner",
+            timeoutMinutes = 10,
+        ),
     )
 }
 

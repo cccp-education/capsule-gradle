@@ -169,17 +169,17 @@ totale).
    dégradation sans clé, `strictMode`, cache) + runner dédié.
 | `src/test/features`
 | 3
-| 🟡 À FAIRE
+| ✅ S-182
 
 | US-5
 | **Docs + dogfooding metered** — README (tâches/config) + traductions + run réel
    (accord pilote) : une capsule rendue avec la voix clonée.
 | docs, consumer
 | 3
-| 🟡 À FAIRE
+| 🟡 EN livré (S-182) ; traductions + dogfooding metered restent
 |===
 
-*Total* : 6 US ~17 pts. Ordre : US-0 ✅ + US-1 ✅ (S-182) → US-2 → US-3 → US-4 → US-5.
+*Total* : 6 US ~17 pts. Ordre : US-0 ✅ + US-1 ✅ + US-2 ✅ + US-3 ✅ + US-4 ✅ (S-182) → US-5 🟡.
 
 == Hors scope
 

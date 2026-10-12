@@ -34,6 +34,14 @@
   (AUTOMATIC) ; consommateur racine `capsule = 0.0.9` ; **MEMPHIS** BOM/catalog `0.0.85`
   (bundle `e64d3224-0eca-48a4-ab82-da12cca35815`, capsule-plugin 0.0.9). Reste US-4 (BDD)
   + US-5 (docs).
+* **US-4 livrée** : BDD `@fish` — `capsule_fish_audio.feature` (5 scénarios : POST + body/
+  en-têtes, engine indisponible sans clé, retry, échec borné, non-fuite du secret) +
+  `CapsuleFishAudioSteps` (moteur **mocké** via transport fake — **jamais Fish réel**) +
+  `CapsuleFishAudioCucumberRunner` + `CucumberTaskSpec("cucumberTestFishAudio")` (couvert
+  par l'agrégat `cucumberTest`).
+* **US-5 partiel** : README EN (racine `README.md` + `capsule-plugin/README.md`) `0.0.9`
+  avec Fish Audio (requirements, config DSL, troubleshooting). Reste : traductions (9×2)
+  + dogfooding metered (accord pilote).
 * `fish.yaml` **non lu** (gitignoré) ; schéma pris de `fish_example.yaml` (clé factice).
 * Rapport `.agents/sessions/182-cap-fish-audio-cadrage.adoc`.
 
