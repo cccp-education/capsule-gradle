@@ -27,7 +27,7 @@ dégradation propre si absent.
 
 | US-0 | Cadrage (audit + décisions) | ce doc | 0 | ✅ S-182
 | US-1 | **Modèle + chargement** — `FishAudioKey` + membre `CapsuleConfig.fishAudio` (`@JsonProperty("fish-audio")`) + chargement pool depuis `fish.yaml` + rédaction secret | `CapsuleConfig`, `CapsuleConfigLoader`, `CapsulePlugin` | 3 | ✅ S-182
-| US-2 | **`FishAudioTtsEngine`** — `HttpClient` JDK + JSON + `Bearer` + `model` + `format: wav` → `wavToMp3`, retries, cache sha1 du texte dit | `capsule` (`TtsManager`) | 5 | 🟡 À FAIRE
+| US-2 | **`FishAudioTtsEngine`** — `HttpClient` JDK + JSON + `Bearer` + `model` + `format: wav` → `wavToMp3`, retries, cache sha1 du texte dit ; **seam HTTP injectable** (test = stub `HttpServer` ou `piper`, **jamais Fish réel**) | `capsule` (`TtsManager`) | 5 | 🟡 À FAIRE
 | US-3 | **Wiring** — `resolveTtsEngine()` (`fish`/`fish-audio`) + `TtsConfig` 6 champs Fish (4 sources) + extension/conventions/push + scaffold | `CapsuleVideoTask`, `CapsuleConfig*`, `CapsuleScaffoldTask` | 3 | 🟡 À FAIRE
 | US-4 | **BDD `@fish`** — stub HTTP (engine choisi, body/env, dégradation, strict, cache) + runner dédié | `src/test/features` | 3 | 🟡 À FAIRE
 | US-5 | **Docs + dogfooding metered** — README/traductions + run réel (accord pilote) | docs, consumer | 3 | 🟡 À FAIRE

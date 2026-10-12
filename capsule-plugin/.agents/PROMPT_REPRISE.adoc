@@ -35,7 +35,8 @@ _littérature_ : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
   5. Cache **indexé sur le texte dit** (sha1) — Économie d'Encre (aligné PRT-01).
   6. Unit sur **stub HTTP** (`com.sun.net.httpserver.HttpServer`, patron des tests
      LLM) : body/env corrects, dégradation sans clé, cache, garde « aucune clé
-     dans les logs ».
+     dans les logs ». **Aucun test n'appelle Fish réel** — moteur mocké (seam HTTP)
+     ou `piper` en test.
 * Gates : `compileKotlin` + `compileTestKotlin` VERT (Local = Build, **Tests = CI**).
 * Ne pas toucher US-3 (wiring) — une US par session (baby-step).
 

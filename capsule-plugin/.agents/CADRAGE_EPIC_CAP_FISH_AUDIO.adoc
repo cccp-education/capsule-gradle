@@ -113,8 +113,11 @@ totale).
    (sha1) — une phrase corrigée est forcément régénérée, une phrase inchangée est
    réutilisée sans appel meteron. Aligné sur le cache PRT-01 (`<file>.key`).
 9. **Metered = accord pilote** : le dogfooding réel (US-5) exige l'autorisation
-   pilote (comme S-158) ; en CI, **stub HTTP** (`com.sun.net.httpserver.HttpServer`,
-   patron déjà utilisé par les tests LLM) — **zéro appel réseau réel**.
+   pilote (comme S-158). **Aucun test n'utilise Fish Audio réel** : le moteur est
+   **mocké** (seam HTTP injectable + stub `com.sun.net.httpserver.HttpServer`,
+   patron des tests LLM) **ou** le test utilise `piper`/`espeak`/`NoOp` comme moteur.
+   En CI, l'absence de `fish.yaml` rend `isAvailable()=false` → dégradation
+   (jamais d'échec, jamais d'appel réseau). **Zéro appel réel à Fish en test.**
 10. **Boundary** : capsule (N2) porte sa **première** authentification. Choix
    pilote « dogfood-first » : le secret vit dans un fichier gitignoré du
    consommateur. Le routage via le hub N1 (comme le LLM) est **écarté pour cette
@@ -147,7 +150,8 @@ totale).
 | US-2
 | **`FishAudioTtsEngine`** — port `TtsEngine` : `HttpClient` + JSON + `Bearer` +
    `model` + `format: wav` → `wavToMp3`, retries bornés, cache sha1 du texte dit.
-   Unit (`HttpServer` stub) + garde « aucune clé dans les logs ».
+   **Seam HTTP injectable** (test = stub `HttpServer`, jamais Fish réel) + garde
+   « aucune clé dans les logs ».
 | `capsule` (`TtsManager`)
 | 5
 | 🟡 À FAIRE
