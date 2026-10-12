@@ -121,3 +121,11 @@ de vocabulaire **traverse les assertions de message** — la CI est la preuve.
 
 `CAP-ENGINE-DECOUPLING` **US-1 ✅ S-185** (US-0 ✅ S-184 ; US-2→5 🟡 À FAIRE).
 Plugin inchangé côté contrat externe ; refactor additif du modèle.
+
+=== Preuve CI (commit `0277981`)
+
+* **Test** (Fast Tests PR Gate) : ✅ **success** — run `38307263797` (3m42s).
+* **Full Tests** (binaries réels + duration validation) : ✅ **success** — run
+  `38307264025` (19m47s).
+* Run initial `38306638531` rouge (2 assertions de message) → correctif test-only
+  → re-push → vert. Le vert CI est la preuve de validité (Local = Build / Tests = CI).
