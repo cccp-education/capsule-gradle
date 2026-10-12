@@ -1,0 +1,47 @@
+= Rapport de session 175 — Publication `capsule-plugin 0.0.5` (Maven Central)
+:session: 175
+:date: 2026-10-12
+:borough: Détroit
+:epic: PUB — publication Maven Central
+:statut: TERMINÉ
+:methode: procédure AGENTS.adoc (nmcp, ordre DAG)
+
+== Mission
+
+Demande pilote (accord explicite) : *bump / publier / commit / push* `capsule-plugin`
+puis enchaîner la consommation du backlog.
+
+== Livré
+
+* Bump `[versions].capsule` `0.0.4 → 0.0.5` (catalogue interne `capsule-plugin/gradle/libs.versions.toml`).
+* `./gradlew assemble` VERT (0.0.5).
+* `./gradlew publishToMavenLocal` VERT (signé GPG `CBE2926CD46D8E8B`).
+* `./gradlew publishAggregationToCentralPortal --no-daemon` → bundle
+  **`da475207-6c16-442b-90f0-e11e359726b2`** (AUTOMATIC), statut « publishing ».
+* **Consommateur racine** `foundry/public/capsule-gradle` : `capsule = 0.0.4 → 0.0.5` ;
+  `./gradlew tasks` VERT depuis la racine (plugin appliqué ; tâches `verifyCapsuleVoice`,
+  `selectBestVoiceTake`, `renderQcBoards` visibles).
+
+== Contenu 0.0.5 (depuis 0.0.4)
+
+* RENAME S-153 + CAP-VIRAL-E2E S-154→S-156 + `normalizeViralStoryboard` S-159 +
+  LLM-RESILIENCE S-160 + warn Manim S-163.
+* CAP-QC complet : PRT-04/03/09/06 (S-166), PRT-05/10 (S-167), PRT-07 (S-168),
+  PRT-08 (S-173), PRT-01 (S-174).
+* CAP-QC-VOICE complet : US-1→5 (S-170, S-172, S-173, S-174).
+* Infra : cache CI Ollama/Gradle (S-173), correction baseline CI rouge (S-172).
+
+== Ordre DAG / suite
+
+* N1/N0 (codebase 0.0.17, workspace-bom 0.0.79) déjà Central — **aucun prérequis manquant**.
+* Propagation repo1 attendue (7-27 min) : `education.cccp:capsule-plugin:0.0.5` +
+  marker `education.cccp.capsule.gradle.plugin`.
+* **Suite cross-borough** : aligner le catalogue **MEMPHIS** `workspace-bom`
+  (`capsule-plugin = 0.0.5`) + bump BOM (publier) — prochaine étape de consommation.
+
+== Gates
+
+* Local : `assemble` VERT, `publishToMavenLocal` VERT, upload Central accepté (AUTOMATIC).
+* Zéro secret commité (creds nmcp lues depuis `~/.gradle/gradle.properties`, jamais affichées).
+
+_Score : 9/10._

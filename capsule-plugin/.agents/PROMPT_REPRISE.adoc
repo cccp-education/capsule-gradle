@@ -1,11 +1,17 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 175
+:session: 176
 :borough: Détroit
-:session_precedente: 174 — clôture CAP-QC (PRT-01) + CAP-QC-VOICE (US-5)
+:session_precedente: 175 — publication capsule-plugin 0.0.5
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`.
 
 == Contexte Hérité
+
+=== S-175 — publication (livré)
+
+- `capsule-plugin 0.0.5` publié Maven Central (bundle `da475207-…`, AUTOMATIC) ;
+  consommateur racine `capsule = 0.0.5` ; tâches `verifyCapsuleVoice`/
+  `selectBestVoiceTake`/`renderQcBoards` visibles depuis la racine.
 
 === S-174 — clôture des deux EPICs (livré, CI verte)
 
@@ -31,15 +37,12 @@ _littérature_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` + `.agents/CADRAGE_EPIC_CAP_
   prise, dogfooding, karaoké timings ASR).
 * **Tous les EPICs actionnables du backlog sont clos.**
 
-== Mission Session 175 — au choix du pilote (backlog vidé)
+== Mission Session 176 — suite de consommation (backlog EPICs vidé)
 
-Aucun EPIC ouvert. Candidats (sur demande explicite) :
+=== Option A — Consommateur MEMPHIS (cross-borough)
 
-=== Option A — Publication `capsule-plugin 0.0.5` (Maven Central)
-
-Le HEAD a beaucoup avancé depuis 0.0.4 (CAP-QC complet + CAP-QC-VOICE + cache CI).
-Publier 0.0.5 (ordre DAG N0/N1 déjà Central) + consommateurs (racine, MEMPHIS BOM).
-**Accord pilote requis.**
+Aligner `foundry/public/workspace-bom` catalogue `capsule-plugin = 0.0.5` + bump BOM
+(+ catalog) puis publier (accord pilote). Ordre DAG : capsule 0.0.5 déjà Central.
 
 === Option B — Câblage PRT-01 côté karaoké/sous-titres
 

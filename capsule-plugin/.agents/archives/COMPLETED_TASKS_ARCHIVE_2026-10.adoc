@@ -1,6 +1,16 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 175 — Publication `capsule-plugin 0.0.5` (Maven Central) ✅
+
+* Bump `[versions].capsule` 0.0.4 → 0.0.5 ; `assemble` VERT ;
+  `publishToMavenLocal` VERT (GPG `CBE2926CD46D8E8B`) ; bundle Central
+  **`da475207-6c16-442b-90f0-e11e359726b2`** (AUTOMATIC).
+* Consommateur racine `capsule = 0.0.5` (`./gradlew tasks` VERT).
+* Contenu : CAP-QC complet (PRT-01→08) + CAP-QC-VOICE complet (US-1→5) + cache CI.
+  Suite : MEMPHIS BOM/catalog → `capsule-plugin 0.0.5`.
+  Rapport `.agents/sessions/175-publication-0.0.5.adoc`.
+
 == Session 174 — Clôture CAP-QC (PRT-01) + CAP-QC-VOICE (US-5) ✅
 
 * **CAP-QC-VOICE US-5** : `TimedWord` + `WordTimingsJson.parse` (whisper, tolérant) +

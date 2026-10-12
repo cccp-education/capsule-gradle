@@ -1,7 +1,17 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-12
-:session: 174 Clôture CAP-QC (PRT-01) + CAP-QC-VOICE (US-5)
+:session: 175 Publication capsule-plugin 0.0.5
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 12 octobre 2026 (après session 175)
+
+.Publication capsule-plugin 0.0.5
+|===
+| Élément | Changement | Tests
+| — | **Aucun test modifié.** Publication (bump 0.0.5 + Central) : `assemble` +
+  `publishToMavenLocal` VERTS. La baseline de tests reste celle de S-174
+  (CI `Full Tests` verte, run `38224893199`). | 0
+|===
 
 == Couverture — 12 octobre 2026 (après session 174)
 
