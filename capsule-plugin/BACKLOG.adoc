@@ -47,6 +47,31 @@ cible probable N1 `codebase.koog.pipeline`. Note : `pipeline-contracts` (MEMPHIS
 contrat **release-notes**, sans rapport._
 
 '''
+== 🟡 CAP-ENGINE-DECOUPLING — EN COURS (S-184 cadrage)
+_📖 Littérature : `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`._
+
+_Découpler le **métier** vidéo du **moteur** reveal.js/slider, isoler un noyau
+engine-agnostique (`capsule.kernel`), poser les ports neutres (`SegmentSource`,
+`VideoEngine`) et **préparer la mutualisation** avec `hyperframes-gradle` (2ᵉ moteur).
+Décision pilote : **ne pas attendre le seuil « factoriser à 3 »**. La review S-184
+(capsule 190 fichiers / 31 tâches vs hyperframes 16 / 3) reclassifie le
+« non-transférable » : presque tout est **récupérable** ; le couplage slider se limite
+à la **capture reveal.js**, le **parser speaker-notes**, le **swap de slides Manim** et
+les **champs deck/slide** du contrat N3. Cible d'extraction : N1 `education.cccp:video-kernel`
+(lib utilitaire, **pas N0** — cf. S-162 LLM-RESILIENCE N0 CADUQUE). 6 US (US-0 ✅, US-1→5 🟡)._
+
+[cols="1,3,1,1", options="header"]
+|===
+| US | Livrable | Statut | Effort
+| US-0 | Cadrage + roadmap/backlog/prompt-reprise | ✅ S-184 | —
+| US-1 | Modèle neutre `VideoSegment`/`VideoScript`/`VideoProductionEntry` (alias additif) | 🟡 À FAIRE | M
+| US-2 | Port `VideoEngine` + adapter `RevealJsEngineAdapter` (extraire Playwright de `CapsuleVideoTask` 1248 l.) | 🟡 À FAIRE | L
+| US-3 | Port `SegmentSource` + `RevealJsSpeakerNoteSource` | 🟡 À FAIRE | M
+| US-4 | Isoler `capsule.kernel` + garde d'architecture (test frontière) | 🟡 À FAIRE | M
+| US-5 | Préparer l'extraction N1 `video-kernel` (module + publication) — accord pilote | 🟡 À FAIRE | L
+|===
+
+'''
 == ✅ CAP-QC — TERMINÉ 9/9 (S-174)
 _📖 Littérature de référence : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage `prepa` → capsule : frontière, catalogue PRT, décisions — **portage TERMINÉ 9/9**)._
 

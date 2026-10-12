@@ -1,0 +1,74 @@
+= Session 184 — Cadrage EPIC CAP-ENGINE-DECOUPLING
+:session: 184
+:date: 2026-10-12
+:type: cadrage (gouvernance pure, zéro code)
+:borough: Détroit / capsule-gradle
+:toc:
+
+== Objectif
+
+Découpler le **métier** vidéo du **moteur** reveal.js/slider dans capsule et
+**préparer la mutualisation** du code avec `hyperframes-gradle` — sans attendre le
+seuil doctrinal « factoriser à 3 » (décision pilote explicite).
+
+== Déclencheur
+
+Demande pilote 2026-10-12 : « refactoriser capsule pour découpler le plus possible le
+métier du moteur et préparer la mutualisation de code entre les deux boroughs » ;
+« je ne veux pas attendre 3 boroughs pour l'extraction, préparons-la dès maintenant » ;
+« récupérer le plus de fonctionnalité qui avait été dite non transférable et pas en
+relation avec le moteur slider ».
+
+== Travail réalisé (lecture seule + littérature)
+
+. **Review code des deux boroughs** (agents d'exploration + vérifications directes) :
+   capsule **190 fichiers prod / 20 domaines / 31 tâches** vs hyperframes **16 / 3 / 3**.
+. **Audit de la couture moteur** dans le code :
+   * `CapsuleVideoTask.kt` (**1248 lignes**) = point chaud (noyau TTS/audio/sous-titres
+     + adapter reveal.js : `.reveal .slides section[data-audio]`, Playwright,
+     `createSingleSlideHtml`, `HtmlSectionParser`, `ManimSlideReplacer`).
+   * Couplage slider concentré : `PlaywrightManager`, `CaptureResolver`, `ScreenshotPlanner`,
+     `HtmlSectionParser`, `ManimSlideReplacer`, `RemotionCapture`/`RemotionTemplate`,
+     parser speaker-notes + contrat `-script.txt`, champs deck du contrat N3.
+   * Noyau engine-agnostique : audio, podcast, chapters, transcript, validation, qc,
+     voice, timeline, publish, i18n, multilang, context, viral, ai, pipeline (squelette),
+     anim, moteurs Manim/Remotion (rendu).
+. **Reclassification du « non-transférable »** (review initiale) : presque tout est
+   **récupérable** ; le couplage slider se limite à la capture reveal.js, le parser
+   speaker-notes, le swap de slides Manim et les champs deck du contrat N3.
+. **Décisions** D1→D7 (modèle neutre, ports `SegmentSource`/`VideoEngine`, package
+   `capsule.kernel`, adapter `capsule.adapter.revealjs`, cible N1 `video-kernel` — pas N0).
+. **Roadmap** 6 US (US-0 ✅ → US-5).
+
+== Livrables
+
+* `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc` (créé).
+* `BACKLOG.adoc` : section `CAP-ENGINE-DECOUPLING` + table US.
+* `.agents/INDEX.adoc` : ligne roadmap.
+* `.agents/PROMPT_REPRISE.adoc` + `PROMPT_REPRISE.adoc` (S-185, mission US-1).
+* `.agents/SESSIONS_HISTORY.adoc` : entrée 184.
+* Côté Watts : `hyperframes-plugin/.agents/CADRAGE_EPIC_HF_KERNEL_ADAPTER.adoc` + backlog/INDEX/PROMPT_REPRISE.
+
+== Décisions clés
+
+[cols="1,4", options="header"]
+|===
+| # | Décision
+| D1 | Modèle neutre `VideoSegment`/`VideoScript`/`VideoProductionEntry` (alias additif).
+| D2 | Ports `SegmentSource` (source → segments) + `VideoEngine` (render visuel).
+| D3 | Package `capsule.kernel` + garde d'architecture (test frontière).
+| D4 | Package `capsule.adapter.revealjs` (Playwright/HtmlSectionParser/ManimSlideReplacer).
+| D5 | Cible N1 `education.cccp:video-kernel` (lib utilitaire, **pas N0** — cf. S-162).
+| D6 | Baby-step additif, backward-compat (ne pas casser 0.0.10).
+| D7 | Noyau neutre : ni `slide`/`deck`/`reveal`/`Playwright`.
+|===
+
+== Précédents
+
+* `KOOG-PIPELINE-DEDUP` (S-183, CADUQUE) : seuil « factoriser à 3 ».
+* `LLM-RESILIENCE N0` (S-162, CADUQUE) : N0 = contrats purs, lib utilitaire ≠ N0.
+
+== Statut
+
+Gouvernance pure. `CAP-ENGINE-DECOUPLING` 🟡 EN COURS (US-0 ✅, US-1→5 À FAIRE).
+Zéro code modifié, zéro bump, zéro publication, zéro secret.

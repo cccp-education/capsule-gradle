@@ -1,0 +1,150 @@
+= CADRAGE — EPIC CAP-ENGINE-DECOUPLING (Détroit / capsule-gradle)
+:session: 184
+:date: 2026-10-12
+:statut: 🟡 EN COURS — cadrage (US-0)
+:toc:
+
+== Objectif
+
+Découpler le **métier** vidéo du **moteur** reveal.js/slider dans capsule, isoler
+un **noyau engine-agnostique** (`capsule.kernel`), poser les **ports neutres**, et
+**préparer la mutualisation** du code avec `hyperframes-gradle` (2ᵉ moteur).
+
+Objectif stratégique : faire de capsule un **moteur de production vidéo** dont le
+moteur de rendu visuel (reveal.js) n'est qu'un **adaptateur** — afin qu'hyperframes
+puisse devenir un **2ᵉ adaptateur** du même noyau (asymétrie d'outillage constatée :
+capsule 190 fichiers / 31 tâches, hyperframes 16 fichiers / 3 tâches).
+
+_Origine_ : session pilote 2026-10-12 — demande explicite : « refactoriser capsule
+pour découpler le plus possible le métier du moteur et préparer la mutualisation de
+code entre les deux boroughs » ; « je ne veux pas attendre 3 boroughs pour l'extraction ».
+
+== Constats (audit au code)
+
+=== C1 — Point chaud : `CapsuleVideoTask.kt` (1248 lignes)
+
+Le fichier mélange deux responsabilités dans le même corps :
+
+* **Noyau** : TTS, audio-post, sous-titres, conversion de format, validation durée,
+  injection audio, planification de la capture.
+* **Adapter reveal.js** : injection du script d'autoplay `.reveal .slides section[data-audio]`,
+  capture Playwright par slide, `createSingleSlideHtml()`, `HtmlSectionParser`,
+  `ManimSlideReplacer`, résolution de la stratégie de capture (Playwright/Screenshot/Remotion).
+
+C'est **la** couture à déplacer : le noyau ne doit connaître ni `.reveal`, ni
+`<section>`, ni `data-audio`, ni Playwright.
+
+=== C2 — Couplage moteur concentré dans une poignée de fichiers
+
+[cols="1,3", options="header"]
+|===
+| Catégorie | Fichiers
+
+| **ADAPTER reveal.js/slider** (à isoler)
+| `PlaywrightManager.kt`, `CaptureResolver.kt`, `ScreenshotPlanner.kt`, `HtmlSectionParser.kt`,
+  `ManimSlideReplacer.kt`, `RemotionCapture.kt`, `RemotionTemplate.kt`,
+  `createSingleSlideHtml()` (dans `CapsuleVideoTask`), `capsule/feed/AsciidocSpeakerNoteParser.kt`
+  (contrat `-script.txt` de slider)
+
+| **NOYAU engine-agnostique** (à extraire)
+| `audio/`, `podcast/`, `chapters/`, `transcript/`, `validation/`, `qc/`, `voice/`,
+  `timeline/`, `publish/`, `i18n/`, `multilang/`, `context/`, `viral/`, `ai/`,
+  `ManimEngine`/`ManimVideoMixer`/`ManimParallelRenderer` (le *rendu* Manim, pas le swap deck),
+  `anim/RemotionTiming`
+
+| **INFRA / portage Gradle** (reste dans capsule)
+| `CapsuleConfig`/`CapsuleConfigLoader`/`CapsuleConfigMerger`/`CapsuleModels`/`CapsulePlugin`/`CapsuleManager`,
+  `ProcessRunner`, `MediaProbeUtil`, `FileReplace`, `RenderSignature`
+|===
+
+=== C3 — Le vocabulaire moteur traverse le noyau
+
+`SlideSegment`, `SlideType`, `CapsuleScript`, `CapsuleVideoPlan`/`CapsuleVideoEntry`
+(cf. `feed/CapsuleFeedModels.kt`, `multilang/CapsuleVideoPlan.kt`) portent le vocabulaire
+**slide/deck**. `CapsuleVideoEntry` **exige** un `deckFile` (reveal.js) → impossible
+d'accueillir une source HyperFrames sans neutralisation.
+
+=== C4 — Le « non-transférable » de la review est largement surévalué
+
+Reclassification de la review (S-184, cf. `PROMPT_REPRISE`) :
+
+[cols="2,2,1", options="header"]
+|===
+| Sous-système | Verdict affiné | Raison
+
+| `capsule.feed` (speaker notes → `-script.txt`) | **Récupérable** (modèle noyau) + adapter source | Le *modèle* `VideoSegment`/`VideoScript` est neutre ; seul le **parser AsciiDoc reveal.js** + le contrat `-script.txt` sont moteur.
+| `capsule.pipeline` (koog) | **Récupérable** (squelette + content-plan) | Le squelette `propose→validate→generate` (cf. `KOOG-PIPELINE-DEDUP`) et le content-plan à segments sont neutres.
+| `ManimSlideReplacer` | **Non récupérable** (swap `<section>` deck) | Mais `ManimEngine`/`ManimVideoMixer`/`ManimParallelRenderer` = **rendu neutre → récupérable**.
+| `CapsuleVideoPlan`/`CapsuleVideoEntry` | **Récupérable** | Généraliser `deckFile` → `VisualSource` abstrait.
+| `viral` | **Récupérable** | Campagnes short-form — **aucun** lien slider.
+| `context` (augmented) | **Récupérable** | Contexte augmenté — aucun lien slider (couple codebase N1).
+| `timeline`, `anim/RemotionTiming` | **Récupérables** | Oubliés dans la review — aucun lien slider.
+|===
+
+Conclusion : **presque tout est récupérable** ; le couplage slider se limite à la
+**capture reveal.js** + le **parser speaker-notes** + le **swap de slides Manim** +
+les **champs deck/slide** du contrat N3.
+
+== Décisions
+
+. **D1 — Modèle neutre.** Généraliser `SlideSegment` → `VideoSegment` (index, titre,
+   narration, `kind` {`VISUAL`, `ANIMATION`}, `scene?`), `CapsuleScript` → `VideoScript`,
+   `CapsuleVideoEntry` → `VideoProductionEntry` (`VisualSource` abstrait, plus `deckFile`).
+   **Additif** : `typealias` de compatibilité, zéro rupture 0.0.10.
+. **D2 — Deux ports structurants.**
+   * `SegmentSource` : `source → List<VideoSegment>` — impl. reveal.js (speaker notes).
+   * `VideoEngine` : `render(visual, segments, audio, output)` — impl. `RevealJsEngineAdapter`
+     (Playwright) aujourd'hui ; impl. HyperFrames plus tard.
+. **D3 — Package `capsule.kernel`.** Noyau isolé, **zéro import** Playwright/reveal/slider/
+   `org.gradle` métier. Frontière **gardée par test d'architecture** (pattern
+   `bakery` `I18nClientNoDirectHttpBoundaryTest`).
+. **D4 — Package `capsule.adapter.revealjs`.** `PlaywrightManager`, `HtmlSectionParser`,
+   `ManimSlideReplacer`, `createSingleSlideHtml`, parser speaker-notes, contrat `-script.txt`.
+. **D5 — Cible d'extraction : N1 `education.cccp:video-kernel`.** Lib **utilitaire**, pas
+   N0 (doctrine S-162 `LLM-RESILIENCE N0` CADUQUE : N0 = contrats purs). Les **ports**
+   peuvent devenir un N0 `video-contracts` *si* contractuels. **Extraction effective =
+   US ultérieure, accord pilote** — le pilote acte le principe dès maintenant (pas d'attente
+   du seuil « factoriser à 3 »).
+. **D6 — Baby-step, additif, backward-compat.** Ne pas casser un plugin mature
+   (917 unit + 60 functional + 22 runners Cucumber).
+. **D7 — Vocabulaire neutralisé dans le noyau** : ni `slide`, ni `deck`, ni `reveal`,
+   ni `Playwright`. Le noyau parle `segment`, `visual`, `engine`.
+
+== Roadmap — EPIC CAP-ENGINE-DECOUPLING
+
+[cols="1,3,1,1", options="header"]
+|===
+| US | Livrable | Statut | Effort
+
+| US-0 | Cadrage (ce document) + roadmap/backlog/prompt-reprise | ✅ S-184 | —
+| US-1 | Modèle neutre `VideoSegment`/`VideoScript`/`VideoProductionEntry` (alias additif) | 🟡 À FAIRE | M
+| US-2 | Port `VideoEngine` + adapter `RevealJsEngineAdapter` (extraire Playwright de `CapsuleVideoTask`) | 🟡 À FAIRE | L
+| US-3 | Port `SegmentSource` + `RevealJsSpeakerNoteSource` | 🟡 À FAIRE | M
+| US-4 | Isoler `capsule.kernel` + **garde d'architecture** (test frontière) | 🟡 À FAIRE | M
+| US-5 | Préparer l'extraction N1 `video-kernel` (module + publication) — **accord pilote** | 🟡 À FAIRE | L
+|===
+
+_Ordre_ : US-1 → US-2 → US-3 → US-4 → US-5 (US-4 dépend de US-1/2/3).
+
+== Risques
+
+* **Régression** sur plugin mature (0.0.10, CI verte). Mitigation : additif (`typealias`),
+  frontière testée, baby-step DDD/TDD/BDD, Local = Build / Tests = CI.
+* **Sur-abstraction** : créer des ports pour 2 consommateurs (capsule + hyperframes).
+  Mitigation : le pilote acte explicitement l'extraction anticipée ; les ports restent
+  **minces** (`SegmentSource` + `VideoEngine`), pas de générique paramétré par 5 callbacks.
+* **Nommage du module partagé** (N1 `video-kernel`) à trancher en US-5.
+
+== Hors scope
+
+* Extraction effective N1 + publication Central + bump BOM (US-5, accord pilote).
+* Réécriture de l'adapter reveal.js (on le **déplace**, on ne le réécrit pas).
+* Côté hyperframes : EPIC `HF-KERNEL-ADAPTER` (littérature séparée, borough Watts).
+
+== Traçabilité
+
+* Review code des deux boroughs (S-184, inventaire 190 vs 16 fichiers).
+* `capsule-plugin/.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc` (précédent : seuil 3, N0 vs N1).
+* `capsule-plugin/.agents/CADRAGE_EPIC_LLM_RESILIENCE_N0.adoc` (précédent : N0 = contrats purs).
+* `capsule/CapsuleVideoTask.kt` (1248 l.), `capsule/feed/CapsuleFeedModels.kt`, `capsule/multilang/CapsuleVideoPlan.kt`.
+* Côté Watts : `hyperframes-plugin/.agents/CADRAGE_EPIC_HF_KERNEL_ADAPTER.adoc`.
