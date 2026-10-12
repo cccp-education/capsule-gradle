@@ -78,9 +78,15 @@ class CapsuleEngineAdapterSteps {
     fun aRevealDeckWith3Slides() {
         deckHtml = """
             <html><head><style>.reveal{}</style></head><body><div class="reveal"><div class="slides">
-            <section data-capsule-slide="1"><h1>One</h1></section>
-            <section data-capsule-slide="2"><h1>Two</h1></section>
-            <section data-capsule-slide="3"><h1>Three</h1></section>
+            <section data-capsule-slide="1">
+              <h1>One</h1>
+            </section>
+            <section data-capsule-slide="2">
+              <h1>Two</h1>
+            </section>
+            <section data-capsule-slide="3">
+              <h1>Three</h1>
+            </section>
             </div></div></body></html>
         """.trimIndent()
     }
@@ -138,8 +144,12 @@ class CapsuleEngineAdapterSteps {
             writeText(
                 """
                 <html><head></head><body><div class="reveal"><div class="slides">
-                <section data-capsule-slide="1"><h1>One</h1></section>
-                <section data-capsule-slide="2"><h1>Two</h1></section>
+                <section data-capsule-slide="1">
+                  <h1>One</h1>
+                </section>
+                <section data-capsule-slide="2">
+                  <h1>Two</h1>
+                </section>
                 </div></div></body></html>
                 """.trimIndent()
             )

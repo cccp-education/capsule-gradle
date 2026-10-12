@@ -63,6 +63,15 @@ Tests = CI** (compiles ×3 + `assemble` + `validatePlugins` uniquement en local)
 * Tâches `cucumberTestEngineAdapter` + `cucumberTestKernelModel` **enregistrées**.
 * Zéro secret. Zéro bump, zéro publication.
 
+=== Correctif CI (run `38310466715` rouge — 1 échec unit)
+
+`RevealJsDeckHtmlTest > injectDataSlideAudio …` : ma fixture de test mettait
+`<section>…</section>` **sur une même ligne**, alors que l'injection d'audio
+(logique héritée `injectDataSlideAudio`) n'agit que sur une ligne d'**ouverture
+`<section`** sans `</section>`. Decks réels reveal.js = sections multi-lignes.
+Fixtures corrigées (unit + BDD). Leçon : reproduire le **format réel** du deck
+dans les fixtures, pas une forme compacte.
+
 == Décisions clés
 
 [cols="1,4", options="header"]
