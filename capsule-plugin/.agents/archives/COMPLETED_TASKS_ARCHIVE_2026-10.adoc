@@ -1,6 +1,17 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 187 — `CAP-ENGINE-DECOUPLING` US-3 ✅ (port `SegmentSource` + adapter speaker-notes)
+
+* Port neutre `capsule.kernel.SegmentSource` (`segments(source: File): List<VideoSegment>`).
+* Adapter `capsule.adapter.revealjs` : `RevealJsSpeakerNoteParser` + `RevealJsScriptContract`
+  + `RevealJsSpeakerNoteSource`.
+* Compat `capsule.feed` par délégation (`AsciidocSpeakerNoteParser`/`CapsuleScriptWriter`/
+  `CapsuleScriptReader`).
+* Tests : +8 unit + BDD `@segment-source` (runner **43e** `cucumberTestSegmentSource`).
+* Gates locaux (Local = Build) : compiles ×3 + `assemble` + `validatePlugins` VERTS.
+  Zéro bump, zéro publication, zéro secret. Rapport `.agents/sessions/187-cap-engine-decoupling-us3.adoc`.
+
 == Session 186 — `CAP-ENGINE-DECOUPLING` US-2 ✅ (port `VideoEngine` + adapter reveal.js)
 
 * Port neutre `capsule.kernel.VideoEngine` + `VideoRenderRequest`/`VideoRenderResult`.

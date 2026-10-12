@@ -1,5 +1,6 @@
 package capsule.feed
 
+import capsule.adapter.revealjs.RevealJsScriptContract
 import capsule.kernel.VideoKind
 import capsule.kernel.VideoScript
 import capsule.kernel.VideoSegment
@@ -71,122 +72,23 @@ val VideoScript.deckName: String get() = name
  */
 object CapsuleScriptWriter {
 
-    fun write(script: VideoScript): String {
-        require(script.segments.isNotEmpty()) { "VideoScript.segments must not be empty" }
-        val sb = StringBuilder()
-        sb.append("=== CAPSULE SCRIPT : ${script.name} ===")
-        sb.append("\n")
-        script.segments.forEach { seg ->
-            sb.append("\n")
-            val decoratedTitle = decorateTitle(seg)
-            sb.append("--- SLIDE ${seg.index} : $decoratedTitle ---\n")
-            sb.append(seg.narration.trim())
-            sb.append("\n")
-        }
-        return sb.toString().trimEnd() + "\n"
-    }
-
-    private fun decorateTitle(seg: VideoSegment): String {
-        val base = seg.title.trim()
-        return when (seg.kind) {
-            VideoKind.ANIMATION -> {
-                val scene = seg.scene
-                if (scene.isNullOrBlank()) base else "$base [manim:$scene]"
-            }
-            VideoKind.VISUAL -> base
-        }
-    }
+    /**
+     * Serializes [script] into the `-script.txt` contract.
+     *
+     * **Legacy compat surface** (CAP-ENGINE-DECOUPLING US-3): delegates to
+     * [RevealJsScriptContract] so existing call-sites keep working.
+     */
+    fun write(script: VideoScript): String = RevealJsScriptContract.write(script)
 }
 
 /**
  * Parses a `*-script.txt` file (the plain-text contract produced by [CapsuleScriptWriter])
  * back into a [VideoScript] production model.
  *
- * Round-trip idempotent with [CapsuleScriptWriter.write] : `read(write(script))` preserves
- * `name`, `segments` ordering, `index`, `title` (markers stripped), `narration`,
- * `kind` and `scene`.
- *
- * Contract parsed:
- * ```
- * === CAPSULE SCRIPT : <name> ===
- *
- * --- SLIDE <n> : <title> [markers] ---
- * <narration>
- * ```
- * Markers supported in the title: `[manim:SceneName]` (→ [VideoKind.ANIMATION] + `scene`),
- * `[html]` (→ [VideoKind.VISUAL]). When no marker is present, defaults to [VideoKind.VISUAL].
+ * **Legacy compat surface** (CAP-ENGINE-DECOUPLING US-3): delegates to
+ * [RevealJsScriptContract] so existing call-sites keep working.
  */
 object CapsuleScriptReader {
 
-    private val manimMarkerRegex = Regex("""\[manim:(\w+)]""")
-    private val htmlMarker = "[html]"
-
-    fun read(file: File): VideoScript {
-        val lines = file.readLines()
-        val header = lines.firstOrNull()?.trim().orEmpty()
-        val name = if (header.startsWith("=== CAPSULE SCRIPT : ") && header.endsWith(" ===")) {
-            header.removePrefix("=== CAPSULE SCRIPT : ")
-                .removeSuffix(" ===")
-                .trim()
-                .ifBlank { null }
-        } else null
-        val resolvedName: String = name ?: file.nameWithoutExtension
-
-        val segments = mutableListOf<VideoSegment>()
-        var currentIndex = -1
-        var currentTitle = ""
-        var currentKind = VideoKind.VISUAL
-        var currentScene: String? = null
-        val noteLines = mutableListOf<String>()
-
-        val startIdx = if (header.startsWith("=== CAPSULE SCRIPT : ")) 1 else 0
-        for (i in startIdx until lines.size) {
-            val line = lines[i]
-            when {
-                line.startsWith("--- SLIDE ") && line.contains(":") -> {
-                    flushSegment(segments, currentIndex, currentTitle, currentKind, currentScene, noteLines)
-                    val parts = line.removeSurrounding("--- SLIDE ", " ---")
-                    val colonIdx = parts.indexOf(":")
-                    currentIndex = parts.substring(0, colonIdx).trim()
-                        .toIntOrNull() ?: (segments.size + 1)
-                    val rawTitle = parts.substring(colonIdx + 1).trim()
-                    val manimMatch = manimMarkerRegex.find(rawTitle)
-                    currentKind = if (manimMatch != null) VideoKind.ANIMATION else VideoKind.VISUAL
-                    currentScene = manimMatch?.groupValues?.get(1)
-                    currentTitle = rawTitle
-                        .replace(manimMarkerRegex, "")
-                        .replace(htmlMarker, "")
-                        .trim()
-                }
-                line.isNotBlank() && currentIndex >= 0 -> noteLines.add(line)
-            }
-        }
-
-        flushSegment(segments, currentIndex, currentTitle, currentKind, currentScene, noteLines)
-
-        return VideoScript(name = resolvedName, segments = segments)
-    }
-
-    private fun flushSegment(
-        sink: MutableList<VideoSegment>,
-        index: Int,
-        title: String,
-        kind: VideoKind,
-        scene: String?,
-        noteLines: MutableList<String>,
-    ) {
-        if (index < 0 || title.isBlank() || noteLines.isEmpty()) return
-        val note = noteLines.joinToString("\n").trim()
-        if (note.isBlank()) return
-        sink.add(
-            VideoSegment(
-                index = index,
-                title = title,
-                narration = note,
-                kind = kind,
-                scene = scene,
-            )
-        )
-        noteLines.clear()
-    }
+    fun read(file: File): VideoScript = RevealJsScriptContract.read(file)
 }

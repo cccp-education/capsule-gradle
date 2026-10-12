@@ -322,6 +322,17 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleEngineAdapterCucumberRunner",
             timeoutMinutes = 10,
         ),
+        // CAP-ENGINE-DECOUPLING US-3 — SegmentSource port + reveal.js speaker-note
+        // adapter (AsciiDoc parsing + -script.txt contract).
+        // Dedicated runner pattern S-082; steps prefixed "source"/"deck"/"reveal contract".
+        // Pure domain — no Gradle/FFmpeg/Playwright.
+        CucumberTaskSpec(
+            name = "cucumberTestSegmentSource",
+            features = listOf("src/test/features/capsule_segment_source.feature"),
+            tags = listOf("@segment-source"),
+            runnerClass = "capsule.scenarios.CapsuleSegmentSourceCucumberRunner",
+            timeoutMinutes = 10,
+        ),
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task

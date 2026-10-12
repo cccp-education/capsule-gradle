@@ -1,0 +1,79 @@
+= Session 187 — CAP-ENGINE-DECOUPLING US-3 (port `SegmentSource` + adapter speaker-notes reveal.js)
+:session: 187
+:date: 2026-10-12
+:type: refactor+test (extraction source, additif)
+:borough: Détroit / capsule-gradle
+:toc:
+
+== Objectif
+
+Livrer **US-3** de l'EPIC `CAP-ENGINE-DECOUPLING` : extraire le **parser
+speaker-notes** AsciiDoc reveal.js et le **contrat `-script.txt`** vers
+`capsule.adapter.revealjs`, derrière le **port neutre**
+`capsule.kernel.SegmentSource`. Additif, backward-compat.
+
+== Méthode
+
+Baby-step DDD/TDD/BDD strict (unit → fonctionnel → cucumber). **Local = Build /
+Tests = CI** (compiles ×3 + `assemble` + `validatePlugins` uniquement en local).
+
+== Livrables
+
+=== Port neutre `capsule.kernel.SegmentSource` (créé)
+
+`interface SegmentSource { fun name(): String; fun segments(source: File): List<VideoSegment> }`
+— le noyau ne connaît ni AsciiDoc, ni reveal, ni `<section>` : une source produit
+des `VideoSegment`.
+
+=== Adapter `capsule.adapter.revealjs` (créé)
+
+[cols="1,3", options="header"]
+|===
+| Fichier | Rôle
+| `RevealJsSpeakerNoteParser.kt` | **Pur** : parse un deck AsciiDoc (`== Title` + bloc `[NOTE.speaker]`) → `VideoScript` (segments réindexés 1..n, slides sans note ignorées).
+| `RevealJsScriptContract.kt` | **Pur** : contrat `-script.txt` — `write(VideoScript): String` (marqueurs `[manim:Scene]`/`[html]`) + `read(File): VideoScript` (round-trip idempotent).
+| `RevealJsSpeakerNoteSource.kt` | Implémente `SegmentSource` : `segments(File)` délègue au parser (nom de fichier → `name`).
+|===
+
+=== Compatibilité (délégation)
+
+* `capsule.feed.AsciidocSpeakerNoteParser.parse` → `RevealJsSpeakerNoteParser.parse`.
+* `capsule.feed.CapsuleScriptWriter.write` → `RevealJsScriptContract.write`.
+* `capsule.feed.CapsuleScriptReader.read` → `RevealJsScriptContract.read`.
+* Signatures conservées : **zéro rupture** des call-sites (tasks, tests).
+
+=== Tests (nouveaux)
+
+[cols="2,1", options="header"]
+|===
+| Test | Scénarios
+| `capsule/adapter/revealjs/RevealJsSpeakerNoteSourceTest.kt` | 5 (1 segment/slide narrée + réindex, slide silencieuse ignorée, nom stable, deck vide, nom blanc rejeté)
+| `capsule/adapter/revealjs/RevealJsScriptContractTest.kt` | 3 (round-trip name/kind/scene, write rejette vide, fallback nom de fichier)
+| `capsule_segment_source.feature` + `CapsuleSegmentSourceSteps` + `CapsuleSegmentSourceCucumberRunner` | 3 scénarios `@segment-source` (runner dédié **43e** `cucumberTestSegmentSource`, S-082/S-088)
+|===
+
+== Gates locaux (Local = Build)
+
+* `compileKotlin` / `compileTestKotlin` / `compileFunctionalTestKotlin` **VERTS**.
+* `assemble` + `validatePlugins` **VERTS**.
+* Tâche `cucumberTestSegmentSource` **enregistrée**. Zéro secret. Zéro bump.
+
+== Décisions clés
+
+[cols="1,4", options="header"]
+|===
+| # | Décision
+| D-187-1 | Port `SegmentSource` **neutre** (`source → List<VideoSegment>`) dans `capsule.kernel`.
+| D-187-2 | Adapter reveal.js : `RevealJsSpeakerNoteParser` + `RevealJsScriptContract` + `RevealJsSpeakerNoteSource` (le vocabulaire reveal/AsciiDoc reste confiné).
+| D-187-3 | Compatibilité par **délégation** (`capsule.feed`) — API publique/test préservée.
+| D-187-4 | Le contrat `-script.txt` (marqueurs `[manim:]`/`[html]`) = I/O reveal ; le noyau ne voit que `VideoKind`.
+|===
+
+== Suite
+
+* US-4 : isoler `capsule.kernel` + **garde d'architecture** (test frontière) — `capsule.kernel` ne doit importer ni reveal/AsciiDoc/Playwright/Gradle.
+* US-5 : extraction N1 `video-kernel` (accord pilote).
+
+== Statut
+
+`CAP-ENGINE-DECOUPLING` **US-3 ✅ S-187** (US-0 ✅ S-184, US-1 ✅ S-185, US-2 ✅ S-186 ; US-4→5 🟡 À FAIRE).
