@@ -47,7 +47,7 @@ class ParallelCaptureTimeoutSteps {
         t.capsuleExtension = ext
         task = t
         script = CapsuleScript(
-            deckName = "parallel-deck",
+            name = "parallel-deck",
             segments = (1..slideCount).map { SlideSegment(it, "Slide $it", "Note $it") }
         )
 

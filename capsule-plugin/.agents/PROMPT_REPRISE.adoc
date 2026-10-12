@@ -1,45 +1,47 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 185
+:session: 186
 :borough: Détroit
-:session_precedente: 184 — cadrage EPIC CAP-ENGINE-DECOUPLING (découplage métier/moteur + mutualisation)
+:session_precedente: 185 — CAP-ENGINE-DECOUPLING US-1 (modèle neutre + alias additif) ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`.
 
 == Contexte Hérité
 
-=== S-184 — EPIC CAP-ENGINE-DECOUPLING cadré (gouvernance pure, zéro code)
+=== S-185 — CAP-ENGINE-DECOUPLING US-1 ✅ (modèle neutre, additif)
 
-- Review code des deux boroughs : **capsule 190 fichiers / 31 tâches** vs
-  **hyperframes 16 fichiers / 3 tâches** ; écart outillage ~10:1.
-- Constat clé : `CapsuleVideoTask.kt` (1248 l.) = point chaud (noyau + adapter reveal.js mêlés).
-- **Reclassification du « non-transférable »** : presque tout est **récupérable** ;
-  couplage slider limité à la capture reveal.js / parser speaker-notes / swap Manim /
-  champs deck du contrat N3.
-- Décisions : modèle neutre `VideoSegment`/`VideoScript`/`VideoProductionEntry`,
-  ports `SegmentSource` + `VideoEngine`, package `capsule.kernel`, adapter
-  `capsule.adapter.revealjs`, cible N1 `video-kernel` (**pas N0**, cf. S-162).
-- **Décision pilote** : ne pas attendre le seuil « factoriser à 3 ».
-- Docs : `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`. Côté Watts :
-  `hyperframes-plugin/.agents/CADRAGE_EPIC_HF_KERNEL_ADAPTER.adoc`.
+- Noyau neutre créé `capsule.kernel` : `VideoKind`, `VideoSegment`, `VideoScript`,
+  `VisualSource`/`FileVisualSource`, `VideoProductionEntry`, `VideoProductionPlan`.
+- Alias additifs : `SlideSegment`/`CapsuleScript` (feed),
+  `CapsuleVideoEntry`/`CapsuleVideoPlan` (multilang) + accesseurs legacy
+  (`speakerNote`/`manimScene`/`type`/`deckName`/`deckFile`).
+- `SlideType` (HTML/MANIM) **conservé** (sérialisation storyboard viral + marqueurs
+  `-script.txt`) + mapping `SlideType ↔ VideoKind`.
+- Constructions migrées vers le vocabulaire neutre ; lectures couvertes par compat.
+- Tests : +20 unit (kernel + mapping) + BDD `@kernel-model` (runner dédié 41e
+  `cucumberTestKernelModel`). Compiles + `assemble` + `validatePlugins` VERTS.
+- Zéro bump, zéro publication, zéro secret.
 
-== Mission Session 185 — CAP-ENGINE-DECOUPLING US-1
+== Mission Session 186 — CAP-ENGINE-DECOUPLING US-2
 
-Introduire le **modèle neutre** (additif, backward-compat) :
-`VideoSegment` / `VideoScript` / `VideoProductionEntry` + `typealias` de compatibilité
-(`SlideSegment = VideoSegment`, etc.). Zéro rupture 0.0.10. Baby-step DDD/TDD strict.
+Extraire le port `VideoEngine` + adapter `RevealJsEngineAdapter` : déplacer la
+capture Playwright (`PlaywrightManager`, `HtmlSectionParser`, `createSingleSlideHtml`,
+`CaptureResolver`) hors de `CapsuleVideoTask.kt` (1248 l.) vers
+`capsule.adapter.revealjs`, derrière le port neutre `capsule.kernel.VideoEngine`.
+Additif, backward-compat. Baby-step DDD/TDD/BDD strict (unit → fonctionnel → cucumber).
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
 * **Règle 6 — ZÉRO secret** dans le code, les logs, les tests.
-* Additif + `typealias` : ne pas casser le plugin mature (917 unit + 60 functional + 22 runners).
+* **Règle 7 — capsule consomme slider** sans modifier le deck source.
 * Le noyau parle `segment`/`visual`/`engine` — **jamais** `slide`/`deck`/`reveal`/`Playwright`.
+* Ne pas casser le plugin mature (917 unit + 60 functional + 41 runners Cucumber).
 * **English only** code/Gherkin (`OssVocabularyGuardTest`) ; **zéro Python** ;
-  baby-step DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
+  runner dédié par feature (S-082), steps préfixés (S-088).
 * Catalogue **interne** aligné BOM `0.0.86`.
 
 == Rappels
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.10** (Central).
 * MEMPHIS BOM/catalog **0.0.86**. Tous les EPICs antérieurs sont clos/caduques.
-* **CAP-ENGINE-DECOUPLING** 🟡 EN COURS (US-0 ✅ S-184 ; US-1→5 À FAIRE).
+* **CAP-ENGINE-DECOUPLING** 🟡 EN COURS (US-0 ✅ S-184 ; **US-1 ✅ S-185** ; US-2→5 À FAIRE).

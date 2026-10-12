@@ -300,6 +300,17 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleRemotionAnimCucumberRunner",
             timeoutMinutes = 15,
         ),
+        // CAP-ENGINE-DECOUPLING US-1 — engine-neutral video model (VideoSegment /
+        // VideoScript / VideoProductionEntry) and the legacy↔neutral bridge.
+        // Dedicated runner pattern S-082; steps prefixed "kernel"/"legacy" (S-088).
+        // Pure domain — no Gradle/FFmpeg/Playwright.
+        CucumberTaskSpec(
+            name = "cucumberTestKernelModel",
+            features = listOf("src/test/features/capsule_kernel_model.feature"),
+            tags = listOf("@kernel-model"),
+            runnerClass = "capsule.scenarios.CapsuleKernelModelCucumberRunner",
+            timeoutMinutes = 10,
+        ),
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task

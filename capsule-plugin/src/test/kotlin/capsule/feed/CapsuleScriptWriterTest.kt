@@ -1,5 +1,6 @@
 package capsule.feed
 
+import capsule.kernel.VideoKind
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -8,8 +9,8 @@ class CapsuleScriptWriterTest {
     @Test
     fun `write should produce header with deck name`() {
         val script = CapsuleScript(
-            deckName = "kotlin-intro",
-            segments = listOf(SlideSegment(index = 1, title = "Intro", speakerNote = "Welcome.")),
+            name = "kotlin-intro",
+            segments = listOf(SlideSegment(index = 1, title = "Intro", narration = "Welcome.")),
         )
 
         val out = CapsuleScriptWriter.write(script)
@@ -20,10 +21,10 @@ class CapsuleScriptWriterTest {
     @Test
     fun `write should emit one segment block per slide`() {
         val script = CapsuleScript(
-            deckName = "deck",
+            name = "deck",
             segments = listOf(
-                SlideSegment(index = 1, title = "Intro", speakerNote = "Welcome."),
-                SlideSegment(index = 2, title = "Topic", speakerNote = "Details."),
+                SlideSegment(index = 1, title = "Intro", narration = "Welcome."),
+                SlideSegment(index = 2, title = "Topic", narration = "Details."),
             ),
         )
 
@@ -37,8 +38,8 @@ class CapsuleScriptWriterTest {
     @Test
     fun `write should put speaker note on the line after the slide header`() {
         val script = CapsuleScript(
-            deckName = "deck",
-            segments = listOf(SlideSegment(index = 1, title = "Intro", speakerNote = "Welcome.")),
+            name = "deck",
+            segments = listOf(SlideSegment(index = 1, title = "Intro", narration = "Welcome.")),
         )
 
         val out = CapsuleScriptWriter.write(script)
@@ -52,10 +53,10 @@ class CapsuleScriptWriterTest {
     @Test
     fun `write should separate segments with a blank line`() {
         val script = CapsuleScript(
-            deckName = "deck",
+            name = "deck",
             segments = listOf(
-                SlideSegment(index = 1, title = "Intro", speakerNote = "Welcome."),
-                SlideSegment(index = 2, title = "Topic", speakerNote = "Details."),
+                SlideSegment(index = 1, title = "Intro", narration = "Welcome."),
+                SlideSegment(index = 2, title = "Topic", narration = "Details."),
             ),
         )
 
@@ -71,8 +72,8 @@ class CapsuleScriptWriterTest {
     @Test
     fun `write should emit a blank line after the header`() {
         val script = CapsuleScript(
-            deckName = "deck",
-            segments = listOf(SlideSegment(index = 1, title = "Intro", speakerNote = "Welcome.")),
+            name = "deck",
+            segments = listOf(SlideSegment(index = 1, title = "Intro", narration = "Welcome.")),
         )
 
         val out = CapsuleScriptWriter.write(script)
@@ -85,8 +86,8 @@ class CapsuleScriptWriterTest {
     @Test
     fun `write should trim trailing whitespace from speaker notes`() {
         val script = CapsuleScript(
-            deckName = "deck",
-            segments = listOf(SlideSegment(index = 1, title = "Intro", speakerNote = "  Welcome.  ")),
+            name = "deck",
+            segments = listOf(SlideSegment(index = 1, title = "Intro", narration = "  Welcome.  ")),
         )
 
         val out = CapsuleScriptWriter.write(script)
@@ -97,9 +98,9 @@ class CapsuleScriptWriterTest {
     @Test
     fun `write should preserve multi-line speaker notes`() {
         val script = CapsuleScript(
-            deckName = "deck",
+            name = "deck",
             segments = listOf(
-                SlideSegment(index = 1, title = "Intro", speakerNote = "Line one.\nLine two."),
+                SlideSegment(index = 1, title = "Intro", narration = "Line one.\nLine two."),
             ),
         )
 
@@ -112,8 +113,8 @@ class CapsuleScriptWriterTest {
     fun `CapsuleScript should reject blank deck name at construction`() {
         try {
             CapsuleScript(
-                deckName = "",
-                segments = listOf(SlideSegment(index = 1, title = "Intro", speakerNote = "Note.")),
+                name = "",
+                segments = listOf(SlideSegment(index = 1, title = "Intro", narration = "Note.")),
             )
             error("Expected IllegalArgumentException")
         } catch (e: IllegalArgumentException) {
@@ -123,7 +124,7 @@ class CapsuleScriptWriterTest {
 
     @Test
     fun `write should reject empty segments`() {
-        val script = CapsuleScript(deckName = "deck", segments = emptyList())
+        val script = CapsuleScript(name = "deck", segments = emptyList())
 
         try {
             CapsuleScriptWriter.write(script)
@@ -136,7 +137,7 @@ class CapsuleScriptWriterTest {
     @Test
     fun `SlideSegment should reject blank title at construction`() {
         try {
-            SlideSegment(index = 1, title = "   ", speakerNote = "Note.")
+            SlideSegment(index = 1, title = "   ", narration = "Note.")
             error("Expected IllegalArgumentException")
         } catch (e: IllegalArgumentException) {
             assertThat(e.message).contains("title")
@@ -146,7 +147,7 @@ class CapsuleScriptWriterTest {
     @Test
     fun `SlideSegment should reject blank speaker note at construction`() {
         try {
-            SlideSegment(index = 1, title = "Intro", speakerNote = "  ")
+            SlideSegment(index = 1, title = "Intro", narration = "  ")
             error("Expected IllegalArgumentException")
         } catch (e: IllegalArgumentException) {
             assertThat(e.message).contains("speakerNote")
@@ -156,9 +157,9 @@ class CapsuleScriptWriterTest {
     @Test
     fun `CapsuleScript should preserve explicit segment indices`() {
         val script = CapsuleScript(
-            deckName = "deck",
+            name = "deck",
             segments = listOf(
-                SlideSegment(index = 7, title = "Intro", speakerNote = "Note."),
+                SlideSegment(index = 7, title = "Intro", narration = "Note."),
             ),
         )
 
@@ -168,14 +169,14 @@ class CapsuleScriptWriterTest {
     @Test
     fun `write should emit manim marker when slide type is MANIM`() {
         val script = CapsuleScript(
-            deckName = "deck",
+            name = "deck",
             segments = listOf(
                 SlideSegment(
                     index = 1,
                     title = "Animation",
-                    speakerNote = "Watch.",
-                    type = SlideType.MANIM,
-                    manimScene = "MoveSquare",
+                    narration = "Watch.",
+                    kind = VideoKind.ANIMATION,
+                    scene = "MoveSquare",
                 ),
             ),
         )
@@ -188,9 +189,9 @@ class CapsuleScriptWriterTest {
     @Test
     fun `write should not emit manim marker when slide type is HTML`() {
         val script = CapsuleScript(
-            deckName = "deck",
+            name = "deck",
             segments = listOf(
-                SlideSegment(index = 1, title = "Intro", speakerNote = "Note.", type = SlideType.HTML),
+                SlideSegment(index = 1, title = "Intro", narration = "Note.", kind = VideoKind.VISUAL),
             ),
         )
 

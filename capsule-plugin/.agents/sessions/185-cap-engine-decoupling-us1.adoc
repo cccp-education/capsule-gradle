@@ -1,0 +1,115 @@
+= Session 185 — CAP-ENGINE-DECOUPLING US-1 (modèle neutre + alias additif)
+:session: 185
+:date: 2026-10-12
+:type: feat+test (refactor de modèle, additif)
+:borough: Détroit / capsule-gradle
+:toc:
+
+== Objectif
+
+Livrer **US-1** de l'EPIC `CAP-ENGINE-DECOUPLING` : introduire le **modèle neutre**
+engine-agnostique (`VideoSegment` / `VideoScript` / `VideoProductionEntry`) dans le
+package `capsule.kernel`, avec **alias additifs** de compatibilité, sans casser le
+plugin mature (0.0.10, CI verte).
+
+== Méthode
+
+Baby-step DDD/TDD/BDD strict (unit → fonctionnel → cucumber), **Local = Build /
+Tests = CI** : seuls `compile*` / `assemble` / `validatePlugins` exécutés localement ;
+les tests sont prouvés par la CI du push. **Zéro Python**, **English only**.
+
+== Ligne rouge respectée — `capsule.kernel`
+
+Le noyau ne parle **que** `segment` / `visual` / `kind` / `scene` / `engine` :
+aucun `slide`, `deck`, `reveal`, `Playwright`. Le vocabulaire de rendu reste dans
+les packages de compatibilité (`capsule.feed`, `capsule.multilang`).
+
+== Livrables
+
+=== Noyau neutre (créé — `capsule.kernel`)
+
+[cols="1,3", options="header"]
+|===
+| Fichier | Rôle
+
+| `VideoKind.kt` | enum neutre `VISUAL` / `ANIMATION` (remplace le vocabulaire de rendu)
+| `VideoSegment.kt` | data class `index / title / narration / kind / scene` + invariants fail-fast
+| `VideoScript.kt` | agrégat `name / segments` + `isEmpty`
+| `VisualSource.kt` | `interface VisualSource { val file: File }` + `FileVisualSource`
+| `VideoProductionEntry.kt` | `visual / scriptFile / language / outputVideo` + invariants
+| `VideoProductionPlan.kt` | plan multi-langue `entries` + `size` / `isEmpty` / `languages`
+|===
+
+=== Alias additifs de compatibilité
+
+* `capsule.feed` : `typealias SlideSegment = VideoSegment`,
+  `typealias CapsuleScript = VideoScript`, mappings `SlideType.toVideoKind()` /
+  `VideoKind.toSlideType()`, accesseurs legacy `VideoSegment.type`,
+  `VideoScript.deckName`.
+* `capsule.multilang` : `typealias CapsuleVideoEntry = VideoProductionEntry`,
+  `typealias CapsuleVideoPlan = VideoProductionPlan`, accesseur legacy
+  `VideoProductionEntry.deckFile`.
+* Accesseurs legacy membres `VideoSegment.speakerNote` / `.manimScene`
+  (`@Deprecated`, `ReplaceWith`).
+
+=== Migration interne (sites de construction)
+
+* Les *lectures* restent couvertes par les accesseurs de compatibilité (zéro
+  changement sémantique).
+* Les *constructions* migrent vers le vocabulaire neutre : `speakerNote =` →
+  `narration =`, `type = SlideType.X` → `kind = VideoKind.Y`, `manimScene =` →
+  `scene =`, `CapsuleScript(deckName =)` → `name =`,
+  `CapsuleVideoEntry(deckFile =)` → `visual = FileVisualSource(...)`.
+* **Décision d'implémentation** : `SlideType` (HTML/MANIM) est **conservé** car il
+  reste la **vocabulaire de sérialisation** du storyboard viral
+  (`capsule.viral.StoryboardBeat`) et des marqueurs `-script.txt`
+  (`[manim:Scene]`). Le mapping `SlideType ↔ VideoKind` fait le pont — éviter un
+  renommage massif des features BDD et du format AsciiDoc storyboard.
+* Imports d'extension legacy (`capsule.feed.type`, `capsule.feed.deckName`,
+  `capsule.multilang.deckFile`) ajoutés aux appelants ; imports `SlideType`
+  devenus inutiles supprimés (ktlint `no-unused-imports`).
+
+=== Tests (nouveaux)
+
+[cols="2,1", options="header"]
+|===
+| Test | Scénarios
+
+| `capsule/kernel/VideoSegmentTest.kt` | 5 (défauts, animation+scene, invariants, accesseurs legacy)
+| `capsule/kernel/VideoScriptTest.kt` | 4 (name/segments, isEmpty, invariant, deckName legacy)
+| `capsule/kernel/VideoProductionEntryTest.kt` | 5 (binding, visual/script manquants, langue hors catalogue, deckFile legacy)
+| `capsule/kernel/VideoProductionPlanTest.kt` | 2 (size/languages, plan vide)
+| `capsule/feed/SlideTypeMappingTest.kt` | 4 (HTML→VISUAL, MANIM→ANIMATION, round-trip, pont typealias)
+| `capsule_kernel_model.feature` + `CapsuleKernelModelSteps` + `CapsuleKernelModelCucumberRunner` | 5 scénarios `@kernel-model` (runner dédié **41e** `cucumberTestKernelModel`, pattern S-082, steps préfixés S-088)
+|===
+
+== Gates locaux (Local = Build)
+
+* `compileKotlin` / `compileTestKotlin` / `compileFunctionalTestKotlin` **VERTS**.
+* `assemble` + `validatePlugins` **VERTS**.
+* Tâche `cucumberTestKernelModel` **enregistrée** (vérifiée via `tasks --all`).
+* Zéro secret (`grep` = 0). Zéro bump, zéro publication.
+
+== Décisions clés
+
+[cols="1,4", options="header"]
+|===
+| # | Décision
+| D-185-1 | Noyau `capsule.kernel` = vocabulaire **purement** neutre (segment/visual/kind/scene).
+| D-185-2 | Compatibilité par `typealias` + accesseurs legacy (additif, zéro rupture 0.0.10).
+| D-185-3 | `SlideType` conservé (vocabulaire de sérialisation viral) + mapping `↔ VideoKind`.
+| D-185-4 | `VideoProductionEntry.visual: VisualSource` (abstraction moteur) + `deckFile` legacy.
+| D-185-5 | Aucune publication ni bump (US purement interne au modèle).
+|===
+
+== Suite
+
+* US-2 : port `VideoEngine` + adapter `RevealJsEngineAdapter` (extraire Playwright de `CapsuleVideoTask` 1248 l.).
+* US-3 : port `SegmentSource` + `RevealJsSpeakerNoteSource`.
+* US-4 : isoler `capsule.kernel` + **garde d'architecture** (test frontière).
+* US-5 : extraction N1 `video-kernel` (accord pilote).
+
+== Statut
+
+`CAP-ENGINE-DECOUPLING` **US-1 ✅ S-185** (US-0 ✅ S-184 ; US-2→5 🟡 À FAIRE).
+Plugin inchangé côté contrat externe ; refactor additif du modèle.

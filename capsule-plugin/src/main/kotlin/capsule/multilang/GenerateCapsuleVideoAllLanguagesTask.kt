@@ -4,6 +4,7 @@ import capsule.CapsuleManager
 import capsule.CapsuleVideoTask
 import capsule.MediaProbeUtil
 import capsule.feed.CapsuleScriptReader
+import capsule.feed.deckName
 import contracts.i18n.LanguageCatalog
 import contracts.i18n.SupportedLanguage
 import org.gradle.api.tasks.TaskAction

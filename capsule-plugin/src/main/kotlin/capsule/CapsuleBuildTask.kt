@@ -1,6 +1,7 @@
 package capsule
 
 import capsule.feed.CapsuleScriptReader
+import capsule.feed.deckName
 import capsule.multilang.MultiLanguageResolver
 import capsule.voice.PronunciationLexicon
 import org.gradle.api.DefaultTask

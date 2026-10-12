@@ -28,7 +28,7 @@ class CapsuleQcBoardsSteps {
 
     @Given("a QC deck slide {int} titled {string} saying {string}")
     fun aQcDeckSlide(index: Int, title: String, note: String) {
-        slides.add(SlideSegment(index = index, title = title, speakerNote = note))
+        slides.add(SlideSegment(index = index, title = title, narration = note))
     }
 
     @When("the beats board is planned")

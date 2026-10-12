@@ -5,6 +5,9 @@ import capsule.feed.CapsuleScriptReader
 import capsule.feed.CapsuleScriptWriter
 import capsule.feed.SlideSegment
 import capsule.feed.SlideType
+import capsule.feed.deckName
+import capsule.feed.type
+import capsule.kernel.VideoKind
 import io.cucumber.datatable.DataTable
 import io.cucumber.java.en.And
 import io.cucumber.java.en.Given
@@ -28,17 +31,17 @@ class ConsolidatedCapsuleModelSteps {
             val title = row["title"] ?: error("Missing title at row $i")
             val speakerNote = row["speakerNote"] ?: error("Missing speakerNote at row $i")
             val typeRaw = row["type"]?.trim()?.uppercase()
-            val type = if (typeRaw == "MANIM") SlideType.MANIM else SlideType.HTML
-            val manimScene = row["manimScene"]?.takeIf { it.isNotBlank() }
+            val kind = if (typeRaw == "MANIM") VideoKind.ANIMATION else VideoKind.VISUAL
+            val scene = row["manimScene"]?.takeIf { it.isNotBlank() }
             SlideSegment(
                 index = index,
                 title = title,
-                speakerNote = speakerNote,
-                type = type,
-                manimScene = manimScene,
+                narration = speakerNote,
+                kind = kind,
+                scene = scene,
             )
         }
-        script = CapsuleScript(deckName = deckName, segments = segments)
+        script = CapsuleScript(name = deckName, segments = segments)
     }
 
     @Given("a raw script file {string} with content")

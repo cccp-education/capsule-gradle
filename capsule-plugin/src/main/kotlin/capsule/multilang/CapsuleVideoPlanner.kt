@@ -1,5 +1,6 @@
 package capsule.multilang
 
+import capsule.kernel.FileVisualSource
 import contracts.i18n.SupportedLanguage
 import java.io.File
 
@@ -61,7 +62,7 @@ object CapsuleVideoPlanner {
                 val outputVideo = outputDir.resolve("${deckName}_${language.code}.webm")
                 entries.add(
                     CapsuleVideoEntry(
-                        deckFile = deckFile,
+                        visual = FileVisualSource(deckFile),
                         scriptFile = scriptFile,
                         language = language,
                         outputVideo = outputVideo,

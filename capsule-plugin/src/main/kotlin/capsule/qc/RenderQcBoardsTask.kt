@@ -3,6 +3,7 @@ package capsule.qc
 import capsule.CapsuleExtension
 import capsule.CapsuleManager
 import capsule.feed.CapsuleScriptReader
+import capsule.feed.deckName
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property

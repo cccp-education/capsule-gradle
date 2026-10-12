@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-12 (S-183) — cadrage EPIC KOOG-PIPELINE-DEDUP (verdict CADUQUE, gouvernance pure). Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-12 (S-185) — CAP-ENGINE-DECOUPLING US-1 (modèle neutre + alias additif). Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (126-184)
+== Sessions récentes (126-185)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 185 | 2026-10-12 | feat+test | **CAP-ENGINE-DECOUPLING US-1 ✅ — modèle neutre additif.** Noyau engine-agnostique `capsule.kernel` créé : `VideoKind` (`VISUAL`/`ANIMATION`), `VideoSegment` (`index/title/narration/kind/scene`), `VideoScript` (`name/segments`), `VisualSource`/`FileVisualSource`, `VideoProductionEntry` (`visual/scriptFile/language/outputVideo`), `VideoProductionPlan`. **Alias additifs** : `typealias SlideSegment = VideoSegment`, `CapsuleScript = VideoScript` (feed), `CapsuleVideoEntry = VideoProductionEntry`, `CapsuleVideoPlan = VideoProductionPlan` (multilang) + accesseurs legacy `@Deprecated` (`speakerNote`/`manimScene`/`type`/`deckName`/`deckFile`) + mappings `SlideType.toVideoKind()`/`VideoKind.toSlideType()`. **Décision** : `SlideType` (HTML/MANIM) conservé (vocabulaire de sérialisation du storyboard viral `capsule.viral.StoryboardBeat` + marqueurs `-script.txt`) — évite un renommage massif des features BDD et du format AsciiDoc. Constructions migrées (neutral) ; lectures couvertes par compat. Baby-step DDD/TDD/BDD : +20 unit (`VideoSegmentTest` 5, `VideoScriptTest` 4, `VideoProductionEntryTest` 5, `VideoProductionPlanTest` 2, `SlideTypeMappingTest` 4) + BDD `capsule_kernel_model.feature` `@kernel-model` (5 scénarios, runner dédié **41e** `cucumberTestKernelModel`, S-082, steps préfixés S-088). Gates locaux (Local = Build) : `compileKotlin`/`compileTestKotlin`/`compileFunctionalTestKotlin` + `assemble` + `validatePlugins` VERTS, tâche Cucumber enregistrée. Imports legacy (extension `type`/`deckName`/`deckFile`) + purge des imports `SlideType` devenus inutiles (ktlint). Zéro bump, zéro publication, zéro secret. | 9/10
 
 | 184 | 2026-10-12 | cadrage | **EPIC `CAP-ENGINE-DECOUPLING` cadré** (gouvernance pure, patron S-057/S-063). Découpler le **métier** vidéo du **moteur** reveal.js/slider + **préparer la mutualisation** avec `hyperframes-gradle` — décision pilote : **ne pas attendre le seuil « factoriser à 3 »**. Review code des deux boroughs : **capsule 190 fichiers / 20 domaines / 31 tâches** vs **hyperframes 16 / 3 / 3** (écart outillage ~10:1). Audit de la couture : `CapsuleVideoTask.kt` (**1248 l.**) = point chaud (noyau TTS/audio/sous-titres + adapter reveal.js `.reveal .slides section[data-audio]`/Playwright/`createSingleSlideHtml`/`HtmlSectionParser`/`ManimSlideReplacer`). **Reclassification du « non-transférable »** : presque tout est **récupérable** ; couplage slider limité à la capture reveal.js + parser speaker-notes + swap Manim + champs deck du contrat N3. 7 décisions (modèle neutre `VideoSegment`/`VideoScript`/`VideoProductionEntry` ; ports `SegmentSource` + `VideoEngine` ; package `capsule.kernel` + garde d'architecture ; adapter `capsule.adapter.revealjs` ; cible N1 `education.cccp:video-kernel` — **pas N0**, cf. S-162). Roadmap 6 US (US-0 ✅ → US-5). Doc `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`. Côté Watts : `.agents/CADRAGE_EPIC_HF_KERNEL_ADAPTER.adoc`. Zéro code, zéro bump, zéro secret. | 9/10
 

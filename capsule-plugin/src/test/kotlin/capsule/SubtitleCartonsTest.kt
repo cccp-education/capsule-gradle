@@ -127,7 +127,7 @@ class SubtitleCartonsTest {
 
     // ─── SubtitleTimingCalculator.calculateFromCartons ─────────────
 
-    private fun slide(index: Int, note: String) = SlideSegment(index = index, title = "s$index", speakerNote = note)
+    private fun slide(index: Int, note: String) = SlideSegment(index = index, title = "s$index", narration = note)
 
     @Test
     fun `one cue per carton with sequential indices`() {

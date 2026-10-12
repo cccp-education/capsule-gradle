@@ -1,7 +1,7 @@
 package capsule.transcript
 
 import capsule.feed.SlideSegment
-import capsule.feed.SlideType
+import capsule.kernel.VideoKind
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -22,13 +22,13 @@ class TranscriptPlanTest {
     private fun segment(
         index: Int = 1,
         title: String = "Introduction",
-        speakerNote: String = "Welcome to the capsule.",
-        type: SlideType = SlideType.HTML,
+        narrator: String = "Welcome to the capsule.",
+        kind: VideoKind = VideoKind.VISUAL,
     ): SlideSegment = SlideSegment(
         index = index,
         title = title,
-        speakerNote = speakerNote,
-        type = type,
+        narration = narrator,
+        kind = kind,
     )
 
     @Test

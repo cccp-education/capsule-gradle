@@ -3,6 +3,7 @@ package capsule.scenarios
 import capsule.feed.AsciidocSpeakerNoteParser
 import capsule.feed.CapsuleScript
 import capsule.feed.CapsuleScriptWriter
+import capsule.feed.deckName
 import io.cucumber.java.en.And
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then

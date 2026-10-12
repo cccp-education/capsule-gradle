@@ -2,7 +2,7 @@ package capsule
 
 import capsule.feed.CapsuleScript
 import capsule.feed.SlideSegment
-import capsule.feed.SlideType
+import capsule.kernel.VideoKind
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -53,8 +53,8 @@ class ComputeSlideDurationsWithManimTest {
         File(audioDir, "slide-01.mp3").writeText("fake mp3 not probed")
 
         val script = CapsuleScript("test", listOf(
-            SlideSegment(1, "Intro", "Note HTML", type = SlideType.HTML),
-            SlideSegment(2, "Anim", "Note Manim", type = SlideType.MANIM, manimScene = "Scene1")
+            SlideSegment(1, "Intro", "Note HTML", kind = VideoKind.VISUAL),
+            SlideSegment(2, "Anim", "Note Manim", kind = VideoKind.ANIMATION, scene = "Scene1")
         ))
 
         // Manim slide 2 has a muxed MP4 with duration 8.5 seconds
@@ -73,8 +73,8 @@ class ComputeSlideDurationsWithManimTest {
         val audioDir = File(tempDir, "audio2").also { it.mkdirs() }
 
         val script = CapsuleScript("test2", listOf(
-            SlideSegment(1, "Intro", "Note", type = SlideType.HTML),
-            SlideSegment(2, "Anim", "Note", type = SlideType.MANIM, manimScene = "Scene1")
+            SlideSegment(1, "Intro", "Note", kind = VideoKind.VISUAL),
+            SlideSegment(2, "Anim", "Note", kind = VideoKind.ANIMATION, scene = "Scene1")
         ))
 
         // Manim duration is 0.0 (probe failed)
@@ -90,10 +90,10 @@ class ComputeSlideDurationsWithManimTest {
         val audioDir = File(tempDir, "audio3").also { it.mkdirs() }
 
         val script = CapsuleScript("test3", listOf(
-            SlideSegment(1, "Intro", "Note", type = SlideType.HTML),
-            SlideSegment(2, "Anim1", "Note", type = SlideType.MANIM, manimScene = "Scene1"),
-            SlideSegment(3, "Anim2", "Note", type = SlideType.MANIM, manimScene = "Scene2"),
-            SlideSegment(4, "End", "Note", type = SlideType.HTML)
+            SlideSegment(1, "Intro", "Note", kind = VideoKind.VISUAL),
+            SlideSegment(2, "Anim1", "Note", kind = VideoKind.ANIMATION, scene = "Scene1"),
+            SlideSegment(3, "Anim2", "Note", kind = VideoKind.ANIMATION, scene = "Scene2"),
+            SlideSegment(4, "End", "Note", kind = VideoKind.VISUAL)
         ))
 
         val manimDurations = mapOf(2 to 12.0, 3 to 7.5)
@@ -111,8 +111,8 @@ class ComputeSlideDurationsWithManimTest {
         val audioDir = File(tempDir, "audio4").also { it.mkdirs() }
 
         val script = CapsuleScript("test4", listOf(
-            SlideSegment(1, "Intro", "Note", type = SlideType.MANIM, manimScene = "Scene1"),
-            SlideSegment(2, "End", "Note", type = SlideType.HTML)
+            SlideSegment(1, "Intro", "Note", kind = VideoKind.ANIMATION, scene = "Scene1"),
+            SlideSegment(2, "End", "Note", kind = VideoKind.VISUAL)
         ))
 
         val manimDurations = emptyMap<Int, Double>()

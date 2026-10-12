@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
  */
 class ContentPreflightTest {
 
-    private fun slide(index: Int, note: String) = SlideSegment(index = index, title = "s$index", speakerNote = note)
+    private fun slide(index: Int, note: String) = SlideSegment(index = index, title = "s$index", narration = note)
 
     @Test
     fun `clean slides yield no finding`() {

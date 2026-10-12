@@ -15,7 +15,7 @@ class SubtitleTimingCalculatorTest {
     @Test
     fun `calculate single slide starts at zero`() {
         val slides = listOf(
-            SlideSegment(index = 0, title = "Intro", speakerNote = "Hello")
+            SlideSegment(index = 0, title = "Intro", narration = "Hello")
         )
         val durations = listOf(5.0)
         val result = SubtitleTimingCalculator.calculate(slides, durations)
@@ -29,8 +29,8 @@ class SubtitleTimingCalculatorTest {
     @Test
     fun `calculate two slides accumulate start times`() {
         val slides = listOf(
-            SlideSegment(index = 0, title = "Slide 0", speakerNote = "First"),
-            SlideSegment(index = 1, title = "Slide 1", speakerNote = "Second")
+            SlideSegment(index = 0, title = "Slide 0", narration = "First"),
+            SlideSegment(index = 1, title = "Slide 1", narration = "Second")
         )
         val durations = listOf(3.0, 4.0)
         val result = SubtitleTimingCalculator.calculate(slides, durations)
@@ -44,9 +44,9 @@ class SubtitleTimingCalculatorTest {
     @Test
     fun `calculate three slides with varying durations`() {
         val slides = listOf(
-            SlideSegment(index = 0, title = "A", speakerNote = "a"),
-            SlideSegment(index = 1, title = "B", speakerNote = "b"),
-            SlideSegment(index = 2, title = "C", speakerNote = "c")
+            SlideSegment(index = 0, title = "A", narration = "a"),
+            SlideSegment(index = 1, title = "B", narration = "b"),
+            SlideSegment(index = 2, title = "C", narration = "c")
         )
         val durations = listOf(2.5, 6.0, 3.5)
         val result = SubtitleTimingCalculator.calculate(slides, durations)
@@ -62,7 +62,7 @@ class SubtitleTimingCalculatorTest {
     @Test
     fun `calculate uses slide index from SlideSegment`() {
         val slides = listOf(
-            SlideSegment(index = 5, title = "Fifth", speakerNote = "five")
+            SlideSegment(index = 5, title = "Fifth", narration = "five")
         )
         val durations = listOf(10.0)
         val result = SubtitleTimingCalculator.calculate(slides, durations)
@@ -72,7 +72,7 @@ class SubtitleTimingCalculatorTest {
     @Test
     fun `calculate uses speakerNote as subtitle text`() {
         val slides = listOf(
-            SlideSegment(index = 0, title = "Title", speakerNote = "Actual speaker note text")
+            SlideSegment(index = 0, title = "Title", narration = "Actual speaker note text")
         )
         val durations = listOf(3.0)
         val result = SubtitleTimingCalculator.calculate(slides, durations)
@@ -82,8 +82,8 @@ class SubtitleTimingCalculatorTest {
     @Test
     fun `calculate handles zero duration slides`() {
         val slides = listOf(
-            SlideSegment(index = 0, title = "A", speakerNote = "a"),
-            SlideSegment(index = 1, title = "B", speakerNote = "b")
+            SlideSegment(index = 0, title = "A", narration = "a"),
+            SlideSegment(index = 1, title = "B", narration = "b")
         )
         val durations = listOf(0.0, 5.0)
         val result = SubtitleTimingCalculator.calculate(slides, durations)
@@ -96,9 +96,9 @@ class SubtitleTimingCalculatorTest {
     @Test
     fun `calculate mismatched sizes uses available durations`() {
         val slides = listOf(
-            SlideSegment(index = 0, title = "A", speakerNote = "a"),
-            SlideSegment(index = 1, title = "B", speakerNote = "b"),
-            SlideSegment(index = 2, title = "C", speakerNote = "c")
+            SlideSegment(index = 0, title = "A", narration = "a"),
+            SlideSegment(index = 1, title = "B", narration = "b"),
+            SlideSegment(index = 2, title = "C", narration = "c")
         )
         val durations = listOf(2.0)
         val result = SubtitleTimingCalculator.calculate(slides, durations)
@@ -114,7 +114,7 @@ class SubtitleTimingCalculatorTest {
     @Test
     fun `calculate more durations than slides ignores extra`() {
         val slides = listOf(
-            SlideSegment(index = 0, title = "A", speakerNote = "a")
+            SlideSegment(index = 0, title = "A", narration = "a")
         )
         val durations = listOf(2.0, 3.0, 4.0)
         val result = SubtitleTimingCalculator.calculate(slides, durations)

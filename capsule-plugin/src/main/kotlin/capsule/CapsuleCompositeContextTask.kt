@@ -2,6 +2,7 @@ package capsule
 
 import org.gradle.api.DefaultTask
 import capsule.feed.CapsuleScriptReader
+import capsule.feed.deckName
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile

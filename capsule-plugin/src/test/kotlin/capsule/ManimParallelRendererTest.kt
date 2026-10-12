@@ -1,7 +1,7 @@
 package capsule
 
 import capsule.feed.SlideSegment
-import capsule.feed.SlideType
+import capsule.kernel.VideoKind
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -34,8 +34,8 @@ class ManimParallelRendererTest {
 
         val engine = NoOpManimEngine()
         val slides = listOf(
-            SlideSegment(1, "Scene1", "Note 1", type = SlideType.MANIM, manimScene = "Scene1"),
-            SlideSegment(2, "Scene2", "Note 2", type = SlideType.MANIM, manimScene = "Scene2")
+            SlideSegment(1, "Scene1", "Note 1", kind = VideoKind.ANIMATION, scene = "Scene1"),
+            SlideSegment(2, "Scene2", "Note 2", kind = VideoKind.ANIMATION, scene = "Scene2")
         )
         val scriptsDir = tmpDir.resolve("manim-scripts")
         scriptsDir.mkdirs()
@@ -88,7 +88,7 @@ class ManimParallelRendererTest {
 
         val engine = NoOpManimEngine()
         val slides = listOf(
-            SlideSegment(1, "NoScene", "Note", type = SlideType.MANIM, manimScene = null)
+            SlideSegment(1, "NoScene", "Note", kind = VideoKind.ANIMATION, scene = null)
         )
         val scriptsDir = tmpDir.resolve("manim-scripts")
         scriptsDir.mkdirs()
@@ -111,7 +111,7 @@ class ManimParallelRendererTest {
 
         val engine = NoOpManimEngine()
         val slides = listOf(
-            SlideSegment(1, "Missing", "Note", type = SlideType.MANIM, manimScene = "MissingScene")
+            SlideSegment(1, "Missing", "Note", kind = VideoKind.ANIMATION, scene = "MissingScene")
         )
         val scriptsDir = tmpDir.resolve("manim-scripts")
         scriptsDir.mkdirs()
@@ -137,7 +137,7 @@ class ManimParallelRendererTest {
 
         val failingEngine = ManimEngineImpl(ManimConfig(executablePath = "/nonexistent/path/manim"))
         val slides = listOf(
-            SlideSegment(1, "Fail", "Note", type = SlideType.MANIM, manimScene = "FailScene")
+            SlideSegment(1, "Fail", "Note", kind = VideoKind.ANIMATION, scene = "FailScene")
         )
         val scriptsDir = tmpDir.resolve("manim-scripts")
         scriptsDir.mkdirs()
@@ -171,9 +171,9 @@ class ManimParallelRendererTest {
 
         val engine = NoOpManimEngine()
         val slides = listOf(
-            SlideSegment(1, "Scene1", "Note 1", type = SlideType.MANIM, manimScene = "Scene1"),
-            SlideSegment(2, "Scene2", "Note 2", type = SlideType.MANIM, manimScene = "Scene2"),
-            SlideSegment(3, "Scene3", "Note 3", type = SlideType.MANIM, manimScene = "Scene3")
+            SlideSegment(1, "Scene1", "Note 1", kind = VideoKind.ANIMATION, scene = "Scene1"),
+            SlideSegment(2, "Scene2", "Note 2", kind = VideoKind.ANIMATION, scene = "Scene2"),
+            SlideSegment(3, "Scene3", "Note 3", kind = VideoKind.ANIMATION, scene = "Scene3")
         )
         val scriptsDir = tmpDir.resolve("manim-scripts")
         scriptsDir.mkdirs()
@@ -216,8 +216,8 @@ class ManimParallelRendererTest {
 
         val engine = NoOpManimEngine()
         val slides = listOf(
-            SlideSegment(1, "NoScene", "Note", type = SlideType.MANIM, manimScene = null),
-            SlideSegment(2, "WithScene", "Note", type = SlideType.MANIM, manimScene = "WithScene")
+            SlideSegment(1, "NoScene", "Note", kind = VideoKind.ANIMATION, scene = null),
+            SlideSegment(2, "WithScene", "Note", kind = VideoKind.ANIMATION, scene = "WithScene")
         )
         val scriptsDir = tmpDir.resolve("manim-scripts")
         scriptsDir.mkdirs()
@@ -251,7 +251,7 @@ class ManimParallelRendererTest {
         val failingEngine = ManimEngineImpl(config)
 
         val slides = listOf(
-            SlideSegment(1, "Fail", "Note", type = SlideType.MANIM, manimScene = "FailScene")
+            SlideSegment(1, "Fail", "Note", kind = VideoKind.ANIMATION, scene = "FailScene")
         )
         val scriptsDir = tmpDir.resolve("manim-scripts")
         scriptsDir.mkdirs()

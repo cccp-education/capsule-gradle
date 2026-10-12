@@ -1,5 +1,6 @@
 package capsule.multilang
 
+import capsule.kernel.FileVisualSource
 import contracts.i18n.LanguageCatalog
 import contracts.i18n.SupportedLanguage
 import org.junit.jupiter.api.Test
@@ -34,7 +35,7 @@ class CapsuleVideoPlanTest {
         val scriptFile = touch("scripts/${deckName}_$code-script.txt")
         val outputVideo = tempDir.resolve("out/${deckName}_$code.webm").toFile()
         return CapsuleVideoEntry(
-            deckFile = deckFile,
+            visual = FileVisualSource(deckFile),
             scriptFile = scriptFile,
             language = supportedLanguage(code),
             outputVideo = outputVideo,
@@ -90,7 +91,7 @@ class CapsuleVideoPlanTest {
         val scriptFile = touch("scripts/kotlin-basics_fr-script.txt")
         val ex = assertThrows(IllegalArgumentException::class.java) {
             CapsuleVideoEntry(
-                deckFile = tempDir.resolve("decks/missing_fr-deck.html").toFile(),
+                visual = FileVisualSource(tempDir.resolve("decks/missing_fr-deck.html").toFile()),
                 scriptFile = scriptFile,
                 language = supportedLanguage("fr"),
                 outputVideo = tempDir.resolve("out/kotlin-basics_fr.webm").toFile(),
@@ -104,7 +105,7 @@ class CapsuleVideoPlanTest {
         val deckFile = touch("decks/kotlin-basics_fr-deck.html")
         val ex = assertThrows(IllegalArgumentException::class.java) {
             CapsuleVideoEntry(
-                deckFile = deckFile,
+                visual = FileVisualSource(deckFile),
                 scriptFile = tempDir.resolve("scripts/missing_fr-script.txt").toFile(),
                 language = supportedLanguage("fr"),
                 outputVideo = tempDir.resolve("out/kotlin-basics_fr.webm").toFile(),
@@ -119,7 +120,7 @@ class CapsuleVideoPlanTest {
         val scriptFile = touch("scripts/kotlin-basics_xx-script.txt")
         val ex = assertThrows(IllegalArgumentException::class.java) {
             CapsuleVideoEntry(
-                deckFile = deckFile,
+                visual = FileVisualSource(deckFile),
                 scriptFile = scriptFile,
                 language = SupportedLanguage(code = "xx", name = "Unknown", nativeName = "Unknown"),
                 outputVideo = tempDir.resolve("out/kotlin-basics_xx.webm").toFile(),
@@ -134,7 +135,7 @@ class CapsuleVideoPlanTest {
         val scriptFile = touch("scripts/kotlin-basics_fr-script.txt")
         val outputVideo = tempDir.resolve("out/kotlin-basics_fr.webm").toFile()
         val language = supportedLanguage("fr")
-        val entry = CapsuleVideoEntry(deckFile, scriptFile, language, outputVideo)
+        val entry = CapsuleVideoEntry(FileVisualSource(deckFile), scriptFile, language, outputVideo)
         assertEquals(deckFile, entry.deckFile)
         assertEquals(scriptFile, entry.scriptFile)
         assertEquals(language, entry.language)

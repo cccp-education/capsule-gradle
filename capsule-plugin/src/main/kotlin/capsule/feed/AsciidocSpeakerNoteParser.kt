@@ -59,9 +59,9 @@ object AsciidocSpeakerNoteParser {
         flush(rawSegments, currentTitle, noteLines)
 
         val reindexed = rawSegments.mapIndexed { i, seg ->
-            SlideSegment(index = i + 1, title = seg.title, speakerNote = seg.speakerNote)
+            SlideSegment(index = i + 1, title = seg.title, narration = seg.narration)
         }
-        return CapsuleScript(deckName = deckName, segments = reindexed)
+        return CapsuleScript(name = deckName, segments = reindexed)
     }
 
     private fun flush(
@@ -72,7 +72,7 @@ object AsciidocSpeakerNoteParser {
         if (title == null) return
         val note = noteLines.joinToString("\n").trim()
         if (note.isBlank()) return
-        sink.add(SlideSegment(index = -1, title = title, speakerNote = note))
+        sink.add(SlideSegment(index = -1, title = title, narration = note))
     }
 
     private fun isSlideHeading(line: String): Boolean =

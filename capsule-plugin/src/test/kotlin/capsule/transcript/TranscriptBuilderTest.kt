@@ -1,7 +1,7 @@
 package capsule.transcript
 
 import capsule.feed.SlideSegment
-import capsule.feed.SlideType
+import capsule.kernel.VideoKind
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -81,9 +81,9 @@ class TranscriptBuilderTest {
     @Test
     fun `build skips MANIM segments`() {
         val segments = listOf(
-            SlideSegment(1, "HTML Slide", "HTML narration.", SlideType.HTML),
-            SlideSegment(2, "Manim Animation", "Animation narration.", SlideType.MANIM, "SceneOne"),
-            SlideSegment(3, "Second HTML", "Second HTML narration.", SlideType.HTML),
+            SlideSegment(1, "HTML Slide", "HTML narration.", VideoKind.VISUAL),
+            SlideSegment(2, "Manim Animation", "Animation narration.", VideoKind.ANIMATION, "SceneOne"),
+            SlideSegment(3, "Second HTML", "Second HTML narration.", VideoKind.VISUAL),
         )
         val adoc = TranscriptBuilder.build(plan(segments = segments))
         assertTrue(adoc.contains("== HTML Slide"), "HTML slide should be present")
@@ -95,7 +95,7 @@ class TranscriptBuilderTest {
     @Test
     fun `build with only MANIM segments produces no sections`() {
         val segments = listOf(
-            SlideSegment(1, "Pure Animation", "Animation only.", SlideType.MANIM, "SceneOne"),
+            SlideSegment(1, "Pure Animation", "Animation only.", VideoKind.ANIMATION, "SceneOne"),
         )
         val adoc = TranscriptBuilder.build(plan(segments = segments))
         assertFalse(adoc.contains("== Pure Animation"), "MANIM-only plan should produce no section")

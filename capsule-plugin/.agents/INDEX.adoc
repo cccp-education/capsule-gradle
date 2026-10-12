@@ -5,9 +5,9 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-12 (S-183 — **cadrage EPIC `KOOG-PIPELINE-DEDUP` → CADUQUE** (gouvernance pure, zéro code). Audit : `CapsulePipelineGraph` (capsule) ≈ `DeckPipelineGraph` (slider) = **jumeaux quasi verbatim** (~90 % du squelette ; gate `contextValid`), mais **seulement 2 boroughs N2** ; `KoogAugmentedContextGraph` (codebase) = forme **différente** (linéaire, dégradé). Seuil doctrine « factoriser à 3 » non atteint → **statu quo** + **déclencheur documenté**. Nom corrigé : `pipeline-contracts` = release-notes, pas koog. Doc `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`. Précédent : S-182 CAP-FISH-AUDIO TERMINÉ.)
- _Derniere session terminee_ : 183.
- _Prochaine session_ : 184 — backlog actionnable vidé ; au choix : A) maintenance/dette ; B) nouvelle demande pilote.
+ _Derniere mise a jour_ : 2026-10-12 (S-185 — **CAP-ENGINE-DECOUPLING US-1 ✅** : modèle neutre `capsule.kernel` (`VideoKind`/`VideoSegment`/`VideoScript`/`VisualSource`/`VideoProductionEntry`/`VideoProductionPlan`) + alias additifs (`SlideSegment`/`CapsuleScript`/`CapsuleVideoEntry`/`CapsuleVideoPlan`) + accesseurs legacy. `SlideType` conservé (sérialisation storyboard viral) + mapping `↔ VideoKind`. +20 unit + BDD `@kernel-model` (runner 41e). Zéro bump/publication. Précédent : S-184 cadrage EPIC.)
+ _Derniere session terminee_ : 185.
+ _Prochaine session_ : 186 — CAP-ENGINE-DECOUPLING **US-2** (port `VideoEngine` + adapter `RevealJsEngineAdapter`, extraire Playwright de `CapsuleVideoTask` 1248 l.).
  _Session en cours_ : — (S-183 terminée).
  _Littérature de référence_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage) + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc` (EPIC voix).
 
@@ -23,11 +23,15 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (174-183)
+== Sessions récentes (174-185)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 185 | 2026-10-12 | feat+test | **CAP-ENGINE-DECOUPLING US-1 ✅ — modèle neutre additif.** Noyau engine-agnostique `capsule.kernel` : `VideoKind` (`VISUAL`/`ANIMATION`), `VideoSegment` (`index/title/narration/kind/scene`), `VideoScript` (`name/segments`), `VisualSource`/`FileVisualSource`, `VideoProductionEntry` (`visual/scriptFile/language/outputVideo`), `VideoProductionPlan`. **Alias additifs** : `typealias SlideSegment = VideoSegment`, `CapsuleScript = VideoScript` (feed), `CapsuleVideoEntry = VideoProductionEntry`, `CapsuleVideoPlan = VideoProductionPlan` (multilang) + accesseurs legacy `@Deprecated` (`speakerNote`/`manimScene`/`type`/`deckName`/`deckFile`) + mappings `SlideType.toVideoKind()`/`VideoKind.toSlideType()`. **`SlideType` (HTML/MANIM) conservé** (vocabulaire de sérialisation du storyboard viral + marqueurs `-script.txt`). Constructions migrées (neutral), lectures via compat. Baby-step DDD/TDD/BDD : +20 unit (`VideoSegmentTest` 5, `VideoScriptTest` 4, `VideoProductionEntryTest` 5, `VideoProductionPlanTest` 2, `SlideTypeMappingTest` 4) + BDD `capsule_kernel_model.feature` `@kernel-model` (5 scénarios, runner dédié **41e** `cucumberTestKernelModel`, S-082/S-088). Gates locaux (Local = Build) : compiles ×3 + `assemble` + `validatePlugins` VERTS, tâche Cucumber enregistrée. Zéro bump, zéro publication, zéro secret. Rapport `.agents/sessions/185-cap-engine-decoupling-us1.adoc`. | 9/10
+
+| 184 | 2026-10-12 | cadrage | **EPIC `CAP-ENGINE-DECOUPLING` cadré** (gouvernance pure, patron S-057/S-063). Découpler le **métier** vidéo du **moteur** reveal.js/slider + préparer la mutualisation avec `hyperframes-gradle` — décision pilote : **ne pas attendre le seuil « factoriser à 3 »**. Review : capsule 190 fichiers / 31 tâches vs hyperframes 16 / 3. `CapsuleVideoTask.kt` (1248 l.) = point chaud (noyau + adapter reveal.js). Reclassification : presque tout est **récupérable** ; couplage slider limité à la capture reveal.js + parser speaker-notes + swap Manim + champs deck N3. 7 décisions (modèle neutre, ports `SegmentSource`/`VideoEngine`, `capsule.kernel`, adapter `capsule.adapter.revealjs`, cible N1 `video-kernel` — **pas N0**). 6 US. Doc `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`. Zéro code. | 9/10
 
 | 183 | 2026-10-12 | cadrage | **EPIC `KOOG-PIPELINE-DEDUP` → CADUQUE** (gouvernance pure, zéro code). Audit de 3 pipelines koog `propose/validate/generate` : `capsule.pipeline.CapsulePipelineGraph` (148 l.) ≈ `slider.pipeline.DeckPipelineGraph` (142 l.) = **jumeaux quasi verbatim** (~90 % du squelette, `ToolSelectionStrategy.NONE`, `execute()` séquentiel fail-fast, `asMermaidDiagram`) ; `codebase.koog.KoogAugmentedContextGraph` (156 l.) = **forme différente** (linéaire, dégradation continue, nœuds domaine pgvector/planner). **2 boroughs N2** seulement → seuil doctrine « factoriser à 3 » non atteint → **statu quo** + **déclencheur documenté** (extraire au 3ᵉ borough N2, cible N1 `codebase.koog.pipeline` ; koog = dépendance, pas contrat pur N0 — cf. LLM-RESILIENCE N0 S-162 CADUQUE). Nom corrigé : `pipeline-contracts` (MEMPHIS) = release-notes. Doc `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`. | 8/10
 
@@ -121,7 +125,7 @@ _Sessions 000-117 archivées_ : rapports dans `.agents/sessions/`, résumé dans
 |===
 |EPIC |Description |Statut |Priorité
 
-| **CAP-ENGINE-DECOUPLING** | **Découplage métier/moteur + mutualisation** — noyau `capsule.kernel` engine-agnostique + adapter `capsule.adapter.revealjs` ; ports `SegmentSource` + `VideoEngine` ; modèle neutre `VideoSegment`/`VideoScript`/`VideoProductionEntry` ; cible N1 `video-kernel` (partagé avec hyperframes). Review S-184 : capsule 190 fichiers/31 tâches vs hyperframes 16/3 ; « non-transférable » reclassifié (presque tout récupérable). Cadrage `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`. 6 US (US-0 ✅, US-1→5 🟡). | 🟡 EN COURS — cadrage S-184 | P0
+| **CAP-ENGINE-DECOUPLING** | **Découplage métier/moteur + mutualisation** — noyau `capsule.kernel` engine-agnostique + adapter `capsule.adapter.revealjs` ; ports `SegmentSource` + `VideoEngine` ; modèle neutre `VideoSegment`/`VideoScript`/`VideoProductionEntry` ; cible N1 `video-kernel` (partagé avec hyperframes). Review S-184 : capsule 190 fichiers/31 tâches vs hyperframes 16/3 ; « non-transférable » reclassifié (presque tout récupérable). Cadrage `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`. 6 US (US-0 ✅ S-184, **US-1 ✅ S-185**, US-2→5 🟡). | 🟡 EN COURS — US-1 ✅ S-185 | P0
 | **CAP-FISH-AUDIO** | **Moteur TTS cloud Fish Audio (voix clonée)** — 4e `TtsEngine` additif. Config `fish-audio` (pool de clés) = membre de `CapsuleConfig` (Jackson) ; clé en `fish.yaml` gitignoré (chargée + fusionnée) ; voix/modèle/format/temperature/topP/endpoint dans `tts` ; `FishAudioTtsEngine` (`HttpClient` JDK + JSON + `Bearer` + `format: wav` → `wavToMp3`, retries, cache sha1 du texte dit) ; jeton `fish`/`fish-audio` ; rédaction du secret ; dégradation propre ; run meteron = accord pilote (CI stub HTTP). 6 US ~17 pts. Cadrage `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`. | ✅ TERMINÉ (S-182) — 6/6 US ; releases 0.0.9 + 0.0.10 | P1
 | **CAP-VIRAL** | **Moteur de campagnes virales YouTube/TikTok** — domaine `capsule.viral` : rendu vertical 9:16, format court 15-60 s, hooks/CTA **ancrés contexte N1**, **storyboard validable** (porte éditoriale), chaîne marketing (amont `capsule.copy` / aval `CampaignBundle`), thumbnail, sous-titres karaoké, batch multi-plateforme, **assemblage bout-en-bout** (`ViralCampaignAssembler`), **socle FFmpeg** (`ViralCaptureStrategy` — Playwright temps réel écarté), **câblage tâche `generateViralCampaign`**. 14 US ~53 pts. Cadrage `.agents/sessions/138-cap-viral-cadrage.adoc`. | ✅ TERMINÉ (S-142) — 14/14 US (wiring + US-7 livrés) | P0
 | CAP-SHORT | **Livraison end-to-end du format court** (YouTube Shorts / TikTok / Reels). **US-1a ✅ S-146**, **US-1b ✅ S-147**, **US-2 ✅ S-148**, **US-3 ✅ S-149**, **US-5 ✅ S-150**, **US-4 ✅ S-158** (dogfooding viral réel, LLM `deepseek-v4.1-flash:cloud:11434`). **6 US ~22 pts**. ~~maintenance RENAME~~ ✅ **SOLDÉE S-153**. Cadré S-143, diagnostic S-145. | ✅ TERMINÉ 6/6 (S-143→S-158) | P0 |
@@ -200,7 +204,10 @@ neuf) ; **S-150** ajoute le **23e** runner (`cucumberTestViralRender`, vrai MP4)
 (`cucumberTestVoiceVerification`) ; **S-173** le **36e** (`cucumberTestQcBoards`).
 **EPICs** : **CAP-QC ✅ 9/9** (S-166→S-174) et **CAP-QC-VOICE ✅ 5/5** (S-169→S-174) —
 **portage `prepa_electricite_complet` → capsule TERMINÉ.** **CAP-FISH-AUDIO ✅ TERMINÉ
-6/6 (S-182)** — releases `0.0.9` + `0.0.10` ; **tous les EPICs actionnables sont clos.**
+6/6 (S-182)** — releases `0.0.9` + `0.0.10`. **S-185** ouvre l'EPIC transverse
+**CAP-ENGINE-DECOUPLING** (découplage métier/moteur + mutualisation hyperframes) :
+**US-1 ✅ S-185** (modèle neutre `capsule.kernel` + alias additifs, **41e** runner
+`cucumberTestKernelModel`) ; US-2→5 🟡. Les autres EPICs actionnables restent clos.
 **Cache CI** : `.github/actions/setup-ollama` (image Docker + modèle) + Gradle
 (`gradle/actions/setup-gradle@v4`).
 

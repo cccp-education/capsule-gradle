@@ -1,6 +1,7 @@
 package capsule.transcript
 
 import capsule.feed.SlideType
+import capsule.feed.type
 
 /**
  * Pure, deterministic builder of a transcript AsciiDoc article from a

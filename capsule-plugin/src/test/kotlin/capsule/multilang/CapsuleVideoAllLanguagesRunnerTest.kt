@@ -1,5 +1,6 @@
 package capsule.multilang
 
+import capsule.kernel.FileVisualSource
 import contracts.i18n.LanguageCatalog
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -22,7 +23,7 @@ class CapsuleVideoAllLanguagesRunnerTest {
         if (outputExists) {
             output.writeBytes(byteArrayOf(0x1a.toByte(), 0x45.toByte(), 0xdf.toByte(), 0xa3.toByte()))
         }
-        return CapsuleVideoEntry(deckFile = deck, scriptFile = script, language = language, outputVideo = output)
+        return CapsuleVideoEntry(visual = FileVisualSource(deck), scriptFile = script, language = language, outputVideo = output)
     }
 
     private fun planOf(vararg languages: Pair<String, Boolean>): CapsuleVideoPlan =

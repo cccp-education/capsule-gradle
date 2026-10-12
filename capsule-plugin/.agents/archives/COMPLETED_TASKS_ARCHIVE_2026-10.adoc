@@ -1,6 +1,25 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 185 — `CAP-ENGINE-DECOUPLING` US-1 ✅ (modèle neutre + alias additif)
+
+* Noyau engine-agnostique `capsule.kernel` créé : `VideoKind` (`VISUAL`/`ANIMATION`),
+  `VideoSegment` (`index/title/narration/kind/scene`), `VideoScript` (`name/segments`),
+  `VisualSource`/`FileVisualSource`, `VideoProductionEntry`
+  (`visual/scriptFile/language/outputVideo`), `VideoProductionPlan`.
+* **Alias additifs** : `typealias SlideSegment = VideoSegment`, `CapsuleScript = VideoScript`
+  (`capsule.feed`), `CapsuleVideoEntry = VideoProductionEntry`, `CapsuleVideoPlan = VideoProductionPlan`
+  (`capsule.multilang`) + accesseurs legacy `@Deprecated` (`speakerNote`/`manimScene`/`type`/`deckName`/`deckFile`)
+  + mappings `SlideType.toVideoKind()` / `VideoKind.toSlideType()`.
+* **Décision** : `SlideType` (HTML/MANIM) conservé — vocabulaire de sérialisation du storyboard
+  viral (`capsule.viral.StoryboardBeat`) et des marqueurs `-script.txt` ; le mapping fait le pont
+  (pas de renommage massif features/format).
+* Constructions migrées (neutral) ; lectures couvertes par compat. Imports d'extension legacy
+  (`type`/`deckName`/`deckFile`) + purge des imports `SlideType` inutiles.
+* Baby-step DDD/TDD/BDD : +20 unit + BDD `@kernel-model` (5 scénarios, runner **41e** `cucumberTestKernelModel`).
+* Gates locaux (Local = Build) : compiles ×3 + `assemble` + `validatePlugins` VERTS. Zéro bump,
+  zéro publication, zéro secret. Rapport `.agents/sessions/185-cap-engine-decoupling-us1.adoc`.
+
 == Session 184 — Cadrage EPIC `CAP-ENGINE-DECOUPLING` ✅
 
 * Gouvernance pure, zéro code (patron S-057/S-063). Découpler le **métier** vidéo du

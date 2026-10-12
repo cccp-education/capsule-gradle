@@ -2,8 +2,8 @@ package capsule
 
 import capsule.feed.CapsuleScript
 import capsule.feed.CapsuleScriptReader
+import capsule.kernel.VideoKind
 import capsule.feed.SlideSegment
-import capsule.feed.SlideType
 import capsule.test.BinaryAvailability
 import contracts.i18n.LanguageCatalog
 import org.gradle.testfixtures.ProjectBuilder
@@ -540,7 +540,7 @@ Voici le contenu principal.
 
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val parsed = CapsuleScript(
-            deckName = "test",
+            name = "test",
             segments = listOf(
                 SlideSegment(1, "Intro", "Bienvenue."),
                 SlideSegment(2, "Topic", "Contenu principal."),
@@ -571,7 +571,7 @@ Voici le contenu principal.
         existingFile.writeText("existing content")
 
         val parsed = CapsuleScript(
-            deckName = "test",
+            name = "test",
             segments = listOf(
                 SlideSegment(1, "Intro", "Bienvenue."),
                 SlideSegment(2, "Topic", "Contenu.")
@@ -597,7 +597,7 @@ Voici le contenu principal.
 
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val parsed = CapsuleScript(
-            deckName = "test",
+            name = "test",
             segments = listOf(
                 SlideSegment(1, "OK", "OK."),
                 SlideSegment(2, "Fail", "Échoue."),
@@ -656,10 +656,10 @@ Voici le contenu principal.
         task.capsuleExtension = ext
 
         val parsed = CapsuleScript(
-            deckName = "test",
+            name = "test",
             segments = listOf(
-                SlideSegment(1, "Intro", "Bienvenue.", type = SlideType.HTML),
-                SlideSegment(2, "Topic", "Contenu.", type = SlideType.HTML)
+                SlideSegment(1, "Intro", "Bienvenue.", kind = VideoKind.VISUAL),
+                SlideSegment(2, "Topic", "Contenu.", kind = VideoKind.VISUAL)
             )
         )
         val manimOutputDir = File(tempDir, "manim").also { it.mkdirs() }
@@ -685,9 +685,9 @@ Voici le contenu principal.
         task.capsuleExtension = ext
 
         val parsed = CapsuleScript(
-            deckName = "test",
+            name = "test",
             segments = listOf(
-                SlideSegment(1, "Anim", "Animation.", type = SlideType.MANIM, manimScene = "Scene1")
+                SlideSegment(1, "Anim", "Animation.", kind = VideoKind.ANIMATION, scene = "Scene1")
             )
         )
         val manimScriptsDir = File(tempDir, "src/manim").also { it.mkdirs() }
@@ -719,8 +719,8 @@ Voici le contenu principal.
         deckFile.writeText("<html><body><section>Slide 1</section></body></html>")
 
         val parsed = CapsuleScript(
-            deckName = "test",
-            segments = listOf(SlideSegment(1, "Intro", "Note.", type = SlideType.HTML))
+            name = "test",
+            segments = listOf(SlideSegment(1, "Intro", "Note.", kind = VideoKind.VISUAL))
         )
         val manimOutputDir = File(tempDir, "manim").also { it.mkdirs() }
 
@@ -751,8 +751,8 @@ Voici le contenu principal.
         """.trimIndent())
 
         val parsed = CapsuleScript(
-            deckName = "test",
-            segments = listOf(SlideSegment(1, "Anim", "Note.", type = SlideType.MANIM, manimScene = "Scene1"))
+            name = "test",
+            segments = listOf(SlideSegment(1, "Anim", "Note.", kind = VideoKind.ANIMATION, scene = "Scene1"))
         )
         val manimOutputDir = File(tempDir, "manim").also { it.mkdirs() }
         val renderedFiles = mapOf(1 to File(manimOutputDir, "Scene1.mp4").also { it.writeText("fake mp4") })
@@ -1516,7 +1516,7 @@ class ParallelCaptureTest {
         }
 
         val script = CapsuleScript(
-            deckName = "parallel-test",
+            name = "parallel-test",
             segments = (1..6).map { SlideSegment(it, "Slide $it", "Note $it") }
         )
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
@@ -1587,7 +1587,7 @@ ${(1..6).map { i -> """<section data-capsule-slide="$i"><h2>Slide $i</h2></secti
         }
 
         val script = CapsuleScript(
-            deckName = "one-per-slide",
+            name = "one-per-slide",
             segments = (1..3).map { SlideSegment(it, "Slide $it", "Note $it") }
         )
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }

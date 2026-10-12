@@ -1,7 +1,25 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-12
-:session: 176 Câblage dit↔lu (sous-titres + karaoké)
+:session: 185 CAP-ENGINE-DECOUPLING US-1 (modèle neutre + alias additif)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 12 octobre 2026 (après session 185)
+
+.Modèle neutre `capsule.kernel` + pont de compatibilité (CAP-ENGINE-DECOUPLING US-1)
+|===
+| Élément | Changement | Tests
+
+| `capsule/kernel/VideoSegment.kt` (créé) | segment neutre `index/title/narration/kind/scene` + invariants + membres legacy `speakerNote`/`manimScene` | +5 `VideoSegmentTest`
+| `capsule/kernel/VideoScript.kt` (créé) | agrégat neutre `name/segments` + `isEmpty` | +4 `VideoScriptTest`
+| `capsule/kernel/VisualSource.kt` (créé) | `VisualSource` + `FileVisualSource` | (couvert via entry)
+| `capsule/kernel/VideoProductionEntry.kt` (créé) | `visual/scriptFile/language/outputVideo` + invariants | +5 `VideoProductionEntryTest`
+| `capsule/kernel/VideoProductionPlan.kt` (créé) | plan multi-langue `entries` + `size`/`isEmpty`/`languages` | +2 `VideoProductionPlanTest`
+| `capsule/feed/CapsuleFeedModels.kt` (retravaillé) | `typealias` `SlideSegment`/`CapsuleScript` + mappings `SlideType↔VideoKind` + extensions legacy `type`/`deckName` | +4 `SlideTypeMappingTest`
+| `capsule/multilang/CapsuleVideoPlan.kt` (retravaillé) | `typealias` `CapsuleVideoEntry`/`CapsuleVideoPlan` + extension `deckFile` | (couvert via entry/plan)
+| `capsule_kernel_model.feature` (créé) | 5 scénarios `@kernel-model` (défauts, animation+scene, mapping, pont typealias, visual source) | `CapsuleKernelModelSteps` + `CapsuleKernelModelCucumberRunner` (`cucumberTestKernelModel`, 41e)
+|===
+
+
 
 == Couverture — 12 octobre 2026 (après session 179)
 

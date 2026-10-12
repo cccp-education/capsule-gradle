@@ -98,8 +98,8 @@ class CapsuleSubtitlesCartonsSteps {
     fun twoSubtitleSlides(first: String, second: String) {
         slides.clear()
         durations.clear()
-        slides.add(SlideSegment(index = 0, title = "s0", speakerNote = first))
-        slides.add(SlideSegment(index = 1, title = "s1", speakerNote = second))
+        slides.add(SlideSegment(index = 0, title = "s0", narration = first))
+        slides.add(SlideSegment(index = 1, title = "s1", narration = second))
         durations.add(0.5)
         durations.add(0.5)
     }

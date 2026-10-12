@@ -19,7 +19,7 @@ class QcBoardRendererTest {
     lateinit var workDir: File
 
     private fun slide(index: Int, title: String, note: String) =
-        SlideSegment(index = index, title = title, speakerNote = note)
+        SlideSegment(index = index, title = title, narration = note)
 
     @Test
     fun `the beats planner builds one cell per slide`() {

@@ -25,7 +25,7 @@ class TtsErrorHandlingTest {
     }
 
     private fun script(vararg titles: String): CapsuleScript = CapsuleScript(
-        deckName = "test",
+        name = "test",
         segments = titles.mapIndexed { i, t -> SlideSegment(i + 1, t, "$t note.") }
     )
 

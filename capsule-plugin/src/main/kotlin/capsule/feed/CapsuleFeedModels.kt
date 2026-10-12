@@ -1,142 +1,142 @@
 package capsule.feed
 
+import capsule.kernel.VideoKind
+import capsule.kernel.VideoScript
+import capsule.kernel.VideoSegment
 import java.io.File
 
 /**
- * Type of a slide segment — drives rendering strategy (HTML capture vs Manim scene).
+ * Renderer vocabulary of a segment — **legacy** type (CAP-ENGINE-DECOUPLING US-1).
  *
- * - [HTML] : slide rendered as HTML (default, Reveal.js capture via Playwright).
- * - [MANIM] : slide rendered as a Manim animation (scene name carried by [SlideSegment.manimScene]).
+ * Superseded by the engine-neutral [VideoKind] for the video production model.
+ * It is kept because it remains the serialization vocabulary of the viral
+ * storyboard ([capsule.viral.StoryboardBeat]) and of the `-script.txt` contract
+ * markers (`[manim:Scene]`). Use [toVideoKind] to move into the neutral kernel.
+ *
+ * - [HTML]  : segment rendered from markup.
+ * - [MANIM] : segment rendered as a Manim animation.
  */
 enum class SlideType { HTML, MANIM }
 
-/**
- * One slide segment inside a capsule feed script.
- *
- * @param index 1-based slide position.
- * @param title slide title (AsciiDoc `== ` heading text), must be non-blank.
- * @param speakerNote narration body, must be non-blank.
- * @param type rendering strategy — [SlideType.HTML] (default) or [SlideType.MANIM].
- * @param manimScene Manim scene name when [type] is [SlideType.MANIM], otherwise null.
- */
-data class SlideSegment(
-    val index: Int,
-    val title: String,
-    val speakerNote: String,
-    val type: SlideType = SlideType.HTML,
-    val manimScene: String? = null,
-) {
-    init {
-        require(title.isNotBlank()) { "SlideSegment.title must not be blank (index=$index)" }
-        require(speakerNote.isNotBlank()) { "SlideSegment.speakerNote must not be blank (index=$index)" }
-    }
+/** Maps the legacy [SlideType] to the neutral [VideoKind]. */
+fun SlideType.toVideoKind(): VideoKind = when (this) {
+    SlideType.HTML -> VideoKind.VISUAL
+    SlideType.MANIM -> VideoKind.ANIMATION
+}
+
+/** Maps the neutral [VideoKind] back to the legacy [SlideType]. */
+fun VideoKind.toSlideType(): SlideType = when (this) {
+    VideoKind.VISUAL -> SlideType.HTML
+    VideoKind.ANIMATION -> SlideType.MANIM
 }
 
 /**
- * Aggregate root — the full capsule feed script for one deck.
- *
- * Produced by [AsciidocSpeakerNoteParser] from an AsciiDoc deck and serialized
- * by [CapsuleScriptWriter] into the plain-text contract consumed by
- * capsule-gradle video tasks ([CapsuleScriptReader]).
- *
- * @param deckName deck name (without extension), must be non-blank.
- * @param segments ordered slide segments (may be empty when no slide carries
- * a `[NOTE.speaker]` block).
+ * Backward-compatible alias — a `SlideSegment` **is** a [VideoSegment]
+ * (CAP-ENGINE-DECOUPLING US-1). Prefer the neutral [VideoSegment] in new code.
  */
-data class CapsuleScript(
-    val deckName: String,
-    val segments: List<SlideSegment>,
-) {
-    init {
-        require(deckName.isNotBlank()) { "CapsuleScript.deckName must not be blank" }
-    }
-
-    val isEmpty: Boolean get() = segments.isEmpty()
-}
+typealias SlideSegment = VideoSegment
 
 /**
- * Serializes a [CapsuleScript] into the plain-text contract consumed by
+ * Backward-compatible alias — a `CapsuleScript` **is** a [VideoScript]
+ * (CAP-ENGINE-DECOUPLING US-1). Prefer the neutral [VideoScript] in new code.
+ */
+typealias CapsuleScript = VideoScript
+
+/**
+ * Legacy rendering-type accessor — the neutral field is [VideoSegment.kind].
+ */
+@Deprecated("Neutralized vocabulary: use VideoSegment.kind", ReplaceWith("kind.toSlideType()"))
+val VideoSegment.type: SlideType get() = kind.toSlideType()
+
+/**
+ * Legacy deck-name accessor — the neutral field is [VideoScript.name].
+ */
+@Deprecated("Neutralized vocabulary: use VideoScript.name", ReplaceWith("name"))
+val VideoScript.deckName: String get() = name
+
+/**
+ * Serializes a [VideoScript] into the plain-text contract consumed by
  * [CapsuleScriptReader] (round-trip idempotent).
  *
  * Contract format:
  * ```
- * === CAPSULE SCRIPT : <deckName> ===
+ * === CAPSULE SCRIPT : <name> ===
  *
  * --- SLIDE <n> : <title> ---
- * <speakerNote>
+ * <narration>
  *
  * --- SLIDE <n+1> : <title> ---
- * <speakerNote>
+ * <narration>
  * ```
  */
 object CapsuleScriptWriter {
 
-    fun write(script: CapsuleScript): String {
-        require(script.segments.isNotEmpty()) { "CapsuleScript.segments must not be empty" }
+    fun write(script: VideoScript): String {
+        require(script.segments.isNotEmpty()) { "VideoScript.segments must not be empty" }
         val sb = StringBuilder()
-        sb.append("=== CAPSULE SCRIPT : ${script.deckName} ===")
+        sb.append("=== CAPSULE SCRIPT : ${script.name} ===")
         sb.append("\n")
         script.segments.forEach { seg ->
             sb.append("\n")
             val decoratedTitle = decorateTitle(seg)
             sb.append("--- SLIDE ${seg.index} : $decoratedTitle ---\n")
-            sb.append(seg.speakerNote.trim())
+            sb.append(seg.narration.trim())
             sb.append("\n")
         }
         return sb.toString().trimEnd() + "\n"
     }
 
-    private fun decorateTitle(seg: SlideSegment): String {
+    private fun decorateTitle(seg: VideoSegment): String {
         val base = seg.title.trim()
-        return when (seg.type) {
-            SlideType.MANIM -> {
-                val scene = seg.manimScene
+        return when (seg.kind) {
+            VideoKind.ANIMATION -> {
+                val scene = seg.scene
                 if (scene.isNullOrBlank()) base else "$base [manim:$scene]"
             }
-            SlideType.HTML -> base
+            VideoKind.VISUAL -> base
         }
     }
 }
 
 /**
  * Parses a `*-script.txt` file (the plain-text contract produced by [CapsuleScriptWriter])
- * back into a [CapsuleScript] feed model.
+ * back into a [VideoScript] production model.
  *
  * Round-trip idempotent with [CapsuleScriptWriter.write] : `read(write(script))` preserves
- * `deckName`, `segments` ordering, `index`, `title` (markers stripped), `speakerNote`,
- * `type` and `manimScene`.
+ * `name`, `segments` ordering, `index`, `title` (markers stripped), `narration`,
+ * `kind` and `scene`.
  *
  * Contract parsed:
  * ```
- * === CAPSULE SCRIPT : <deckName> ===
+ * === CAPSULE SCRIPT : <name> ===
  *
  * --- SLIDE <n> : <title> [markers] ---
- * <speakerNote>
+ * <narration>
  * ```
- * Markers supported in the title: `[manim:SceneName]` (→ [SlideType.MANIM] + `manimScene`),
- * `[html]` (→ [SlideType.HTML]). When no marker is present, defaults to [SlideType.HTML].
+ * Markers supported in the title: `[manim:SceneName]` (→ [VideoKind.ANIMATION] + `scene`),
+ * `[html]` (→ [VideoKind.VISUAL]). When no marker is present, defaults to [VideoKind.VISUAL].
  */
 object CapsuleScriptReader {
 
     private val manimMarkerRegex = Regex("""\[manim:(\w+)]""")
     private val htmlMarker = "[html]"
 
-    fun read(file: File): CapsuleScript {
+    fun read(file: File): VideoScript {
         val lines = file.readLines()
         val header = lines.firstOrNull()?.trim().orEmpty()
-        val deckName = if (header.startsWith("=== CAPSULE SCRIPT : ") && header.endsWith(" ===")) {
+        val name = if (header.startsWith("=== CAPSULE SCRIPT : ") && header.endsWith(" ===")) {
             header.removePrefix("=== CAPSULE SCRIPT : ")
                 .removeSuffix(" ===")
                 .trim()
                 .ifBlank { null }
         } else null
-        val resolvedDeckName: String = deckName ?: file.nameWithoutExtension
+        val resolvedName: String = name ?: file.nameWithoutExtension
 
-        val segments = mutableListOf<SlideSegment>()
+        val segments = mutableListOf<VideoSegment>()
         var currentIndex = -1
         var currentTitle = ""
-        var currentType = SlideType.HTML
-        var currentManimScene: String? = null
+        var currentKind = VideoKind.VISUAL
+        var currentScene: String? = null
         val noteLines = mutableListOf<String>()
 
         val startIdx = if (header.startsWith("=== CAPSULE SCRIPT : ")) 1 else 0
@@ -144,15 +144,15 @@ object CapsuleScriptReader {
             val line = lines[i]
             when {
                 line.startsWith("--- SLIDE ") && line.contains(":") -> {
-                    flushSegment(segments, currentIndex, currentTitle, currentType, currentManimScene, noteLines)
+                    flushSegment(segments, currentIndex, currentTitle, currentKind, currentScene, noteLines)
                     val parts = line.removeSurrounding("--- SLIDE ", " ---")
                     val colonIdx = parts.indexOf(":")
                     currentIndex = parts.substring(0, colonIdx).trim()
                         .toIntOrNull() ?: (segments.size + 1)
                     val rawTitle = parts.substring(colonIdx + 1).trim()
                     val manimMatch = manimMarkerRegex.find(rawTitle)
-                    currentType = if (manimMatch != null) SlideType.MANIM else SlideType.HTML
-                    currentManimScene = manimMatch?.groupValues?.get(1)
+                    currentKind = if (manimMatch != null) VideoKind.ANIMATION else VideoKind.VISUAL
+                    currentScene = manimMatch?.groupValues?.get(1)
                     currentTitle = rawTitle
                         .replace(manimMarkerRegex, "")
                         .replace(htmlMarker, "")
@@ -162,29 +162,29 @@ object CapsuleScriptReader {
             }
         }
 
-        flushSegment(segments, currentIndex, currentTitle, currentType, currentManimScene, noteLines)
+        flushSegment(segments, currentIndex, currentTitle, currentKind, currentScene, noteLines)
 
-        return CapsuleScript(deckName = resolvedDeckName, segments = segments)
+        return VideoScript(name = resolvedName, segments = segments)
     }
 
     private fun flushSegment(
-        sink: MutableList<SlideSegment>,
+        sink: MutableList<VideoSegment>,
         index: Int,
         title: String,
-        type: SlideType,
-        manimScene: String?,
+        kind: VideoKind,
+        scene: String?,
         noteLines: MutableList<String>,
     ) {
         if (index < 0 || title.isBlank() || noteLines.isEmpty()) return
         val note = noteLines.joinToString("\n").trim()
         if (note.isBlank()) return
         sink.add(
-            SlideSegment(
+            VideoSegment(
                 index = index,
                 title = title,
-                speakerNote = note,
-                type = type,
-                manimScene = manimScene,
+                narration = note,
+                kind = kind,
+                scene = scene,
             )
         )
         noteLines.clear()

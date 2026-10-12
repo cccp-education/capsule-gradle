@@ -6,6 +6,8 @@ import capsule.feed.CapsuleScript
 import capsule.feed.CapsuleScriptReader
 import capsule.feed.SlideSegment
 import capsule.feed.SlideType
+import capsule.feed.deckName
+import capsule.feed.type
 import capsule.multilang.MultiLanguageResolver
 import capsule.voice.PronunciationLexicon
 import capsule.validation.VideoIntegrityProbe
@@ -818,7 +820,7 @@ open class CapsuleVideoTask : DefaultTask() {
                 parsed.segments
             } else {
                 parsed.segments.map {
-                    it.copy(speakerNote = SubtitleTextNormalizer.spokenToDisplay(it.speakerNote, reversals))
+                    it.copy(narration = SubtitleTextNormalizer.spokenToDisplay(it.narration, reversals))
                 }
             }
             SubtitleTimingCalculator.calculate(displaySegments, slideDurations)

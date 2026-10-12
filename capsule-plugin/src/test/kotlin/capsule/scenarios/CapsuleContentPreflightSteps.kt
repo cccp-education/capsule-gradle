@@ -23,7 +23,7 @@ class CapsuleContentPreflightSteps {
 
     @Given("a preflight slide {int} with note {string}")
     fun aPreflightSlide(index: Int, note: String) {
-        slides.add(SlideSegment(index = index, title = "s$index", speakerNote = note))
+        slides.add(SlideSegment(index = index, title = "s$index", narration = note))
     }
 
     @When("the content preflight runs")

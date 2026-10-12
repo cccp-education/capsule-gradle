@@ -65,7 +65,7 @@ class CaptureSlideParallelTest {
     fun `captureSlideParallel times out when a slide capture blocks beyond timeout`() {
         val task = newTask()
         val script = CapsuleScript(
-            deckName = "timeout-deck",
+            name = "timeout-deck",
             segments = (1..2).map { SlideSegment(it, "Slide $it", "Note $it") }
         )
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
@@ -113,7 +113,7 @@ class CaptureSlideParallelTest {
     fun `captureSlideParallel shuts down the executor when a capture throws`() {
         val task = newTask()
         val script = CapsuleScript(
-            deckName = "throwing-deck",
+            name = "throwing-deck",
             segments = (1..3).map { SlideSegment(it, "Slide $it", "Note $it") }
         )
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
@@ -157,7 +157,7 @@ class CaptureSlideParallelTest {
     fun `captureSlideParallel interrupts in-flight captures via shutdownNow`() {
         val task = newTask()
         val script = CapsuleScript(
-            deckName = "interrupt-deck",
+            name = "interrupt-deck",
             segments = (1..2).map { SlideSegment(it, "Slide $it", "Note $it") }
         )
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
@@ -217,7 +217,7 @@ class CaptureSlideParallelTest {
     fun `captureSlideParallel accumulates failed slides and continues with the rest`() {
         val task = newTask()
         val script = CapsuleScript(
-            deckName = "mixed-deck",
+            name = "mixed-deck",
             segments = (1..4).map { SlideSegment(it, "Slide $it", "Note $it") }
         )
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
