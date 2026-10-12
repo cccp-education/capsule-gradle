@@ -35,3 +35,16 @@ Feature: Viral karaoke captions
       | Bonjour | 2       |
     Then the karaoke first line has 1 words
     And the karaoke timeline spans 0 to 2
+
+  Scenario: Measured ASR timings drive the word highlights
+    Given karaoke beats
+      | intent           | seconds |
+      | Bonjour le monde | 3       |
+    And karaoke word timings
+      | word    | start | end |
+      | bonjour | 0.1   | 0.6 |
+      | le      | 0.7   | 0.9 |
+      | monde   | 1.0   | 1.8 |
+    When the karaoke timeline is planned with timings
+    Then the karaoke first line first word starts at 0.1
+    And the karaoke first line last word ends at 1.8

@@ -64,6 +64,16 @@ abstract class RenderViralSubtitlesTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val storyboardFile: RegularFileProperty
 
+    /**
+     * Optional ASR word-timings JSON (whisper `segments[].words[]`, CAP-QC-VOICE
+     * US-5). When present, the karaoke uses the measured words; otherwise it times
+     * words proportionally.
+     */
+    @get:InputFile
+    @get:Optional
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val wordTimingsFile: RegularFileProperty
+
     @TaskAction
     fun run() {
         if (!viralEnabled.get()) {
@@ -93,7 +103,11 @@ abstract class RenderViralSubtitlesTask : DefaultTask() {
             return
         }
 
-        val document = AssKaraokeDocument.build(KaraokeWordPlanner.plan(parsed.beats))
+        val timings = wordTimingsFile.orNull?.asFile
+            ?.takeIf { it.isFile && it.length() > 0L }
+            ?.let { WordTimingsJson.parse(it.readText()) }
+            .orEmpty()
+        val document = AssKaraokeDocument.build(KaraokeWordPlanner.plan(parsed.beats, timings))
         val dir = File(project.projectDir, renderedVideoDir.get())
         dir.mkdirs()
 

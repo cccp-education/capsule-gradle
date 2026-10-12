@@ -583,6 +583,12 @@ class CapsuleManager(private val project: Project) {
                     if (f.exists()) f else null
                 }),
             )
+            task.wordTimingsFile.convention(
+                project.layout.file(project.provider {
+                    val path = project.findProperty("capsule.viral.wordTimingsFile")?.toString().orEmpty()
+                    if (path.isBlank()) null else project.file(path).takeIf { it.isFile }
+                }),
+            )
         }
     }
 

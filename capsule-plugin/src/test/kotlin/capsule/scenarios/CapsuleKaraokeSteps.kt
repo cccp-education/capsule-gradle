@@ -4,6 +4,8 @@ import capsule.viral.AssKaraokeDocument
 import capsule.viral.KaraokeLine
 import capsule.viral.KaraokeWordPlanner
 import capsule.viral.StoryboardBeat
+import capsule.viral.TimedWord
+import capsule.viral.WordTimingsJson
 import io.cucumber.datatable.DataTable
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
@@ -21,6 +23,45 @@ class CapsuleKaraokeSteps {
 
     private var lines: List<KaraokeLine> = emptyList()
     private var document: String? = null
+    private var beats: List<StoryboardBeat> = emptyList()
+    private var timings: List<TimedWord> = emptyList()
+
+    @Given("karaoke beats")
+    fun `karaoke beats`(table: DataTable) {
+        beats = table.asMaps().map { row ->
+            StoryboardBeat(
+                role = "development",
+                intent = row["intent"]!!.trim(),
+                durationSeconds = row["seconds"]!!.trim().toDouble(),
+            )
+        }
+    }
+
+    @Given("karaoke word timings")
+    fun `karaoke word timings`(table: DataTable) {
+        timings = table.asMaps().map { row ->
+            TimedWord(
+                text = WordTimingsJson.normalize(row["word"]!!),
+                start = row["start"]!!.trim().toDouble(),
+                end = row["end"]!!.trim().toDouble(),
+            )
+        }
+    }
+
+    @When("the karaoke timeline is planned with timings")
+    fun `the karaoke timeline is planned with timings`() {
+        lines = KaraokeWordPlanner.plan(beats, timings)
+    }
+
+    @Then("the karaoke first line first word starts at {double}")
+    fun `the karaoke first line first word starts at`(value: Double) {
+        assertThat(lines.first().words.first().startTime).isCloseTo(value, within(1e-9))
+    }
+
+    @Then("the karaoke first line last word ends at {double}")
+    fun `the karaoke first line last word ends at`(value: Double) {
+        assertThat(lines.first().words.last().endTime).isCloseTo(value, within(1e-9))
+    }
 
     @Given("a karaoke timeline for beats")
     fun `a karaoke timeline for beats`(table: DataTable) {
