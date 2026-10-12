@@ -55,6 +55,6 @@ class RevealJsScriptContractTest {
             writeText("--- SLIDE 1 : Intro ---\nHello.\n")
         }
 
-        assertThat(RevealJsScriptContract.read(file).name).isEqualTo("fallback")
+        assertThat(RevealJsScriptContract.read(file).name).isEqualTo("fallback-script")
     }
 }

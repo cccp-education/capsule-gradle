@@ -58,6 +58,12 @@ des `VideoSegment`.
 * `assemble` + `validatePlugins` **VERTS**.
 * Tâche `cucumberTestSegmentSource` **enregistrée**. Zéro secret. Zéro bump.
 
+=== Correctif CI (run `38314428803` rouge — 1 échec unit)
+
+`RevealJsScriptContractTest > read falls back to the file name…` : mauvais attendu —
+`File("fallback-script.txt").nameWithoutExtension` = `"fallback-script"`, pas
+`"fallback"`. Correctif test-only (assertion).
+
 == Décisions clés
 
 [cols="1,4", options="header"]
