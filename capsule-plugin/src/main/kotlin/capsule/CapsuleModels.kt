@@ -12,6 +12,15 @@ open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
     val configPath: Property<String> = objects.property(String::class.java)
         .convention("capsule-context.yml")
 
+    /**
+     * CAP-FISH-AUDIO — path to the fish-audio key pool file. This file holds a
+     * **secret** and is git-ignored (never committed); it supplies the
+     * `fish-audio` member of [CapsuleConfig]. Defaults to "fish.yaml" in the
+     * project root; absent → the `fish` engine is unavailable (degraded).
+     */
+    val fishAudioConfigPath: Property<String> = objects.property(String::class.java)
+        .convention("fish.yaml")
+
     /** Active UI language for task descriptions and log messages. Defaults to "en". */
     val language: Property<String> = objects.property(String::class.java)
         .convention("en")

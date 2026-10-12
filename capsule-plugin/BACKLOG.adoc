@@ -1,6 +1,37 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-12 (S-177 — release `capsule-plugin 0.0.6` + alignement catalogue BOM `0.0.81` ; MEMPHIS BOM/catalog `0.0.82`. Tous les EPICs actionnables clos.)
+:last_update: 2026-10-12 (S-182 — **EPIC `CAP-FISH-AUDIO` CADRÉ + US-1 livrée** : moteur TTS cloud **Fish Audio** (voix clonée) = 4e `TtsEngine` ; config `fish-audio` (pool de clés) membre de `CapsuleConfig`, clé en `fish.yaml` gitignoré. 6 US ~17 pts, US-0 ✅ + US-1 ✅.)
+
+'''
+== 🐟 CAP-FISH-AUDIO — 🟡 EN COURS (S-182 : US-0 ✅ + US-1 ✅)
+_📖 Littérature de référence : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`._
+
+_Réintroduire le moteur TTS **Fish Audio** (`https://api.fish.audio`, voix clonée)
+utilisé par l'usine `prepa`, comme **4e `TtsEngine`** (à côté de Piper/Espeak/NoOp).
+Additif : branche un moteur sur un port existant, zéro modification des moteurs
+actuels. Introduit la **première capacité metered portant sa propre
+authentification** dans capsule — le secret vit dans `fish.yaml` (gitignoré),
+la config `fish-audio` (pool de clés) devient un **membre de `CapsuleConfig`**
+(mappage Jackson), la voix/modèle/format dans la section `tts`._
+
+*Cadrage* : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc` (S-182, 9 constats + 11 décisions).
+*Charge* : 6 US ~17 pts — **US-0 ✅ S-182**. Source de contrat :
+`foundry/private/prepa_electricite_complet/gen_audio.py`.
+*Contraintes* : secret jamais commité/loggé (Règle 6) ; run meteron = accord pilote ;
+CI sur **stub HTTP** (zéro réseau réel) ; `tts.fishAudioConfigFile` défaut `fish.yaml`,
+dégradation propre si absent.
+
+[cols="1,4,2,1,2", options="header"]
+|===
+| US | Description | Cibles | Pts | Statut
+
+| US-0 | Cadrage (audit + décisions) | ce doc | 0 | ✅ S-182
+| US-1 | **Modèle + chargement** — `FishAudioKey` + membre `CapsuleConfig.fishAudio` (`@JsonProperty("fish-audio")`) + chargement pool depuis `fish.yaml` + rédaction secret | `CapsuleConfig`, `CapsuleConfigLoader`, `CapsulePlugin` | 3 | ✅ S-182
+| US-2 | **`FishAudioTtsEngine`** — `HttpClient` JDK + JSON + `Bearer` + `model` + `format: wav` → `wavToMp3`, retries, cache sha1 du texte dit | `capsule` (`TtsManager`) | 5 | 🟡 À FAIRE
+| US-3 | **Wiring** — `resolveTtsEngine()` (`fish`/`fish-audio`) + `TtsConfig` 6 champs Fish (4 sources) + extension/conventions/push + scaffold | `CapsuleVideoTask`, `CapsuleConfig*`, `CapsuleScaffoldTask` | 3 | 🟡 À FAIRE
+| US-4 | **BDD `@fish`** — stub HTTP (engine choisi, body/env, dégradation, strict, cache) + runner dédié | `src/test/features` | 3 | 🟡 À FAIRE
+| US-5 | **Docs + dogfooding metered** — README/traductions + run réel (accord pilote) | docs, consumer | 3 | 🟡 À FAIRE
+|===
 
 '''
 == ✅ CAP-QC — TERMINÉ 9/9 (S-174)

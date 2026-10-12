@@ -53,7 +53,11 @@ object CapsuleConfigMerger {
             preview = mergePreviewConfig(envConfig.preview, propertiesConfig.preview, yaml?.preview, cliParams),
             chapters = mergeChaptersConfig(envConfig.chapters, propertiesConfig.chapters, yaml?.chapters, cliParams),
             viral = mergeViralConfig(envConfig.viral, propertiesConfig.viral, yaml?.viral, cliParams),
-            voice = mergeVoiceConfig(envConfig.voice, propertiesConfig.voice, yaml?.voice, cliParams)
+            voice = mergeVoiceConfig(envConfig.voice, propertiesConfig.voice, yaml?.voice, cliParams),
+            // CAP-FISH-AUDIO — the key pool is a secret: it is NOT a 4-source value.
+            // It rides the YAML only (the dedicated git-ignored `fish.yaml`, loaded
+            // by the plugin). Never ENV/props/CLI — a key must not leak into logs.
+            fishAudio = yaml?.fishAudio ?: emptyList()
         )
     }
 

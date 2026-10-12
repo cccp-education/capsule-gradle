@@ -2,3 +2,4 @@ capsules/
 build/
 .gradle/
 .kotlin
+fish.yaml

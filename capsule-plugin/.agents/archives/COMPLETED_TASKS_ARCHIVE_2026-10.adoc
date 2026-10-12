@@ -1,6 +1,29 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 182 — Cadrage EPIC `CAP-FISH-AUDIO` (moteur TTS cloud Fish Audio) ✅
+
+* Demande pilote : réintroduire le support **Fish Audio** (`prepa`, voix clonée)
+  dans `capsule` comme **4e `TtsEngine`** additif ; clé dans `fish.yaml` (gitignoré) ;
+  mappage **Jackson** de la config `fish-audio`.
+* **Gouvernance pure, zéro code** (patron S-057/S-063). Audit 9 constats + 11 décisions.
+* Décisions clés : `fish-audio` = **membre de `CapsuleConfig`** (`@JsonProperty`) ;
+  **pool de clés** (`fish.yaml`, chargé + fusionné) ; voix/modèle/format/temperature/
+  topP/endpoint dans `tts` ; `FishAudioTtsEngine` (`HttpClient` JDK + JSON + `Bearer`
+  + `format: wav` → `wavToMp3`, retries, cache sha1 du texte dit) ; jeton
+  `fish`/`fish-audio` ; **rédaction du secret** ; dégradation propre si fichier absent ;
+  run meteron = accord pilote (CI **stub HTTP**).
+* 6 US ~17 pts (US-0 ✅). Doc `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
+* **US-1 livrée** : `FishAudioKey` (invariant non-blanc + `toString()` → `(key=***)`
+  rédaction du secret) + membre `CapsuleConfig.fishAudio` (`@JsonProperty("fish-audio")`,
+  `@JsonIgnoreProperties`) + `CapsuleConfigLoader.loadFishAudio` (réutilise `load` +
+  `${VAR}`) + `CapsuleConfigMerger` (le secret rode le YAML seul) +
+  `CapsuleExtension.fishAudioConfigPath` (défaut `fish.yaml`) + wiring `CapsulePlugin`.
+  8 unit (`FishAudioKeyTest` + `FishAudioConfigLoaderTest`, garde non-fuite + exemple
+  committé). `compileKotlin`/`compileTestKotlin` VERT (Local = Build, Tests = CI).
+* `fish.yaml` **non lu** (gitignoré) ; schéma pris de `fish_example.yaml` (clé factice).
+* Rapport `.agents/sessions/182-cap-fish-audio-cadrage.adoc`.
+
 == Session 181 — README consommateur (racine) + traductions ✅
 
 * `README.md` **racine** (vitrine GitHub) réécrit en **guide consommateur** fidèle au code :

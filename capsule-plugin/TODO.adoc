@@ -1,5 +1,17 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-12 (S-181 — README consommateur (racine) + 9 traductions ; EN = source de vérité.)
+:last_update: 2026-10-12 (S-182 — **EPIC CAP-FISH-AUDIO CADRÉ** : moteur TTS cloud Fish Audio (voix clonée) = 4e `TtsEngine` ; config `fish-audio` membre de `CapsuleConfig`, clé en pool `fish.yaml` gitignoré. 6 US ~17 pts, US-0 ✅.)
+
+'''
+== 🐟 CAP-FISH-AUDIO — moteur TTS cloud Fish Audio (CADRÉ S-182)
+
+_📖 Littérature : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`._
+
+. [x] **US-0** ✅ S-182 — cadrage (audit 9 constats + 11 décisions ; `fish-audio` = membre `CapsuleConfig`, pool de clés, voix/modèle dans `tts`, `FishAudioTtsEngine` HttpClient JDK, rédaction secret, run meteron = accord pilote).
+. [x] **US-1** ✅ S-182 — modèle + chargement (`FishAudioKey` + membre `CapsuleConfig.fishAudio` + `CapsuleConfigLoader.loadFishAudio` + `fish.yaml` + rédaction secret ; 8 unit).
+. [ ] **US-2** — `FishAudioTtsEngine` (`HttpClient` + JSON + `Bearer` + `format: wav` → `wavToMp3`, retries, cache sha1).
+. [ ] **US-3** — wiring `resolveTtsEngine()` (`fish`/`fish-audio`) + `TtsConfig` 6 champs Fish (4 sources) + extension/conventions/scaffold.
+. [ ] **US-4** — BDD `@fish` (stub HTTP) + runner dédié.
+. [ ] **US-5** — docs/traductions + dogfooding metered (accord pilote).
 
 '''
 == ✅ README consommateur (racine) + traductions (S-181)

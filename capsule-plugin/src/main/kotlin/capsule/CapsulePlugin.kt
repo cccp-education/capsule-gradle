@@ -29,11 +29,19 @@ class CapsulePlugin : Plugin<Project> {
             // Load YAML config (defaults if file doesn't exist)
             val yamlConfig = CapsuleConfigLoader.load(configFile)
 
+            // CAP-FISH-AUDIO — the key pool is a secret living in a dedicated
+            // git-ignored file, never in the committed capsule-context.yml. When
+            // present it overrides the (usually empty) `fish-audio` member.
+            val fishKeys = CapsuleConfigLoader.loadFishAudio(
+                File(project.projectDir, capsuleExt.fishAudioConfigPath.get())
+            )
+
             // Collect CLI -P params prefixed with "capsule."
             val cliParams = collectCliParams(project)
 
             // Merge: CLI > YAML > gradle.properties > ENV
             val mergedConfig = CapsuleConfigMerger.merge(project.projectDir, yamlConfig, cliParams, yamlLoaded)
+                .let { if (fishKeys.isNotEmpty()) it.copy(fishAudio = fishKeys) else it }
 
             // Push resolved values into DSL Extension properties
             pushConfigIntoExtension(mergedConfig, capsuleExt)

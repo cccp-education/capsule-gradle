@@ -1,0 +1,99 @@
+= Session 182 — Cadrage EPIC CAP-FISH-AUDIO + US-1
+:session: 182
+:borough: Détroit
+:date: 2026-10-12
+:epic: CAP-FISH-AUDIO
+:us: US-0 (cadrage) + US-1 (modèle + chargement)
+
+== Mission
+
+Demande pilote : **réintroduire dans `capsule` le support du moteur TTS cloud
+Fish Audio**, comme dans l'usine `prepa_electricite_complet`. Le pilote dispose
+d'une clé API dans `fish.yaml` (gitignoré) et demande un **mappage Jackson** pour
+la configuration `fish-audio`. Session de cadrage : établir le périmètre, les
+décisions et le découpage, **sans écrire de code**.
+
+== Protocole
+
+* **Règle 6 (zéro secret)** : `fish.yaml` est **gitignoré**
+  (`git check-ignore -v` → `.gitignore:5`) → **jamais lu ni commité**. Le schéma
+  est pris de `fish_example.yaml` (committé, clé factice).
+* Source de contrat : `foundry/private/prepa_electricite_complet/gen_audio.py`
+  (usine Python de référence — lecture seule, aucun portage de code).
+* Audit au code de `capsule` (port `TtsEngine`, config Jackson, extension,
+  logger, conversion audio, absence d'HTTP/secret en prod).
+
+== Constats (9)
+
+. `TtsEngine` existe (`TtsManager.kt:7`) + 3 implémentations + `when` de
+  résolution (`CapsuleVideoTask.kt:259`) → Fish = **4e moteur additif**.
+. **Aucun client HTTP en production** (LLM via hub N1 codebase) → Fish = 1re
+  dépendance réseau.
+. **Aucun secret en production** (`grep apiKey|bearer|token` = 0) → Fish = 1re
+  capacité metered portant son authentification.
+. `fish.yaml` gitignoré ; `fish_example.yaml` = schéma (pool de clés).
+. Jackson déjà présent (databind + yaml + module-kotlin).
+. `CapsuleConfig` = 18 sections ; `CapsuleConfigLoader` mappe tout YAML (défauts)
+  + `${VAR}`.
+. Config journalisée (`CapsuleConfigLogger`) + sérialisée
+  (`CapsuleCompositeContextTask`) → **rédaction obligatoire** de la clé.
+. `AudioConversionUtil.wavToMp3` réutilisable (Fish rend du WAV).
+. `prepa/gen_audio.py:85-103` = contrat (endpoint, headers, model, format wav,
+   temperature/top_p, retries, écriture atomique, cache sha1 du texte dit).
+
+== Décisions (11)
+
+. `fish-audio` = **membre de `CapsuleConfig`** (`@JsonProperty("fish-audio")`).
+. **Pool de clés** = valeur du membre (`List<FishAudioKey>`), rotation-ready.
+. Voix/modèle/format/temperature/topP/endpoint dans **`tts`** (validé pilote) ;
+   le **secret seul** reste dans `fish.yaml`.
+. `fish.yaml` (gitignoré) chargé via `CapsuleConfigLoader` + fusion du membre
+   `fishAudio` ; absent → moteur indisponible (dégradation, jamais d'échec).
+5. `FishAudioTtsEngine` — `HttpClient` JDK (zéro dépendance) + JSON + `Bearer` +
+   `format: wav` → `wavToMp3`, retries bornés, écriture atomique.
+6. Jetons `fish`/`fish-audio` dans `resolveTtsEngine()`.
+7. **Rédaction** du secret (`toString` → `***`, log/sérialisation) + garde de test.
+8. **Économie d'Encre** : cache sha1 du texte dit (aligné PRT-01).
+9. Run meteron = **accord pilote** ; CI sur **stub HTTP** (zéro réseau réel).
+10. **Boundary** : capsule porte sa 1re authentification (dogfood-first) ;
+    routage N1 écarté pour cette itération.
+11. English only ; zéro secret commité/loggé.
+
+== Découpage (6 US ~17 pts)
+
+US-0 cadrage ✅ · US-1 modèle+chargement ✅ · US-2 engine · US-3 wiring · US-4 BDD ·
+US-5 docs+dogfooding. Détail : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
+
+== US-1 livrée — modèle + chargement (baby-step DDD/TDD, zéro réseau)
+
+* `FishAudioKey` (`src/main/kotlin/capsule/FishAudioKey.kt`) — `key: String`
+  (invariant non-blanc), `@JsonIgnoreProperties(ignoreUnknown = true)`,
+  `toString()` → `FishAudioKey(key=***)` (**rédaction du secret**).
+* Membre `CapsuleConfig.fishAudio: List<FishAudioKey>` —
+  `@JsonProperty("fish-audio")` (trait d'union ≠ identifiant Kotlin), défaut
+  `emptyList()` (backward-compat).
+* `CapsuleConfigLoader.loadFishAudio(file)` — réutilise `load` (Jackson + `${VAR}`) ;
+  fichier absent/vide → **liste vide** (dégradation propre, jamais d'échec).
+* `CapsuleConfigMerger.merge` — `fishAudio = yaml?.fishAudio ?: emptyList()` : le
+  secret **rode le YAML seul**, jamais ENV/props/CLI (pas de fuite en log).
+* `CapsuleExtension.fishAudioConfigPath` — défaut `fish.yaml` (gitignoré).
+* Wiring `CapsulePlugin.afterEvaluate` — charge le pool et **override** le membre
+  fusionné quand non vide.
+* Tests (8) : `FishAudioKeyTest` (rédaction, invariant, non-fuite `CapsuleConfig`
+  / log) + `FishAudioConfigLoaderTest` (1 clé, pool ordonné, absent/vide, champ
+  inconnu ignoré, mapping `CapsuleConfig`, merger, exemple committé).
+* `fish_example.yaml` (committé, clé factice) = schéma ; `fish.yaml` **non lu**.
+
+== Gates
+
+* `compileKotlin` + `compileTestKotlin` **VERT** (Local = Build, **Tests = CI**).
+* **Zéro secret** : `fish.yaml` non lu/commité ; `fish_example.yaml` = clé factice.
+* Gouvernance synchronisée : `BACKLOG.adoc`, `.agents/INDEX.adoc`,
+  `PROMPT_REPRISE.adoc` (×2), `TODO.adoc`, `.agents/SESSIONS_HISTORY.adoc`,
+  archive `2026-10`, `AGENTS.adoc` racine.
+
+== Prochaine session
+
+**S-183 — CAP-FISH-AUDIO US-2** : `FishAudioTtsEngine` (`HttpClient` JDK + JSON +
+`Bearer` + `format: wav` → `wavToMp3`, retries, cache sha1 du texte dit ; unit sur
+stub HTTP `HttpServer`, zéro réseau réel).

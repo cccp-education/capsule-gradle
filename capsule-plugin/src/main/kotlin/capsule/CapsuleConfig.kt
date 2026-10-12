@@ -6,6 +6,7 @@ import capsule.podcast.PodcastConfig
 import capsule.preview.PreviewConfig
 import capsule.transcript.TranscriptConfig
 import capsule.viral.ViralConfig
+import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * Immutable configuration model for capsule-gradle.
@@ -33,7 +34,16 @@ data class CapsuleConfig(
     val preview: PreviewConfig = PreviewConfig(),
     val chapters: ChaptersConfig = ChaptersConfig(),
     val viral: ViralConfig = ViralConfig(),
-    val voice: VoiceConfig = VoiceConfig()
+    val voice: VoiceConfig = VoiceConfig(),
+    /**
+     * CAP-FISH-AUDIO — the `fish-audio` member: a pool of Fish Audio API keys,
+     * loaded from the git-ignored `fish.yaml` (never from the committed
+     * `capsule-context.yml`). Empty when the file is absent — the `fish` engine is
+     * then unavailable (degraded, never a failure). The hyphenated YAML key
+     * requires the explicit [JsonProperty].
+     */
+    @JsonProperty("fish-audio")
+    val fishAudio: List<FishAudioKey> = emptyList()
 )
 
 /**

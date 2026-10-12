@@ -43,6 +43,22 @@ object CapsuleConfigLoader {
     }
 
     /**
+     * CAP-FISH-AUDIO — loads the `fish-audio` key pool from a dedicated YAML file
+     * (typically the git-ignored `fish.yaml`).
+     *
+     * Returns an empty list when the file is missing or empty: the `fish` engine
+     * is then unavailable, which is a **degraded** state, never a failure. Reuses
+     * [load] so `${VAR}` substitution and tolerant parsing apply.
+     *
+     * The returned keys are secrets — never log or serialise them in clear
+     * ([FishAudioKey.toString] is redacted).
+     */
+    fun loadFishAudio(configFile: File): List<FishAudioKey> {
+        if (!configFile.exists() || configFile.length() == 0L) return emptyList()
+        return load(configFile).fishAudio
+    }
+
+    /**
      * Resolves environment variables in YAML content.
      *
      * Replaces all occurrences of `${VAR_NAME}` with the corresponding

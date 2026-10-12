@@ -1,0 +1,198 @@
+= CADRAGE — EPIC CAP-FISH-AUDIO (Détroit / capsule-gradle)
+:session: 182
+:date: 2026-10-12
+:toc:
+
+== Objectif
+
+Réintroduire dans `capsule` le support **Fish Audio** (`https://api.fish.audio`),
+un moteur TTS **cloud cloné** déjà utilisé par l'usine `prepa_electricite_complet`
+(`foundry/private/prepa_electricite_complet/gen_audio.py`). Aujourd'hui capsule
+n'a que des moteurs **locaux/offline** (`PiperTtsEngine`, `EspeakTtsEngine`) ou
+un `NoOpTtsEngine` ; Fish apporte une **voix clonée de qualité** (registre
+chaleureux) au prix d'un service **metered** (facturé à l'octet).
+
+L'EPIC est **additif** : il branche un **4e `TtsEngine`** sur un port qui existe
+déjà, sans modifier le comportement des moteurs existants (backward-compat
+totale).
+
+== Constats (audit au code, S-182)
+
+[cols="1,3,1", options="header"]
+|===
+| # | Constat | Preuve
+
+| C1
+| Le port `TtsEngine` existe (`synthesize`/`isAvailable`/`name`/`language`) et a
+   3 implémentations, résolues par un `when` sur `capsuleExtension.ttsEngine`.
+   Un `FishAudioTtsEngine` s'y insère **sans toucher** aux autres.
+| `capsule/TtsManager.kt:7`, `CapsuleVideoTask.kt:259`
+
+| C2
+| **Aucun client HTTP en production** dans capsule : le LLM transite par le hub
+   N1 codebase (`LlmBuildService`). Fish introduit la **première dépendance
+   réseau** de capsule.
+| `grep java.net.http\|HttpClient\|okhttp src/main` = 0
+
+| C3
+| **Aucun secret dans le code** aujourd'hui : `grep apiKey\|bearer\|token src/`
+   = 0. Fish serait la **première capacité metered portant sa propre
+   authentification**.
+| `grep -rni "apiKey\|bearer" src/` = 0
+
+| C4
+| Le fichier de clé `fish.yaml` est **gitignoré** ; `fish_example.yaml`
+   (committé) documente le schéma. Le shape est un **pool** de clés.
+| `.gitignore:5` ; `fish_example.yaml` :
+   `fish-audio:` → liste d'objets `{ key: … }`
+
+| C5
+| Jack**son** est déjà disponible (databind + dataformat-yaml + module-kotlin) :
+   le mapping de la config Fish n'ajoute **aucune dépendance**.
+| `CapsuleConfigLoader.kt:3-5` ; `build.gradle.kts:461-463`
+
+| C6
+| Le modèle `CapsuleConfig` compte **18 sections** ; Jackson mappe un YAML entier
+   (défauts pour les sections absentes) + substitution `${VAR}`. Une section
+   `fish-audio` s'y ajoute comme **membre**.
+| `CapsuleConfig.kt:18`, `CapsuleConfigLoader.kt:30`
+
+| C7
+| La config résolue est **journalisée** (`CapsuleConfigLogger`) et sérialisée
+   (`CapsuleCompositeContextTask`), donc toute clé doit être **rédigée**.
+| `CapsulePlugin.kt:46`, `CapsuleCompositeContextTask.kt:76`
+
+| C8
+| La conversion WAV→MP3 existe (`AudioConversionUtil.wavToMp3`) et `piper`/`espeak`
+   l'utilisent déjà — Fish (qui rend du **WAV**) la réutilise.
+| `TtsManager.kt:58,140`
+
+| C9
+| `prepa` (`gen_audio.py:85-103`) est la **référence de contrat** : `POST
+   /v1/tts`, `Bearer`, `model: speech-1.6`, body `{text, reference_id, format: wav,
+   temperature: 0.85, top_p: 0.88}`, retries, écriture atomique, **cache sha1 du
+   texte dit**.
+| `foundry/private/prepa_electricite_complet/gen_audio.py`
+|===
+
+== Décisions
+
+. **`fish-audio` = membre de `CapsuleConfig`** (demande pilote). Jackson mappe le
+   bloc YAML `fish-audio` dans un membre `fishAudio`. Le trait d'union impose
+   `@JsonProperty("fish-audio")` (identifiant Kotlin invalide sinon).
+. **Le pool de clés est la valeur du membre** (shape de l'exemple) :
+   `fish-audio:` → `List<FishAudioKey>` ; chaque entrée porte une `key`. C'est un
+   **pool** : la 1re clé valide est utilisée, la rotation (repli 2e clé sur
+   401/429) est possible plus tard — cohérent avec la doctrine maison (rotation
+   des ports Ollama, `api-key-pool-gradle` N0).
+. **Les paramètres non-secrets vivent dans `tts`** (demande pilote validée) :
+   `tts.fishVoice` (voix clonée `reference_id`), `tts.fishModel`
+   (défaut `speech-1.6`), `tts.fishFormat` (défaut `wav`), `tts.fishTemperature`
+   (défaut `0.85`), `tts.fishTopP` (défaut `0.88`), `tts.fishEndpoint`
+   (défaut `https://api.fish.audio/v1/tts`), `tts.fishAudioConfigFile`
+   (défaut `fish.yaml`). Le **secret seul** reste isolé dans `fish.yaml`.
+. **Le secret entre par `fish.yaml`, jamais par `capsule-context.yml`**
+   (committé/scaffoldé). Le plugin charge `fish.yaml` (même `CapsuleConfigLoader`
+   + substitution `${VAR}`) et **fusionne son unique membre `fishAudio`**. Fichier
+   absent → `fishAudio` vide → moteur `fish` indisponible (dégradation propre,
+   jamais d'échec). `fish_example.yaml` (committé, clé factice) = documentation
+   du schéma.
+5. **`FishAudioTtsEngine implements TtsEngine`** — `java.net.http.HttpClient`
+   (JDK, **zéro dépendance**), corps JSON via Jackson, en-têtes `authorization:
+   Bearer` + `model`, `format: wav` (comme `prepa` : le mp3 par défaut ajoute une
+   compression), puis `AudioConversionUtil.wavToMp3`. `isAvailable` = présence
+   d'au moins une clé non blanche. Retries bornés (transitoires) + écriture
+   atomique (`.part` → `os.replace`).
+6. **Jetons d'engine `fish` / `fish-audio`** dans `resolveTtsEngine()` →
+   `FishAudioTtsEngine` ; indisponible + `strictMode` → erreur, sinon `NoOpTtsEngine`
+   (patron `PiperTtsEngine`/`EspeakTtsEngine`).
+7. **Rédaction obligatoire du secret** : `FishAudioKey.toString()` → `(key=***)`,
+   et `CapsuleConfigLogger`/`CapsuleCompositeContextTask` ne doivent jamais
+   exposer la clé (garde de test dédiée).
+8. **Économie d'Encre** (Loi `AGENT.adoc`) : cache **indexé sur le texte dit**
+   (sha1) — une phrase corrigée est forcément régénérée, une phrase inchangée est
+   réutilisée sans appel meteron. Aligné sur le cache PRT-01 (`<file>.key`).
+9. **Metered = accord pilote** : le dogfooding réel (US-5) exige l'autorisation
+   pilote (comme S-158) ; en CI, **stub HTTP** (`com.sun.net.httpserver.HttpServer`,
+   patron déjà utilisé par les tests LLM) — **zéro appel réseau réel**.
+10. **Boundary** : capsule (N2) porte sa **première** authentification. Choix
+   pilote « dogfood-first » : le secret vit dans un fichier gitignoré du
+   consommateur. Le routage via le hub N1 (comme le LLM) est **écarté pour cette
+   itération** (TTS hors périmètre codebase) — réouverture = EPIC distinct si un
+   2e borough adopte Fish.
+11. **English only** (code, Gherkin, commentaires) ; **zéro secret** commité ou
+   loggé (Règle 6).
+
+== Découpage
+
+[cols="1,4,2,1,2", options="header"]
+|===
+| US | Description | Cibles | Pts | Statut
+
+| US-0
+| Cadrage (audit + décisions)
+| ce document
+| 0
+| ✅ S-182
+
+| US-1
+| **Modèle + chargement** — `FishAudioKey` + membre `CapsuleConfig.fishAudio`
+   (`@JsonProperty("fish-audio")`) + chargement du pool depuis `fish.yaml`
+   (`tts.fishAudioConfigFile`) via `CapsuleConfigLoader` + **rédaction** du secret.
+   Unit Jackson round-trip + garde de non-fuite.
+| `CapsuleConfig`, `CapsuleConfigLoader`, `CapsulePlugin`
+| 3
+| ✅ S-182
+
+| US-2
+| **`FishAudioTtsEngine`** — port `TtsEngine` : `HttpClient` + JSON + `Bearer` +
+   `model` + `format: wav` → `wavToMp3`, retries bornés, cache sha1 du texte dit.
+   Unit (`HttpServer` stub) + garde « aucune clé dans les logs ».
+| `capsule` (`TtsManager`)
+| 5
+| 🟡 À FAIRE
+
+| US-3
+| **Wiring** — `resolveTtsEngine()` (`fish`/`fish-audio`) + `TtsConfig` 6 champs
+   Fish (4 sources) + `CapsuleExtension` + `CapsuleConventions` +
+   `pushConfigIntoExtension` + bloc `tts` commenté dans `CapsuleScaffoldTask`.
+| `CapsuleVideoTask`, `CapsuleConfig*`, `CapsuleScaffoldTask`
+| 3
+| 🟡 À FAIRE
+
+| US-4
+| **BDD `@fish`** — scénarios sur stub HTTP (engine choisi, body/env corrects,
+   dégradation sans clé, `strictMode`, cache) + runner dédié.
+| `src/test/features`
+| 3
+| 🟡 À FAIRE
+
+| US-5
+| **Docs + dogfooding metered** — README (tâches/config) + traductions + run réel
+   (accord pilote) : une capsule rendue avec la voix clonée.
+| docs, consumer
+| 3
+| 🟡 À FAIRE
+|===
+
+*Total* : 6 US ~17 pts. Ordre : US-0 ✅ + US-1 ✅ (S-182) → US-2 → US-3 → US-4 → US-5.
+
+== Hors scope
+
+* **Post-traitement phonétique** de `prepa` (`gen_audio.py:38-61`, table
+  `PHONETIQUE` dit/lu) — sujet **PRT-01** déjà porté (`PronunciationLexicon`,
+  S-174) ; cet EPIC n'y touche pas.
+* **Routage du secret via le hub N1** (comme le LLM) — écarté pour cette
+  itération (décision 10).
+* **Rotation multi-clés effective** — le pool est *prêt* (shape liste), la
+  sélection de la 2e clé sur 401/429 est un incrément ultérieur.
+* **Publication Maven Central** — accord pilote (Règle 2).
+
+== Traçabilité
+
+* Demande pilote : « remettre le support de fish audio comme dans prepa ; clé dans
+  `fish.yaml` (gitignoré) ; introduire un mappage Jackson pour la config
+  fish-audio ». Validée S-182 : `fish-audio` = membre de `CapsuleConfig` ; pool de
+  clés = valeur du membre ; voix/modèle dans `tts`.
+* Référence de contrat : `foundry/private/prepa_electricite_complet/gen_audio.py`.
+* Schéma : `fish_example.yaml` (committé) ; secret : `fish.yaml` (gitignoré).

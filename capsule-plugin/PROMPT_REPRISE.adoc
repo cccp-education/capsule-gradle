@@ -1,40 +1,60 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 182
+:session: 183
 :borough: Détroit
-:session_precedente: 181 — README consommateur (racine) + traductions
+:session_precedente: 182 — cadrage EPIC CAP-FISH-AUDIO (gouvernance pure)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
-_littérature_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`.
+_littérature_ : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
 
 == Contexte Hérité
 
-=== S-181 — README consommateur + i18n (livré, documentaire)
+=== S-182 — cadrage EPIC CAP-FISH-AUDIO + US-1 (livré)
 
-- `README.md` **racine** (vitrine GitHub) réécrit en **guide consommateur** fidèle au code
-  (version `0.0.8`, prérequis Gradle 9.8+, 22 langues, tâches, DSL, features opt-in, liens).
-- 9 traductions régénérées dans `README.consommateurs/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md`
-  (`rev 0.0.8`). Dette `0.0.1-SNAPSHOT` résorbée.
-- Aucun artefact publié → pas de bump. Rapport `.agents/sessions/181-readme-consommateur-i18n.adoc`.
+- EPIC `CAP-FISH-AUDIO` cadré : réintroduire le moteur TTS cloud **Fish Audio**
+  (voix clonée `prepa`) comme **4e `TtsEngine`** additif.
+- Décisions actées (validées pilote) : config `fish-audio` = **membre de
+  `CapsuleConfig`** (`@JsonProperty("fish-audio")`) ; **pool de clés** = valeur du
+  membre (`fish.yaml` gitignoré, chargé + fusionné) ; voix/modèle/format/
+  temperature/topP/endpoint dans `tts`.
+- **US-1 livrée** : `FishAudioKey` (`toString()` → `(key=***)`) + membre
+  `CapsuleConfig.fishAudio` + `CapsuleConfigLoader.loadFishAudio` + merger (secret
+  YAML seul) + `CapsuleExtension.fishAudioConfigPath` (défaut `fish.yaml`) +
+  wiring `CapsulePlugin`. 8 unit + compiles VERT.
+- 6 US ~17 pts (US-0 ✅ + US-1 ✅). Doc `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
+- Aucun artefact publié → pas de bump. Rapport `.agents/sessions/182-*.adoc`.
 
-=== S-180 — README internes (`capsule-plugin/`) + `README.plugin/` (9). S-179 — résidus `prepa` + release 0.0.8.
+== Mission Session 183 — CAP-FISH-AUDIO US-2
 
-== Mission Session 182 — backlog EPICs vidé
-
-* **A)** Dette/maintenance : couverture Kover, docs restantes.
-* **B)** Toute nouvelle demande pilote (cadrer + implémenter en baby-step).
+* **US-2** — **`FishAudioTtsEngine implements TtsEngine`** (baby-step DDD/TDD,
+  zéro réseau réel) :
+  1. `HttpClient` JDK + corps JSON (Jackson) + en-têtes `authorization: Bearer` +
+     `model`.
+  2. `format: wav` (comme `prepa` : le mp3 par défaut ajoute une compression) puis
+     `AudioConversionUtil.wavToMp3`.
+  3. Retries bornés (transitoires) + écriture atomique (`.part` → `os.replace`).
+  4. `isAvailable()` = au moins une clé non blanche ; `language()` inchangé.
+  5. Cache **indexé sur le texte dit** (sha1) — Économie d'Encre (aligné PRT-01).
+  6. Unit sur **stub HTTP** (`com.sun.net.httpserver.HttpServer`, patron des tests
+     LLM) : body/env corrects, dégradation sans clé, cache, garde « aucune clé
+     dans les logs ».
+* Gates : `compileKotlin` + `compileTestKotlin` VERT (Local = Build, **Tests = CI**).
+* Ne pas toucher US-3 (wiring) — une US par session (baby-step).
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
-* Nouvelle option → `Config` + extension + `CapsuleConventions` + merger + `pushConfigIntoExtension`,
-  **défaut false** (backward compat).
-* **English only** code/Gherkin (`OssVocabularyGuardTest`) ; **zéro Python** ; **zéro secret** ;
+* **Règle 6 — ZÉRO secret** dans le code, les logs, les tests. `fish.yaml` est
+  **gitignoré** : ne jamais le lire/commiter. `fish_example.yaml` = clé factice.
+* Nouvelle option → `Config` + extension + `CapsuleConventions` + merger +
+  `pushConfigIntoExtension`, **défaut backward-compat**.
+* **English only** code/Gherkin (`OssVocabularyGuardTest`) ; **zéro Python** ;
   baby-step DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
-* **README** : deux corpus, même source de vérité EN — racine `README.md` (consommateur) +
-  `README.consommateurs/` ; `capsule-plugin/README.md` (interne) + `capsule-plugin/README.plugin/`.
+* Contrat Fish : `prepa/gen_audio.py` (endpoint `/v1/tts`, `Bearer`, `model:
+  speech-1.6`, `format: wav`, `temperature 0.85`, `top_p 0.88`).
 * Catalogue **interne** aligné BOM `0.0.83`.
 
 == Rappels
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.8** (Central).
-* MEMPHIS BOM/catalog **0.0.84**. `CAP-QC` **9/9 ✅**, `CAP-QC-VOICE` **5/5 ✅**.
-  Backlog actionnable **vidé** ; README consommateur (10) + interne (10) à jour.
+* MEMPHIS BOM/catalog **0.0.84**. `CAP-QC` **9/9 ✅**, `CAP-QC-VOICE` **5/5 ✅**,
+  `CAP-VIRAL`/`CAP-SHORT`/`CAP-VIRAL-E2E`/`CAP-CONTEXT`/`LLM-RESILIENCE` ✅.
+* **CAP-FISH-AUDIO 🟡 CADRÉ** (S-182) : 6 US ~17 pts — **seul EPIC actionnable ouvert.**
