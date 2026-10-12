@@ -7,6 +7,29 @@
 
 toc::[]
 
+[WARNING]
+====
+*État réel (S-178, 2026-10) — ce document est la **vision d'origine (rev 1.0, mai 2026)**,
+conservée pour l'historique.* Elle précède la réorientation FFmpeg et les EPICs livrés.
+La carte courante fait foi dans `.agents/INDEX.adoc` + `BACKLOG.adoc`. Réconciliation :
+
+[cols="2,3", options="header"]
+|===
+| Vision rev 1.0 (mai 2026) | Réalité 2026-10 (S-178)
+
+| `com.cheroliv.capsule` | groupId **`education.cccp`**, packages `capsule.*`
+| **FFmpeg « NON utilisé »** ; WebM natif Playwright uniquement | FFmpeg **central** : socle `SCREENSHOT` (PNG → WebM), conversion **MP4/H.264**, post-audio (loudnorm EBU R128, BGM, ducking), burn-in sous-titres
+| 1 seule voie de capture (Playwright) | **3 stratégies** : `PLAYWRIGHT`, `SCREENSHOT`, `REMOTION` (+ enrichissement Manim)
+| Piper TTS local | Piper **et** espeak-ng **et** NoOp (dégradable)
+| Pipeline mono-deck | **19 domaines** : ai, anim, audio, chapters, ci, context, feed, i18n, multilang, pipeline, podcast, preview, publish, qc, timeline, transcript, validation, viral, voice
+| Mono-langue | **multi-langue** (`LanguageCatalog`, 22 langues) ; **viral** YouTube/TikTok (`capsule.viral`) ; **QC voix ASR** (`capsule.voice`) ; transcript inverse ; podcast
+| Étapes « à implémenter » | **toutes implémentées** ; version **`0.0.7`** (Maven Central) ; **44** `.feature`, **38** `CucumberTaskSpec`
+|===
+
+La vision (transformer un deck reveal.js en capsule vidéo synchronisée, sans
+post-production humaine) reste **valide** ; seule l'implémentation a évolué.
+====
+
 '''
 == Vision
 

@@ -3,6 +3,12 @@
 :session: 176 Câblage dit↔lu (sous-titres + karaoké)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
 
+== Couverture — 12 octobre 2026 (après session 178)
+
+*S-177/S-178 (release `0.0.6`/`0.0.7`, sync gouvernance, cache CI Playwright)* :
+**aucun test modifié**. Baseline inchangée depuis S-176 ; preuve = CI `Test` +
+`Full Tests` VERTES (run `38254919492`).
+
 == Couverture — 12 octobre 2026 (après session 176)
 
 .Câblage dit↔lu
