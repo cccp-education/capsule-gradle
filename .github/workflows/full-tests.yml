@@ -3,6 +3,18 @@ name: Full Tests
 on:
   push:
     branches: [main, master]
+    # Governance/doc-only changes do not affect the plugin build -> no CI proof
+    # required (rule "Local = Build, Tests = CI": an unchanged code commit's green
+    # run stands). Ignore pure-doc paths to avoid burning ~24 min of Full Tests.
+    paths-ignore:
+      - '**/*.adoc'
+      - '**/*.md'
+      - '.agents/**'
+      - '.github/**'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
+      - 'fish_example.yaml'
 
 jobs:
   full-tests:

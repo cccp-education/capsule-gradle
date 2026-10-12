@@ -3,8 +3,28 @@ name: Test
 on:
   push:
     branches: [main, master]
+    # Governance/doc-only changes do not affect the plugin build (rule
+    # "Local = Build, Tests = CI"): skip CI on pure-doc paths.
+    paths-ignore:
+      - '**/*.adoc'
+      - '**/*.md'
+      - '.agents/**'
+      - '.github/**'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
+      - 'fish_example.yaml'
   pull_request:
     branches: [main, master]
+    paths-ignore:
+      - '**/*.adoc'
+      - '**/*.md'
+      - '.agents/**'
+      - '.github/**'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
+      - 'fish_example.yaml'
 
 jobs:
   test:

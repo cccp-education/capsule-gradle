@@ -48,6 +48,10 @@ Session C (audit, lecture seule) — le verdict tranche B (extraire) vs CADUQUE.
 * Gouvernance synchronisée : `TODO.adoc`, `.agents/INDEX.adoc`, `PROMPT_REPRISE.adoc`,
   `.agents/SESSIONS_HISTORY.adoc`, archive `2026-10`, `AGENTS.adoc` racine.
 * Zéro secret, zéro Python.
+* **CI doc-only filtrée** : ajout de `paths-ignore` (`**/*.adoc`, `**/*.md`, `.agents/**`,
+  `.github/**`, `docs/**`, `LICENSE`, `.gitignore`, `fish_example.yaml`) aux workflows
+  `test.yml` (push + PR) et `full-tests.yml` (push) — un push gouvernance/doc ne déclenche
+  plus `Test`/`Full Tests` (règle « code inchangé → run vert antérieur fait foi »).
 
 == Prochaine session
 
