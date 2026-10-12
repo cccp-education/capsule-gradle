@@ -1,0 +1,87 @@
+= CADRAGE — EPIC KOOG-PIPELINE-DEDUP (Détroit / capsule-gradle)
+:session: 183
+:date: 2026-10-12
+:toc:
+
+== Objectif
+
+Trancher le TODO dormant `capsule-plugin/TODO.adoc` (ligne 339) : **faut-il extraire
+le squelette de pipeline koog** partagé par plusieurs boroughs dans un artefact
+commun (N0/N1), ou **tolérer la duplication verbatim** (doctrine N2) ?
+
+Item d'origine : _« EPIC extraction pipeline-contracts (MEMPHIS) — à cadrer si un 3e
+borough adopte le pattern pipeline koog. `CapsulePipelineGraph` ≈ `DeckPipelineGraph`
+= duplication verbatim acceptée par boundary N2, extraction N0 future. »_
+
+Session C (audit, lecture seule) — **gouvernance pure, zéro code**. Le verdict de C
+tranche B (extraire) vs CADUQUE (statu quo).
+
+== Constats (audit au code, S-183)
+
+[cols="1,2,1,1,1", options="header"]
+|===
+| Pipeline | Classe | DAG | Taille | Gate validate
+
+| codebase (N1) | `codebase.koog.KoogAugmentedContextGraph` | buildContext → classify → plan | 156 l. | ❌
+| slider (N2) | `slider.pipeline.DeckPipelineGraph` | propose → validate → generate\|finish | 142 l. | ✅
+| capsule (N2) | `capsule.pipeline.CapsulePipelineGraph` | propose → validate → generate\|finish | 148 l. | ✅
+|===
+
+. **capsule ↔ slider = jumeaux quasi verbatim.** Même `strategy`/`node`/`edge`
+   (`ToolSelectionStrategy.NONE`), même `execute()` séquentiel (try/catch par nœud,
+   `stage = FAILED`, court-circuit), même `asMermaidDiagram()`, même logique de nœud
+   `propose` (`require(notBlank)`) et `generate`. **Squelette partagé ≈ 85-90 lignes**
+   (~90 % du fichier). Variantes : `State`, `Stage`, `Validator`, `PromptBuilder`,
+   `Llm`, `Result` ; capsule ajoute `TtsScriptDeriver.derive`.
+   (`CapsulePipelineGraph.kt:51-148` ↔ `DeckPipelineGraph.kt:46-141`.)
+
+. **codebase ≠ même motif.** Linéaire (pas de gate `contextValid`), **dégradation
+   continue** (chaque nœud catch et poursuit ; pas de `FAILED`), nœuds **domaine**
+   (pgvector, `plannerPort`, `classify`). Il ne partage que l'**idiome koog** (strategy
+   + `execute` séquentiel + `asMermaidDiagram`), pas le squelette propose/validate/generate.
+   Le KDoc de `CapsulePipelineGraph` (« mirroring `KoogAugmentedContextGraph.execute` »)
+   est **aspirationnel** : structurellement, capsule copie **slider**.
+
+. **Consommateurs du même squelette = 2** boroughs N2. Le « 3ᵉ » candidat (`codebase`)
+   a une forme matériellement différente.
+
+. **Titre trompeur.** L'artefact `education.cccp:pipeline-contracts:0.0.2` (MEMPHIS,
+   package `contracts.pipeline`) est un contrat **release-notes** (`ConventionalCommit`,
+   `GitLogParser`, `ReleaseNotesConfig/Generator/Renderer`) — **rien à voir** avec un
+   pipeline koog. Toute extraction du graphe devrait viser **un autre module**
+   (`koog-pipeline-contracts` N0, ou un helper N1 dans `codebase`, ou `runtime-contracts`).
+
+== Décision
+
+. **CADUQUE (statu quo)** — on **ne factorise pas** : un seul adopter effectif de
+   chaque côté dupliqué ne franchit pas le seuil « factoriser à 3 » de la doctrine N2
+   (la duplication verbatim est assumée par la boundary). Le gain (~90 lignes) ne
+   justifie ni un nouveau module N0 + publication Central + bump BOM + adoption, ni la
+   perte de lisibilité d'un générique paramétré par 5 callbacks.
+. **Déclencheur documenté** — rouvrir un EPIC `KOOG-PIPELINE-DEDUP` (nom correct) dès
+   qu'un **3ᵉ borough N2** adopte le squelette `propose → validate → generate` + gate
+   `contextValid`. À ce moment : extraire un générique
+   `PipelineGraph<STATE, STAGE, LLM, PROMPT_BUILDER, VALIDATOR>` (probablement N1
+   `codebase.koog.pipeline` — koog est la dépendance, pas un contrat pur N0 sans effet
+   de bord ; cf. CADUQUE `LLM-RESILIENCE N0` S-162).
+. **Corriger le titre du TODO** (levée de l'ambiguïté `pipeline-contracts`).
+
+== Precedent
+
+Même issue que `LLM-RESILIENCE` extraction N0 (S-162, CADUQUE) : besoin transverse réel
+mais **coût disproportionné** face à une duplication tolérée ; la doctrine réserve la
+factorisation à 3+ consommateurs et N0 aux **contrats purs**.
+
+== Hors scope
+
+* Extraction effective (B) — conditionnée au déclencheur ci-dessus.
+* Refactoring `codebase.KoogAugmentedContextGraph` (forme différente, hors motif).
+* Nouvelle publication Central / bump BOM.
+
+== Traçabilité
+
+* TODO d'origine : `capsule-plugin/TODO.adoc:339`.
+* Sources auditées : `capsule.pipeline.CapsulePipelineGraph` (148 l.),
+  `slider.pipeline.DeckPipelineGraph` (142 l.),
+  `codebase.koog.KoogAugmentedContextGraph` (156 l.).
+* Rappel historique : S-134 `.agents/sessions/134-sync-gouvernance-post-133.adoc:49`.

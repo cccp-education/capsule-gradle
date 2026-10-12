@@ -34,6 +34,19 @@ dégradation propre si absent.
 |===
 
 '''
+== 🚫 KOOG-PIPELINE-DEDUP — CADUQUE (S-183)
+_📖 Littérature : `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`._
+
+_Item dormant (ex-`TODO.adoc:339`) : extraire le squelette de pipeline koog partagé
+(`CapsulePipelineGraph` ≈ `DeckPipelineGraph`) dans un artefact commun. **Verdict S-183 :
+CADUQUE (statu quo)** — capsule ≈ slider = jumeaux quasi verbatim (~90 % du squelette),
+mais **2 boroughs N2 seulement** ; `codebase.KoogAugmentedContextGraph` = forme
+**différente** (linéaire, dégradé). **Déclencheur** : rouvrir (nom correct
+`KOOG-PIPELINE-DEDUP`) au **3ᵉ borough N2** adoptant `propose → validate → generate` ;
+cible probable N1 `codebase.koog.pipeline`. Note : `pipeline-contracts` (MEMPHIS) =
+contrat **release-notes**, sans rapport._
+
+'''
 == ✅ CAP-QC — TERMINÉ 9/9 (S-174)
 _📖 Littérature de référence : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage `prepa` → capsule : frontière, catalogue PRT, décisions — **portage TERMINÉ 9/9**)._
 

@@ -1,33 +1,33 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 183
+:session: 184
 :borough: Détroit
-:session_precedente: 182 — CAP-FISH-AUDIO (cadrage + US-1→US-5 + releases 0.0.9/0.0.10)
+:session_precedente: 183 — cadrage EPIC KOOG-PIPELINE-DEDUP (verdict CADUQUE)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
-_littérature_ : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
+_littérature_ : `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc` + `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
 
 == Contexte Hérité
 
-=== S-182 — CAP-FISH-AUDIO TERMINÉ 6/6 (cadrage + US-1→US-5 + releases)
+=== S-183 — EPIC KOOG-PIPELINE-DEDUP → CADUQUE (gouvernance pure, zéro code)
 
-- EPIC `CAP-FISH-AUDIO` cadré puis livré : moteur TTS cloud **Fish Audio** (voix
-  clonée `prepa`) comme **4e `TtsEngine`** additif.
-- Décisions : config `fish-audio` = **membre de `CapsuleConfig`** (`@JsonProperty("fish-audio")`)
-  ; **pool de clés** = valeur du membre (`fish.yaml` gitignoré, chargé + fusionné) ;
-  voix/modèle/format/temperature/topP/endpoint dans `tts`.
-- **US-1→US-5 livrées** : `FishAudioKey` (rédaction du secret) + membre
-  `CapsuleConfig.fishAudio` + `CapsuleConfigLoader.loadFishAudio` ; `FishAudioTtsEngine`
-  (seam HTTP injectable + `HttpClient` JDK + JSON + `Bearer` + `format: wav` →
-  `wavToMp3`, retries) ; wiring `TtsConfig` 6 champs Fish (4 sources) + extension/
-  conventions/push/scaffold + `resolveTtsEngine` (`fish`/`fish-audio`) ; BDD `@fish`
-  (moteur mocké) ; README EN + traductions (9×2) ; **dogfooding réel** (prise MP3).
-- **Releases `capsule-plugin 0.0.9` + `0.0.10`** (Central bundles `a2d32777` / `cb26c4e9`) —
-  le 0.0.10 corrige un bug révélé par le dogfooding (`fishAudioConfigPath` **absolu**
-  préfixé par `projectDir` → `project.file(...)`). Consommateur racine `0.0.10` ;
+- Audit du TODO dormant : `CapsulePipelineGraph` (capsule, 148 l.) ≈ `DeckPipelineGraph`
+  (slider, 142 l.) = **jumeaux quasi verbatim** (~90 % du squelette : `strategy`/`node`/`edge`,
+  `execute()` séquentiel fail-fast, `asMermaidDiagram`). `KoogAugmentedContextGraph`
+  (codebase, 156 l.) = **forme différente** (linéaire, dégradation continue).
+- **2 boroughs N2** seulement → seuil doctrine « factoriser à 3 » non atteint → **statu quo**.
+- **Déclencheur documenté** : rouvrir (nom correct) au 3ᵉ borough N2 ; cible N1
+  `codebase.koog.pipeline`. Nom corrigé : `pipeline-contracts` = release-notes.
+- Doc `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`.
+- Aucun artefact publié. Rapport `.agents/sessions/183-*.adoc`.
+
+=== S-182 — CAP-FISH-AUDIO TERMINÉ 6/6 (US-0→US-5 + releases 0.0.9/0.0.10)
+
+- Moteur TTS cloud **Fish Audio** (voix clonée) = **4e `TtsEngine`** ; config `fish-audio`
+  (pool de clés) membre de `CapsuleConfig`, clé en `fish.yaml` gitignoré ; BDD `@fish` ;
+  README EN + traductions (9×2) ; **dogfooding réel** (prise MP3).
+- **Releases `capsule-plugin 0.0.9` + `0.0.10`** (correctif `fishAudioConfigPath` absolu) ;
   MEMPHIS BOM/catalog `0.0.85` puis `0.0.86`.
-- **EPIC `CAP-FISH-AUDIO` TERMINÉ 6/6 US.** Doc `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
-- Rapport `.agents/sessions/182-*.adoc`.
 
-== Mission Session 183 — au choix (backlog actionnable vidé)
+== Mission Session 184 — au choix (backlog actionnable vidé)
 
 * **A)** Maintenance / dette (couverture Kover, docs restantes).
 * **B)** Toute nouvelle demande pilote (cadrer + implémenter en baby-step).
@@ -35,20 +35,16 @@ _littérature_ : `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`.
 == Points d'attention
 
 * **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
-* **Règle 6 — ZÉRO secret** dans le code, les logs, les tests. `fish.yaml` est
-  **gitignoré** : ne jamais le lire/commiter. `fish_example.yaml` = clé factice.
+* **Règle 6 — ZÉRO secret** dans le code, les logs, les tests.
 * Nouvelle option → `Config` + extension + `CapsuleConventions` + merger +
   `pushConfigIntoExtension`, **défaut backward-compat**.
 * **English only** code/Gherkin (`OssVocabularyGuardTest`) ; **zéro Python** ;
   baby-step DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
-* Contrat Fish : `prepa/gen_audio.py` (endpoint `/v1/tts`, `Bearer`, `model:
-  speech-1.6`, `format: wav`, `temperature 0.85`, `top_p 0.88`).
 * Catalogue **interne** aligné BOM `0.0.83`.
 
 == Rappels
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.10** (Central).
 * MEMPHIS BOM/catalog **0.0.86**. `CAP-QC` **9/9 ✅**, `CAP-QC-VOICE` **5/5 ✅**,
-  `CAP-VIRAL`/`CAP-SHORT`/`CAP-VIRAL-E2E`/`CAP-CONTEXT`/`LLM-RESILIENCE` ✅.
-* **CAP-FISH-AUDIO ✅ TERMINÉ 6/6** (S-182) — releases `0.0.9` + `0.0.10` ;
-  **tous les EPICs actionnables sont clos.**
+  `CAP-FISH-AUDIO` **6/6 ✅**, `KOOG-PIPELINE-DEDUP` **CADUQUE**.
+* **Tous les EPICs actionnables sont clos.**

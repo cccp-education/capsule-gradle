@@ -1,0 +1,54 @@
+= Session 183 — Cadrage EPIC KOOG-PIPELINE-DEDUP (verdict CADUQUE)
+:session: 183
+:borough: Détroit
+:date: 2026-10-12
+:epic: KOOG-PIPELINE-DEDUP
+:us: US-0 (audit + décision) — gouvernance pure, zéro code
+
+== Mission
+
+Trancher le TODO dormant `TODO.adoc:339` : extraire le squelette de pipeline koog
+partagé dans un artefact commun, ou tolérer la duplication verbatim (doctrine N2) ?
+Session C (audit, lecture seule) — le verdict tranche B (extraire) vs CADUQUE.
+
+== Audit (3 graphes)
+
+[cols="1,2,1,1,1", options="header"]
+|===
+| Pipeline | Classe | DAG | Taille | Gate validate
+| codebase (N1) | `codebase.koog.KoogAugmentedContextGraph` | buildContext → classify → plan | 156 l. | ❌
+| slider (N2) | `slider.pipeline.DeckPipelineGraph` | propose → validate → generate\|finish | 142 l. | ✅
+| capsule (N2) | `capsule.pipeline.CapsulePipelineGraph` | propose → validate → generate\|finish | 148 l. | ✅
+|===
+
+* **capsule ↔ slider = jumeaux quasi verbatim** : même `strategy`/`node`/`edge`
+  (`ToolSelectionStrategy.NONE`), même `execute()` séquentiel (try/catch par nœud,
+  `stage=FAILED`), même `asMermaidDiagram()`, même logique `propose`/`generate`
+  (`require(notBlank)`). **Squelette partagé ≈ 85-90 lignes** (~90 %). Variantes :
+  `State`/`Stage`/`Validator`/`PromptBuilder`/`Llm`/`Result` (+ `TtsScriptDeriver` capsule).
+* **codebase ≠ même motif** : linéaire (pas de gate), **dégradation continue**, nœuds
+  domaine (pgvector/planner/classify). Il ne partage que l'**idiome koog**, pas le
+  squelette. Le KDoc « mirror `KoogAugmentedContextGraph` » est aspirationnel.
+* **Consommateurs du même squelette = 2** (N2). Le « 3ᵉ » (codebase) a une forme différente.
+* **Titre trompeur** : `pipeline-contracts` (MEMPHIS) = contrat **release-notes**, pas koog.
+
+== Décision
+
+. **CADUQUE (statu quo)** — seuil « factoriser à 3 » non atteint ; gain ~90 lignes,
+   coût (module N0 + Central + BOM + adoption + générique 5 callbacks) disproportionné.
+. **Déclencheur documenté** — rouvrir `KOOG-PIPELINE-DEDUP` (nom correct) au **3ᵉ borough
+   N2** adoptant `propose → validate → generate` ; cible probable N1 `codebase.koog.pipeline`
+   (koog = dépendance, pas un contrat pur N0 ; cf. LLM-RESILIENCE N0 CADUQUE S-162).
+. Corriger le titre du TODO (ambiguïté `pipeline-contracts`).
+
+== Gates
+
+* Session de **gouvernance pure** : **aucun code modifié**. Doc
+  `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`.
+* Gouvernance synchronisée : `TODO.adoc`, `.agents/INDEX.adoc`, `PROMPT_REPRISE.adoc`,
+  `.agents/SESSIONS_HISTORY.adoc`, archive `2026-10`, `AGENTS.adoc` racine.
+* Zéro secret, zéro Python.
+
+== Prochaine session
+
+**S-184 — au choix** (backlog actionnable vidé) : maintenance/dette ou nouvelle demande pilote.

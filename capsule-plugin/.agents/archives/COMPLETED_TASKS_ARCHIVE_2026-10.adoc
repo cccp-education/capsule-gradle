@@ -1,7 +1,21 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
-== Session 182 — Cadrage EPIC `CAP-FISH-AUDIO` (moteur TTS cloud Fish Audio) ✅
+== Session 183 — Cadrage EPIC `KOOG-PIPELINE-DEDUP` → CADUQUE ✅
+
+* Gouvernance pure, zéro code (patron S-057/S-063). Audit du TODO dormant
+  (`TODO.adoc:339`) : `CapsulePipelineGraph` (capsule, 148 l.) ≈ `DeckPipelineGraph`
+  (slider, 142 l.) = **jumeaux quasi verbatim** (~90 % du squelette : `strategy`/`node`/
+  `edge`, `execute()` séquentiel fail-fast, `asMermaidDiagram`).
+* `KoogAugmentedContextGraph` (codebase, 156 l.) = **forme différente** (linéaire, pas de
+  gate `contextValid`, dégradation continue, nœuds domaine).
+* **Verdict : CADUQUE (statu quo)** — 2 boroughs N2 seulement, seuil doctrine
+  « factoriser à 3 » non atteint. **Déclencheur documenté** (3ᵉ borough N2 ; cible N1
+  `codebase.koog.pipeline`). Nom corrigé : `pipeline-contracts` (MEMPHIS) = release-notes.
+* Doc `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`. Rapport
+  `.agents/sessions/183-koog-pipeline-dedup-cadrage.adoc`.
+
+== Session 182 — CAP-FISH-AUDIO (TERMINÉ 6/6) + releases 0.0.9/0.0.10 ✅
 
 * Demande pilote : réintroduire le support **Fish Audio** (`prepa`, voix clonée)
   dans `capsule` comme **4e `TtsEngine`** additif ; clé dans `fish.yaml` (gitignoré) ;
