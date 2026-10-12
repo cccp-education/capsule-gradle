@@ -1,11 +1,14 @@
 package capsule.viral
 
+import capsule.CapsuleExtension
+import capsule.voice.PronunciationLexicon
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -74,6 +77,13 @@ abstract class RenderViralSubtitlesTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val wordTimingsFile: RegularFileProperty
 
+    @get:Internal
+    internal var capsuleExtension: CapsuleExtension
+        get() = _capsuleExtension ?: project.extensions.getByType(CapsuleExtension::class.java).also { _capsuleExtension = it }
+        set(value) { _capsuleExtension = value }
+
+    private var _capsuleExtension: CapsuleExtension? = null
+
     @TaskAction
     fun run() {
         if (!viralEnabled.get()) {
@@ -107,7 +117,14 @@ abstract class RenderViralSubtitlesTask : DefaultTask() {
             ?.takeIf { it.isFile && it.length() > 0L }
             ?.let { WordTimingsJson.parse(it.readText()) }
             .orEmpty()
-        val document = AssKaraokeDocument.build(KaraokeWordPlanner.plan(parsed.beats, timings))
+        // PRT-01 — dit/lu: when the voice speaks the pronunciation form, the caption
+        // shows the display form (reversals map spoken words back to their symbols).
+        val reversals = if (capsuleExtension.ttsPronunciationEnabled.getOrElse(false)) {
+            PronunciationLexicon.reversals()
+        } else {
+            emptyMap()
+        }
+        val document = AssKaraokeDocument.build(KaraokeWordPlanner.plan(parsed.beats, timings, reversals))
         val dir = File(project.projectDir, renderedVideoDir.get())
         dir.mkdirs()
 

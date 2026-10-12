@@ -1,0 +1,45 @@
+= Rapport de session 176 — Câblage dit↔lu (sous-titres + karaoké)
+:session: 176
+:date: 2026-10-12
+:borough: Détroit
+:epic: PRT-01 (câblage)
+:statut: TERMINÉ
+:methode: baby-step DDD/TDD/BDD
+
+== Mission
+
+Option A : brancher `PronunciationLexicon.reversals()` dans la génération des
+sous-titres (et le karaoké) pour que le texte **affiché** reste la forme « lue »
+(display) quand la voix prononce la forme « dite » (spoken).
+
+== Livré
+
+* **Sous-titres** — `CapsuleVideoTask.generateSubtitles` : quand
+  `tts.pronunciationEnabled`, `reversals` (dit→lu) est appliqué. Chemin **cartons**
+  (PRT-03) : paramètre `reversals` passé à `SubtitleTimingCalculator.calculateFromCartons`.
+  Chemin **plain** : les notes sont normalisées par
+  `SubtitleTextNormalizer.spokenToDisplay(note, reversals)` (acronymes recollés +
+  symboles réversés). **Désactivé par défaut → texte historique inchangé.**
+* **Karaoké viral** — `KaraokeWordPlanner.plan(beats, timings, reversals)` (surcharge
+  à défaut `emptyMap`) : les mots du beat viennent de
+  `spokenToDisplay(intent, reversals)`. `RenderViralSubtitlesTask` lit
+  `tts.pronunciationEnabled` (accesseur `capsuleExtension`) et passe `reversals`.
+* **Round-trip prouvé** : `spokenToDisplay(spoken(display), reversals)` recouvre
+  `display` pour un sigle (`the API is ready` → `the A P I is ready` → `the API is ready`)
+  et réverse un symbole (`50%` → `50 pour cent` → contient `%`).
+
+== Tests
+
+* Unit : `PronunciationLexiconTest` +2 (round-trip sigle exact ; réversion symbole).
+* BDD : `capsule_voice_quality.feature` +1 scénario « The spoken form round-trips back
+  to the displayed form » + 2 steps (runner existant `cucumberTestVoiceQuality`).
+* Local = Build : compiles + `validatePlugins` VERTS. Tests = CI.
+
+== Note de conception
+
+Le texte source des sous-titres est la note speaker (forme affichée par défaut). Le
+câblage rend explicite le **round-trip dit↔lu** : la voix consomme la forme dite, le
+cue la forme lue. L'application est **opt-in** (`tts.pronunciationEnabled`) et
+**idempotente** (un cue déjà en forme lue n'est pas altéré).
+
+_Score : 9/10._

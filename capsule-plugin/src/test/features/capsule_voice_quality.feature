@@ -33,3 +33,9 @@ Feature: Voice quality pure domain (CAP-QC-VOICE US-1)
     Given the voice narration "the API is 50%"
     When the voice narration is pronounced
     Then the pronounced voice text is "the A P I is 50 pour cent"
+
+  Scenario: The spoken form round-trips back to the displayed form
+    Given the voice narration "the API is ready"
+    When the voice narration is pronounced
+    And the pronounced voice text is displayed
+    Then the displayed voice text is "the API is ready"

@@ -1,5 +1,6 @@
 package capsule.voice
 
+import capsule.SubtitleTextNormalizer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -46,5 +47,21 @@ class PronunciationLexiconTest {
             PronunciationLexicon.cacheKey("bonjour"),
             PronunciationLexicon.cacheKey("bonjour le monde"),
         )
+    }
+
+    @Test
+    fun `a spelled acronym round-trips back to the display form`() {
+        val display = "the API is ready"
+        val spoken = PronunciationLexicon.spoken(display)
+        val back = SubtitleTextNormalizer.spokenToDisplay(spoken, PronunciationLexicon.reversals())
+        assertEquals(display, back)
+    }
+
+    @Test
+    fun `a spoken symbol reverts to its display glyph`() {
+        val spoken = PronunciationLexicon.spoken("50%")
+        val back = SubtitleTextNormalizer.spokenToDisplay(spoken, PronunciationLexicon.reversals())
+        assertTrue(back.contains("%"), "expected the % glyph back, got '$back'")
+        assertTrue(!back.contains("pour cent"), "the spelled form must not survive, got '$back'")
     }
 }

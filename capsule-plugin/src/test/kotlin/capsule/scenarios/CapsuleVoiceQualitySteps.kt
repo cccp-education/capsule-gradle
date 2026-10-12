@@ -1,5 +1,6 @@
 package capsule.scenarios
 
+import capsule.SubtitleTextNormalizer
 import capsule.voice.FidelityScorer
 import capsule.voice.PronunciationLexicon
 import capsule.voice.TextNormalizer
@@ -23,6 +24,7 @@ class CapsuleVoiceQualitySteps {
     private var normalized: List<String> = emptyList()
     private var score: VoiceScore? = null
     private var pronounced: String = ""
+    private var displayed: String = ""
 
     @Given("the voice narration {string}")
     fun theVoiceNarration(text: String) {
@@ -77,5 +79,15 @@ class CapsuleVoiceQualitySteps {
     @Then("the pronounced voice text is {string}")
     fun thePronouncedVoiceTextIs(expected: String) {
         assertEquals(expected, pronounced)
+    }
+
+    @When("the pronounced voice text is displayed")
+    fun thePronouncedVoiceTextIsDisplayed() {
+        displayed = SubtitleTextNormalizer.spokenToDisplay(pronounced, PronunciationLexicon.reversals())
+    }
+
+    @Then("the displayed voice text is {string}")
+    fun theDisplayedVoiceTextIs(expected: String) {
+        assertEquals(expected, displayed)
     }
 }

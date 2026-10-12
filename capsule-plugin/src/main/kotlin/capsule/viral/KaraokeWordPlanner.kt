@@ -1,5 +1,7 @@
 package capsule.viral
 
+import capsule.SubtitleTextNormalizer
+
 /**
  * One karaoke subtitle line (CAP-VIRAL-E2E US-3): the words of a storyboard beat,
  * spanned over the beat's [startTime]–[endTime] window.
@@ -42,7 +44,7 @@ object KaraokeWordPlanner {
      * @param beats the storyboard beats, in order (intents are the spoken text).
      * @return one [KaraokeLine] per beat, in order, each spanning the beat window.
      */
-    fun plan(beats: List<StoryboardBeat>): List<KaraokeLine> = plan(beats, emptyList())
+    fun plan(beats: List<StoryboardBeat>): List<KaraokeLine> = plan(beats, emptyList(), emptyMap())
 
     /**
      * Plans the karaoke timeline for [beats], using real ASR word [timings] where
@@ -54,16 +56,23 @@ object KaraokeWordPlanner {
      * the beat window so a small ASR drift can never push a highlight outside its
      * line. This keeps the karaoke deterministic and never invents a timing.
      *
-     * @param timings ASR word timings ([WordTimingsJson.parse]); empty → proportional.
+     * @param timings   ASR word timings ([WordTimingsJson.parse]); empty → proportional.
+     * @param reversals PRT-01 dit/lu display substitutions applied to each beat intent
+     *        (empty → the intent is shown verbatim).
      */
-    fun plan(beats: List<StoryboardBeat>, timings: List<TimedWord>): List<KaraokeLine> {
+    fun plan(
+        beats: List<StoryboardBeat>,
+        timings: List<TimedWord>,
+        reversals: Map<String, String> = emptyMap(),
+    ): List<KaraokeLine> {
         var cursor = 0.0
         var timingCursor = 0
         return beats.map { beat ->
             val start = cursor
             val end = start + beat.durationSeconds
             cursor = end
-            val words = splitWords(beat.intent)
+            val display = if (reversals.isEmpty()) beat.intent else SubtitleTextNormalizer.spokenToDisplay(beat.intent, reversals)
+            val words = splitWords(display)
 
             val measured = if (timings.isEmpty()) null else matchTimings(words, timings, timingCursor)
             val wordsOrNull: List<KaraokeWord>? = measured?.let { (ranges, nextCursor) ->

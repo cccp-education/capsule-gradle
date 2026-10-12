@@ -1,7 +1,22 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-12
-:session: 175 Publication capsule-plugin 0.0.5
+:session: 176 Câblage dit↔lu (sous-titres + karaoké)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 12 octobre 2026 (après session 176)
+
+.Câblage dit↔lu
+|===
+| Élément | Changement | Tests
+
+| `voice/PronunciationLexiconTest.kt` (étendu) | Round-trip dit↔lu (sigle exact + symbole) | +2 unit
+| `capsule_voice_quality.feature` (étendue) | BDD round-trip (5e scénario) | runner 34e `cucumberTestVoiceQuality`
+| `CapsuleVideoTask.generateSubtitles` (étendu) | Reversals (opt-in) sous-titres cartons + plain | (couvert par lexicon + BDD)
+| `viral/KaraokeWordPlanner.kt` + `RenderViralSubtitlesTask.kt` (étendus) | Reversals (opt-in) karaoké | (couvert par lexicon + BDD viral)
+|===
+
+*Totaux S-176* : **+2 unit** + 1 scénario BDD. Gates locaux (compiles + `validatePlugins`)
+**VERTS**. Désactivé par défaut → comportement historique inchangé.
 
 == Couverture — 12 octobre 2026 (après session 175)
 

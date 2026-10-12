@@ -1,11 +1,18 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 176
+:session: 177
 :borough: Détroit
-:session_precedente: 175 — publication capsule-plugin 0.0.5
+:session_precedente: 176 — câblage dit↔lu (sous-titres + karaoké)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`.
 
 == Contexte Hérité
+
+=== S-176 — câblage dit↔lu (livré)
+
+- `CapsuleVideoTask.generateSubtitles` applique `PronunciationLexicon.reversals()`
+  (opt-in `tts.pronunciationEnabled`) : chemin cartons + chemin plain.
+- `KaraokeWordPlanner.plan(beats, timings, reversals)` + `RenderViralSubtitlesTask`.
+- Round-trip prouvé (sigle exact, symbole réversé) ; +2 unit + 1 scénario BDD.
 
 === S-175 — publication (livré)
 
@@ -37,22 +44,14 @@ _littérature_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` + `.agents/CADRAGE_EPIC_CAP_
   prise, dogfooding, karaoké timings ASR).
 * **Tous les EPICs actionnables du backlog sont clos.**
 
-== Mission Session 176 — suite de consommation (backlog EPICs vidé)
+== Mission Session 177 — backlog EPICs vidé
 
-=== ✅ Consommateur MEMPHIS — FAIT (MEMPHIS S-284)
+=== ✅ Consommation (FAIT)
 
-`workspace-bom`/`workspace-catalog` **0.0.81** publiés Central (bundle `8bbfe706-…`,
-AUTOMATIC) : catalogue `capsule-plugin = 0.0.5`, garde `PlatformCatalogAlignmentTest`
-ré-alignée (`0.0.77` → `0.0.81`). Propagation repo1 vérifiée (POM BOM contraint
-`capsule-plugin 0.0.5` ; toml catalog `capsule-plugin = "0.0.5"`).
+* MEMPHIS S-284 : `workspace-bom`/`catalog` **0.0.81** (capsule-plugin 0.0.5), propagation vérifiée.
+* S-176 : câblage dit↔lu sous-titres + karaoké (opt-in `tts.pronunciationEnabled`).
 
-=== Option A — Câblage PRT-01 côté karaoké/sous-titres
-
-Brancher `PronunciationLexicon.reversals()` dans la génération des sous-titres
-(le texte affiché reste la forme « lue ») et documenter le round-trip dit↔lu de bout
-en bout.
-
-=== Option B — Dette / maintenance
+=== Option A — Dette / maintenance
 
 Revoir les points d'attention du BACKLOG (drift catalogue de version, docs README,
 couverture Kover).

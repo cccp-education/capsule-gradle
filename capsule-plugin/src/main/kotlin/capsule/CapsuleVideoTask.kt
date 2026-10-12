@@ -7,6 +7,7 @@ import capsule.feed.CapsuleScriptReader
 import capsule.feed.SlideSegment
 import capsule.feed.SlideType
 import capsule.multilang.MultiLanguageResolver
+import capsule.voice.PronunciationLexicon
 import capsule.validation.VideoIntegrityProbe
 import capsule.viral.ViralViewport
 import org.gradle.api.DefaultTask
@@ -767,6 +768,15 @@ open class CapsuleVideoTask : DefaultTask() {
     internal fun generateSubtitles(parsed: CapsuleScript, slideDurations: List<Double>, outDir: File): File? {
         val format = SubtitleFormat.fromString(capsuleExtension.subtitleFormat.get())
         val generator = resolveSubtitleGenerator(format)
+        // PRT-01 — "dit / lu": when the voice speaks the pronunciation form, the cue
+        // must show the DISPLAY form. `reversals` maps the spoken words back to their
+        // symbols (e.g. `pour cent` → `%`); acronyms are re-collected by
+        // SubtitleTextNormalizer. Disabled by default → historical text unchanged.
+        val reversals = if (capsuleExtension.ttsPronunciationEnabled.getOrElse(false)) {
+            PronunciationLexicon.reversals()
+        } else {
+            emptyMap()
+        }
         // PRT-03 — optional carton subdivision (one readable cue per carton);
         // default keeps the historical one-cue-per-slide behaviour.
         val entries = if (capsuleExtension.subtitleCartonsEnabled.getOrElse(false)) {
@@ -774,9 +784,17 @@ open class CapsuleVideoTask : DefaultTask() {
                 parsed.segments,
                 slideDurations,
                 capsuleExtension.subtitleMaxChars.getOrElse(SubtitleCartoner.DEFAULT_MAX_CHARS),
+                reversals,
             )
         } else {
-            SubtitleTimingCalculator.calculate(parsed.segments, slideDurations)
+            val displaySegments = if (reversals.isEmpty()) {
+                parsed.segments
+            } else {
+                parsed.segments.map {
+                    it.copy(speakerNote = SubtitleTextNormalizer.spokenToDisplay(it.speakerNote, reversals))
+                }
+            }
+            SubtitleTimingCalculator.calculate(displaySegments, slideDurations)
         }
         val content = generator.generate(entries)
         val subtitleFile = outDir.resolve("${parsed.deckName}${format.fileExtension}")

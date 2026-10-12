@@ -1,6 +1,14 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 176 — Câblage dit↔lu (sous-titres + karaoké) ✅
+
+* `CapsuleVideoTask.generateSubtitles` applique `PronunciationLexicon.reversals()`
+  (opt-in `tts.pronunciationEnabled`) : chemin cartons + chemin plain.
+* `KaraokeWordPlanner.plan(beats, timings, reversals)` + `RenderViralSubtitlesTask`.
+* Round-trip prouvé (sigle exact, symbole réversé). +2 unit + 1 scénario BDD.
+  Désactivé par défaut. Rapport `.agents/sessions/176-prt01-dit-lu-subtitles-karaoke.adoc`.
+
 == Session 175 — Publication `capsule-plugin 0.0.5` (Maven Central) ✅
 
 * Bump `[versions].capsule` 0.0.4 → 0.0.5 ; `assemble` VERT ;
