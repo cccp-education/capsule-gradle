@@ -110,7 +110,7 @@ class CapsuleScriptWriterTest {
     }
 
     @Test
-    fun `CapsuleScript should reject blank deck name at construction`() {
+    fun `CapsuleScript should reject blank name at construction`() {
         try {
             CapsuleScript(
                 name = "",
@@ -118,7 +118,7 @@ class CapsuleScriptWriterTest {
             )
             error("Expected IllegalArgumentException")
         } catch (e: IllegalArgumentException) {
-            assertThat(e.message).contains("deckName")
+            assertThat(e.message).contains("VideoScript.name")
         }
     }
 
@@ -145,12 +145,12 @@ class CapsuleScriptWriterTest {
     }
 
     @Test
-    fun `SlideSegment should reject blank speaker note at construction`() {
+    fun `SlideSegment should reject blank narration at construction`() {
         try {
             SlideSegment(index = 1, title = "Intro", narration = "  ")
             error("Expected IllegalArgumentException")
         } catch (e: IllegalArgumentException) {
-            assertThat(e.message).contains("speakerNote")
+            assertThat(e.message).contains("VideoSegment.narration")
         }
     }
 

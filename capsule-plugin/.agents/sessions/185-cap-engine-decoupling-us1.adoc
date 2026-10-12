@@ -90,6 +90,14 @@ les packages de compatibilité (`capsule.feed`, `capsule.multilang`).
 * Tâche `cucumberTestKernelModel` **enregistrée** (vérifiée via `tasks --all`).
 * Zéro secret (`grep` = 0). Zéro bump, zéro publication.
 
+=== Correctif CI (run `38306638531` rouge — 2 échecs unit)
+
+Les invariants de `CapsuleScriptWriterTest` assertaient les **messages legacy**
+(`deckName`/`speakerNote`) ; les messages neutres (`VideoScript.name` /
+`VideoSegment.narration`) les invalident. Correctif test-only aligné sur le
+vocabulaire neutre (2 assertions), re-push → CI re-exécutée. Leçon : un renommage
+de vocabulaire **traverse les assertions de message** — la CI est la preuve.
+
 == Décisions clés
 
 [cols="1,4", options="header"]
