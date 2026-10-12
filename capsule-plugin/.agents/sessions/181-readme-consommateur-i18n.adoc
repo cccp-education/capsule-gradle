@@ -1,0 +1,51 @@
+= Rapport de session 181 — README consommateur (racine) + traductions
+:session: 181
+:date: 2026-10-12
+:borough: Détroit (capsule-gradle)
+:statut: TERMINÉ (documentation — 10 fichiers à la racine)
+:methode: sync code réel → master EN → 9 traductions
+
+== Objet
+
+Demande pilote : le `README.md` **racine** (vitrine GitHub, première preview) était
+périmé (`0.0.1-SNAPSHOT`, « non publié », 917 unit + 67 functional, tâches/deps obsolètes) ;
+en faire une **version adaptée consommateur** + ses traductions dans `README.consommateurs/`.
+
+Distinction : `README.md` racine = **guide consommateur** (usage) ; `capsule-plugin/README.md`
++ `README.plugin/` = **guide interne** (développeur), déjà synchro S-180.
+
+== Audit code réel ↔ README consommateur (dérives corrigées)
+
+* Version `0.0.1-SNAPSHOT` (non publié) → **`0.0.8`** (Maven Central) ; badge + meta + apply.
+* Prérequis `Gradle 9.6.1+` → **Gradle 9.8+** ; Java 25+.
+* Langues TTS « 10 » → **22** (`LanguageCatalog`).
+* Tâches : table mise à jour (pipeline, multi-langue, LLM, contexte, sortie, qualité opt-in,
+  viral opt-in, feed composite) ; ajout `generateCapsuleChapters`, `generateCapsulePodcast`,
+  `preflightCapsuleContent`, `renderQcBoards`, `verifyCapsuleVoice`, `selectBestVoiceTake`,
+  `normalizeViralStoryboard`, `outputFormat`/`outputBt709`.
+* DSL : ajout `captureStrategy`, `outputFormat`, `outputBt709` ; renvoi au guide interne pour
+  la `CapsuleConfig` complète (18 sections).
+* Section **Fonctionnalités optionnelles** ajoutée (format MP4/BT.709, audio post, QC opt-in,
+  transcript, podcast, preview, viral).
+* Liens corrigés (`capsule-plugin/README.md`, `capsule-plugin/doc/…`, `LICENSE`).
+* Dette `0.0.1-SNAPSHOT` des traductions consommateur **résorbée**.
+
+== Livrable
+
+* `README.md` racine (EN, source de vérité) réécrit — 274 lignes.
+* 9 traductions `README.consommateurs/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md` régénérées depuis
+  le master EN (en-tête `translated from README.md rev 0.0.8`, switcher/liens corrigés).
+
+== Décisions
+
+* **Anglais = source de vérité** ; les 9 fichiers sont des traductions fidèles de sa révision
+  `0.0.8`.
+* **Aucun bump/publication** : le README n'est pas un artefact publié. Session documentaire.
+
+== Fichiers
+
+* `README.md` + `README.consommateurs/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md`
+* Gouvernance : ce rapport, `PROMPT_REPRISE`, `INDEX`, `SESSIONS_HISTORY`, archive,
+  `BACKLOG`, `TODO`.
+
+_Score : 9/10 (vitrine GitHub consommateur fidèle au code, 10 langues)._

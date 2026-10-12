@@ -410,12 +410,19 @@ Consommateur racine `capsule = 0.0.8` ; **MEMPHIS** `workspace-bom`/`workspace-c
 **0.0.84** (bundle `8b3663cf-3d23-4480-ac88-3a53171f91d4`, capsule-plugin 0.0.8).
 
 '''
-== 📚 README i18n ✅ TERMINE (Session 041) — **régénéré fidèle au code (S-180)**
+== 📚 README i18n ✅ TERMINE (Session 041) — **régénéré fidèle au code (S-180/S-181)**
 
-`README.md` **anglais = source de vérité** (réécrit S-180 : config 18 sections, 19 domaines,
-tâches, CI réelle 4 workflows + caches, publication, statut EPICs, deps, liens) + **9 traductions**
-`README.plugin/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md` (en-tête `rev 0.0.8`). Dette
-`0.0.1-SNAPSHOT` résorbée. Le README n'étant pas un artefact publié, aucun bump.
+Deux corpus README, même **source de vérité EN** :
+
+* **Consommateur** (vitrine GitHub) : `README.md` **racine** (réécrit S-181 : version `0.0.8`,
+  Gradle 9.8+, 22 langues, tâches, DSL, features opt-in, liens) + **9 traductions**
+  `README.consommateurs/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md`.
+* **Interne** (développeur) : `capsule-plugin/README.md` (réécrit S-180 : config 18 sections,
+  19 domaines, tâches, CI réelle 4 workflows + caches, publication, statut EPICs, deps) +
+  **9 traductions** `capsule-plugin/README.plugin/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md`.
+
+En-tête `rev 0.0.8` partout ; dette `0.0.1-SNAPSHOT` résorbée. Le README n'étant pas un artefact
+publié, aucun bump.
 
 '''
 == BACKLOG ACTIF — EPICs en cours ✅ VIDE (tous EPICs terminés/CADUQUES, S-133)

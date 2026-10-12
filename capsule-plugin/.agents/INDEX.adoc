@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-12 (S-180 — **README fidèles au code + i18n** (documentaire). `README.md` (EN, source de vérité) réécrit : config **18 sections**, **19 domaines**, section tâches, CI réelle (4 workflows + caches), publication, statut EPICs, deps, liens. 9 traductions régénérées (`README.plugin/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md`, `rev 0.0.8`). Dette `0.0.1-SNAPSHOT` **résorbée**. Aucun artefact publié. Précédent : S-179 résidus `prepa` (BT.709 + nombres) + release 0.0.8.)
- _Derniere session terminee_ : 180.
- _Prochaine session_ : 181 — backlog EPICs vidé ; au choix : A) maintenance/dette (Kover) ; B) toute nouvelle demande pilote.
- _Session en cours_ : — (S-180 terminée).
+ _Derniere mise a jour_ : 2026-10-12 (S-181 — **README consommateur (racine) + traductions** (documentaire). `README.md` **racine** (vitrine GitHub) réécrit en guide **consommateur** fidèle au code : version `0.0.8`, prérequis Gradle 9.8+, **22 langues**, tâches, DSL (`outputFormat`/`outputBt709`/`captureStrategy`), features opt-in, liens. 9 traductions régénérées (`README.consommateurs/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md`, `rev 0.0.8`). Dette `0.0.1-SNAPSHOT` résorbée. Précédent : S-180 README internes.)
+ _Derniere session terminee_ : 181.
+ _Prochaine session_ : 182 — backlog EPICs vidé ; au choix : A) maintenance/dette (Kover) ; B) toute nouvelle demande pilote.
+ _Session en cours_ : — (S-181 terminée).
  _Littérature de référence_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage) + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc` (EPIC voix).
 
 '''
@@ -23,11 +23,13 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (171-180)
+== 10 dernières sessions (172-181)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 181 | 2026-10-12 | docs+i18n | **README consommateur (racine) + traductions** (EN = source de vérité). `README.md` **racine** (vitrine GitHub) réécrit en guide consommateur fidèle au code : version `0.0.8` (corrigé de `0.0.1-SNAPSHOT`), prérequis Gradle 9.8+, **22 langues** (corrigé de 10), table de tâches, DSL (`captureStrategy`/`outputFormat`/`outputBt709`), section features opt-in, liens corrigés. 9 traductions régénérées (`README.consommateurs/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md`, `rev 0.0.8`). Dette `0.0.1-SNAPSHOT` résorbée. **Aucun bump/publication** (README hors artefact). Rapport `.agents/sessions/181-readme-consommateur-i18n.adoc`. | 9/10
 
 | 180 | 2026-10-12 | docs+i18n | **README fidèles au code + traductions** (EN = source de vérité). Audit code ↔ README : config **18 sections** (corrigé de 11), layout **19 domaines** + fichiers racine réels, section **tâches Gradle**, **CI réelle** (4 workflows + caches `setup-gradle`/`setup-playwright`/`setup-ollama`, fin du faux `test.yml → check`), publication (signature exécutée, `0.0.8`), statut EPICs (tous clos), deps (`langchain4j 1.22.0`, `i18n-contracts 0.0.4`), liens corrigés. `README.md` réécrit (276 l.) + **9 traductions régénérées** (`README.plugin/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md`, `rev 0.0.8`). Dette `0.0.1-SNAPSHOT` résorbée. **Aucun bump/publication** (README hors POM/JAR). Rapport `.agents/sessions/180-readme-sync-i18n.adoc`. | 9/10
 

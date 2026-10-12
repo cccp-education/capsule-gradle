@@ -1,24 +1,23 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 181
+:session: 182
 :borough: Détroit
-:session_precedente: 180 — README fidèles au code + traductions (EN source de vérité)
+:session_precedente: 181 — README consommateur (racine) + traductions
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`.
 
 == Contexte Hérité
 
-=== S-180 — README sync + i18n (livré, documentaire)
+=== S-181 — README consommateur + i18n (livré, documentaire)
 
-- `README.md` (EN, master) réécrit fidèle au code (config 18 sections, 19 domaines,
-  tâches, CI réelle 4 workflows, publication, statut EPICs, deps, liens).
-- 9 traductions régénérées (`README.plugin/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md`),
-  en-tête `rev 0.0.8`, switcher corrigé. Dette `0.0.1-SNAPSHOT` **résorbée**.
-- **Aucun artefact publié** (README hors POM/JAR) → pas de bump.
-- Rapport `.agents/sessions/180-readme-sync-i18n.adoc`.
+- `README.md` **racine** (vitrine GitHub) réécrit en **guide consommateur** fidèle au code
+  (version `0.0.8`, prérequis Gradle 9.8+, 22 langues, tâches, DSL, features opt-in, liens).
+- 9 traductions régénérées dans `README.consommateurs/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md`
+  (`rev 0.0.8`). Dette `0.0.1-SNAPSHOT` résorbée.
+- Aucun artefact publié → pas de bump. Rapport `.agents/sessions/181-readme-consommateur-i18n.adoc`.
 
-=== S-179 — résidus `prepa` (BT.709 + nombres) + release 0.0.8. S-178 — sync + 0.0.7.
+=== S-180 — README internes (`capsule-plugin/`) + `README.plugin/` (9). S-179 — résidus `prepa` + release 0.0.8.
 
-== Mission Session 181 — backlog EPICs vidé
+== Mission Session 182 — backlog EPICs vidé
 
 * **A)** Dette/maintenance : couverture Kover, docs restantes.
 * **B)** Toute nouvelle demande pilote (cadrer + implémenter en baby-step).
@@ -30,12 +29,12 @@ _littérature_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` + `.agents/CADRAGE_EPIC_CAP_
   **défaut false** (backward compat).
 * **English only** code/Gherkin (`OssVocabularyGuardTest`) ; **zéro Python** ; **zéro secret** ;
   baby-step DDD/TDD/BDD ; runner dédié par feature (S-082), steps préfixés (S-088).
-* **README** : l'anglais est la source de vérité ; toute évolution doit être reportée
-  dans les 9 traductions.
+* **README** : deux corpus, même source de vérité EN — racine `README.md` (consommateur) +
+  `README.consommateurs/` ; `capsule-plugin/README.md` (interne) + `capsule-plugin/README.plugin/`.
 * Catalogue **interne** aligné BOM `0.0.83`.
 
 == Rappels
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.8** (Central).
 * MEMPHIS BOM/catalog **0.0.84**. `CAP-QC` **9/9 ✅**, `CAP-QC-VOICE` **5/5 ✅**.
-  Backlog actionnable **vidé** ; 10 README (EN + 9) à jour.
+  Backlog actionnable **vidé** ; README consommateur (10) + interne (10) à jour.

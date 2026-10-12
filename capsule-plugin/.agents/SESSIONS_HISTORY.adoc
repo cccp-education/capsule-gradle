@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-12 (S-180) — README fidèles au code (EN source de vérité) + 9 traductions. Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-12 (S-181) — README consommateur (racine) fidèle au code + 9 traductions. Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (124-180)
+== Sessions récentes (125-181)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 181 | 2026-10-12 | docs+i18n | **README consommateur (racine) + traductions**. `README.md` racine (vitrine GitHub) réécrit en guide consommateur fidèle au code (version `0.0.8`, Gradle 9.8+, 22 langues, tâches, DSL, features opt-in, liens). 9 traductions régénérées (`README.consommateurs/*.md`, `rev 0.0.8`). Dette `0.0.1-SNAPSHOT` résorbée. Aucun bump/publication. | 9/10
 
 | 180 | 2026-10-12 | docs+i18n | **README fidèles au code + traductions** (EN = source de vérité). `README.md` réécrit (config 18 sections, 19 domaines, tâches, CI réelle 4 workflows + caches, publication, statut EPICs, deps, liens). 9 traductions régénérées (`README.plugin/*.md`, `rev 0.0.8`). Dette `0.0.1-SNAPSHOT` résorbée. Aucun bump/publication (README hors artefact). | 9/10
 

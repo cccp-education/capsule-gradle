@@ -1,5 +1,13 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-12 (S-180 — README fidèles au code + 9 traductions ; EN = source de vérité.)
+:last_update: 2026-10-12 (S-181 — README consommateur (racine) + 9 traductions ; EN = source de vérité.)
+
+'''
+== ✅ README consommateur (racine) + traductions (S-181)
+
+. [x] `README.md` **racine** (vitrine GitHub) réécrit en guide **consommateur** fidèle au code : version `0.0.8`, prérequis Gradle 9.8+, 22 langues, table de tâches, DSL (`captureStrategy`/`outputFormat`/`outputBt709`), features opt-in, liens.
+. [x] 9 traductions régénérées (`README.consommateurs/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md`, `rev 0.0.8`) depuis le master EN.
+. [x] Dette `0.0.1-SNAPSHOT` (racine consommateur) **résorbée**.
+. [x] Aucun bump/publication (README hors POM/JAR).
 
 '''
 == ✅ README fidèles au code + traductions (S-180)

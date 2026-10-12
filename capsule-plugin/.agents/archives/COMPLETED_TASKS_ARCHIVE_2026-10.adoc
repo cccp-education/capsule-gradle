@@ -1,6 +1,17 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 181 — README consommateur (racine) + traductions ✅
+
+* `README.md` **racine** (vitrine GitHub) réécrit en **guide consommateur** fidèle au code :
+  version `0.0.8` (corrigé de `0.0.1-SNAPSHOT`), prérequis Gradle 9.8+, **22 langues**
+  (corrigé de 10), table de tâches, DSL (`captureStrategy`/`outputFormat`/`outputBt709`),
+  section features opt-in, liens corrigés.
+* 9 traductions régénérées (`README.consommateurs/README.{zh,hi,es,fr,ar,bn,pt,ru,ur}.md`,
+  `rev 0.0.8`). Dette `0.0.1-SNAPSHOT` **résorbée**.
+* Documentaire : aucun artefact publié, aucun bump.
+* Rapport `.agents/sessions/181-readme-consommateur-i18n.adoc`.
+
 == Session 180 — README fidèles au code + traductions (EN source de vérité) ✅
 
 * `README.md` (EN, master) réécrit fidèle au code : config **18 sections**, layout
