@@ -1,33 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-12 (S-177 — cadrage cross-borough : code review `diag-agent` → catalogue de portage PlantUML `DIA-01`→`DIA-07` / EPIC `PLT-AGENT`, cible HTOWN. Backlog capsule EPICs actionnables toujours vidé.)
-
-'''
-== 🎯 CADRAGE S-177 — portage `diag-agent` → PlantUML (EPIC `PLT-AGENT`, cible **HTOWN**)
-
-_Cadrage cross-borough (gouvernance pure, zéro code capsule). Code review du projet
-OSS `docToolchain/diag-agent` et catalogue des techniques à porter en Kotlin/tâches
-Gradle pour améliorer le support PlantUML de **HTOWN** (`plantuml-gradle`)._
-
-*Littérature* : `.agents/CADRAGE_DIAG_AGENT_PORTAGE_PLANTUML.adoc` (review + catalogue + décisions + 8 options écartées).
-*Rapport* : `.agents/sessions/177-code-review-diag-agent-portage-plantuml.adoc`.
-
-[cols="1,4,2,1,2", options="header"]
-|===
-| ID | Objet | Domaine / cible | Pts | Statut
-
-| DIA-01 | Revue design par **vision** (rendre le PNG → juger mise en page) + convergence | `plantuml.agent` + `DiagramProcessor` | 5 | 🟡 À FAIRE (HTOWN)
-| DIA-02 | **Pré-vol de description** (questions de clarification, fail-safe) + tâche `preflightPlantumlDescription` | `plantuml.agent` + tâche | 3 | 🟡 À FAIRE (HTOWN)
-| DIA-03 | **Budget mur** (`maxIterations` + `maxSeconds`, `stoppedReason`) | `plantuml.agent` + `DiagramProcessor` | 2 | 🟡 À FAIRE (HTOWN)
-| DIA-04 | **Extracteur de code LLM robuste** (fences + JSON + brut) | `plantuml.agent` + `DiagramProcessor` | 3 | 🟡 À FAIRE (HTOWN)
-| DIA-05 | **Catalogue d'exemples canoniques** few-shot par sous-type | `plantuml.agent` | 3 | 🟡 À FAIRE (HTOWN)
-| DIA-06 | **Détection de sous-type** (heuristique + LLM repli) | `plantuml.agent` | 2 | 🟡 À FAIRE (HTOWN)
-| DIA-07 | **Garde de convergence** du feedback design (Économie d'Encre) | `plantuml.agent` | 2 | 🟡 À FAIRE (HTOWN)
-|===
-
-*Transfert à acter* : EPIC + code appartiennent à **HTOWN** (plantuml-gradle) ; à
-inscrire dans `plantuml-gradle/plantuml-plugin/.agents/` (BACKLOG + INDEX) lors de
-l'ouverture de la session HTOWN. **Total proposé ~20 pts.**
+:last_update: 2026-10-12 (S-174 — CAP-QC ✅ 9/9 + CAP-QC-VOICE ✅ 5/5 : portage `prepa` TERMINÉ. Tous les EPICs actionnables clos.)
 
 '''
 == ✅ CAP-QC — TERMINÉ 9/9 (S-174)

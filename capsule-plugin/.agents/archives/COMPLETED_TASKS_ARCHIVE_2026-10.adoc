@@ -1,20 +1,6 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
-== Session 177 — Code review `diag-agent` + catalogue de portage PlantUML (cadrage) ✅
-
-* Code review du projet OSS `docToolchain/diag-agent` (MIT, Python) @ `45068441` :
-  forces (boucle d'auto-validation ancrée sur un oracle de rendu, pré-vol de
-  description, retour design par vision, budget borné, exemples few-shot,
-  détection de sous-type) ; fragilités (`sys.exit(1)` qui tue le serveur MCP,
-  messages allemands hardcodés, pas de port LLM, budget non dur, off-by-one,
-  collision `diagram.<ext>`, 4 modules morts + 1 test fantôme vide).
-* Catalogue de portage `DIA-01`→`DIA-07` → **EPIC `PLT-AGENT`** (~20 pts, cible
-  **HTOWN**/plantuml-gradle). **Zéro code modifié.**
-* Livrable `.agents/CADRAGE_DIAG_AGENT_PORTAGE_PLANTUML.adoc`.
-  Rapport `.agents/sessions/177-code-review-diag-agent-portage-plantuml.adoc`.
-* **Reste** : transfert HTOWN à acter (BACKLOG + INDEX plantuml).
-
 == Session 176 — Câblage dit↔lu (sous-titres + karaoké) ✅
 
 * `CapsuleVideoTask.generateSubtitles` applique `PronunciationLexicon.reversals()`
