@@ -1,5 +1,16 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-12 (S-174 — CAP-QC ✅ 9/9 + CAP-QC-VOICE ✅ 5/5 : portage `prepa` TERMINÉ.)
+:last_update: 2026-10-12 (S-177 — cadrage cross-borough : code review `diag-agent` → catalogue de portage PlantUML `DIA-01`→`DIA-07` / EPIC `PLT-AGENT`, cible HTOWN.)
+
+'''
+== 🎯 Cadrage S-177 — portage `diag-agent` → PlantUML (EPIC `PLT-AGENT`, cible HTOWN)
+
+_Livrable : `.agents/CADRAGE_DIAG_AGENT_PORTAGE_PLANTUML.adoc`. Zéro code capsule._
+
+. [ ] **Transfert HTOWN** — créer l'EPIC `PLT-AGENT` dans `plantuml-gradle/plantuml-plugin/.agents/`
+  (BACKLOG + INDEX `PLT-AGENT`), référencer le cadrage S-177.
+. [ ] **Arbitrage pilote** — valider le périmètre (vision opt-in/dégradable) et l'ordre des US.
+. [ ] **Vérifier la capacité vision** des modèles du pool HTOWN (sinon dégrader DIA-01).
+. [ ] **US HTOWN suivante** — démarrer DIA-04 (extracteur robuste) puis DIA-03 (budget), DIA-01 (vision + convergence), DIA-02, DIA-06, DIA-05.
 
 '''
 == ✅ EPIC CAP-QC — portage utilitaire `prepa` → capsule — TERMINÉ 9/9 (S-174)

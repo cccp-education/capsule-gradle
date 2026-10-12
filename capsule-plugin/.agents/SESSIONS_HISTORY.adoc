@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-12 (S-176) — câblage dit↔lu sous-titres + karaoké. Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-12 (S-177) — code review `diag-agent` + catalogue de portage PlantUML. Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (120-176)
+== Sessions récentes (120-177)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 177 | 2026-10-12 | cadrage | **Code review `diag-agent` + catalogue de portage PlantUML** (cross-borough, zéro code). Review du projet OSS `docToolchain/diag-agent` (MIT, Python, ~3 300 lignes de tests unit mockés) @ `45068441` : **forces** (boucle d'auto-validation ancrée sur un oracle de rendu Kroki avec réinjection de l'erreur, **pré-vol de description** renvoyant des questions, **retour design par vision** sur PNG, budget borné `max_iterations`+`max_time`, exemples few-shot, détection de sous-type, local-first Docker) ; **fragilités** (🔴 `sys.exit(1)` dans l'orchestrateur qui **tue le serveur MCP** sur description invalide — `orchestrator.py:286`/`mcp/server.py:53` ; 🔴 messages **allemands hardcodés** dans le domaine ; 🟠 pas de port/adapter LLM, budget temps non dur, off-by-one d'itération entre les deux boucles, collision `diagram.<ext>`, erreur PNG confondue avec « format non supporté », race de logger, archive non bornée ; ⚪ **4 modules morts + 1 test fantôme vide** `test_feedback_loop.py`). **Comparaison HTOWN** : infra LLM supérieure (`LlmService`, rotation, cross-provider fallback, pool, RAG, i18n 10 langues, incrémentalité, `DiagramOutputProbe`) ; **6 capacités absentes**. **Catalogue `DIA-01`→`DIA-07`** → **EPIC `PLT-AGENT`** (~20 pts, cible **HTOWN**) : revue design par vision + convergence (DIA-01/07), pré-vol de description (DIA-02), budget mur (DIA-03), extracteur de code robuste (DIA-04), exemples canoniques few-shot (DIA-05), détection de sous-type (DIA-06). Décisions : domaine `plantuml.agent` pur, on **étend** `DiagramProcessor` (pas de seconde boucle), aucun nouveau rendu, vision opt-in/dégradable, 4 sources + push, **jamais prérequis de `check`**. 10 décisions, 8 options écartées (Kroki, MCP, CLI, fork de boucle…). Livrable `.agents/CADRAGE_DIAG_AGENT_PORTAGE_PLANTUML.adoc`. **Transfert HTOWN à acter.** Zéro code modifié. Rapport `.agents/sessions/177-code-review-diag-agent-portage-plantuml.adoc`. | 8/10
 
 | 176 | 2026-10-12 | feat+test | **Câblage dit↔lu (sous-titres + karaoké)**. `CapsuleVideoTask.generateSubtitles` applique `PronunciationLexicon.reversals()` (opt-in `tts.pronunciationEnabled`) sur les deux chemins (cartons + plain) ; `KaraokeWordPlanner.plan(beats, timings, reversals)` + `RenderViralSubtitlesTask`. Round-trip prouvé (sigle exact, symbole réversé). +2 unit + 1 scénario BDD. Désactivé par défaut. | 9/10
 

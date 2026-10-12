@@ -5,11 +5,11 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-12 (S-176 — **Câblage dit↔lu sous-titres + karaoké** : `CapsuleVideoTask.generateSubtitles` applique `PronunciationLexicon.reversals()` (opt-in `tts.pronunciationEnabled`) sur les deux chemins (cartons + plain) ; `KaraokeWordPlanner.plan(beats, timings, reversals)` + `RenderViralSubtitlesTask` idem. Round-trip prouvé (sigle exact, symbole réversé). +2 unit + 1 scénario BDD. Précédent : S-175 publication 0.0.5 ; MEMPHIS S-284 consommation 0.0.81.)
- _Derniere session terminee_ : 176.
- _Prochaine session_ : 177 — backlog EPICs vidé ; au choix : A) maintenance/dette (Kover, README) ; B) toute nouvelle demande pilote.
- _Session en cours_ : — (S-176 terminée).
- _Littérature de référence_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage) + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc` (EPIC voix).
+ _Derniere mise a jour_ : 2026-10-12 (S-177 — **Code review `diag-agent` + catalogue de portage PlantUML** (cadrage cross-borough, zéro code). ÉPIC `PLT-AGENT` (~20 pts, cible **HTOWN**/plantuml-gradle) proposé : revue design par vision, pré-vol de description, budget mur, extracteur de code robuste, exemples canoniques, détection de sous-type. Livrable `.agents/CADRAGE_DIAG_AGENT_PORTAGE_PLANTUML.adoc`. Précédent : S-176 câblage dit↔lu ; S-175 publication 0.0.5.)
+ _Derniere session terminee_ : 177.
+ _Prochaine session_ : 178 — backlog capsule EPICs vidé ; au choix : A) dette/maintenance capsule (Kover, README, drift catalogue) ; B) toute nouvelle demande pilote ; C) *hors capsule* — lancer `PLT-AGENT` côté HTOWN.
+ _Session en cours_ : — (S-177 terminée).
+ _Littérature de référence_ : `.agents/CADRAGE_DIAG_AGENT_PORTAGE_PLANTUML.adoc` (S-177, portage PlantUML) + `.agents/CADRAGE_EPIC_CAP_QC.adoc` + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc`.
 
 '''
 == REGLES ABSOLUES (resume)
@@ -28,6 +28,8 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 177 | 2026-10-12 | cadrage | **Code review `diag-agent` + catalogue de portage PlantUML** (cross-borough, zéro code). Review du projet OSS `docToolchain/diag-agent` (MIT, Python) @ `45068441` : forces (boucle d'auto-validation ancrée sur un oracle de rendu, **pré-vol de description**, **retour design par vision**, budget borné, exemples few-shot, détection de sous-type) ; fragilités (🔴 `sys.exit(1)` dans l'orchestrateur qui **tue le serveur MCP** sur description invalide, messages **allemands hardcodés** dans le domaine, pas de port/adapter LLM, budget temps non dur, off-by-one d'itération, collision `diagram.<ext>`, erreur PNG confondue avec « format non supporté », **4 modules morts + 1 test fantôme vide**). Comparaison HTOWN : infra LLM supérieure, 6 capacités absentes. Catalogue `DIA-01`→`DIA-07` → **EPIC `PLT-AGENT`** (~20 pts, cible **HTOWN**) : revue design par vision (DIA-01/07), pré-vol de description (DIA-02), budget mur (DIA-03), extracteur de code robuste (DIA-04), exemples canoniques (DIA-05), détection de sous-type (DIA-06). 10 décisions, 8 options écartées (Kroki, MCP, CLI, fork de boucle). Livrable `.agents/CADRAGE_DIAG_AGENT_PORTAGE_PLANTUML.adoc`. **Transfert HTOWN à acter.** Rapport `.agents/sessions/177-code-review-diag-agent-portage-plantuml.adoc`. | 8/10
 
 | 176 | 2026-10-12 | feat+test | **Câblage dit↔lu (sous-titres + karaoké)**. **Sous-titres** : `CapsuleVideoTask.generateSubtitles` applique `PronunciationLexicon.reversals()` (opt-in `tts.pronunciationEnabled`) — chemin cartons (`calculateFromCartons(reversals)`) et chemin plain (`spokenToDisplay(note, reversals)` sur les segments). **Karaoké viral** : `KaraokeWordPlanner.plan(beats, timings, reversals)` (les mots du beat viennent de la forme affichée) + `RenderViralSubtitlesTask` lit `tts.pronunciationEnabled` et passe `reversals`. **Round-trip prouvé** : `spokenToDisplay(spoken(display), reversals)` recouvre le display (sigle `the API is ready` exact ; symbole `50%` réversé). +2 unit (`PronunciationLexiconTest`) + 1 scénario BDD (`capsule_voice_quality.feature`). Désactivé par défaut → texte historique inchangé. Local = Build (compiles + validatePlugins VERT). Zéro bump, zéro secret. Rapport `.agents/sessions/176-prt01-dit-lu-subtitles-karaoke.adoc`. | 9/10
 

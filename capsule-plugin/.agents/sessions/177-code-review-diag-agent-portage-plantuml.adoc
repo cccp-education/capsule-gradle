@@ -1,0 +1,79 @@
+= Rapport de session 177 — Code review `diag-agent` + catalogue de portage PlantUML
+:session: 177
+:date: 2026-10-12
+:borough: Détroit (capsule) — cadrage cross-borough
+:cible: HTOWN (plantuml-gradle)
+:statut: TERMINÉ (cadrage)
+:methode: gouvernance pure (pattern S-057/S-063/S-074) — zéro code modifié
+
+== Mission
+
+Reprise de capsule (backlog EPICs vidé) puis mission pilote : **code review** du
+projet OSS `docToolchain/diag-agent` et **catalogue de propositions** de techniques
+à porter en Kotlin/tâches Gradle pour **améliorer le support PlantUML** (HTOWN).
+
+== Contexte d'ouverture
+
+* Capsule : S-176 terminée, working tree propre, `compileKotlin` VERT.
+* `CAP-QC` ✅ 9/9 et `CAP-QC-VOICE` ✅ 5/5 — **tous les EPICs actionnables clos**.
+* Release courante : `capsule-plugin 0.0.5` (Central propagée) ; MEMPHIS BOM 0.0.81.
+
+== Livrable
+
+`.agents/CADRAGE_DIAG_AGENT_PORTAGE_PLANTUML.adoc` — code review + catalogue de
+portage `DIA-01`→`DIA-07` (EPIC `PLT-AGENT`, HTOWN, ~20 pts). **Zéro code modifié**
+(cadrage de gouvernance, conformément au pattern des sessions S-057/S-063/S-074).
+
+=== diag-agent — ce qui a de la valeur (à porter)
+
+. **Revue design par vision** — rendre le PNG et le juger par un modèle vision
+   (mise en page/lisibilité) ; HTOWN ne valide aujourd'hui que le **texte**
+   (`validateDiagram`), jamais l'image. → `DIA-01` + convergence `DIA-07`.
+. **Pré-vol de description** — questions de clarification avant génération,
+   fail-safe. → `DIA-02`.
+. **Budget mur** — `max_iterations` **et** `max_time_seconds`, `stopped_reason`.
+   → `DIA-03` (réécrit en objet pur, car la garde de diag-agent est bâclée).
+. **Extracteur de code robuste** — fences markdown + JSON + PlantUML brut. → `DIA-04`.
+. **Exemples canoniques few-shot** + **détection de sous-type** → `DIA-05`/`DIA-06`.
+
+=== diag-agent — ce qu'il ne faut PAS porter (constats)
+
+* 🔴 `sys.exit(1)` dans la couche d'orchestration → **tue le serveur MCP** sur
+   description invalide (`orchestrator.py:286`, `mcp/server.py:53`).
+* 🔴 Messages utilisateur **allemands hardcodés** dans le domaine (`orchestrator.py:279-282`).
+* 🟠 Pas de port/adapter LLM (couplage direct `litellm`/`httpx`), budget temps non
+   dur, off-by-one d'itération entre les deux boucles, collision `diagram.<ext>`,
+   erreur PNG confondue avec « format non supporté ».
+* ⚪ **Code mort** : 4 modules vides + **1 test vide** (`test_feedback_loop.py`,
+   0 ligne = test fantôme).
+* **Kroki comme oracle** : écarté — HTOWN valide **nativement et hors-ligne**.
+
+=== Comparaison
+
+L'infrastructure LLM de HTOWN (`LlmService`, rotation, fallback cross-provider,
+pool de clés, RAG, i18n 10 langues, incrémentalité, probe anti-blanc) est
+**supérieure** à celle de diag-agent. Seules 6 capacités sont réellement absentes
+(voir catalogue).
+
+== Décisions
+
+* Cible = **HTOWN** (plantuml-gradle) ; cadrage hébergé dans Détroit (borough de
+   la session, précédent `CADRAGE_EPIC_LLM_RESILIENCE_N0.adoc`). **Transfert à acter**.
+* Nouveau domaine pur `plantuml.agent` ; on **étend** `DiagramProcessor` (pas de
+   seconde boucle) ; aucun nouveau moteur de rendu ; vision **opt-in et dégradable**.
+* Aucune option n'est un prérequis de `check` ; 4 sources de config + `push` ;
+   défaut `false`.
+
+== Tests
+
+Aucun (cadrage). Vérification d'ouverture : `compileKotlin` VERT ; working tree
+propre.
+
+== Reste à faire (transfert HTOWN)
+
+. [ ] Créer l'EPIC `PLT-AGENT` dans `plantuml-gradle/plantuml-plugin/.agents/`
+   (BACKLOG + INDEX), référencer ce cadrage.
+. [ ] Arbitrage pilote sur le périmètre (vision opt-in) et l'ordre des US.
+. [ ] Vérifier la disponibilité **vision** des modèles du pool HTOWN.
+
+_Score : 8/10 (cadrage cross-borough, zéro code)._
