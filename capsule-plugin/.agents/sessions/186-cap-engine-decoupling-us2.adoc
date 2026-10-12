@@ -72,6 +72,13 @@ Tests = CI** (compiles ×3 + `assemble` + `validatePlugins` uniquement en local)
 Fixtures corrigées (unit + BDD). Leçon : reproduire le **format réel** du deck
 dans les fixtures, pas une forme compacte.
 
+=== Preuve CI (commit `e849b3a`)
+
+* **Test** (Fast Tests PR Gate) : ✅ **success** — run `38311099044` (3m23s).
+* **Full Tests** (binaries réels + duration validation) : ✅ **success** — run
+  `38311099295` (~20m). Run initial `38310466715` rouge (1 assertion de fixture)
+  → correctif test-only → re-push → vert.
+
 == Décisions clés
 
 [cols="1,4", options="header"]
