@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-12 (S-173 — **chaînage EPICs + cache CI**). **Cache CI** : action composite `.github/actions/setup-ollama` (image Docker `ollama/ollama` + `~/.ollama/models` cachés, `ollama pull` seulement si absent) + workflow `llm-smoke.yml` (dispatch, port 11466) + cache Gradle durci (`gradle/actions/setup-gradle@v4`). **CAP-QC-VOICE US-3** : `TakeSelector` (pur) + `VoiceSelectionJson` + tâche `selectBestVoiceTake` (opt-in `voice.selectBestTake`, non destructif). **US-4** : `VoiceAsrIntegrationTest` (TTS→ASR réels, skip-gardé). **CAP-QC PRT-08** : `capsule.qc` (`QcBoard`/`BeatsBoardPlanner`/`DitMontreBoardPlanner`) + `QcBoardRenderer` (Java2D→PNG) + tâche `renderQcBoards` (opt-in `qc.boardsEnabled`). BDD `@qc-boards` (runner 36e). Gates locaux VERT ; **CI `Test` + `Full Tests` VERTES** (run `38182193992`). **CAP-QC 8/9**, **CAP-QC-VOICE 4/5**. Précédent : S-172 US-2.)
- _Derniere session terminee_ : 173.
- _Prochaine session_ : 174 — au choix : A) PRT-01 (prononciation dit/lu + cache contenu `slide-NN-<key8>.mp3`, **intrusif**, clôt CAP-QC) ; B) `CAP-QC-VOICE` US-5 *(optionnel)* karaoké sur timings ASR ; C) maintenance.
- _Session en cours_ : — (S-173 terminée).
+ _Derniere mise a jour_ : 2026-10-12 (S-174 — **clôture des deux EPICs**). **CAP-QC PRT-01** : `PronunciationLexicon` (pur : dit/lu `spoken`, `reversals`, `cacheKey`) + cache TTS indexé sur le texte dit (sidecar `<file>.key`, opt-in `tts.pronunciationEnabled`, non intrusif). **CAP-QC-VOICE US-5** : `TimedWord` + `WordTimingsJson.parse` + `KaraokeWordPlanner.plan(beats, timings)` (timings ASR clampés + repli proportionnel) + `RenderViralSubtitlesTask.wordTimingsFile`. CI `Test` + `Full Tests` VERTES (run `38224893199`). **CAP-QC ✅ 9/9**, **CAP-QC-VOICE ✅ 5/5 — tous les EPICs actionnables clos.** Précédent : S-173 chaînage.)
+ _Derniere session terminee_ : 174.
+ _Prochaine session_ : 175 — backlog vidé ; au choix : A) publication `capsule-plugin 0.0.5` (accord pilote) ; B) câblage karaoké/sous-titres dit↔lu ; C) maintenance/dette.
+ _Session en cours_ : — (S-174 terminée).
  _Littérature de référence_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage) + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc` (EPIC voix).
 
 '''
@@ -23,11 +23,13 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== 10 dernières sessions (160-173)
+== 10 dernières sessions (160-174)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 174 | 2026-10-12 | feat+test | **Clôture CAP-QC (PRT-01) + CAP-QC-VOICE (US-5)** — les deux EPICs clos. **US-5** : `TimedWord` + `WordTimingsJson.parse` (whisper `segments[].words[]`, tolérant) + `KaraokeWordPlanner.plan(beats, timings)` (timings mesurés clampés à la fenêtre du beat + repli proportionnel si un mot n'est pas apparié, jamais de timing inventé) + `RenderViralSubtitlesTask.wordTimingsFile` (optionnel). +5 unit (`WordTimingsTest`) + 1 scénario BDD (`capsule_viral_karaoke.feature`). **PRT-01** : `PronunciationLexicon` (pur : `spoken` — sigles épelés `API`→`A P I`, symboles `%`→`pour cent` ; `reversals` ; `cacheKey` = 8 hex SHA-256 du texte dit) + `CapsuleBuildTask` opt-in `tts.pronunciationEnabled` : la voix prononce la forme **dite** et une prise n'est réutilisée que si le sidecar `<file>.key` correspond (éditer une prononciation n'invalide que les prises concernées). **Non intrusif** : nommage `slide-NN.mp3` et lookup `CapsuleVideoTask` inchangés (décision vs `slide-NN-<key8>.mp3` du cadrage). +6 unit (`PronunciationLexiconTest`) + merger + 1 scénario BDD. **CI `Test` + `Full Tests` VERTES** (run `38224893199`, commit `34b4086`). **CAP-QC ✅ 9/9**, **CAP-QC-VOICE ✅ 5/5**. Zéro bump, zéro publication, zéro secret. Rapport `.agents/sessions/174-cap-qc-closure-us5-prt01.adoc`. | 9/10
 
 | 173 | 2026-10-12 | feat+test+ci | **Chaînage EPICs + cache CI**. **A — Cache CI** : action composite `.github/actions/setup-ollama` (image Docker `ollama/ollama` via `docker save` + `~/.ollama/models` depuis le cache Actions, `ollama pull` seulement si absent, `chown` du store) + workflow `llm-smoke.yml` (`workflow_dispatch` non bloquant, port dédié 11466, `OLLAMA_TEST_PORT`/`OLLAMA_TEST_MODEL`) + cache Gradle durci `gradle/actions/setup-gradle@v4` dans `full-tests.yml`/`cucumber-full.yml`. **B — CAP-QC-VOICE US-3** : domaine pur `TakeSelector` (`selectBest`/`selectBySlide` — non-échouant > WER > surplus > ordre) + `VoiceSelection` + `VoiceSelectionJson` (`choix.json`) + tâche `selectBestVoiceTake` (groupe `verification`, opt-in `voice.selectBestTake`, non destructif, dégradé si ASR absent) + `VoiceConfig.selectBestTake` 4 sources. **C — US-4** : `VoiceAsrIntegrationTest` (TTS espeak/piper → ASR whisper réels → `FidelityScorer`, skip-gardé). **D — CAP-QC PRT-08** : domaine pur `capsule.qc` (`QcBoard`/`QcCell` + `BeatsBoardPlanner` + `DitMontreBoardPlanner`) + `QcBoardRenderer` (Java2D → PNG, image manquante → placeholder) + tâche `renderQcBoards` (opt-in `qc.boardsEnabled`, `<deck>-beats.png` + `<deck>-dit-montre.png`) + `QcConfig.boardsEnabled` 4 sources. Baby-step DDD/TDD/BDD : +14 unit (TakeSelector 8, QcBoardRenderer 5, merger) + 8 functional TestKit + BDD `@qc-boards` (runner 36e `cucumberTestQcBoards`). **CI `Test` + `Full Tests` VERTES** (run `38182193992`, `1481 tests`). **CAP-QC 8/9**, **CAP-QC-VOICE 4/5**. Reste : PRT-01 (intrusif), US-5 (optionnel). Zéro bump, zéro publication, zéro secret. Rapport `.agents/sessions/173-cap-qc-chain-and-ci-cache.adoc`. | 9/10
 
@@ -175,8 +177,9 @@ neuf) ; **S-150** ajoute le **23e** runner (`cucumberTestViralRender`, vrai MP4)
 (`cucumberTestContentPreflight`) ; **S-168** le **33e** (`cucumberTestTimeline`) ;
 **S-170** le **34e** (`cucumberTestVoiceQuality`) ; **S-172** le **35e**
 (`cucumberTestVoiceVerification`) ; **S-173** le **36e** (`cucumberTestQcBoards`).
-**EPICs en cours** : **CAP-QC 🟡 8/9** (reste PRT-01, intrusif) et **CAP-QC-VOICE 🟡 4/5**
-(reste US-5, optionnel) — portage `prepa_electricite_complet` → capsule.
+**EPICs** : **CAP-QC ✅ 9/9** (S-166→S-174) et **CAP-QC-VOICE ✅ 5/5** (S-169→S-174) —
+**portage `prepa_electricite_complet` → capsule TERMINÉ. Tous les EPICs actionnables
+sont clos.**
 **Cache CI** : `.github/actions/setup-ollama` (image Docker + modèle) + Gradle
 (`gradle/actions/setup-gradle@v4`).
 

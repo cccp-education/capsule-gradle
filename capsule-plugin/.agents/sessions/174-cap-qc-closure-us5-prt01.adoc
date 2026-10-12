@@ -1,0 +1,62 @@
+= Rapport de session 174 — Clôture CAP-QC (PRT-01) + CAP-QC-VOICE (US-5)
+:session: 174
+:date: 2026-10-12
+:borough: Détroit
+:epic: CAP-QC-VOICE (US-5) + CAP-QC (PRT-01)
+:statut: TERMINÉ — **les deux EPICs clos**
+:methode: baby-step DDD/TDD/BDD (unit → fonctionnel → cucumber)
+
+== Mission
+
+Demande pilote : *« clos CAP-QC puis passe à US-5 et enfin attaque PRT-01 »* — les deux
+derniers items du portage `prepa_electricite_complet` → capsule.
+
+== A — CAP-QC-VOICE US-5 (optionnel) — karaoké sur timings ASR
+
+* **Domaine pur** `capsule.viral` : `TimedWord` + `WordTimingsJson.parse` (whisper
+  `segments[].words[]`, tolérant : document vide/malformé → liste vide) +
+  `KaraokeWordPlanner.plan(beats, timings)` — les timings mesurés sont **clampés** à la
+  fenêtre du beat et le repli **proportionnel** s'applique dès qu'un mot du beat n'est
+  pas apparié (jamais de timing inventé).
+* `RenderViralSubtitlesTask` : entrée optionnelle `wordTimingsFile`
+  (`-Pcapsule.viral.wordTimingsFile`).
+* Rétro-compatible (timings vides = ancien comportement). +5 unit (`WordTimingsTest`) +
+  1 scénario BDD (`capsule_viral_karaoke.feature`).
+
+== B — CAP-QC PRT-01 (intrusif) — dit/lu + cache par contenu
+
+* **Domaine pur** `capsule.voice.PronunciationLexicon` : `spoken(display)` (sigles
+  épelés `API` → `A P I`, symboles étendus `%` → `pour cent`), `reversals()` (dit →
+  affiché), `cacheKey(spoken)` (8 hex SHA-256).
+* **Cache par contenu, non intrusif** : `CapsuleBuildTask`, opt-in
+  `tts.pronunciationEnabled` — la voix prononce la forme **dite**, et une prise
+  existante n'est réutilisée que si le sidecar `<file>.key` correspond à la clé du
+  texte dit (éditer une prononciation n'invalide que les prises concernées).
+  **Décision** : le nom canonique `slide-NN.mp3` et le lookup `CapsuleVideoTask` sont
+  **inchangés** (le cadrage proposait `slide-NN-<key8>.mp3` ; le sidecar atteint le
+  même but sans toucher les 8 sites de résolution audio et leurs tests — moindre
+  risque pour le même contrat d'économie d'encre). Défaut off = comportement strictement
+  identique.
+* `TtsConfig.pronunciationEnabled` 4 sources + extension/conventions/push.
+* +6 unit (`PronunciationLexiconTest`) + merger + 1 scénario BDD
+  (`capsule_voice_quality.feature`).
+
+== Gates
+
+* Local = Build : `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin`
+  + `validatePlugins` **VERTS**.
+* **CI** : `Test` + **`Full Tests` VERTES** (run `38224893199`, commit `34b4086`) —
+  unit + functionalTest + BDD agrégé + real render.
+* Zéro bump, zéro publication, zéro secret.
+
+== Clôture EPICs
+
+* **CAP-QC ✅ 9/9** — portage `prepa` : PRT-04/03/09/06 (S-166), PRT-05/10 (S-167),
+  PRT-07 (S-168), PRT-08 (S-173), PRT-01 (S-174). (PRT-11 CADUQUE ; PRT-12/13 hors
+  cœur OSS.)
+* **CAP-QC-VOICE ✅ 5/5** — US-0 cadrage (S-169), US-1 domaine pur (S-170), US-2 port +
+  tâche (S-172), US-3 choix de prise (S-173), US-4 dogfooding (S-173), US-5 karaoké
+  timings ASR (S-174).
+* **Tous les EPICs actionnables du backlog sont clos.**
+
+_Score : 9/10._

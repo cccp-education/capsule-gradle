@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-12 (S-173) — chaînage EPICs + cache CI. Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-12 (S-174) — clôture CAP-QC + CAP-QC-VOICE. Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (120-173)
+== Sessions récentes (120-174)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 174 | 2026-10-12 | feat+test | **Clôture CAP-QC (PRT-01) + CAP-QC-VOICE (US-5)** — les deux EPICs clos. **US-5** : karaoké sur timings ASR (`TimedWord` + `WordTimingsJson.parse` tolérant + `KaraokeWordPlanner.plan(beats, timings)` clampé + repli proportionnel + `RenderViralSubtitlesTask.wordTimingsFile`) ; 5 unit + 1 scénario BDD. **PRT-01** : `PronunciationLexicon` pur (dit/lu + `cacheKey`) + cache TTS indexé sur le texte dit (sidecar `<file>.key`, opt-in `tts.pronunciationEnabled`, non intrusif) ; 6 unit + merger + 1 scénario BDD. **CI `Test` + `Full Tests` VERTES** (run `38224893199`, commit `34b4086`). **CAP-QC 9/9**, **CAP-QC-VOICE 5/5** — tous les EPICs actionnables clos. Zéro bump, zéro publication, zéro secret. | 9/10
 
 | 173 | 2026-10-12 | feat+test+ci | **Chaînage EPICs + cache CI**. **Cache CI** : action composite `.github/actions/setup-ollama` (image Docker `ollama/ollama` + `~/.ollama/models` cachés) + workflow `llm-smoke.yml` (dispatch, port 11466) + cache Gradle durci (`gradle/actions/setup-gradle@v4`). **CAP-QC-VOICE US-3** : `TakeSelector` (pur) + `VoiceSelectionJson` + tâche `selectBestVoiceTake` (opt-in `voice.selectBestTake`, non destructif). **US-4** : `VoiceAsrIntegrationTest` (TTS→ASR réels, skip-gardé). **CAP-QC PRT-08** : `capsule.qc` (`QcBoard`/planners) + `QcBoardRenderer` (Java2D→PNG) + tâche `renderQcBoards` (opt-in `qc.boardsEnabled`). Baby-step DDD/TDD/BDD : +14 unit + 8 functional + BDD `@qc-boards` (runner 36e `cucumberTestQcBoards`). **CI `Test` + `Full Tests` VERTES** (run `38182193992`, `1481 tests`). **CAP-QC 8/9**, **CAP-QC-VOICE 4/5**. Reste : PRT-01 (intrusif), US-5 (optionnel). Zéro bump, zéro publication, zéro secret. | 9/10
 

@@ -1,7 +1,26 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-12
-:session: 173 Chaînage EPICs (CAP-QC-VOICE US-3/US-4 + CAP-QC PRT-08) + cache CI
+:session: 174 Clôture CAP-QC (PRT-01) + CAP-QC-VOICE (US-5)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 12 octobre 2026 (après session 174)
+
+.Clôture CAP-QC + CAP-QC-VOICE
+|===
+| Élément | Changement | Tests
+
+| `viral/WordTimings.kt` (créé) | `TimedWord` + `WordTimingsJson.parse` (whisper, tolérant) | +5 `WordTimingsTest`
+| `viral/KaraokeWordPlanner.kt` (étendu) | `plan(beats, timings)` — mesurés clampés + repli proportionnel | (couvert par `WordTimingsTest`)
+| `viral/RenderViralSubtitlesTask.kt` (étendu) | entrée `wordTimingsFile` optionnelle | 1 scénario BDD `capsule_viral_karaoke.feature`
+| `voice/PronunciationLexicon.kt` (créé) | dit/lu `spoken`/`reversals`/`cacheKey` (pur) | +6 `PronunciationLexiconTest`
+| `CapsuleBuildTask.kt` (étendu) | cache TTS indexé sur le texte dit (sidecar `.key`, opt-in) | (couvert par lexicon + merger + BDD)
+| `capsule_voice_quality.feature` (étendue) | BDD `@voice` (5e scénario prononciation) | runner 34e `cucumberTestVoiceQuality`
+| `CapsuleConfig*.kt` (`tts.pronunciationEnabled`) | 4 sources + extension + push | +1 `CapsuleConfigMergerTest`
+|===
+
+*Totaux S-174* : **+12 unit** + 2 scénarios BDD (features existantes). Gates locaux
+(compiles + `validatePlugins`) **VERTS** ; **CI `Test` + `Full Tests` VERTES**
+(run `38224893199`). **CAP-QC ✅ 9/9**, **CAP-QC-VOICE ✅ 5/5**.
 
 == Couverture — 12 octobre 2026 (après session 173)
 

@@ -1,6 +1,19 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 174 — Clôture CAP-QC (PRT-01) + CAP-QC-VOICE (US-5) ✅
+
+* **CAP-QC-VOICE US-5** : `TimedWord` + `WordTimingsJson.parse` (whisper, tolérant) +
+  `KaraokeWordPlanner.plan(beats, timings)` (timings mesurés clampés + repli
+  proportionnel) + `RenderViralSubtitlesTask.wordTimingsFile` ; 5 unit + 1 scénario BDD.
+* **CAP-QC PRT-01** : `PronunciationLexicon` pur (dit/lu `spoken`, `reversals`,
+  `cacheKey`) + cache TTS indexé sur le texte dit (sidecar `<file>.key`, opt-in
+  `tts.pronunciationEnabled`, non intrusif — nommage `slide-NN.mp3` inchangé) ;
+  6 unit + merger + 1 scénario BDD.
+* **CI `Test` + `Full Tests` VERTES** (run `38224893199`, commit `34b4086`).
+  **CAP-QC ✅ 9/9**, **CAP-QC-VOICE ✅ 5/5 — portage `prepa` TERMINÉ, tous les EPICs
+  actionnables clos.** Rapport `.agents/sessions/174-cap-qc-closure-us5-prt01.adoc`.
+
 == Session 173 — Chaînage EPICs (CAP-QC-VOICE US-3/US-4 + CAP-QC PRT-08) + cache CI ✅
 
 * **Cache CI** : action composite `.github/actions/setup-ollama` (image Docker
