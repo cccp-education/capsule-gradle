@@ -2,6 +2,7 @@ package capsule.adapter.revealjs
 
 import capsule.CaptureResolver
 import capsule.CaptureStrategy
+import capsule.MediaProbeUtil
 import capsule.NoOpPlaywrightCapture
 import capsule.PlaywrightCapture
 import capsule.PlaywrightCaptureImpl
@@ -10,6 +11,7 @@ import capsule.RemotionCaptureImpl
 import capsule.RemotionPlanner
 import capsule.ScreenshotCaptureImpl
 import capsule.kernel.VideoEngine
+import capsule.kernel.VideoOutcome
 import capsule.kernel.VideoRenderRequest
 import capsule.kernel.VideoRenderResult
 import capsule.kernel.segment.VideoSegment
@@ -194,7 +196,7 @@ class RevealJsEngineAdapter(
         val chosen = produced.firstOrNull { it.name == "${RemotionPlanner.FINAL_VIDEO_BASENAME}.$ext" }
             ?: produced.firstOrNull { !it.name.startsWith("slide-") }
             ?: produced.firstOrNull()
-        return VideoRenderResult(produced = chosen)
+        return VideoRenderResult(produced = chosen, outcome = outcomeFor(chosen))
     }
 
     /**
@@ -288,7 +290,28 @@ class RevealJsEngineAdapter(
             finalVideo.takeIf { it.exists() }
         } else null
 
-        return VideoRenderResult(produced = produced, failedUnits = failedUnits.toList())
+        return VideoRenderResult(produced = produced, outcome = outcomeFor(produced), failedUnits = failedUnits.toList())
+    }
+
+    /**
+     * Neutral descriptor of the produced video: duration probed via ffprobe,
+     * dimensions from the capture plan, size from the file, codec by container.
+     */
+    private fun outcomeFor(file: File?): VideoOutcome? {
+        if (file == null || !file.exists()) return null
+        return VideoOutcome(
+            durationSeconds = MediaProbeUtil.probeDuration(file),
+            width = plan.viewportWidth,
+            height = plan.viewportHeight,
+            sizeBytes = file.length(),
+            codec = codecFor(file.extension),
+        )
+    }
+
+    private fun codecFor(extension: String): String? = when (extension.lowercase()) {
+        "mp4" -> "h264"
+        "webm" -> "vp8"
+        else -> null
     }
 
     companion object {

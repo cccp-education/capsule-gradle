@@ -1,0 +1,30 @@
+= Session 191 — Capsule alimente `VideoOutcome` (video-kernel 0.0.3)
+:session: 191
+:date: 2026-10-12
+:type: refactor (contrat) — synchronisation cross-borough
+:borough: Détroit / capsule-gradle
+:toc:
+
+== Objectif
+
+Alimenter le nouveau descripteur d'issue neutre `VideoOutcome` (video-kernel 0.0.3)
+depuis l'adapter reveal.js, pour que l'orchestrateur générique lise la vidéo
+produite uniformément (durée/dims/taille/codec).
+
+== Changements
+
+* `gradle/libs.versions.toml` : `video-kernel = "0.0.3"`.
+* `RevealJsEngineAdapter` : `outcomeFor(produced)` calcule
+  `MediaProbeUtil.probeDuration` (durée), dims du `RevealJsRenderPlan` (viewport),
+  `sizeBytes` du fichier, codec par conteneur (`mp4→h264`, `webm→vp8`) ;
+  `renderWholeSource` et `renderSegmentsParallel` renvoient
+  `VideoRenderResult(produced, outcome, failedUnits)`.
+
+== Gates locaux (Local = Build)
+
+* compiles ×3 **VERTS** (résolution `video-kernel:0.0.3`).
+
+== Statut
+
+Le contrat partagé est **complet et éprouvé par 2 moteurs** (capsule + hyperframes).
+Candidat au gel `0.1.0`.

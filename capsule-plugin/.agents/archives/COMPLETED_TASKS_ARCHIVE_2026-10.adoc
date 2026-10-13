@@ -1,6 +1,12 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 191 — Alimentation de `VideoOutcome` (video-kernel 0.0.3) ✅
+
+* L'adapter reveal alimente `VideoOutcome` (durée/dims/taille/codec).
+* Contrat partagé complet, éprouvé par 2 moteurs.
+* Rapport `.agents/sessions/191-video-outcome-0.0.3.adoc`.
+
 == Session 190 — Adaptation à `video-kernel:0.0.2` (port `VideoEngine` aminci) ✅
 
 * Fitness mapping vs HyperFrames → noyau évolué en 0.0.2 (contrat partagé honnête).
