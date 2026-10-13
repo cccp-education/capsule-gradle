@@ -24,6 +24,16 @@ produite uniformément (durée/dims/taille/codec).
 
 * compiles ×3 **VERTS** (résolution `video-kernel:0.0.3`).
 
+=== Preuve CI (commit `9dbe534`)
+
+* **Test** : ✅ **success** — run `38433472507` (3m58s).
+* **Full Tests** : ✅ **success** — run `38433472412` (24m8s) — résolution
+  `video-kernel:0.0.3` **depuis Maven Central**.
+* **video-kernel** : CI ✅ (run `38431572137`) ; publication `0.0.3` bundle
+  `208f27e1` (Central, propagée).
+* **hyperframes** : le spike compile (185 tests, échec **uniquement** sur les 2
+  gardes de publication **pré-existantes** racy cross-repo — inchangé par cette session).
+
 == Statut
 
 Le contrat partagé est **complet et éprouvé par 2 moteurs** (capsule + hyperframes).
