@@ -1,7 +1,7 @@
 package capsule.adapter.revealjs
 
-import capsule.kernel.VideoScript
-import capsule.kernel.VideoSegment
+import capsule.kernel.segment.VideoScript
+import capsule.kernel.segment.VideoSegment
 
 /**
  * Reveal.js speaker-note parser — the AsciiDoc-deck parsing extracted from

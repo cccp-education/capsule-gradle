@@ -9,7 +9,7 @@ import capsule.adapter.revealjs.RevealJsSpeakerNoteParser
  * **Legacy compat surface** (CAP-ENGINE-DECOUPLING US-3): the reveal.js parsing
  * now lives in [RevealJsSpeakerNoteParser]; this object delegates so existing
  * call-sites keep working. Prefer the adapter (or the neutral
- * [capsule.kernel.SegmentSource] port) in new code.
+ * [capsule.kernel.segment.SegmentSource] port) in new code.
  */
 object AsciidocSpeakerNoteParser {
 

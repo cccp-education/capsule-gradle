@@ -5,9 +5,9 @@ import capsule.feed.SlideType
 import capsule.feed.toVideoKind
 import capsule.feed.type
 import capsule.kernel.FileVisualSource
-import capsule.kernel.VideoKind
+import capsule.kernel.segment.VideoKind
 import capsule.kernel.VideoProductionEntry
-import capsule.kernel.VideoSegment
+import capsule.kernel.segment.VideoSegment
 import capsule.multilang.deckFile
 import contracts.i18n.LanguageCatalog
 import io.cucumber.java.en.Given

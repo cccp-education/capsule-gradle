@@ -1,6 +1,6 @@
 package capsule.feed
 
-import capsule.kernel.VideoKind
+import capsule.kernel.segment.VideoKind
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

@@ -12,6 +12,7 @@ import capsule.ScreenshotCaptureImpl
 import capsule.kernel.VideoEngine
 import capsule.kernel.VideoRenderRequest
 import capsule.kernel.VideoRenderResult
+import capsule.kernel.segment.VideoSegment
 import capsule.viral.ViralCaptureStrategy
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
@@ -24,8 +25,7 @@ import java.util.concurrent.TimeoutException
 
 /**
  * Configuration snapshot the reveal.js engine adapter needs, decoupled from the
- * Gradle extension so the adapter stays testable and the kernel stays neutral
- * (CAP-ENGINE-DECOUPLING US-2).
+ * Gradle extension so the adapter stays testable and the kernel stays neutral.
  */
 data class RevealJsCaptureSettings(
     val playwrightTimeout: Double,
@@ -45,21 +45,48 @@ data class RevealJsCaptureSettings(
 )
 
 /**
- * Reveal.js video engine adapter — the concrete [VideoEngine] that renders a
- * reveal.js deck (CAP-ENGINE-DECOUPLING US-2).
+ * Reveal.js-specific render plan (video-kernel US-1, 0.0.2).
  *
- * Extracted from `CapsuleVideoTask`: it owns the capture-engine resolution
+ * These inputs belong to the **segment-oriented capture engine**, not to the
+ * shared [VideoEngine] contract: a whole-document renderer (HyperFrames) has no
+ * segments, durations or viewport. They are supplied when the adapter is built,
+ * so the neutral [VideoRenderRequest] stays minimal.
+ *
+ * @property segments             ordered narration segments.
+ * @property segmentDurations     per-segment duration in seconds (aligned with
+ *                                [segments] by index).
+ * @property viewportWidth        capture viewport width in pixels.
+ * @property viewportHeight       capture viewport height in pixels.
+ * @property parallel             `true` to capture each segment independently
+ *                                (a standalone visual per segment) and concat.
+ * @property captureTimeoutMillis per-segment capture timeout.
+ */
+data class RevealJsRenderPlan(
+    val segments: List<VideoSegment>,
+    val segmentDurations: List<Double>,
+    val viewportWidth: Int,
+    val viewportHeight: Int,
+    val parallel: Boolean,
+    val captureTimeoutMillis: Long = 5 * 60 * 1000L,
+)
+
+/**
+ * Reveal.js video engine adapter — the concrete [VideoEngine] that renders a
+ * reveal.js deck, and the only place that knows about per-segment capture.
+ *
+ * Extracted from `CapsuleVideoTask`. It owns the capture-engine resolution
  * (Playwright / Screenshot / Remotion via [CaptureResolver]), the parallel
- * per-slide capture using [RevealJsDeckHtml.singleSlideHtml], the whole-deck
- * capture, and the FFmpeg concatenation of per-slide clips. The task keeps only
- * the post-processing steps (audio mix, subtitle burn-in, audio post, format
- * conversion) which are engine-agnostic.
+ * per-segment capture using [RevealJsDeckHtml.singleSlideHtml], the whole-deck
+ * capture, and the FFmpeg concatenation of per-segment clips. The task keeps only
+ * the engine-agnostic post-processing (audio mix, subtitle burn-in, audio post,
+ * format conversion).
  *
  * A [captureProvider] can be supplied for tests to inject a fake
  * [PlaywrightCapture] (never a real browser); it is invoked once per engine.
  */
 class RevealJsEngineAdapter(
     private val settings: RevealJsCaptureSettings,
+    private val plan: RevealJsRenderPlan,
     private val logger: Logger = Logging.getLogger(RevealJsEngineAdapter::class.java),
     private val captureProvider: (() -> PlaywrightCapture)? = null,
 ) : VideoEngine {
@@ -76,19 +103,19 @@ class RevealJsEngineAdapter(
     }
 
     /** A fresh capture engine — one per parallel worker thread. */
-    fun newCapture(segmentDurations: List<Double>): PlaywrightCapture =
-        captureProvider?.invoke() ?: resolveFromSettings(segmentDurations)
+    fun newCapture(): PlaywrightCapture =
+        captureProvider?.invoke() ?: resolveFromSettings()
 
     /** A single engine reused across a whole-source render. */
-    fun resolveCapture(segmentDurations: List<Double>): PlaywrightCapture =
-        captureProvider?.invoke() ?: (cachedCapture ?: resolveFromSettings(segmentDurations).also { cachedCapture = it })
+    fun resolveCapture(): PlaywrightCapture =
+        captureProvider?.invoke() ?: (cachedCapture ?: resolveFromSettings().also { cachedCapture = it })
 
     /**
      * Resolves the capture engine for the configured strategy, applying the
-     * viral rule and the strict-mode guard. Falls back to noop when the engine
-     * is unavailable and strict mode is off.
+     * viral rule and the strict-mode guard. Falls back to noop when the engine is
+     * unavailable and strict mode is off.
      */
-    private fun resolveFromSettings(segmentDurations: List<Double>): PlaywrightCapture {
+    private fun resolveFromSettings(): PlaywrightCapture {
         val strategy = ViralCaptureStrategy.resolve(
             configured = settings.configuredStrategy,
             viralEnabled = settings.viralEnabled,
@@ -123,11 +150,11 @@ class RevealJsEngineAdapter(
             },
         )
         if (resolved.isAvailable()) {
-            val totalSecs = segmentDurations.sum()
+            val totalSecs = plan.segmentDurations.sum()
             logger.lifecycle(
                 "Capture: {} strategy ({} slides, {}s total)",
                 strategy.name.lowercase(),
-                segmentDurations.size,
+                plan.segmentDurations.size,
                 String.format("%.1f", totalSecs),
             )
         } else {
@@ -137,8 +164,8 @@ class RevealJsEngineAdapter(
     }
 
     override fun render(request: VideoRenderRequest): VideoRenderResult =
-        if (request.parallel) {
-            renderSlidesParallel(request)
+        if (plan.parallel) {
+            renderSegmentsParallel(request)
         } else {
             renderWholeSource(request)
         }
@@ -148,14 +175,14 @@ class RevealJsEngineAdapter(
      * post-processes the produced file (audio mix, subtitles, format).
      */
     private fun renderWholeSource(request: VideoRenderRequest): VideoRenderResult {
-        val capture = resolveCapture(request.segmentDurations)
+        val capture = resolveCapture()
         try {
             capture.capture(
                 deckHtmlPath = request.visual.file.absolutePath,
                 outputDir = request.outputDir,
-                viewportWidth = request.viewportWidth,
-                viewportHeight = request.viewportHeight,
-                slideDurations = request.segmentDurations,
+                viewportWidth = plan.viewportWidth,
+                viewportHeight = plan.viewportHeight,
+                slideDurations = plan.segmentDurations,
             )
         } finally {
             capture.close()
@@ -172,31 +199,29 @@ class RevealJsEngineAdapter(
 
     /**
      * Parallel capture: one standalone slide HTML per segment, captured by a
-     * per-worker engine, then concatenated into `<name>.<ext>`. A failing
-     * segment is reported in [VideoRenderResult.failedSegments], never fatal.
+     * per-worker engine, then concatenated into `<name>.<ext>`. A failing segment
+     * is reported in [VideoRenderResult.failedUnits], never fatal.
      */
-    private fun renderSlidesParallel(request: VideoRenderRequest): VideoRenderResult {
+    private fun renderSegmentsParallel(request: VideoRenderRequest): VideoRenderResult {
         val executor = Executors.newFixedThreadPool(settings.parallelThreads)
         val futures = mutableListOf<Future<File?>>()
-        val failedSegments = mutableListOf<Int>()
+        val failedUnits = mutableListOf<Int>()
 
         // One capture engine per worker thread, reused across that thread's
-        // slides. Resolving per slide launched a browser for the availability
+        // segments. Resolving per slide launched a browser for the availability
         // probe and a second one for the capture itself — two Chromium instances
-        // per slide, which saturated the driver and made this mode unusable.
+        // per segment, which saturated the driver and made this mode unusable.
         val engines = ConcurrentLinkedQueue<PlaywrightCapture>()
-        val threadEngine = ThreadLocal.withInitial {
-            newCapture(request.segmentDurations).also { engines.add(it) }
-        }
+        val threadEngine = ThreadLocal.withInitial { newCapture().also { engines.add(it) } }
 
         val deckHtml = request.visual.file.readText()
+        val timeoutMillis = if (request.timeoutMillis > 0) request.timeoutMillis else plan.captureTimeoutMillis
 
-        for ((idx, seg) in request.segments.withIndex()) {
+        for ((idx, seg) in plan.segments.withIndex()) {
             val slideDir = request.outputDir.resolve("slide-${String.format("%02d", seg.index)}")
             futures.add(executor.submit<File?> {
                 val capture = threadEngine.get()
                 try {
-                    // Standalone HTML for this specific slide.
                     val singleSlideHtml = RevealJsDeckHtml.singleSlideHtml(deckHtml, idx)
                     val singleSlideFile = slideDir.resolve("slide.html")
                     slideDir.mkdirs()
@@ -205,14 +230,10 @@ class RevealJsEngineAdapter(
                     capture.capture(
                         singleSlideFile.absolutePath,
                         slideDir,
-                        request.viewportWidth,
-                        request.viewportHeight,
-                        listOf(request.segmentDurations[idx]),
+                        plan.viewportWidth,
+                        plan.viewportHeight,
+                        listOf(plan.segmentDurations[idx]),
                     )
-                    // No capture engine writes a file called `slide.webm`:
-                    // Playwright names its recording with a random id,
-                    // ScreenshotCaptureImpl emits `capsule.webm`. Take whatever
-                    // video landed in the slide directory.
                     val slideExt = capture.outputExtension()
                     val produced = slideDir.listFiles { f -> f.name.endsWith(".$slideExt") }?.toList().orEmpty()
                     val source = produced.firstOrNull {
@@ -226,9 +247,8 @@ class RevealJsEngineAdapter(
                         target
                     } else null
                 } catch (e: Exception) {
-                    // Degraded mode: a failing slide is reported, never fatal.
                     logger.warn("  Slide {} capture failed: {}", seg.index, e.message)
-                    synchronized(failedSegments) { failedSegments.add(seg.index) }
+                    synchronized(failedUnits) { failedUnits.add(seg.index) }
                     null
                 }
             })
@@ -237,11 +257,11 @@ class RevealJsEngineAdapter(
         val slideVideos = try {
             futures.mapNotNull { future ->
                 try {
-                    future.get(request.timeoutMillis, TimeUnit.MILLISECONDS)
+                    future.get(timeoutMillis, TimeUnit.MILLISECONDS)
                 } catch (e: TimeoutException) {
                     logger.error(
                         "Parallel capture timed out after {} ms — aborting. Shutting down executor.",
-                        request.timeoutMillis,
+                        timeoutMillis,
                     )
                     throw e
                 }
@@ -254,11 +274,11 @@ class RevealJsEngineAdapter(
             }
         }
 
-        if (failedSegments.isNotEmpty()) {
+        if (failedUnits.isNotEmpty()) {
             logger.error(
                 "{} slide(s) failed to capture: {} — resulting video may be incomplete",
-                failedSegments.size,
-                failedSegments.sorted().joinToString(", "),
+                failedUnits.size,
+                failedUnits.sorted().joinToString(", "),
             )
         }
 
@@ -268,7 +288,7 @@ class RevealJsEngineAdapter(
             finalVideo.takeIf { it.exists() }
         } else null
 
-        return VideoRenderResult(produced = produced, failedSegments = failedSegments.toList())
+        return VideoRenderResult(produced = produced, failedUnits = failedUnits.toList())
     }
 
     companion object {

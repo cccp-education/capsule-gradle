@@ -1,29 +1,34 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 190
+:session: 191
 :borough: Détroit
-:session_precedente: 189 — CAP-ENGINE-DECOUPLING US-5 (extraction N1 video-kernel) ✅ — EPIC TERMINÉ 6/6
+:session_precedente: 190 — adaptation à video-kernel 0.0.2 (port VideoEngine aminci) ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`.
 
 == Contexte Hérité
 
-=== S-189 — CAP-ENGINE-DECOUPLING US-5 ✅ (extraction N1)
+=== S-190 — capsule ↔ video-kernel 0.0.2 ✅
 
-- Nouveau borough **`video-kernel-gradle`** : noyau `capsule.kernel` extrait +
-  garde de frontière, publié **`education.cccp:video-kernel:0.0.1`** (Maven Central).
-- Capsule consomme `implementation(libs.video.kernel)` ; noyau in-repo supprimé
-  (+ ses tests/guard/BDD `@kernel-boundary` déplacés).
-- **Blocage admin** : le dépôt GitHub `cccp-education/video-kernel-gradle` n'a pas
-  pu être créé (token sans droit d'org) — dépôt initialisé **localement**
-  (commit `cffab2b`), remote + CI à activer.
-- **`CAP-ENGINE-DECOUPLING` TERMINÉ 6/6.**
+- Noyau `video-kernel` évolué en **0.0.2** : `VideoRenderRequest` aminci
+  (`{name, visual, outputDir, timeoutMillis}`), `VideoRenderResult.failedUnits`,
+  capacité segment-orientée déplacée en `capsule.kernel.segment`.
+- Capsule adapté : `RevealJsRenderPlan` (segments/durations/viewport/parallel)
+  fourni **au constructeur** de `RevealJsEngineAdapter` ; requête de rendu mince ;
+  `captureDeckSequential`/`captureSlideParallel` reconstruits ; `resolvePlaywrightCapture` supprimé.
+- Imports segment → `capsule.kernel.segment.*` ; cœur en `capsule.kernel`.
 
-== Mission Session 190 — au choix (pilote)
+=== S-184→S-189 — EPIC CAP-ENGINE-DECOUPLING TERMINÉ 6/6
 
-* A) **Release capsule** (bump version + Central) intégrant la dépendance `video-kernel`.
-* B) Suivre les items du borough `video-kernel` : VK-1 (hyperframes/Watts),
-  VK-2 (package neutre `video.kernel.*`), VK-3 (entrée BOM MEMPHIS).
-* C) Nouvelle demande pilote.
+- Extraction N1 `video-kernel` (borough `video-kernel-gradle`), garde
+  `KernelBoundaryTest`, publications 0.0.1 puis 0.0.2.
+
+== Mission Session 191 — au choix (pilote)
+
+* A) **Adapter hyperframes** (Watts) contre `video-kernel:0.0.2` — implémenter
+  `VideoEngine` (rendu document-entier). Payoff de la mutualisation.
+* B) **Release capsule** (bump version + Central) intégrant `video-kernel:0.0.2`.
+* C) Borough `video-kernel` : VK-3 (BOM MEMPHIS) ou VK-2 (package neutre).
+* D) Nouvelle demande pilote.
 
 == Points d'attention
 
@@ -36,5 +41,5 @@ _littérature_ : `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`.
 == Rappels
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.10** (Central).
-* MEMPHIS BOM/catalog **0.0.86**. `education.cccp:video-kernel:0.0.1` (Central).
-* Tous les EPICs sont clos ; `CAP-ENGINE-DECOUPLING` **TERMINÉ 6/6 (S-184→S-189)**.
+* `education.cccp:video-kernel:0.0.2` (Central). MEMPHIS BOM/catalog **0.0.86**.
+* Tous les EPICs capsule sont clos ; `CAP-ENGINE-DECOUPLING` **TERMINÉ 6/6**.

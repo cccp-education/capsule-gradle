@@ -2,8 +2,8 @@ package capsule.scenarios
 
 import capsule.adapter.revealjs.RevealJsScriptContract
 import capsule.adapter.revealjs.RevealJsSpeakerNoteSource
-import capsule.kernel.VideoScript
-import capsule.kernel.VideoSegment
+import capsule.kernel.segment.VideoScript
+import capsule.kernel.segment.VideoSegment
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When

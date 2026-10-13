@@ -5,10 +5,11 @@ import capsule.PlaywrightCapture
 import capsule.adapter.revealjs.RevealJsCaptureSettings
 import capsule.adapter.revealjs.RevealJsDeckHtml
 import capsule.adapter.revealjs.RevealJsEngineAdapter
+import capsule.adapter.revealjs.RevealJsRenderPlan
 import capsule.kernel.FileVisualSource
 import capsule.kernel.VideoRenderRequest
 import capsule.kernel.VideoRenderResult
-import capsule.kernel.VideoSegment
+import capsule.kernel.segment.VideoSegment
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
@@ -19,7 +20,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 
 /**
  * Pure-domain BDD steps for `capsule_engine_adapter.feature`
- * (CAP-ENGINE-DECOUPLING US-2).
+ * (CAP-ENGINE-DECOUPLING US-2 / video-kernel US-1, 0.0.2).
  *
  * Exercises [RevealJsDeckHtml] and [RevealJsEngineAdapter] directly with a fake
  * [PlaywrightCapture] (never a real browser). Step texts are prefixed with
@@ -29,9 +30,12 @@ class CapsuleEngineAdapterSteps {
 
     private var deckHtml: String = ""
     private var transformed: String = ""
-    private var adapter: RevealJsEngineAdapter? = null
     private var request: VideoRenderRequest? = null
     private var result: VideoRenderResult? = null
+    private var fakeOutputName: String = "capsule.webm"
+    private var fakeFailPath: String? = null
+    private var segments: List<VideoSegment> = emptyList()
+    private var parallel: Boolean = false
     private val workDir: File = Files.createTempDirectory("capsule-engine-adapter").toFile()
 
     private class FakeCapture(
@@ -121,25 +125,29 @@ class CapsuleEngineAdapterSteps {
 
     @Given("a reveal engine adapter backed by a fake capture writing {string}")
     fun aRevealEngineAdapterBackedByAFakeCaptureWriting(outputName: String) {
-        adapter = RevealJsEngineAdapter(settings(), captureProvider = { FakeCapture(outputName, null) })
+        fakeOutputName = outputName
+        fakeFailPath = null
     }
 
     @Given("a reveal engine adapter backed by a fake capture failing on {string}")
     fun aRevealEngineAdapterBackedByAFakeCaptureFailingOn(pathFragment: String) {
-        adapter = RevealJsEngineAdapter(settings(), captureProvider = { FakeCapture("capsule.webm", pathFragment) })
+        fakeOutputName = "capsule.webm"
+        fakeFailPath = pathFragment
     }
 
     @Given("a render request for {string} in non-parallel mode")
     fun aRenderRequestForInNonParallelMode(name: String) {
-        request = buildRequest(name, parallel = false, segmentCount = 2)
+        buildRequest(name, parallel = false, segmentCount = 2)
     }
 
     @Given("a render request for {string} in parallel mode with {int} segments")
     fun aRenderRequestForInParallelModeWithSegments(name: String, segmentCount: Int) {
-        request = buildRequest(name, parallel = true, segmentCount = segmentCount)
+        buildRequest(name, parallel = true, segmentCount = segmentCount)
     }
 
-    private fun buildRequest(name: String, parallel: Boolean, segmentCount: Int): VideoRenderRequest {
+    private fun buildRequest(name: String, parallel: Boolean, segmentCount: Int) {
+        this.parallel = parallel
+        segments = (1..segmentCount).map { VideoSegment(index = it, title = "S$it", narration = "n$it.") }
         val deck = File(workDir, "deck.html").apply {
             writeText(
                 """
@@ -154,23 +162,30 @@ class CapsuleEngineAdapterSteps {
                 """.trimIndent()
             )
         }
-        val segments = (1..segmentCount).map { VideoSegment(index = it, title = "S$it", narration = "n$it.") }
-        return VideoRenderRequest(
+        request = VideoRenderRequest(
             name = name,
             visual = FileVisualSource(deck),
-            segments = segments,
-            segmentDurations = segments.map { 1.0 },
             outputDir = File(workDir, "out-$name-$parallel").apply { mkdirs() },
-            viewportWidth = 1920,
-            viewportHeight = 1080,
-            parallel = parallel,
             timeoutMillis = 5_000,
         )
     }
 
     @When("the engine adapter renders the request")
     fun theEngineAdapterRendersTheRequest() {
-        result = adapter!!.render(request!!)
+        val plan = RevealJsRenderPlan(
+            segments = segments,
+            segmentDurations = segments.map { 1.0 },
+            viewportWidth = 1920,
+            viewportHeight = 1080,
+            parallel = parallel,
+            captureTimeoutMillis = 5_000,
+        )
+        val adapter = RevealJsEngineAdapter(
+            settings(),
+            plan,
+            captureProvider = { FakeCapture(fakeOutputName, fakeFailPath) },
+        )
+        result = adapter.render(request!!)
     }
 
     @Then("the produced video is {string}")
@@ -180,11 +195,11 @@ class CapsuleEngineAdapterSteps {
 
     @Then("no segment failed")
     fun noSegmentFailed() {
-        assertTrue(result!!.failedSegments.isEmpty(), "expected no failed segment, got ${result!!.failedSegments}")
+        assertTrue(result!!.failedUnits.isEmpty(), "expected no failed unit, got ${result!!.failedUnits}")
     }
 
     @Then("the failed segments are {string}")
     fun theFailedSegmentsAre(expected: String) {
-        assertEquals(expected, result!!.failedSegments.joinToString(", "))
+        assertEquals(expected, result!!.failedUnits.joinToString(", "))
     }
 }

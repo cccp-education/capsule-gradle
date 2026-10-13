@@ -3,6 +3,7 @@ package capsule
 import capsule.adapter.revealjs.RevealJsCaptureSettings
 import capsule.adapter.revealjs.RevealJsDeckHtml
 import capsule.adapter.revealjs.RevealJsEngineAdapter
+import capsule.adapter.revealjs.RevealJsRenderPlan
 import capsule.audio.AudioPostConfig
 import capsule.audio.NoOpAudioPostProcessor
 import capsule.feed.CapsuleScript
@@ -111,7 +112,10 @@ open class CapsuleVideoTask : DefaultTask() {
      * @param captureProvider optional fake engine supplier (tests); when `null`
      *        the adapter resolves the real engine from the settings.
      */
-    private fun revealJsAdapter(captureProvider: (() -> PlaywrightCapture)? = null): RevealJsEngineAdapter =
+    private fun revealJsAdapter(
+        plan: RevealJsRenderPlan,
+        captureProvider: (() -> PlaywrightCapture)? = null,
+    ): RevealJsEngineAdapter =
         RevealJsEngineAdapter(
             settings = RevealJsCaptureSettings(
                 playwrightTimeout = capsuleExtension.playwrightTimeout.get(),
@@ -133,14 +137,10 @@ open class CapsuleVideoTask : DefaultTask() {
                 // so every leaf is offered rather than one guessed path.
                 manimSources = manimVideoDirs(),
             ),
+            plan = plan,
             logger = logger,
             captureProvider = captureProvider,
         )
-
-    private fun resolvePlaywrightCapture(slideDurations: List<Double>): PlaywrightCapture {
-        playwrightCapture?.let { return it }
-        return revealJsAdapter().resolveCapture(slideDurations)
-    }
 
     internal fun resolveTtsEngine(): TtsEngine {
         if (ttsEngine != null) return ttsEngine!!
@@ -460,18 +460,21 @@ open class CapsuleVideoTask : DefaultTask() {
         subtitleFile: File?
     ) {
         val (viewportWidth, viewportHeight) = resolveViewport()
-        val adapter = revealJsAdapter(playwrightCapture?.let { { it } })
+        val plan = RevealJsRenderPlan(
+            segments = parsed.segments,
+            segmentDurations = slideDurations,
+            viewportWidth = viewportWidth,
+            viewportHeight = viewportHeight,
+            parallel = false,
+            captureTimeoutMillis = DEFAULT_CAPTURE_TIMEOUT_MILLIS,
+        )
+        val adapter = revealJsAdapter(plan, playwrightCapture?.let { { it } })
         val result = try {
             adapter.render(
                 VideoRenderRequest(
                     name = parsed.deckName,
                     visual = FileVisualSource(finalDeckFile),
-                    segments = parsed.segments,
-                    segmentDurations = slideDurations,
                     outputDir = videoOutputDir,
-                    viewportWidth = viewportWidth,
-                    viewportHeight = viewportHeight,
-                    parallel = false,
                     timeoutMillis = DEFAULT_CAPTURE_TIMEOUT_MILLIS,
                 )
             )
@@ -899,21 +902,24 @@ open class CapsuleVideoTask : DefaultTask() {
     ): Int {
         val slideDurations = computeSlideDurations(parsed, audioDir)
         val provider = captureFactory ?: playwrightCapture?.let { { it } }
-        val adapter = revealJsAdapter(provider)
+        val plan = RevealJsRenderPlan(
+            segments = parsed.segments,
+            segmentDurations = slideDurations,
+            viewportWidth = viewportWidth,
+            viewportHeight = viewportHeight,
+            parallel = true,
+            captureTimeoutMillis = captureTimeoutMillis,
+        )
+        val adapter = revealJsAdapter(plan, provider)
         val result = adapter.render(
             VideoRenderRequest(
                 name = parsed.deckName,
                 visual = FileVisualSource(File(deckHtmlPath)),
-                segments = parsed.segments,
-                segmentDurations = slideDurations,
                 outputDir = outputDir,
-                viewportWidth = viewportWidth,
-                viewportHeight = viewportHeight,
-                parallel = true,
                 timeoutMillis = captureTimeoutMillis,
             )
         )
-        return result.failedSegments.size
+        return result.failedUnits.size
     }
 
     internal fun injectAudio(deckFile: File, script: CapsuleScript, audioDir: File): File {

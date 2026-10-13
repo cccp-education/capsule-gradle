@@ -4,7 +4,7 @@ import capsule.CaptureStrategy
 import capsule.PlaywrightCapture
 import capsule.kernel.FileVisualSource
 import capsule.kernel.VideoRenderRequest
-import capsule.kernel.VideoSegment
+import capsule.kernel.segment.VideoSegment
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -12,8 +12,8 @@ import java.io.File
 import java.nio.file.Path
 
 /**
- * TDD — reveal.js engine adapter ([VideoEngine] implementation)
- * (CAP-ENGINE-DECOUPLING US-2).
+ * TDD — reveal.js engine adapter ([capsule.kernel.VideoEngine] implementation)
+ * (video-kernel US-1, 0.0.2).
  *
  * Uses a fake [PlaywrightCapture] (never a real browser); FFmpeg is pointed at a
  * non-existent path so the concat step degrades without touching the system.
@@ -45,6 +45,15 @@ class RevealJsEngineAdapterTest {
         manimSources = emptyList(),
     )
 
+    private fun plan(parallel: Boolean) = RevealJsRenderPlan(
+        segments = segments,
+        segmentDurations = listOf(1.0, 1.0),
+        viewportWidth = 1920,
+        viewportHeight = 1080,
+        parallel = parallel,
+        captureTimeoutMillis = 5_000,
+    )
+
     private fun deckFile(): File =
         tempDir.resolve("deck.html").toFile().apply {
             writeText(
@@ -56,6 +65,13 @@ class RevealJsEngineAdapterTest {
                 """.trimIndent()
             )
         }
+
+    private fun request(parallelOutputDir: String) = VideoRenderRequest(
+        name = "demo",
+        visual = FileVisualSource(deckFile()),
+        outputDir = tempDir.resolve(parallelOutputDir).toFile(),
+        timeoutMillis = 5_000,
+    )
 
     private open class FakeCapture(
         private val outputName: String = "capsule.webm",
@@ -82,58 +98,33 @@ class RevealJsEngineAdapterTest {
 
     @Test
     fun `newCapture and resolveCapture use the injected provider`() {
-        val adapter = RevealJsEngineAdapter(settings(), captureProvider = { FakeCapture() })
+        val adapter = RevealJsEngineAdapter(settings(), plan(false), captureProvider = { FakeCapture() })
 
-        assertThat(adapter.newCapture(emptyList()).name()).isEqualTo("fake-capture")
-        assertThat(adapter.resolveCapture(emptyList()).name()).isEqualTo("fake-capture")
+        assertThat(adapter.newCapture().name()).isEqualTo("fake-capture")
+        assertThat(adapter.resolveCapture().name()).isEqualTo("fake-capture")
     }
 
     @Test
     fun `render whole source returns the produced capsule video`() {
-        val outputDir = tempDir.resolve("out").toFile()
-        val adapter = RevealJsEngineAdapter(settings(), captureProvider = { FakeCapture() })
+        val adapter = RevealJsEngineAdapter(settings(), plan(false), captureProvider = { FakeCapture() })
 
-        val result = adapter.render(
-            VideoRenderRequest(
-                name = "demo",
-                visual = FileVisualSource(deckFile()),
-                segments = segments,
-                segmentDurations = listOf(1.0, 1.0),
-                outputDir = outputDir,
-                viewportWidth = 1920,
-                viewportHeight = 1080,
-                parallel = false,
-                timeoutMillis = 5_000,
-            )
-        )
+        val result = adapter.render(request("out-whole"))
 
         assertThat(result.produced?.name).isEqualTo("capsule.webm")
-        assertThat(result.failedSegments).isEmpty()
+        assertThat(result.failedUnits).isEmpty()
     }
 
     @Test
-    fun `render parallel reports a failing segment without aborting the render`() {
-        val outputDir = tempDir.resolve("out").toFile()
+    fun `render parallel reports a failing unit without aborting the render`() {
         val adapter = RevealJsEngineAdapter(
             settings(),
+            plan(true),
             captureProvider = { FakeCapture(failWhenPathContains = "slide-02") },
         )
 
-        val result = adapter.render(
-            VideoRenderRequest(
-                name = "demo",
-                visual = FileVisualSource(deckFile()),
-                segments = segments,
-                segmentDurations = listOf(1.0, 1.0),
-                outputDir = outputDir,
-                viewportWidth = 1920,
-                viewportHeight = 1080,
-                parallel = true,
-                timeoutMillis = 5_000,
-            )
-        )
+        val result = adapter.render(request("out-parallel"))
 
-        assertThat(result.failedSegments).containsExactly(2)
+        assertThat(result.failedUnits).containsExactly(2)
     }
 
     @Test
@@ -145,7 +136,7 @@ class RevealJsEngineAdapterTest {
 
     @Test
     fun `adapter name and availability are stable`() {
-        val adapter = RevealJsEngineAdapter(settings(), captureProvider = { FakeCapture() })
+        val adapter = RevealJsEngineAdapter(settings(), plan(false), captureProvider = { FakeCapture() })
 
         assertThat(adapter.name()).isEqualTo("revealjs")
         assertThat(adapter.isAvailable()).isTrue()

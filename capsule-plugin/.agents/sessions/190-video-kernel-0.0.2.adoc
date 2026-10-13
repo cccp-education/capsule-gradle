@@ -1,0 +1,49 @@
+= Session 190 — Adaptation de capsule à `video-kernel:0.0.2` (port aminci)
+:session: 190
+:date: 2026-10-12
+:type: refactor (contrat) + synchronisation cross-borough
+:borough: Détroit / capsule-gradle
+:toc:
+
+== Objectif
+
+Adapter capsule au noyau `video-kernel:0.0.2` dont le port `VideoEngine` a été
+**aminci** (contrat partagé honnête, apte à un 2ᵉ moteur document-entier).
+
+== Contexte
+
+Le **fitness mapping** (S-190 côté video-kernel, lecture seule) a montré que le
+port 0.0.1 était moulé sur reveal.js : `VideoRenderRequest` forçait
+`segments`/`segmentDurations`/`viewport`/`parallel` sur **tout** moteur. Évolution
+en 0.0.2 (côté borough `video-kernel`) :
+* `VideoRenderRequest` = `{ name, visual, outputDir, timeoutMillis }`.
+* `VideoRenderResult` = `produced` + `failedUnits` (générique).
+* `VideoKind`/`VideoSegment`/`VideoScript`/`SegmentSource` → `capsule.kernel.segment`.
+
+== Changements (capsule)
+
+* `gradle/libs.versions.toml` : `video-kernel = "0.0.2"`.
+* **Adapter reveal** (`RevealJsEngineAdapter`) : nouveau `RevealJsRenderPlan`
+  (`segments`, `segmentDurations`, `viewportWidth/Height`, `parallel`,
+  `captureTimeoutMillis`) **fourni au constructeur** — la requête de rendu reste
+  mince. `render(request)` utilise `request.visual`/`outputDir`/`name`.
+  `failedSegments` → `failedUnits`.
+* **`CapsuleVideoTask`** : construit le plan + la requête mince dans
+  `captureDeckSequential` / `captureSlideParallel` ; `resolvePlaywrightCapture`
+  supprimé (devenu inutile).
+* Déplacement des imports `capsule.kernel.*` → `capsule.kernel.segment.*`
+  (segment types) ; le cœur (`FileVisualSource`, `VideoRenderRequest`,
+  `VideoProductionEntry/Plan`) reste en `capsule.kernel`.
+* Tests adaptés : `RevealJsEngineAdapterTest`, `CapsuleEngineAdapterSteps` (plan +
+  requête mince + `failedUnits`).
+
+== Gates locaux (Local = Build)
+
+* `compileKotlin` / `compileTestKotlin` / `compileFunctionalTestKotlin` **VERTS**
+  (résolution `video-kernel:0.0.2` mavenLocal).
+* `assemble` + `validatePlugins` **VERTS**. Zéro secret.
+
+== Statut
+
+`video-kernel:0.0.2` publié (Central) ; capsule adapté. Le port est désormais le
+**dénominateur commun** prêt pour l'adapter HyperFrames (VK-1).

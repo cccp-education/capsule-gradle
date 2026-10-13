@@ -1,6 +1,13 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-12
 
+== Session 190 — Adaptation à `video-kernel:0.0.2` (port `VideoEngine` aminci) ✅
+
+* Fitness mapping vs HyperFrames → noyau évolué en 0.0.2 (contrat partagé honnête).
+* Capsule : `RevealJsRenderPlan` au constructeur, requête mince, `failedUnits`,
+  imports segment en `capsule.kernel.segment`.
+* Rapport `.agents/sessions/190-video-kernel-0.0.2.adoc`.
+
 == Session 189 — `CAP-ENGINE-DECOUPLING` US-5 ✅ (extraction N1 `video-kernel`) — EPIC TERMINÉ
 
 * Nouveau borough `video-kernel-gradle` ; noyau extrait + publié `education.cccp:video-kernel:0.0.1`

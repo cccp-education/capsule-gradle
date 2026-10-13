@@ -1,7 +1,20 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-12
-:session: 189 CAP-ENGINE-DECOUPLING US-5 (extraction N1 video-kernel)
+:session: 190 adaptation à video-kernel 0.0.2 (port VideoEngine aminci)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 12 octobre 2026 (après session 190)
+
+.Adaptation au contrat partagé video-kernel 0.0.2
+|===
+| Élément | Changement | Tests
+
+| `capsule/adapter/revealjs/RevealJsEngineAdapter.kt` (retravaillé) | `RevealJsRenderPlan` au constructeur ; requête mince ; `failedUnits` | `RevealJsEngineAdapterTest` adapté
+| `capsule/CapsuleVideoTask.kt` (retravaillé) | plan + requête mince ; `resolvePlaywrightCapture` supprimé | suites existantes via API préservée
+| `capsule/kernel/**` (dépendance) | `VideoKind`/`VideoSegment`/`VideoScript`/`SegmentSource` → `capsule.kernel.segment` (dépendance 0.0.2) | `SlideTypeMappingTest`, `@kernel-model`, `@segment-source`, `@engine-adapter`
+|===
+
+
 
 == Couverture — 12 octobre 2026 (après session 189)
 

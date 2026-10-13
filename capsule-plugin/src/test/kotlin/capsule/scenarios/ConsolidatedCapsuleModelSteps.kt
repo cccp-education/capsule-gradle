@@ -7,7 +7,7 @@ import capsule.feed.SlideSegment
 import capsule.feed.SlideType
 import capsule.feed.deckName
 import capsule.feed.type
-import capsule.kernel.VideoKind
+import capsule.kernel.segment.VideoKind
 import io.cucumber.datatable.DataTable
 import io.cucumber.java.en.And
 import io.cucumber.java.en.Given

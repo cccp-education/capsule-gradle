@@ -5,9 +5,9 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-12 (S-189 — **CAP-ENGINE-DECOUPLING US-5 ✅ — EPIC TERMINÉ 6/6** : extraction N1 du noyau en artefact publié **`education.cccp:video-kernel:0.0.1`** (nouveau borough `video-kernel-gradle`) ; capsule consomme `libs.video.kernel`, noyau in-repo supprimé.)
- _Derniere session terminee_ : 189.
- _Prochaine session_ : 190 — EPIC clos ; au choix : A) release capsule (dépendance video-kernel) ; B) items borough video-kernel (VK-1 hyperframes / VK-2 package neutre / VK-3 BOM) ; C) nouvelle demande pilote.
+ _Derniere mise a jour_ : 2026-10-12 (S-190 — **adaptation à `video-kernel:0.0.2`** : port `VideoEngine` aminci, `RevealJsRenderPlan` au constructeur, capacité segment en `capsule.kernel.segment`. Précédent : S-189 extraction N1 + EPIC CAP-ENGINE-DECOUPLING TERMINÉ.)
+ _Derniere session terminee_ : 190.
+ _Prochaine session_ : 191 — au choix : A) adapter hyperframes (Watts) contre video-kernel 0.0.2 ; B) release capsule (0.0.11) ; C) items video-kernel (VK-3 BOM / VK-2 package) ; D) nouvelle demande pilote.
  _Session en cours_ : — (S-183 terminée).
  _Littérature de référence_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage) + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc` (EPIC voix).
 
@@ -23,11 +23,13 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 === 7. CAPSULE CONSUME SLIDER — capsule ne modifie jamais le deck source
 
 '''
-== Sessions récentes (174-189)
+== Sessions récentes (174-190)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 190 | 2026-10-12 | refactor | **Adaptation à `video-kernel:0.0.2` (port `VideoEngine` aminci).** Après le fitness mapping (côté borough video-kernel) montrant que le port 0.0.1 était moulé reveal.js, capsule s'aligne sur le contrat partagé honnête : `RevealJsRenderPlan` (`segments`/`segmentDurations`/`viewport`/`parallel`/`captureTimeoutMillis`) **fourni au constructeur** de `RevealJsEngineAdapter` ; requête de rendu mince (`{name, visual, outputDir, timeoutMillis}`) ; `failedSegments` → `failedUnits` ; `resolvePlaywrightCapture` supprimé ; imports segment → `capsule.kernel.segment.*`. `captureDeckSequential`/`captureSlideParallel` reconstruits ; tests adaptés (`RevealJsEngineAdapterTest`, `CapsuleEngineAdapterSteps`). Gates locaux (Local = Build) : compiles ×3 + `assemble` + `validatePlugins` VERTS. Zéro bump, zéro publication. | 9/10
 
 | 189 | 2026-10-12 | refactor+release | **CAP-ENGINE-DECOUPLING US-5 ✅ — extraction N1 `video-kernel` — EPIC TERMINÉ 6/6.** Nouveau borough **`video-kernel-gradle`** : noyau engine-agnostique `capsule.kernel` extrait (modèle + ports `VideoEngine`/`SegmentSource`) + garde de frontière, publié **`education.cccp:video-kernel:0.0.1`** (Maven Central, Apache 2.0, signé GPG). Capsule consomme `implementation(libs.video.kernel)` ; noyau in-repo supprimé (+ tests unitaires noyau, garde `KernelBoundary*`, BDD `@kernel-boundary`/spec déplacés ; `SlideTypeMappingTest` + BDD `@kernel-model` conservés). Gates locaux (Local = Build) : compiles ×3 + `assemble` + `validatePlugins` VERTS. **Blocage admin** : dépôt GitHub `cccp-education/video-kernel-gradle` non créable par le token de session → dépôt initialisé **localement** (commit `cffab2b`), remote + CI à activer. Rapport `.agents/sessions/189-cap-engine-decoupling-us5.adoc`. | 9/10
 
@@ -222,7 +224,8 @@ adapter speaker-notes reveal, **43e** runner `cucumberTestSegmentSource`) ;
 **US-4 ✅ S-188** (garde d'architecture `KernelBoundaryAudit`/`KernelBoundaryTest`) ;
 **US-5 ✅ S-189** (extraction N1 `education.cccp:video-kernel:0.0.1`, nouveau
 borough `video-kernel-gradle`). **`CAP-ENGINE-DECOUPLING` TERMINÉ 6/6.**
-Tous les EPICs sont clos.
+**S-190** : noyau évolué **`0.0.2`** (port aminci, fitness mapping HyperFrames) ;
+capsule adapté. Tous les EPICs capsule sont clos.
 **Cache CI** : `.github/actions/setup-ollama` (image Docker + modèle) + Gradle
 (`gradle/actions/setup-gradle@v4`).
 

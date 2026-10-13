@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-12 (S-189 — **`CAP-ENGINE-DECOUPLING` US-5 ✅ — EPIC TERMINÉ 6/6** : extraction N1 `education.cccp:video-kernel:0.0.1` (nouveau borough `video-kernel-gradle`) ; capsule consomme `libs.video.kernel`.)
+:last_update: 2026-10-12 (S-190 — adaptation à **`video-kernel:0.0.2`** : port `VideoEngine` aminci, `RevealJsRenderPlan` au constructeur. Précédent S-189 : extraction N1 + EPIC CAP-ENGINE-DECOUPLING TERMINÉ 6/6.)
 
 '''
 == ✅ CAP-FISH-AUDIO — TERMINÉ 6/6 US (S-182)
