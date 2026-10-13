@@ -7,6 +7,15 @@ _littérature_ : `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`.
 
 == Contexte Hérité
 
+=== Cross-borough — hyperframes S-017 (2026-10-13) ✅ (2ᵉ moteur, défauts + CI)
+
+Le 2ᵉ adaptateur du noyau (`hyperframes-gradle`, Watts) a livré **HF-KERNEL-ADAPTER
+US-1** : défauts D-A→D-F corrigés (dont la durée **mesurée** via `VideoOutcome`,
+alignée sur `video-kernel:0.0.3`) + **CI hyperframes débloquée**. L'option A de la
+mission ci-dessous (« adapter hyperframes contre `video-kernel:0.0.3` ») est donc
+**amorcée** ; la délégation des 3 tâches hyperframes à `VideoEngine` (US-3) et la
+consommation complète du noyau (US-4) restent à faire. **Capsule n'a pas été modifié.**
+
 === S-190 — capsule ↔ video-kernel 0.0.2 ✅
 
 - Noyau `video-kernel` évolué en **0.0.2** : `VideoRenderRequest` aminci
