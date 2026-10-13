@@ -43,6 +43,14 @@ en 0.0.2 (côté borough `video-kernel`) :
   (résolution `video-kernel:0.0.2` mavenLocal).
 * `assemble` + `validatePlugins` **VERTS**. Zéro secret.
 
+=== Preuve CI (commit `95fd199`)
+
+* **Test** : ✅ **success** — run `38423974505` (3m12s).
+* **Full Tests** : ✅ **success** — run `38423974279` (23m26s) — résolution
+  `video-kernel:0.0.2` **depuis Maven Central** (HTTP 200).
+* **video-kernel** : CI ✅ (run `38423299627`) ; publication `0.0.2` bundle
+  `6cac928b` (Central, propagée).
+
 == Statut
 
 `video-kernel:0.0.2` publié (Central) ; capsule adapté. Le port est désormais le
