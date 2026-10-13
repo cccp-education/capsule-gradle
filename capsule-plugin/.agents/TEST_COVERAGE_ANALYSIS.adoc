@@ -1,6 +1,6 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-12
-:session: 190 adaptation à video-kernel 0.0.2 (port VideoEngine aminci)
+:session: 191 alimentation de VideoOutcome (video-kernel 0.0.3)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
 
 == Couverture — 12 octobre 2026 (après session 190)
