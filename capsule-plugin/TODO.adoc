@@ -1,5 +1,14 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-12 (S-182 — **EPIC CAP-FISH-AUDIO US-0→US-3 + release `capsule-plugin 0.0.9`** : moteur TTS cloud Fish Audio (voix clonée) = 4e `TtsEngine` ; config `fish-audio` membre de `CapsuleConfig`, clé en `fish.yaml` gitignoré. MEMPHIS BOM/catalog `0.0.85`. Reste US-4 (BDD) + US-5 (docs).)
+:last_update: 2026-10-14 (S-199 — split multi-lang en 4 groupes (pôle CI 260 s) + **CAP-DECOMPOSE BS-5 ✅** (EPIC clos 5/5). Précédent S-182.)
+
+'''
+== ✅ S-199 — split multi-lang 4 groupes + CAP-DECOMPOSE BS-5
+
+. [x] **CI** — `multi-lang-genA/B` scindé en **4 groupes** (`capsule.ci.MultiLangShardPartition` + test, `@multilang-gen-c`/`-d`, 2 runners, 2 `CucumberTaskSpec` + 2 jobs `full-tests.yml`). Test-only.
+. [x] **CAP-DECOMPOSE BS-5** — résolveurs extraits (`capsule/CapsuleVideoResolvers.kt` + 7 unit) ; shims statiques retirés. `CapsuleVideoTask` 1005 → 851 l. **EPIC clos 5/5.**
+. [x] Gates locaux (Local = Build) : compiles ×3 VERTS, tâches shard enregistrées. Zéro bump, zéro publication.
+. [ ] 🟡 **KOOG-PIPELINE-DEDUP** — 🟡 RÉOUVERT (éligible seuil 2, S-195) — décision d'exécution = pilote. Voir `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`.
+. [ ] 🟢 **Release `capsule 0.0.11`** — option pilote (intègre `video-kernel 0.3.0` + CAP-DECOMPOSE BS-1→5 + split multi-lang).
 
 '''
 == 🐟 CAP-FISH-AUDIO — moteur TTS cloud Fish Audio (CADRÉ S-182)

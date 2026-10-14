@@ -1,40 +1,48 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 199
+:session: 200
 :borough: Détroit
-:session_precedente: 198 — CI sharding : `full-tests.yml` en matrice parallèle ✅
+:session_precedente: 199 — split multi-lang en 4 groupes (A/B/C/D) ✅ + CAP-DECOMPOSE BS-5 ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
-_littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc`.
+_littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos).
 
 == Contexte Hérité
 
+=== S-199 — split multi-lang + CAP-DECOMPOSE BS-5 ✅
+
+**Mission 1 — éclatement `multi-lang-genA/B` → 4 groupes.** Le pôle CI restant de
+S-198 (`BDD · multi-lang-genB` = 260 s) est scindé en **4 groupes de langues**
+(6/6/5/5) : objet pur `capsule.ci.MultiLangShardPartition` (+ `MultiLangShardPartitionTest`,
+partition exhaustive/disjointe/équilibrée/déterministe), 2 scénarios BDD
+`@multilang-gen-c`/`-d`, 2 runners `CucumberShardMultiLangGen{C,D}Runner`, 2
+`CucumberTaskSpec` + 2 jobs `full-tests.yml`. Test-only, zéro code plugin modifié.
+
+**Mission 2 — CAP-DECOMPOSE BS-5 ✅ (EPIC clos 5/5).** `CapsuleVideoTask` 1005 → 851 l. :
+résolveurs extraits dans `capsule/CapsuleVideoResolvers.kt` (objet pur, 7 unit tests
+`CapsuleVideoResolversTest`) ; shims `concatWebmFiles`/`createSingleSlideHtml` retirés
+du `companion` (appelants → domaine `capsule.adapter.revealjs`).
+
+Gates locaux (Local = Build) : compiles ×3 VERTS ; 4 tâches `cucumberTestShardMultiLangGen*`
+enregistrées. Zéro test/check local.
+
 === S-198 — CI sharding ✅ (ci-infra)
 
-`full-tests.yml` éclaté en **24 jobs parallèles** : matrice `bdd-shard` (17 shards exhaustifs et
-disjoints — features et partitions par tags, 1 JVM/shard) + `functional` (4) + `integration` (shards
-`@integration`/`@manim`/`@manim-parallel` + real render). Overhead réduit par **cache de build Gradle**
-(`capsule-plugin/gradle.properties`, `org.gradle.caching=true`) + **installs ciblés** (`binaries` par
-shard). Garde `capsule.ci.CapsuleCucumberShardCoverageTest`. **Wall-clock ~24 min → ~4,3 min** (run
-`38534915332`). 5 runners `CucumberShard*Runner` + 5 `CucumberTaskSpec`.
+`full-tests.yml` = matrice parallèle (shards BDD exhaustifs/disjoints + functional +
+integration), garde `CapsuleCucumberShardCoverageTest`. 24 min → ~4,3 min (avant S-199).
 
-=== S-197 — CAP-DECOMPOSE BS-3 + BS-4 ✅
+== Mission Session 200 — au choix (pilote)
 
-=== S-196 — CAP-DECOMPOSE BS-2 ✅
-
-== Mission Session 199 — au choix (pilote)
-
-* A) **CAP-DECOMPOSE BS-5** : `CapsuleVideoTask` (1005 l.) — résolveurs + helpers
-  statiques (risque **élevé**, dernier god-object).
-* B) **KOOG-PIPELINE-DEDUP** (🟡 éligible au seuil 2).
-* C) **Release capsule `0.0.11`** intégrant `video-kernel 0.3.0` + CAP-DECOMPOSE (BS-1→4).
-* D) Nouvelle demande pilote.
+* A) **Release `capsule 0.0.11`** (accord pilote) — intègre `video-kernel 0.3.0` +
+  CAP-DECOMPOSE (BS-1→5) + split multi-lang 4 groupes.
+* B) **KOOG-PIPELINE-DEDUP** (🟡 éligible au seuil 2 — pipeline `capsule` ≈ `slider`).
+* C) Nouvelle demande pilote.
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
 * **Règle 2 — PUBLISH** : accord pilote. **Règle 6 — ZÉRO secret**.
 * **English only** ; **zéro Python** ; runner dédié par feature (S-082), steps préfixés (S-088).
-* **CI sharding** : toute nouvelle feature doit être rattachée à un shard (garde
-  `CapsuleCucumberShardCoverageTest` sinon rouge).
+* **CI sharding** : toute nouvelle feature/scénario doit être rattachée à un shard
+  (garde `CapsuleCucumberShardCoverageTest` sinon rouge).
 
 == Rappels
 

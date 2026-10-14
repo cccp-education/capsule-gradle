@@ -1,6 +1,17 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-14 (S-198 — CI sharding : `full-tests.yml` en 7 jobs parallèles (5 shards BDD + functional + integration). Précédent S-197 : CAP-DECOMPOSE BS-3 + BS-4.)
+:last_update: 2026-10-14 (S-199 — split multi-lang en 4 groupes (pôle CI 260 s) + CAP-DECOMPOSE BS-5 ✅ (EPIC clos 5/5). Précédent S-198 : CI sharding.)
+
+'''
+== ✅ CI-SHARDING-2 — split multi-lang en 4 groupes (S-199)
+
+Le pôle CI restant de S-198 (`BDD · multi-lang-genB` = **260 s**, 11 langues) est
+scindé en **4 groupes de langues** (6/6/5/5). Objet pur
+`capsule.ci.MultiLangShardPartition` (+ `MultiLangShardPartitionTest` : partition
+exhaustive/disjointe/équilibrée/déterministe) ; 2 scénarios BDD
+`@multilang-gen-c`/`-d` ; 2 runners `CucumberShardMultiLangGen{C,D}Runner` ; 2
+`CucumberTaskSpec` + 2 jobs `full-tests.yml`. **Test-only** (zéro code plugin).
+Rapport `.agents/sessions/199-split-multilang-4-groups-cap-decompose-bs5.adoc`.
 
 '''
 == ✅ CI-SHARDING — `full-tests.yml` en matrice parallèle (S-198)
@@ -25,11 +36,11 @@ port `video.kernel.VideoDurationProbe` (+ parseur pur `FfprobeDurationParser`,
 entre capsule et hyperframes. **Doctrine** : seuil de factorisation `3 → 2`.
 
 '''
-== 🟡 CAP-DECOMPOSE — EN COURS (S-197)
+== ✅ CAP-DECOMPOSE — TERMINÉ 5/5 (S-194→S-199)
 _📖 Littérature de référence : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc`._
 
-Dette interne : décomposition des **god-objects** `CapsuleManager` (1115 → **900** l. après BS-1) et
-`CapsuleVideoTask` (1005 l.) — pattern éprouvé slider `SLD-6` (plugin → registrars).
+Dette interne : décomposition des **god-objects** `CapsuleManager` (1115 → **22** l.)
+et `CapsuleVideoTask` (1005 → **851** l.) — pattern éprouvé slider `SLD-6`.
 
 [cols="1,3,1,1", options="header"]
 |===
@@ -38,8 +49,14 @@ Dette interne : décomposition des **god-objects** `CapsuleManager` (1115 → **
 | BS-2 | Extraire `CapsuleViralRegistrar` ; `registerTasks()` délègue | Moyen | ✅ S-196
 | BS-3 | Extraire `CapsuleQcRegistrar` + `CapsuleVoiceRegistrar` | Moyen | ✅ S-197
 | BS-4 | Extraire `CapsuleCoreRegistrar` + `CapsuleContextRegistrar` + `CapsulePodcastRegistrar` + `CapsuleAiRegistrar` | Moyen | ✅ S-197
-| BS-5 | `CapsuleVideoTask` — extraire résolveurs + helpers statiques | Élevé | 🟡 À FAIRE
+| BS-5 | `CapsuleVideoTask` — extraire résolveurs + helpers statiques | Élevé | ✅ S-199
 |===
+
+**BS-5 (S-199)** : `capsule/CapsuleVideoResolvers.kt` (objet pur, déplacement
+verbatim des résolveurs TTS/Manim/viewport/sous-titres/burn-in + `manimVideoDirs`),
+7 unit `CapsuleVideoResolversTest` ; shims `@JvmStatic`
+`concatWebmFiles`/`createSingleSlideHtml` retirés du `companion` (appelants →
+`capsule.adapter.revealjs`).
 
 '''
 == ✅ CAP-FISH-AUDIO — TERMINÉ 6/6 US (S-182)

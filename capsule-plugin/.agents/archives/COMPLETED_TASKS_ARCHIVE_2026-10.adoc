@@ -1,6 +1,21 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-14
 
+== Session 199 — Split multi-lang en 4 groupes + CAP-DECOMPOSE BS-5 ✅
+
+* **Mission 1 (CI)** : le pôle `BDD · multi-lang-genB` (260 s, 11 langues) est
+  scindé en **4 groupes** (6/6/5/5). Objet pur `capsule.ci.MultiLangShardPartition`
+  + `MultiLangShardPartitionTest` (RED 18 `Unresolved reference` → GREEN) ; 2 scénarios
+  BDD `@multilang-gen-c`/`-d` ; 2 runners `CucumberShardMultiLangGen{C,D}Runner` ;
+  2 `CucumberTaskSpec` + 2 jobs `full-tests.yml`. Test-only (zéro code plugin).
+* **Mission 2 (BS-5)** : `capsule/CapsuleVideoResolvers.kt` extrait de
+  `CapsuleVideoTask` (déplacement verbatim) + 7 unit `CapsuleVideoResolversTest` ;
+  shims `@JvmStatic` `concatWebmFiles`/`createSingleSlideHtml` retirés du `companion`.
+  `CapsuleVideoTask` **1005 → 851 l.** (−154). **CAP-DECOMPOSE ✅ TERMINÉ 5/5.**
+* Gates locaux : `compileKotlin compileTestKotlin compileFunctionalTestKotlin` VERTS,
+  tâches `cucumberTestShardMultiLangGen*` enregistrées. Zéro bump, zéro publication.
+* Rapport `.agents/sessions/199-split-multilang-4-groups-cap-decompose-bs5.adoc`.
+
 == Session 197 — CAP-DECOMPOSE BS-3 + BS-4 (registrars par domaine) ✅
 
 * BS-3 : `CapsuleQcRegistrar` (4 tâches) + `CapsuleVoiceRegistrar` (2).

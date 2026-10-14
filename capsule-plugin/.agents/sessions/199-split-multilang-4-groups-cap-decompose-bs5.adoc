@@ -1,0 +1,127 @@
+= Session 199 — Éclatement multi-lang en 4 groupes + CAP-DECOMPOSE BS-5
+:session: 199
+:date: 2026-10-14
+:type: ci-infra + refactor
+:borough: Détroit / capsule-gradle
+:statut: ✅ TERMINÉ — CI pole multi-lang scindé en 4 ; CAP-DECOMPOSE clos 5/5
+:toc:
+
+== Contexte
+
+Session transverse (hyperframes / video-kernel / capsule) demandée par le pilote,
+avec deux missions concrètes, toutes deux côté **capsule** :
+
+1. **Éclater encore** les shards CI `multi-lang-genA/B` (générateur 22 langues,
+   pôle actuel **260 s** — reste optionnel documenté de S-198 itération 6).
+2. **Reprendre CAP-DECOMPOSE BS-5** — le dernier god-object `CapsuleVideoTask`.
+
+Aucune action requise côté **hyperframes** (HF-KERNEL-ADAPTER ✅ S-024, reste HF-CR3
+réseau/rendu réel) ni **video-kernel** (VK-4a ✅ S-195, reste ports conditionnels
+US-4b→d sans 2ᵉ consommateur). Le partage N1 `video-kernel:0.3.0` est sain et non
+touché par cette session.
+
+== Mission 1 — multi-lang-genA/B → 4 groupes (A/B/C/D)
+
+=== Diagnostic
+
+S-198 itérait 6 fois sur le sharding ; le plancher final était
+**`BDD · multi-lang-genB` = 260 s** (11 langues rendues en un scénario TestKit).
+Le split 2-groupes (S-198 itér. 3) restait le pôle.
+
+=== Décision
+
+Scinder à nouveau la partition déterministe du `LanguageCatalog` en **4 groupes**
+(6/6/5/5 langues — au plus 1 langue d'écart), chaque groupe sur sa propre machine.
+Le planner ignore les langues sans paire `deck+script`, donc chaque groupe ne rend
+que son quart. **Test-only** : zéro code plugin modifié.
+
+=== Livrables (baby-step DDD/TDD)
+
+- **`capsule.ci.MultiLangShardPartition`** (objet pur, source de vérité de la
+  partition N-way, `GROUP_LETTERS = a..d`), pinçé par **`MultiLangShardPartitionTest`**
+  (RED par 18 `Unresolved reference` → GREEN) : exhaustivité, disjonction,
+  équilibre (max−min ≤ 1), déterminisme, échec explicite sur lettre inconnue.
+- `MultiLanguageCapsuleSteps.languageGroup` délègue à l'objet.
+- `multi_language_capsule.feature` : +2 scénarios `@multilang-gen-c` / `-d`
+  (en plus de `-a`/`-b`).
+- 2 runners `CucumberShardMultiLangGen{C,D}Runner` (S-082, steps préfixés S-088).
+- `build.gradle.kts` : +2 `CucumberTaskSpec` ; `full-tests.yml` : +2 entrées
+  `BDD · multi-lang-genC/D` (binaries `ffmpeg`).
+- Garde `CapsuleCucumberShardCoverageTest` inchangée : la partition reste
+  exhaustive/disjointe, chaque runner enregistré + invoqué par le workflow.
+
+=== Attendu
+
+Max wall-clock ≈ **145 s** (6 langues) au lieu de 260 s, sous réserve que les
+autres shards restent < 145 s. Preuve = run CI `full-tests.yml` du commit poussé.
+
+== Mission 2 — CAP-DECOMPOSE BS-5
+
+`CapsuleVideoTask` était le **dernier god-object** (1005 l.) : task `@TaskAction`
++ résolveurs + étapes pipeline + helpers statiques.
+
+=== BS-5a — résolveurs extraits
+
+Nouvel objet pur **`capsule/CapsuleVideoResolvers.kt`** (déplacement verbatim) :
+`resolveTtsEngine`, `resolveManimEngine/VideoMixer/SlideReplacer/ParallelRenderer`,
+`manimVideoDirs`, `resolveViewport`, `resolveSubtitleGenerator`,
+`resolveSubtitleBurnInService`. La tâche conserve ses caches/seams
+(`ttsEngine`/`manimEngine`/… = override injectable en test) et délègue ; ses
+`resolve*` deviennent des wrappers minces. `revealJsAdapter` appelle l'objet.
+
+Tests **`CapsuleVideoResolversTest`** (7 unit, RED → GREEN) : dégradation TTS NoOp,
+viewport landscape/portrait (9:16 quand `viral`), dispatch VTT/SRT, Manim NoOp
+quand `executablePath=noop`, renderer parallèle 1 vs 4, `manimVideoDirs` vide sans
+racine.
+
+=== BS-5b — helpers statiques retirés
+
+Les shims `@JvmStatic` `concatWebmFiles` / `createSingleSlideHtml` du `companion`
+(déjà délégués à `capsule.adapter.revealjs` depuis CAP-ENGINE-DECOUPLING US-2)
+sont **retirés** ; les appelants (`CapsulePluginTest`, KDoc de `RemotionCapture`)
+pointent désormais directement `RevealJsEngineAdapter.concat` /
+`RevealJsDeckHtml.singleSlideHtml`.
+
+=== Résultat
+
+`CapsuleVideoTask` **1005 → 851 l.** (−154 ; BS-1→BS-5 cumulés : `CapsuleManager`
+1115 → 22, `CapsuleVideoTask` 1005 → 851). EPIC **CAP-DECOMPOSE ✅ TERMINÉ 5/5**.
+
+== Gates
+
+- **Local = Build, Tests = CI** : `compileKotlin` + `compileTestKotlin` +
+  `compileFunctionalTestKotlin` VERTS (3 source sets) ; `./gradlew tasks --all`
+  liste les 4 tâches `cucumberTestShardMultiLangGen{A,B,C,D}`. **Aucun** `test`/
+  `check` local (règle EAGER).
+- **Tests = CI** : `test.yml` (garde shard + unit BS-5) + `full-tests.yml`
+  (matrice 26 jobs) prouvés par le run du commit poussé.
+- Zéro secret, zéro Python, zéro bump de version, zéro publication.
+
+== Fichiers
+
+.Produits
+- `capsule-plugin/src/main/kotlin/capsule/CapsuleVideoResolvers.kt` (nouveau)
+- `capsule-plugin/src/test/kotlin/capsule/CapsuleVideoResolversTest.kt` (nouveau)
+- `capsule-plugin/src/test/kotlin/capsule/ci/MultiLangShardPartition.kt` (nouveau)
+- `capsule-plugin/src/test/kotlin/capsule/ci/MultiLangShardPartitionTest.kt` (nouveau)
+- `capsule-plugin/src/test/kotlin/capsule/scenarios/CucumberShardMultiLangGenCRunner.kt`
+- `capsule-plugin/src/test/kotlin/capsule/scenarios/CucumberShardMultiLangGenDRunner.kt`
+
+.Modifiés
+- `capsule-plugin/src/main/kotlin/capsule/CapsuleVideoTask.kt`
+- `capsule-plugin/src/main/kotlin/capsule/RemotionCapture.kt` (KDoc)
+- `capsule-plugin/src/test/kotlin/capsule/CapsulePluginTest.kt`
+- `capsule-plugin/src/test/kotlin/capsule/HtmlSectionParserTest.kt` (KDoc)
+- `capsule-plugin/src/test/kotlin/capsule/scenarios/MultiLanguageCapsuleSteps.kt`
+- `capsule-plugin/src/test/kotlin/capsule/scenarios/CucumberShardMultiLangGenARunner.kt` (KDoc)
+- `capsule-plugin/src/test/features/multi_language_capsule.feature`
+- `capsule-plugin/build.gradle.kts`
+- `.github/workflows/full-tests.yml`
+- `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc`
+
+== Suites possibles (session 200)
+
+* A) **Release `capsule 0.0.11`** (accord pilote) — intègre `video-kernel 0.3.0`
+  + CAP-DECOMPOSE (BS-1→5) + split multi-lang.
+* B) **KOOG-PIPELINE-DEDUP** (🟡 éligible au seuil 2).
+* C) Nouvelle demande pilote.
