@@ -16,7 +16,7 @@ entre capsule et hyperframes. **Doctrine** : seuil de factorisation `3 → 2`.
 == 🟡 CAP-DECOMPOSE — EN COURS (S-194)
 _📖 Littérature de référence : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc`._
 
-Dette interne : décomposition des **god-objects** `CapsuleManager` (1115 l.) et
+Dette interne : décomposition des **god-objects** `CapsuleManager` (1115 → **900** l. après BS-1) et
 `CapsuleVideoTask` (1005 l.) — pattern éprouvé slider `SLD-6` (plugin → registrars).
 
 [cols="1,3,1,1", options="header"]
