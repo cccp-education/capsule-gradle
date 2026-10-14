@@ -5,7 +5,7 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-14 (S-194 — **CAP-DECOMPOSE BS-1** : extraction du `companion` factories de `CapsuleManager` → **`CapsuleFactory`** (move pur). `CapsuleManager` **1115 → 906 l.** ; 35 call sites rebasculés ; compiles ×3 VERTS.)
+ _Derniere mise a jour_ : 2026-10-14 (S-194 — **CAP-DECOMPOSE BS-1** : extraction du `companion` factories de `CapsuleManager` → **`CapsuleFactory`** (move pur). `CapsuleManager` **1115 → 906 l.** ; 35 call sites rebasculés ; compiles ×3 VERTS. **CI Test `38506167654` ✅ + Full Tests `38506167771` ✅.**)
  _Derniere session terminee_ : 194.
  _Prochaine session_ : 195 — au choix : A) CAP-DECOMPOSE BS-2 (`CapsuleViralRegistrar`) ; B) release capsule (0.0.11) intégrant `video-kernel 0.2.0` ; C) autre.
  _Session en cours_ : —.

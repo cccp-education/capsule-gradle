@@ -18,7 +18,7 @@ extrait vers l'objet **`CapsuleFactory`** (move pur). `CapsuleManager` **1115 �
 35 call sites rebasculés `CapsuleManager.resolveX` → `CapsuleFactory.resolveX` ;
 6 imports de sous-paquets ; imports `capsule.chapters.*` déplacés ; test
 `CapsuleManagerPathResolutionTest` → `CapsuleFactoryPathResolutionTest` (`git mv`).
-Compiles ×3 VERTS.
+Compiles ×3 VERTS ; **CI Test `38506167654` ✅ + Full Tests `38506167771` ✅**.
 
 === S-193 — VK-2 : adoption `video-kernel 0.2.0` ✅
 

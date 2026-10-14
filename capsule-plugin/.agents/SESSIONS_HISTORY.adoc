@@ -9,7 +9,7 @@ _Derniere rotation_ : 2026-10-12 (S-191) — capsule alimente VideoOutcome (vide
 |===
 |# |Date |Type |Sujet |Score
 
-| 194 | 2026-10-14 | refactor | **CAP-DECOMPOSE BS-1 — extraction `CapsuleFactory`.** Dette interne (god-object `CapsuleManager` 1115 l.) : le `companion` (12 factories `resolve*` + 3 helpers, ≈210 l.) extrait vers l'objet **`CapsuleFactory`** (move pur). `CapsuleManager` **1115 → 906 l.** ; 35 call sites rebasculés ; imports déplacés ; test renommé (`git mv`). Cadrage EPIC `CAP-DECOMPOSE` (pattern slider SLD-6, BS-1→BS-5). Compiles ×3 VERTS (Local = Build). Zéro bump, zéro secret. | 9/10
+| 194 | 2026-10-14 | refactor | **CAP-DECOMPOSE BS-1 — extraction `CapsuleFactory`.** Dette interne (god-object `CapsuleManager` 1115 l.) : le `companion` (12 factories `resolve*` + 3 helpers, ≈210 l.) extrait vers l'objet **`CapsuleFactory`** (move pur). `CapsuleManager` **1115 → 906 l.** ; 35 call sites rebasculés ; imports déplacés ; test renommé (`git mv`). Cadrage EPIC `CAP-DECOMPOSE` (pattern slider SLD-6, BS-1→BS-5). Compiles ×3 VERTS (Local = Build) ; **CI Test `38506167654` ✅ + Full Tests `38506167771` ✅**. Zéro bump, zéro secret. | 9/10
 
 | 193 | 2026-10-14 | maintenance | **VK-2 — adoption `video-kernel 0.2.0` (package neutre `video.kernel.*`).** Breaking coordonné : pin `0.1.0 → 0.2.0` + bascule imports `capsule.kernel` → `video.kernel` (27 fichiers `src/`, adapters reveal.js + modèle + feed + multilang + transcript + scenarios). Compiles `compileKotlin`/`compileTestKotlin`/`compileFunctionalTestKotlin` VERTS. Prérequis : propagation repo1 `video-kernel 0.2.0` avant push (Piège DAG). Rapport `.agents/sessions/193-vk2-video-kernel-0.2.0-adoption.adoc`. | 9/10
 

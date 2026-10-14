@@ -12,8 +12,7 @@ Dette interne : décomposition des **god-objects** `CapsuleManager` (1115 l.) et
 [cols="1,3,1,1", options="header"]
 |===
 | BS | Livrable | Risque | Statut
-| BS-1 | Extraire `CapsuleFactory` du `companion` de `CapsuleManager` (move pur) | Faible | ✅ S-194
-| BS-2 | Extraire `CapsuleViralRegistrar` ; `registerTasks()` délègue | Moyen | 🟡 À FAIRE
+| BS-1 | Extraire `CapsuleFactory` du `companion` de `CapsuleManager` (move pur) | Faible | ✅ S-194| BS-2 | Extraire `CapsuleViralRegistrar` ; `registerTasks()` délègue | Moyen | 🟡 À FAIRE
 | BS-3 | Extraire `CapsuleQcRegistrar` + `CapsuleVoiceRegistrar` | Moyen | 🟡 À FAIRE
 | BS-4 | Extraire `CapsuleCoreRegistrar` + `CapsuleContextRegistrar` + `CapsulePodcastRegistrar` + `CapsuleAiRegistrar` | Moyen | 🟡 À FAIRE
 | BS-5 | `CapsuleVideoTask` — extraire résolveurs + helpers statiques | Élevé | 🟡 À FAIRE

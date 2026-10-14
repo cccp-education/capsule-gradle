@@ -49,7 +49,7 @@ Baby-steps BS-1→BS-5 (risque croissant). **BS-1 livré ici.**
   `CapsuleFactoryPathResolutionTest`).
 - **Local = Build** : `compileKotlin compileTestKotlin compileFunctionalTestKotlin`
   ✅ BUILD SUCCESSFUL.
-- **Tests = CI** : workflow capsule (`test` + `full-tests`).
+- **Tests = CI** : **Test run `38506167654` ✅** + **Full Tests run `38506167771` ✅**.
 - **Zéro secret**.
 
 == Suite (BS-2→BS-5)
