@@ -41,49 +41,49 @@ jobs:
         include:
           - name: "BDD · kernel"
             task: cucumberTestShardKernel
-            binaries: none
+            binaries: ffmpeg
           - name: "BDD · context-misc"
             task: cucumberTestShardContext
-            binaries: none
+            binaries: ffmpeg
           - name: "BDD · capsule-subtitles"
             task: cucumberTestShardCapsuleSubtitles
-            binaries: none
+            binaries: ffmpeg
           - name: "BDD · capsule-subtitles-burnin"
             task: cucumberTestShardCapsuleSubtitlesBurnIn
             binaries: ffmpeg
           - name: "BDD · capsule-manim"
             task: cucumberTestShardCapsuleManim
-            binaries: none
+            binaries: ffmpeg
           - name: "BDD · capsule-base"
             task: cucumberTestShardCapsuleBase
-            binaries: none
+            binaries: ffmpeg
           - name: "BDD · capsule-core-a"
             task: cucumberTestShardCapsuleCoreA
-            binaries: none
+            binaries: ffmpeg
           - name: "BDD · capsule-core-b"
             task: cucumberTestShardCapsuleCoreB
-            binaries: none
+            binaries: ffmpeg
           - name: "BDD · qc+voice"
             task: cucumberTestShardQc
             binaries: ffmpeg
           - name: "BDD · media"
             task: cucumberTestShardMedia
-            binaries: none
+            binaries: ffmpeg
           - name: "BDD · multi-lang"
             task: cucumberTestShardMultiLang
-            binaries: none
+            binaries: ffmpeg
           - name: "BDD · multi-lang-genA"
             task: cucumberTestShardMultiLangGenA
-            binaries: none
+            binaries: ffmpeg
           - name: "BDD · multi-lang-genB"
             task: cucumberTestShardMultiLangGenB
-            binaries: none
+            binaries: ffmpeg
           - name: "BDD · audio-post"
             task: cucumberTestShardAudioPost
-            binaries: none
+            binaries: ffmpeg
           - name: "BDD · ai+viral"
             task: cucumberTestShardAiViral
-            binaries: none
+            binaries: ffmpeg
     steps:
       - uses: actions/checkout@v4
 
@@ -186,10 +186,10 @@ jobs:
             binaries: ffmpeg+playwright
           - name: "Integration · @manim"
             task: cucumberTestShardManim
-            binaries: none
+            binaries: ffmpeg
           - name: "Integration · @manim-parallel"
             task: cucumberTestShardManimParallel
-            binaries: none
+            binaries: ffmpeg
           - name: "Integration · real render (viral)"
             task: cucumberTestViralRender
             binaries: ffmpeg+playwright
