@@ -1,37 +1,32 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 197
+:session: 198
 :borough: Détroit
-:session_precedente: 196 — CAP-DECOMPOSE BS-2 : extraction `CapsuleViralRegistrar` ✅
+:session_precedente: 197 — CAP-DECOMPOSE BS-3 + BS-4 : registrars par domaine ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc`.
 
 == Contexte Hérité
 
-=== S-196 — CAP-DECOMPOSE BS-2 ✅ (dette interne : god-objects)
+=== S-197 — CAP-DECOMPOSE BS-3 + BS-4 ✅ (moves purs)
 
-**Move pur** : les 6 tâches de campagne virale (~296 l.) extraites de
-`CapsuleManager` vers le nouveau `capsule/CapsuleViralRegistrar.kt`
-(`internal object`, pattern `CapsuleFeedTaskRegistrar` / slider `SLD-6`).
-`registerTasks()` délègue (`CapsuleViralRegistrar.register(project)`).
-`CapsuleManager` **906 → 602 l.** (−304). Compiles ×3 VERTS ; aucun test modifié
-(non-régression : `CapsulePluginTest` + 5 tests fonctionnels viraux + Cucumber).
+**BS-3** : `CapsuleQcRegistrar` (4 tâches) + `CapsuleVoiceRegistrar` (2 tâches).
+**BS-4** : `CapsuleCoreRegistrar` (7) + `CapsuleContextRegistrar` (6 + `resolveGlobFiles`)
++ `CapsulePodcastRegistrar` (1) + `CapsuleAiRegistrar` (1).
+`CapsuleManager` **réécrit en orchestrateur mince (22 l.)** — `registerTasks()` délègue
+aux 7 registrars. Compiles ×3 VERTS ; aucun test modifié.
+
+=== S-196 — CAP-DECOMPOSE BS-2 : `CapsuleViralRegistrar` ✅
 
 === S-195 — VK-4 US-4a : adoption du port partagé `VideoDurationProbe` ✅
 
-- `video-kernel 0.2.0 → 0.3.0` ; `capsule.validation.FfprobeDurationProbe` +
-  `MediaProbeUtil` délègue ; BOM interne aligné `0.0.91`. Doctrine seuil `3 → 2`.
+== Mission Session 198 — au choix (pilote)
 
-=== S-194 — CAP-DECOMPOSE BS-1 : extraction `CapsuleFactory` ✅
-
-== Mission Session 197 — au choix (pilote)
-
-* A) **CAP-DECOMPOSE BS-3** : `CapsuleQcRegistrar` + `CapsuleVoiceRegistrar`.
-* B) **CAP-DECOMPOSE BS-4** : `CapsuleCoreRegistrar` + `CapsuleContextRegistrar`
-  + `CapsulePodcastRegistrar` + `CapsuleAiRegistrar`.
-* C) **KOOG-PIPELINE-DEDUP** (🟡 éligible au seuil 2) — extraction du squelette
-  koog capsule ≈ slider (cible N1 `codebase.koog.pipeline`).
-* D) **Release capsule `0.0.11`** intégrant `video-kernel 0.3.0`.
-* E) Nouvelle demande pilote.
+* A) **CAP-DECOMPOSE BS-5** : `CapsuleVideoTask` (1005 l.) — résolveurs + helpers
+  statiques (risque **élevé**, dernier god-object).
+* B) **KOOG-PIPELINE-DEDUP** (🟡 éligible au seuil 2) — squelette koog capsule ≈ slider
+  (cible N1 `codebase.koog.pipeline`).
+* C) **Release capsule `0.0.11`** intégrant `video-kernel 0.3.0` + CAP-DECOMPOSE (BS-1→4).
+* D) Nouvelle demande pilote.
 
 == Points d'attention
 

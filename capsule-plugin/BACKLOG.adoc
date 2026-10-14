@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-14 (S-196 — CAP-DECOMPOSE BS-2 : extraction `CapsuleViralRegistrar` (move pur). Précédent S-195 : VK-4 US-4a adoption `VideoDurationProbe`.)
+:last_update: 2026-10-14 (S-197 — CAP-DECOMPOSE BS-3 + BS-4 : registrars par domaine (QC/Voice/Core/Context/Podcast/Ai), `CapsuleManager` en orchestrateur mince (22 l.). Précédent S-196 : BS-2 `CapsuleViralRegistrar`.)
 
 '''
 == ✅ VK-4 US-4a — Adoption du port partagé `VideoDurationProbe` (S-195)
@@ -13,7 +13,7 @@ port `video.kernel.VideoDurationProbe` (+ parseur pur `FfprobeDurationParser`,
 entre capsule et hyperframes. **Doctrine** : seuil de factorisation `3 → 2`.
 
 '''
-== 🟡 CAP-DECOMPOSE — EN COURS (S-196)
+== 🟡 CAP-DECOMPOSE — EN COURS (S-197)
 _📖 Littérature de référence : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc`._
 
 Dette interne : décomposition des **god-objects** `CapsuleManager` (1115 → **900** l. après BS-1) et
@@ -24,8 +24,8 @@ Dette interne : décomposition des **god-objects** `CapsuleManager` (1115 → **
 | BS | Livrable | Risque | Statut
 | BS-1 | Extraire `CapsuleFactory` du `companion` de `CapsuleManager` (move pur) | Faible | ✅ S-194
 | BS-2 | Extraire `CapsuleViralRegistrar` ; `registerTasks()` délègue | Moyen | ✅ S-196
-| BS-3 | Extraire `CapsuleQcRegistrar` + `CapsuleVoiceRegistrar` | Moyen | 🟡 À FAIRE
-| BS-4 | Extraire `CapsuleCoreRegistrar` + `CapsuleContextRegistrar` + `CapsulePodcastRegistrar` + `CapsuleAiRegistrar` | Moyen | 🟡 À FAIRE
+| BS-3 | Extraire `CapsuleQcRegistrar` + `CapsuleVoiceRegistrar` | Moyen | ✅ S-197
+| BS-4 | Extraire `CapsuleCoreRegistrar` + `CapsuleContextRegistrar` + `CapsulePodcastRegistrar` + `CapsuleAiRegistrar` | Moyen | ✅ S-197
 | BS-5 | `CapsuleVideoTask` — extraire résolveurs + helpers statiques | Élevé | 🟡 À FAIRE
 |===
 

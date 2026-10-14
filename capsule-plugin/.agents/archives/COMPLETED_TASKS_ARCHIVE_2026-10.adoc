@@ -1,6 +1,14 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-14
 
+== Session 197 — CAP-DECOMPOSE BS-3 + BS-4 (registrars par domaine) ✅
+
+* BS-3 : `CapsuleQcRegistrar` (4 tâches) + `CapsuleVoiceRegistrar` (2).
+* BS-4 : `CapsuleCoreRegistrar` (7) + `CapsuleContextRegistrar` (6 + `resolveGlobFiles`)
+  + `CapsulePodcastRegistrar` + `CapsuleAiRegistrar`. Moves purs.
+* `CapsuleManager` réécrit en orchestrateur mince (22 l.). Compiles ×3 VERTS.
+* Rapport `.agents/sessions/197-cap-decompose-bs3-bs4-registrars.adoc`.
+
 == Session 196 — CAP-DECOMPOSE BS-2 (extraction `CapsuleViralRegistrar`) ✅
 
 * Cluster viral (6 tâches, ~296 l.) extrait de `CapsuleManager` vers `CapsuleViralRegistrar`

@@ -1,0 +1,64 @@
+= Session 197 — CAP-DECOMPOSE BS-3 + BS-4 : registrars par domaine (QC/Voice + Core/Context/Podcast/Ai)
+:session: 197
+:date: 2026-10-14
+:type: refactor
+:borough: Détroit / capsule-gradle
+:statut: ✅ TERMINÉ — moves purs (aucune logique modifiée)
+:toc:
+
+== Mission
+
+CAP-DECOMPOSE **BS-3** puis **BS-4** (cadrage `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc`) :
+poursuivre la décomposition du god-object `CapsuleManager` en registrars par domaine
+(pattern slider `SLD-6`), `registerTasks()` devenant un orchestrateur mince.
+
+== BS-3 — `CapsuleQcRegistrar` + `CapsuleVoiceRegistrar`
+
+- `capsule/CapsuleQcRegistrar.kt` (`internal object`) : 4 tâches déplacées verbatim —
+  `validateCapsuleVideoDuration`, `preflightCapsuleContent`, `renderQcBoards`,
+  `generateCapsuleChapters`.
+- `capsule/CapsuleVoiceRegistrar.kt` (`internal object`) : 2 tâches —
+  `verifyCapsuleVoice`, `selectBestVoiceTake`.
+
+== BS-4 — `CapsuleCoreRegistrar` + `CapsuleContextRegistrar` + `CapsulePodcastRegistrar` + `CapsuleAiRegistrar`
+
+- `capsule/CapsuleCoreRegistrar.kt` : 7 tâches (extractSpeakerNotes, generateCapsuleScript,
+  generateCapsule, generateCapsuleVideo, generateCapsuleVideoAllLanguages, deployCapsule,
+  distributeCapsuleVideo).
+- `capsule/CapsuleContextRegistrar.kt` : 6 tâches (collectCapsuleContext,
+  transformCapsuleContext, scaffoldCapsuleContext, collectCapsuleAugmentedContext,
+  generateCapsuleContent, generateCapsuleTranscript) + le helper `resolveGlobFiles`.
+- `capsule/CapsulePodcastRegistrar.kt` : `generateCapsulePodcast`.
+- `capsule/CapsuleAiRegistrar.kt` : `capsuleAiSmokeTest`.
+- `CapsuleManager` **réécrit** : orchestrateur mince (22 l.) — `registerTasks()` ne fait
+  que déléguer aux 7 registrars.
+
+== Bilan (move pur)
+
+|===
+| Fichier | Lignes
+
+| `CapsuleManager.kt` | **1115 → 22** (−1093 sur l'EPIC)
+| `CapsuleViralRegistrar.kt` | 324 (S-196)
+| `CapsuleContextRegistrar.kt` | 245
+| `CapsuleQcRegistrar.kt` | 141
+| `CapsuleVoiceRegistrar.kt` | 129
+| `CapsuleCoreRegistrar.kt` | 95
+| `CapsulePodcastRegistrar.kt` | 57
+| `CapsuleAiRegistrar.kt` | 30
+|===
+
+*Zéro ligne de logique modifiée* (extraction verbatim ; seuls s'ajoutent les en-têtes
+KDoc + le `register()` de chaque registrar + l'orchestrateur).
+
+== Gates
+
+- **Local = Build** : `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin`
+  VERTS (CapsuleManager : +12 / −587 vs S-196).
+- **Non-régression = CI** : l'enregistrement + le comportement sont couverts par
+  `CapsulePluginTest` + les tests fonctionnels + les runners Cucumber. **Aucun test modifié.**
+
+== Suite
+
+- CAP-DECOMPOSE **BS-5** : `CapsuleVideoTask` (1005 l.) — extraction des résolveurs +
+  helpers statiques. Risque **élevé** (dernier god-object).
