@@ -78,3 +78,21 @@ core+ai (7), feed+context (11), media (9), viral+voice+qc (10) = **37 classes**.
 La garde `CapsuleCucumberShardCoverageTest` vérifie aussi cette partition (3ᵉ test).
 
 **`full-tests.yml` = 10 jobs parallèles** : 5 BDD + 4 functional + 1 integration (+ unit dans `test.yml`).
+
+== Itération 2 — équilibrage (run `38526207720`)
+
+10/10 jobs verts, mais deux shards dominent : **BDD · media 572 s** et **BDD · context 561 s**.
+Analyse par feature (artefacts Cucumber) : le coût est concentré dans **quelques features/scénarios
+uniques** — `capsule.feature` ≈ **401 s** (46 scénarios TestKit), `multi_language_capsule.feature`
+≈ **303 s** (1 scénario × 22 langues), les 9 autres features de context ≈ 16 s cumulés.
+
+**Split intra-feature** :
+- `capsule.feature` → **partition par tags** (priority chain, exhaustive/disjointe) en 3 :
+  `@subtitles` · `@manim and not @subtitles` · `not @subtitles and not @manim`
+  (`CucumberShardCapsule{Subtitles,Manim,Base}Runner`).
+- `multi_language_capsule.feature` + `capsule_audio_post.feature` **isolées** de `media`
+  (`CucumberShardMultiLangRunner`, `CucumberShardAudioPostRunner`).
+
+**`full-tests.yml` = 15 jobs parallèles** : **10 shards BDD** + 4 functional + 1 integration.
+Garde étendue : un feature peut être couvert par plusieurs shards **uniquement** s'ils portent
+un filtre de tags non vide (partition par tags, jamais de double exécution silencieuse).

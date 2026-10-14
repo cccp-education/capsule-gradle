@@ -40,12 +40,22 @@ jobs:
         include:
           - name: "BDD · kernel"
             task: cucumberTestShardKernel
-          - name: "BDD · context"
+          - name: "BDD · context-misc"
             task: cucumberTestShardContext
+          - name: "BDD · capsule-subtitles"
+            task: cucumberTestShardCapsuleSubtitles
+          - name: "BDD · capsule-manim"
+            task: cucumberTestShardCapsuleManim
+          - name: "BDD · capsule-base"
+            task: cucumberTestShardCapsuleBase
           - name: "BDD · qc+voice"
             task: cucumberTestShardQc
           - name: "BDD · media"
             task: cucumberTestShardMedia
+          - name: "BDD · multi-lang"
+            task: cucumberTestShardMultiLang
+          - name: "BDD · audio-post"
+            task: cucumberTestShardAudioPost
           - name: "BDD · ai+viral"
             task: cucumberTestShardAiViral
     steps:

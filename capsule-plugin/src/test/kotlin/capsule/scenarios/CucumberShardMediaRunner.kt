@@ -19,8 +19,6 @@ import org.junit.platform.suite.api.Suite
 @IncludeEngines("cucumber")
 @SelectClasspathResource("features/capsule_capture_strategy.feature")
 @SelectClasspathResource("features/capsule_format.feature")
-@SelectClasspathResource("features/multi_language_capsule.feature")
-@SelectClasspathResource("features/capsule_audio_post.feature")
 @SelectClasspathResource("features/capsule_podcast.feature")
 @SelectClasspathResource("features/capsule_preview.feature")
 @SelectClasspathResource("features/capsule_chapters.feature")
@@ -30,7 +28,6 @@ import org.junit.platform.suite.api.Suite
 @ConfigurationParameter(
     key = FEATURES_PROPERTY_NAME,
     value = "src/test/features/capsule_capture_strategy.feature,src/test/features/capsule_format.feature," +
-        "src/test/features/multi_language_capsule.feature,src/test/features/capsule_audio_post.feature," +
         "src/test/features/capsule_podcast.feature,src/test/features/capsule_preview.feature," +
         "src/test/features/capsule_chapters.feature,src/test/features/capsule_remotion.feature," +
         "src/test/features/capsule_remotion_anim.feature,src/test/features/capsule_distrib.feature"

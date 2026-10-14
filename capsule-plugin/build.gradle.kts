@@ -58,6 +58,33 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CucumberShardAiViralRunner",
             timeoutMinutes = 30,
         ),
+        // `capsule.feature` (~400 s) is split by a tag-priority partition into 3 shards.
+        CucumberTaskSpec(
+            name = "cucumberTestShardCapsuleSubtitles",
+            runnerClass = "capsule.scenarios.CucumberShardCapsuleSubtitlesRunner",
+            timeoutMinutes = 30,
+        ),
+        CucumberTaskSpec(
+            name = "cucumberTestShardCapsuleManim",
+            runnerClass = "capsule.scenarios.CucumberShardCapsuleManimRunner",
+            timeoutMinutes = 30,
+        ),
+        CucumberTaskSpec(
+            name = "cucumberTestShardCapsuleBase",
+            runnerClass = "capsule.scenarios.CucumberShardCapsuleBaseRunner",
+            timeoutMinutes = 30,
+        ),
+        // Heavy single features isolated from the `media` shard.
+        CucumberTaskSpec(
+            name = "cucumberTestShardMultiLang",
+            runnerClass = "capsule.scenarios.CucumberShardMultiLangRunner",
+            timeoutMinutes = 30,
+        ),
+        CucumberTaskSpec(
+            name = "cucumberTestShardAudioPost",
+            runnerClass = "capsule.scenarios.CucumberShardAudioPostRunner",
+            timeoutMinutes = 30,
+        ),
         // Focused cucumber run for the CAP-ARCH-2 augmented context feature
         // (fast iteration without the full Playwright suite, ~15 min).
         CucumberTaskSpec(

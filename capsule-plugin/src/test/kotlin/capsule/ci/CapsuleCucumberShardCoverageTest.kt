@@ -51,8 +51,12 @@ class CapsuleCucumberShardCoverageTest {
             .map { it.groupValues[1] }
             .toList()
 
+    private fun runnerTags(runner: File): String =
+        Regex("""FILTER_TAGS_PROPERTY_NAME,\s*value = "([^"]*)"""")
+            .find(runner.readText())?.groupValues?.get(1) ?: ""
+
     @Test
-    fun `the shards form an exhaustive and disjoint partition of every feature file`() {
+    fun `the shards cover every feature, and a feature is split only by tag filters`() {
         val runners = shardRunners()
         assertThat(runners)
             .describedAs("CI shard runners must exist and be at least 5")
@@ -65,15 +69,23 @@ class CapsuleCucumberShardCoverageTest {
                 .isNotEmpty()
         }
 
-        val all = perRunner.values.flatten()
-        val duplicates = all.groupingBy { it }.eachCount().filterValues { it > 1 }.keys
-        assertThat(duplicates)
-            .describedAs("a feature must belong to exactly one shard")
-            .isEmpty()
+        val byFeature = mutableMapOf<String, MutableList<File>>()
+        runners.forEach { r -> runnerFeatures(r).forEach { byFeature.getOrPut(it) { mutableListOf() }.add(r) } }
 
-        assertThat(all.toSet())
+        assertThat(byFeature.keys)
             .describedAs("the shards must cover every feature file")
             .containsExactlyInAnyOrderElementsOf(allFeatures())
+
+        // A feature may appear in several shards only if each such shard restricts it
+        // by a tag filter (a tag-priority partition, e.g. capsule.feature @subtitles /
+        // @manim / base) — never a silent duplicate run.
+        byFeature.filterValues { it.size > 1 }.forEach { (feature, rs) ->
+            rs.forEach { r ->
+                assertThat(runnerTags(r))
+                    .describedAs("%s overlaps on %s and must carry a non-blank tag filter", r.name, feature)
+                    .isNotBlank()
+            }
+        }
     }
 
     @Test
@@ -95,7 +107,7 @@ class CapsuleCucumberShardCoverageTest {
 
         assertThat(buildShardTasks)
             .describedAs("shard CucumberTaskSpec tasks")
-            .hasSize(5)
+            .hasSizeGreaterThanOrEqualTo(5)
         assertThat(ciShardTasks)
             .describedAs("full-tests.yml must run every shard task")
             .containsExactlyInAnyOrderElementsOf(buildShardTasks)
