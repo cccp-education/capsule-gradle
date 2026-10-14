@@ -1,5 +1,6 @@
 package capsule.scenarios
 
+import io.cucumber.junit.platform.engine.Constants.FEATURES_PROPERTY_NAME
 import io.cucumber.junit.platform.engine.Constants.FILTER_TAGS_PROPERTY_NAME
 import io.cucumber.junit.platform.engine.Constants.GLUE_PROPERTY_NAME
 import io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME
@@ -29,6 +30,14 @@ import org.junit.platform.suite.api.Suite
 @SelectClasspathResource("features/capsule_speaker_notes.feature")
 @SelectClasspathResource("features/cucumber_skip.feature")
 @SelectClasspathResource("features/parallel_capture_timeout.feature")
+@ConfigurationParameter(
+    key = FEATURES_PROPERTY_NAME,
+    value = "src/test/features/capsule_kernel_model.feature,src/test/features/capsule_engine_adapter.feature," +
+        "src/test/features/capsule_segment_source.feature,src/test/features/capsule_arch_boundary.feature," +
+        "src/test/features/consolidated_capsule_model.feature,src/test/features/capsule_pr2_coverage.feature," +
+        "src/test/features/capsule_speaker_notes.feature,src/test/features/cucumber_skip.feature," +
+        "src/test/features/parallel_capture_timeout.feature"
+)
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,

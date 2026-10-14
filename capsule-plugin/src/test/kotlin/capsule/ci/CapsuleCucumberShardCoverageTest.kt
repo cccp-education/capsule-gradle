@@ -100,4 +100,30 @@ class CapsuleCucumberShardCoverageTest {
             .describedAs("full-tests.yml must run every shard task")
             .containsExactlyInAnyOrderElementsOf(buildShardTasks)
     }
+
+    @Test
+    fun `the functional shards form an exhaustive and disjoint partition of the functional tests`() {
+        val functionalDir = repoRoot.resolve("capsule-plugin/src/functionalTest/kotlin")
+        val all = functionalDir.walkTopDown()
+            .filter { it.isFile && it.name.endsWith("FunctionalTest.kt") }
+            .map { file ->
+                val pkg = Regex("""(?m)^package\s+([A-Za-z0-9_.]+)""").find(file.readText())!!.groupValues[1]
+                "$pkg.${file.nameWithoutExtension}"
+            }
+            .toSet()
+
+        val sharded = Regex("""--tests\s+(capsule\.[A-Za-z0-9_.]+)""")
+            .findAll(workflow.readText())
+            .map { it.groupValues[1] }
+            .toList()
+
+        assertThat(all).describedAs("functionalTest classes found").isNotEmpty()
+        val duplicates = sharded.groupingBy { it }.eachCount().filterValues { it > 1 }.keys
+        assertThat(duplicates)
+            .describedAs("a functional test must belong to exactly one shard")
+            .isEmpty()
+        assertThat(sharded.toSet())
+            .describedAs("the functional shards must cover every functional test")
+            .containsExactlyInAnyOrderElementsOf(all)
+    }
 }

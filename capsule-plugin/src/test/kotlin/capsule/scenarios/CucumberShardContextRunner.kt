@@ -1,5 +1,6 @@
 package capsule.scenarios
 
+import io.cucumber.junit.platform.engine.Constants.FEATURES_PROPERTY_NAME
 import io.cucumber.junit.platform.engine.Constants.FILTER_TAGS_PROPERTY_NAME
 import io.cucumber.junit.platform.engine.Constants.GLUE_PROPERTY_NAME
 import io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME
@@ -26,6 +27,14 @@ import org.junit.platform.suite.api.Suite
 @SelectClasspathResource("features/capsule_transcript.feature")
 @SelectClasspathResource("features/capsule.feature")
 @SelectClasspathResource("features/translate_and_extract_speaker_notes.feature")
+@ConfigurationParameter(
+    key = FEATURES_PROPERTY_NAME,
+    value = "src/test/features/capsule_context.feature,src/test/features/capsule_doc_context.feature," +
+        "src/test/features/capsule_scenario_context.feature,src/test/features/capsule_glossary_context.feature," +
+        "src/test/features/capsule_provenance.feature,src/test/features/capsule_content_and_videos.feature," +
+        "src/test/features/capsule_content_preflight.feature,src/test/features/capsule_transcript.feature," +
+        "src/test/features/capsule.feature,src/test/features/translate_and_extract_speaker_notes.feature"
+)
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,

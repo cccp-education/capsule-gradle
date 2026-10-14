@@ -84,11 +84,26 @@ jobs:
           name: reports-${{ matrix.task }}
           path: capsule-plugin/build/reports/
 
-  # ── functionalTest (TestKit, real binaries) ────────────────────────────────────
-  functional:
-    name: Functional (TestKit)
+  # ── functionalTest shards (TestKit, real binaries) ──────────────────────────────
+  # `functionalTest` alone (~7.5 min) is split into 4 EXHAUSTIVE, DISJOINT class
+  # shards via `--tests` filters, each on its own runner. Exhaustiveness/disjointness
+  # is guarded by capsule.ci.CapsuleCucumberShardCoverageTest.
+  functional-shard:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "Functional · core+ai"
+            tests: "--tests capsule.CapsulePluginFunctionalTest --tests capsule.StrictModeFunctionalTest --tests capsule.ai.CapsuleAiSmokeTestFunctionalTest --tests capsule.podcast.GeneratePodcastFunctionalTest --tests capsule.preview.PreviewExtensionFunctionalTest --tests capsule.transcript.GenerateCapsuleTranscriptFunctionalTest --tests capsule.validation.ValidateCapsuleVideoDurationFunctionalTest"
+          - name: "Functional · feed+context"
+            tests: "--tests capsule.feed.ExtractSpeakerNotesFunctionalTest --tests capsule.feed.GenerateCapsuleScriptIntegrationFunctionalTest --tests capsule.feed.TranslateAndExtractSpeakerNotesFunctionalTest --tests capsule.feed.TranslateAndGenerateCapsuleVideosFunctionalTest --tests capsule.context.CapsuleAugmentedContextFunctionalTest --tests capsule.context.CollectProvenanceFunctionalTest --tests capsule.context.DocContextFunctionalTest --tests capsule.context.GlossaryContextFunctionalTest --tests capsule.context.ScenarioContextFunctionalTest --tests capsule.pipeline.GenerateCapsuleContentFunctionalTest --tests capsule.pipeline.GenerateCapsuleContentAndVideosFunctionalTest"
+          - name: "Functional · media"
+            tests: "--tests capsule.AudioPostFunctionalTest --tests capsule.CaptureStrategyFunctionalTest --tests capsule.CaptureTimeoutFunctionalTest --tests capsule.DistributeCapsuleVideoFunctionalTest --tests capsule.FormatConversionFunctionalTest --tests capsule.GenerateCapsuleVideoAllLanguagesFunctionalTest --tests capsule.RemotionCaptureFunctionalTest --tests capsule.RenderSignatureFunctionalTest --tests capsule.TimelineFunctionalTest"
+          - name: "Functional · viral+voice+qc"
+            tests: "--tests capsule.viral.GenerateViralCampaignFunctionalTest --tests capsule.viral.NormalizeViralStoryboardFunctionalTest --tests capsule.viral.RenderViralSubtitlesFunctionalTest --tests capsule.viral.RenderViralThumbnailsFunctionalTest --tests capsule.viral.RenderViralVariantsFunctionalTest --tests capsule.viral.ValidateViralCampaignFunctionalTest --tests capsule.voice.SelectBestVoiceTakeFunctionalTest --tests capsule.voice.VerifyCapsuleVoiceFunctionalTest --tests capsule.qc.PreflightCapsuleContentFunctionalTest --tests capsule.qc.RenderQcBoardsFunctionalTest"
     steps:
       - uses: actions/checkout@v4
 
@@ -109,8 +124,8 @@ jobs:
       - name: Setup Playwright (cached Chromium)
         uses: ./.github/actions/setup-playwright
 
-      - name: Run functionalTest
-        run: ./gradlew functionalTest
+      - name: Run functional shard
+        run: ./gradlew functionalTest ${{ matrix.tests }}
         working-directory: capsule-plugin
         env:
           CI: "true"
@@ -119,7 +134,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reports-functional
+          name: reports-functionalshard-${{ strategy.job-index }}
           path: capsule-plugin/build/reports/
 
   # ── integration (real render: Playwright + ffmpeg) ─────────────────────────────

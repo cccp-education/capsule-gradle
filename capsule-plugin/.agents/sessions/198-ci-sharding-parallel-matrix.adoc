@@ -60,3 +60,21 @@ Simulation locale : `diff(union shards, features) = ∅` (48/48), aucun doublon.
 
 Wall-clock ≈ **6-8 min** (borné par le shard le plus lourd + `functional`), au lieu de ~24 min.
 Optimisation ultérieure possible : n'installer ffmpeg/Chromium que dans les shards qui en ont besoin.
+
+== Correctif (run `38525167272`)
+
+Le 1er run a révélé `CucumberShard*Runner > initializationError : NoTestsDiscoveredException` :
+le moteur Cucumber exige `cucumber.features` — les runners dédiés existants fonctionnent
+car leur `CucumberTaskSpec` pose `systemProperty("cucumber.features", …)` ; mes shards n'avaient
+que les sélecteurs `@SelectClasspathResource`. **Fix** : ajout de
+`@ConfigurationParameter(FEATURES_PROPERTY_NAME, "<liste>")` aux 5 runners (mécanisme de
+l'agrégat `CucumberTestRunner`). Seuls `Functional` et `Integration` avaient réussi.
+
+== Ajout — split de `functionalTest`
+
+`functionalTest` (~7 min 27 s, run `38525167272`) est à son tour éclaté en **4 shards
+exhaustifs et disjoints** par classes (`--tests`), sans changement de build :
+core+ai (7), feed+context (11), media (9), viral+voice+qc (10) = **37 classes**.
+La garde `CapsuleCucumberShardCoverageTest` vérifie aussi cette partition (3ᵉ test).
+
+**`full-tests.yml` = 10 jobs parallèles** : 5 BDD + 4 functional + 1 integration (+ unit dans `test.yml`).

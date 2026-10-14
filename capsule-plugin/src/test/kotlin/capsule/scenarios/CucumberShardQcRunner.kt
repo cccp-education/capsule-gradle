@@ -1,5 +1,6 @@
 package capsule.scenarios
 
+import io.cucumber.junit.platform.engine.Constants.FEATURES_PROPERTY_NAME
 import io.cucumber.junit.platform.engine.Constants.FILTER_TAGS_PROPERTY_NAME
 import io.cucumber.junit.platform.engine.Constants.GLUE_PROPERTY_NAME
 import io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME
@@ -24,6 +25,13 @@ import org.junit.platform.suite.api.Suite
 @SelectClasspathResource("features/capsule_voice_quality.feature")
 @SelectClasspathResource("features/capsule_voice_verification.feature")
 @SelectClasspathResource("features/capsule_qc_boards.feature")
+@ConfigurationParameter(
+    key = FEATURES_PROPERTY_NAME,
+    value = "src/test/features/capsule_duration_validation.feature,src/test/features/capsule_video_integrity.feature," +
+        "src/test/features/capsule_subtitles_cartons.feature,src/test/features/capsule_render_signature.feature," +
+        "src/test/features/capsule_timeline.feature,src/test/features/capsule_voice_quality.feature," +
+        "src/test/features/capsule_voice_verification.feature,src/test/features/capsule_qc_boards.feature"
+)
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,

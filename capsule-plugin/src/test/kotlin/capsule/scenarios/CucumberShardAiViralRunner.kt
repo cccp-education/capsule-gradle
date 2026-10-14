@@ -1,5 +1,6 @@
 package capsule.scenarios
 
+import io.cucumber.junit.platform.engine.Constants.FEATURES_PROPERTY_NAME
 import io.cucumber.junit.platform.engine.Constants.FILTER_TAGS_PROPERTY_NAME
 import io.cucumber.junit.platform.engine.Constants.GLUE_PROPERTY_NAME
 import io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME
@@ -29,6 +30,15 @@ import org.junit.platform.suite.api.Suite
 @SelectClasspathResource("features/capsule_viral_karaoke.feature")
 @SelectClasspathResource("features/capsule_viral_normalize.feature")
 @SelectClasspathResource("features/capsule_viral_render.feature")
+@ConfigurationParameter(
+    key = FEATURES_PROPERTY_NAME,
+    value = "src/test/features/capsule_ai.feature,src/test/features/capsule_fish_audio.feature," +
+        "src/test/features/capsule_llm_resilience.feature,src/test/features/capsule_strict_mode.feature," +
+        "src/test/features/capsule_viral.feature,src/test/features/capsule_storyboard_context.feature," +
+        "src/test/features/capsule_viral_gate.feature,src/test/features/capsule_viral_thumbnail.feature," +
+        "src/test/features/capsule_viral_karaoke.feature,src/test/features/capsule_viral_normalize.feature," +
+        "src/test/features/capsule_viral_render.feature"
+)
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
