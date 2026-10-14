@@ -19,7 +19,7 @@ import java.io.File
  * [capsule.VideoFormatConverter]:
  * - [AudioPostProcessorImpl] uses ffmpeg complex filter.
  * - [NoOpAudioPostProcessor] is the test/no-ffmpeg fallback (returns `false`).
- * - Factory: [capsule.CapsuleManager.resolveAudioPostProcessor]
+ * - Factory: [capsule.CapsuleFactory.resolveAudioPostProcessor]
  *   (5ème `resolve*`, pattern `resolveFormatConverter` — ffmpegPath="noop"
  *   → NoOp, unavailable + non-strict → NoOp, unavailable + strict → throw
  *   via [capsule.StrictModeGuard], available → Impl).

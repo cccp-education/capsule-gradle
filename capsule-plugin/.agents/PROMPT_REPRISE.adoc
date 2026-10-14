@@ -1,44 +1,50 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 193
+:session: 195
 :borough: Détroit
-:session_precedente: 192 — pin `video-kernel 0.1.0` ✅
+:session_precedente: 194 — CAP-DECOMPOSE BS-1 : extraction `CapsuleFactory` ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
-_littérature_ : `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`.
+_littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc`.
 
 == Contexte Hérité
 
+=== S-194 — CAP-DECOMPOSE BS-1 ✅ (dette interne : god-objects)
+
+Code review S-194 : `CapsuleManager.kt` **1115 l.** et `CapsuleVideoTask.kt` **1005 l.**
+= god-objects (dette propre de capsule, sans lien avec le rattrapage hyperframes).
+Cadrage EPIC `CAP-DECOMPOSE` (pattern slider `SLD-6`, BS-1→BS-5).
+
+**BS-1 livré** : le `companion` factories (12 `resolve*` + 3 helpers, ≈210 l.)
+extrait vers l'objet **`CapsuleFactory`** (move pur). `CapsuleManager` **1115 → 906 l.**
+35 call sites rebasculés `CapsuleManager.resolveX` → `CapsuleFactory.resolveX` ;
+6 imports de sous-paquets ; imports `capsule.chapters.*` déplacés ; test
+`CapsuleManagerPathResolutionTest` → `CapsuleFactoryPathResolutionTest` (`git mv`).
+Compiles ×3 VERTS.
+
 === S-193 — VK-2 : adoption `video-kernel 0.2.0` ✅
 
-- Breaking coordonné (noyau promu package neutre `video.kernel.*`).
-- `capsule-plugin/gradle/libs.versions.toml` : `video-kernel 0.1.0 → 0.2.0`.
-- Bascule imports `capsule.kernel` → `video.kernel` (27 fichiers `src/`).
-- `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` VERTS.
-- Rapport `.agents/sessions/193-vk2-video-kernel-0.2.0-adoption.adoc`.
+- Pin `0.1.0 → 0.2.0` + imports `capsule.kernel` → `video.kernel` (27 fichiers).
 
-=== S-192 — pin `video-kernel 0.1.0` ✅
+=== S-190/S-191 — capsule ↔ video-kernel ✅
 
-- Contrat gelé + publié `0.1.0` (Central, bundle `ccbb1f82`) ; capsule aligné.
+== Mission Session 195 — au choix (pilote)
 
-=== S-190/S-191 — adaptation 0.0.2 + alimentation `VideoOutcome` 0.0.3 ✅
-
-=== S-184→S-189 — EPIC CAP-ENGINE-DECOUPLING TERMINÉ 6/6
-
-== Mission Session 194 — au choix (pilote)
-
-* A) **Release capsule** (bump version + Central) intégrant `video-kernel:0.2.0`.
-* B) **Adapter hyperframes** US-4 (consommation complète du noyau : TTS/audio/config).
-* C) Dette / nouvelle demande pilote.
+* A) **CAP-DECOMPOSE BS-2** : extraire `CapsuleViralRegistrar` (plus gros cluster ~300 l.)
+  ; `registerTasks()` délègue.
+* B) **CAP-DECOMPOSE BS-3** : `CapsuleQcRegistrar` + `CapsuleVoiceRegistrar`.
+* C) **Release capsule `0.0.11`** intégrant `video-kernel 0.2.0`.
+* D) Nouvelle demande pilote.
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
+* **Moves purs** : aucun changement de logique (les tests fonctionnels/Cucumber
+  vérifient l'enregistrement + le comportement).
 * **Règle 2 — PUBLISH** : accord pilote. **Règle 6 — ZÉRO secret**.
-* La CI capsule résout `video-kernel` **depuis Maven Central** (mavenLocal vide en CI).
 * **English only** ; **zéro Python** ; runner dédié par feature (S-082), steps préfixés (S-088).
-* Catalogue **interne** : BOM `0.0.83`, `video-kernel = "0.2.0"`.
+* Catalogue **interne** : `video-kernel = "0.2.0"`, `workspace-bom` aligné BOM `0.0.86+`.
 
 == Rappels
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.10** (Central).
-* `education.cccp:video-kernel:0.2.0` (Central). MEMPHIS BOM/catalog `0.0.88` → `0.0.89`.
-* Tous les EPICs capsule sont clos ; `CAP-ENGINE-DECOUPLING` **TERMINÉ 6/6**.
+* `education.cccp:video-kernel:0.2.0` (Central). MEMPHIS BOM/catalog **0.0.90**.
+* `capsule.kernel` n'existe plus → `video.kernel.*`.

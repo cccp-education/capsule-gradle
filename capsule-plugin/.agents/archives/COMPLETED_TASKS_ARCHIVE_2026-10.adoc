@@ -787,3 +787,13 @@ Zéro code modifié. Gouvernance : rapport `.agents/sessions/138-cap-viral-cadra
 * `.agents/PROMPT_REPRISE.adoc` (mission S-139)
 * `.agents/SESSIONS_HISTORY.adoc` (entrée 138)
 * `.agents/archives/COMPLETED_TASKS_ARCHIVE_2026-10.adoc` (ce fichier)
+
+== S-194 — CAP-DECOMPOSE BS-1 : extraction `CapsuleFactory` ✅
+
+* Dette interne (god-objects) : `CapsuleManager` **1115 → 906 l.** (companion factories
+  extrait vers `capsule/CapsuleFactory.kt`, move pur).
+* `CapsuleVideoTask` (1005 l.) : BS-5 (à faire).
+* Cadrage EPIC `CAP-DECOMPOSE` (pattern slider SLD-6, BS-1→BS-5).
+* Gates locaux : `compileKotlin compileTestKotlin compileFunctionalTestKotlin` VERTS.
+  Zéro bump, zéro publication.
+* Rapport `.agents/sessions/194-cap-decompose-bs1-capsulefactory.adoc`.

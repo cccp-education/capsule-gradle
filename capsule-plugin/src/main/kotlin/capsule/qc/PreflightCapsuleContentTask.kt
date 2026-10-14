@@ -1,7 +1,7 @@
 package capsule.qc
 
 import capsule.CapsuleExtension
-import capsule.CapsuleManager
+import capsule.CapsuleFactory
 import capsule.feed.CapsuleScriptReader
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -21,7 +21,7 @@ import org.gradle.work.DisableCachingByDefault
  *   and [Severity.WARNING] findings fail too when [strict] is true.
  *
  * Reads the script directory the same way [capsule.CapsuleBuildTask] does
- * ([CapsuleManager.resolveScriptDir] + [CapsuleManager.readScriptFiles]).
+ * ([CapsuleFactory.resolveScriptDir] + [CapsuleFactory.readScriptFiles]).
  */
 @DisableCachingByDefault(because = "Reads script files; the verdict is a cheap function of their content")
 open class PreflightCapsuleContentTask : DefaultTask() {
@@ -53,8 +53,8 @@ open class PreflightCapsuleContentTask : DefaultTask() {
             return
         }
 
-        val scriptDir = CapsuleManager.resolveScriptDir(project, capsuleExtension)
-        val scripts = CapsuleManager.readScriptFiles(scriptDir)
+        val scriptDir = CapsuleFactory.resolveScriptDir(project, capsuleExtension)
+        val scripts = CapsuleFactory.readScriptFiles(scriptDir)
         if (scripts.isEmpty()) {
             logger.lifecycle("CAPSULE PREFLIGHT → no scripts found in {}", scriptDir.absolutePath)
             return

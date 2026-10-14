@@ -2158,7 +2158,7 @@ class CapsuleManagerResolveManimEngineTest {
     @Test
     fun `resolveManimEngine returns NoOpManimEngine when config says noop`() {
         val config = ManimConfig(executablePath = "noop", quality = "l", scriptsDir = "src/manim")
-        val engine = CapsuleManager.resolveManimEngine(config)
+        val engine = CapsuleFactory.resolveManimEngine(config)
         assertTrue(engine is NoOpManimEngine, "Should return NoOpManimEngine for 'noop' path")
         assertEquals("noop", engine.name())
         assertTrue(engine.isAvailable())
@@ -2167,7 +2167,7 @@ class CapsuleManagerResolveManimEngineTest {
     @Test
     fun `resolveManimEngine returns NoOpManimEngine when manim not available`() {
         val config = ManimConfig(executablePath = "/nonexistent/path/manim", quality = "l", scriptsDir = "src/manim")
-        val engine = CapsuleManager.resolveManimEngine(config)
+        val engine = CapsuleFactory.resolveManimEngine(config)
         // Should fallback to NoOp since manim binary not found
         assertTrue(engine is NoOpManimEngine, "Should fallback to NoOpManimEngine when manim not available")
     }
@@ -2176,7 +2176,7 @@ class CapsuleManagerResolveManimEngineTest {
     fun `resolveManimEngine returns ManimEngineImpl with default path`() {
         // Default path is "manim" — in test env, likely not available
         val config = ManimConfig(executablePath = "manim", quality = "l", scriptsDir = "src/manim")
-        val engine = CapsuleManager.resolveManimEngine(config)
+        val engine = CapsuleFactory.resolveManimEngine(config)
         // Either ManimEngineImpl (if manim installed) or NoOpManimEngine (fallback)
         assertNotNull(engine, "Should always return an engine")
         assertTrue(engine.isAvailable() || engine is NoOpManimEngine, "Should be available or fallback to noop")
@@ -2185,7 +2185,7 @@ class CapsuleManagerResolveManimEngineTest {
     @Test
     fun `resolveManimEngine passes quality from config to ManimEngineImpl`() {
         val config = ManimConfig(executablePath = "/nonexistent/path/manim", quality = "h", scriptsDir = "scripts")
-        val engine = CapsuleManager.resolveManimEngine(config)
+        val engine = CapsuleFactory.resolveManimEngine(config)
         // Even NoOp fallback, the method should not throw
         assertNotNull(engine)
     }
@@ -2460,7 +2460,7 @@ Fin du cours.
     @Test
     fun `task uses resolveManimVideoMixer for ffmpeg-based muxing`() {
         // Verify the factory resolves correctly
-        val noOpMixer = CapsuleManager.resolveManimVideoMixer("/nonexistent/path/ffmpeg")
+        val noOpMixer = CapsuleFactory.resolveManimVideoMixer("/nonexistent/path/ffmpeg")
         assertTrue(noOpMixer is NoOpManimVideoMixer, "Should return NoOp when ffmpeg not found")
         assertTrue(noOpMixer.isAvailable())
     }
@@ -2577,7 +2577,7 @@ Note.
 
     @Test
     fun `resolveManimSlideReplacer returns ManimSlideReplacerImpl`() {
-        val replacer = CapsuleManager.resolveManimSlideReplacer()
+        val replacer = CapsuleFactory.resolveManimSlideReplacer()
         assertTrue(replacer is ManimSlideReplacerImpl, "Factory should return ManimSlideReplacerImpl")
         assertTrue(replacer.isAvailable())
         assertEquals("html-replacer", replacer.name())

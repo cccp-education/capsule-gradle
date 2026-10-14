@@ -9,7 +9,7 @@ import java.io.File
  * Design mirrors [SubtitleBurnInService]:
  * - [VideoFormatConverterImpl] uses ffmpeg `-c:v libx264 -c:a aac -movflags +faststart`
  * - [NoOpVideoFormatConverter] is the test/no-ffmpeg fallback (returns `false`)
- * - Factory: [CapsuleManager.resolveFormatConverter] (pattern
+ * - Factory: [CapsuleFactory.resolveFormatConverter] (pattern
  *   `resolveSubtitleBurnInService` — ffmpegPath="noop" → NoOp, unavailable +
  *   non-strict → NoOp, unavailable + strict → throw via [StrictModeGuard])
  *

@@ -40,7 +40,7 @@ open class CapsuleCompositeContextTask : DefaultTask() {
             capsuleExtension.sliderScriptDir.get()
         ).get().asFile
 
-        val scripts = CapsuleManager.readScriptFiles(scriptDir)
+        val scripts = CapsuleFactory.readScriptFiles(scriptDir)
 
         val capsuleEntries = mutableListOf<Map<String, Any>>()
 

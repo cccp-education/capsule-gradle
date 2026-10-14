@@ -261,13 +261,13 @@ class ManimVideoMixerTest {
 
     @Test
     fun `resolveManimVideoMixer returns NoOpManimVideoMixer when ffmpeg is noop`() {
-        val mixer = CapsuleManager.resolveManimVideoMixer("/nonexistent/path/ffmpeg")
+        val mixer = CapsuleFactory.resolveManimVideoMixer("/nonexistent/path/ffmpeg")
         assertTrue(mixer is NoOpManimVideoMixer, "Should return NoOp mixer when ffmpeg not found")
     }
 
     @Test
     fun `resolveManimVideoMixer returns ManimVideoMixerImpl with default ffmpeg`() {
-        val mixer = CapsuleManager.resolveManimVideoMixer("ffmpeg")
+        val mixer = CapsuleFactory.resolveManimVideoMixer("ffmpeg")
         // On test env, ffmpeg may or may not be available — just verify it doesn't throw
         assertNotNull(mixer)
         // Either ManimVideoMixerImpl (if ffmpeg present) or NoOpManimVideoMixer (fallback)

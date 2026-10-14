@@ -28,8 +28,8 @@ open class CapsuleScriptTask : DefaultTask() {
 
     @TaskAction
     fun execute() {
-        val scriptDir = CapsuleManager.resolveScriptDir(project, capsuleExtension)
-        val scripts = CapsuleManager.readScriptFiles(scriptDir)
+        val scriptDir = CapsuleFactory.resolveScriptDir(project, capsuleExtension)
+        val scripts = CapsuleFactory.readScriptFiles(scriptDir)
 
         if (scripts.isEmpty()) {
             logger.warn("No *-script.txt files found in {}", scriptDir.absolutePath)

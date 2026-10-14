@@ -14,7 +14,7 @@ import java.io.File
  * - Interface SubtitleBurnInService with burnIn(video, subtitle, output)
  * - NoOpSubtitleBurnInService creates placeholder for testing
  * - SubtitleBurnInServiceImpl uses ffmpeg subtitles filter
- * - Factory: CapsuleManager.resolveSubtitleBurnInService(ffmpegPath)
+ * - Factory: CapsuleFactory.resolveSubtitleBurnInService(ffmpegPath)
  */
 class SubtitleBurnInServiceTest {
 
@@ -136,19 +136,19 @@ class SubtitleBurnInServiceTest {
 
     @Test
     fun `resolveSubtitleBurnInService returns NoOp when ffmpeg is noop`() {
-        val service = CapsuleManager.resolveSubtitleBurnInService("noop", SubtitleBurnInStyle())
+        val service = CapsuleFactory.resolveSubtitleBurnInService("noop", SubtitleBurnInStyle())
         assertTrue(service is NoOpSubtitleBurnInService, "Should return NoOp when ffmpegPath is 'noop'")
     }
 
     @Test
     fun `resolveSubtitleBurnInService returns NoOp when ffmpeg not found`() {
-        val service = CapsuleManager.resolveSubtitleBurnInService("/nonexistent/path/ffmpeg", SubtitleBurnInStyle())
+        val service = CapsuleFactory.resolveSubtitleBurnInService("/nonexistent/path/ffmpeg", SubtitleBurnInStyle())
         assertTrue(service is NoOpSubtitleBurnInService, "Should return NoOp when ffmpeg not found")
     }
 
     @Test
     fun `resolveSubtitleBurnInService does not throw with default ffmpeg`() {
-        val service = CapsuleManager.resolveSubtitleBurnInService("ffmpeg", SubtitleBurnInStyle())
+        val service = CapsuleFactory.resolveSubtitleBurnInService("ffmpeg", SubtitleBurnInStyle())
         assertNotNull(service)
         assertTrue(service.isAvailable() || service is NoOpSubtitleBurnInService)
     }
@@ -156,7 +156,7 @@ class SubtitleBurnInServiceTest {
     @Test
     fun `resolveSubtitleBurnInService passes style to impl when ffmpeg available`() {
         val customStyle = SubtitleBurnInStyle(fontSize = 36, fontColor = "&H000000FF", position = "top")
-        val service = CapsuleManager.resolveSubtitleBurnInService("ffmpeg", customStyle)
+        val service = CapsuleFactory.resolveSubtitleBurnInService("ffmpeg", customStyle)
         if (service is SubtitleBurnInServiceImpl) {
             assertEquals("ffmpeg-burnin", service.name())
         }

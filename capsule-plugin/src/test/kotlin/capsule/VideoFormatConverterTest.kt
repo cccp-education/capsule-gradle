@@ -8,12 +8,12 @@ import kotlin.test.assertTrue
 import java.io.File
 
 /**
- * TDD unit tests for [VideoFormatConverter] and [CapsuleManager.resolveFormatConverter]
+ * TDD unit tests for [VideoFormatConverter] and [CapsuleFactory.resolveFormatConverter]
  * (CAP-MP4 US-2).
  *
  * [VideoFormatConverter] is the FFmpeg-backed WebM→MP4/H.264 transcode engine.
  * [NoOpVideoFormatConverter] is the test fallback. The factory
- * [CapsuleManager.resolveFormatConverter] mirrors [CapsuleManager.resolveSubtitleBurnInService]
+ * [CapsuleFactory.resolveFormatConverter] mirrors [CapsuleFactory.resolveSubtitleBurnInService]
  * (ffmpegPath="noop" → NoOp, unavailable + non-strict → NoOp, unavailable + strict → throw).
  */
 class VideoFormatConverterTest {
@@ -48,14 +48,14 @@ class VideoFormatConverterTest {
 
     @Test
     fun `resolveFormatConverter with ffmpegPath noop returns NoOp`() {
-        val resolved = CapsuleManager.resolveFormatConverter(ffmpegPath = "noop", strict = false)
+        val resolved = CapsuleFactory.resolveFormatConverter(ffmpegPath = "noop", strict = false)
         assertTrue(resolved is NoOpVideoFormatConverter, "noop path should return NoOp")
         assertEquals("noop-format", resolved.name())
     }
 
     @Test
     fun `resolveFormatConverter unavailable and non-strict falls back to NoOp`() {
-        val resolved = CapsuleManager.resolveFormatConverter(
+        val resolved = CapsuleFactory.resolveFormatConverter(
             ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
             strict = false
         )
@@ -65,7 +65,7 @@ class VideoFormatConverterTest {
     @Test
     fun `resolveFormatConverter unavailable and strict throws IllegalStateException`() {
         val ex = assertFailsWith<IllegalStateException> {
-            CapsuleManager.resolveFormatConverter(
+            CapsuleFactory.resolveFormatConverter(
                 ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
                 strict = true
             )
@@ -81,7 +81,7 @@ class VideoFormatConverterTest {
         // contract when the impl is actually available.
         val impl = VideoFormatConverterImpl("ffmpeg")
         if (impl.isAvailable()) {
-            val resolved = CapsuleManager.resolveFormatConverter("ffmpeg", strict = false)
+            val resolved = CapsuleFactory.resolveFormatConverter("ffmpeg", strict = false)
             assertEquals("ffmpeg-format", resolved.name())
         }
     }

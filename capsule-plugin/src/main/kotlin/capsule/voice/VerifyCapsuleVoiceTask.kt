@@ -1,7 +1,7 @@
 package capsule.voice
 
 import capsule.CapsuleExtension
-import capsule.CapsuleManager
+import capsule.CapsuleFactory
 import capsule.feed.CapsuleScriptReader
 import capsule.feed.deckName
 import org.gradle.api.DefaultTask
@@ -178,8 +178,8 @@ abstract class VerifyCapsuleVoiceTask : DefaultTask() {
 
     /** Resolves the takes from the capsule scripts and the produced MP3s. */
     private fun collectTakes(): List<VoiceTake> {
-        val scriptDir = scriptDirOverride ?: CapsuleManager.resolveScriptDir(project, capsuleExtension)
-        val scripts = CapsuleManager.readScriptFiles(scriptDir)
+        val scriptDir = scriptDirOverride ?: CapsuleFactory.resolveScriptDir(project, capsuleExtension)
+        val scripts = CapsuleFactory.readScriptFiles(scriptDir)
         if (scripts.isEmpty()) return emptyList()
 
         val outputRoot = project.layout.buildDirectory.dir(capsuleExtension.outputDir.get()).get().asFile

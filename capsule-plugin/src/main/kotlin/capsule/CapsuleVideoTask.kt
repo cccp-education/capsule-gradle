@@ -223,7 +223,7 @@ open class CapsuleVideoTask : DefaultTask() {
             scriptsDir = capsuleExtension.manimScriptsDir.get(),
             outputDir = capsuleExtension.manimOutputDir.get()
         )
-        val engine = CapsuleManager.resolveManimEngine(config, strict = capsuleExtension.strictMode.get())
+        val engine = CapsuleFactory.resolveManimEngine(config, strict = capsuleExtension.strictMode.get())
         if (engine.isAvailable()) {
             logger.lifecycle("Manim engine: {} (available)", engine.name())
         } else {
@@ -236,7 +236,7 @@ open class CapsuleVideoTask : DefaultTask() {
         if (manimVideoMixer != null) return manimVideoMixer!!
 
         val ffmpegPath = capsuleExtension.ffmpegExecutablePath.get()
-        val mixer = CapsuleManager.resolveManimVideoMixer(ffmpegPath, strict = capsuleExtension.strictMode.get())
+        val mixer = CapsuleFactory.resolveManimVideoMixer(ffmpegPath, strict = capsuleExtension.strictMode.get())
         if (mixer.isAvailable()) {
             logger.lifecycle("Manim video mixer: {} (available)", mixer.name())
         } else {
@@ -247,7 +247,7 @@ open class CapsuleVideoTask : DefaultTask() {
 
     private fun resolveManimSlideReplacerInternal(): ManimSlideReplacer {
         if (manimSlideReplacer != null) return manimSlideReplacer!!
-        val replacer = CapsuleManager.resolveManimSlideReplacer()
+        val replacer = CapsuleFactory.resolveManimSlideReplacer()
         logger.lifecycle("Manim slide replacer: {} (available)", replacer.name())
         return replacer
     }
@@ -255,7 +255,7 @@ open class CapsuleVideoTask : DefaultTask() {
     private fun resolveManimParallelRenderer(): ManimParallelRenderer {
         if (manimParallelRenderer != null) return manimParallelRenderer!!
         val parallelism = if (capsuleExtension.manimParallelRender.get()) capsuleExtension.manimParallelRenderThreads.get() else 1
-        val renderer = CapsuleManager.resolveManimParallelRenderer(parallelism)
+        val renderer = CapsuleFactory.resolveManimParallelRenderer(parallelism)
         logger.lifecycle("Manim parallel renderer: {} (parallelism={})", renderer.name(), parallelism)
         return renderer
     }
@@ -548,12 +548,12 @@ open class CapsuleVideoTask : DefaultTask() {
 
     @TaskAction
     open fun execute() {
-        val deckDir = CapsuleManager.resolveDeckDir(project, capsuleExtension)
-        val scriptDir = CapsuleManager.resolveScriptDir(project, capsuleExtension)
+        val deckDir = CapsuleFactory.resolveDeckDir(project, capsuleExtension)
+        val scriptDir = CapsuleFactory.resolveScriptDir(project, capsuleExtension)
 
         val deckFiles = deckDir.listFiles { f -> f.name.endsWith("-deck.html") }?.toList()
             ?: emptyList()
-        val scripts = CapsuleManager.readScriptFiles(scriptDir)
+        val scripts = CapsuleFactory.readScriptFiles(scriptDir)
 
         if (deckFiles.isEmpty()) {
             logger.warn("No *-deck.html files found in {}", deckDir.absolutePath)
@@ -736,7 +736,7 @@ open class CapsuleVideoTask : DefaultTask() {
             outlineColor = capsuleExtension.subtitleBurnInOutlineColor.get(),
             position = capsuleExtension.subtitleBurnInPosition.get()
         )
-        val service = CapsuleManager.resolveSubtitleBurnInService(ffmpegPath, style, strict = capsuleExtension.strictMode.get())
+        val service = CapsuleFactory.resolveSubtitleBurnInService(ffmpegPath, style, strict = capsuleExtension.strictMode.get())
         if (service.isAvailable()) {
             logger.lifecycle("Subtitle burn-in service: {} (available, style: fontSize={}, color={}, position={})", service.name(), style.fontSize, style.fontColor, style.position)
         } else {
@@ -810,7 +810,7 @@ open class CapsuleVideoTask : DefaultTask() {
         }
 
         val ffmpegPath = capsuleExtension.ffmpegExecutablePath.get()
-        val processor = CapsuleManager.resolveAudioPostProcessor(ffmpegPath, strict = capsuleExtension.strictMode.get())
+        val processor = CapsuleFactory.resolveAudioPostProcessor(ffmpegPath, strict = capsuleExtension.strictMode.get())
         if (processor !is NoOpAudioPostProcessor) {
             logger.lifecycle(
                 "Audio post: {} (available, ffmpeg={})",
@@ -868,7 +868,7 @@ open class CapsuleVideoTask : DefaultTask() {
             return finalVideo
         }
         val ffmpegPath = capsuleExtension.ffmpegExecutablePath.get()
-        val converter = CapsuleManager.resolveFormatConverter(
+        val converter = CapsuleFactory.resolveFormatConverter(
             ffmpegPath,
             strict = capsuleExtension.strictMode.get(),
             bt709 = capsuleExtension.outputBt709.getOrElse(false),

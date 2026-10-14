@@ -2,7 +2,7 @@ package capsule.viral
 
 import capsule.CaptureResolver
 import capsule.CaptureStrategy
-import capsule.CapsuleManager
+import capsule.CapsuleFactory
 import capsule.MediaProbeUtil
 import capsule.NoOpPlaywrightCapture
 import capsule.PlaywrightCapture
@@ -244,5 +244,5 @@ abstract class RenderViralVariantsTask : DefaultTask() {
 
     /** Resolves the MP4 converter (FFmpeg, or NoOp when unavailable / ffmpegPath=noop). */
     private fun resolveConverter(): VideoFormatConverter =
-        formatConverter ?: CapsuleManager.resolveFormatConverter(ffmpegPath.get(), strict.get())
+        formatConverter ?: CapsuleFactory.resolveFormatConverter(ffmpegPath.get(), strict.get())
 }

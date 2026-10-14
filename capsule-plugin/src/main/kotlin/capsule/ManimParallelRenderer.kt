@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
  * Design:
  * - ManimParallelRendererImpl: uses Executors.newFixedThreadPool for parallel render
  * - NoOpManimParallelRenderer: sequential fallback (iterates slides one by one)
- * - Factory: CapsuleManager.resolveManimParallelRenderer(parallelism)
+ * - Factory: CapsuleFactory.resolveManimParallelRenderer(parallelism)
  *
  * TDD Baby Step — EPIC CAP-20: Manim parallel render.
  */

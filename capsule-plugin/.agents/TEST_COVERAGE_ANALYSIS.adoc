@@ -1,7 +1,17 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-14
-:session: 193 adoption video-kernel 0.2.0 (package neutre video.kernel.*)
+:session: 194 CAP-DECOMPOSE BS-1 (extraction CapsuleFactory)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 14 octobre 2026 (après session 194)
+
+.CAP-DECOMPOSE BS-1 — `CapsuleFactory` (move pur, aucune logique changée)
+|===
+| Élément | Changement | Tests
+
+| `capsule/CapsuleFactory.kt` (créé) | 12 factories `resolve*` + `readScriptFiles`/`resolveScriptDir`/`resolveDeckDir` extraits de `CapsuleManager.companion` | suites existantes inchangées (factory tests : `ManimVideoMixerTest`, `VideoFormatConverterTest`, `AudioPostProcessorTest`, `PodcastConcatenatorTest`, `SubtitleBurnInServiceTest`, `CapsuleFactoryPathResolutionTest` (renommé `git mv`))
+| `capsule/CapsuleManager.kt` | companion supprimé (1115 → 906 l.) | enregistrement des tâches inchangé (couvert par `CapsulePluginTest` + Cucumber)
+|===
 
 == Couverture — 14 octobre 2026 (après session 193)
 

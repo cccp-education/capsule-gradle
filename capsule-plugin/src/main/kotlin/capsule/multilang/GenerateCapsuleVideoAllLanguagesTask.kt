@@ -1,6 +1,6 @@
 package capsule.multilang
 
-import capsule.CapsuleManager
+import capsule.CapsuleFactory
 import capsule.CapsuleVideoTask
 import capsule.MediaProbeUtil
 import capsule.feed.CapsuleScriptReader
@@ -34,8 +34,8 @@ open class GenerateCapsuleVideoAllLanguagesTask : CapsuleVideoTask() {
 
     @TaskAction
     override fun execute() {
-        val deckDir = CapsuleManager.resolveDeckDir(project, capsuleExtension)
-        val scriptDir = CapsuleManager.resolveScriptDir(project, capsuleExtension)
+        val deckDir = CapsuleFactory.resolveDeckDir(project, capsuleExtension)
+        val scriptDir = CapsuleFactory.resolveScriptDir(project, capsuleExtension)
         val outDir = project.layout.buildDirectory.dir(capsuleExtension.outputDir.get()).get().asFile
         outDir.mkdirs()
 

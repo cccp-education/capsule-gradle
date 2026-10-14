@@ -5,9 +5,9 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-14 (S-193 — **VK-2 : adoption `video-kernel 0.2.0`** (package neutre `video.kernel.*`, breaking coordonné). Pin `0.1.0 → 0.2.0` + bascule imports `capsule.kernel` → `video.kernel` (27 fichiers). Compiles ×3 VERTS. Précédent : S-192 pin `0.1.0`.)
- _Derniere session terminee_ : 193.
- _Prochaine session_ : 194 — au choix : A) release capsule (0.0.11) intégrant `video-kernel 0.2.0` ; B) adapter hyperframes US-4 ; C) autre.
+ _Derniere mise a jour_ : 2026-10-14 (S-194 — **CAP-DECOMPOSE BS-1** : extraction du `companion` factories de `CapsuleManager` → **`CapsuleFactory`** (move pur). `CapsuleManager` **1115 → 906 l.** ; 35 call sites rebasculés ; compiles ×3 VERTS.)
+ _Derniere session terminee_ : 194.
+ _Prochaine session_ : 195 — au choix : A) CAP-DECOMPOSE BS-2 (`CapsuleViralRegistrar`) ; B) release capsule (0.0.11) intégrant `video-kernel 0.2.0` ; C) autre.
  _Session en cours_ : —.
  _Littérature de référence_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage) + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc` (EPIC voix).
 
@@ -28,6 +28,8 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 194 | 2026-10-14 | refactor | **CAP-DECOMPOSE BS-1 — extraction `CapsuleFactory`.** Dette interne (god-object `CapsuleManager` 1115 l.) : le `companion` (12 factories `resolve*` + 3 helpers de chemins, ≈210 l.) extrait vers l'objet **`CapsuleFactory`** (move pur, aucune logique changée). `CapsuleManager` **1115 → 906 l.** (−209) ; 35 call sites rebasculés ; 6 imports de sous-paquets + imports `capsule.chapters.*` déplacés ; test `CapsuleManagerPathResolutionTest` → `CapsuleFactoryPathResolutionTest` (`git mv`). Cadrage EPIC `CAP-DECOMPOSE` (pattern slider SLD-6, BS-1→BS-5). Gates locaux (Local = Build) : compiles ×3 VERTS. Zéro bump, zéro publication, zéro secret. Rapport `.agents/sessions/194-cap-decompose-bs1-capsulefactory.adoc`. | 9/10
 
 | 191 | 2026-10-12 | refactor | **Alimentation de `VideoOutcome` (video-kernel `0.0.3`).** Gap confirmé par le spike hyperframes (S-016) comblé : `VideoRenderResult.outcome: VideoOutcome?` (durée/dims/taille/codec). L'adapter reveal l'alimente : durée via `MediaProbeUtil.probeDuration`, dims du `RevealJsRenderPlan`, `sizeBytes` du fichier, codec par conteneur (`mp4→h264`, `webm→vp8`). `video-kernel = "0.0.3"` dans le toml. Le contrat partagé est **complet et éprouvé par 2 moteurs**. Gates locaux (Local = Build) : compiles ×3 VERTS. Zéro bump. | 9/10
 
@@ -136,6 +138,8 @@ _Sessions 000-117 archivées_ : rapports dans `.agents/sessions/`, résumé dans
 [cols="1,3,1,1"]
 |===
 |EPIC |Description |Statut |Priorité
+
+| **CAP-DECOMPOSE** | **Dette interne — décomposition des god-objects** (pattern slider `SLD-6`). `CapsuleManager` **1115 l.** (enregistrement ~20 tâches + 12 factories) → registrars par domaine + `CapsuleFactory` ; `CapsuleVideoTask` **1005 l.** → orchestration mince + résolveurs/étapes extraits. Cadrage `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc`. BS-1 ✅ S-194 (`CapsuleFactory`) ; BS-2→BS-5 À FAIRE. | 🟡 EN COURS — BS-1 ✅ S-194 | P1
 
 | **CAP-ENGINE-DECOUPLING** | **Découplage métier/moteur + mutualisation** — noyau `capsule.kernel` engine-agnostique + adapter `capsule.adapter.revealjs` ; ports `SegmentSource` + `VideoEngine` ; modèle neutre `VideoSegment`/`VideoScript`/`VideoProductionEntry` ; cible N1 `video-kernel` (partagé avec hyperframes). Review S-184 : capsule 190 fichiers/31 tâches vs hyperframes 16/3 ; « non-transférable » reclassifié (presque tout récupérable). Cadrage `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`. 6 US (US-0 ✅ S-184, US-1 ✅ S-185, US-2 ✅ S-186, US-3 ✅ S-187, US-4 ✅ S-188, **US-5 ✅ S-189**). | ✅ TERMINÉ 6/6 (S-184→S-189) | P0
 | **CAP-FISH-AUDIO** | **Moteur TTS cloud Fish Audio (voix clonée)** — 4e `TtsEngine` additif. Config `fish-audio` (pool de clés) = membre de `CapsuleConfig` (Jackson) ; clé en `fish.yaml` gitignoré (chargée + fusionnée) ; voix/modèle/format/temperature/topP/endpoint dans `tts` ; `FishAudioTtsEngine` (`HttpClient` JDK + JSON + `Bearer` + `format: wav` → `wavToMp3`, retries, cache sha1 du texte dit) ; jeton `fish`/`fish-audio` ; rédaction du secret ; dégradation propre ; run meteron = accord pilote (CI stub HTTP). 6 US ~17 pts. Cadrage `.agents/CADRAGE_EPIC_CAP_FISH_AUDIO.adoc`. | ✅ TERMINÉ (S-182) — 6/6 US ; releases 0.0.9 + 0.0.10 | P1

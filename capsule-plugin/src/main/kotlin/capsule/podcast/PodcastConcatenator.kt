@@ -16,7 +16,7 @@ import java.io.File
  * [capsule.VideoFormatConverter]:
  * - [PodcastConcatenatorImpl] uses ffmpeg concat demuxer.
  * - [NoOpPodcastConcatenator] is the test/no-ffmpeg fallback (returns `false`).
- * - Factory: [capsule.CapsuleManager.resolvePodcastConcatenator]
+ * - Factory: [capsule.CapsuleFactory.resolvePodcastConcatenator]
  *   (8ème `resolve*`, pattern `resolveAudioPostProcessor` — ffmpegPath="noop"
  *   → NoOp, unavailable + non-strict → NoOp, unavailable + strict → throw
  *   via [capsule.StrictModeGuard], available → Impl).

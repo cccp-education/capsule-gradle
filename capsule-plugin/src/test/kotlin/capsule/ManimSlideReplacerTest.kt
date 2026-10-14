@@ -200,7 +200,7 @@ class ManimSlideReplacerTest {
 
     @Test
     fun `resolveManimSlideReplacer returns impl`() {
-        val replacer = CapsuleManager.resolveManimSlideReplacer()
+        val replacer = CapsuleFactory.resolveManimSlideReplacer()
         assertNotNull(replacer)
         assertTrue(replacer.name().isNotBlank())
     }

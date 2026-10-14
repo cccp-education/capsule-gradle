@@ -13,7 +13,7 @@ import java.io.File
  * Design:
  * - ManimVideoMixerImpl uses ffmpeg for real muxing
  * - NoOpManimVideoMixer produces placeholder for testing
- * - Factory: CapsuleManager.resolveManimVideoMixer(ffmpegPath)
+ * - Factory: CapsuleFactory.resolveManimVideoMixer(ffmpegPath)
  */
 interface ManimVideoMixer {
     /**

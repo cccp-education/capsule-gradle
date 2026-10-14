@@ -14,7 +14,7 @@ import org.gradle.api.logging.Logging
  * Design:
  * - ManimSlideReplacerImpl parses the deck HTML and replaces the <section> at slideIndex
  * - NoOpManimSlideReplacer returns the deck unchanged (for testing)
- * - Factory: CapsuleManager.resolveManimSlideReplacer()
+ * - Factory: CapsuleFactory.resolveManimSlideReplacer()
  */
 interface ManimSlideReplacer {
     /**

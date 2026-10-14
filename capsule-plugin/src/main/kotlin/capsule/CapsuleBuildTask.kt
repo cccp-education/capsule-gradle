@@ -126,8 +126,8 @@ open class CapsuleBuildTask : DefaultTask() {
 
     @TaskAction
     fun execute() {
-        val scriptDir = CapsuleManager.resolveScriptDir(project, capsuleExtension)
-        val scripts = CapsuleManager.readScriptFiles(scriptDir)
+        val scriptDir = CapsuleFactory.resolveScriptDir(project, capsuleExtension)
+        val scripts = CapsuleFactory.readScriptFiles(scriptDir)
 
         if (scripts.isEmpty()) {
             logger.warn("No capsule scripts to process. Skipping TTS generation.")

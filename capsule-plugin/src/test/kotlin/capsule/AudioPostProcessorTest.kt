@@ -16,7 +16,7 @@ import java.io.File
 /**
  * TDD unit tests for CAP-AUDIO US-2 — `AudioPostProcessor` (interface +
  * Impl + NoOp + Exception) + `AudioPostCommand` (pure object) +
- * `CapsuleManager.resolveAudioPostProcessor` factory (5ème).
+ * `CapsuleFactory.resolveAudioPostProcessor` factory (5ème).
  *
  * Pattern de référence : [VideoFormatConverter] + [FormatConversion]
  * (CAP-MP4 US-2) et [SubtitleBurnInService] (interface + Impl + NoOp +
@@ -171,14 +171,14 @@ class AudioPostProcessorTest {
 
     @Test
     fun `resolveAudioPostProcessor with ffmpegPath noop returns NoOp`() {
-        val resolved = CapsuleManager.resolveAudioPostProcessor(ffmpegPath = "noop", strict = false)
+        val resolved = CapsuleFactory.resolveAudioPostProcessor(ffmpegPath = "noop", strict = false)
         assertTrue(resolved is NoOpAudioPostProcessor, "noop path should return NoOp")
         assertEquals("noop-audio-post", resolved.name())
     }
 
     @Test
     fun `resolveAudioPostProcessor unavailable and non-strict falls back to NoOp`() {
-        val resolved = CapsuleManager.resolveAudioPostProcessor(
+        val resolved = CapsuleFactory.resolveAudioPostProcessor(
             ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
             strict = false
         )
@@ -188,7 +188,7 @@ class AudioPostProcessorTest {
     @Test
     fun `resolveAudioPostProcessor unavailable and strict throws IllegalStateException`() {
         val ex = assertFailsWith<IllegalStateException> {
-            CapsuleManager.resolveAudioPostProcessor(
+            CapsuleFactory.resolveAudioPostProcessor(
                 ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
                 strict = true
             )
@@ -202,7 +202,7 @@ class AudioPostProcessorTest {
     fun `resolveAudioPostProcessor named ffmpeg-audio-post when impl returned`() {
         val impl = AudioPostProcessorImpl("ffmpeg")
         if (impl.isAvailable()) {
-            val resolved = CapsuleManager.resolveAudioPostProcessor("ffmpeg", strict = false)
+            val resolved = CapsuleFactory.resolveAudioPostProcessor("ffmpeg", strict = false)
             assertEquals("ffmpeg-audio-post", resolved.name())
         }
     }

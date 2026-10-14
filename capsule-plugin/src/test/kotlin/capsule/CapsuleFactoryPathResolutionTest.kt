@@ -7,11 +7,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * Unit tests for CapsuleManager.resolveScriptDir / resolveDeckDir (CAP-CR3-4).
+ * Unit tests for CapsuleFactory.resolveScriptDir / resolveDeckDir (CAP-CR3-4).
  *
  * Tests the configurable fallback to slider's build output directory.
  */
-class CapsuleManagerPathResolutionTest {
+class CapsuleFactoryPathResolutionTest {
 
     @TempDir
     lateinit var tempDir: File
@@ -28,7 +28,7 @@ class CapsuleManagerPathResolutionTest {
         buildDir.mkdirs()
         File(buildDir, "example-script.txt").writeText("slide 1")
 
-        val result = CapsuleManager.resolveScriptDir(project, ext)
+        val result = CapsuleFactory.resolveScriptDir(project, ext)
         assertEquals(buildDir, result)
     }
 
@@ -45,7 +45,7 @@ class CapsuleManagerPathResolutionTest {
         File(sliderCapsule, "slide1-script.txt").writeText("content")
         ext.sliderBuildDir.set(sliderRoot.absolutePath)
 
-        val result = CapsuleManager.resolveScriptDir(project, ext)
+        val result = CapsuleFactory.resolveScriptDir(project, ext)
         assertEquals(sliderCapsule, result)
     }
 
@@ -59,7 +59,7 @@ class CapsuleManagerPathResolutionTest {
         val buildDir = File(project.layout.buildDirectory.get().asFile, "capsule")
         buildDir.mkdirs()
 
-        val result = CapsuleManager.resolveScriptDir(project, ext)
+        val result = CapsuleFactory.resolveScriptDir(project, ext)
         assertEquals(buildDir, result)
     }
 
@@ -73,7 +73,7 @@ class CapsuleManagerPathResolutionTest {
         val buildDir = File(project.layout.buildDirectory.get().asFile, "capsule")
         buildDir.mkdirs()
 
-        val result = CapsuleManager.resolveScriptDir(project, ext)
+        val result = CapsuleFactory.resolveScriptDir(project, ext)
         assertEquals(buildDir, result)
     }
 
@@ -88,7 +88,7 @@ class CapsuleManagerPathResolutionTest {
         val buildDir = File(project.layout.buildDirectory.get().asFile, "docs/asciidocRevealJs")
         buildDir.mkdirs()
 
-        val result = CapsuleManager.resolveDeckDir(project, ext)
+        val result = CapsuleFactory.resolveDeckDir(project, ext)
         assertEquals(buildDir, result)
     }
 
@@ -103,7 +103,7 @@ class CapsuleManagerPathResolutionTest {
         sliderDocs.mkdirs()
         ext.sliderBuildDir.set(sliderRoot.absolutePath)
 
-        val result = CapsuleManager.resolveDeckDir(project, ext)
+        val result = CapsuleFactory.resolveDeckDir(project, ext)
         assertEquals(sliderDocs, result)
     }
 
@@ -116,7 +116,7 @@ class CapsuleManagerPathResolutionTest {
         val buildDir = File(project.layout.buildDirectory.get().asFile, "docs/asciidocRevealJs")
         buildDir.mkdirs()
 
-        val result = CapsuleManager.resolveDeckDir(project, ext)
+        val result = CapsuleFactory.resolveDeckDir(project, ext)
         assertEquals(buildDir, result)
     }
 
@@ -130,7 +130,7 @@ class CapsuleManagerPathResolutionTest {
         val buildDir = File(project.layout.buildDirectory.get().asFile, "docs/asciidocRevealJs")
         buildDir.mkdirs()
 
-        val result = CapsuleManager.resolveDeckDir(project, ext)
+        val result = CapsuleFactory.resolveDeckDir(project, ext)
         assertEquals(buildDir, result)
     }
 }

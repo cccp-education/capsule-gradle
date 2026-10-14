@@ -245,7 +245,7 @@ class CapsuleArchBoundarySteps {
     private fun preGenerateFrenchVideoArtifacts() {
         val project = projectDir ?: error("No Gradle project set up")
         // The video pipeline (generateCapsuleVideoAllLanguages) resolves its
-        // deck dir via CapsuleManager.resolveDeckDir → build/docs/asciidocRevealJs
+        // deck dir via CapsuleFactory.resolveDeckDir → build/docs/asciidocRevealJs
         // and its script dir via resolveScriptDir → build/capsule.
         val deckDir = project.resolve("build/docs/asciidocRevealJs").also { it.mkdirs() }
         val scriptDir = project.resolve("build/capsule").also { it.mkdirs() }

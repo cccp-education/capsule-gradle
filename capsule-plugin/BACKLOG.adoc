@@ -1,6 +1,23 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-14 (S-193 — VK-2 : adoption `video-kernel 0.2.0` (package neutre `video.kernel.*`). Précédent S-192 : pin `0.1.0`.)
+:last_update: 2026-10-14 (S-194 — CAP-DECOMPOSE BS-1 : extraction `CapsuleFactory`. Précédent S-193 : VK-2 adoption `video-kernel 0.2.0`.)
+
+'''
+== 🟡 CAP-DECOMPOSE — EN COURS (S-194)
+_📖 Littérature de référence : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc`._
+
+Dette interne : décomposition des **god-objects** `CapsuleManager` (1115 l.) et
+`CapsuleVideoTask` (1005 l.) — pattern éprouvé slider `SLD-6` (plugin → registrars).
+
+[cols="1,3,1,1", options="header"]
+|===
+| BS | Livrable | Risque | Statut
+| BS-1 | Extraire `CapsuleFactory` du `companion` de `CapsuleManager` (move pur) | Faible | ✅ S-194
+| BS-2 | Extraire `CapsuleViralRegistrar` ; `registerTasks()` délègue | Moyen | 🟡 À FAIRE
+| BS-3 | Extraire `CapsuleQcRegistrar` + `CapsuleVoiceRegistrar` | Moyen | 🟡 À FAIRE
+| BS-4 | Extraire `CapsuleCoreRegistrar` + `CapsuleContextRegistrar` + `CapsulePodcastRegistrar` + `CapsuleAiRegistrar` | Moyen | 🟡 À FAIRE
+| BS-5 | `CapsuleVideoTask` — extraire résolveurs + helpers statiques | Élevé | 🟡 À FAIRE
+|===
 
 '''
 == ✅ CAP-FISH-AUDIO — TERMINÉ 6/6 US (S-182)

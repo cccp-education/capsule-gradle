@@ -18,7 +18,7 @@ import kotlin.test.assertFalse
  * - Interface ManimParallelRenderer with renderAll(slides, manimEngine, scriptsDir, outputDir)
  * - NoOpManimParallelRenderer: sequential fallback, iterates slides one by one
  * - ManimParallelRendererImpl: parallel render using thread pool
- * - Factory: CapsuleManager.resolveManimParallelRenderer()
+ * - Factory: CapsuleFactory.resolveManimParallelRenderer()
  */
 class ManimParallelRendererTest {
 
@@ -270,13 +270,13 @@ class ManimParallelRendererTest {
 
     @Test
     fun `resolveManimParallelRenderer returns NoOp when parallelism is 1`() {
-        val renderer = CapsuleManager.resolveManimParallelRenderer(parallelism = 1)
+        val renderer = CapsuleFactory.resolveManimParallelRenderer(parallelism = 1)
         assertTrue(renderer is NoOpManimParallelRenderer, "parallelism=1 should return NoOp (sequential)")
     }
 
     @Test
     fun `resolveManimParallelRenderer returns parallel renderer when parallelism greater than 1`() {
-        val renderer = CapsuleManager.resolveManimParallelRenderer(parallelism = 4)
+        val renderer = CapsuleFactory.resolveManimParallelRenderer(parallelism = 4)
         assertTrue(renderer is ManimParallelRendererImpl, "parallelism>1 should return parallel renderer")
     }
 }

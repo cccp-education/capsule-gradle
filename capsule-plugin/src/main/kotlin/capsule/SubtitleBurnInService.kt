@@ -12,7 +12,7 @@ import java.io.File
  * Design:
  * - SubtitleBurnInServiceImpl uses ffmpeg subtitles filter
  * - NoOpSubtitleBurnInService produces placeholder for testing
- * - Factory: CapsuleManager.resolveSubtitleBurnInService(ffmpegPath)
+ * - Factory: CapsuleFactory.resolveSubtitleBurnInService(ffmpegPath)
  */
 interface SubtitleBurnInService {
     /**

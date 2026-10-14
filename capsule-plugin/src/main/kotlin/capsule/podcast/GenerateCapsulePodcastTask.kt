@@ -96,7 +96,7 @@ abstract class GenerateCapsulePodcastTask : DefaultTask() {
             .findByType(capsule.CapsuleExtension::class.java)
             ?.strictMode?.get()
             ?: false
-        val concatenator = capsule.CapsuleManager.resolvePodcastConcatenator(ffmpegPath, strict)
+        val concatenator = capsule.CapsuleFactory.resolvePodcastConcatenator(ffmpegPath, strict)
 
         if (!concatenator.isAvailable()) {
             logger.warn("CAPSULE PODCAST → ffmpeg unavailable (path={}), podcast skipped (degraded)", ffmpegPath)

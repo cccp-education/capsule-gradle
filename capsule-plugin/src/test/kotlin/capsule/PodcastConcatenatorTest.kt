@@ -16,7 +16,7 @@ import kotlin.test.assertTrue
  * (interface) + `PodcastConcatCommand` (pure object) +
  * `PodcastConcatenatorImpl` (FFmpeg concat demuxer) +
  * `NoOpPodcastConcatenator` (test fallback) +
- * `CapsuleManager.resolvePodcastConcatenator` factory (8ème).
+ * `CapsuleFactory.resolvePodcastConcatenator` factory (8ème).
  *
  * Pattern de référence : [capsule.audio.AudioPostProcessor] +
  * [capsule.audio.AudioPostCommand] (CAP-AUDIO US-2) and
@@ -151,14 +151,14 @@ class PodcastConcatenatorTest {
 
     @Test
     fun `resolvePodcastConcatenator with ffmpegPath noop returns NoOp`() {
-        val resolved = CapsuleManager.resolvePodcastConcatenator(ffmpegPath = "noop", strict = false)
+        val resolved = CapsuleFactory.resolvePodcastConcatenator(ffmpegPath = "noop", strict = false)
         assertTrue(resolved is NoOpPodcastConcatenator, "noop path should return NoOp")
         assertEquals("noop-podcast-concat", resolved.name())
     }
 
     @Test
     fun `resolvePodcastConcatenator unavailable and non-strict falls back to NoOp`() {
-        val resolved = CapsuleManager.resolvePodcastConcatenator(
+        val resolved = CapsuleFactory.resolvePodcastConcatenator(
             ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
             strict = false
         )
@@ -168,7 +168,7 @@ class PodcastConcatenatorTest {
     @Test
     fun `resolvePodcastConcatenator unavailable and strict throws IllegalStateException`() {
         val ex = assertFailsWith<IllegalStateException> {
-            CapsuleManager.resolvePodcastConcatenator(
+            CapsuleFactory.resolvePodcastConcatenator(
                 ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
                 strict = true
             )
@@ -182,7 +182,7 @@ class PodcastConcatenatorTest {
     fun `resolvePodcastConcatenator named ffmpeg-podcast-concat when impl returned`() {
         val impl = PodcastConcatenatorImpl("ffmpeg")
         if (impl.isAvailable()) {
-            val resolved = CapsuleManager.resolvePodcastConcatenator("ffmpeg", strict = false)
+            val resolved = CapsuleFactory.resolvePodcastConcatenator("ffmpeg", strict = false)
             assertEquals("ffmpeg-podcast-concat", resolved.name())
         }
     }

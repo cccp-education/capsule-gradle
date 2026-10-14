@@ -1,0 +1,60 @@
+= Session 194 — CAP-DECOMPOSE BS-1 : extraction de `CapsuleFactory`
+:session: 194
+:date: 2026-10-14
+:type: refactor + test
+:borough: Détroit / capsule-gradle
+:epic: CAP-DECOMPOSE
+:us: BS-1
+:statut: ✅ TERMINÉ (BS-1)
+:toc:
+
+== Mission
+
+Attaquer la **dette interne** de capsule (god-objects identifiés en code review
+S-194) : `CapsuleManager.kt` (**1115 l.**) mélangeait **deux responsabilités** —
+(a) l'enregistrement de ~20 tâches Gradle (≈890 l.) et (b) **12 factories runtime
+`resolve*` + 3 helpers** (`companion`, ≈210 l.).
+
+== Cadrage EPIC CAP-DECOMPOSE
+
+Doc `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (pattern éprouvé slider `SLD-6`).
+Cible :
+- `CapsuleManager` → orchestrateur déléguant à des **registrars par domaine**
+  (core/context/qc/voice/viral/podcast/ai) ;
+- `companion` → **`CapsuleFactory`** (sélection d'adapter + dégradation) ;
+- `CapsuleVideoTask` → orchestration mince + résolveurs/helpers extraits.
+Baby-steps BS-1→BS-5 (risque croissant). **BS-1 livré ici.**
+
+== BS-1 — `CapsuleFactory` (move pur)
+
+- Nouveau `capsule/CapsuleFactory.kt` (**objet**) : les 12 `resolve*`
+  (`resolveManimVideoMixer/SlideReplacer/Engine/ParallelRenderer`,
+  `resolveSubtitleBurnInService`, `resolveFormatConverter`, `resolveAudioPostProcessor`,
+  `resolvePodcastConcatenator`, `resolveChapterMarker`, `resolveCardRenderer`) +
+  `readScriptFiles`/`resolveScriptDir`/`resolveDeckDir`, **déplacés verbatim**.
+- `CapsuleManager.companion` **supprimé** ; `CapsuleManager` passe de **1115 → 906 l.**
+  (−209).
+- **35 call sites** main + tests + KDoc rebasculés `CapsuleManager.resolveX` →
+  `CapsuleFactory.resolveX` ; `import capsule.CapsuleManager` →
+  `import capsule.CapsuleFactory` (6 fichiers de sous-paquets) ; imports
+  `capsule.chapters.*` déplacés de `CapsuleManager` vers `CapsuleFactory`.
+- Test `CapsuleManagerPathResolutionTest` → **`CapsuleFactoryPathResolutionTest`**
+  (`git mv` + classe + KDoc).
+
+== Tests / Gates
+
+- **Aucun changement de logique** (move pur) — les suites existantes couvrent le
+  comportement (factory tests : `ManimVideoMixerTest`, `VideoFormatConverterTest`,
+  `AudioPostProcessorTest`, `PodcastConcatenatorTest`, `SubtitleBurnInServiceTest`,
+  `CapsuleFactoryPathResolutionTest`).
+- **Local = Build** : `compileKotlin compileTestKotlin compileFunctionalTestKotlin`
+  ✅ BUILD SUCCESSFUL.
+- **Tests = CI** : workflow capsule (`test` + `full-tests`).
+- **Zéro secret**.
+
+== Suite (BS-2→BS-5)
+
+- **BS-2** : `CapsuleViralRegistrar` (plus gros cluster ~300 l.) ; `registerTasks()` délègue.
+- **BS-3** : `CapsuleQcRegistrar` + `CapsuleVoiceRegistrar`.
+- **BS-4** : `CapsuleCoreRegistrar` + `CapsuleContextRegistrar` + `CapsulePodcastRegistrar` + `CapsuleAiRegistrar`.
+- **BS-5** : `CapsuleVideoTask` (résolveurs + helpers).

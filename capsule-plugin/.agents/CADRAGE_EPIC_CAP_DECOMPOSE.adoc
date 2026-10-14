@@ -1,0 +1,76 @@
+= CADRAGE — EPIC CAP-DECOMPOSE (Capsule, Détroit)
+:session: 194
+:date: 2026-10-14
+:statut: 🟡 EN COURS — BS-1 livré (factories) ; BS-2→N à faire
+:toc:
+
+== Objectif
+
+Résorber la **dette interne** de capsule : deux **god-objects** identifiés en code
+review (S-194) —
+
+|===
+| Fichier | LOC | Responsabilités mélangées
+
+| `capsule/CapsuleManager.kt` | **1115** | (a) enregistrement de ~20 tâches Gradle (≈890 l.) ; (b) 12 *factories* runtime `resolve*` + 3 helpers de chemins (≈210 l., `companion`)
+| `capsule/CapsuleVideoTask.kt` | **1005** | task `@TaskAction` + résolveurs (TTS/Manim/viewport) + étapes pipeline (durées, TTS, Manim render/replace, capture séquentiel/parallèle, conversion, signature, burn-in) + helpers statiques
+|===
+
+Ces god-objects sont de la **dette propre de capsule** — sans lien avec le rattrapage
+hyperframes (le partage N1 `video-kernel` est sain).
+
+== Cible (pattern éprouvé slider `SLD-6`)
+
+=== `CapsuleManager` → enregistrements délégués par domaine
+
+`CapsuleManager.registerTasks()` devient un **orchestrateur** qui délègue à des
+**registrars par domaine** (classes/objets dédiés, `internal`), chacun portant les
+`register*Task` de son domaine :
+
+|===
+| Registrar | Tâches
+
+| `CapsuleCoreRegistrar` | extractSpeakerNotes, generateCapsuleScript, generateCapsule, generateCapsuleVideo, generateCapsuleVideoAllLanguages, deployCapsule, distributeCapsuleVideo
+| `CapsuleContextRegistrar` | collectCapsuleContext, transformCapsuleContext, scaffoldCapsuleContext, collectCapsuleAugmentedContext, generateCapsuleContent, generateTranscript
+| `CapsuleQcRegistrar` | validateCapsuleVideoDuration, preflightCapsuleContent, renderQcBoards, generateCapsuleChapters
+| `CapsuleVoiceRegistrar` | verifyCapsuleVoice, selectBestVoiceTake
+| `CapsuleViralRegistrar` | generateViralCampaign, renderViralVariants, renderViralThumbnails, renderViralSubtitles, validateViralCampaign, normalizeViralStoryboard
+| `CapsulePodcastRegistrar` | generatePodcast
+| `CapsuleAiRegistrar` | capsuleAiSmokeTest
+|===
+
+=== `CapsuleManager.companion` → `CapsuleFactory`
+
+Les 12 `resolve*` (Manim, ffmpeg services, chapters) + `readScriptFiles`/
+`resolveScriptDir`/`resolveDeckDir` constituent une **autre responsabilité** :
+la sélection d'un adapter avec dégradation + `StrictModeGuard`. → objet `CapsuleFactory`.
+
+=== `CapsuleVideoTask` → orchestration mince + domaines extraits
+
+- **Résolveurs** (`resolveTtsEngine`, `resolveManim*`, `resolveViewport`) → `CapsuleVideoResolvers` (ou réutiliser `CapsuleFactory` + `TtsManager`).
+- **Étapes de pipeline** → objets domaines purs là où possible (durées, capture déjà déléguée à `RevealJsEngineAdapter`) ; garder `CapsuleVideoTask` = séquence d'orchestration.
+- **Helpers statiques** (`concatWebmFiles`, `createSingleSlideHtml`) → domaine (`capsule.adapter.revealjs`).
+
+== Baby-steps
+
+[cols="1,3,1,1", options="header"]
+|===
+| # | Livrable | Risque | Statut
+
+| BS-1 | Extraire `CapsuleFactory` du `companion` de `CapsuleManager` (move pur ; maj ~35 call sites main + tests + KDoc) | Faible | ✅ S-194
+| BS-2 | Extraire `CapsuleViralRegistrar` (plus gros cluster ~300 l.) ; `registerTasks()` délègue | Moyen | 🟡 À FAIRE
+| BS-3 | Extraire `CapsuleQcRegistrar` + `CapsuleVoiceRegistrar` | Moyen | 🟡 À FAIRE
+| BS-4 | Extraire `CapsuleCoreRegistrar` + `CapsuleContextRegistrar` + `CapsulePodcastRegistrar` + `CapsuleAiRegistrar` | Moyen | 🟡 À FAIRE
+| BS-5 | `CapsuleVideoTask` — extraire les résolveurs + helpers statiques | Élevé | 🟡 À FAIRE
+|===
+
+== Contraintes
+
+- **Local = Build, Tests = CI** : chaque BS se valide par `compileKotlin compileTestKotlin compileFunctionalTestKotlin` puis CI.
+- **Moves purs** : aucun changement de logique (les tests fonctionnels/Cucumber vérifient l'enregistrement + le comportement).
+- **Baby-step DDD/TDD/BDD**, commit/push par BS.
+
+== Traçabilité
+
+- Code review S-194 (god-objects).
+- Pattern de référence : slider `SLD-6` (`SliderPlugin` → 5 registrars).
