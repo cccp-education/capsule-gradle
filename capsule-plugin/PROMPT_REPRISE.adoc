@@ -9,11 +9,12 @@ _littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc`.
 
 === S-198 — CI sharding ✅ (ci-infra)
 
-`full-tests.yml` éclaté en **7 jobs parallèles** : matrice `bdd-shard` (5 shards exhaustifs
-et disjoints des 48 features, 1 JVM/shard) + `functional` + `integration` (real render).
-Garde `capsule.ci.CapsuleCucumberShardCoverageTest` (partition + câblage CI).
-`concurrency` + `workflow_dispatch` ajoutés. 5 runners `CucumberShard*Runner` + 5 `CucumberTaskSpec`.
-Wall-clock attendu ~6-8 min (vs ~24 min).
+`full-tests.yml` éclaté en **24 jobs parallèles** : matrice `bdd-shard` (17 shards exhaustifs et
+disjoints — features et partitions par tags, 1 JVM/shard) + `functional` (4) + `integration` (shards
+`@integration`/`@manim`/`@manim-parallel` + real render). Overhead réduit par **cache de build Gradle**
+(`capsule-plugin/gradle.properties`, `org.gradle.caching=true`) + **installs ciblés** (`binaries` par
+shard). Garde `capsule.ci.CapsuleCucumberShardCoverageTest`. **Wall-clock ~24 min → ~4,3 min** (run
+`38534915332`). 5 runners `CucumberShard*Runner` + 5 `CucumberTaskSpec`.
 
 === S-197 — CAP-DECOMPOSE BS-3 + BS-4 ✅
 

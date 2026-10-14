@@ -5,7 +5,7 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-14 (S-198 — **CI sharding** : `full-tests.yml` éclaté en **7 jobs parallèles** — matrice `bdd-shard` de 5 shards exhaustifs/disjoints des 48 features + `functional` + `integration` ; garde `CapsuleCucumberShardCoverageTest`. ~24 min → ~6-8 min.)
+ _Derniere mise a jour_ : 2026-10-14 (S-198 — **CI sharding** : `full-tests.yml` éclaté en **7 jobs parallèles** — matrice `bdd-shard` de 5 shards exhaustifs/disjoints des 48 features + `functional` + `integration` ; garde `CapsuleCucumberShardCoverageTest`. ~24 min → ~4,3 min, 24 jobs.)
  _Derniere session terminee_ : 198.
  _Prochaine session_ : 199 — au choix : A) CAP-DECOMPOSE BS-5 (`CapsuleVideoTask`, risque élevé) ; B) KOOG-PIPELINE-DEDUP (éligible au seuil 2) ; C) release capsule `0.0.11`.
  _Session en cours_ : —.

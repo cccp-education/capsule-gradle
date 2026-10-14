@@ -134,3 +134,30 @@ Ces deux shards étaient encore dominés par des scénarios lourds **non taggés
 core-a / core-b / base), disjoints et exhaustifs par construction (chaîne de priorité de tags).
 
 **`full-tests.yml` = 23 jobs parallèles** : **17 shards** (15 BDD + 2 integration) + 4 functional + 1 viral-render + unit.
+
+== Itération 6 — réduction de l'overhead fixe (run manuel `38534915332`)
+
+Le plancher atteint (~180 s/job fixe) étant devenu dominant, deux leviers uniformes :
+1. **Cache de build Gradle** — `capsule-plugin/gradle.properties` **créé** (`org.gradle.caching=true`) :
+   `setup-gradle` cache le Gradle User Home (dont `caches/build-cache-1`) → compilation servie
+   du cache entre jobs/runs.
+2. **Installs ciblés** — champ `binaries` par shard (`none`/`ffmpeg`/`ffmpeg+playwright`) :
+   Chromium réservé au rendu réel (`@integration`, `real-render`, `functional`). *Découverte* : tous
+   les shards BDD ont besoin de **ffmpeg** (le scénario `capsule_arch_boundary` CAP-ARCH-6 fait un
+   audio-mix ffmpeg) → `ffmpeg` installé partout, Chromium retiré de ~15 shards.
+
+**Résultat final (run vert `38534915332`, 0 échec)** : max = **`BDD · multi-lang-genB` 260 s (~4,3 min)**.
+
+|===
+| Étape | Max wall-clock
+
+| Avant (job unique) | ~24 min
+| Itér. 1 (7 jobs) | ~9,5 min
+| Itér. 2 (15 jobs) | ~8,4 min
+| Itér. 4 (19 jobs) | ~5,9 min
+| Itér. 5 (23 jobs) | ~5,3 min
+| **Itér. 6 (overhead) — final** | **~4,3 min**
+|===
+
+24 min → **4,3 min** (×5,6) ; 24 jobs parallèles. Garde `CapsuleCucumberShardCoverageTest` verte.
+Reste (optionnel) : éclater `multi-lang-genA/B` (générateur 22 langues).
