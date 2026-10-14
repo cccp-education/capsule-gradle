@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-14 (S-199) — split multi-lang en 4 groupes + CAP-DECOMPOSE BS-5. Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-14 (S-200) — KOOG-PIPELINE-DEDUP BS-2 (adoption squelette N1). Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (126-199)
+== Sessions récentes (126-200)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 200 | 2026-10-14 | refactor+cross-borough | **KOOG-PIPELINE-DEDUP BS-2 ✅ — EPIC clos.** Adoption du squelette N1 `codebase.koog.pipeline` (BS-1 S-276). DAG N0→N1→N2 : MEMPHIS `workspace-bom/catalog 0.0.91 → 0.0.92` (`codebase-plugin 0.0.18`, bundle `fbc592ed`, S-295) → codebase re-pin `ws 0.0.78 → 0.0.92` + version propre `0.0.18` (bundle `d107805c`, S-277) → adoption N2. **Blocage résolu** : bootstrap self-application codebase (marker plugin == version propre) → split-ref `codebase-gradle-plugin = "0.0.17"`. Capsule : `CapsulePipelineDefinition` (port `PipelineDefinition<CapsuleState>`) + `CapsulePipelineGraph` façade (−124 l.), API publique préservée ; bump `codebase/codebase-gradle-plugin 0.0.18` + `workspace-bom 0.0.92`. Slider jumeau (`DeckPipelineDefinition`, −116 l., koog `1.0.0 → 1.3.0`). Iso-comportement (mêmes stages/erreurs/edges). Compiles ×3 VERTS. Rapport `.agents/sessions/200-koog-pipeline-dedup-bs2-adoption.adoc`. | 10/10
 
 | 199 | 2026-10-14 | ci-infra+refactor | **Split multi-lang en 4 groupes + CAP-DECOMPOSE BS-5 ✅.** (1) Le pôle CI `BDD · multi-lang-genB` (260 s, 11 langues) est scindé en **4 groupes** (6/6/5/5) : objet pur `capsule.ci.MultiLangShardPartition` + `MultiLangShardPartitionTest` (RED 18 `Unresolved reference` → GREEN), 2 scénarios BDD `@multilang-gen-c`/`-d`, 2 runners `CucumberShardMultiLangGen{C,D}Runner`, 2 `CucumberTaskSpec` + 2 jobs `full-tests.yml`. **Test-only**. (2) **CAP-DECOMPOSE BS-5 ✅ — EPIC clos 5/5** : résolveurs extraits vers `capsule/CapsuleVideoResolvers.kt` (+ 7 unit `CapsuleVideoResolversTest`) ; shims `@JvmStatic` `concatWebmFiles`/`createSingleSlideHtml` retirés du `companion`. `CapsuleVideoTask` **1005 → 851 l.** (−154). Compiles ×3 VERTS (Local = Build). Zéro bump, zéro publication, zéro secret. Rapport `.agents/sessions/199-split-multilang-4-groups-cap-decompose-bs5.adoc`. | 9/10
 

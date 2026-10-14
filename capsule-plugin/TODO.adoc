@@ -7,7 +7,7 @@
 . [x] **CI** — `multi-lang-genA/B` scindé en **4 groupes** (`capsule.ci.MultiLangShardPartition` + test, `@multilang-gen-c`/`-d`, 2 runners, 2 `CucumberTaskSpec` + 2 jobs `full-tests.yml`). Test-only.
 . [x] **CAP-DECOMPOSE BS-5** — résolveurs extraits (`capsule/CapsuleVideoResolvers.kt` + 7 unit) ; shims statiques retirés. `CapsuleVideoTask` 1005 → 851 l. **EPIC clos 5/5.**
 . [x] Gates locaux (Local = Build) : compiles ×3 VERTS, tâches shard enregistrées. Zéro bump, zéro publication.
-. [ ] 🟡 **KOOG-PIPELINE-DEDUP** — 🟡 RÉOUVERT (éligible seuil 2, S-195) — décision d'exécution = pilote. Voir `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`.
+. [x] **KOOG-PIPELINE-DEDUP** ✅ **TERMINÉ (S-276 BS-1 + S-277/295 BS-2 + S-200)** — squelette N1 `codebase.koog.pipeline` extrait puis publié (`codebase-plugin 0.0.18`) et adopté par capsule + slider. Voir `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`.
 . [ ] 🟢 **Release `capsule 0.0.11`** — option pilote (intègre `video-kernel 0.3.0` + CAP-DECOMPOSE BS-1→5 + split multi-lang).
 
 '''

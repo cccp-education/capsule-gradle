@@ -1,0 +1,114 @@
+= Session 200 — KOOG-PIPELINE-DEDUP BS-2 : adoption du squelette N1 (capsule + slider)
+:session: 200
+:date: 2026-10-14
+:borough: Détroit — capsule-gradle (N2) / Queens — codebase-gradle (N1) / MEMPHIS (N0) / MIAMI — slider-gradle (N2)
+:statut: ✅ TERMINÉ — EPIC KOOG-PIPELINE-DEDUP clos (BS-1 S-276 + BS-2 S-200)
+
+== Mission
+
+Décision pilote d'exécution : **BS-2 de KOOG-PIPELINE-DEDUP** — publier l'artefact
+N1 (`codebase-plugin 0.0.18`, squelette `codebase.koog.pipeline`) et **adopter** ce
+squelette dans capsule + slider. Bump/pin/publication/propagation **autorisés par
+le pilote**. Périmètre strict BS-2.
+
+== Ordre DAG retenu (et justification vs gardes)
+
+Le squelette N1 `codebase.koog.pipeline` (BS-1 S-276) doit être **résolvable depuis
+Maven Central** par les deux consommateurs N2. Or la garde
+`codebase.publishing.CodebasePluginPublicationTest` impose que la **version propre
+de codebase** soient **dérivée du `workspace-catalog` publié** (`ws.versions.codebase.plugin`).
+Seul MEMPHIS publie ce catalogue → l'ordre **N0 → N1 → N2** est **structurel**, pas
+conventionnel :
+
+. **N0 MEMPHIS** — `workspace-bom`/`workspace-catalog` `0.0.91 → 0.0.92`, entrée
+  `codebase-plugin 0.0.17 → 0.0.18`. Publication Central. (Garde
+  `contracts.catalog.PlatformCatalogAlignmentTest` ré-alignée conjointement.)
+. **N1 codebase** — re-pin `settings.gradle.kts` `ws` `0.0.78 → 0.0.92` (catalogue
+  déclarant `codebase-plugin = 0.0.18`) + toml local `codebase-plugin 0.0.17 → 0.0.18`.
+  La version propre passe à `0.0.18`. Publication Central.
+. **N2 capsule + slider** — re-pin `codebase → 0.0.18` (+ BOM capsule `0.0.92`, koog
+  slider `1.0.0 → 1.3.0`) + implémentent `PipelineDefinition<State>` et délèguent à
+  `pipelineGraph(...)`.
+
+=== Blocage découvert (et résolu) : bootstrap de la self-application codebase
+
+La garde S-273 (`CodebasePluginPublicationTest`) avait migré la self-application du
+plugin (`alias(libs.plugins.codebase)`) sur `codebase-plugin` — la **même** entrée que
+la version propre. Conséquence : bumper la version propre à `0.0.18` fait résoudre le
+**marker du plugin** `education.cccp.codebase:0.0.18` **avant** qu'il ne soit publié →
+`Plugin ... was not found` (œuf/poule).
+
+**Résolution (pattern capsule)** : découpler *version propre* et *version du plugin
+self-appliqué* via une entrée toml dédiée `codebase-gradle-plugin = "0.0.17"`
+(dernière release publiée), tandis que `codebase-plugin = "0.0.18"` porte la version
+propre. La garde ne lit que l'entrée `codebase-plugin` → **VERTE** (version propre
+== catalogue). La self-application est un bootstrap standard, son lag d'une version
+est inhérent.
+
+== Livrables
+
+=== N0 MEMPHIS (`workspace-bom`) — S-295
+
+* `gradle/libs.versions.toml` : `workspace-bom 0.0.91 → 0.0.92`, `codebase-plugin 0.0.17 → 0.0.18`.
+* Garde `agent-contracts/.../PlatformCatalogAlignmentTest.kt` : `0.0.91 → 0.0.92`, `0.0.17 → 0.0.18`.
+* Central bundle **`fbc592ed-fc0b-4032-981e-32a6bc618fdd`** (AUTOMATIC) ; propagation repo1 confirmée.
+* Commit `07539e9`.
+
+=== N1 codebase (`codebase-gradle`) — S-277
+
+* `settings.gradle.kts` : `ws` catalog `0.0.78 → 0.0.92`.
+* `gradle/libs.versions.toml` : `codebase-plugin 0.0.17 → 0.0.18` + nouvelle entrée `codebase-gradle-plugin = "0.0.17"` ; `[plugins].codebase` pointe sur `codebase-gradle-plugin`.
+* `build.gradle.kts` : commentaire aligné (version dérivée `ws.versions.codebase.plugin`).
+* `./gradlew properties` → `version: 0.0.18`.
+* Central bundle **`d107805c-dd8c-4418-b0c1-7cd2f7e8cab5`** (AUTOMATIC) ; propagation repo1 HTTP 200 (pom + marker).
+* Commit `f5f1817`.
+
+=== N2 capsule (`capsule-plugin`)
+
+* Nouveau `capsule/pipeline/CapsulePipelineDefinition.kt` : port `PipelineDefinition<CapsuleState>`
+  (propose/validate/generate + `isValid`/`isFailed` + `onProposeFailure`/`onGenerateFailure`,
+  libellés `ProposeContextFailed:`/`GenerateSpeakerNotesFailed:`).
+* `CapsulePipelineGraph.kt` : simple façade sur `pipelineGraph(CapsulePipelineDefinition(...))`,
+  **API publique préservée** (`graph`, `execute`, `asMermaidDiagram`). −124 lignes.
+* TOML : `codebase 0.0.17 → 0.0.18`, `codebase-gradle-plugin 0.0.17 → 0.0.18`, `workspace-bom 0.0.91 → 0.0.92`.
+* Compiles ×3 VERT. Commit `fad27a8`.
+
+=== N2 slider (`slider-plugin`)
+
+* Nouveau `slider/pipeline/DeckPipelineDefinition.kt` : port `PipelineDefinition<DeckState>`
+  (libellés `ProposeContextFailed:`/`GenerateDeckFailed:`).
+* `DeckPipelineGraph.kt` : façade sur `pipelineGraph(DeckPipelineDefinition(...))`, API
+  publique préservée. −116 lignes.
+* TOML : `codebase 0.0.14 → 0.0.18`, `koog 1.0.0 → 1.3.0` (aligné sur le koog de
+  compilation de codebase 0.0.18).
+* Compiles ×3 VERT. Commit `a20c4b1`.
+
+== Iso-comportement
+
+* **Stages / erreurs / edges strictement préservés** : mêmes transitions
+  (`CONTEXT_PROPOSED → CONTEXT_VALIDATED → CONTENT_GENERATED|DECK_GENERATED`, `FAILED`),
+  mêmes libellés d'erreur, mêmes edges conditionnels
+  (`validate → generate onCondition isValid` / `validate → nodeFinish`).
+* **Déviation documentée (mineure)** : `asMermaidDiagram()` nomme désormais les nœuds
+  génériques (`proposeNode`/`validateNode`/`generateNode`) au lieu des noms domaine ;
+  les tests n'assertent que la non-vacuité. Les logs internes portent le `name` du
+  port (`[capsule-pipeline]`/`[deck-pipeline]`). Aucune assertion de test concernée.
+* **Zéro régression** attendue : les UT `CapsulePipelineGraphTest` (20) + `DeckPipelineGraphTest` (16)
+  + BDD `@viral-*`/`26_deck_pipeline_koog.feature` inchangés (CI).
+
+== Gates (Local = Build, Tests = CI)
+
+* MEMPHIS : `publishToMavenLocal` VERT ; garde alignée par édition conjointe (non exécutée CI).
+* codebase : `compileKotlin`/`compileTestKotlin` VERT, `validatePlugins` VERT, `publishToMavenLocal` VERT.
+* capsule : `compileKotlin`/`compileTestKotlin`/`compileFunctionalTestKotlin` VERT.
+* slider : `compileKotlin`/`compileTestKotlin`/`compileFunctionalTestKotlin` VERT.
+* **Preuves CI** : capsule `Test` **run `38595418994` ✅** (3m48s) + `Full Tests`
+  **run `38595419918` ✅** (7m40s) ; codebase `OCR` run `38597443742` ✅ + `CI` en cours ;
+  MEMPHIS `runAllTests` en cours. (1er run capsule rouge transitoire : marker
+  `codebase-plugin 0.0.18` pas encore propagé Central ; re-run vert après propagation.)
+
+== Traçabilité
+
+* Cadrage : `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc` (révisé S-195, seuil 2).
+* BS-1 : `codebase-gradle/.../sessions/276-koog-pipeline-dedup-bs1.adoc`.
+* Amendement doctrine : seuil de factorisation 3 → 2 (S-195).

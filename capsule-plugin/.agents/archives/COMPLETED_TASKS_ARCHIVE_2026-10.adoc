@@ -842,3 +842,17 @@ Zéro code modifié. Gouvernance : rapport `.agents/sessions/138-cap-viral-cadra
 * Gates locaux : `compileKotlin compileTestKotlin compileFunctionalTestKotlin` VERTS.
   Zéro bump, zéro publication.
 * Rapport `.agents/sessions/194-cap-decompose-bs1-capsulefactory.adoc`.
+
+== S-200 — KOOG-PIPELINE-DEDUP BS-2 : adoption du squelette N1 ✅ (EPIC clos)
+
+* Décision pilote d'exécution : publier `codebase-plugin 0.0.18` (squelette
+  `codebase.koog.pipeline`, BS-1 S-276) et l'adopter dans capsule + slider.
+* DAG **N0 → N1 → N2** (structurel — la version propre codebase dérive du
+  `workspace-catalog` publié) : MEMPHIS `0.0.92` (bundle `fbc592ed`, S-295) →
+  codebase re-pin + `0.0.18` (bundle `d107805c`, S-277) → adoption N2.
+* Capsule : `CapsulePipelineDefinition` (port `PipelineDefinition<CapsuleState>`) +
+  `CapsulePipelineGraph` façade (−124 l.), API publique préservée.
+* Bump `codebase/codebase-gradle-plugin 0.0.18` + `workspace-bom 0.0.92`.
+* Bootstrap self-application codebase résolu (split-ref `codebase-gradle-plugin`).
+* Gates : compiles ×3 VERTS (Local = Build). Zéro bump capsule (0.0.10), zéro secret.
+* Rapport `.agents/sessions/200-koog-pipeline-dedup-bs2-adoption.adoc`.

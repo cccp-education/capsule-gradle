@@ -1,11 +1,30 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 200
+:session: 201
 :borough: Détroit
-:session_precedente: 199 — split multi-lang en 4 groupes (A/B/C/D) ✅ + CAP-DECOMPOSE BS-5 ✅
+:session_precedente: 200 — **KOOG-PIPELINE-DEDUP BS-2 ✅** (adoption du squelette N1 `codebase.koog.pipeline`, EPIC clos)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
-_littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos).
+_littérature_ : `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc` (✅ clos), `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos).
+
+== Mission session 201 — à arbitrer par le pilote
+
+* **Release `capsule 0.0.11`** (accord pilote) — cumule RENAME + CAP-VIRAL-E2E + CAP-DECOMPOSE BS-1→5 +
+  split multi-lang + KOOG-PIPELINE-DEDUP BS-2 (adoption N1, `codebase 0.0.18`).
+* Ou toute nouvelle demande pilote.
 
 == Contexte Hérité
+
+=== S-200 — KOOG-PIPELINE-DEDUP BS-2 ✅
+
+**Adoption du squelette N1.** Décision pilote d'exécution : publier `codebase-plugin 0.0.18`
+(`codebase.koog.pipeline`, BS-1 S-276) et l'adopter dans capsule + slider. DAG **N0 → N1 → N2** :
+MEMPHIS `workspace-bom/catalog 0.0.91 → 0.0.92` (`codebase-plugin = 0.0.18`, bundle `fbc592ed`,
+S-295) → codebase re-pin `ws 0.0.78 → 0.0.92` + version propre `0.0.18` (bundle `d107805c`, S-277) →
+adoption. **Blocage résolu** : bootstrap self-application codebase (marker plugin == version propre) →
+split-ref `codebase-gradle-plugin = "0.0.17"` (dernier publié). Capsule : `CapsulePipelineDefinition`
+(port `PipelineDefinition<CapsuleState>`) + `CapsulePipelineGraph` façade (−124 l.), API publique
+préservée. Slider : `DeckPipelineDefinition` (−116 l.), koog `1.0.0 → 1.3.0`. Bumps capsule :
+`codebase 0.0.18`, `codebase-gradle-plugin 0.0.18`, `workspace-bom 0.0.92`. Compiles ×3 VERTS.
+Rapport `.agents/sessions/200-koog-pipeline-dedup-bs2-adoption.adoc`.
 
 === S-199 — split multi-lang + CAP-DECOMPOSE BS-5 ✅
 
