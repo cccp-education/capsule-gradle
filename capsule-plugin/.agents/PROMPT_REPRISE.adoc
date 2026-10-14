@@ -1,15 +1,23 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 201
+:session: 202
 :borough: Détroit
-:session_precedente: 200 — **KOOG-PIPELINE-DEDUP BS-2 ✅** (adoption du squelette N1 `codebase.koog.pipeline`, EPIC clos)
+:session_precedente: 201 — **Release `capsule-plugin 0.0.11` ✅** (Maven Central, bundle `9aa2f725`, + BOM 0.0.93)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc` (✅ clos), `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos).
 
-== Mission session 201 — à arbitrer par le pilote
+== Mission session 201 (TERMINÉE) — Release `capsule 0.0.11`
 
-* **Release `capsule 0.0.11`** (accord pilote) — cumule RENAME + CAP-VIRAL-E2E + CAP-DECOMPOSE BS-1→5 +
-  split multi-lang + KOOG-PIPELINE-DEDUP BS-2 (adoption N1, `codebase 0.0.18`).
-* Ou toute nouvelle demande pilote.
+Release DAG N0→N1→N2 (accord pilote) : `capsule-plugin 0.0.11` publié Central
+(bundle `9aa2f725-fafb-4d88-82e4-8f6041639dd6`, AUTOMATIC) ; bump `slider 0.0.19 → 0.0.20` +
+`capsule 0.0.10 → 0.0.11` ; consommateur racine `0.0.11` (`./gradlew tasks` VERT) ;
+MEMPHIS BOM/catalog `0.0.93` (`capsule-plugin 0.0.11` + `slider-plugin 0.0.20`, bundle `fa361f70`).
+Contenu 0.0.11 : RENAME + CAP-VIRAL-E2E + CAP-DECOMPOSE BS-1→5 + split multi-lang +
+KOOG-PIPELINE-DEDUP BS-2 + `video-kernel 0.3.0`. Rapport `.agents/sessions/201-publication-0.0.11.adoc`.
+
+== Mission session 202 — à arbitrer par le pilote
+
+* Backlog actionnable vidé (tous EPICs clos, release 0.0.11 publiée).
+* Options : dogfooding / nouvelle demande pilote / maintenance.
 
 == Contexte Hérité
 

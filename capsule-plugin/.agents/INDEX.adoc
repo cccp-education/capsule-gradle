@@ -5,9 +5,9 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-14 (S-200 — **KOOG-PIPELINE-DEDUP BS-2** ✅ : adoption du squelette N1 `codebase.koog.pipeline` (`CapsulePipelineDefinition` + `CapsulePipelineGraph` façade, −124 l.), publication `codebase-plugin 0.0.18` (N0 MEMPHIS 0.0.92 + N1 codebase), adoption jumelle slider. **EPIC clos.**)
- _Derniere session terminee_ : 200.
- _Prochaine session_ : 201 — au choix : A) release capsule `0.0.11` (accord pilote) ; B) nouvelle demande pilote.
+ _Derniere mise a jour_ : 2026-10-14 (S-201 — **Release `capsule-plugin 0.0.11`** ✅ (Maven Central, bundle `9aa2f725`, AUTOMATIC) : cumule RENAME + CAP-VIRAL-E2E + CAP-DECOMPOSE BS-1→5 + split multi-lang + KOOG-PIPELINE-DEDUP BS-2 + `video-kernel 0.3.0`. Bump `slider 0.0.19 → 0.0.20`. Consommateur racine `0.0.11`. MEMPHIS BOM/catalog `0.0.93` (bundle `fa361f70`).)
+ _Derniere session terminee_ : 201.
+ _Prochaine session_ : 202 — à arbitrer par le pilote (backlog actionnable vidé).
  _Session en cours_ : —.
  _Littérature de référence_ : `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc` (✅ clos) + `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos).
 

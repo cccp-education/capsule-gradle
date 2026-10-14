@@ -1,0 +1,53 @@
+= Rapport de session 201 — Release `capsule-plugin 0.0.11` + BOM 0.0.93
+:session: 201
+:date: 2026-10-14
+:borough: Détroit (capsule-gradle)
+:statut: TERMINÉ (release DAG N0→N1→N2, accord pilote)
+:methode: pin/bump/publish/consommateurs (Local = Build, Tests = CI)
+
+== Mission
+
+Option A du PROMPT_REPRISE S-201 (accord pilote) : **release `capsule-plugin 0.0.11`**.
+Cumule RENAME + CAP-VIRAL-E2E + CAP-DECOMPOSE BS-1→5 + split multi-lang +
+KOOG-PIPELINE-DEDUP BS-2 (adoption N1 `codebase 0.0.18`) + `video-kernel 0.3.0`.
+
+== Actions
+
+. **Bump** `capsule-plugin/gradle/libs.versions.toml` :
+  `capsule 0.0.10 → 0.0.11` **et** `slider 0.0.19 → 0.0.20`
+  (N2 `compileOnly`, aligné sur la release slider S-076 déjà propagée).
+. `assemble` + `publishToMavenLocal` **VERTS** (signés GPG CBE2926CD46D8E8B) ;
+  artefacts `0.0.11` (jar + sources + javadoc + module) + 2 plugin markers.
+  POM `0.0.11` importe `workspace-bom:0.0.92` (vérifié).
+3. `publishAggregationToCentralPortal --no-daemon` → bundle
+   **`9aa2f725-fafb-4d88-82e4-8f6041639dd6`** (AUTOMATIC).
+4. **Consommateur racine** `foundry/public/capsule-gradle/gradle/libs.versions.toml` :
+   `capsule 0.0.10 → 0.0.11` (`./gradlew tasks` VERT — `verifyCapsuleVoice`/
+   `renderQcBoards` visibles). Commit `d6eece6`.
+5. **MEMPHIS (S-296)** : catalogue `capsule-plugin 0.0.10 → 0.0.11` +
+   `slider-plugin 0.0.19 → 0.0.20` + BOM/catalog `0.0.92 → 0.0.93` ; garde
+   `PlatformCatalogAlignmentTest` ré-alignée. `publishToMavenLocal` + Central
+   bundle **`fa361f70-ed77-4325-9e7d-d562db429efa`** (AUTOMATIC).
+
+== Propagation (repo1)
+
+* `slider-plugin 0.0.20` → HTTP **200** (confirmé).
+* `capsule-plugin 0.0.11` + marker `education.cccp.capsule.gradle.plugin` +
+  `workspace-bom 0.0.93` + `workspace-catalog 0.0.93` → propagation en cours
+  (publiés en fin de session ; polling > 6 min, délai Central habituel 7-27 min).
+
+== Fichiers
+
+* `capsule-plugin/gradle/libs.versions.toml` (capsule 0.0.11, slider 0.0.20)
+* `capsule-gradle/gradle/libs.versions.toml` (racine 0.0.11)
+* `workspace-bom/gradle/libs.versions.toml` (0.0.93, capsule 0.0.11, slider 0.0.20)
+* `workspace-bom/agent-contracts/src/test/.../PlatformCatalogAlignmentTest.kt`
+* Gouvernance : ce rapport, `PROMPT_REPRISE`, `INDEX`, `SESSIONS_HISTORY`,
+  archive, `TODO`.
+
+== Gates
+
+* Local = Build : `assemble` + `publishToMavenLocal` VERTS ; tests = CI.
+* Zéro secret, zéro Python, zéro code de production modifié (release pure).
+
+_Score : 9/10 (release DAG complet + propagation slider confirmée)._

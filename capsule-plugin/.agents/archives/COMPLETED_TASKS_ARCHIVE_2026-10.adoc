@@ -1,6 +1,18 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-14
 
+== Session 201 — Release `capsule-plugin 0.0.11` + BOM 0.0.93 ✅
+
+* Release DAG N0→N1→N2 (accord pilote) : `capsule-plugin 0.0.11` Central — bundle
+  `9aa2f725-fafb-4d88-82e4-8f6041639dd6` (AUTOMATIC), signé GPG ; bump
+  `slider 0.0.19 → 0.0.20` (compileOnly).
+* Consommateur racine `0.0.11` (`./gradlew tasks` VERT, commit `d6eece6`).
+* MEMPHIS BOM/catalog `0.0.93` (`capsule-plugin 0.0.11` + `slider-plugin 0.0.20`,
+  bundle `fa361f70`).
+* Contenu 0.0.11 : RENAME + CAP-VIRAL-E2E + CAP-DECOMPOSE BS-1→5 + split multi-lang
+  + KOOG-PIPELINE-DEDUP BS-2 + `video-kernel 0.3.0`.
+* Rapport `.agents/sessions/201-publication-0.0.11.adoc`.
+
 == Session 199 — Split multi-lang en 4 groupes + CAP-DECOMPOSE BS-5 ✅
 
 * **Mission 1 (CI)** : le pôle `BDD · multi-lang-genB` (260 s, 11 langues) est

@@ -1,5 +1,13 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-14 (S-199 — split multi-lang en 4 groupes (pôle CI 260 s) + **CAP-DECOMPOSE BS-5 ✅** (EPIC clos 5/5). Précédent S-182.)
+:last_update: 2026-10-14 (S-201 — **Release `capsule-plugin 0.0.11` ✅** (Central bundle `9aa2f725`) + BOM 0.0.93. Précédent S-199.)
+
+'''
+== ✅ S-201 — Release `capsule-plugin 0.0.11` + BOM 0.0.93
+
+. [x] **Release `capsule 0.0.11`** — publié Central (bundle `9aa2f725-fafb-4d88-82e4-8f6041639dd6`, AUTOMATIC) ; bump `slider 0.0.19 → 0.0.20` + `capsule 0.0.10 → 0.0.11`.
+. [x] Consommateur racine `capsule = 0.0.11` (`./gradlew tasks` VERT, commit `d6eece6`).
+. [x] MEMPHIS BOM/catalog `0.0.93` (`capsule-plugin 0.0.11` + `slider-plugin 0.0.20`, bundle `fa361f70`) + garde ré-alignée.
+. [x] Gates locaux (Local = Build) : `assemble` + `publishToMavenLocal` VERTS (signés GPG). Zéro code production modifié.
 
 '''
 == ✅ S-199 — split multi-lang 4 groupes + CAP-DECOMPOSE BS-5
@@ -8,7 +16,7 @@
 . [x] **CAP-DECOMPOSE BS-5** — résolveurs extraits (`capsule/CapsuleVideoResolvers.kt` + 7 unit) ; shims statiques retirés. `CapsuleVideoTask` 1005 → 851 l. **EPIC clos 5/5.**
 . [x] Gates locaux (Local = Build) : compiles ×3 VERTS, tâches shard enregistrées. Zéro bump, zéro publication.
 . [x] **KOOG-PIPELINE-DEDUP** ✅ **TERMINÉ (S-276 BS-1 + S-277/295 BS-2 + S-200)** — squelette N1 `codebase.koog.pipeline` extrait puis publié (`codebase-plugin 0.0.18`) et adopté par capsule + slider. Voir `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`.
-. [ ] 🟢 **Release `capsule 0.0.11`** — option pilote (intègre `video-kernel 0.3.0` + CAP-DECOMPOSE BS-1→5 + split multi-lang).
+. [x] 🟢 **Release `capsule 0.0.11`** — ✅ **publié S-201** (Central bundle `9aa2f725`) : intègre `video-kernel 0.3.0` + CAP-DECOMPOSE BS-1→5 + split multi-lang + KOOG-PIPELINE-DEDUP BS-2.
 
 '''
 == 🐟 CAP-FISH-AUDIO — moteur TTS cloud Fish Audio (CADRÉ S-182)
