@@ -170,6 +170,8 @@ jobs:
             task: cucumberTestShardIntegration
           - name: "Integration · @manim"
             task: cucumberTestShardManim
+          - name: "Integration · @manim-parallel"
+            task: cucumberTestShardManimParallel
           - name: "Integration · real render (viral)"
             task: cucumberTestViralRender
     steps:

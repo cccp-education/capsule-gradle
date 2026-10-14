@@ -122,6 +122,11 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CucumberShardManimRunner",
             timeoutMinutes = 45,
         ),
+        CucumberTaskSpec(
+            name = "cucumberTestShardManimParallel",
+            runnerClass = "capsule.scenarios.CucumberShardManimParallelRunner",
+            timeoutMinutes = 45,
+        ),
         // Focused cucumber run for the CAP-ARCH-2 augmented context feature
         // (fast iteration without the full Playwright suite, ~15 min).
         CucumberTaskSpec(

@@ -24,6 +24,6 @@ import org.junit.platform.suite.api.Suite
 )
 @ConfigurationParameter(
     key = FILTER_TAGS_PROPERTY_NAME,
-    value = "@manim and not @integration and not @wip and not @viral-render"
+    value = "@manim and not @parallel and not @integration and not @wip and not @viral-render"
 )
 class CucumberShardManimRunner
