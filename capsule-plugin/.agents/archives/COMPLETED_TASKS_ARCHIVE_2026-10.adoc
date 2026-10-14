@@ -1,6 +1,13 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-14
 
+== Session 196 — CAP-DECOMPOSE BS-2 (extraction `CapsuleViralRegistrar`) ✅
+
+* Cluster viral (6 tâches, ~296 l.) extrait de `CapsuleManager` vers `CapsuleViralRegistrar`
+  (`internal object`, move pur). `CapsuleManager` 906 → 602 l.
+* `registerTasks()` délègue. Compiles ×3 VERTS ; aucun test modifié.
+* Rapport `.agents/sessions/196-cap-decompose-bs2-capsuleviralregistrar.adoc`.
+
 == Session 195 — VK-4 US-4a : adoption du port partagé `VideoDurationProbe` ✅
 
 * `video-kernel 0.2.0 → 0.3.0` (toml local). `capsule.validation.FfprobeDurationProbe`

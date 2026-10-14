@@ -1,0 +1,41 @@
+= Session 196 — CAP-DECOMPOSE BS-2 : extraction `CapsuleViralRegistrar`
+:session: 196
+:date: 2026-10-14
+:type: refactor
+:borough: Détroit / capsule-gradle
+:statut: ✅ TERMINÉ — move pur (aucune logique modifiée)
+:toc:
+
+== Mission
+
+CAP-DECOMPOSE BS-2 (cadrage `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc`) : extraire
+le **plus gros cluster** de `CapsuleManager` — les 6 tâches de campagne virale
+(~296 l.) — vers un registrar dédié ; `registerTasks()` délègue.
+
+== Changement (move pur)
+
+- Nouveau `capsule/CapsuleViralRegistrar.kt` (`internal object`) — pattern
+  `capsule.feed.CapsuleFeedTaskRegistrar` / slider `SLD-6` : un `register(Project)`
+  qui enregistre les 6 tâches + les 6 `private fun Project.register*Task()` **déplacées
+  verbatim** (aucune ligne de logique changée) :
+  - `generateViralCampaign`, `renderViralVariants`, `renderViralThumbnails`,
+    `renderViralSubtitles`, `validateViralCampaign`, `normalizeViralStoryboard`.
+- `CapsuleManager.registerTasks()` : les 6 appels `project.register*Viral*Task()`
+  remplacés par **`CapsuleViralRegistrar.register(project)`** (orchestrateur mince).
+- `CapsuleManager` **906 → 602 l.** (−304 l. nettes : −297 bloc + 6 appels → 1 délégation).
+
+== Gates
+
+- **Local = Build** : `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin`
+  VERTS (diff : 1 insertion / 304 suppressions sur `CapsuleManager.kt`).
+- **Non-régression = CI** : l'enregistrement + le comportement sont couverts par
+  `CapsulePluginTest` (TestKit) + les 5 tests fonctionnels viraux
+  (`GenerateViralCampaignFunctionalTest`, `RenderViralVariantsFunctionalTest`,
+  `RenderViralThumbnailsFunctionalTest`, `RenderViralSubtitlesFunctionalTest`,
+  `ValidateViralCampaignFunctionalTest`) + les runners Cucumber viraux. **Aucun
+  test modifié** (move pur).
+
+== Suite
+
+- CAP-DECOMPOSE **BS-3** (`CapsuleQcRegistrar` + `CapsuleVoiceRegistrar`).
+- BS-4 (core/context/podcast/ai), BS-5 (`CapsuleVideoTask`).

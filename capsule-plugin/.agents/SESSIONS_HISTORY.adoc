@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-14 (S-195) — adoption du port partagé `VideoDurationProbe` (video-kernel 0.3.0). Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-14 (S-196) — CAP-DECOMPOSE BS-2 (extraction `CapsuleViralRegistrar`). Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (126-195)
+== Sessions récentes (126-196)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 196 | 2026-10-14 | refactor | **CAP-DECOMPOSE BS-2 — extraction `CapsuleViralRegistrar`.** Dette interne (god-object `CapsuleManager`) : le cluster viral (~296 l., 6 tâches : `generateViralCampaign`, `renderViralVariants`, `renderViralThumbnails`, `renderViralSubtitles`, `validateViralCampaign`, `normalizeViralStoryboard`) extrait vers le nouveau `capsule/CapsuleViralRegistrar.kt` (`internal object`, pattern `CapsuleFeedTaskRegistrar` / slider `SLD-6`) — **move pur** (aucune logique changée). `registerTasks()` délègue (`CapsuleViralRegistrar.register(project)`). `CapsuleManager` **906 → 602 l.** (−304). Compiles ×3 VERTS (Local = Build) ; **aucun test modifié** (non-régression : `CapsulePluginTest` + 5 tests fonctionnels viraux + runners Cucumber viraux). Rapport `.agents/sessions/196-cap-decompose-bs2-capsuleviralregistrar.adoc`. | 9/10
 
 | 195 | 2026-10-14 | refactor | **VK-4 US-4a — adoption du port partagé `VideoDurationProbe`** (session transverse video-kernel + hyperframes + capsule). `video-kernel 0.2.0 → 0.3.0` (toml local). Nouveau `capsule.validation.FfprobeDurationProbe` implémente le port N1 `video.kernel.VideoDurationProbe` (couplage process gardé N2 via `capsule.ProcessRunner`, interdit dans le noyau) + réutilise le parseur **pur** `video.kernel.FfprobeDurationParser` (fin de duplication). `capsule.MediaProbeUtil.probeDuration` **délègue** (API publique inchangée). Tests : `FfprobeDurationProbeTest` (5 unit). **Doctrine** : seuil de factorisation `3 → 2` (AGENTS.adoc racine) → `KOOG-PIPELINE-DEDUP` 🟡 RÉOUVERT. Compiles ×3 VERTS (Local = Build). Rapport `.agents/sessions/195-vk4-adoption-shared-probe.adoc`. | 9/10
 

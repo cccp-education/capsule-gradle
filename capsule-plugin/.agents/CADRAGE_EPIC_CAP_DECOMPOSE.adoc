@@ -1,7 +1,7 @@
 = CADRAGE — EPIC CAP-DECOMPOSE (Capsule, Détroit)
 :session: 194
 :date: 2026-10-14
-:statut: 🟡 EN COURS — BS-1 livré (factories) ; BS-2→N à faire
+:statut: 🟡 EN COURS — BS-1 livré (factories) ; BS-2 livré (viral) ; BS-3→N à faire
 :toc:
 
 == Objectif
@@ -58,7 +58,7 @@ la sélection d'un adapter avec dégradation + `StrictModeGuard`. → objet `Cap
 | # | Livrable | Risque | Statut
 
 | BS-1 | Extraire `CapsuleFactory` du `companion` de `CapsuleManager` (move pur ; maj ~35 call sites main + tests + KDoc) | Faible | ✅ S-194
-| BS-2 | Extraire `CapsuleViralRegistrar` (plus gros cluster ~300 l.) ; `registerTasks()` délègue | Moyen | 🟡 À FAIRE
+| BS-2 | Extraire `CapsuleViralRegistrar` (plus gros cluster ~300 l.) ; `registerTasks()` délègue | Moyen | ✅ S-196
 | BS-3 | Extraire `CapsuleQcRegistrar` + `CapsuleVoiceRegistrar` | Moyen | 🟡 À FAIRE
 | BS-4 | Extraire `CapsuleCoreRegistrar` + `CapsuleContextRegistrar` + `CapsulePodcastRegistrar` + `CapsuleAiRegistrar` | Moyen | 🟡 À FAIRE
 | BS-5 | `CapsuleVideoTask` — extraire les résolveurs + helpers statiques | Élevé | 🟡 À FAIRE
