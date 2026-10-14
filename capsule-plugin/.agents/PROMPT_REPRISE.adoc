@@ -7,6 +7,13 @@ _littérature_ : `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`.
 
 == Contexte Hérité
 
+=== Cross-borough — publication `video-kernel 0.1.0` (2026-10-13) ✅ (pin aligné)
+
+Le contrat neutre `video-kernel` est **gelé puis publié** `0.1.0` (Maven Central,
+bundle `ccbb1f82`). **Capsule aligné** : `gradle/libs.versions.toml`
+`video-kernel 0.0.3 → 0.1.0` (résolution `0.1.0` vérifiée, compiles VERTS ; ABI
+inchangé, garde de stabilité `KernelApiStabilityTest`). Aucun autre changement.
+
 === Cross-borough — hyperframes S-017 (2026-10-13) ✅ (2ᵉ moteur, défauts + CI)
 
 Le 2ᵉ adaptateur du noyau (`hyperframes-gradle`, Watts) a livré **HF-KERNEL-ADAPTER
@@ -33,9 +40,9 @@ consommation complète du noyau (US-4) restent à faire. **Capsule n'a pas été
 
 == Mission Session 192 — au choix (pilote)
 
-* A) **Adapter hyperframes** (Watts) contre `video-kernel:0.0.3` — implémenter
+* A) **Adapter hyperframes** (Watts) contre `video-kernel:0.1.0` — implémenter
   `VideoEngine` (rendu document-entier). Payoff de la mutualisation.
-* B) **Release capsule** (bump version + Central) intégrant `video-kernel:0.0.3`.
+* B) **Release capsule** (bump version + Central) intégrant `video-kernel:0.1.0`.
 * C) Borough `video-kernel` : VK-3 (BOM MEMPHIS) ou VK-2 (package neutre).
 * D) Nouvelle demande pilote.
 
@@ -50,5 +57,5 @@ consommation complète du noyau (US-4) restent à faire. **Capsule n'a pas été
 == Rappels
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.10** (Central).
-* `education.cccp:video-kernel:0.0.3` (Central). MEMPHIS BOM/catalog **0.0.86**.
+* `education.cccp:video-kernel:0.1.0` (Central). MEMPHIS BOM/catalog **0.0.86**.
 * Tous les EPICs capsule sont clos ; `CAP-ENGINE-DECOUPLING` **TERMINÉ 6/6**.
