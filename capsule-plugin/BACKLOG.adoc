@@ -1,6 +1,16 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-14 (S-194 — CAP-DECOMPOSE BS-1 : extraction `CapsuleFactory`. Précédent S-193 : VK-2 adoption `video-kernel 0.2.0`.)
+:last_update: 2026-10-14 (S-195 — VK-4 US-4a : adoption du port partagé `VideoDurationProbe` (`video-kernel 0.3.0`) + doctrine seuil de factorisation `3 → 2`.)
+
+'''
+== ✅ VK-4 US-4a — Adoption du port partagé `VideoDurationProbe` (S-195)
+
+Session transverse (video-kernel + hyperframes + capsule). Le noyau N1 expose le
+port `video.kernel.VideoDurationProbe` (+ parseur pur `FfprobeDurationParser`,
+`video-kernel 0.3.0`) : capsule l'adopte via
+`capsule.validation.FfprobeDurationProbe` (couplage process gardé N2) et
+`MediaProbeUtil.probeDuration` délègue. Fin de la duplication de parsing ffprobe
+entre capsule et hyperframes. **Doctrine** : seuil de factorisation `3 → 2`.
 
 '''
 == 🟡 CAP-DECOMPOSE — EN COURS (S-194)
@@ -12,7 +22,8 @@ Dette interne : décomposition des **god-objects** `CapsuleManager` (1115 l.) et
 [cols="1,3,1,1", options="header"]
 |===
 | BS | Livrable | Risque | Statut
-| BS-1 | Extraire `CapsuleFactory` du `companion` de `CapsuleManager` (move pur) | Faible | ✅ S-194| BS-2 | Extraire `CapsuleViralRegistrar` ; `registerTasks()` délègue | Moyen | 🟡 À FAIRE
+| BS-1 | Extraire `CapsuleFactory` du `companion` de `CapsuleManager` (move pur) | Faible | ✅ S-194
+| BS-2 | Extraire `CapsuleViralRegistrar` ; `registerTasks()` délègue | Moyen | 🟡 À FAIRE
 | BS-3 | Extraire `CapsuleQcRegistrar` + `CapsuleVoiceRegistrar` | Moyen | 🟡 À FAIRE
 | BS-4 | Extraire `CapsuleCoreRegistrar` + `CapsuleContextRegistrar` + `CapsulePodcastRegistrar` + `CapsuleAiRegistrar` | Moyen | 🟡 À FAIRE
 | BS-5 | `CapsuleVideoTask` — extraire résolveurs + helpers statiques | Élevé | 🟡 À FAIRE
@@ -50,17 +61,18 @@ dégradation propre si absent.
 |===
 
 '''
-== 🚫 KOOG-PIPELINE-DEDUP — CADUQUE (S-183)
+== 🟡 KOOG-PIPELINE-DEDUP — RÉOUVERT (éligible, S-195)
 _📖 Littérature : `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`._
 
 _Item dormant (ex-`TODO.adoc:339`) : extraire le squelette de pipeline koog partagé
 (`CapsulePipelineGraph` ≈ `DeckPipelineGraph`) dans un artefact commun. **Verdict S-183 :
 CADUQUE (statu quo)** — capsule ≈ slider = jumeaux quasi verbatim (~90 % du squelette),
 mais **2 boroughs N2 seulement** ; `codebase.KoogAugmentedContextGraph` = forme
-**différente** (linéaire, dégradé). **Déclencheur** : rouvrir (nom correct
-`KOOG-PIPELINE-DEDUP`) au **3ᵉ borough N2** adoptant `propose → validate → generate` ;
-cible probable N1 `codebase.koog.pipeline`. Note : `pipeline-contracts` (MEMPHIS) =
-contrat **release-notes**, sans rapport._
+**différente** (linéaire, dégradé). **Amendement pilote S-195 : le seuil doctrinal de
+factorisation passe `3 → 2`** → les 2 boroughs N2 franchissent désormais la condition →
+EPIC **🟡 RÉOUVERT (éligible)**. Décision d'exécution = pilote. Cible probable N1
+`codebase.koog.pipeline`. Note : `pipeline-contracts` (MEMPHIS) = contrat
+**release-notes**, sans rapport._
 
 '''
 == ✅ CAP-ENGINE-DECOUPLING — TERMINÉ 6/6 (S-184→S-189)
@@ -69,7 +81,7 @@ _📖 Littérature : `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`._
 _Découpler le **métier** vidéo du **moteur** reveal.js/slider, isoler un noyau
 engine-agnostique (`capsule.kernel`), poser les ports neutres (`SegmentSource`,
 `VideoEngine`) et **préparer la mutualisation** avec `hyperframes-gradle` (2ᵉ moteur).
-Décision pilote : **ne pas attendre le seuil « factoriser à 3 »**. La review S-184
+Décision pilote : **doctrine de factorisation — seuil `à 2`** (amendement S-195 ; un second cas suffit). La review S-184
 (capsule 190 fichiers / 31 tâches vs hyperframes 16 / 3) reclassifie le
 « non-transférable » : presque tout est **récupérable** ; le couplage slider se limite
 à la **capture reveal.js**, le **parser speaker-notes**, le **swap de slides Manim** et

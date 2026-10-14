@@ -104,7 +104,7 @@ les **champs deck/slide** du contrat N3.
    N0 (doctrine S-162 `LLM-RESILIENCE N0` CADUQUE : N0 = contrats purs). Les **ports**
    peuvent devenir un N0 `video-contracts` *si* contractuels. **Extraction effective =
    US ultérieure, accord pilote** — le pilote acte le principe dès maintenant (pas d'attente
-   du seuil « factoriser à 3 »).
+   du seuil « factoriser à 2 » — amendement pilote S-195 : un second cas suffit).
 . **D6 — Baby-step, additif, backward-compat.** Ne pas casser un plugin mature
    (917 unit + 60 functional + 22 runners Cucumber).
 . **D7 — Vocabulaire neutralisé dans le noyau** : ni `slide`, ni `deck`, ni `reveal`,

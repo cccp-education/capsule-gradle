@@ -1,0 +1,46 @@
+= Session 195 — VK-4 US-4a : adoption du port partagé `VideoDurationProbe`
+:session: 195
+:date: 2026-10-14
+:type: refactor
+:borough: Détroit / capsule-gradle — transverse (video-kernel + hyperframes)
+:statut: ✅ TERMINÉ — port noyau adopté (`video-kernel 0.3.0`)
+:toc:
+
+== Mission
+
+Session transverse S-195. Clore `HF-KERNEL-ADAPTER US-4` : consommer le noyau
+partagé. Premier livrable adopté côté capsule : le port de durée.
+
+== Livré
+
+- `gradle/libs.versions.toml` : `video-kernel 0.2.0 → 0.3.0`.
+- Nouveau `capsule.validation.FfprobeDurationProbe` : implémente le port N1
+  `video.kernel.VideoDurationProbe` (via `capsule.ProcessRunner` pour le
+  couplage process, interdit dans le noyau) et réutilise le parseur **pur**
+  `video.kernel.FfprobeDurationParser` — fin de la duplication de parsing.
+- `capsule.MediaProbeUtil.probeDuration` **délègue** au port (API publique
+  inchangée pour les ~10 call sites : `CapsuleVideoTask`, `RevealJsEngineAdapter`,
+  `ManimEngine`, `ManimVideoMixer`, `FormatConversion`, `RenderViralVariantsTask`,
+  `GenerateCapsulePodcastTask`, `ValidateCapsuleVideoDurationTask`, …).
+- Tests : `FfprobeDurationProbeTest` (5 unit, runner injecté — jamais de vrai
+  ffprobe) ; `MediaProbeUtilTest` (6 tests existants) reste vert (comportement
+  dégradé préservé).
+
+== Amendement doctrine (S-195)
+
+Le seuil de factorisation doctrinal passe **`3 → 2`** (AGENTS.adoc racine).
+Effet : `KOOG-PIPELINE-DEDUP` (capsule ≈ slider, 2 boroughs N2) passe de
+CADUQUE à **🟡 RÉOUVERT (éligible)**.
+
+== Gates
+
+- **Local = Build** : `compileKotlin` + `compileTestKotlin` +
+  `compileFunctionalTestKotlin` VERTS.
+- **Tests = CI** : `Test` + `Full Tests` après push (la CI résout
+  `video-kernel 0.3.0` depuis **Maven Central** — propagation repo1 confirmée
+  avant push, piège DAG R-1).
+
+== Suite
+
+- `CAP-DECOMPOSE` BS-2→BS-5 (dette god-objects) inchangé.
+- KOOG-PIPELINE-DEDUP : éligible au seuil 2 (décision pilote).

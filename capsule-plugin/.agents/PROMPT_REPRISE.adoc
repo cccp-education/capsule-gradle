@@ -1,50 +1,47 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 195
+:session: 196
 :borough: Détroit
-:session_precedente: 194 — CAP-DECOMPOSE BS-1 : extraction `CapsuleFactory` ✅
+:session_precedente: 195 — VK-4 US-4a : adoption du port partagé `VideoDurationProbe` ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
-_littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc`.
+_littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` + `../../video-kernel-gradle/video-kernel-plugin/.agents/CADRAGE_EPIC_VK_SHARED_PORTS.adoc`.
 
 == Contexte Hérité
 
-=== S-194 — CAP-DECOMPOSE BS-1 ✅ (dette interne : god-objects)
+=== S-195 — VK-4 US-4a : adoption du port partagé `VideoDurationProbe` ✅
 
-Code review S-194 : `CapsuleManager.kt` **1115 l.** et `CapsuleVideoTask.kt` **1005 l.**
-= god-objects (dette propre de capsule, sans lien avec le rattrapage hyperframes).
-Cadrage EPIC `CAP-DECOMPOSE` (pattern slider `SLD-6`, BS-1→BS-5).
+Session transverse (video-kernel + hyperframes + capsule).
+- `video-kernel 0.2.0 → 0.3.0` (toml local).
+- Nouveau `capsule.validation.FfprobeDurationProbe` implémente le port N1
+  `video.kernel.VideoDurationProbe` (couplage process gardé N2 via
+  `capsule.ProcessRunner`) + réutilise `video.kernel.FfprobeDurationParser` (pur).
+- `capsule.MediaProbeUtil.probeDuration` **délègue** (API inchangée).
+- Tests : `FfprobeDurationProbeTest` (5 unit). Compiles ×3 VERTS.
+- **Doctrine** : seuil de factorisation `3 → 2` ; `KOOG-PIPELINE-DEDUP` 🟡 RÉOUVERT.
 
-**BS-1 livré** : le `companion` factories (12 `resolve*` + 3 helpers, ≈210 l.)
-extrait vers l'objet **`CapsuleFactory`** (move pur). `CapsuleManager` **1115 → 906 l.**
-35 call sites rebasculés `CapsuleManager.resolveX` → `CapsuleFactory.resolveX` ;
-6 imports de sous-paquets ; imports `capsule.chapters.*` déplacés ; test
-`CapsuleManagerPathResolutionTest` → `CapsuleFactoryPathResolutionTest` (`git mv`).
-Compiles ×3 VERTS ; **CI Test `38506167654` ✅ + Full Tests `38506167771` ✅**.
+=== S-194 — CAP-DECOMPOSE BS-1 : extraction `CapsuleFactory` ✅
 
 === S-193 — VK-2 : adoption `video-kernel 0.2.0` ✅
 
-- Pin `0.1.0 → 0.2.0` + imports `capsule.kernel` → `video.kernel` (27 fichiers).
+== Mission Session 196 — au choix (pilote)
 
-=== S-190/S-191 — capsule ↔ video-kernel ✅
-
-== Mission Session 195 — au choix (pilote)
-
-* A) **CAP-DECOMPOSE BS-2** : extraire `CapsuleViralRegistrar` (plus gros cluster ~300 l.)
-  ; `registerTasks()` délègue.
+* A) **CAP-DECOMPOSE BS-2** : extraire `CapsuleViralRegistrar` (~300 l.) ;
+  `registerTasks()` délègue.
 * B) **CAP-DECOMPOSE BS-3** : `CapsuleQcRegistrar` + `CapsuleVoiceRegistrar`.
-* C) **Release capsule `0.0.11`** intégrant `video-kernel 0.2.0`.
-* D) Nouvelle demande pilote.
+* C) **KOOG-PIPELINE-DEDUP** (🟡 éligible au seuil 2 désormais) — extraction du
+  squelette koog capsule ≈ slider (cible N1 `codebase.koog.pipeline`).
+* D) **Release capsule `0.0.11`** intégrant `video-kernel 0.3.0`.
+* E) Nouvelle demande pilote.
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
-* **Moves purs** : aucun changement de logique (les tests fonctionnels/Cucumber
-  vérifient l'enregistrement + le comportement).
+* **Moves purs** : aucun changement de logique (BS-2/3).
 * **Règle 2 — PUBLISH** : accord pilote. **Règle 6 — ZÉRO secret**.
 * **English only** ; **zéro Python** ; runner dédié par feature (S-082), steps préfixés (S-088).
-* Catalogue **interne** : `video-kernel = "0.2.0"`, `workspace-bom` aligné BOM `0.0.86+`.
+* Catalogue **interne** : `video-kernel = "0.3.0"`, BOM `0.0.83`.
 
 == Rappels
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.10** (Central).
-* `education.cccp:video-kernel:0.2.0` (Central). MEMPHIS BOM/catalog **0.0.90**.
-* `capsule.kernel` n'existe plus → `video.kernel.*`.
+* `education.cccp:video-kernel:0.3.0` (Central). MEMPHIS BOM/catalog **0.0.90**.
+* Doctrine de factorisation : **seuil `à 2`** (amendement S-195).

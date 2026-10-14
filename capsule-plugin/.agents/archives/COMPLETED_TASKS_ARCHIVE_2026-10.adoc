@@ -1,6 +1,20 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-14
 
+== Session 195 — VK-4 US-4a : adoption du port partagé `VideoDurationProbe` ✅
+
+* `video-kernel 0.2.0 → 0.3.0` (toml local). `capsule.validation.FfprobeDurationProbe`
+  implémente le port N1 `video.kernel.VideoDurationProbe` + parseur pur noyau.
+* `capsule.MediaProbeUtil.probeDuration` délègue (API inchangée). +5 unit.
+* Doctrine : seuil de factorisation `3 → 2`.
+* Rapport `.agents/sessions/195-vk4-adoption-shared-probe.adoc`.
+
+== Session 194 — CAP-DECOMPOSE BS-1 (extraction `CapsuleFactory`) ✅
+
+* `companion` factories (12 `resolve*` + 3 helpers, ≈210 l.) → `CapsuleFactory` (move pur).
+* `CapsuleManager` 1115 → 906 l. ; compiles ×3 VERTS ; CI Test + Full Tests ✅.
+* Rapport `.agents/sessions/194-cap-decompose-bs1-capsulefactory.adoc`.
+
 == Session 193 — VK-2 adoption `video-kernel 0.2.0` (package neutre) ✅
 
 * Breaking coordonné : pin `0.1.0 → 0.2.0` + imports `capsule.kernel` → `video.kernel` (27 fichiers).
@@ -88,7 +102,7 @@
 
 * Gouvernance pure, zéro code (patron S-057/S-063). Découpler le **métier** vidéo du
   **moteur** reveal.js/slider + **préparer la mutualisation** avec `hyperframes-gradle`.
-  Décision pilote : **ne pas attendre le seuil « factoriser à 3 »**.
+  Décision pilote : **doctrine de factorisation, seuil `à 2`** (amendement S-195 : ne pas attendre 3).
 * Review code des deux boroughs : **capsule 190 fichiers / 20 domaines / 31 tâches** vs
   **hyperframes 16 / 3 / 3** (écart outillage ~10:1). Point chaud : `CapsuleVideoTask.kt`
   (**1248 l.**) mêlant noyau (TTS/audio/sous-titres) + adapter reveal.js
@@ -105,7 +119,7 @@
   `.agents/sessions/184-cap-engine-decoupling-cadrage.adoc`. Côté Watts :
   `.agents/CADRAGE_EPIC_HF_KERNEL_ADAPTER.adoc`.
 
-== Session 183 — Cadrage EPIC `KOOG-PIPELINE-DEDUP` → CADUQUE ✅
+== Session 183 — Cadrage EPIC `KOOG-PIPELINE-DEDUP` → 🟡 RÉOUVERT (éligible S-195)
 
 * Gouvernance pure, zéro code (patron S-057/S-063). Audit du TODO dormant
   (`TODO.adoc:339`) : `CapsulePipelineGraph` (capsule, 148 l.) ≈ `DeckPipelineGraph`
@@ -113,9 +127,10 @@
   `edge`, `execute()` séquentiel fail-fast, `asMermaidDiagram`).
 * `KoogAugmentedContextGraph` (codebase, 156 l.) = **forme différente** (linéaire, pas de
   gate `contextValid`, dégradation continue, nœuds domaine).
-* **Verdict : CADUQUE (statu quo)** — 2 boroughs N2 seulement, seuil doctrine
-  « factoriser à 3 » non atteint. **Déclencheur documenté** (3ᵉ borough N2 ; cible N1
-  `codebase.koog.pipeline`). Nom corrigé : `pipeline-contracts` (MEMPHIS) = release-notes.
+* **Verdict (révisé S-195)** : *historiquement* CADUQUE (seuil doctrine « factoriser à 3 »
+  non atteint) ; **amendement S-195 : seuil `3 → 2`** → les **2 boroughs N2** franchissent
+  la condition → **🟡 RÉOUVERT (éligible)** (cible N1 `codebase.koog.pipeline` ; décision
+  d'exécution = pilote). Nom corrigé : `pipeline-contracts` (MEMPHIS) = release-notes.
 * Doc `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc`. Rapport
   `.agents/sessions/183-koog-pipeline-dedup-cadrage.adoc`.
 

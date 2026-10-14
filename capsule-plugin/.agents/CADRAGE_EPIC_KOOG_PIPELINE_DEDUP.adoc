@@ -1,7 +1,18 @@
 = CADRAGE — EPIC KOOG-PIPELINE-DEDUP (Détroit / capsule-gradle)
-:session: 183
+:session: 183 (révisé S-195)
 :date: 2026-10-12
+:statut: 🟡 RÉOUVERT (éligible) — amendement doctrine S-195 : seuil « factoriser à 2 »
 :toc:
+
+== Amendement S-195 — seuil de factorisation 3 → 2
+
+La décision ci-dessous était **CADUQUE** parce qu'aucun côté dupliqué ne franchissait
+le seuil **« factoriser à 3 »**. **Amendement pilote S-195** : le seuil doctrinal passe
+**à 2** (un second cas suffit à factoriser). Conséquence : `CapsulePipelineGraph`
+(capsule) ≈ `DeckPipelineGraph` (slider) = **2 boroughs N2** → la condition est
+désormais **remplie**. Le statut passe de CADUQUE à **🟡 RÉOUVERT (éligible)** — la
+décision d'exécuter l'extraction reste au pilote. Le reste du cadrage (analyse,
+cibles d'extraction, coût) demeure valide.
 
 == Objectif
 
@@ -53,17 +64,16 @@ tranche B (extraire) vs CADUQUE (statu quo).
 
 == Décision
 
-. **CADUQUE (statu quo)** — on **ne factorise pas** : un seul adopter effectif de
-   chaque côté dupliqué ne franchit pas le seuil « factoriser à 3 » de la doctrine N2
-   (la duplication verbatim est assumée par la boundary). Le gain (~90 lignes) ne
-   justifie ni un nouveau module N0 + publication Central + bump BOM + adoption, ni la
-   perte de lisibilité d'un générique paramétré par 5 callbacks.
-. **Déclencheur documenté** — rouvrir un EPIC `KOOG-PIPELINE-DEDUP` (nom correct) dès
-   qu'un **3ᵉ borough N2** adopte le squelette `propose → validate → generate` + gate
-   `contextValid`. À ce moment : extraire un générique
-   `PipelineGraph<STATE, STAGE, LLM, PROMPT_BUILDER, VALIDATOR>` (probablement N1
-   `codebase.koog.pipeline` — koog est la dépendance, pas un contrat pur N0 sans effet
-   de bord ; cf. CADUQUE `LLM-RESILIENCE N0` S-162).
+. **🟡 RÉOUVERT (éligible) — amendement S-195.** *Historiquement* CADUQUE : un seul
+   adopter effectif de chaque côté dupliqué ne franchissait pas le seuil
+   « factoriser à 3 » de la doctrine N2 (la duplication verbatim est assumée par la
+   boundary). **Mais le seuil doctrinal passe à `2` (S-195)** : les 2 boroughs N2
+   (capsule ≈ slider) le franchissent désormais → l'extraction devient **éligible**.
+   Le gain (~90 lignes) justifie un générique `PipelineGraph<STATE, STAGE, LLM,
+   PROMPT_BUILDER, VALIDATOR>` (probablement N1 `codebase.koog.pipeline` — koog est
+   la dépendance, pas un contrat pur N0). Décision d'exécution = pilote.
+. **Déclencheur (obsolète sous seuil 2)** — la clause « rouvrir dès qu'un **3ᵉ**
+   borough N2 adopte » est remplacée par le seuil `2` (amendement S-195).
 . **Corriger le titre du TODO** (levée de l'ambiguïté `pipeline-contracts`).
 
 == Precedent

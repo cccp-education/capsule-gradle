@@ -9,7 +9,7 @@
 
 Découpler le **métier** vidéo du **moteur** reveal.js/slider dans capsule et
 **préparer la mutualisation** du code avec `hyperframes-gradle` — sans attendre le
-seuil doctrinal « factoriser à 3 » (décision pilote explicite).
+seuil doctrinal « factoriser à 2 » (amendement S-195 ; décision pilote explicite).
 
 == Déclencheur
 
@@ -65,7 +65,7 @@ relation avec le moteur slider ».
 
 == Précédents
 
-* `KOOG-PIPELINE-DEDUP` (S-183, CADUQUE) : seuil « factoriser à 3 ».
+* `KOOG-PIPELINE-DEDUP` (S-183, 🟡 RÉOUVERT S-195) : seuil « factoriser à 2 » (amendement S-195).
 * `LLM-RESILIENCE N0` (S-162, CADUQUE) : N0 = contrats purs, lib utilitaire ≠ N0.
 
 == Statut

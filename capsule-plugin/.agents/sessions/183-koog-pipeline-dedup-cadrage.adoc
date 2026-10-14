@@ -34,11 +34,12 @@ Session C (audit, lecture seule) — le verdict tranche B (extraire) vs CADUQUE.
 
 == Décision
 
-. **CADUQUE (statu quo)** — seuil « factoriser à 3 » non atteint ; gain ~90 lignes,
-   coût (module N0 + Central + BOM + adoption + générique 5 callbacks) disproportionné.
-. **Déclencheur documenté** — rouvrir `KOOG-PIPELINE-DEDUP` (nom correct) au **3ᵉ borough
-   N2** adoptant `propose → validate → generate` ; cible probable N1 `codebase.koog.pipeline`
-   (koog = dépendance, pas un contrat pur N0 ; cf. LLM-RESILIENCE N0 CADUQUE S-162).
+. **Historiquement CADUQUE (statu quo)** — seuil « factoriser à 3 » non atteint ;
+   gain ~90 lignes, coût disproportionné.
+. **🟡 Amendement S-195 — RÉOUVERT (éligible)** : le seuil doctrinal de factorisation
+   passe **`3 → 2`** ; les **2 boroughs N2** (capsule ≈ slider) franchissent désormais la
+   condition → extraction **éligible** (cible N1 `codebase.koog.pipeline` ; koog =
+   dépendance, pas un contrat pur N0). Décision d'exécution = pilote.
 . Corriger le titre du TODO (ambiguïté `pipeline-contracts`).
 
 == Gates

@@ -1,7 +1,17 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-14
-:session: 194 CAP-DECOMPOSE BS-1 (extraction CapsuleFactory)
+:session: 195 VK-4 US-4a (adoption port partagé VideoDurationProbe)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 14 octobre 2026 (après session 195)
+
+.VK-4 US-4a — adoption du port partagé `VideoDurationProbe`
+|===
+| Élément | Changement | Tests
+
+| `capsule/validation/FfprobeDurationProbe.kt` (créé) | implémente le port N1 `video.kernel.VideoDurationProbe` (couplage process via `capsule.ProcessRunner`) + parseur pur `video.kernel.FfprobeDurationParser` | +5 `FfprobeDurationProbeTest` (runner injecté)
+| `capsule/MediaProbeUtil.kt` | `probeDuration` **délègue** au port (API inchangée) | `MediaProbeUtilTest` (6) inchangé/vert
+|===
 
 == Couverture — 14 octobre 2026 (après session 194)
 
