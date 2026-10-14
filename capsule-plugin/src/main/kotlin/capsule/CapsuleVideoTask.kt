@@ -14,10 +14,8 @@ import capsule.feed.deckName
 import capsule.feed.type
 import video.kernel.FileVisualSource
 import video.kernel.VideoRenderRequest
-import capsule.multilang.MultiLanguageResolver
 import capsule.voice.PronunciationLexicon
 import capsule.validation.VideoIntegrityProbe
-import capsule.viral.ViralViewport
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.Internal
@@ -49,27 +47,6 @@ open class CapsuleVideoTask : DefaultTask() {
 
         /** PRT-06 — sidecar suffix holding the render signature next to a video. */
         internal const val SIGNATURE_SUFFIX: String = ".sig"
-
-        /**
-         * Concatenates per-slide video files via the FFmpeg concat demuxer.
-         *
-         * Delegates to the reveal.js adapter (CAP-ENGINE-DECOUPLING US-2); kept
-         * on this companion for backward compatibility of existing call-sites.
-         */
-        @JvmStatic
-        fun concatWebmFiles(webmFiles: List<File>, outputFile: File, ffmpegPath: String = "ffmpeg"): Boolean =
-            RevealJsEngineAdapter.concat(webmFiles, outputFile, ffmpegPath)
-
-        /**
-         * Extracts a single slide from a reveal.js deck HTML into a standalone
-         * document.
-         *
-         * Delegates to [RevealJsDeckHtml] (CAP-ENGINE-DECOUPLING US-2); kept on
-         * this companion for backward compatibility of existing call-sites.
-         */
-        @JvmStatic
-        fun createSingleSlideHtml(deckHtml: String, slideIndex: Int): String =
-            RevealJsDeckHtml.singleSlideHtml(deckHtml, slideIndex)
 
     }
 
@@ -135,7 +112,7 @@ open class CapsuleVideoTask : DefaultTask() {
                 // Manim writes under <mediaDir>/videos/<module>/<quality>/ ;
                 // the quality directory depends on the resolution asked for,
                 // so every leaf is offered rather than one guessed path.
-                manimSources = manimVideoDirs(),
+                manimSources = CapsuleVideoResolvers.manimVideoDirs(project, capsuleExtension),
             ),
             plan = plan,
             logger = logger,
@@ -144,138 +121,27 @@ open class CapsuleVideoTask : DefaultTask() {
 
     internal fun resolveTtsEngine(): TtsEngine {
         if (ttsEngine != null) return ttsEngine!!
-
-        val langCode = capsuleExtension.ttsLanguage.get()
-        val resolvedLanguage = MultiLanguageResolver.resolve(langCode)?.language
-
-        return when (capsuleExtension.ttsEngine.get().lowercase()) {
-            "piper" -> {
-                val engine = PiperTtsEngine(
-                    capsuleExtension.piperExecutablePath.get(),
-                    capsuleExtension.ttsVoice.get(),
-                    language = resolvedLanguage
-                )
-                if (engine.isAvailable()) {
-                    engine
-                } else {
-                    StrictModeGuard.requireAvailable(
-                        strict = capsuleExtension.strictMode.get(),
-                        engineName = "piper",
-                        isAvailable = false,
-                        path = capsuleExtension.piperExecutablePath.get()
-                    )
-                    NoOpTtsEngine()
-                }
-            }
-            "espeak" -> {
-                val voice = capsuleExtension.espeakVoice.get()
-                val speed = capsuleExtension.espeakSpeed.get()
-                val engine = EspeakTtsEngine(voice = voice, speed = speed, language = resolvedLanguage)
-                if (engine.isAvailable()) {
-                    engine
-                } else {
-                    StrictModeGuard.requireAvailable(
-                        strict = capsuleExtension.strictMode.get(),
-                        engineName = "espeak",
-                        isAvailable = false,
-                        path = "espeak"
-                    )
-                    NoOpTtsEngine()
-                }
-            }
-            "fish", "fish-audio" -> {
-                val keys = CapsuleConfigLoader.loadFishAudio(
-                    project.file(capsuleExtension.fishAudioConfigPath.get())
-                )
-                val params = FishAudioParams(
-                    voice = capsuleExtension.ttsFishVoice.get(),
-                    model = capsuleExtension.ttsFishModel.get(),
-                    format = capsuleExtension.ttsFishFormat.get(),
-                    temperature = capsuleExtension.ttsFishTemperature.get(),
-                    topP = capsuleExtension.ttsFishTopP.get(),
-                    endpoint = capsuleExtension.ttsFishEndpoint.get(),
-                )
-                val engine = FishAudioTtsEngine(
-                    params, keys, ffmpegPath = capsuleExtension.ffmpegExecutablePath.get(),
-                )
-                if (engine.isAvailable()) {
-                    engine
-                } else {
-                    StrictModeGuard.requireAvailable(
-                        strict = capsuleExtension.strictMode.get(),
-                        engineName = "fish",
-                        isAvailable = false,
-                        path = capsuleExtension.fishAudioConfigPath.get()
-                    )
-                    NoOpTtsEngine()
-                }
-            }
-            else -> NoOpTtsEngine()
-        }
+        return CapsuleVideoResolvers.resolveTtsEngine(project, capsuleExtension)
     }
 
     private fun resolveManimEngineInternal(): ManimEngine {
         if (manimEngine != null) return manimEngine!!
-
-        val config = ManimConfig(
-            executablePath = capsuleExtension.manimExecutablePath.get(),
-            quality = capsuleExtension.manimQuality.get(),
-            scriptsDir = capsuleExtension.manimScriptsDir.get(),
-            outputDir = capsuleExtension.manimOutputDir.get()
-        )
-        val engine = CapsuleFactory.resolveManimEngine(config, strict = capsuleExtension.strictMode.get())
-        if (engine.isAvailable()) {
-            logger.lifecycle("Manim engine: {} (available)", engine.name())
-        } else {
-            logger.warn("Manim engine not available, using noop fallback")
-        }
-        return engine
+        return CapsuleVideoResolvers.resolveManimEngine(capsuleExtension, logger)
     }
 
     private fun resolveManimVideoMixerInternal(): ManimVideoMixer {
         if (manimVideoMixer != null) return manimVideoMixer!!
-
-        val ffmpegPath = capsuleExtension.ffmpegExecutablePath.get()
-        val mixer = CapsuleFactory.resolveManimVideoMixer(ffmpegPath, strict = capsuleExtension.strictMode.get())
-        if (mixer.isAvailable()) {
-            logger.lifecycle("Manim video mixer: {} (available)", mixer.name())
-        } else {
-            logger.warn("Manim video mixer not available, using noop fallback")
-        }
-        return mixer
+        return CapsuleVideoResolvers.resolveManimVideoMixer(capsuleExtension, logger)
     }
 
     private fun resolveManimSlideReplacerInternal(): ManimSlideReplacer {
         if (manimSlideReplacer != null) return manimSlideReplacer!!
-        val replacer = CapsuleFactory.resolveManimSlideReplacer()
-        logger.lifecycle("Manim slide replacer: {} (available)", replacer.name())
-        return replacer
+        return CapsuleVideoResolvers.resolveManimSlideReplacer(logger)
     }
 
     private fun resolveManimParallelRenderer(): ManimParallelRenderer {
         if (manimParallelRenderer != null) return manimParallelRenderer!!
-        val parallelism = if (capsuleExtension.manimParallelRender.get()) capsuleExtension.manimParallelRenderThreads.get() else 1
-        val renderer = CapsuleFactory.resolveManimParallelRenderer(parallelism)
-        logger.lifecycle("Manim parallel renderer: {} (parallelism={})", renderer.name(), parallelism)
-        return renderer
-    }
-
-    /**
-     * Every directory that may hold a Manim render, deepest first.
-     *
-     * Manim nests its output under a quality folder whose name follows the
-     * requested resolution (`792p30`, `1080p60`...), so the tree is walked
-     * instead of assuming one.
-     */
-    private fun manimVideoDirs(): List<File> {
-        val roots = listOf(
-            project.file(capsuleExtension.manimOutputDir.get()),
-            project.layout.buildDirectory.dir(capsuleExtension.manimOutputDir.get()).get().asFile,
-            project.file("build/manim"),
-        ).filter { it.isDirectory }
-        return roots.flatMap { root ->
-            root.walkTopDown().maxDepth(4).filter { it.isDirectory }.toList()
-        }.distinct()
+        return CapsuleVideoResolvers.resolveManimParallelRenderer(capsuleExtension, logger)
     }
 
     internal fun computeSlideDurations(parsed: CapsuleScript, audioDir: File): List<Double> {
@@ -444,11 +310,7 @@ open class CapsuleVideoTask : DefaultTask() {
      * otherwise the pedagogical landscape default is preserved (backward compat).
      */
     private fun resolveViewport(): Pair<Int, Int> =
-        ViralViewport.resolve(
-            viralEnabled = capsuleExtension.viralEnabled.getOrElse(false),
-            defaultWidth = capsuleExtension.viewportWidth.get(),
-            defaultHeight = capsuleExtension.viewportHeight.get(),
-        )
+        CapsuleVideoResolvers.resolveViewport(capsuleExtension)
 
     internal fun captureDeckSequential(
         parsed: CapsuleScript,
@@ -721,28 +583,12 @@ open class CapsuleVideoTask : DefaultTask() {
 
     private fun resolveSubtitleGenerator(format: SubtitleFormat): SubtitleGenerator {
         if (subtitleGenerator != null) return subtitleGenerator!!
-        return when (format) {
-            SubtitleFormat.VTT -> VttGenerator()
-            SubtitleFormat.SRT -> SrtGenerator()
-        }
+        return CapsuleVideoResolvers.resolveSubtitleGenerator(format)
     }
 
     private fun resolveSubtitleBurnInService(): SubtitleBurnInService {
         if (subtitleBurnInService != null) return subtitleBurnInService!!
-        val ffmpegPath = capsuleExtension.ffmpegExecutablePath.get()
-        val style = SubtitleBurnInStyle(
-            fontSize = capsuleExtension.subtitleBurnInFontSize.get(),
-            fontColor = capsuleExtension.subtitleBurnInFontColor.get(),
-            outlineColor = capsuleExtension.subtitleBurnInOutlineColor.get(),
-            position = capsuleExtension.subtitleBurnInPosition.get()
-        )
-        val service = CapsuleFactory.resolveSubtitleBurnInService(ffmpegPath, style, strict = capsuleExtension.strictMode.get())
-        if (service.isAvailable()) {
-            logger.lifecycle("Subtitle burn-in service: {} (available, style: fontSize={}, color={}, position={})", service.name(), style.fontSize, style.fontColor, style.position)
-        } else {
-            logger.warn("Subtitle burn-in service not available, using noop fallback")
-        }
-        return service
+        return CapsuleVideoResolvers.resolveSubtitleBurnInService(capsuleExtension, logger)
     }
 
     internal fun injectSubtitleTrack(deckHtml: String, subtitleFile: File): String {

@@ -181,8 +181,8 @@ class RemotionCaptureImpl(
          * document when the deck carries no `slides` container.
          *
          * The extraction itself lives in [HtmlSectionParser.slidesMarkup]:
-         * [CapsuleVideoTask.createSingleSlideHtml] needs exactly the same rule,
-         * and kept its own — non-greedy, hence truncating — copy of it.
+         * [capsule.adapter.revealjs.RevealJsDeckHtml.singleSlideHtml] needs exactly
+         * the same rule, and kept its own — non-greedy, hence truncating — copy of it.
          */
         internal fun slidesMarkup(deckHtml: String): String =
             HtmlSectionParser.slidesMarkup(deckHtml) ?: deckHtml

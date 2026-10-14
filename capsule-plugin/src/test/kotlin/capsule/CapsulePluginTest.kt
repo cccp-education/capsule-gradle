@@ -2,6 +2,8 @@ package capsule
 
 import capsule.feed.CapsuleScript
 import capsule.feed.CapsuleScriptReader
+import capsule.adapter.revealjs.RevealJsDeckHtml
+import capsule.adapter.revealjs.RevealJsEngineAdapter
 import video.kernel.segment.VideoKind
 import capsule.feed.SlideSegment
 import capsule.test.BinaryAvailability
@@ -1433,7 +1435,7 @@ class ParallelCaptureTest {
         val webm2 = File(tempDir, "slide2.webm").also { createTinyWebm(it) }
         val output = File(tempDir, "output.webm")
 
-        val result = CapsuleVideoTask.concatWebmFiles(listOf(webm1, webm2), output)
+        val result = RevealJsEngineAdapter.concat(listOf(webm1, webm2), output)
 
         assertTrue(result, "concatWebmFiles should succeed")
         assertTrue(output.exists(), "Output file should exist")
@@ -1445,7 +1447,7 @@ class ParallelCaptureTest {
     @Test
     fun `concatWebmFiles handles empty list gracefully`() {
         val output = File(tempDir, "empty.webm")
-        val result = CapsuleVideoTask.concatWebmFiles(emptyList(), output)
+        val result = RevealJsEngineAdapter.concat(emptyList(), output)
         assertTrue(!result, "Should return false for empty list")
         assertTrue(!output.exists(), "No output should be created for empty list")
     }
@@ -1456,7 +1458,7 @@ class ParallelCaptureTest {
         val webm1 = File(tempDir, "a.webm").also { createTinyWebm(it) }
         val output = File(tempDir, "out.webm")
 
-        CapsuleVideoTask.concatWebmFiles(listOf(webm1), output)
+        RevealJsEngineAdapter.concat(listOf(webm1), output)
 
         assertTrue(!webm1.exists(), "Input file should be deleted after concat")
         assertTrue(output.exists(), "Output should exist")
@@ -1468,7 +1470,7 @@ class ParallelCaptureTest {
         val webm1 = File(tempDir, "single.webm").also { createTinyWebm(it) }
         val output = File(tempDir, "fallback.webm")
 
-        val result = CapsuleVideoTask.concatWebmFiles(listOf(webm1), output, "__nonexistent_ffmpeg__")
+        val result = RevealJsEngineAdapter.concat(listOf(webm1), output, "__nonexistent_ffmpeg__")
         assertTrue(!result, "Should return false when ffmpeg not available")
         assertTrue(!output.exists(), "No output should exist when ffmpeg not available")
         assertTrue(webm1.exists(), "Input files should NOT be deleted when concat fails")
@@ -1806,7 +1808,7 @@ class CreateSingleSlideHtmlTest {
 
     @Test
     fun `createSingleSlideHtml extracts first slide as standalone HTML`() {
-        val result = CapsuleVideoTask.createSingleSlideHtml(threeSlideDeck, 0)
+        val result = RevealJsDeckHtml.singleSlideHtml(threeSlideDeck, 0)
         assertTrue(result.contains("<section"), "Should contain a section element")
         assertTrue(result.contains("Intro"), "Should contain slide 1 title")
         assertTrue(!result.contains("Topic"), "Should NOT contain slide 2 title")
@@ -1816,7 +1818,7 @@ class CreateSingleSlideHtmlTest {
 
     @Test
     fun `createSingleSlideHtml extracts middle slide as standalone HTML`() {
-        val result = CapsuleVideoTask.createSingleSlideHtml(threeSlideDeck, 1)
+        val result = RevealJsDeckHtml.singleSlideHtml(threeSlideDeck, 1)
         assertTrue(result.contains("Topic"), "Should contain slide 2 title")
         assertTrue(!result.contains("Intro"), "Should NOT contain slide 1 title")
         assertTrue(!result.contains("End"), "Should NOT contain slide 3 title")
@@ -1825,7 +1827,7 @@ class CreateSingleSlideHtmlTest {
 
     @Test
     fun `createSingleSlideHtml preserves head section with CSS`() {
-        val result = CapsuleVideoTask.createSingleSlideHtml(threeSlideDeck, 0)
+        val result = RevealJsDeckHtml.singleSlideHtml(threeSlideDeck, 0)
         assertTrue(result.contains("reveal.css"), "Should include reveal.js CSS")
         assertTrue(result.contains("white.css"), "Should include theme CSS")
         assertTrue(result.contains("<style>"), "Should include custom styles")
@@ -1833,7 +1835,7 @@ class CreateSingleSlideHtmlTest {
 
     @Test
     fun `createSingleSlideHtml forces the slide visible without pulling a reveal js copy`() {
-        val result = CapsuleVideoTask.createSingleSlideHtml(threeSlideDeck, 0)
+        val result = RevealJsDeckHtml.singleSlideHtml(threeSlideDeck, 0)
         assertTrue(result.contains("reveal.js"), "Should include reveal.js script")
         // Injecting a CDN reveal.js on top of the deck's own runtime re-laid out the
         // page (titles and captions pushed off-screen) and made parallel capture
@@ -1873,7 +1875,7 @@ class CreateSingleSlideHtmlTest {
 </body></html>
         """.trimIndent()
 
-        val result = CapsuleVideoTask.createSingleSlideHtml(deckWithDivs, 1)
+        val result = RevealJsDeckHtml.singleSlideHtml(deckWithDivs, 1)
 
         assertTrue(result.contains("Topic"), "La diapo demandée doit être là : $result")
         assertTrue(!result.contains("Intro"), "La diapo 1 ne doit pas suivre : $result")
@@ -1882,7 +1884,7 @@ class CreateSingleSlideHtmlTest {
 
     @Test
     fun `createSingleSlideHtml with out-of-range index returns fallback`() {
-        val result = CapsuleVideoTask.createSingleSlideHtml(threeSlideDeck, 99)
+        val result = RevealJsDeckHtml.singleSlideHtml(threeSlideDeck, 99)
         // Should return the original HTML unchanged as fallback
         assertTrue(result.contains("Intro"), "Fallback should return original deck")
         assertTrue(result.contains("End"), "Fallback should return original deck")
@@ -1904,7 +1906,7 @@ class CreateSingleSlideHtmlTest {
 <script>Reveal.initialize();</script>
 </body></html>
         """.trimIndent()
-        val result = CapsuleVideoTask.createSingleSlideHtml(deckWithAudio, 0)
+        val result = RevealJsDeckHtml.singleSlideHtml(deckWithAudio, 0)
         assertTrue(result.contains("data-audio"), "Should preserve data-audio attribute")
         assertTrue(result.contains("slide-01.mp3"), "Should preserve audio file path")
         assertTrue(!result.contains("Slide 2"), "Should NOT contain slide 2")
@@ -1928,7 +1930,7 @@ class CreateSingleSlideHtmlTest {
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
 </body></html>
         """.trimIndent()
-        val result = CapsuleVideoTask.createSingleSlideHtml(deckWithNested, 0)
+        val result = RevealJsDeckHtml.singleSlideHtml(deckWithNested, 0)
         assertTrue(result.contains("Sub A"), "Should contain nested subsection A")
         assertTrue(result.contains("Sub B"), "Should contain nested subsection B")
         assertTrue(!result.contains("Other"), "Should NOT contain slide 2")

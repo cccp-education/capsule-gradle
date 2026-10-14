@@ -238,7 +238,7 @@ class HtmlSectionParserTest {
 
     /**
      * `headMarkup` est appelé par RemotionCaptureImpl ET par
-     * CapsuleVideoTask.createSingleSlideHtml : c'est ce qui garde à chaque diapo
+     * RevealJsDeckHtml.singleSlideHtml : c'est ce qui garde à chaque diapo
      * extraite sa feuille de style. Les trois appelants en avaient chacun leur
      * copie, dont deux recompilaient l'expression à chaque diapo.
      */
