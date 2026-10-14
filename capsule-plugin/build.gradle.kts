@@ -28,6 +28,36 @@ repositories {
 cucumberConventions {
     featuresDir = "src/test/features"
     additionalTasks = listOf(
+        // ── CI shards (parallel `full-tests.yml`) ───────────────────────────────
+        // Exhaustive, disjoint feature shards of the aggregate `CucumberTestRunner`,
+        // so the BDD suite runs across several CI machines in parallel instead of one
+        // ~14 min job (each shard keeps the one-JVM/aggregate efficiency). Exhaustiveness
+        // and disjointness are guarded by capsule.ci.CapsuleCucumberShardCoverageTest.
+        CucumberTaskSpec(
+            name = "cucumberTestShardKernel",
+            runnerClass = "capsule.scenarios.CucumberShardKernelRunner",
+            timeoutMinutes = 30,
+        ),
+        CucumberTaskSpec(
+            name = "cucumberTestShardContext",
+            runnerClass = "capsule.scenarios.CucumberShardContextRunner",
+            timeoutMinutes = 30,
+        ),
+        CucumberTaskSpec(
+            name = "cucumberTestShardQc",
+            runnerClass = "capsule.scenarios.CucumberShardQcRunner",
+            timeoutMinutes = 30,
+        ),
+        CucumberTaskSpec(
+            name = "cucumberTestShardMedia",
+            runnerClass = "capsule.scenarios.CucumberShardMediaRunner",
+            timeoutMinutes = 30,
+        ),
+        CucumberTaskSpec(
+            name = "cucumberTestShardAiViral",
+            runnerClass = "capsule.scenarios.CucumberShardAiViralRunner",
+            timeoutMinutes = 30,
+        ),
         // Focused cucumber run for the CAP-ARCH-2 augmented context feature
         // (fast iteration without the full Playwright suite, ~15 min).
         CucumberTaskSpec(

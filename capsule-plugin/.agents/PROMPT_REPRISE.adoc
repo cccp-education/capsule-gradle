@@ -1,40 +1,39 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 198
+:session: 199
 :borough: Détroit
-:session_precedente: 197 — CAP-DECOMPOSE BS-3 + BS-4 : registrars par domaine ✅
+:session_precedente: 198 — CI sharding : `full-tests.yml` en matrice parallèle ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc`.
 
 == Contexte Hérité
 
-=== S-197 — CAP-DECOMPOSE BS-3 + BS-4 ✅ (moves purs)
+=== S-198 — CI sharding ✅ (ci-infra)
 
-**BS-3** : `CapsuleQcRegistrar` (4 tâches) + `CapsuleVoiceRegistrar` (2 tâches).
-**BS-4** : `CapsuleCoreRegistrar` (7) + `CapsuleContextRegistrar` (6 + `resolveGlobFiles`)
-+ `CapsulePodcastRegistrar` (1) + `CapsuleAiRegistrar` (1).
-`CapsuleManager` **réécrit en orchestrateur mince (22 l.)** — `registerTasks()` délègue
-aux 7 registrars. Compiles ×3 VERTS ; aucun test modifié.
+`full-tests.yml` éclaté en **7 jobs parallèles** : matrice `bdd-shard` (5 shards exhaustifs
+et disjoints des 48 features, 1 JVM/shard) + `functional` + `integration` (real render).
+Garde `capsule.ci.CapsuleCucumberShardCoverageTest` (partition + câblage CI).
+`concurrency` + `workflow_dispatch` ajoutés. 5 runners `CucumberShard*Runner` + 5 `CucumberTaskSpec`.
+Wall-clock attendu ~6-8 min (vs ~24 min).
 
-=== S-196 — CAP-DECOMPOSE BS-2 : `CapsuleViralRegistrar` ✅
+=== S-197 — CAP-DECOMPOSE BS-3 + BS-4 ✅
 
-=== S-195 — VK-4 US-4a : adoption du port partagé `VideoDurationProbe` ✅
+=== S-196 — CAP-DECOMPOSE BS-2 ✅
 
-== Mission Session 198 — au choix (pilote)
+== Mission Session 199 — au choix (pilote)
 
 * A) **CAP-DECOMPOSE BS-5** : `CapsuleVideoTask` (1005 l.) — résolveurs + helpers
   statiques (risque **élevé**, dernier god-object).
-* B) **KOOG-PIPELINE-DEDUP** (🟡 éligible au seuil 2) — squelette koog capsule ≈ slider
-  (cible N1 `codebase.koog.pipeline`).
+* B) **KOOG-PIPELINE-DEDUP** (🟡 éligible au seuil 2).
 * C) **Release capsule `0.0.11`** intégrant `video-kernel 0.3.0` + CAP-DECOMPOSE (BS-1→4).
 * D) Nouvelle demande pilote.
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
-* **Moves purs** : aucun changement de logique (les tests fonctionnels/Cucumber
-  vérifient l'enregistrement + le comportement).
 * **Règle 2 — PUBLISH** : accord pilote. **Règle 6 — ZÉRO secret**.
 * **English only** ; **zéro Python** ; runner dédié par feature (S-082), steps préfixés (S-088).
+* **CI sharding** : toute nouvelle feature doit être rattachée à un shard (garde
+  `CapsuleCucumberShardCoverageTest` sinon rouge).
 
 == Rappels
 

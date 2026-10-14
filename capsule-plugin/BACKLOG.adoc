@@ -1,6 +1,17 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-14 (S-197 — CAP-DECOMPOSE BS-3 + BS-4 : registrars par domaine (QC/Voice/Core/Context/Podcast/Ai), `CapsuleManager` en orchestrateur mince (22 l.). Précédent S-196 : BS-2 `CapsuleViralRegistrar`.)
+:last_update: 2026-10-14 (S-198 — CI sharding : `full-tests.yml` en 7 jobs parallèles (5 shards BDD + functional + integration). Précédent S-197 : CAP-DECOMPOSE BS-3 + BS-4.)
+
+'''
+== ✅ CI-SHARDING — `full-tests.yml` en matrice parallèle (S-198)
+
+Le job unique (~24 min) éclaté en **7 jobs** : matrice `bdd-shard` de **5 shards
+exhaustifs et disjoints** des 48 features (1 JVM/shard, `@SelectClasspathResource`
+répétable → 5 runners `CucumberShard*Runner` + 5 `CucumberTaskSpec`), + `functional`
+(TestKit) + `integration` (real render Playwright/ffmpeg). Garde
+`capsule.ci.CapsuleCucumberShardCoverageTest` (partition + câblage CI) dans la gate
+rapide `test`. `concurrency` + `workflow_dispatch`. **Wall-clock ~24 min → ~6-8 min.**
+Rapport `.agents/sessions/198-ci-sharding-parallel-matrix.adoc`.
 
 '''
 == ✅ VK-4 US-4a — Adoption du port partagé `VideoDurationProbe` (S-195)

@@ -1,0 +1,62 @@
+= Session 198 — CI sharding : `full-tests.yml` en matrice parallèle (5 shards BDD + functional + integration)
+:session: 198
+:date: 2026-10-14
+:type: ci-infra
+:borough: Détroit / capsule-gradle
+:statut: ✅ TERMINÉ — `full-tests.yml` éclaté en 7 jobs parallèles
+:toc:
+
+== Contexte
+
+`full-tests.yml` était **un seul job** (~24 min) : setup + `test functionalTest` (~8 min) puis
+`cucumberTest cucumberTestViralRender` (~14,5 min, agrégat dans 1 JVM). Objectif pilote :
+éclater en plusieurs jobs parallèles (machines distinctes) par regroupement cohérent.
+
+== Diagnostic (mesures CI réelles)
+
+Depuis le run `38521414668` : setup ~45 s, **unit+functional ≈ 7 min 56 s**,
+**BDD agrégat ≈ 14 min 31 s**. Les 42 runners Cucumber dédiés ne couvrent pas
+7 features « orphelines » (couvertes seulement par l'agrégat) → un sharding naïf par
+runners dédiés **omettrait** des tests (risque « test fantôme », S-269).
+
+== Décision
+
+Sharder le **runner agrégé** (1 JVM par shard = efficacité conservée) en **5 shards
+exhaustifs et disjoints** sur les 48 features, chaque shard sur sa propre machine.
+Mécanisme : `@SelectClasspathResource` **répétable** (vérifié dans `junit-platform-suite-api 1.14.3`),
+5 nouveaux runners `capsule.scenarios.CucumberShard*Runner` + 5 `CucumberTaskSpec`.
+
+[cols="1,4", options="header"]
+|===
+| Shard | Tâche Gradle / features
+
+| kernel | `cucumberTestShardKernel` (9) — kernel_model, engine_adapter, segment_source, arch_boundary, consolidated_capsule_model, pr2_coverage, speaker_notes, cucumber_skip, parallel_capture_timeout
+| context | `cucumberTestShardContext` (10)
+| qc+voice | `cucumberTestShardQc` (8) — dont video_integrity (ffmpeg réel)
+| media | `cucumberTestShardMedia` (10)
+| ai+viral | `cucumberTestShardAiViral` (11) — incl. viral_render (@viral-render filtré → réel en job `integration`)
+|===
+
+`full-tests.yml` = **matrice** `bdd-shard` (5) + `functional` + `integration`
+(real render : Playwright + ffmpeg) = **7 jobs parallèles** (+ `test.yml` unit = 8).
+`concurrency` (annule les runs superseded) + `workflow_dispatch` ajoutés.
+
+== Garde d'exhaustivité (§ anti test fantôme)
+
+`capsule/ci/CapsuleCucumberShardCoverageTest.kt` (2 tests, dans la gate rapide `test`) :
+1. les shards forment une **partition exhaustive et disjointe** de toutes les features ;
+2. chaque runner de shard est une tâche Gradle **et** est invoquée par `full-tests.yml`.
+
+Simulation locale : `diff(union shards, features) = ∅` (48/48), aucun doublon.
+
+== Gates
+
+- **Local = Build** : `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin`
+  VERTS ; tâches `cucumberTestShard*` visibles (`./gradlew tasks --all`).
+- **Tests = CI** : `test.yml` (garde) + `full-tests.yml` (matrice) déclenchés par le push
+  (le changement `build.gradle.kts` + tests n'est pas dans `paths-ignore`).
+
+== Attendu
+
+Wall-clock ≈ **6-8 min** (borné par le shard le plus lourd + `functional`), au lieu de ~24 min.
+Optimisation ultérieure possible : n'installer ffmpeg/Chromium que dans les shards qui en ont besoin.
