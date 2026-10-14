@@ -78,6 +78,12 @@ jobs:
           - name: "BDD · multi-lang-genB"
             task: cucumberTestShardMultiLangGenB
             binaries: ffmpeg
+          - name: "BDD · multi-lang-genC"
+            task: cucumberTestShardMultiLangGenC
+            binaries: ffmpeg
+          - name: "BDD · multi-lang-genD"
+            task: cucumberTestShardMultiLangGenD
+            binaries: ffmpeg
           - name: "BDD · audio-post"
             task: cucumberTestShardAudioPost
             binaries: ffmpeg

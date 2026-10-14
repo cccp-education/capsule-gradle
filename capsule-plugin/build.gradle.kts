@@ -100,7 +100,7 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CucumberShardAudioPostRunner",
             timeoutMinutes = 30,
         ),
-        // The heavy multi-language generation scenario is split into 2 language groups.
+        // The heavy multi-language generation scenario is split into 4 language groups.
         CucumberTaskSpec(
             name = "cucumberTestShardMultiLangGenA",
             runnerClass = "capsule.scenarios.CucumberShardMultiLangGenARunner",
@@ -109,6 +109,16 @@ cucumberConventions {
         CucumberTaskSpec(
             name = "cucumberTestShardMultiLangGenB",
             runnerClass = "capsule.scenarios.CucumberShardMultiLangGenBRunner",
+            timeoutMinutes = 30,
+        ),
+        CucumberTaskSpec(
+            name = "cucumberTestShardMultiLangGenC",
+            runnerClass = "capsule.scenarios.CucumberShardMultiLangGenCRunner",
+            timeoutMinutes = 30,
+        ),
+        CucumberTaskSpec(
+            name = "cucumberTestShardMultiLangGenD",
+            runnerClass = "capsule.scenarios.CucumberShardMultiLangGenDRunner",
             timeoutMinutes = 30,
         ),
         // Integration (@integration / @manim) is split by tag into 2 shards.

@@ -1,5 +1,6 @@
 package capsule.scenarios
 
+import capsule.ci.MultiLangShardPartition
 import capsule.multilang.CapsuleVideoPlan
 import capsule.multilang.CapsuleVideoPlanner
 import contracts.i18n.LanguageCatalog
@@ -69,16 +70,12 @@ Note content in $lang.
     private fun languagesFor(vararg codes: String): List<SupportedLanguage> =
         codes.map { code -> LanguageCatalog.findByCode(code) ?: error("Unknown LanguageCatalog code: $code") }
 
-    /** Deterministic two-way partition of the catalog, for the CI language-group shards. */
-    private fun languageGroup(group: String): List<SupportedLanguage> {
-        val all = allCatalogLanguages()
-        val mid = (all.size + 1) / 2
-        return when (group.lowercase()) {
-            "a" -> all.take(mid)
-            "b" -> all.drop(mid)
-            else -> error("Unknown language group: $group (expected 'a' or 'b')")
-        }
-    }
+    /**
+     * Deterministic N-way partition of the catalog, for the CI language-group
+     * shards (see `capsule.ci.MultiLangShardPartition`).
+     */
+    private fun languageGroup(group: String): List<SupportedLanguage> =
+        MultiLangShardPartition.partition(group, allCatalogLanguages())
 
     private fun buildPlan(targets: List<SupportedLanguage>) {
         try {

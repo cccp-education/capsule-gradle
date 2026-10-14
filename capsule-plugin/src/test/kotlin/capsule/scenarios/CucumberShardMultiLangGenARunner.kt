@@ -13,8 +13,8 @@ import org.junit.platform.suite.api.Suite
  * CI shard — `multi_language_capsule.feature`, heavy generation partition A.
  *
  * The former single "all languages" TestKit scenario (~22 languages) is split into
- * two language-group scenarios (`@multilang-gen-a` / `@multilang-gen-b`); the planner
- * skips languages without a deck+script pair, so each group renders only its half.
+ * four language-group scenarios (`@multilang-gen-a` / `-b` / `-c` / `-d`); the planner
+ * skips languages without a deck+script pair, so each group renders only its quarter.
  * Guarded by `capsule.ci.CapsuleCucumberShardCoverageTest`.
  */
 @Suite
