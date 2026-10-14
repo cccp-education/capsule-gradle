@@ -23,5 +23,8 @@ import org.junit.platform.suite.api.Suite
     key = PLUGIN_PROPERTY_NAME,
     value = "pretty, html:build/reports/cucumber-shard-multilang.html, json:build/reports/cucumber-shard-multilang.json"
 )
-@ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @wip and not @integration and not @viral-render")
+@ConfigurationParameter(
+    key = FILTER_TAGS_PROPERTY_NAME,
+    value = "not @multilang-gen and not @wip and not @integration and not @viral-render"
+)
 class CucumberShardMultiLangRunner

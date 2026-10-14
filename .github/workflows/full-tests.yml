@@ -54,6 +54,10 @@ jobs:
             task: cucumberTestShardMedia
           - name: "BDD · multi-lang"
             task: cucumberTestShardMultiLang
+          - name: "BDD · multi-lang-genA"
+            task: cucumberTestShardMultiLangGenA
+          - name: "BDD · multi-lang-genB"
+            task: cucumberTestShardMultiLangGenB
           - name: "BDD · audio-post"
             task: cucumberTestShardAudioPost
           - name: "BDD · ai+viral"
@@ -149,9 +153,17 @@ jobs:
 
   # ── integration (real render: Playwright + ffmpeg) ─────────────────────────────
   integration:
-    name: Integration (real render)
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "Integration · BDD (@integration/@manim)"
+            task: cucumberTestIntegration
+          - name: "Integration · real render (viral)"
+            task: cucumberTestViralRender
     steps:
       - uses: actions/checkout@v4
 
@@ -172,8 +184,8 @@ jobs:
       - name: Setup Playwright (cached Chromium)
         uses: ./.github/actions/setup-playwright
 
-      - name: Run integration + real render
-        run: ./gradlew cucumberTestIntegration cucumberTestViralRender -PrunCucumber -PrunPlaywrightTests
+      - name: Run integration task
+        run: ./gradlew ${{ matrix.task }} -PrunCucumber -PrunPlaywrightTests
         working-directory: capsule-plugin
         env:
           CI: "true"
@@ -182,5 +194,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reports-integration
+          name: reports-integration-${{ strategy.job-index }}
           path: capsule-plugin/build/reports/

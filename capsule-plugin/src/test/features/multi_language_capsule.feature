@@ -35,14 +35,22 @@ Feature: Multi-language capsule video pipeline (CAP-29.5)
     When the multi-language video plan is built for "fr" and "en"
     Then the plan build fails with a message containing "no matching deck + script pair"
 
-  Scenario: The task generates one WebM per language with NoOp engines
+  # The former single "all languages" scenario is split into two language-group
+  # partitions (the planner skips languages without a deck+script pair), so the
+  # heavy TestKit generation runs on 2 CI machines in parallel.
+  @multilang-gen @multilang-gen-a
+  Scenario: The task generates one WebM per language — language group A
     Given a Gradle project with the capsule plugin applied and NoOp engines
-    And translated decks and scripts for all LanguageCatalog languages
+    And translated decks and scripts for language group "a"
     When I run the multi-language video generation task
-    Then the build output reports all rendered languages
-    And a video file "demo_fr.webm" is generated in the capsules build directory
-    And a video file "demo_ar.webm" is generated in the capsules build directory
-    And a video file "demo_ur.webm" is generated in the capsules build directory
+    Then the build output reports the whole language group "a" rendered
+
+  @multilang-gen @multilang-gen-b
+  Scenario: The task generates one WebM per language — language group B
+    Given a Gradle project with the capsule plugin applied and NoOp engines
+    And translated decks and scripts for language group "b"
+    When I run the multi-language video generation task
+    Then the build output reports the whole language group "b" rendered
 
   Scenario: RTL languages ar and ur produce their localized WebM
     Given a Gradle project with the capsule plugin applied and NoOp engines

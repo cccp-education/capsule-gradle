@@ -96,3 +96,15 @@ uniques** — `capsule.feature` ≈ **401 s** (46 scénarios TestKit), `multi_la
 **`full-tests.yml` = 15 jobs parallèles** : **10 shards BDD** + 4 functional + 1 integration.
 Garde étendue : un feature peut être couvert par plusieurs shards **uniquement** s'ils portent
 un filtre de tags non vide (partition par tags, jamais de double exécution silencieuse).
+
+== Itération 3 — les 2 pôles restants (run `38527720929`)
+
+15/15 verts, max = **BDD · multi-lang 503 s** et **Integration 453 s**.
+- **`multi-lang`** : le scénario « all languages » (~277 s, 22 langues) est scindé en **2 scénarios
+  de groupe** (`@multilang-gen-a` / `@multilang-gen-b`) — **test-only**, sans toucher le plugin : le
+  planner ignore les langues sans paire `deck+script`, donc chaque groupe ne rend que sa moitié.
+  Nouveaux steps `... language group "{string}"` + runners `CucumberShardMultiLangGen{A,B}Runner`.
+- **`integration`** : le job unique (2 tâches) est éclaté en **2 jobs** (`cucumberTestIntegration`
+  et `cucumberTestViralRender`).
+
+**`full-tests.yml` = 18 jobs parallèles** : **12 shards BDD** + 4 functional + 2 integration.

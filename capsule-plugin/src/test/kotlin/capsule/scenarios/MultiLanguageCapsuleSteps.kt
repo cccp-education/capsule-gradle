@@ -69,6 +69,17 @@ Note content in $lang.
     private fun languagesFor(vararg codes: String): List<SupportedLanguage> =
         codes.map { code -> LanguageCatalog.findByCode(code) ?: error("Unknown LanguageCatalog code: $code") }
 
+    /** Deterministic two-way partition of the catalog, for the CI language-group shards. */
+    private fun languageGroup(group: String): List<SupportedLanguage> {
+        val all = allCatalogLanguages()
+        val mid = (all.size + 1) / 2
+        return when (group.lowercase()) {
+            "a" -> all.take(mid)
+            "b" -> all.drop(mid)
+            else -> error("Unknown language group: $group (expected 'a' or 'b')")
+        }
+    }
+
     private fun buildPlan(targets: List<SupportedLanguage>) {
         try {
             plan = CapsuleVideoPlanner.plan(
@@ -111,6 +122,12 @@ Note content in $lang.
         ensureDirs()
         writePair(first)
         writePair(second)
+    }
+
+    @Given("translated decks and scripts for language group {string}")
+    fun translatedDecksAndScriptsForLanguageGroup(group: String) {
+        ensureDirs()
+        languageGroup(group).forEach { writePair(it.code) }
     }
 
     @Given("no translated decks or scripts")
@@ -236,6 +253,16 @@ Note content in $lang.
         Assertions.assertTrue(
             lastBuildOutput.contains("CAPSULE MULTILANG → $count/$count languages rendered"),
             "Expected 'CAPSULE MULTILANG → $count/$count languages rendered' in build output. " +
+                "Got: ${lastBuildOutput.take(2000)}",
+        )
+    }
+
+    @Then("the build output reports the whole language group {string} rendered")
+    fun theBuildOutputReportsTheWholeLanguageGroupRendered(group: String) {
+        val count = languageGroup(group).size
+        Assertions.assertTrue(
+            lastBuildOutput.contains("CAPSULE MULTILANG → $count/$count languages rendered"),
+            "Expected 'CAPSULE MULTILANG → $count/$count languages rendered' for group '$group'. " +
                 "Got: ${lastBuildOutput.take(2000)}",
         )
     }

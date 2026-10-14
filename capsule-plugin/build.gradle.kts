@@ -85,6 +85,17 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CucumberShardAudioPostRunner",
             timeoutMinutes = 30,
         ),
+        // The heavy multi-language generation scenario is split into 2 language groups.
+        CucumberTaskSpec(
+            name = "cucumberTestShardMultiLangGenA",
+            runnerClass = "capsule.scenarios.CucumberShardMultiLangGenARunner",
+            timeoutMinutes = 30,
+        ),
+        CucumberTaskSpec(
+            name = "cucumberTestShardMultiLangGenB",
+            runnerClass = "capsule.scenarios.CucumberShardMultiLangGenBRunner",
+            timeoutMinutes = 30,
+        ),
         // Focused cucumber run for the CAP-ARCH-2 augmented context feature
         // (fast iteration without the full Playwright suite, ~15 min).
         CucumberTaskSpec(
