@@ -55,6 +55,20 @@ que son quart. **Test-only** : zéro code plugin modifié.
 Max wall-clock ≈ **145 s** (6 langues) au lieu de 260 s, sous réserve que les
 autres shards restent < 145 s. Preuve = run CI `full-tests.yml` du commit poussé.
 
+=== Résultat CI (commit `b5cd6d1`)
+
+`Test` **success** (run `38576644671`, garde shard + unit BS-5). `Full Tests`
+**success** (run `38576644672`, 26 jobs). Les 4 shards génération s'exécutent
+(chacun son quart) : genA 3m01s, genB 4m07s, genC 3m49s, genD 3m33s — **verts**.
+
+*Constat mesuré* : les shards sont désormais **dominés par l'overhead fixe par
+job** (~120-180 s : `apt-get install ffmpeg/espeak` + setup Gradle + boot JVM) plus
+que par le nombre de langues rendues : genB (6 langues) ne descend que de 260 s →
+247 s. Le pôle de ce run s'est déplacé sur `Integration · @integration` (323 s,
+indépendant de cette session — variance runner/cache). **Levier réel restant pour
+le wall-clock** : réduire l'overhead fixe (image runner pré-provisionnée ffmpeg/
+espeak), pas de nouveaux shards.
+
 == Mission 2 — CAP-DECOMPOSE BS-5
 
 `CapsuleVideoTask` était le **dernier god-object** (1005 l.) : task `@TaskAction`

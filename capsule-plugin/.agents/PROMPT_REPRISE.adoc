@@ -15,6 +15,10 @@ S-198 (`BDD · multi-lang-genB` = 260 s) est scindé en **4 groupes de langues**
 partition exhaustive/disjointe/équilibrée/déterministe), 2 scénarios BDD
 `@multilang-gen-c`/`-d`, 2 runners `CucumberShardMultiLangGen{C,D}Runner`, 2
 `CucumberTaskSpec` + 2 jobs `full-tests.yml`. Test-only, zéro code plugin modifié.
+**CI verte** (`Test` `38576644671`, `Full Tests` `38576644672`). *Constat* : les
+shards sont désormais **overhead-bound** (fixe par job ~120-180 s) ; le levier
+wall-clock restant = réduire l'overhead (image runner ffmpeg/espeak pré-provisionnée),
+pas de nouveaux shards.
 
 **Mission 2 — CAP-DECOMPOSE BS-5 ✅ (EPIC clos 5/5).** `CapsuleVideoTask` 1005 → 851 l. :
 résolveurs extraits dans `capsule/CapsuleVideoResolvers.kt` (objet pur, 7 unit tests

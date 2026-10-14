@@ -5,7 +5,7 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-14 (S-199 — **split multi-lang en 4 groupes** (pôle CI 260 s → ~145 s attendus) + **CAP-DECOMPOSE BS-5** ✅ : `CapsuleVideoResolvers` extrait, `CapsuleVideoTask` 1005 → 851 l., EPIC clos 5/5.)
+ _Derniere mise a jour_ : 2026-10-14 (S-199 — **split multi-lang en 4 groupes** (pôle CI 260 s scindé ; shards désormais overhead-bound) + **CAP-DECOMPOSE BS-5** ✅ : `CapsuleVideoResolvers` extrait, `CapsuleVideoTask` 1005 → 851 l., EPIC clos 5/5. CI `Test` `38576644671` + `Full Tests` `38576644672` VERTES.)
  _Derniere session terminee_ : 199.
  _Prochaine session_ : 200 — au choix : A) release capsule `0.0.11` (accord pilote) ; B) KOOG-PIPELINE-DEDUP (éligible au seuil 2) ; C) nouvelle demande pilote.
  _Session en cours_ : —.
