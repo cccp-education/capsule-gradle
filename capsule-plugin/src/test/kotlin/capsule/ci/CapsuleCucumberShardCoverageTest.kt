@@ -45,11 +45,18 @@ class CapsuleCucumberShardCoverageTest {
         scenarioDir.listFiles { f -> f.isFile && f.name.startsWith("CucumberShard") && f.name.endsWith("Runner.kt") }!!
             .sortedBy { it.name }
 
-    private fun runnerFeatures(runner: File): List<String> =
-        Regex("""@SelectClasspathResource\("features/([^"]+\.feature)"\)""")
-            .findAll(runner.readText())
+    private fun runnerFeatures(runner: File): List<String> {
+        val text = runner.readText()
+        // A shard may select the whole `features` directory (tag-partitioned, e.g. the
+        // integration @integration/@manim split) — then it spans every feature.
+        if (Regex("""@SelectClasspathResource\("features"\)""").containsMatchIn(text)) {
+            return allFeatures().toList()
+        }
+        return Regex("""@SelectClasspathResource\("features/([^"]+\.feature)"\)""")
+            .findAll(text)
             .map { it.groupValues[1] }
             .toList()
+    }
 
     private fun runnerTags(runner: File): String =
         Regex("""FILTER_TAGS_PROPERTY_NAME,\s*value = "([^"]*)"""")

@@ -160,8 +160,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: "Integration · BDD (@integration/@manim)"
-            task: cucumberTestIntegration
+          - name: "Integration · @integration"
+            task: cucumberTestShardIntegration
+          - name: "Integration · @manim"
+            task: cucumberTestShardManim
           - name: "Integration · real render (viral)"
             task: cucumberTestViralRender
     steps:

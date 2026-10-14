@@ -108,3 +108,14 @@ un filtre de tags non vide (partition par tags, jamais de double exécution sile
   et `cucumberTestViralRender`).
 
 **`full-tests.yml` = 18 jobs parallèles** : **12 shards BDD** + 4 functional + 2 integration.
+
+== Itération 4 — `Integration · BDD` (run `38529124631`)
+
+Max restant = **`Integration · BDD (@integration/@manim)` 435 s** (`cucumberTestIntegration`,
+filtre `@integration or @manim` sur toutes les features). Éclaté par **partition de tags**
+disjointe/exhaustive : `@integration` · `@manim and not @integration`
+(`CucumberShardIntegrationRunner` / `CucumberShardManimRunner`, sélecteur `features` complet).
+Garde mise à jour : un shard sélectionnant tout le répertoire `features` est reconnu (span = toutes
+les features), et l'overlap reste autorisé **uniquement** si chaque shard porte un filtre de tags.
+
+**`full-tests.yml` = 19 jobs parallèles** : **14 shards** (12 BDD + 2 integration) + 4 functional + 1 viral-render.

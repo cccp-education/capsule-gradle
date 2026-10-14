@@ -96,6 +96,17 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CucumberShardMultiLangGenBRunner",
             timeoutMinutes = 30,
         ),
+        // Integration (@integration / @manim) is split by tag into 2 shards.
+        CucumberTaskSpec(
+            name = "cucumberTestShardIntegration",
+            runnerClass = "capsule.scenarios.CucumberShardIntegrationRunner",
+            timeoutMinutes = 45,
+        ),
+        CucumberTaskSpec(
+            name = "cucumberTestShardManim",
+            runnerClass = "capsule.scenarios.CucumberShardManimRunner",
+            timeoutMinutes = 45,
+        ),
         // Focused cucumber run for the CAP-ARCH-2 augmented context feature
         // (fast iteration without the full Playwright suite, ~15 min).
         CucumberTaskSpec(
