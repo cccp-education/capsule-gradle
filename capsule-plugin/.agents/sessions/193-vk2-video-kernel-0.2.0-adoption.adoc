@@ -1,0 +1,36 @@
+= Session 193 — VK-2 : adoption `video-kernel 0.2.0` (package neutre `video.kernel.*`)
+:session: 193
+:date: 2026-10-14
+:type: maintenance / breaking coordonné
+:statut: TERMINÉ
+:borough: Détroit
+
+== Mission
+
+Breaking coordonné (VK-2) : le noyau `video-kernel` est promu du préfixe
+historique `capsule.kernel.*` au package neutre **`video.kernel.*`** (+
+`video.kernel.segment.*`). Capsule, premier moteur consommateur, bascule ses
+imports et son pin.
+
+== Livré
+
+* `capsule-plugin/gradle/libs.versions.toml` : `video-kernel 0.1.0 → 0.2.0`.
+* Bascule imports/comments dans `capsule-plugin/src` :
+  `capsule.kernel` → `video.kernel` (27 fichiers — adapters reveal.js,
+  modèle, feed, multilang, transcript, scenarios).
+* `build.gradle.kts` : commentaire de garde (`video.kernel` sources).
+* `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` VERTS.
+* Warnings de dépréciation préexistants (typealiases neutres) inchangés.
+
+== Contexte / DAG
+
+* Prérequis : `education.cccp:video-kernel:0.2.0` publié Central (bundle
+  `da095e64`, video-kernel S-194) et **propagé repo1** avant le push capsule
+  (sinon la CI résout une version absente — Piège DAG).
+* Suite : hyperframes (2e moteur) puis repin BOM MEMPHIS `0.0.89`.
+
+== Notes
+
+* Prose historique (`.agents/sessions/184-191`, `SESSIONS_HISTORY`, `archives`)
+  conservée telle quelle.
+* Zéro secret, zéro Python. Aucun test modifié.

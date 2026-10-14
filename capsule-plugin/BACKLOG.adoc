@@ -1,6 +1,6 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-12 (S-190 — adaptation à **`video-kernel:0.0.2`** : port `VideoEngine` aminci, `RevealJsRenderPlan` au constructeur. Précédent S-189 : extraction N1 + EPIC CAP-ENGINE-DECOUPLING TERMINÉ 6/6.)
+:last_update: 2026-10-14 (S-193 — VK-2 : adoption `video-kernel 0.2.0` (package neutre `video.kernel.*`). Précédent S-192 : pin `0.1.0`.)
 
 '''
 == ✅ CAP-FISH-AUDIO — TERMINÉ 6/6 US (S-182)
@@ -70,6 +70,14 @@ les **champs deck/slide** du contrat N3. Cible d'extraction : N1 `education.cccp
 | US-4 | Isoler `capsule.kernel` + garde d'architecture (test frontière) — `KernelBoundaryAudit`/`KernelBoundaryTest` (imports + vocabulaire neutre) ; fuite `slideDurations → segmentDurations` corrigée | ✅ S-188 | M
 | US-5 | Préparer l'extraction N1 `video-kernel` (module + publication) — nouveau borough `video-kernel-gradle` + publication `education.cccp:video-kernel:0.0.1` (Central) ; capsule consomme `implementation(libs.video.kernel)` | ✅ S-189 | L
 |===
+
+'''
+== ✅ Cross-borough VK-2 — adoption `video-kernel 0.2.0` (S-193)
+
+Le noyau `video-kernel` est promu du préfixe historique `capsule.kernel.*` au
+**package neutre `video.kernel.*`** (breaking coordonné, video-kernel S-194) —
+côté capsule : pin `0.1.0 → 0.2.0` + bascule des imports (27 fichiers `src/`).
+Compiles ×3 VERTS. Statut : ✅ TERMINÉ (S-193).
 
 '''
 == ✅ CAP-QC — TERMINÉ 9/9 (S-174)

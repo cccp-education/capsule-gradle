@@ -1,5 +1,15 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
-:date: 2026-10-12
+:date: 2026-10-14
+
+== Session 193 — VK-2 adoption `video-kernel 0.2.0` (package neutre) ✅
+
+* Breaking coordonné : pin `0.1.0 → 0.2.0` + imports `capsule.kernel` → `video.kernel` (27 fichiers).
+* Compiles ×3 VERTS. Prérequis propagation repo1 avant push.
+* Rapport `.agents/sessions/193-vk2-video-kernel-0.2.0-adoption.adoc`.
+
+== Session 192 — Pin `video-kernel 0.1.0` ✅
+
+* Alignement sur le contrat gelé + publié `0.1.0` (Central, bundle `ccbb1f82`).
 
 == Session 191 — Alimentation de `VideoOutcome` (video-kernel 0.0.3) ✅
 

@@ -1,9 +1,9 @@
 package capsule.feed
 
 import capsule.adapter.revealjs.RevealJsScriptContract
-import capsule.kernel.segment.VideoKind
-import capsule.kernel.segment.VideoScript
-import capsule.kernel.segment.VideoSegment
+import video.kernel.segment.VideoKind
+import video.kernel.segment.VideoScript
+import video.kernel.segment.VideoSegment
 import java.io.File
 
 /**

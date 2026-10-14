@@ -6,10 +6,10 @@ import capsule.adapter.revealjs.RevealJsCaptureSettings
 import capsule.adapter.revealjs.RevealJsDeckHtml
 import capsule.adapter.revealjs.RevealJsEngineAdapter
 import capsule.adapter.revealjs.RevealJsRenderPlan
-import capsule.kernel.FileVisualSource
-import capsule.kernel.VideoRenderRequest
-import capsule.kernel.VideoRenderResult
-import capsule.kernel.segment.VideoSegment
+import video.kernel.FileVisualSource
+import video.kernel.VideoRenderRequest
+import video.kernel.VideoRenderResult
+import video.kernel.segment.VideoSegment
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When

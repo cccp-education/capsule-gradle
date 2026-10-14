@@ -2,9 +2,9 @@ package capsule.adapter.revealjs
 
 import capsule.CaptureStrategy
 import capsule.PlaywrightCapture
-import capsule.kernel.FileVisualSource
-import capsule.kernel.VideoRenderRequest
-import capsule.kernel.segment.VideoSegment
+import video.kernel.FileVisualSource
+import video.kernel.VideoRenderRequest
+import video.kernel.segment.VideoSegment
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -12,7 +12,7 @@ import java.io.File
 import java.nio.file.Path
 
 /**
- * TDD — reveal.js engine adapter ([capsule.kernel.VideoEngine] implementation)
+ * TDD — reveal.js engine adapter ([video.kernel.VideoEngine] implementation)
  * (video-kernel US-1, 0.0.2).
  *
  * Uses a fake [PlaywrightCapture] (never a real browser); FFmpeg is pointed at a

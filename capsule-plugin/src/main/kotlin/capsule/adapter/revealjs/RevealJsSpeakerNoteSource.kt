@@ -1,7 +1,7 @@
 package capsule.adapter.revealjs
 
-import capsule.kernel.segment.SegmentSource
-import capsule.kernel.segment.VideoSegment
+import video.kernel.segment.SegmentSource
+import video.kernel.segment.VideoSegment
 import java.io.File
 
 /**

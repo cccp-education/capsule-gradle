@@ -1,7 +1,7 @@
 package capsule.adapter.revealjs
 
 import capsule.HtmlSectionParser
-import capsule.kernel.segment.VideoSegment
+import video.kernel.segment.VideoSegment
 
 /**
  * Reveal.js deck HTML adapter — the pure, renderer-specific HTML manipulation

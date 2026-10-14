@@ -5,10 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-12 (S-191 — capsule alimente **`VideoOutcome`** (video-kernel **0.0.3**) : descripteur d'issue neutre (durée/dims/taille/codec) depuis l'adapter reveal. Contrat partagé complet, éprouvé par 2 moteurs.)
- _Derniere session terminee_ : 191.
- _Prochaine session_ : 191 — au choix : A) adapter hyperframes (Watts) contre video-kernel 0.0.2 ; B) release capsule (0.0.11) ; C) items video-kernel (VK-3 BOM / VK-2 package) ; D) nouvelle demande pilote.
- _Session en cours_ : — (S-183 terminée).
+ _Derniere mise a jour_ : 2026-10-14 (S-193 — **VK-2 : adoption `video-kernel 0.2.0`** (package neutre `video.kernel.*`, breaking coordonné). Pin `0.1.0 → 0.2.0` + bascule imports `capsule.kernel` → `video.kernel` (27 fichiers). Compiles ×3 VERTS. Précédent : S-192 pin `0.1.0`.)
+ _Derniere session terminee_ : 193.
+ _Prochaine session_ : 194 — au choix : A) release capsule (0.0.11) intégrant `video-kernel 0.2.0` ; B) adapter hyperframes US-4 ; C) autre.
+ _Session en cours_ : —.
  _Littérature de référence_ : `.agents/CADRAGE_EPIC_CAP_QC.adoc` (portage) + `.agents/CADRAGE_EPIC_CAP_QC_VOICE.adoc` (EPIC voix).
 
 '''

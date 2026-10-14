@@ -2,7 +2,7 @@ package capsule
 
 import capsule.feed.CapsuleScript
 import capsule.feed.SlideSegment
-import capsule.kernel.segment.VideoKind
+import video.kernel.segment.VideoKind
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.io.TempDir
 import java.io.File

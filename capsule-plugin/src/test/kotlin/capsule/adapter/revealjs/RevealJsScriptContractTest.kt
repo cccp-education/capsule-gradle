@@ -1,8 +1,8 @@
 package capsule.adapter.revealjs
 
-import capsule.kernel.segment.VideoKind
-import capsule.kernel.segment.VideoScript
-import capsule.kernel.segment.VideoSegment
+import video.kernel.segment.VideoKind
+import video.kernel.segment.VideoScript
+import video.kernel.segment.VideoSegment
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test

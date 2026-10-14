@@ -2,7 +2,7 @@ package capsule
 
 import capsule.feed.CapsuleScript
 import capsule.feed.CapsuleScriptReader
-import capsule.kernel.segment.VideoKind
+import video.kernel.segment.VideoKind
 import capsule.feed.SlideSegment
 import capsule.test.BinaryAvailability
 import contracts.i18n.LanguageCatalog

@@ -1,13 +1,13 @@
 package capsule.multilang
 
-import capsule.kernel.VideoProductionEntry
-import capsule.kernel.VideoProductionPlan
+import video.kernel.VideoProductionEntry
+import video.kernel.VideoProductionPlan
 import java.io.File
 
 /**
  * Backward-compatible alias — a `CapsuleVideoEntry` **is** a
  * [VideoProductionEntry] (CAP-ENGINE-DECOUPLING US-1). The former renderer-leaking
- * `deckFile: File` is now the neutral [capsule.kernel.VisualSource]. Prefer the
+ * `deckFile: File` is now the neutral [video.kernel.VisualSource]. Prefer the
  * neutral type in new code.
  */
 typealias CapsuleVideoEntry = VideoProductionEntry

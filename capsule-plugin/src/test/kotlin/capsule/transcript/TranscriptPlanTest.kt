@@ -1,7 +1,7 @@
 package capsule.transcript
 
 import capsule.feed.SlideSegment
-import capsule.kernel.segment.VideoKind
+import video.kernel.segment.VideoKind
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

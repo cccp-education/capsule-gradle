@@ -1,34 +1,33 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 192
+:session: 193
 :borough: Détroit
-:session_precedente: 191 — alimentation de VideoOutcome (video-kernel 0.0.3) ✅
+:session_precedente: 192 — pin `video-kernel 0.1.0` ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`.
 
 == Contexte Hérité
 
-=== S-190 — capsule ↔ video-kernel 0.0.2 ✅
+=== S-193 — VK-2 : adoption `video-kernel 0.2.0` ✅
 
-- Noyau `video-kernel` évolué en **0.0.2** : `VideoRenderRequest` aminci
-  (`{name, visual, outputDir, timeoutMillis}`), `VideoRenderResult.failedUnits`,
-  capacité segment-orientée déplacée en `capsule.kernel.segment`.
-- Capsule adapté : `RevealJsRenderPlan` (segments/durations/viewport/parallel)
-  fourni **au constructeur** de `RevealJsEngineAdapter` ; requête de rendu mince ;
-  `captureDeckSequential`/`captureSlideParallel` reconstruits ; `resolvePlaywrightCapture` supprimé.
-- Imports segment → `capsule.kernel.segment.*` ; cœur en `capsule.kernel`.
+- Breaking coordonné (noyau promu package neutre `video.kernel.*`).
+- `capsule-plugin/gradle/libs.versions.toml` : `video-kernel 0.1.0 → 0.2.0`.
+- Bascule imports `capsule.kernel` → `video.kernel` (27 fichiers `src/`).
+- `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` VERTS.
+- Rapport `.agents/sessions/193-vk2-video-kernel-0.2.0-adoption.adoc`.
+
+=== S-192 — pin `video-kernel 0.1.0` ✅
+
+- Contrat gelé + publié `0.1.0` (Central, bundle `ccbb1f82`) ; capsule aligné.
+
+=== S-190/S-191 — adaptation 0.0.2 + alimentation `VideoOutcome` 0.0.3 ✅
 
 === S-184→S-189 — EPIC CAP-ENGINE-DECOUPLING TERMINÉ 6/6
 
-- Extraction N1 `video-kernel` (borough `video-kernel-gradle`), garde
-  `KernelBoundaryTest`, publications 0.0.1 puis 0.0.2.
+== Mission Session 194 — au choix (pilote)
 
-== Mission Session 192 — au choix (pilote)
-
-* A) **Adapter hyperframes** (Watts) contre `video-kernel:0.0.3` — implémenter
-  `VideoEngine` (rendu document-entier). Payoff de la mutualisation.
-* B) **Release capsule** (bump version + Central) intégrant `video-kernel:0.0.3`.
-* C) Borough `video-kernel` : VK-3 (BOM MEMPHIS) ou VK-2 (package neutre).
-* D) Nouvelle demande pilote.
+* A) **Release capsule** (bump version + Central) intégrant `video-kernel:0.2.0`.
+* B) **Adapter hyperframes** US-4 (consommation complète du noyau : TTS/audio/config).
+* C) Dette / nouvelle demande pilote.
 
 == Points d'attention
 
@@ -36,10 +35,10 @@ _littérature_ : `.agents/CADRAGE_EPIC_CAP_ENGINE_DECOUPLING.adoc`.
 * **Règle 2 — PUBLISH** : accord pilote. **Règle 6 — ZÉRO secret**.
 * La CI capsule résout `video-kernel` **depuis Maven Central** (mavenLocal vide en CI).
 * **English only** ; **zéro Python** ; runner dédié par feature (S-082), steps préfixés (S-088).
-* Catalogue **interne** aligné BOM `0.0.86` (entrée `video-kernel` non encore dans la BOM).
+* Catalogue **interne** : BOM `0.0.83`, `video-kernel = "0.2.0"`.
 
 == Rappels
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.10** (Central).
-* `education.cccp:video-kernel:0.0.3` (Central). MEMPHIS BOM/catalog **0.0.86**.
+* `education.cccp:video-kernel:0.2.0` (Central). MEMPHIS BOM/catalog `0.0.88` → `0.0.89`.
 * Tous les EPICs capsule sont clos ; `CAP-ENGINE-DECOUPLING` **TERMINÉ 6/6**.

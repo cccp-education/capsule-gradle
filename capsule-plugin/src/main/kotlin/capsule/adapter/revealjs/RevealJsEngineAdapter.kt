@@ -10,11 +10,11 @@ import capsule.ProcessRunner
 import capsule.RemotionCaptureImpl
 import capsule.RemotionPlanner
 import capsule.ScreenshotCaptureImpl
-import capsule.kernel.VideoEngine
-import capsule.kernel.VideoOutcome
-import capsule.kernel.VideoRenderRequest
-import capsule.kernel.VideoRenderResult
-import capsule.kernel.segment.VideoSegment
+import video.kernel.VideoEngine
+import video.kernel.VideoOutcome
+import video.kernel.VideoRenderRequest
+import video.kernel.VideoRenderResult
+import video.kernel.segment.VideoSegment
 import capsule.viral.ViralCaptureStrategy
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging

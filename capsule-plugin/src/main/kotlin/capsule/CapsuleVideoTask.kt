@@ -12,8 +12,8 @@ import capsule.feed.SlideSegment
 import capsule.feed.SlideType
 import capsule.feed.deckName
 import capsule.feed.type
-import capsule.kernel.FileVisualSource
-import capsule.kernel.VideoRenderRequest
+import video.kernel.FileVisualSource
+import video.kernel.VideoRenderRequest
 import capsule.multilang.MultiLanguageResolver
 import capsule.voice.PronunciationLexicon
 import capsule.validation.VideoIntegrityProbe

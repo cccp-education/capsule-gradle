@@ -1,6 +1,6 @@
 package capsule.multilang
 
-import capsule.kernel.FileVisualSource
+import video.kernel.FileVisualSource
 import contracts.i18n.SupportedLanguage
 import java.io.File
 

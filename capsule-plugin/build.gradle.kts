@@ -334,7 +334,7 @@ cucumberConventions {
             timeoutMinutes = 10,
         ),
         // US-4 kernel boundary guard moved to the video-kernel borough (it scans the
-        // capsule.kernel sources, now owned there).
+        // video.kernel sources, now owned there).
         // Integration cucumber run — scenarios tagged @integration or @manim
         // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
         // default cucumberTest runner by `not @integration`; this dedicated task

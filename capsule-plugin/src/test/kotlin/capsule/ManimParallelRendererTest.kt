@@ -1,7 +1,7 @@
 package capsule
 
 import capsule.feed.SlideSegment
-import capsule.kernel.segment.VideoKind
+import video.kernel.segment.VideoKind
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -8,7 +8,7 @@ import java.io.File
 import java.nio.file.Path
 
 /**
- * TDD — reveal.js [capsule.kernel.segment.SegmentSource] adapter
+ * TDD — reveal.js [video.kernel.segment.SegmentSource] adapter
  * (CAP-ENGINE-DECOUPLING US-3).
  */
 class RevealJsSpeakerNoteSourceTest {
