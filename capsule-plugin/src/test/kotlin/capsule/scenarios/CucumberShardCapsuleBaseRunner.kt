@@ -25,6 +25,7 @@ import org.junit.platform.suite.api.Suite
 )
 @ConfigurationParameter(
     key = FILTER_TAGS_PROPERTY_NAME,
-    value = "not @subtitles and not @manim and not @wip and not @integration and not @viral-render"
+    value = "not @subtitles and not @manim and not @capsule-core-a and not @capsule-core-b " +
+        "and not @wip and not @integration and not @viral-render"
 )
 class CucumberShardCapsuleBaseRunner

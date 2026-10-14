@@ -74,6 +74,21 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CucumberShardCapsuleBaseRunner",
             timeoutMinutes = 30,
         ),
+        CucumberTaskSpec(
+            name = "cucumberTestShardCapsuleCoreA",
+            runnerClass = "capsule.scenarios.CucumberShardCapsuleCoreARunner",
+            timeoutMinutes = 30,
+        ),
+        CucumberTaskSpec(
+            name = "cucumberTestShardCapsuleCoreB",
+            runnerClass = "capsule.scenarios.CucumberShardCapsuleCoreBRunner",
+            timeoutMinutes = 30,
+        ),
+        CucumberTaskSpec(
+            name = "cucumberTestShardCapsuleSubtitlesBurnIn",
+            runnerClass = "capsule.scenarios.CucumberShardCapsuleSubtitlesBurnInRunner",
+            timeoutMinutes = 30,
+        ),
         // Heavy single features isolated from the `media` shard.
         CucumberTaskSpec(
             name = "cucumberTestShardMultiLang",

@@ -44,10 +44,16 @@ jobs:
             task: cucumberTestShardContext
           - name: "BDD · capsule-subtitles"
             task: cucumberTestShardCapsuleSubtitles
+          - name: "BDD · capsule-subtitles-burnin"
+            task: cucumberTestShardCapsuleSubtitlesBurnIn
           - name: "BDD · capsule-manim"
             task: cucumberTestShardCapsuleManim
           - name: "BDD · capsule-base"
             task: cucumberTestShardCapsuleBase
+          - name: "BDD · capsule-core-a"
+            task: cucumberTestShardCapsuleCoreA
+          - name: "BDD · capsule-core-b"
+            task: cucumberTestShardCapsuleCoreB
           - name: "BDD · qc+voice"
             task: cucumberTestShardQc
           - name: "BDD · media"

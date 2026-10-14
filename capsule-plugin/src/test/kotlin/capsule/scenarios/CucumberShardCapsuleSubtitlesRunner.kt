@@ -33,6 +33,6 @@ import org.junit.platform.suite.api.Suite
 )
 @ConfigurationParameter(
     key = FILTER_TAGS_PROPERTY_NAME,
-    value = "@subtitles and not @wip and not @integration and not @viral-render"
+    value = "@subtitles and not @burnin and not @wip and not @integration and not @viral-render"
 )
 class CucumberShardCapsuleSubtitlesRunner

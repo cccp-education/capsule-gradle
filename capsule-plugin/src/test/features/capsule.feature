@@ -6,6 +6,7 @@ Feature: Capsule video generation from a reveal.js deck
   Background:
     Given a Gradle project with the capsule plugin applied
 
+  @capsule-core-a
   Scenario: Generate a WebM capsule from a deck with capsule script
     Given a reveal.js deck "mon-cours-deck.html" with 2 slides and data-capsule-slide attributes
     And a capsule script "mon-cours-script.txt" with 2 slide segments
@@ -13,6 +14,7 @@ Feature: Capsule video generation from a reveal.js deck
     Then a video file "mon-cours.webm" is generated
     And the video file is not empty
 
+  @capsule-core-a
   Scenario: NoOp fallback when Chromium is unavailable
     Given a reveal.js deck "test-deck.html" with 1 slides and data-capsule-slide attributes
     And a capsule script "test-script.txt" with 1 slide segments
@@ -20,6 +22,7 @@ Feature: Capsule video generation from a reveal.js deck
     Then the task completes without error
     And a placeholder video is generated
 
+  @capsule-core-b
   Scenario: Sequential fallback for deck without data-capsule-slide attributes
     Given a reveal.js deck "seq-deck.html" with 3 slides without data-capsule-slide attributes
     And a capsule script "seq-script.txt" with 3 sequentially ordered slide segments
@@ -34,6 +37,7 @@ Feature: Capsule video generation from a reveal.js deck
     When I run the task "generateCapsuleVideo" with NoOp capture
     Then the injected deck HTML contains exactly 2 data-audio attributes
 
+  @capsule-core-a
   Scenario: Multi-deck build produces separate videos
     Given a reveal.js deck "deck-a-deck.html" with 1 slides and data-capsule-slide attributes
     And a reveal.js deck "deck-b-deck.html" with 1 slides and data-capsule-slide attributes
@@ -43,6 +47,7 @@ Feature: Capsule video generation from a reveal.js deck
     Then a video file "deck-a.webm" is generated
     And a video file "deck-b.webm" is generated
 
+  @capsule-core-b
   Scenario: Audio injection into deck HTML
     Given a reveal.js deck "audio-deck.html" with 2 slides and data-capsule-slide attributes
     And a capsule script "audio-script.txt" with 2 slide segments
@@ -50,6 +55,7 @@ Feature: Capsule video generation from a reveal.js deck
     Then the injected deck HTML contains "data-audio" attributes
     And the injected deck contains the "CAPSULE-GRADLE" autoplay script
 
+  @capsule-core-b
   Scenario: Composite context JSON is parsed for engine N3 contract
     Given a reveal.js deck "ctx-deck.html" with 2 slides and data-capsule-slide attributes
     And a capsule script "ctx-script.txt" with 2 slide segments

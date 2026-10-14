@@ -119,3 +119,18 @@ Garde mise à jour : un shard sélectionnant tout le répertoire `features` est 
 les features), et l'overlap reste autorisé **uniquement** si chaque shard porte un filtre de tags.
 
 **`full-tests.yml` = 19 jobs parallèles** : **14 shards** (12 BDD + 2 integration) + 4 functional + 1 viral-render.
+
+== Itération 5 — les 2 plus longs restants (run `38530235891`)
+
+Après l'itération 4, max = **`BDD · capsule-base` 354 s** puis **`BDD · capsule-subtitles` 327 s**.
+Ces deux shards étaient encore dominés par des scénarios lourds **non taggés** de `capsule.feature`.
+- `capsule-base` : les 6 scénarios lourds non taggés reçoivent des tags de partition
+  `@capsule-core-a` / `@capsule-core-b` (test-only) → scindés en `capsule-core-a` (~82 s) +
+  `capsule-core-b` (~77 s) ; `capsule-base` ne garde que les scénarios rapides (@config/@tts/@audio).
+- `capsule-subtitles` : scindé par `@burnin` → `capsule-subtitles-burnin` (les 3 burn-in réels,
+  ~82 s) + `capsule-subtitles` (le reste).
+
+`capsule.feature` est désormais couvert par **6 shards** (subtitles / subtitles-burnin / manim /
+core-a / core-b / base), disjoints et exhaustifs par construction (chaîne de priorité de tags).
+
+**`full-tests.yml` = 23 jobs parallèles** : **17 shards** (15 BDD + 2 integration) + 4 functional + 1 viral-render + unit.
