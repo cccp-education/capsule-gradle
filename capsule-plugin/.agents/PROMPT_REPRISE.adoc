@@ -13,6 +13,7 @@ Le contrat neutre `video-kernel` est **gelé puis publié** `0.1.0` (Maven Centr
 bundle `ccbb1f82`). **Capsule aligné** : `gradle/libs.versions.toml`
 `video-kernel 0.0.3 → 0.1.0` (résolution `0.1.0` vérifiée, compiles VERTS ; ABI
 inchangé, garde de stabilité `KernelApiStabilityTest`). Aucun autre changement.
+CI capsule **Test** ✅ + **Full Tests** ✅.
 
 === Cross-borough — hyperframes S-017 (2026-10-13) ✅ (2ᵉ moteur, défauts + CI)
 
