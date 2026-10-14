@@ -1,7 +1,7 @@
 = CADRAGE — EPIC KOOG-PIPELINE-DEDUP (Détroit / capsule-gradle)
-:session: 183 (révisé S-195)
+:session: 183 (révisé S-195, terminé S-200)
 :date: 2026-10-12
-:statut: 🟡 RÉOUVERT (éligible) — amendement doctrine S-195 : seuil « factoriser à 2 »
+:statut: ✅ TERMINÉ (S-276 BS-1 extraction + S-277/295 BS-2 publication `codebase-plugin 0.0.18` + S-200 adoption capsule/slider)
 :toc:
 
 == Amendement S-195 — seuil de factorisation 3 → 2
