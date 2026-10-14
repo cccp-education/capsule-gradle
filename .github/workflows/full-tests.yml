@@ -25,11 +25,12 @@ concurrency:
 
 jobs:
   # ── BDD shards (parallel machines) ─────────────────────────────────────────────
-  # The monolithic `cucumberTest` aggregate (~14 min, single JVM) is split into 5
-  # EXHAUSTIVE, DISJOINT feature shards, each on its own runner. Every shard still
-  # runs in a single JVM (keeps the aggregate's efficiency — no per-feature
-  # bootstrap). Exhaustiveness/disjointness is guarded by
-  # capsule.ci.CapsuleCucumberShardCoverageTest.
+  # The monolithic `cucumberTest` aggregate (~14 min, single JVM) is split into
+  # EXHAUSTIVE, DISJOINT feature/tag shards, each on its own runner, in a single JVM
+  # (keeps the aggregate's efficiency). Guarded by capsule.ci.CapsuleCucumberShardCoverageTest.
+  #
+  # `binaries` controls what is installed (biggest per-job fixed cost): most shards are
+  # pure-domain (NoOp engines) and need neither ffmpeg nor Chromium.
   bdd-shard:
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
@@ -40,34 +41,49 @@ jobs:
         include:
           - name: "BDD · kernel"
             task: cucumberTestShardKernel
+            binaries: none
           - name: "BDD · context-misc"
             task: cucumberTestShardContext
+            binaries: none
           - name: "BDD · capsule-subtitles"
             task: cucumberTestShardCapsuleSubtitles
+            binaries: none
           - name: "BDD · capsule-subtitles-burnin"
             task: cucumberTestShardCapsuleSubtitlesBurnIn
+            binaries: ffmpeg
           - name: "BDD · capsule-manim"
             task: cucumberTestShardCapsuleManim
+            binaries: none
           - name: "BDD · capsule-base"
             task: cucumberTestShardCapsuleBase
+            binaries: none
           - name: "BDD · capsule-core-a"
             task: cucumberTestShardCapsuleCoreA
+            binaries: none
           - name: "BDD · capsule-core-b"
             task: cucumberTestShardCapsuleCoreB
+            binaries: none
           - name: "BDD · qc+voice"
             task: cucumberTestShardQc
+            binaries: ffmpeg
           - name: "BDD · media"
             task: cucumberTestShardMedia
+            binaries: none
           - name: "BDD · multi-lang"
             task: cucumberTestShardMultiLang
+            binaries: none
           - name: "BDD · multi-lang-genA"
             task: cucumberTestShardMultiLangGenA
+            binaries: none
           - name: "BDD · multi-lang-genB"
             task: cucumberTestShardMultiLangGenB
+            binaries: none
           - name: "BDD · audio-post"
             task: cucumberTestShardAudioPost
+            binaries: none
           - name: "BDD · ai+viral"
             task: cucumberTestShardAiViral
+            binaries: none
     steps:
       - uses: actions/checkout@v4
 
@@ -80,15 +96,14 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # Real binaries are installed in every shard: most runners are pure-domain
-      # (NoOp engines), but a few scenarios shell out to ffmpeg/ffprobe or drive
-      # Chromium. Kept uniform to stay correct-first; the per-shard cost is ~1 min.
       - name: Install ffmpeg + espeak
+        if: ${{ matrix.binaries == 'ffmpeg' || matrix.binaries == 'ffmpeg+playwright' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg espeak espeak-data
 
       - name: Setup Playwright (cached Chromium)
+        if: ${{ matrix.binaries == 'ffmpeg+playwright' }}
         uses: ./.github/actions/setup-playwright
 
       - name: Run BDD shard
@@ -105,9 +120,8 @@ jobs:
           path: capsule-plugin/build/reports/
 
   # ── functionalTest shards (TestKit, real binaries) ──────────────────────────────
-  # `functionalTest` alone (~7.5 min) is split into 4 EXHAUSTIVE, DISJOINT class
-  # shards via `--tests` filters, each on its own runner. Exhaustiveness/disjointness
-  # is guarded by capsule.ci.CapsuleCucumberShardCoverageTest.
+  # `functionalTest` (~7.5 min) split into 4 EXHAUSTIVE, DISJOINT class shards via
+  # `--tests`. Guarded by capsule.ci.CapsuleCucumberShardCoverageTest.
   functional-shard:
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
@@ -157,7 +171,8 @@ jobs:
           name: reports-functionalshard-${{ strategy.job-index }}
           path: capsule-plugin/build/reports/
 
-  # ── integration (real render: Playwright + ffmpeg) ─────────────────────────────
+  # ── integration (real binaries) ─────────────────────────────────────────────────
+  # `binaries`: @integration + real-render need ffmpeg+Chromium; @manim uses NoOp.
   integration:
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
@@ -168,12 +183,16 @@ jobs:
         include:
           - name: "Integration · @integration"
             task: cucumberTestShardIntegration
+            binaries: ffmpeg+playwright
           - name: "Integration · @manim"
             task: cucumberTestShardManim
+            binaries: none
           - name: "Integration · @manim-parallel"
             task: cucumberTestShardManimParallel
+            binaries: none
           - name: "Integration · real render (viral)"
             task: cucumberTestViralRender
+            binaries: ffmpeg+playwright
     steps:
       - uses: actions/checkout@v4
 
@@ -187,11 +206,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Install ffmpeg + espeak
+        if: ${{ matrix.binaries == 'ffmpeg' || matrix.binaries == 'ffmpeg+playwright' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg espeak espeak-data
 
       - name: Setup Playwright (cached Chromium)
+        if: ${{ matrix.binaries == 'ffmpeg+playwright' }}
         uses: ./.github/actions/setup-playwright
 
       - name: Run integration task
