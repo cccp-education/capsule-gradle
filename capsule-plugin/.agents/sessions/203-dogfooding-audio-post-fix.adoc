@@ -1,0 +1,40 @@
+= Session 203 — Dogfooding réel + fix bug ffmpeg audio-post (BGM/ducking)
+:toc:
+
+== Contexte
+
+Option de pilotage « dogfooding », menée depuis la session transverse vidéo
+(hyperframes + video-kernel + capsule). Le dogfooding réel des adaptateurs
+hyperframes (S-028) a révélé un bug de commande ffmpeg **dupliqué verbatim** dans
+le noyau capsule.
+
+== Bug réel (CAP-AUDIO S-104 — jamais dogfoodé avec ffmpeg réel)
+
+`AudioPostCommand.buildFilterGraph` :
+. **`loudnorm` sort à 192 kHz** → chaîné dans `amix` (mix BGM), la sortie est
+  tronquée à ~0,12 s.
+. **label `[voice]` réutilisé** dans la branche ducking (`sidechaincompress` **et**
+  `amix`) → `Invalid stream specifier: voice`, ffmpeg échoue.
+
+Conséquence : le chemin BGM (avec ou sans ducking) **n'a jamais fonctionné** —
+`AudioPostProcessorImpl.process` dégrade silencieusement (`false` → la vidéo
+originale est conservée). Les tests ne validaient que l'argv, jamais l'exécution.
+
+== Correctif
+
+`AudioPostCommand.buildFilterGraph` :
+* `loudnorm=I=<target>:TP=-1.5:LRA=11,aresample=48000` (alignement d'échantillonnage).
+* branche ducking : `[voice]asplit=2[vsc][vmix];[vsc][bgm]sidechaincompress…[ducked];[vmix][ducked]amix…`.
+
+Preuve (ffmpeg 6.1.1 réel) : durée 3,018 s (vs 0,118 s / échec avant).
+
+== Tests
+
+`AudioPostProcessorTest` renforcé : verrouille `aresample=48000` et `asplit=2`
+(garde argv anti-régression). Compiles VERTS.
+
+== Suite — décision pilote
+
+* La correction n'atteint les consommateurs qu'avec une **release `capsule-plugin
+  0.0.12`** (DAG : MEMPHIS catalogue + publication Central) — accord pilote.
+* En attendant, le chemin BGM reste opt-in (`audioPost.bgmEnabled`, défaut `false`).

@@ -56,8 +56,10 @@ class AudioPostProcessorTest {
         val config = AudioPostConfig(bgmEnabled = true, bgmLevel = -18.0, loudnessTarget = -16.0, duckingEnabled = true)
         val graph = AudioPostCommand.buildFilterGraph(config, hasBgmInput = true)
         assertTrue(graph.contains("loudnorm=I=-16.0:TP=-1.5:LRA=11"), "should apply loudnorm")
+        assertTrue(graph.contains("aresample=48000"), "loudnorm 192 kHz must be resampled before amix (S-203)")
         assertTrue(graph.contains("sidechaincompress"), "should apply ducking")
         assertTrue(graph.contains("amix=inputs=2"), "should mix BGM with voice")
+        assertTrue(graph.contains("asplit=2"), "voice must be split before sidechaincompress + amix (S-203)")
     }
 
     @Test

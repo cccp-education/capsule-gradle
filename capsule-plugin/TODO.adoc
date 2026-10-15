@@ -1,5 +1,13 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-15 (S-202 — **Adoption des ports vidéo partagés `video-kernel 0.4.0`** (transverse). Précédent S-201.)
+:last_update: 2026-10-15 (S-203 — **dogfooding réel + fix bug ffmpeg audio-post (BGM/ducking)**. Précédent S-202.)
+
+'''
+== ✅ S-203 — Dogfooding réel + fix bug ffmpeg audio-post (BGM/ducking)
+
+. [x] **Bug réel identifié** (via dogfooding hyperframes S-028) — `AudioPostCommand.buildFilterGraph` : chemin BGM/ducking jamais fonctionnel (loudnorm 192 kHz → amix tronque ; label `[voice]` mono-usage réutilisé).
+. [x] **Correctif** — `loudnorm=…,aresample=48000` + `[voice]asplit=2[vsc][vmix]` (ducking).
+. [x] `AudioPostProcessorTest` renforcé (`aresample=48000`, `asplit=2`). Compiles VERTS.
+. [ ] 🟡 **Dette** — **release `capsule-plugin 0.0.12`** (accord pilote, Règle 2) pour propager le fix aux consommateurs.
 
 '''
 == ✅ S-202 — Adoption des ports vidéo partagés `video-kernel 0.4.0` (transverse)

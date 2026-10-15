@@ -34,7 +34,14 @@ object AudioPostCommand {
      * @return the filter graph string (for `-filter_complex` or `-af`)
      */
     fun buildFilterGraph(config: AudioPostConfig, hasBgmInput: Boolean): String {
-        val loudness = "loudnorm=I=${config.loudnessTarget}:TP=-1.5:LRA=11"
+        // S-203 (dogfooding réel) — two real-ffmpeg fixes:
+        //  1. `loudnorm` outputs 192 kHz; without a resample, a following `amix`
+        //     (BGM mix) truncates the stream. Re-sample back to 48 kHz.
+        //  2. In the ducking branch, `[voice]` must be `asplit` before being
+        //     consumed by BOTH `sidechaincompress` and `amix` (a filter output
+        //     pad is single-use — reusing the label fails with
+        //     "Invalid stream specifier: voice").
+        val loudness = "loudnorm=I=${config.loudnessTarget}:TP=-1.5:LRA=11,aresample=48000"
 
         // Ducking without BGM is meaningless — ignore it.
         val effectiveBgm = config.bgmEnabled && hasBgmInput
@@ -53,12 +60,13 @@ object AudioPostCommand {
                 "[voice][bgm]${amix}[aout]"
         }
 
-        // Ducking: sidechaincompress on BGM driven by voice.
+        // Ducking: sidechaincompress on BGM driven by voice; voice split for mix.
         val ducking = "sidechaincompress=threshold=0.1:ratio=4:attack=5:release=300"
         return "[0:a]${loudness}[voice];" +
             "[1:a]${bgmVolume}[bgm];" +
-            "[voice][bgm]${ducking}[ducked];" +
-            "[voice][ducked]${amix}[aout]"
+            "[voice]asplit=2[vsc][vmix];" +
+            "[vsc][bgm]${ducking}[ducked];" +
+            "[vmix][ducked]${amix}[aout]"
     }
 
     /**

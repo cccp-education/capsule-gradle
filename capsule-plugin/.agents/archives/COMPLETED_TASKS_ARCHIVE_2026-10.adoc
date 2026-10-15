@@ -1,6 +1,15 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-15
 
+== Session 203 — Dogfooding réel + fix bug ffmpeg audio-post (BGM/ducking) ✅
+
+* Bug réel dupliqué (CAP-AUDIO S-104) révélé par le dogfooding hyperframes (S-028) :
+  le chemin BGM/ducking n'a jamais fonctionné avec ffmpeg réel.
+* [x] Correctif `AudioPostCommand.buildFilterGraph` : `loudnorm=…,aresample=48000` +
+  `[voice]asplit=2[vsc][vmix]` (ducking).
+* [x] `AudioPostProcessorTest` renforcé (`aresample=48000`, `asplit=2`). Compiles VERTS.
+* [ ] Dette : release `capsule-plugin 0.0.12` (accord pilote).
+
 == Session 202 — Adoption des ports vidéo partagés `video-kernel 0.4.0` ✅
 
 * Session transverse (video-kernel + capsule + hyperframes), mission « A puis B ».

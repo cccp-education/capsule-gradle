@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-15 (S-202) — adoption des ports vidéo partagés `video-kernel 0.4.0` (transverse). Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-15 (S-203) — dogfooding réel + fix bug ffmpeg audio-post (BGM/ducking). Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (126-202)
+== Sessions récentes (126-203)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 203 | 2026-10-15 | dogfooding+fix | **Dogfooding réel + fix bug ffmpeg audio-post (BGM/ducking).** Le dogfooding des adaptateurs hyperframes (S-028) a révélé un bug réel **dupliqué** dans `capsule.audio.AudioPostCommand` (CAP-AUDIO S-104) : le chemin BGM (avec/sans ducking) **n'a jamais fonctionné** avec ffmpeg réel — `loudnorm` sort à 192 kHz (l'`amix` tronque à ~0,12 s) et le label `[voice]` mono-usage était réutilisé (`Invalid stream specifier: voice`). Correctif : `loudnorm=I=<target>:TP=-1.5:LRA=11,aresample=48000` + `[voice]asplit=2[vsc][vmix]` (ducking). `AudioPostProcessorTest` renforcé (`aresample=48000`, `asplit=2`). Compiles VERTS. Dette : release `capsule-plugin 0.0.12`. Rapport `.agents/sessions/203-dogfooding-audio-post-fix.adoc`. | 9/10
 
 | 202 | 2026-10-15 | refactor | **Adoption des ports vidéo partagés `video-kernel 0.4.0`** (transverse, mission « A puis B »). `capsule.adapter.kernel.CapsuleKernelPorts` : `CapsuleTextToSpeech`, `CapsuleAudioPostProduction`, `CapsuleSubtitleBurnIn` — adaptateurs non intrusifs (`TtsEngine`/`AudioPostProcessor`/`SubtitleBurnInService` conservés), mapping `AudioPostSettings`→`AudioPostConfig`, dégradation `false`. Pin `video-kernel 0.3.0 → 0.4.0`. `CapsuleKernelPortsTest` (6 unit). Compiles ×3 VERTS. Dette : publication Central `video-kernel 0.4.0` (accord pilote). Rapport `.agents/sessions/202-adopt-shared-video-ports.adoc`. | 9/10
 

@@ -5,9 +5,9 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-15 (S-202 — **Adoption des ports vidéo partagés `video-kernel 0.4.0`** (transverse) : `capsule.adapter.kernel.CapsuleKernelPorts` — `TextToSpeech`/`AudioPostProduction`(+`AudioPostSettings`)/`SubtitleBurnIn`, adaptateurs non intrusifs ; pin `0.3.0 → 0.4.0`. Tous les EPICs capsule restent clos.)
- _Derniere session terminee_ : 202.
- _Prochaine session_ : 203 — à arbitrer par le pilote (prérequis : publication Central `video-kernel 0.4.0`).
+ _Derniere mise a jour_ : 2026-10-15 (S-203 — **Dogfooding réel + fix bug ffmpeg audio-post (BGM/ducking)** : `AudioPostCommand.buildFilterGraph` corrigé — `loudnorm…,aresample=48000` + `asplit=2` (le chemin BGM/ducking n'avait jamais fonctionné réellement). `AudioPostProcessorTest` renforcé. Tous les EPICs capsule restent clos.)
+ _Derniere session terminee_ : 203.
+ _Prochaine session_ : 204 — à arbitrer par le pilote (dette : release `capsule-plugin 0.0.12`).
  _Session en cours_ : —.
  _Littérature de référence_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos) + `video-kernel/.agents/CADRAGE_EPIC_VK_SHARED_PORTS.adoc` (✅ clos).
 
@@ -28,6 +28,8 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 203 | 2026-10-15 | dogfooding+fix | **Dogfooding réel + fix bug ffmpeg audio-post (BGM/ducking).** Le dogfooding des adaptateurs hyperframes (S-028) a révélé un **bug réel dupliqué** dans `capsule.audio.AudioPostCommand` (CAP-AUDIO S-104) : le chemin BGM (avec/sans ducking) **n'a jamais fonctionné** avec ffmpeg réel — `loudnorm` sort à 192 kHz (amix tronque à 0,118 s) et le label `[voice]` mono-usage était réutilisé (`Invalid stream specifier: voice`). Correctif : `loudnorm…,aresample=48000` + `[voice]asplit=2[vsc][vmix]` (ducking). `AudioPostProcessorTest` renforcé (`aresample=48000`, `asplit=2`). `compileKotlin`/`compileTestKotlin` VERTS. **Dette** : release `capsule-plugin 0.0.12` (accord pilote). Rapport `.agents/sessions/203-dogfooding-audio-post-fix.adoc`. | 9/10
 
 | 202 | 2026-10-15 | refactor | **Adoption des ports vidéo partagés `video-kernel 0.4.0`** (session transverse video-kernel + capsule + hyperframes, mission « A puis B »). Capsule adopte les ports `VK-4 US-4b→d` (`TextToSpeech`, `AudioPostProduction` + `AudioPostSettings`, `SubtitleBurnIn`) via `capsule.adapter.kernel.CapsuleKernelPorts` — adaptateurs **non intrusifs** (`TtsEngine`/`AudioPostProcessor`/`SubtitleBurnInService` conservés), mapping `AudioPostSettings`→`AudioPostConfig`, dégradation `false`. Pin `video-kernel 0.3.0 → 0.4.0`. `CapsuleKernelPortsTest` (6 unit). Compiles ×3 VERTS. Zéro bump capsule, zéro publication. Rapport `.agents/sessions/202-adopt-shared-video-ports.adoc`. | 9/10
 

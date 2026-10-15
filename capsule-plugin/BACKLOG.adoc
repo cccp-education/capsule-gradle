@@ -1,6 +1,19 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-15 (S-202 — adoption des ports vidéo partagés `video-kernel 0.4.0` (transverse). Précédent S-199.)
+:last_update: 2026-10-15 (S-203 — dogfooding réel + fix bug ffmpeg audio-post BGM/ducking. Précédent S-202.)
+
+'''
+== ✅ Dogfooding réel + fix bug ffmpeg audio-post (BGM/ducking) — S-203
+
+Le dogfooding des adaptateurs hyperframes (S-028) a révélé un **bug réel dupliqué**
+dans `capsule.audio.AudioPostCommand` (CAP-AUDIO S-104) : le chemin **BGM**
+(avec/sans ducking) **n'a jamais fonctionné** avec ffmpeg réel — `loudnorm` sort à
+192 kHz (l'`amix` tronque à ~0,12 s) et le label `[voice]` **mono-usage** était
+réutilisé (`Invalid stream specifier: voice`) ; `AudioPostProcessorImpl` dégradait
+silencieusement. **Correctif** : `loudnorm=I=<target>:TP=-1.5:LRA=11,aresample=48000`
++ `[voice]asplit=2[vsc][vmix]` (branche ducking). `AudioPostProcessorTest` renforcé.
+Rapport `.agents/sessions/203-dogfooding-audio-post-fix.adoc`. **Dette** : release
+`capsule-plugin 0.0.12` (accord pilote) pour propager le fix.
 
 '''
 == ✅ Adoption des ports vidéo partagés `video-kernel 0.4.0` (S-202, transverse)

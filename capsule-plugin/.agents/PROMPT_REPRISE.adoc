@@ -1,28 +1,33 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 203
+:session: 204
 :borough: Détroit
-:session_precedente: 202 — **Adoption des ports vidéo partagés `video-kernel 0.4.0`** ✅ (transverse)
+:session_precedente: 203 — **Dogfooding réel + fix bug ffmpeg audio-post (BGM/ducking)** ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos) ; `video-kernel/.agents/CADRAGE_EPIC_VK_SHARED_PORTS.adoc` (✅ clos) ; `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc` (✅ clos S-200).
 
-== Mission session 201 (TERMINÉE) — Release `capsule 0.0.11`
+== Mission session 203 (TERMINÉE) — Dogfooding réel + fix bug audio-post
 
-Release DAG N0→N1→N2 (accord pilote) : `capsule-plugin 0.0.11` publié Central
-(bundle `9aa2f725`, AUTOMATIC) ; MEMPHIS BOM/catalog `0.0.93`. Rapport `.agents/sessions/201-publication-0.0.11.adoc`.
+Dogfooding réel des adaptateurs hyperframes (S-028) → **bug réel dupliqué** dans
+`capsule.audio.AudioPostCommand` (CAP-AUDIO S-104) : le chemin BGM/ducking **n'a
+jamais fonctionné** avec ffmpeg réel (dégradation silencieuse). Causes : `loudnorm`
+sort à 192 kHz (amix tronque) ; label `[voice]` mono-usage réutilisé. Correctif :
+`…,aresample=48000` + `asplit=2` (ducking). `AudioPostProcessorTest` renforcé.
+Rapport `.agents/sessions/203-dogfooding-audio-post-fix.adoc`. **Dette** : release
+`capsule-plugin 0.0.12` (accord pilote) pour propager le fix.
 
 == Mission session 202 (TERMINÉE) — Adoption ports vidéo partagés
 
-Session transverse (video-kernel + capsule + hyperframes), mission « A puis B ».
 Capsule adopte les ports `VK-4 US-4b→d` (`TextToSpeech`, `AudioPostProduction` +
 `AudioPostSettings`, `SubtitleBurnIn`) via `capsule.adapter.kernel.CapsuleKernelPorts`
 (adaptateurs non intrusifs, dégradation `false`) ; pin `video-kernel 0.3.0 → 0.4.0`.
-6 unit `CapsuleKernelPortsTest`. Compiles VERTS. Rapport `.agents/sessions/202-adopt-shared-video-ports.adoc`.
+Rapport `.agents/sessions/202-adopt-shared-video-ports.adoc`.
 
-== Mission Session 203 — au choix (pilote)
+== Mission Session 204 — au choix (pilote)
 
 * Backlog capsule **actionnable vidé** (tous EPICs clos, release `0.0.11` publiée,
-  adoption des ports vidéo faite, `video-kernel 0.4.0` **publié Central**).
-* Options : dogfooding / nouvelle demande pilote / maintenance.
+  adoption des ports vidéo faite, `video-kernel 0.4.0` publié Central).
+* **Dette ouverte** : release `capsule-plugin 0.0.12` (fix audio-post BGM/ducking).
+* Options : release 0.0.12 / dogfooding / nouvelle demande pilote / maintenance.
 
 == Points d'attention
 
