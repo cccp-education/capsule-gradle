@@ -1,9 +1,9 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 202
+:session: 203
 :borough: Détroit
 :session_precedente: 202 — **Adoption des ports vidéo partagés `video-kernel 0.4.0`** ✅ (transverse)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
-_littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos) ; `video-kernel/.agents/CADRAGE_EPIC_VK_SHARED_PORTS.adoc` (✅ clos).
+_littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos) ; `video-kernel/.agents/CADRAGE_EPIC_VK_SHARED_PORTS.adoc` (✅ clos) ; `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc` (✅ clos S-200).
 
 == Mission session 201 (TERMINÉE) — Release `capsule 0.0.11`
 
@@ -18,12 +18,10 @@ Capsule adopte les ports `VK-4 US-4b→d` (`TextToSpeech`, `AudioPostProduction`
 (adaptateurs non intrusifs, dégradation `false`) ; pin `video-kernel 0.3.0 → 0.4.0`.
 6 unit `CapsuleKernelPortsTest`. Compiles VERTS. Rapport `.agents/sessions/202-adopt-shared-video-ports.adoc`.
 
-== Mission session 203 — à arbitrer par le pilote
+== Mission Session 203 — au choix (pilote)
 
-* Backlog capsule actionnable vidé (tous EPICs clos, release 0.0.11 publiée,
-  adoption ports vidéo faite).
-* **Prérequis** : publication Central `video-kernel 0.4.0` (accord pilote) —
-  sinon la CI capsule ne résout pas 0.4.0.
+* Backlog capsule **actionnable vidé** (tous EPICs clos, release `0.0.11` publiée,
+  adoption des ports vidéo faite, `video-kernel 0.4.0` **publié Central**).
 * Options : dogfooding / nouvelle demande pilote / maintenance.
 
 == Points d'attention
@@ -37,26 +35,5 @@ Capsule adopte les ports `VK-4 US-4b→d` (`TextToSpeech`, `AudioPostProduction`
 == Rappels
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.11** (Central).
-* `education.cccp:video-kernel:0.4.0` (source ; publication à confirmer). Catalogue interne `workspace-bom = "0.0.91"`.
-* Doctrine de factorisation : **seuil `à 2`** (amendement S-195).
-
-== Mission Session 200 — au choix (pilote)
-
-* A) **Release `capsule 0.0.11`** (accord pilote) — intègre `video-kernel 0.3.0` +
-  CAP-DECOMPOSE (BS-1→5) + split multi-lang 4 groupes.
-* B) **KOOG-PIPELINE-DEDUP** (🟡 éligible au seuil 2 — pipeline `capsule` ≈ `slider`).
-* C) Nouvelle demande pilote.
-
-== Points d'attention
-
-* **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
-* **Règle 2 — PUBLISH** : accord pilote. **Règle 6 — ZÉRO secret**.
-* **English only** ; **zéro Python** ; runner dédié par feature (S-082), steps préfixés (S-088).
-* **CI sharding** : toute nouvelle feature/scénario doit être rattachée à un shard
-  (garde `CapsuleCucumberShardCoverageTest` sinon rouge).
-
-== Rappels
-
-* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.10** (Central).
-* `education.cccp:video-kernel:0.3.0` (Central). Catalogue interne `workspace-bom = "0.0.91"`.
+* `education.cccp:video-kernel:0.4.0` (Central, bundle `695c4ccd`). Catalogue interne `workspace-bom = "0.0.91"`.
 * Doctrine de factorisation : **seuil `à 2`** (amendement S-195).

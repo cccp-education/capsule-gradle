@@ -1,43 +1,11 @@
-= PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 199
+= PROMPT_REPRISE — Capsule Gradle (Détroit) — POINTEUR
 :borough: Détroit
-:session_precedente: 198 — CI sharding : `full-tests.yml` en matrice parallèle ✅
-_note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
-_littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc`.
 
-== Contexte Hérité
+== Fichier canonique
 
-=== S-198 — CI sharding ✅ (ci-infra)
+Ce fichier racine est **déprécié** (doublon historique, laissé périmé jusqu'à S-199).
+Le fichier canonique de la mission en cours est :
 
-`full-tests.yml` éclaté en **24 jobs parallèles** : matrice `bdd-shard` (17 shards exhaustifs et
-disjoints — features et partitions par tags, 1 JVM/shard) + `functional` (4) + `integration` (shards
-`@integration`/`@manim`/`@manim-parallel` + real render). Overhead réduit par **cache de build Gradle**
-(`capsule-plugin/gradle.properties`, `org.gradle.caching=true`) + **installs ciblés** (`binaries` par
-shard). Garde `capsule.ci.CapsuleCucumberShardCoverageTest`. **Wall-clock ~24 min → ~4,3 min** (run
-`38534915332`). 5 runners `CucumberShard*Runner` + 5 `CucumberTaskSpec`.
+  `.agents/PROMPT_REPRISE.adoc`
 
-=== S-197 — CAP-DECOMPOSE BS-3 + BS-4 ✅
-
-=== S-196 — CAP-DECOMPOSE BS-2 ✅
-
-== Mission Session 199 — au choix (pilote)
-
-* A) **CAP-DECOMPOSE BS-5** : `CapsuleVideoTask` (1005 l.) — résolveurs + helpers
-  statiques (risque **élevé**, dernier god-object).
-* B) **KOOG-PIPELINE-DEDUP** (🟡 éligible au seuil 2).
-* C) **Release capsule `0.0.11`** intégrant `video-kernel 0.3.0` + CAP-DECOMPOSE (BS-1→4).
-* D) Nouvelle demande pilote.
-
-== Points d'attention
-
-* **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
-* **Règle 2 — PUBLISH** : accord pilote. **Règle 6 — ZÉRO secret**.
-* **English only** ; **zéro Python** ; runner dédié par feature (S-082), steps préfixés (S-088).
-* **CI sharding** : toute nouvelle feature doit être rattachée à un shard (garde
-  `CapsuleCucumberShardCoverageTest` sinon rouge).
-
-== Rappels
-
-* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.10** (Central).
-* `education.cccp:video-kernel:0.3.0` (Central). Catalogue interne `workspace-bom = "0.0.91"`.
-* Doctrine de factorisation : **seuil `à 2`** (amendement S-195).
+Ne pas éditer ce pointeur : toute mise à jour de mission se fait dans `.agents/PROMPT_REPRISE.adoc`.
