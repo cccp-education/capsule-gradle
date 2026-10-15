@@ -1,5 +1,5 @@
 [versions]
-capsule = "0.0.11"
+capsule = "0.0.12"
 slider = "0.0.20"
 kotlin = "2.4.10"
 junit-platform-launcher = "1.10.2"
@@ -15,7 +15,7 @@ codebase = "0.0.18"
 codebase-gradle-plugin = "0.0.18"
 koog = "1.3.0"
 # BOM N0 courante (aligné sur le catalogue workspace MEMPHIS 0.0.92).
-workspace-bom = "0.0.92"
+workspace-bom = "0.0.96"
 i18n-contracts = "0.0.4"
 video-kernel = "0.4.0"
 codebase-contracts = "0.0.2"

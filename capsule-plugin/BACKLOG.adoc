@@ -1,6 +1,15 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-15 (S-203 — dogfooding réel + fix bug ffmpeg audio-post BGM/ducking. Précédent S-202.)
+:last_update: 2026-10-15 (S-204 — release corrective `capsule-plugin 0.0.12` (fix audio-post BGM/ducking). Précédent S-203.)
+
+'''
+== ✅ Release corrective `capsule-plugin 0.0.12` — S-204
+
+Release DAG N0→N1→N2 (accord pilote) : MEMPHIS catalogue/BOM `0.0.96`
+(`capsule-plugin = "0.0.12"`) → toml `capsule 0.0.11 → 0.0.12` + alignement BOM
+interne `workspace-bom 0.0.92 → 0.0.96` → **Central `0.0.12`** (bundle `fcab286c`,
+AUTOMATIC). Contenu : fix bug audio-post BGM/ducking (S-203). `publishToMavenLocal`
+VERT. Rapport `.agents/sessions/204-release-0.0.12.adoc`.
 
 '''
 == ✅ Dogfooding réel + fix bug ffmpeg audio-post (BGM/ducking) — S-203

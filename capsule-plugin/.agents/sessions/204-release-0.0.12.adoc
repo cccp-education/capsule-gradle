@@ -1,0 +1,32 @@
+= Session 204 — Release corrective `capsule-plugin 0.0.12` (Maven Central)
+:toc:
+
+== Contexte
+
+Release corrective (accord pilote), demandée en clôture du dogfooding S-203 qui a
+révélé un bug réel du chemin audio-post **BGM / ducking** dans `AudioPostCommand`
+(CAP-AUDIO S-104 — le chemin n'avait jamais fonctionné avec ffmpeg réel).
+
+== Ordre DAG
+
+. **MEMPHIS** catalogue/BOM `0.0.96` (`capsule-plugin = "0.0.12"`, bundle `df0ac9c6`).
+. **capsule** : toml `capsule 0.0.11 → 0.0.12` + alignement BOM interne
+   `workspace-bom 0.0.92 → 0.0.96` (la platform capsule est dérivée du toml).
+. Publication Central `capsule-plugin 0.0.12` (ce document).
+
+== Contenu depuis 0.0.11
+
+* **Fix bug réel audio-post** (`capsule.audio.AudioPostCommand.buildFilterGraph`) :
+  `loudnorm=…,aresample=48000` + `[voice]asplit=2[vsc][vmix]` (ducking).
+* `AudioPostProcessorTest` renforcé (`aresample=48000`, `asplit=2`).
+* Aucune autre modification de comportement (opt-in `audioPost.bgmEnabled`, défaut `false`).
+
+== Gates (Local = Build)
+
+Compiles ×3 VERTS ; `publishToMavenLocal` VERT — POM `0.0.12` importe
+`workspace-bom:0.0.96`. Publication Central bundle
+`fcab286c-e245-475b-ab61-ea1073c31338` (AUTOMATIC).
+
+== Suite
+
+* Propagation repo1 `capsule-plugin/0.0.12` à confirmer.

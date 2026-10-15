@@ -1,6 +1,14 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-15
 
+== Session 204 — Release corrective `capsule-plugin 0.0.12` ✅
+
+* Release DAG N0→N1→N2 (accord pilote) : MEMPHIS catalogue/BOM `0.0.96` →
+  toml `capsule 0.0.11 → 0.0.12` + alignement BOM interne `workspace-bom 0.0.92 → 0.0.96`
+  → Central `0.0.12` (bundle `fcab286c`, AUTOMATIC).
+* Contenu : fix bug audio-post BGM/ducking (S-203).
+* `publishToMavenLocal` VERT (POM 0.0.12 importe `workspace-bom:0.0.96`).
+
 == Session 203 — Dogfooding réel + fix bug ffmpeg audio-post (BGM/ducking) ✅
 
 * Bug réel dupliqué (CAP-AUDIO S-104) révélé par le dogfooding hyperframes (S-028) :
