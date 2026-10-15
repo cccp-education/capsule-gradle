@@ -1,64 +1,44 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 :session: 202
 :borough: Détroit
-:session_precedente: 201 — **Release `capsule-plugin 0.0.11` ✅** (Maven Central, bundle `9aa2f725`, + BOM 0.0.93)
+:session_precedente: 202 — **Adoption des ports vidéo partagés `video-kernel 0.4.0`** ✅ (transverse)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
-_littérature_ : `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc` (✅ clos), `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos).
+_littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos) ; `video-kernel/.agents/CADRAGE_EPIC_VK_SHARED_PORTS.adoc` (✅ clos).
 
 == Mission session 201 (TERMINÉE) — Release `capsule 0.0.11`
 
 Release DAG N0→N1→N2 (accord pilote) : `capsule-plugin 0.0.11` publié Central
-(bundle `9aa2f725-fafb-4d88-82e4-8f6041639dd6`, AUTOMATIC) ; bump `slider 0.0.19 → 0.0.20` +
-`capsule 0.0.10 → 0.0.11` ; consommateur racine `0.0.11` (`./gradlew tasks` VERT) ;
-MEMPHIS BOM/catalog `0.0.93` (`capsule-plugin 0.0.11` + `slider-plugin 0.0.20`, bundle `fa361f70`).
-Contenu 0.0.11 : RENAME + CAP-VIRAL-E2E + CAP-DECOMPOSE BS-1→5 + split multi-lang +
-KOOG-PIPELINE-DEDUP BS-2 + `video-kernel 0.3.0`. Rapport `.agents/sessions/201-publication-0.0.11.adoc`.
+(bundle `9aa2f725`, AUTOMATIC) ; MEMPHIS BOM/catalog `0.0.93`. Rapport `.agents/sessions/201-publication-0.0.11.adoc`.
 
-== Mission session 202 — à arbitrer par le pilote
+== Mission session 202 (TERMINÉE) — Adoption ports vidéo partagés
 
-* Backlog actionnable vidé (tous EPICs clos, release 0.0.11 publiée).
+Session transverse (video-kernel + capsule + hyperframes), mission « A puis B ».
+Capsule adopte les ports `VK-4 US-4b→d` (`TextToSpeech`, `AudioPostProduction` +
+`AudioPostSettings`, `SubtitleBurnIn`) via `capsule.adapter.kernel.CapsuleKernelPorts`
+(adaptateurs non intrusifs, dégradation `false`) ; pin `video-kernel 0.3.0 → 0.4.0`.
+6 unit `CapsuleKernelPortsTest`. Compiles VERTS. Rapport `.agents/sessions/202-adopt-shared-video-ports.adoc`.
+
+== Mission session 203 — à arbitrer par le pilote
+
+* Backlog capsule actionnable vidé (tous EPICs clos, release 0.0.11 publiée,
+  adoption ports vidéo faite).
+* **Prérequis** : publication Central `video-kernel 0.4.0` (accord pilote) —
+  sinon la CI capsule ne résout pas 0.4.0.
 * Options : dogfooding / nouvelle demande pilote / maintenance.
 
-== Contexte Hérité
+== Points d'attention
 
-=== S-200 — KOOG-PIPELINE-DEDUP BS-2 ✅
+* **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
+* **Règle 2 — PUBLISH** : accord pilote. **Règle 6 — ZÉRO secret**.
+* **English only** ; **zéro Python** ; runner dédié par feature (S-082), steps préfixés (S-088).
+* **CI sharding** : toute nouvelle feature/scénario doit être rattachée à un shard
+  (garde `CapsuleCucumberShardCoverageTest` sinon rouge).
 
-**Adoption du squelette N1.** Décision pilote d'exécution : publier `codebase-plugin 0.0.18`
-(`codebase.koog.pipeline`, BS-1 S-276) et l'adopter dans capsule + slider. DAG **N0 → N1 → N2** :
-MEMPHIS `workspace-bom/catalog 0.0.91 → 0.0.92` (`codebase-plugin = 0.0.18`, bundle `fbc592ed`,
-S-295) → codebase re-pin `ws 0.0.78 → 0.0.92` + version propre `0.0.18` (bundle `d107805c`, S-277) →
-adoption. **Blocage résolu** : bootstrap self-application codebase (marker plugin == version propre) →
-split-ref `codebase-gradle-plugin = "0.0.17"` (dernier publié). Capsule : `CapsulePipelineDefinition`
-(port `PipelineDefinition<CapsuleState>`) + `CapsulePipelineGraph` façade (−124 l.), API publique
-préservée. Slider : `DeckPipelineDefinition` (−116 l.), koog `1.0.0 → 1.3.0`. Bumps capsule :
-`codebase 0.0.18`, `codebase-gradle-plugin 0.0.18`, `workspace-bom 0.0.92`. Compiles ×3 VERTS.
-Rapport `.agents/sessions/200-koog-pipeline-dedup-bs2-adoption.adoc`.
+== Rappels
 
-=== S-199 — split multi-lang + CAP-DECOMPOSE BS-5 ✅
-
-**Mission 1 — éclatement `multi-lang-genA/B` → 4 groupes.** Le pôle CI restant de
-S-198 (`BDD · multi-lang-genB` = 260 s) est scindé en **4 groupes de langues**
-(6/6/5/5) : objet pur `capsule.ci.MultiLangShardPartition` (+ `MultiLangShardPartitionTest`,
-partition exhaustive/disjointe/équilibrée/déterministe), 2 scénarios BDD
-`@multilang-gen-c`/`-d`, 2 runners `CucumberShardMultiLangGen{C,D}Runner`, 2
-`CucumberTaskSpec` + 2 jobs `full-tests.yml`. Test-only, zéro code plugin modifié.
-**CI verte** (`Test` `38576644671`, `Full Tests` `38576644672`). *Constat* : les
-shards sont désormais **overhead-bound** (fixe par job ~120-180 s) ; le levier
-wall-clock restant = réduire l'overhead (image runner ffmpeg/espeak pré-provisionnée),
-pas de nouveaux shards.
-
-**Mission 2 — CAP-DECOMPOSE BS-5 ✅ (EPIC clos 5/5).** `CapsuleVideoTask` 1005 → 851 l. :
-résolveurs extraits dans `capsule/CapsuleVideoResolvers.kt` (objet pur, 7 unit tests
-`CapsuleVideoResolversTest`) ; shims `concatWebmFiles`/`createSingleSlideHtml` retirés
-du `companion` (appelants → domaine `capsule.adapter.revealjs`).
-
-Gates locaux (Local = Build) : compiles ×3 VERTS ; 4 tâches `cucumberTestShardMultiLangGen*`
-enregistrées. Zéro test/check local.
-
-=== S-198 — CI sharding ✅ (ci-infra)
-
-`full-tests.yml` = matrice parallèle (shards BDD exhaustifs/disjoints + functional +
-integration), garde `CapsuleCucumberShardCoverageTest`. 24 min → ~4,3 min (avant S-199).
+* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.11** (Central).
+* `education.cccp:video-kernel:0.4.0` (source ; publication à confirmer). Catalogue interne `workspace-bom = "0.0.91"`.
+* Doctrine de factorisation : **seuil `à 2`** (amendement S-195).
 
 == Mission Session 200 — au choix (pilote)
 

@@ -1,0 +1,47 @@
+= Session 202 — Adoption des ports vidéo partagés `video-kernel 0.4.0` (transverse)
+:toc:
+
+== Contexte
+
+Session **transverse** (video-kernel + capsule + hyperframes), mission pilote
+« enchaine sur A puis B ». A = promotion des ports `VK-4 US-4b→d` au noyau avec
+hyperframes déclaré 2ᵉ consommateur (voir `video-kernel/.agents/sessions/196-…`).
+
+== Livrable capsule — adoption des ports
+
+Le noyau `video-kernel 0.4.0` (additif) expose trois ports engine-neutres :
+`TextToSpeech`, `AudioPostProduction` (+ `AudioPostSettings`), `SubtitleBurnIn`.
+
+Nouveau `capsule.adapter.kernel.CapsuleKernelPorts` : adaptateurs **non intrusifs**
+qui exposent les capacités historiques de capsule à travers le contrat partagé,
+en parité avec hyperframes (le second moteur) :
+
+[cols="1,2", options="header"]
+|===
+| Adapter | Délègue à
+| `CapsuleTextToSpeech` | `capsule.TtsEngine` (Piper/Espeak/Fish/NoOp)
+| `CapsuleAudioPostProduction` | `capsule.audio.AudioPostProcessor` (mapping `AudioPostSettings` → `AudioPostConfig`)
+| `CapsuleSubtitleBurnIn` | `capsule.SubtitleBurnInService`
+|===
+
+Chaque adaptateur **dégrade en `false`** (le contrat du noyau n'émet jamais
+d'exception, cohérent avec `VideoDurationProbe`). Les interfaces historiques et
+leurs implémentations sont conservées — zéro changement de comportement.
+
+Pin : `gradle/libs.versions.toml` `video-kernel 0.3.0 → 0.4.0`.
+
+== Tests
+
+* `CapsuleKernelPortsTest` — 6 unit (JUnit5, `@TempDir`) : synthèse OK / échec /
+  vide, mapping fidèle des settings, burn-in OK / échec. Fakes, zéro binaire réel.
+
+== Gates (Local = Build)
+
+`compileKotlin` + `compileTestKotlin` **VERTS** (contre `video-kernel 0.4.0`
+mavenLocal). **Tests = CI** (règle EAGER).
+
+== Dette / suite
+
+* **Publication Central `video-kernel 0.4.0`** — prérequis dur CI (résolution
+  depuis Central ; mavenLocal vide en CI) — accord pilote requis (Règle 2).
+* Aucun bump de version capsule, aucune publication capsule (adoption seule).

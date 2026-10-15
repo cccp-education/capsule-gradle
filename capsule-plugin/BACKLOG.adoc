@@ -1,6 +1,26 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-14 (S-199 — split multi-lang en 4 groupes (pôle CI 260 s) + CAP-DECOMPOSE BS-5 ✅ (EPIC clos 5/5). Précédent S-198 : CI sharding.)
+:last_update: 2026-10-15 (S-202 — adoption des ports vidéo partagés `video-kernel 0.4.0` (transverse). Précédent S-199.)
+
+'''
+== ✅ Adoption des ports vidéo partagés `video-kernel 0.4.0` (S-202, transverse)
+
+Session transverse (video-kernel + capsule + hyperframes). Le noyau `video-kernel 0.4.0`
+(additif) expose trois ports engine-neutres ; capsule les adopte via
+`capsule.adapter.kernel.CapsuleKernelPorts` (adaptateurs **non intrusifs** — les
+interfaces historiques sont conservées, mapping fidèle, dégradation `false`) :
+
+[cols="1,2", options="header"]
+|===
+| Adapter | Délègue à
+| `CapsuleTextToSpeech` | `capsule.TtsEngine`
+| `CapsuleAudioPostProduction` | `capsule.audio.AudioPostProcessor`
+| `CapsuleSubtitleBurnIn` | `capsule.SubtitleBurnInService`
+|===
+
+Pin `video-kernel 0.3.0 → 0.4.0` ; `CapsuleKernelPortsTest` (6 unit). Compiles VERTS.
+Rapport `.agents/sessions/202-adopt-shared-video-ports.adoc`. **Dette** : publication
+Central `video-kernel 0.4.0` (accord pilote) — prérequis CI.
 
 '''
 == ✅ CI-SHARDING-2 — split multi-lang en 4 groupes (S-199)

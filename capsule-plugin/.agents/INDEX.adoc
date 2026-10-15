@@ -5,11 +5,11 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-14 (S-201 — **Release `capsule-plugin 0.0.11`** ✅ (Maven Central, bundle `9aa2f725`, AUTOMATIC) : cumule RENAME + CAP-VIRAL-E2E + CAP-DECOMPOSE BS-1→5 + split multi-lang + KOOG-PIPELINE-DEDUP BS-2 + `video-kernel 0.3.0`. Bump `slider 0.0.19 → 0.0.20`. Consommateur racine `0.0.11`. MEMPHIS BOM/catalog `0.0.93` (bundle `fa361f70`).)
- _Derniere session terminee_ : 201.
- _Prochaine session_ : 202 — à arbitrer par le pilote (backlog actionnable vidé).
+ _Derniere mise a jour_ : 2026-10-15 (S-202 — **Adoption des ports vidéo partagés `video-kernel 0.4.0`** (transverse) : `capsule.adapter.kernel.CapsuleKernelPorts` — `TextToSpeech`/`AudioPostProduction`(+`AudioPostSettings`)/`SubtitleBurnIn`, adaptateurs non intrusifs ; pin `0.3.0 → 0.4.0`. Tous les EPICs capsule restent clos.)
+ _Derniere session terminee_ : 202.
+ _Prochaine session_ : 203 — à arbitrer par le pilote (prérequis : publication Central `video-kernel 0.4.0`).
  _Session en cours_ : —.
- _Littérature de référence_ : `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc` (✅ clos) + `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos).
+ _Littérature de référence_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos) + `video-kernel/.agents/CADRAGE_EPIC_VK_SHARED_PORTS.adoc` (✅ clos).
 
 '''
 == REGLES ABSOLUES (resume)
@@ -28,6 +28,8 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 202 | 2026-10-15 | refactor | **Adoption des ports vidéo partagés `video-kernel 0.4.0`** (session transverse video-kernel + capsule + hyperframes, mission « A puis B »). Capsule adopte les ports `VK-4 US-4b→d` (`TextToSpeech`, `AudioPostProduction` + `AudioPostSettings`, `SubtitleBurnIn`) via `capsule.adapter.kernel.CapsuleKernelPorts` — adaptateurs **non intrusifs** (`TtsEngine`/`AudioPostProcessor`/`SubtitleBurnInService` conservés), mapping `AudioPostSettings`→`AudioPostConfig`, dégradation `false`. Pin `video-kernel 0.3.0 → 0.4.0`. `CapsuleKernelPortsTest` (6 unit). Compiles ×3 VERTS. Zéro bump capsule, zéro publication. Rapport `.agents/sessions/202-adopt-shared-video-ports.adoc`. | 9/10
 
 | 199 | 2026-10-14 | ci-infra+refactor | **Split multi-lang en 4 groupes + CAP-DECOMPOSE BS-5 ✅.** (1) Le pôle CI `BDD · multi-lang-genB` (260 s, 11 langues) est scindé en **4 groupes** (6/6/5/5) : objet pur `capsule.ci.MultiLangShardPartition` (partition N-way déterministe) + `MultiLangShardPartitionTest` (RED 18 `Unresolved reference` → GREEN ; exhaustif/disjoint/équilibré/déterministe, lettre inconnue → `IllegalArgumentException`), 2 scénarios BDD `@multilang-gen-c`/`-d`, 2 runners `CucumberShardMultiLangGen{C,D}Runner` (S-082/S-088), 2 `CucumberTaskSpec` + 2 jobs `full-tests.yml`. **Test-only** (zéro code plugin). (2) **CAP-DECOMPOSE BS-5 ✅ — EPIC clos 5/5** : résolveurs extraits de `CapsuleVideoTask` vers `capsule/CapsuleVideoResolvers.kt` (déplacement verbatim ; TTS piper/espeak/fish/noop, Manim engine/mixer/replacer/parallel, viewport viral, sous-titres/burn-in, `manimVideoDirs`) + 7 unit `CapsuleVideoResolversTest` ; shims `@JvmStatic` `concatWebmFiles`/`createSingleSlideHtml` retirés du `companion` (appelants → `RevealJsEngineAdapter.concat`/`RevealJsDeckHtml.singleSlideHtml`). `CapsuleVideoTask` **1005 → 851 l.** (−154). Gates locaux (Local = Build) : compiles ×3 VERTS, 4 tâches shard enregistrées. Zéro bump, zéro publication, zéro secret. Rapport `.agents/sessions/199-split-multilang-4-groups-cap-decompose-bs5.adoc`. | 9/10
 

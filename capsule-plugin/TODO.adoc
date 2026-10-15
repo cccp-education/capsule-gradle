@@ -1,5 +1,13 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-14 (S-201 — **Release `capsule-plugin 0.0.11` ✅** (Central bundle `9aa2f725`) + BOM 0.0.93. Précédent S-199.)
+:last_update: 2026-10-15 (S-202 — **Adoption des ports vidéo partagés `video-kernel 0.4.0`** (transverse). Précédent S-201.)
+
+'''
+== ✅ S-202 — Adoption des ports vidéo partagés `video-kernel 0.4.0` (transverse)
+
+. [x] **Ports `VK-4 US-4b→d` adoptés** — `capsule.adapter.kernel.CapsuleKernelPorts` (`CapsuleTextToSpeech` / `CapsuleAudioPostProduction` / `CapsuleSubtitleBurnIn`), adaptateurs non intrusifs, dégradation `false`.
+. [x] Pin `gradle/libs.versions.toml` `video-kernel 0.3.0 → 0.4.0`.
+. [x] `CapsuleKernelPortsTest` (6 unit). Compiles ×3 VERTS.
+. [ ] 🟡 **Dette** — **publication Central `video-kernel 0.4.0`** (accord pilote requis, Règle 2) : prérequis de la CI capsule (résolution depuis Central).
 
 '''
 == ✅ S-201 — Release `capsule-plugin 0.0.11` + BOM 0.0.93

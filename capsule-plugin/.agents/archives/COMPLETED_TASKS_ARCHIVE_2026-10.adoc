@@ -1,5 +1,14 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
-:date: 2026-10-14
+:date: 2026-10-15
+
+== Session 202 — Adoption des ports vidéo partagés `video-kernel 0.4.0` ✅
+
+* Session transverse (video-kernel + capsule + hyperframes), mission « A puis B ».
+* `capsule.adapter.kernel.CapsuleKernelPorts` — `CapsuleTextToSpeech` /
+  `CapsuleAudioPostProduction` / `CapsuleSubtitleBurnIn` (adaptateurs non intrusifs,
+  dégradation `false`).
+* Pin `video-kernel 0.3.0 → 0.4.0` ; `CapsuleKernelPortsTest` (6 unit).
+* Zéro bump capsule, zéro publication capsule.
 
 == Session 201 — Release `capsule-plugin 0.0.11` + BOM 0.0.93 ✅
 

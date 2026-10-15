@@ -1,7 +1,16 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
-:date: 2026-10-14
-:session: 195 VK-4 US-4a (adoption port partagé VideoDurationProbe)
+:date: 2026-10-15
+:session: 202 adoption des ports vidéo partagés `video-kernel 0.4.0` (transverse)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 15 octobre 2026 (après session 202)
+
+.VK-4 US-4b→d — adoption des ports partagés (adaptateurs)
+|===
+| Élément | Changement | Tests
+
+| `capsule/adapter/kernel/CapsuleKernelPorts.kt` (créé) | `CapsuleTextToSpeech` / `CapsuleAudioPostProduction` / `CapsuleSubtitleBurnIn` implémentent les ports N1 (`TextToSpeech`/`AudioPostProduction`/`SubtitleBurnIn`) ; mapping `AudioPostSettings`→`AudioPostConfig` ; dégradation `false` | +6 `CapsuleKernelPortsTest` (fakes, `@TempDir`)
+|===
 
 == Couverture — 14 octobre 2026 (après session 195)
 

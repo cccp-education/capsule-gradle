@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-14 (S-200) — KOOG-PIPELINE-DEDUP BS-2 (adoption squelette N1). Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-15 (S-202) — adoption des ports vidéo partagés `video-kernel 0.4.0` (transverse). Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (126-200)
+== Sessions récentes (126-202)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 202 | 2026-10-15 | refactor | **Adoption des ports vidéo partagés `video-kernel 0.4.0`** (transverse, mission « A puis B »). `capsule.adapter.kernel.CapsuleKernelPorts` : `CapsuleTextToSpeech`, `CapsuleAudioPostProduction`, `CapsuleSubtitleBurnIn` — adaptateurs non intrusifs (`TtsEngine`/`AudioPostProcessor`/`SubtitleBurnInService` conservés), mapping `AudioPostSettings`→`AudioPostConfig`, dégradation `false`. Pin `video-kernel 0.3.0 → 0.4.0`. `CapsuleKernelPortsTest` (6 unit). Compiles ×3 VERTS. Dette : publication Central `video-kernel 0.4.0` (accord pilote). Rapport `.agents/sessions/202-adopt-shared-video-ports.adoc`. | 9/10
 
 | 201 | 2026-10-14 | publish/ops | **Release `capsule-plugin 0.0.11` (Maven Central).** DAG N0→N1→N2 (accord pilote) : bump `capsule 0.0.10 → 0.0.11` + `slider 0.0.19 → 0.0.20` ; `assemble`/`publishToMavenLocal` VERTS (signés GPG) ; Central bundle `9aa2f725-fafb-4d88-82e4-8f6041639dd6` (AUTOMATIC) ; consommateur racine `0.0.11` (`./gradlew tasks` VERT, commit `d6eece6`) ; MEMPHIS BOM/catalog `0.0.93` (`capsule-plugin 0.0.11` + `slider-plugin 0.0.20`, bundle `fa361f70`). Contenu : RENAME + CAP-VIRAL-E2E + CAP-DECOMPOSE BS-1→5 + split multi-lang + KOOG-PIPELINE-DEDUP BS-2 + `video-kernel 0.3.0`. Rapport `.agents/sessions/201-publication-0.0.11.adoc`. | 9/10
 
