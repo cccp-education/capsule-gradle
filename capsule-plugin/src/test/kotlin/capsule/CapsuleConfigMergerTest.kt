@@ -2169,4 +2169,35 @@ class CapsuleConfigMergerTest {
         assertEquals("TIKTOK", merged.viral.platform.name, "props viral.platform should apply")
         assertEquals(42, merged.viral.targetDurationSeconds, "props viral.targetDurationSeconds should apply")
     }
+
+    @Test
+    fun `merge publish section reads gradle properties`() {
+        val projectDir = File(tempDir, "publish-props").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText(
+            """
+            capsule.publish.enabled=true
+            capsule.publish.title=From properties
+            capsule.publish.tags=formation,cccp
+            """.trimIndent()
+        )
+        // yamlLoaded = false simulates an absent YAML file: props/ENV apply.
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
+
+        assertEquals(true, merged.publish.enabled, "props publish.enabled should apply")
+        assertEquals("From properties", merged.publish.title, "props publish.title should apply")
+        assertEquals(listOf("formation", "cccp"), merged.publish.tags, "props publish.tags should be comma-split")
+        assertEquals("youtube", merged.publish.platform, "default platform preserved")
+    }
+
+    @Test
+    fun `merge publish CLI overrides properties`() {
+        val projectDir = File(tempDir, "publish-cli").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("capsule.publish.title=From properties")
+
+        val merged = CapsuleConfigMerger.merge(
+            projectDir, CapsuleConfig(), mapOf("publish.title" to "From CLI"), yamlLoaded = false,
+        )
+
+        assertEquals("From CLI", merged.publish.title, "CLI should override properties")
+    }
 }

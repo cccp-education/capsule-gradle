@@ -4,6 +4,7 @@ import capsule.audio.AudioPostConfig
 import capsule.chapters.ChaptersConfig
 import capsule.podcast.PodcastConfig
 import capsule.preview.PreviewConfig
+import capsule.publish.PublishConfig
 import capsule.transcript.TranscriptConfig
 import capsule.viral.ViralConfig
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -35,6 +36,12 @@ data class CapsuleConfig(
     val chapters: ChaptersConfig = ChaptersConfig(),
     val viral: ViralConfig = ViralConfig(),
     val voice: VoiceConfig = VoiceConfig(),
+    /**
+     * HF-YOUTUBE-PUBLISH US-3b — the `publish` section: automated upload to a
+     * video platform (YouTube) through the shared N1 `VideoPublisher` port.
+     * Disabled by default.
+     */
+    val publish: PublishConfig = PublishConfig(),
     /**
      * CAP-FISH-AUDIO — the `fish-audio` member: a pool of Fish Audio API keys,
      * loaded from the git-ignored `fish.yaml` (never from the committed

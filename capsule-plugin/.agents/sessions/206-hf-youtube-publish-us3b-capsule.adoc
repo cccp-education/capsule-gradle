@@ -1,0 +1,68 @@
+= Session 206 — HF-YOUTUBE-PUBLISH US-3b : publication YouTube capsule
+:session: 206
+:date: 2026-10-16
+:borough: Détroit (capsule)
+:type: feat (adaptateur N2 + tâche)
+:score: 8/10
+
+== Mission
+
+Session transverse (pilotée hyperframes S-035) — EPIC `HF-YOUTUBE-PUBLISH`
+US-3b : doter capsule de la **publication YouTube automatique**, comme
+hyperframes (US-2). Pilote a autorisé `publish` + `git`.
+
+== Décision d'architecture — option (a) duplication verbatim N2
+
+Le pipeline OAuth/HTTP (`video.kernel.publish.VideoPublisher` = **port N1**,
+implémentation = **N2**). La doctrine de factorisation autorise explicitement
+**la duplication verbatim N2 d'une implémentation de port N1**
+(`AGENTS.adoc` : « port en N0/N1 + implémentations N2 (duplication verbatim
+tolérée) »). L'alternative (b) — module partagé N1 `youtube-publish` — reste
+recommandée à terme (flux OAuth sensible) et est **tracée** ici comme EPIC
+futur `PUBLISH-ADAPTER-N1` (hors périmètre).
+
+== Livré
+
+=== Adaptateur `capsule.adapter.youtube` (copie verbatim N2)
+
+`YouTubeCredentials` (rédigé), `YouTubeCredentialsLoader`, `HttpTransport` +
+`JdkHttpTransport` (seam injectable, JDK `HttpClient`, **aucun SDK Google`),
+`YouTubePublishCommand` (builders purs), `YouTubeDataApiPublisher`, 
+`DisabledVideoPublisher`, `CapsuleYouTubePublisherResolver`, `ChapterLineParser`.
+
+=== Config `publish` (4 sources)
+
+Nouvelle section `PublishConfig` câblée dans `CapsuleConfig` +
+`CapsuleConfigMerger` (ENV `CAPSULE_PUBLISH_*` < gradle.properties
+`capsule.publish.*` < YAML `publish.*` < CLI `-Pcapsule.publish.*`).
+
+=== Tâche `publishCapsuleToYouTube` (groupe deploy, opt-in)
+
+`PublishCapsuleToYouTubeTask` — assemble la `VideoPublication` (décrit via le
+noyau `VideoDescriptionComposer`), **valide avant réseau**
+(`VideoPublicationValidator`), résout le publisher (`CapsuleYouTubePublisherResolver`),
+écrit `publication.json`. Enregistrée dans `CapsuleCoreRegistrar`.
+
+== Tests
+
+* `capsule.adapter.youtube` : `YouTubeDataApiPublisherTest` (fake transport, 8),
+  `YouTubeCredentialsLoaderTest` (redaction Règle 6, 6), `ChapterLineParserTest` (7).
+* `CapsuleConfigMergerTest` : +2 (merge `publish` depuis gradle.properties ; CLI
+  prioritaire).
+* **Local = Build** : `compileKotlin` + `compileTestKotlin` **VERTS**. Aucun test
+  lancé localement (CI).
+
+== Reste / dette
+
+* **BDD `@publish` (capsule)** : non ajoutée (la garde de sharding
+  `CapsuleCucumberShardCoverageTest` exige qu'une feature soit rattachée à un
+  shard — à faire avec le câblage shard). Couverture unit assurée.
+* **EPIC `PUBLISH-ADAPTER-N1`** : extraire l'adaptateur commun en N1 (option b).
+* **Release** `capsule-plugin 0.0.13` : à planifier (DAG MEMPHIS).
+
+== Fichiers
+
+* `src/main/kotlin/capsule/adapter/youtube/*` (9 fichiers)
+* `src/main/kotlin/capsule/publish/PublishConfig.kt`, `PublishCapsuleToYouTubeTask.kt`
+* `src/main/kotlin/capsule/CapsuleConfig.kt`, `CapsuleConfigMerger.kt`, `CapsuleCoreRegistrar.kt`
+* `src/test/kotlin/capsule/adapter/youtube/*` (3), `CapsuleConfigMergerTest.kt` (+2)

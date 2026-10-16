@@ -2,6 +2,7 @@ package capsule
 
 import capsule.audio.AudioPostConfig
 import capsule.chapters.ChaptersConfig
+import capsule.publish.PublishConfig
 import capsule.podcast.PodcastConfig
 import capsule.preview.PreviewConfig
 import capsule.transcript.TranscriptConfig
@@ -52,6 +53,7 @@ object CapsuleConfigMerger {
             podcast = mergePodcastConfig(envConfig.podcast, propertiesConfig.podcast, yaml?.podcast, cliParams),
             preview = mergePreviewConfig(envConfig.preview, propertiesConfig.preview, yaml?.preview, cliParams),
             chapters = mergeChaptersConfig(envConfig.chapters, propertiesConfig.chapters, yaml?.chapters, cliParams),
+            publish = mergePublishConfig(envConfig.publish, propertiesConfig.publish, yaml?.publish, cliParams),
             viral = mergeViralConfig(envConfig.viral, propertiesConfig.viral, yaml?.viral, cliParams),
             voice = mergeVoiceConfig(envConfig.voice, propertiesConfig.voice, yaml?.voice, cliParams),
             // CAP-FISH-AUDIO — the key pool is a secret: it is NOT a 4-source value.
@@ -207,6 +209,24 @@ object CapsuleConfigMerger {
                 outroText = env["CAPSULE_CHAPTERS_OUTRO_TEXT"] ?: "",
                 outputDir = env["CAPSULE_CHAPTERS_OUTPUT_DIR"] ?: ""
             ),
+            publish = PublishConfig(
+                enabled = env["CAPSULE_PUBLISH_ENABLED"]?.toBoolean() ?: false,
+                platform = env["CAPSULE_PUBLISH_PLATFORM"] ?: "youtube",
+                credentialsFile = env["CAPSULE_PUBLISH_CREDENTIALS_FILE"] ?: "youtube.yaml",
+                title = env["CAPSULE_PUBLISH_TITLE"] ?: "",
+                description = env["CAPSULE_PUBLISH_DESCRIPTION"] ?: "",
+                tags = env["CAPSULE_PUBLISH_TAGS"]?.let { splitCommaList(it) } ?: emptyList(),
+                hashtags = env["CAPSULE_PUBLISH_HASHTAGS"]?.let { splitCommaList(it) } ?: emptyList(),
+                links = env["CAPSULE_PUBLISH_LINKS"]?.let { splitCommaList(it) } ?: emptyList(),
+                nextVideo = env["CAPSULE_PUBLISH_NEXT_VIDEO"] ?: "",
+                previousVideo = env["CAPSULE_PUBLISH_PREVIOUS_VIDEO"] ?: "",
+                thumbnailFile = env["CAPSULE_PUBLISH_THUMBNAIL_FILE"] ?: "",
+                visibility = env["CAPSULE_PUBLISH_VISIBILITY"] ?: "private",
+                categoryId = env["CAPSULE_PUBLISH_CATEGORY_ID"] ?: "",
+                languageCode = env["CAPSULE_PUBLISH_LANGUAGE_CODE"] ?: "",
+                publishAt = env["CAPSULE_PUBLISH_AT"] ?: "",
+                strict = env["CAPSULE_PUBLISH_STRICT"]?.toBoolean() ?: false
+            ),
             viral = ViralConfig(
                 enabled = env["CAPSULE_VIRAL_ENABLED"]?.toBoolean() ?: false,
                 platform = ViralPlatform.fromString(env["CAPSULE_VIRAL_PLATFORM"]),
@@ -342,6 +362,24 @@ object CapsuleConfigMerger {
                 introText = props["capsule.chapters.introText"] ?: "",
                 outroText = props["capsule.chapters.outroText"] ?: "",
                 outputDir = props["capsule.chapters.outputDir"] ?: ""
+            ),
+            publish = PublishConfig(
+                enabled = props["capsule.publish.enabled"]?.toBoolean() ?: false,
+                platform = props["capsule.publish.platform"] ?: "youtube",
+                credentialsFile = props["capsule.publish.credentialsFile"] ?: "youtube.yaml",
+                title = props["capsule.publish.title"] ?: "",
+                description = props["capsule.publish.description"] ?: "",
+                tags = props["capsule.publish.tags"]?.let { splitCommaList(it) } ?: emptyList(),
+                hashtags = props["capsule.publish.hashtags"]?.let { splitCommaList(it) } ?: emptyList(),
+                links = props["capsule.publish.links"]?.let { splitCommaList(it) } ?: emptyList(),
+                nextVideo = props["capsule.publish.nextVideo"] ?: "",
+                previousVideo = props["capsule.publish.previousVideo"] ?: "",
+                thumbnailFile = props["capsule.publish.thumbnailFile"] ?: "",
+                visibility = props["capsule.publish.visibility"] ?: "private",
+                categoryId = props["capsule.publish.categoryId"] ?: "",
+                languageCode = props["capsule.publish.languageCode"] ?: "",
+                publishAt = props["capsule.publish.publishAt"] ?: "",
+                strict = props["capsule.publish.strict"]?.toBoolean() ?: false
             ),
             viral = ViralConfig(
                 enabled = props["capsule.viral.enabled"]?.toBoolean() ?: false,
@@ -556,6 +594,27 @@ object CapsuleConfigMerger {
             introText = mergeStr(cli, "chapters.introText", yaml?.introText, props.introText, env.introText),
             outroText = mergeStr(cli, "chapters.outroText", yaml?.outroText, props.outroText, env.outroText),
             outputDir = mergeStr(cli, "chapters.outputDir", yaml?.outputDir, props.outputDir, env.outputDir)
+        )
+    }
+
+    private fun mergePublishConfig(env: PublishConfig, props: PublishConfig, yaml: PublishConfig?, cli: Map<String, Any?>): PublishConfig {
+        return PublishConfig(
+            enabled = mergeBoolean(cli, "publish.enabled", yaml?.enabled, props.enabled),
+            platform = mergeStr(cli, "publish.platform", yaml?.platform, props.platform, env.platform),
+            credentialsFile = mergeStr(cli, "publish.credentialsFile", yaml?.credentialsFile, props.credentialsFile, env.credentialsFile),
+            title = mergeStr(cli, "publish.title", yaml?.title, props.title, env.title),
+            description = mergeStr(cli, "publish.description", yaml?.description, props.description, env.description),
+            tags = mergeStrList(cli, "publish.tags", yaml?.tags, props.tags, env.tags),
+            hashtags = mergeStrList(cli, "publish.hashtags", yaml?.hashtags, props.hashtags, env.hashtags),
+            links = mergeStrList(cli, "publish.links", yaml?.links, props.links, env.links),
+            nextVideo = mergeStr(cli, "publish.nextVideo", yaml?.nextVideo, props.nextVideo, env.nextVideo),
+            previousVideo = mergeStr(cli, "publish.previousVideo", yaml?.previousVideo, props.previousVideo, env.previousVideo),
+            thumbnailFile = mergeStr(cli, "publish.thumbnailFile", yaml?.thumbnailFile, props.thumbnailFile, env.thumbnailFile),
+            visibility = mergeStr(cli, "publish.visibility", yaml?.visibility, props.visibility, env.visibility),
+            categoryId = mergeStr(cli, "publish.categoryId", yaml?.categoryId, props.categoryId, env.categoryId),
+            languageCode = mergeStr(cli, "publish.languageCode", yaml?.languageCode, props.languageCode, env.languageCode),
+            publishAt = mergeStr(cli, "publish.publishAt", yaml?.publishAt, props.publishAt, env.publishAt),
+            strict = mergeBoolean(cli, "publish.strict", yaml?.strict, props.strict)
         )
     }
 

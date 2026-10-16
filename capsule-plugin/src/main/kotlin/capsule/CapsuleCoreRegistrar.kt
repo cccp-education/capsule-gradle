@@ -23,6 +23,42 @@ internal object CapsuleCoreRegistrar {
         project.registerGenerateCapsuleVideoAllLanguagesTask()
         project.registerDeployCapsuleTask()
         project.registerDistributeCapsuleVideoTask()
+        project.registerPublishCapsuleToYouTubeTask()
+    }
+
+    private fun Project.registerPublishCapsuleToYouTubeTask() {
+        val lang = CapsuleMessages.resolveLanguage(this)
+        tasks.register("publishCapsuleToYouTube", capsule.publish.PublishCapsuleToYouTubeTask::class.java) { task ->
+            task.group = CapsuleMessages.get("task.group.deploy", lang)
+            task.description = "Publish the produced MP4 to YouTube (OAuth 2.0; opt-in via publish.enabled)"
+            val config = CapsuleConfigLoader.load(File(projectDir, "capsule-context.yml"))
+            val merged = CapsuleConfigMerger.merge(projectDir, config, emptyMap())
+            val publish = merged.publish
+            val extension = extensions.getByType(CapsuleExtension::class.java)
+            task.videoFiles.from(
+                layout.buildDirectory.dir(extension.outputDir).map { dir ->
+                    dir.asFileTree.matching { it.include("**/*.mp4") }
+                },
+            )
+            task.outputDir.set(layout.buildDirectory.dir("capsule/publish"))
+            task.publishEnabled.set(publish.enabled)
+            task.platform.set(publish.platform)
+            task.credentialsFile.set(publish.credentialsFile)
+            task.title.set(publish.title)
+            task.publishDescription.set(publish.description)
+            task.tags.set(publish.tags)
+            task.hashtags.set(publish.hashtags)
+            task.links.set(publish.links)
+            task.nextVideo.set(publish.nextVideo)
+            task.previousVideo.set(publish.previousVideo)
+            task.thumbnailFile.set(publish.thumbnailFile)
+            task.visibility.set(publish.visibility)
+            task.categoryId.set(publish.categoryId)
+            task.languageCode.set(publish.languageCode)
+            task.publishAt.set(publish.publishAt)
+            task.chapters.set(emptyList<String>())
+            task.strict.set(publish.strict)
+        }
     }
 
     private fun Project.registerExtractSpeakerNotesTask() {

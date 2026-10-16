@@ -5,9 +5,9 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-16 (S-205 — **HF-YOUTUBE-PUBLISH US-3a** : adoption du modèle neutre de publication — `YouTubeChaptersFormatter.formatTimestamp` et `VideoDescriptionBuilder.FORBIDDEN_CHARS` délégués au noyau `video.kernel.publish` ; `video-kernel 0.4.0 → 0.5.0`. Comportement public préservé.)
- _Derniere session terminee_ : 205.
- _Prochaine session_ : 206 — **US-3b** (tâche `publishCapsuleToYouTube` + adaptateur YouTube, décision architecture duplication N2 vs module N1) ou autre.
+ _Derniere mise a jour_ : 2026-10-16 (S-206 — **HF-YOUTUBE-PUBLISH US-3b** : publication YouTube capsule — adaptateur `capsule.adapter.youtube` (OAuth 2.0, duplication verbatim N2) + section `publish` (4 sources) + tâche `publishCapsuleToYouTube` (groupe deploy, opt-in). Compiles VERTS ; tests unit + merge.)
+ _Derniere session terminee_ : 206.
+ _Prochaine session_ : 207 — BDD `@publish` (shard CI) / EPIC `PUBLISH-ADAPTER-N1` (module partagé) / release `0.0.13`.
  _Session en cours_ : —.
  _Littérature de référence_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos) + `video-kernel/.agents/CADRAGE_EPIC_VK_SHARED_PORTS.adoc` (✅ clos).
 
