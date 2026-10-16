@@ -1,7 +1,16 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
 :date: 2026-10-15
-:session: 202 adoption des ports vidéo partagés `video-kernel 0.4.0` (transverse)
+:session: 204 release 0.0.12 ; 203 fix audio-post BGM/ducking ; 202 adoption des ports vidéo partagés
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 15 octobre 2026 (après session 203/204)
+
+.Audio-post BGM/ducking — fix bug réel + test renforcé (CAP-AUDIO S-104)
+|===
+| Élément | Changement | Tests
+
+| `capsule/audio/AudioPostCommand.kt` | fix réel ffmpeg : `loudnorm…,aresample=48000` (192 kHz sinon tronqué) + `[voice]asplit=2[vsc][vmix]` (ducking : label mono-usage) | `AudioPostProcessorTest` renforcé : assert `aresample=48000` + `asplit=2`
+|===
 
 == Couverture — 15 octobre 2026 (après session 202)
 
