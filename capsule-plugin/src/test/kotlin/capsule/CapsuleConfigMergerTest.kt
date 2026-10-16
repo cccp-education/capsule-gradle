@@ -2177,7 +2177,7 @@ class CapsuleConfigMergerTest {
             """
             capsule.publish.enabled=true
             capsule.publish.title=From properties
-            capsule.publish.tags=formation,cccp
+            capsule.publish.tags=video,cccp
             """.trimIndent()
         )
         // yamlLoaded = false simulates an absent YAML file: props/ENV apply.
@@ -2185,7 +2185,7 @@ class CapsuleConfigMergerTest {
 
         assertEquals(true, merged.publish.enabled, "props publish.enabled should apply")
         assertEquals("From properties", merged.publish.title, "props publish.title should apply")
-        assertEquals(listOf("formation", "cccp"), merged.publish.tags, "props publish.tags should be comma-split")
+        assertEquals(listOf("video", "cccp"), merged.publish.tags, "props publish.tags should be comma-split")
         assertEquals("youtube", merged.publish.platform, "default platform preserved")
     }
 
