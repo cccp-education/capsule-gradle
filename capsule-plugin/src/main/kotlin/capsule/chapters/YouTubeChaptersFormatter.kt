@@ -1,11 +1,18 @@
 package capsule.chapters
 
+import video.kernel.publish.VideoDescriptionComposer
+
 /**
  * Formats chapter entries as YouTube chapter text (PRT-10).
  *
  * YouTube recognises a description block of `<timestamp> <title>` lines, the
  * first chapter being at `0:00`. Ported from
  * `prepa_electricite_complet/subs.py` (which wrote `final/chapitres.txt`).
+ *
+ * HF-YOUTUBE-PUBLISH US-3 — the timestamp formatting now **delegates** to the
+ * shared neutral [VideoDescriptionComposer.chapterTimestamp] (single source of
+ * truth across capsule and hyperframes; doctrine "factor at 2"), so both
+ * engines render identical YouTube timelines.
  *
  * Pure — no I/O.
  */
@@ -22,17 +29,8 @@ object YouTubeChaptersFormatter {
 
     /**
      * `M:SS`, or `H:MM:SS` once the timestamp reaches one hour — the two forms
-     * YouTube accepts.
+     * YouTube accepts. Delegates to the neutral kernel.
      */
-    fun formatTimestamp(startMs: Long): String {
-        val totalSeconds = (startMs / 1000).coerceAtLeast(0)
-        val hours = totalSeconds / 3600
-        val minutes = (totalSeconds % 3600) / 60
-        val seconds = totalSeconds % 60
-        return if (hours > 0) {
-            String.format("%d:%02d:%02d", hours, minutes, seconds)
-        } else {
-            String.format("%d:%02d", minutes, seconds)
-        }
-    }
+    fun formatTimestamp(startMs: Long): String =
+        VideoDescriptionComposer.chapterTimestamp((startMs / 1000).coerceAtLeast(0).toInt())
 }

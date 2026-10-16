@@ -1,7 +1,7 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 205
+:session: 206
 :borough: Détroit
-:session_precedente: 204 — **Release corrective `capsule-plugin 0.0.12`** ✅
+:session_precedente: 205 — **HF-YOUTUBE-PUBLISH US-3a** : adoption du modèle neutre de publication ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos) ; `video-kernel/.agents/CADRAGE_EPIC_VK_SHARED_PORTS.adoc` (✅ clos) ; `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc` (✅ clos S-200).
 
@@ -24,26 +24,28 @@ Rapport `.agents/sessions/203-dogfooding-audio-post-fix.adoc`.
 Capsule adopte les ports `VK-4 US-4b→d` via `capsule.adapter.kernel.CapsuleKernelPorts` ;
 pin `video-kernel 0.3.0 → 0.4.0`. Rapport `.agents/sessions/202-adopt-shared-video-ports.adoc`.
 
-== Contexte transverse — EPIC `HF-YOUTUBE-PUBLISH` (session hyperframes S-035)
+== Contexte transverse — EPIC `HF-YOUTUBE-PUBLISH`
 
-Une session transverse (pilote Watts) a cadré le **déploiement YouTube
-industrialisé** et posé le **noyau** (US-1, `video-kernel 0.5.0` —
-`video.kernel.publish` : `VideoPublisher` + modèle de publication).
-Voir `hyperframes-gradle/.../.agents/CADRAGE_EPIC_HF_YOUTUBE_PUBLISH.adoc`.
+Cadrage : `hyperframes-gradle/.../.agents/CADRAGE_EPIC_HF_YOUTUBE_PUBLISH.adoc`.
 
-* **US-3 (à venir, Détroit)** : adopter le modèle neutre — `capsule.publish.VideoDescriptionBuilder`
-  et `capsule.chapters.YouTubeChaptersFormatter` **délégués au noyau**
-  (`VideoDescriptionComposer`, factorisation doctrine « à 2 ») + adaptateur
-  `capsule.adapter.youtube` (OAuth) + tâche `publishCapsuleToYouTube`.
-  **Prérequis** : publication `video-kernel 0.5.0` (US-1b) + adaptateur hyperframes (US-2).
+* **US-1/1b** (video-kernel) : noyau `video.kernel.publish` + publication `0.5.0` ✅.
+* **US-2** (hyperframes) : adaptateur `hyperframes.publish` + tâche
+  `publishHyperframesToYouTube` ✅.
+* **US-3a** (capsule, S-205 ✅) : adoption du modèle neutre —
+  `YouTubeChaptersFormatter.formatTimestamp` et
+  `VideoDescriptionBuilder.FORBIDDEN_CHARS` **délégués au noyau**
+  (`VideoDescriptionComposer` / `VideoPublicationLimits`) ; `video-kernel 0.5.0`.
 
-== Mission Session 205 — au choix (pilote)
+== Mission Session 206 — US-3b (à trancher) ou autre
 
-* **US-3 `HF-YOUTUBE-PUBLISH`** (capsule) une fois US-1b + US-2 livrés : adoption du
-  noyau de publication + adaptateur YouTube + tâche `publishCapsuleToYouTube`.
+* **US-3b (capsule)** : tâche `publishCapsuleToYouTube` + adaptateur YouTube.
+  **Décision d'architecture requise** : le pipeline OAuth/HTTP (~520 lignes) vit
+  en N2 hyperframes (`hyperframes.publish`) → réutilisation par (a) duplication
+  verbatim N2 **ou** (b) module partagé N1 `youtube-publish` (doctrine « seuil à
+  2 »). À arbitrer par le pilote avant codage.
 * Sinon : dogfooding / nouvelle demande pilote / maintenance.
-* Backlog capsule **actionnable vidé** (tous EPICs clos, release `0.0.12` publiée,
-  adoption des ports vidéo faite, `video-kernel 0.4.0` publié Central).
+* Rappel : backlog capsule actionnable vidé (tous EPICs clos, release `0.0.12`
+  publiée, `video-kernel 0.5.0` consommé).
 
 == Points d'attention
 

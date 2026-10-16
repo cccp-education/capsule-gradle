@@ -5,9 +5,9 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-15 (S-204 — **Release corrective `capsule-plugin 0.0.12`** (Maven Central, bundle `fcab286c`, AUTOMATIC) : propage le fix bug audio-post BGM/ducking ; alignement BOM interne `workspace-bom 0.0.92 → 0.0.96`. Tous les EPICs capsule restent clos.)
- _Derniere session terminee_ : 204.
- _Prochaine session_ : 205 — à arbitrer par le pilote (backlog actionnable vidé).
+ _Derniere mise a jour_ : 2026-10-16 (S-205 — **HF-YOUTUBE-PUBLISH US-3a** : adoption du modèle neutre de publication — `YouTubeChaptersFormatter.formatTimestamp` et `VideoDescriptionBuilder.FORBIDDEN_CHARS` délégués au noyau `video.kernel.publish` ; `video-kernel 0.4.0 → 0.5.0`. Comportement public préservé.)
+ _Derniere session terminee_ : 205.
+ _Prochaine session_ : 206 — **US-3b** (tâche `publishCapsuleToYouTube` + adaptateur YouTube, décision architecture duplication N2 vs module N1) ou autre.
  _Session en cours_ : —.
  _Littérature de référence_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos) + `video-kernel/.agents/CADRAGE_EPIC_VK_SHARED_PORTS.adoc` (✅ clos).
 

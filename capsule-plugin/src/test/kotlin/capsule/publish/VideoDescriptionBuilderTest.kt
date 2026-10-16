@@ -4,11 +4,17 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import video.kernel.publish.VideoPublicationLimits
 
 /**
  * TDD unit tests for [VideoDescriptionBuilder] (PRT-10). Pure — no I/O.
  */
 class VideoDescriptionBuilderTest {
+
+    @Test
+    fun `forbidden chars are the shared neutral kernel set (HF-YOUTUBE-PUBLISH US-3)`() {
+        assertEquals(VideoPublicationLimits.FORBIDDEN_CHARS, VideoDescriptionBuilder.FORBIDDEN_CHARS)
+    }
 
     @Test
     fun `builds title chapters and tags`() {

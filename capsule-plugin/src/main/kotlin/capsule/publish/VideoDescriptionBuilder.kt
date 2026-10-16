@@ -1,5 +1,7 @@
 package capsule.publish
 
+import video.kernel.publish.VideoPublicationLimits
+
 /**
  * Builds a YouTube-ready video description (PRT-10).
  *
@@ -8,12 +10,16 @@ package capsule.publish
  * `prepa_electricite_complet/description.py`, whose final check asserts the
  * description contains no `<` / `>`.
  *
+ * HF-YOUTUBE-PUBLISH US-3 — the forbidden-character set is now **shared** with
+ * the neutral kernel ([VideoPublicationLimits.FORBIDDEN_CHARS]) so capsule and
+ * hyperframes reject the exact same characters (doctrine "factor at 2").
+ *
  * Pure — no I/O.
  */
 object VideoDescriptionBuilder {
 
-    /** Characters YouTube rejects in a description. */
-    val FORBIDDEN_CHARS: Set<Char> = setOf('<', '>')
+    /** Characters YouTube rejects in a description (neutral kernel source of truth). */
+    val FORBIDDEN_CHARS: Set<Char> = VideoPublicationLimits.FORBIDDEN_CHARS
 
     /**
      * @param text                   the description, free of [FORBIDDEN_CHARS].

@@ -1,0 +1,65 @@
+= Session 205 — HF-YOUTUBE-PUBLISH US-3a : adoption du modèle neutre de publication
+:session: 205
+:date: 2026-10-16
+:borough: Détroit (capsule)
+:type: refactor (adoption cross-borough)
+:score: 9/10
+
+== Mission
+
+Session transverse (pilotée hyperframes S-035) — EPIC `HF-YOUTUBE-PUBLISH`
+US-3 : capsule adopte le **modèle neutre de publication** du noyau
+`video-kernel 0.5.0` (factoration « seuil à 2 »). Le pilote a autorisé
+`publish` + `git`.
+
+== Contexte (cadrage)
+
+Cadrage `.agents/CADRAGE_EPIC_...` côté hyperframes :
+`hyperframes-gradle/.../.agents/CADRAGE_EPIC_HF_YOUTUBE_PUBLISH.adoc`. Deux
+moteurs (`capsule`, `hyperframes`) produisent des vidéos publiables → la
+description et les chapitres, jusqu'ici **capsule-scoped** (`capsule.publish`,
+`capsule.chapters`), rejoignent le noyau commun `video.kernel.publish` (US-1).
+
+== Livré — US-3a (adoption, comportement préservé)
+
+* `capsule.chapters.YouTubeChaptersFormatter.formatTimestamp` **délègue** à
+  `video.kernel.publish.VideoDescriptionComposer.chapterTimestamp` (source unique
+  pour les deux moteurs ; sémantique `M:SS` / `H:MM:SS` identique).
+* `capsule.publish.VideoDescriptionBuilder.FORBIDDEN_CHARS` **délègue** à
+  `video.kernel.publish.VideoPublicationLimits.FORBIDDEN_CHARS`.
+* `gradle/libs.versions.toml` : `video-kernel 0.4.0 → 0.5.0`.
+* Tests : `YouTubeChaptersFormatterTest` +1 (équivalence avec le noyau),
+  `VideoDescriptionBuilderTest` +1 (jeu de caractères partagé). Comportement
+  public inchangé (API et format conservés).
+
+**Local = Build** : `compileKotlin` + `compileTestKotlin` **VERTS** (aucun test
+lancé localement — CI).
+
+== Constat méthodologique (correction de cadrage)
+
+Le cadrage présupposait une délégation **intégrale** de `VideoDescriptionBuilder`
+au noyau. Constat : les **formats diffèrent** (capsule : libellé `CHAPTERS`,
+lignes déjà formatées, retour final ; noyau : `Chapters`, liens/chapitres depuis
+une `VideoPublication`). Une délégation intégrale changerait la sortie publique
+(tests pinnés). ⇒ adoption **ciblée** (jeu de caractères + horodatage partagés),
+pas de rupture de format.
+
+== Reste — US-3b (tâche `publishCapsuleToYouTube` + adaptateur)
+
+Bloqué par une **décision d'architecture** : le pipeline OAuth/HTTP
+(`YouTubeDataApiPublisher`, `HttpTransport`, `YouTubeCredentialsLoader`, seam)
+vit aujourd'hui en **N2 hyperframes** (`hyperframes.publish`, ~520 lignes). Le
+réutiliser côté capsule impose soit
+(a) une **duplication verbatim N2** (tolérée par la doctrine), soit
+(b) un **module partagé N1** `youtube-publish` (doctrine « seuil à 2 », option
+« module partagé si l'artefact est utilitaire non contractuel »).
+⇒ à trancher par le pilote (cadrage US-3b). Aucune duplication décidée à
+l'aveugle.
+
+== Fichiers
+
+* `src/main/kotlin/capsule/chapters/YouTubeChaptersFormatter.kt` (délégation)
+* `src/main/kotlin/capsule/publish/VideoDescriptionBuilder.kt` (délégation)
+* `src/test/kotlin/capsule/chapters/YouTubeChaptersFormatterTest.kt` (+1)
+* `src/test/kotlin/capsule/publish/VideoDescriptionBuilderTest.kt` (+1)
+* `gradle/libs.versions.toml` (`video-kernel 0.5.0`)
