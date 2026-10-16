@@ -24,11 +24,26 @@ Rapport `.agents/sessions/203-dogfooding-audio-post-fix.adoc`.
 Capsule adopte les ports `VK-4 US-4b→d` via `capsule.adapter.kernel.CapsuleKernelPorts` ;
 pin `video-kernel 0.3.0 → 0.4.0`. Rapport `.agents/sessions/202-adopt-shared-video-ports.adoc`.
 
+== Contexte transverse — EPIC `HF-YOUTUBE-PUBLISH` (session hyperframes S-035)
+
+Une session transverse (pilote Watts) a cadré le **déploiement YouTube
+industrialisé** et posé le **noyau** (US-1, `video-kernel 0.5.0` —
+`video.kernel.publish` : `VideoPublisher` + modèle de publication).
+Voir `hyperframes-gradle/.../.agents/CADRAGE_EPIC_HF_YOUTUBE_PUBLISH.adoc`.
+
+* **US-3 (à venir, Détroit)** : adopter le modèle neutre — `capsule.publish.VideoDescriptionBuilder`
+  et `capsule.chapters.YouTubeChaptersFormatter` **délégués au noyau**
+  (`VideoDescriptionComposer`, factorisation doctrine « à 2 ») + adaptateur
+  `capsule.adapter.youtube` (OAuth) + tâche `publishCapsuleToYouTube`.
+  **Prérequis** : publication `video-kernel 0.5.0` (US-1b) + adaptateur hyperframes (US-2).
+
 == Mission Session 205 — au choix (pilote)
 
+* **US-3 `HF-YOUTUBE-PUBLISH`** (capsule) une fois US-1b + US-2 livrés : adoption du
+  noyau de publication + adaptateur YouTube + tâche `publishCapsuleToYouTube`.
+* Sinon : dogfooding / nouvelle demande pilote / maintenance.
 * Backlog capsule **actionnable vidé** (tous EPICs clos, release `0.0.12` publiée,
   adoption des ports vidéo faite, `video-kernel 0.4.0` publié Central).
-* Options : dogfooding / nouvelle demande pilote / maintenance.
 
 == Points d'attention
 
