@@ -5,7 +5,7 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-17 (S-207 — **HF-YOUTUBE-PUBLISH US-4 (capsule)** : BDD `@publish` — 5 scénarios (transport factice, zéro réseau) + runner dédié `cucumberTestPublish` + rattachement shard `media` + TestKit hermétique `PublishCapsuleToYouTubeFunctionalTest` + `youtube_example.yaml` + garde secrets `.gitignore`. Compiles VERTS (Local = Build) ; preuve = CI.)
+ _Derniere mise a jour_ : 2026-10-17 (S-207 — **HF-YOUTUBE-PUBLISH US-4 (capsule)** : BDD `@publish` — 5 scénarios (transport factice, zéro réseau) + runner dédié `cucumberTestPublish` + rattachement shard `media` + TestKit hermétique `PublishCapsuleToYouTubeFunctionalTest` + `youtube_example.yaml` + garde secrets `.gitignore` + **fix précédence 4 sources** (YAML absent ne masque plus `gradle.properties`, 2 tests). Compiles VERTS (Local = Build) ; **CI verte** `Full Tests` `40199925941`.)
  _Derniere session terminee_ : 207.
  _Prochaine session_ : 208 — dogfooding réel (accord pilote) / EPIC `PUBLISH-ADAPTER-N1` / release `0.0.13`.
  _Session en cours_ : —.

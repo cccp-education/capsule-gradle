@@ -58,7 +58,14 @@ loader/rédaction, parser) + 2 merge. Compiles VERTS. Rapport
   shard `Functional · media`.
 * `youtube_example.yaml` + garde secrets `.gitignore` (`youtube.yaml`,
   `client_secret_*.json`).
-* Compiles ×3 VERTS en local (Local = Build) ; preuve = CI.
+* **Bug réel corrigé** (révélé par le TestKit en CI) : les registrars appelaient
+  `CapsuleConfigMerger.merge(...)` sans `yamlLoaded` → un YAML absent laissait ses
+  défauts (`publish.enabled=false`) masquer `gradle.properties`. Les 2 call sites
+  passent `yamlLoaded = configFile.exists()` ; +2 tests `CapsuleConfigMergerTest`
+  (`NoYaml` props + CLI override section `publish`).
+* Compiles ×3 VERTS en local (Local = Build) ; **CI verte** (`Test` + `Full Tests`
+  run `40199925941` — BDD `media` et `Functional · media` incluent les nouveaux
+  scénarios/tests).
 
 == Mission Session 208 — au choix (pilote)
 

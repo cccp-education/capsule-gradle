@@ -13,6 +13,7 @@
 | `src/test/kotlin/capsule/scenarios/CapsulePublishSteps.kt` (créé) | steps préfixés `capsule publish` (S-088), fixture credentials temporaire, cleanup `@After` | — 
 | `CapsulePublishCucumberRunner` + `CucumberTaskSpec("cucumberTestPublish")` | runner dédié (S-082) + rattachement shard CI `media` | garde `CapsuleCucumberShardCoverageTest`
 | `src/functionalTest/kotlin/capsule/publish/PublishCapsuleToYouTubeFunctionalTest.kt` (créé) | TestKit hermétique : groupe `deploy`, `skipped` par défaut, `degraded` sans credentials | +3 tests, rattachés au shard `Functional · media`
+| `CapsuleCoreRegistrar.kt` (fix) | `yamlLoaded = configFile.exists()` sur les 2 `CapsuleConfigMerger.merge` — un YAML absent ne masque plus `gradle.properties` | +2 `CapsuleConfigMergerTest` (`NoYaml` props + CLI override section `publish`)
 |===
 
 == Couverture — 15 octobre 2026 (après session 203/204)
