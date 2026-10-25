@@ -3,3 +3,5 @@ build/
 .gradle/
 .kotlin
 fish.yaml
+youtube.yaml
+client_secret_*.json

@@ -25,12 +25,14 @@ import org.junit.platform.suite.api.Suite
 @SelectClasspathResource("features/capsule_remotion.feature")
 @SelectClasspathResource("features/capsule_remotion_anim.feature")
 @SelectClasspathResource("features/capsule_distrib.feature")
+@SelectClasspathResource("features/capsule_publish.feature")
 @ConfigurationParameter(
     key = FEATURES_PROPERTY_NAME,
     value = "src/test/features/capsule_capture_strategy.feature,src/test/features/capsule_format.feature," +
         "src/test/features/capsule_podcast.feature,src/test/features/capsule_preview.feature," +
         "src/test/features/capsule_chapters.feature,src/test/features/capsule_remotion.feature," +
-        "src/test/features/capsule_remotion_anim.feature,src/test/features/capsule_distrib.feature"
+        "src/test/features/capsule_remotion_anim.feature,src/test/features/capsule_distrib.feature," +
+        "src/test/features/capsule_publish.feature"
 )
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(

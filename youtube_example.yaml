@@ -1,0 +1,15 @@
+# YouTube publication credentials — EXAMPLE ONLY (no real secret).
+#
+# Copy to `youtube.yaml` (gitignored) and fill with your own values, or let
+# `obtainYouTubeRefreshToken` (plugin `education.cccp.video.auth`, video-kernel)
+# write the `refreshToken` line for you.
+#
+# Uploading requires OAuth 2.0 (clientId + clientSecret + refreshToken); a plain
+# API key can only read public data.
+youtube:
+  clientId: "000000000000-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com"
+  clientSecret: "GOCSPX-example-secret"
+  refreshToken: "1//0example-refresh-token"
+  channelId: "UCexampleChannelId"
+  # optional — read-only public queries
+  apiKey: "AIzaExampleApiKey"

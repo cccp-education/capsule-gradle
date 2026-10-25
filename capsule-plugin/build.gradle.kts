@@ -399,6 +399,17 @@ cucumberConventions {
             runnerClass = "capsule.scenarios.CapsuleChaptersCucumberRunner",
             timeoutMinutes = 15,
         ),
+        // HF-YOUTUBE-PUBLISH US-3b — YouTube publication through the shared N1
+        // VideoPublisher port (OAuth 2.0 adapter + resolver). Dedicated runner
+        // pattern S-082; steps prefixed "capsule publish" (bug S-088). Network-free:
+        // a fake HttpTransport stands in for the YouTube Data API.
+        CucumberTaskSpec(
+            name = "cucumberTestPublish",
+            features = listOf("src/test/features/capsule_publish.feature"),
+            tags = listOf("@publish"),
+            runnerClass = "capsule.scenarios.CapsulePublishCucumberRunner",
+            timeoutMinutes = 15,
+        ),
         // CAP-ANIM-TEST US-5 — Remotion timing model (beats, playback rate, overlap).
         // Dedicated runner pattern S-082; steps prefixed "remotion anim" (bug S-088).
         // Exercises the pure RemotionTiming model; no Node/FFmpeg/GradleRunner.
