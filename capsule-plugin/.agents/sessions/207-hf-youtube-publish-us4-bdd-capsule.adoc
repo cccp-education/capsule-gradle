@@ -1,0 +1,87 @@
+= Session 207 — HF-YOUTUBE-PUBLISH US-4 : BDD `@publish` capsule + couverture fonctionnelle
+:session: 207
+:date: 2026-10-17
+:borough: Détroit (capsule)
+:epic: HF-YOUTUBE-PUBLISH (transverse hyperframes / video-kernel / capsule)
+:statut: ✅ TERMINÉE
+
+'''
+== Contexte
+
+L'US-3b (S-206) a livré le code de publication YouTube capsule
+(`capsule.adapter.youtube` + `publishCapsuleToYouTube`) avec ses tests unitaires,
+mais **sans BDD**. L'US-4 de l'EPIC transverse exige la parité d'acceptation entre
+les deux moteurs : features `@publish` (fake transport) **sur hyperframes ET
+capsule**. Hyperframes avait déjà ses 4 scénarios (S-035) ; capsule n'en avait
+aucun.
+
+Cette session clôt donc la **moitié capsule de US-4** et dote la tâche d'une
+couverture fonctionnelle TestKit hermétique.
+
+'''
+== Baby-step DDD/TDD/BDD
+
+=== 1. BDD — `@publish` (5 scénarios, transport factice)
+
+* `capsule_publish.feature` :
+  ** publication réussie → URL `https://youtu.be/VID` ;
+  ** credentials incomplets → `Degraded` **sans aucune requête** (économie d'encre) ;
+  ** jeton refusé → `Failed` ;
+  ** publication désactivée → `Degraded` sans requête ;
+  ** plateforme non supportée → `Degraded` sans requête.
+* `CapsulePublishSteps` — steps **préfixés** `capsule publish …` (bug S-088, glue
+  `capsule.scenarios` partagée). Le transport factice ne touche jamais le réseau ;
+  le fichier de credentials est une fixture temporaire (aucun secret réel).
+* `CapsulePublishCucumberRunner` — runner dédié (pattern S-082) +
+  `CucumberTaskSpec("cucumberTestPublish")`.
+* **Partition CI** : la feature est rattachée au shard `media`
+  (`CucumberShardMediaRunner`) — la garde `CapsuleCucumberShardCoverageTest`
+  exige une partition exhaustive/disjointe de **toutes** les features.
+
+=== 2. Fonctionnel — `PublishCapsuleToYouTubeFunctionalTest` (TestKit)
+
+Trois tests hermétiques, **zéro réseau** :
+
+* la tâche `publishCapsuleToYouTube` est enregistrée dans le groupe `deploy` ;
+* désactivée par défaut → rapport `publication.json` `skipped=true` ;
+* activée avec une vidéo + un titre mais **sans** `youtube.yaml` → `degraded`
+  (le resolver est atteint, échoue proprement, ne lève pas).
+
+Le test est rattaché au shard fonctionnel `Functional · media`
+(`full-tests.yml`) — la garde exige aussi une partition exhaustive/disjointe des
+classes `*FunctionalTest`.
+
+=== 3. Hygiène sécurité
+
+* `.gitignore` : `youtube.yaml` + `client_secret_*.json` (fichiers OAuth téléchargés
+  depuis Google Cloud) — jamais commités.
+* `youtube_example.yaml` versionné (valeurs bidon) documentant le format attendu
+  par `YouTubeCredentialsLoader`.
+
+'''
+== Vérification
+
+* **Local = Build, Tests = CI** : `compileKotlin`, `compileTestKotlin`,
+  `compileFunctionalTestKotlin` **VERTS** en local ; aucune suite lancée.
+* La preuve de validité est le run CI du commit poussé : job `BDD · media`
+  (scénarios `@publish`), job `Functional · media` (TestKit), `Fast Tests`
+  (garde de partition, unitaires).
+* Zéro secret commité.
+
+'''
+== Reste (EPIC transverse)
+
+* **US-4 — dogfooding réel** : upload réel sur la chaîne `@cccp.education`
+  (`youtube.yaml` prêt côté hyperframes et capsule). **Nécessite un accord pilote
+  explicite** (Règle 2 — PUBLISH ; quota `videos.insert` = 1600 unités).
+* **EPIC `PUBLISH-ADAPTER-N1`** : extraction de l'adaptateur commun en module
+  partagé (doctrine « seuil à 2 ») — aujourd'hui duplication verbatim N2 assumée.
+* **Release `capsule-plugin 0.0.13`** (DAG MEMPHIS) — accord pilote.
+
+=== Découverte — US-3c (timeline non alimentable)
+
+`CapsuleCoreRegistrar` force `task.chapters.set(emptyList<String>())` : la
+**timeline de description** (chapitres `M:SS Titre`) n'est pas câblable côté
+capsule, alors que l'EPIC la spécifie et qu'hyperframes expose `publishChapters`.
+Item ajouté au BACKLOG (`US-3c`) : introduire `PublishConfig.chapters` (4 sources)
+puis câbler `task.chapters`.

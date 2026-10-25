@@ -1,7 +1,19 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
-:date: 2026-10-15
-:session: 204 release 0.0.12 ; 203 fix audio-post BGM/ducking ; 202 adoption des ports vidéo partagés
+:date: 2026-10-17
+:session: 207 BDD `@publish` + fonctionnel ; 206 US-3b publish ; 204 release 0.0.12 ; 203 fix audio-post ; 202 ports vidéo partagés
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 17 octobre 2026 (après session 207)
+
+.HF-YOUTUBE-PUBLISH US-4 — BDD `@publish` + TestKit hermétique
+|===
+| Élément | Changement | Tests
+
+| `src/test/features/capsule_publish.feature` (créé) | 5 scénarios `@publish` : succès (URL), credentials incomplets (`Degraded` sans requête), jeton refusé (`Failed`), désactivé, plateforme non supportée | transport factice (`HttpTransport`) — zéro réseau
+| `src/test/kotlin/capsule/scenarios/CapsulePublishSteps.kt` (créé) | steps préfixés `capsule publish` (S-088), fixture credentials temporaire, cleanup `@After` | — 
+| `CapsulePublishCucumberRunner` + `CucumberTaskSpec("cucumberTestPublish")` | runner dédié (S-082) + rattachement shard CI `media` | garde `CapsuleCucumberShardCoverageTest`
+| `src/functionalTest/kotlin/capsule/publish/PublishCapsuleToYouTubeFunctionalTest.kt` (créé) | TestKit hermétique : groupe `deploy`, `skipped` par défaut, `degraded` sans credentials | +3 tests, rattachés au shard `Functional · media`
+|===
 
 == Couverture — 15 octobre 2026 (après session 203/204)
 

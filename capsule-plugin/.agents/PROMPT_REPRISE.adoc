@@ -1,7 +1,7 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 207
+:session: 208
 :borough: Détroit
-:session_precedente: 206 — **HF-YOUTUBE-PUBLISH US-3b** : publication YouTube capsule (`publishCapsuleToYouTube`) ✅
+:session_precedente: 207 — **HF-YOUTUBE-PUBLISH US-4 (capsule)** : BDD `@publish` + couverture fonctionnelle TestKit ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 _littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos) ; `video-kernel/.agents/CADRAGE_EPIC_VK_SHARED_PORTS.adoc` (✅ clos) ; `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc` (✅ clos S-200).
 
@@ -45,14 +45,29 @@ implémentation de port N1 tolérée ». Tests unit (publisher fake transport,
 loader/rédaction, parser) + 2 merge. Compiles VERTS. Rapport
 `.agents/sessions/206-hf-youtube-publish-us3b-capsule.adoc`.
 
-== Mission Session 207 — au choix (pilote)
+== Fait en session 207 — US-4 (capsule) : BDD + fonctionnel
 
-* **BDD `@publish` (capsule)** : ajouter la feature + la rattacher à un shard CI
-  (`CapsuleCucumberShardCoverageTest`).
+* `capsule_publish.feature` — **5 scénarios** `@publish` (fake `HttpTransport`, zéro
+  réseau) : succès (URL), credentials incomplets (`Degraded` sans requête), jeton
+  refusé (`Failed`), désactivé, plateforme non supportée.
+* `CapsulePublishSteps` (steps préfixés `capsule publish`, S-088) +
+  `CapsulePublishCucumberRunner` (S-082) + `CucumberTaskSpec("cucumberTestPublish")`.
+* Feature rattachée au shard CI `media` (`CucumberShardMediaRunner`) — partition
+  exhaustive gardée par `CapsuleCucumberShardCoverageTest`.
+* `PublishCapsuleToYouTubeFunctionalTest` (TestKit hermétique, 3 tests) rattaché au
+  shard `Functional · media`.
+* `youtube_example.yaml` + garde secrets `.gitignore` (`youtube.yaml`,
+  `client_secret_*.json`).
+* Compiles ×3 VERTS en local (Local = Build) ; preuve = CI.
+
+== Mission Session 208 — au choix (pilote)
+
+* **Dogfooding réel** — upload `publishCapsuleToYouTube` sur `@cccp.education`
+  (accord pilote explicite ; `videos.insert` = 1600 unités de quota).
 * **EPIC `PUBLISH-ADAPTER-N1`** : extraire l'adaptateur YouTube commun en N1
-  (option b) — hyperframes + capsule.
+  (option b) — hyperframes + capsule (doctrine « seuil à 2 »).
 * **Release** `capsule-plugin 0.0.13` (DAG MEMPHIS).
-* Sinon : dogfooding / maintenance.
+* Sinon : maintenance.
 
 == Points d'attention
 

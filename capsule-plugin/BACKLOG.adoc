@@ -1,6 +1,26 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-15 (S-204 — release corrective `capsule-plugin 0.0.12` (fix audio-post BGM/ducking). Précédent S-203.)
+:last_update: 2026-10-17 (S-207 — HF-YOUTUBE-PUBLISH US-4 : BDD `@publish` + couverture fonctionnelle capsule. Précédent S-206.)
+
+'''
+== 🟡 EPIC HF-YOUTUBE-PUBLISH — US-4 BDD capsule ✅ (S-207)
+
+_Session transverse hyperframes (Watts) + video-kernel (N1) + capsule (Détroit)._
+_Cadrage_ : `hyperframes-gradle/hyperframes-plugin/.agents/CADRAGE_EPIC_HF_YOUTUBE_PUBLISH.adoc`.
+
+[cols="1,3,1", options="header"]
+|===
+| US | Livrable | Statut
+| US-3a | Adoption du modèle neutre (`formatTimestamp`/`FORBIDDEN_CHARS` délégués au noyau) | ✅ S-205
+| US-3b | Adaptateur `capsule.adapter.youtube` + `publishCapsuleToYouTube` (opt-in) | ✅ S-206
+| US-4 | **Capsule** : BDD `@publish` (5 scénarios, transport factice) + TestKit hermétique + rattachement shards CI (`media` BDD + `Functional · media`) | ✅ S-207
+| US-4 | **Dogfooding réel** (upload `@cccp.education`, accord pilote explicite requis) | 🟡 À FAIRE
+| US-3c | **Découverte S-207** — `PublishCapsuleToYouTubeTask` force `chapters = emptyList()` : la timeline de description (chapitres) n'est pas alimentable côté capsule (hyperframes expose `publishChapters`). Câbler `PublishConfig.chapters` (4 sources) + `task.chapters`. | 🟡 À FAIRE
+|===
+
+_Constat_ : la duplication N2 de l'adaptateur (hyperframes → capsule) est
+assumée (doctrine « seuil à 2 » : implémentation N2 d'un port N1 tolérée).
+Candidat EPIC `PUBLISH-ADAPTER-N1` (module partagé) au prochain palier.
 
 '''
 == ✅ Release corrective `capsule-plugin 0.0.12` — S-204

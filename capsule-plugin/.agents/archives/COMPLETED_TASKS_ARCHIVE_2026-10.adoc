@@ -1,5 +1,18 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
-:date: 2026-10-15
+:date: 2026-10-17
+
+== Session 207 — HF-YOUTUBE-PUBLISH US-4 (capsule) : BDD `@publish` + fonctionnel ✅
+
+* [x] `capsule_publish.feature` — 5 scénarios `@publish` (fake `HttpTransport`,
+  zéro réseau) : succès, credentials incomplets (`Degraded` sans requête), jeton
+  refusé, désactivé, plateforme non supportée.
+* [x] `CapsulePublishSteps` (préfixes `capsule publish`, S-088) +
+  `CapsulePublishCucumberRunner` (S-082) + `cucumberTestPublish`.
+* [x] Rattachement shard BDD `media` (`CucumberShardMediaRunner`) — partition gardée.
+* [x] `PublishCapsuleToYouTubeFunctionalTest` (TestKit hermétique, 3 tests) rattaché
+  au shard `Functional · media`.
+* [x] `youtube_example.yaml` + `.gitignore` (`youtube.yaml`, `client_secret_*.json`).
+* [ ] Dogfooding réel (accord pilote) / EPIC `PUBLISH-ADAPTER-N1` / release `0.0.13`.
 
 == Session 204 — Release corrective `capsule-plugin 0.0.12` ✅
 
