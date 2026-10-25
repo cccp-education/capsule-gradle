@@ -31,8 +31,12 @@ internal object CapsuleCoreRegistrar {
         tasks.register("publishCapsuleToYouTube", capsule.publish.PublishCapsuleToYouTubeTask::class.java) { task ->
             task.group = CapsuleMessages.get("task.group.deploy", lang)
             task.description = "Publish the produced MP4 to YouTube (OAuth 2.0; opt-in via publish.enabled)"
-            val config = CapsuleConfigLoader.load(File(projectDir, "capsule-context.yml"))
-            val merged = CapsuleConfigMerger.merge(projectDir, config, emptyMap())
+            val configFile = File(projectDir, "capsule-context.yml")
+            val config = CapsuleConfigLoader.load(configFile)
+            // 4-source precedence (ENV < props < YAML < CLI): an ABSENT YAML must
+            // not shadow gradle.properties with its defaults (e.g. publish.enabled
+            // stayed false even when `capsule.publish.enabled=true` was set).
+            val merged = CapsuleConfigMerger.merge(projectDir, config, emptyMap(), yamlLoaded = configFile.exists())
             val publish = merged.publish
             val extension = extensions.getByType(CapsuleExtension::class.java)
             task.videoFiles.from(
@@ -120,8 +124,14 @@ internal object CapsuleCoreRegistrar {
         tasks.register("distributeCapsuleVideo", DistributeCapsuleVideoTask::class.java) { task ->
             task.group = CapsuleMessages.get("task.group.distribute", lang)
             task.description = CapsuleMessages.get("task.distributeCapsuleVideo.description", lang)
-            val config = CapsuleConfigLoader.load(File(project.projectDir, "capsule-context.yml"))
-            val merged = CapsuleConfigMerger.merge(project.projectDir, config, emptyMap())
+            val configFile = File(project.projectDir, "capsule-context.yml")
+            val config = CapsuleConfigLoader.load(configFile)
+            val merged = CapsuleConfigMerger.merge(
+                project.projectDir,
+                config,
+                emptyMap(),
+                yamlLoaded = configFile.exists(),
+            )
             task.videoDestinationDir.set(merged.output.videoDestinationDir)
             task.versioning.set(merged.output.versioning.name)
             task.versionPrefix.set(merged.output.versionPrefix)

@@ -721,6 +721,37 @@ class CapsuleConfigMergerTest {
     }
 
     @Test
+    fun `merge NoYaml uses props publish section when CLI absent`() {
+        val projectDir = File(tempDir, "no-yaml-publish").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.publish.enabled=true
+            capsule.publish.title=A title
+            capsule.publish.visibility=unlisted
+        """.trimIndent())
+
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
+
+        assertEquals(true, merged.publish.enabled, "NoYaml: props publish.enabled should win over the YAML default")
+        assertEquals("A title", merged.publish.title, "NoYaml: props publish.title should win")
+        assertEquals("unlisted", merged.publish.visibility, "NoYaml: props publish.visibility should win")
+    }
+
+    @Test
+    fun `merge NoYaml CLI overrides props publish section`() {
+        val projectDir = File(tempDir, "no-yaml-publish-cli").also { it.mkdirs() }
+        File(projectDir, "gradle.properties").writeText("""
+            capsule.publish.enabled=true
+            capsule.publish.title=props title
+        """.trimIndent())
+        val cliParams = mapOf("publish.enabled" to "false", "publish.title" to "cli title")
+
+        val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), cliParams, yamlLoaded = false)
+
+        assertEquals(false, merged.publish.enabled, "NoYaml: CLI should override props publish.enabled")
+        assertEquals("cli title", merged.publish.title, "NoYaml: CLI should override props publish.title")
+    }
+
+    @Test
     fun `merge NoYaml uses props distrib section when CLI absent`() {
         val projectDir = File(tempDir, "no-yaml-distrib").also { it.mkdirs() }
         File(projectDir, "gradle.properties").writeText("""

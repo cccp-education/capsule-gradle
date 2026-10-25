@@ -51,7 +51,24 @@ Le test est rattaché au shard fonctionnel `Functional · media`
 (`full-tests.yml`) — la garde exige aussi une partition exhaustive/disjointe des
 classes `*FunctionalTest`.
 
-=== 3. Hygiène sécurité
+=== 3. Bug réel révélé par le TestKit — précédence des 4 sources
+
+Le test fonctionnel « activé sans credentials » a **échoué en CI** (attendu :
+`degraded`, obtenu : `disabled`). Cause : les registrars
+(`CapsuleCoreRegistrar`) appelaient `CapsuleConfigMerger.merge(..., emptyMap())`
+**sans** `yamlLoaded`, donc un `capsule-context.yml` **absent** voyait ses
+valeurs par défaut (dont `publish.enabled=false`) l'emporter sur
+`gradle.properties` — un booléen YAML non-null gagne avant les props dans
+`mergeBoolean`. La précédence documentée (`ENV < props < YAML < CLI`) était donc
+fausse dès qu'il n'y avait pas de YAML.
+
+Correctif : les deux call sites des registrars passent
+`yamlLoaded = configFile.exists()` (comme le fait déjà `CapsulePlugin`).
+Couverture unitaire : 2 tests `CapsuleConfigMergerTest` (`NoYaml` props + CLI
+override sur la section `publish`). Le test fonctionnel devient la preuve
+d'acceptation (RED CI → GREEN).
+
+=== 4. Hygiène sécurité
 
 * `.gitignore` : `youtube.yaml` + `client_secret_*.json` (fichiers OAuth téléchargés
   depuis Google Cloud) — jamais commités.

@@ -22,6 +22,13 @@ _Constat_ : la duplication N2 de l'adaptateur (hyperframes → capsule) est
 assumée (doctrine « seuil à 2 » : implémentation N2 d'un port N1 tolérée).
 Candidat EPIC `PUBLISH-ADAPTER-N1` (module partagé) au prochain palier.
 
+_Bug réel corrigé en S-207 (révélé par le TestKit)_ : les registrars appelaient
+`CapsuleConfigMerger.merge(...)` **sans `yamlLoaded`** → un `capsule-context.yml`
+absent laissait ses défauts (dont `publish.enabled=false`) masquer
+`gradle.properties`. Les 2 call sites passent `yamlLoaded = configFile.exists()` ;
+2 tests unitaires `CapsuleConfigMergerTest` (`NoYaml` props + CLI override section
+`publish`) verrouillent la précédence `ENV < props < YAML < CLI`.
+
 '''
 == ✅ Release corrective `capsule-plugin 0.0.12` — S-204
 
