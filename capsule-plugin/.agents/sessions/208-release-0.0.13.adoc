@@ -47,4 +47,8 @@ YouTube (décision S-037).
 == Gates
 
 Local = Build : compiles ×3 VERTS, `publishToMavenLocal` VERT. Aucun test local.
-YouTube reste **gelé** (US-4 dogfooding upload et US-3c chapitres non exécutés).
+**CI `Full Tests` run `40377122375` (commit `aa32cd7`) : ✅ VERTE à l'attempt 2**
+— l'attempt 1 a été annulée par le timeout 30 min pendant `apt-get install
+ffmpeg/espeak` (miroir lent), pas par les tests ; rerun `--failed` → 25/25 jobs
+verts. YouTube reste **gelé** (US-4b dogfooding upload et US-3c chapitres non
+exécutés).
