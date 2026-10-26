@@ -1,5 +1,15 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-15 (S-204 — **release corrective `capsule-plugin 0.0.12`** (fix audio-post BGM/ducking). Précédent S-203.)
+:last_update: 2026-10-26 (S-208 — **release `capsule-plugin 0.0.13`** (US-3a/3b/4 + fix précédence 4 sources ; YouTube gelé).)
+
+'''
+== ✅ S-208 — Release `capsule-plugin 0.0.13`
+
+. [x] MEMPHIS BOM/catalog `0.0.106 → 0.0.107` (`capsule-plugin 0.0.13`, bundle `c572e214`, propagation repo1 200).
+. [x] Capsule re-pin `workspace-bom 0.0.96 → 0.0.107` + bump `capsule 0.0.12 → 0.0.13`.
+. [x] `publishToMavenLocal` VERT — POM `0.0.13` importe `workspace-bom:0.0.107`.
+. [x] Publication Central bundle `ab765133` (AUTOMATIC), propagation repo1 200 (plugin + marker).
+. [x] Consommateur racine `capsule = 0.0.13` (`./gradlew tasks` VERT).
+. [ ] US-4b dogfooding upload + US-3c chapitres — **gelés** (S-037, YouTube hors scope).
 
 '''
 == ✅ S-204 — Release corrective `capsule-plugin 0.0.12`

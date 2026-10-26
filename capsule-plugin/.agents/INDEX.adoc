@@ -5,9 +5,10 @@ _Règles absolues_ : voir `AGENT.adoc`
 _DAG_ : N2 — Plugin Gradle de generation de capsules video
 _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime apply dans CapsulePlugin)
 
- _Derniere mise a jour_ : 2026-10-17 (S-207 — **HF-YOUTUBE-PUBLISH US-4 (capsule)** : BDD `@publish` — 5 scénarios (transport factice, zéro réseau) + runner dédié `cucumberTestPublish` + rattachement shard `media` + TestKit hermétique `PublishCapsuleToYouTubeFunctionalTest` + `youtube_example.yaml` + garde secrets `.gitignore` + **fix précédence 4 sources** (YAML absent ne masque plus `gradle.properties`, 2 tests). Compiles VERTS (Local = Build) ; **CI verte** `Full Tests` `40199925941`.)
- _Derniere session terminee_ : 207.
- _Prochaine session_ : 208 — dogfooding réel (accord pilote) / EPIC `PUBLISH-ADAPTER-N1` / release `0.0.13`.
+ _Derniere mise a jour_ : 2026-10-26 (S-208 — **Release `capsule-plugin 0.0.13`** ✅ : MEMPHIS BOM/catalog `0.0.107` (bundle `c572e214`, propagation repo1 200) → capsule re-pin `workspace-bom 0.0.96 → 0.0.107`, bump `capsule 0.0.12 → 0.0.13` → Central bundle `ab765133` (AUTOMATIC), propagation repo1 200 (plugin + marker). Consommateur racine `0.0.13`. Contenu : US-3a/3b/4 `HF-YOUTUBE-PUBLISH` + fix précédence 4 sources. YouTube reste gelé. Rapport `.agents/sessions/208-release-0.0.13.adoc`.)
+ _Derniere mise a jour (anterieure)_ : 2026-10-17 (S-207 — **HF-YOUTUBE-PUBLISH US-4 (capsule)** : BDD `@publish` — 5 scénarios (transport factice, zéro réseau) + runner dédié `cucumberTestPublish` + rattachement shard `media` + TestKit hermétique `PublishCapsuleToYouTubeFunctionalTest` + `youtube_example.yaml` + garde secrets `.gitignore` + **fix précédence 4 sources** (YAML absent ne masque plus `gradle.properties`, 2 tests). Compiles VERTS (Local = Build) ; **CI verte** `Full Tests` `40199925941`.)
+ _Derniere session terminee_ : 208 — release `capsule-plugin 0.0.13`.
+ _Prochaine session_ : 209 — dogfooding local (sans upload) ou repin BOM `0.0.108` / maintenance. **YouTube gelé (S-037)**.
  _Session en cours_ : —.
  _Littérature de référence_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos) + `video-kernel/.agents/CADRAGE_EPIC_VK_SHARED_PORTS.adoc` (✅ clos).
 
@@ -29,6 +30,7 @@ _Dependance N2_ : slider-gradle (compileOnly dans build.gradle.kts, runtime appl
 |===
 |# |Date |Type |Sujet |Score
 
+| 208 | 2026-10-26 | release | **Release `capsule-plugin 0.0.13`** ✅ — DAG N0→N2 : MEMPHIS BOM/catalog `0.0.107` (bundle `c572e214`) → capsule re-pin `workspace-bom 0.0.107`, bump `capsule 0.0.13` → Central bundle `ab765133` (AUTOMATIC), propagation repo1 200 (plugin + marker). Consommateur racine `0.0.13`. Contenu : US-3a/3b/4 + fix précédence 4 sources. YouTube gelé. Zéro test local. Rapport `.agents/sessions/208-release-0.0.13.adoc`. | 10/10
 | 207 | 2026-10-17 | feat+test | **HF-YOUTUBE-PUBLISH US-4 (capsule) — BDD `@publish` + couverture fonctionnelle.** Baby-step DDD/TDD/BDD : `capsule_publish.feature` 5 scénarios (publication réussie → `https://youtu.be/VID` ; credentials incomplets → `Degraded` sans requête ; jeton refusé → `Failed` ; désactivé → `Degraded` sans requête ; plateforme non supportée → `Degraded` sans requête) + `CapsulePublishSteps` préfixés `capsule publish` (S-088) + `CapsulePublishCucumberRunner` (S-082) + `CucumberTaskSpec("cucumberTestPublish")` + rattachement shard `media` (garde de partition) ; `PublishCapsuleToYouTubeFunctionalTest` TestKit hermétique (3 tests : groupe deploy, skipped par défaut, degraded sans credentials) + rattachement `Functional · media` ; `youtube_example.yaml` + garde secrets `.gitignore` (`youtube.yaml`, `client_secret_*.json`). Compiles ×3 VERTS (Local = Build). **Reste** : dogfooding réel (accord pilote), EPIC `PUBLISH-ADAPTER-N1`, release `0.0.13`. Rapport `.agents/sessions/207-hf-youtube-publish-us4-bdd-capsule.adoc`. | 9/10
 
 | 206 | 2026-10-16 | feat | **HF-YOUTUBE-PUBLISH US-3b — publication YouTube capsule** (session transverse, pilotée hyperframes S-035). Décision (a) duplication verbatim N2 : adaptateur `capsule.adapter.youtube` (OAuth 2.0, resumable upload, `thumbnails.set`) + section `publish` (4 sources) + tâche `publishCapsuleToYouTube` (groupe deploy, opt-in). Tests unit. **Reste** : BDD `@publish`, module partagé N1, release `0.0.13`. Rapport `.agents/sessions/206-hf-youtube-publish-us3b-capsule.adoc`. | 8/10

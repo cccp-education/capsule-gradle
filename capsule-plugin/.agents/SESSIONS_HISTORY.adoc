@@ -205,3 +205,12 @@ Highlights :
 * 101-106 (août) : CAP-CR3-1 CI full, CAP-AUDIO post-production 5/5 US
 * 107-112 (août) : CAP-PROVENANCE 3/3 US, CAP-GLOSSARY 4/4 US
 * 113-117 (août) : CAP-27 VTT burn-in 3/3 US, CAP-TRANSCRIPT US-0→US-3
+
+== Session 208 (2026-10-26) — Release `capsule-plugin 0.0.13` (Maven Central)
+
+DAG N0→N2 : MEMPHIS BOM/catalog `0.0.106 → 0.0.107` (bundle `c572e214`,
+propagation repo1 200) → capsule re-pin `workspace-bom 0.0.96 → 0.0.107`, bump
+`capsule 0.0.12 → 0.0.13` → Central bundle `ab765133` (AUTOMATIC), propagation
+repo1 200 (plugin + marker). Consommateur racine `capsule = 0.0.13`. Contenu :
+US-3a/3b/4 `HF-YOUTUBE-PUBLISH` + fix précédence 4 sources. YouTube reste gelé.
+Rapport `.agents/sessions/208-release-0.0.13.adoc`.

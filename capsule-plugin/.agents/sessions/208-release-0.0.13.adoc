@@ -1,0 +1,50 @@
+= Session 208 — Release `capsule-plugin 0.0.13` (Maven Central)
+:session: 208
+:date: 2026-10-26
+:borough: Détroit
+:statut: ✅ TERMINÉ
+
+== Mission
+
+Publier le code postérieur à `0.0.12` (US-3a/3b/4 de `HF-YOUTUBE-PUBLISH`
+côté capsule + correctif de précédence 4 sources), sans rouvrir le déploiement
+YouTube (décision S-037).
+
+== Contenu depuis `0.0.12`
+
+* US-3a : adoption du modèle neutre `video-kernel 0.5.0` (`VideoDescriptionComposer`,
+  `VideoPublicationLimits`).
+* US-3b : adaptateur `capsule.adapter.youtube` + section `publish` (4 sources) +
+  tâche `publishCapsuleToYouTube` (opt-in, groupe `deploy`).
+* US-4 : BDD `@publish` (5 scénarios, transport factice) + TestKit hermétique +
+  rattachement shards `media`.
+* Correctif : un YAML absent ne masque plus `gradle.properties` (précédence 4 sources).
+
+== Modifications
+
+[cols="2,2,4"]
+|===
+| Fichier | Avant | Après
+
+| `capsule-plugin/gradle/libs.versions.toml` | `capsule = "0.0.12"` | `0.0.13`
+| `capsule-plugin/gradle/libs.versions.toml` | `workspace-bom = "0.0.96"` | `0.0.107`
+| `capsule-gradle/gradle/libs.versions.toml` (consommateur racine) | `capsule = "0.0.11"` | `0.0.13`
+|===
+
+== Publication
+
+[cols="2,3"]
+|===
+| Étape | Résultat
+
+| MEMPHIS BOM/catalog `0.0.107` | ✅ bundle `c572e214-7e58-4e71-9306-06fd30fef90c`, propagation repo1 HTTP 200
+| `publishToMavenLocal` capsule | ✅ VERT — POM `0.0.13` importe `workspace-bom:0.0.107`
+| `publishAggregationToCentralPortal` | ✅ bundle **`ab765133-2f25-4c5b-a73c-d04a65b414f7`** (AUTOMATIC)
+| Propagation repo1 | ✅ `capsule-plugin/0.0.13` + marker `education.cccp.capsule.gradle.plugin/0.0.13` HTTP 200
+| Consommateur racine | ✅ `capsule = 0.0.13`, `./gradlew tasks` VERT
+|===
+
+== Gates
+
+Local = Build : compiles ×3 VERTS, `publishToMavenLocal` VERT. Aucun test local.
+YouTube reste **gelé** (US-4 dogfooding upload et US-3c chapitres non exécutés).

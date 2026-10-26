@@ -1,9 +1,17 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-17 (S-207 — HF-YOUTUBE-PUBLISH US-4 : BDD `@publish` + couverture fonctionnelle capsule. Précédent S-206.)
+:last_update: 2026-10-26 (S-208 — Release `capsule-plugin 0.0.13` : US-3a/3b/4 + fix précédence 4 sources. YouTube gelé.)
 
 '''
-== 🟡 EPIC HF-YOUTUBE-PUBLISH — US-4 BDD capsule ✅ (S-207)
+== ✅ Release `capsule-plugin 0.0.13` — Maven Central (S-208)
+
+DAG N0→N2 : MEMPHIS BOM/catalog `0.0.106 → 0.0.107` (bundle `c572e214`,
+propagation repo1 200) → capsule re-pin `workspace-bom 0.0.96 → 0.0.107`,
+bump `capsule 0.0.12 → 0.0.13` → **Central bundle `ab765133`** (AUTOMATIC),
+propagation repo1 200 (plugin + marker). Consommateur racine `capsule = 0.0.13`.
+Rapport `.agents/sessions/208-release-0.0.13.adoc`.
+
+== ⏸️ EPIC HF-YOUTUBE-PUBLISH — US-4 BDD capsule ✅ (S-207) — GELÉ (S-037)
 
 _Session transverse hyperframes (Watts) + video-kernel (N1) + capsule (Détroit)._
 _Cadrage_ : `hyperframes-gradle/hyperframes-plugin/.agents/CADRAGE_EPIC_HF_YOUTUBE_PUBLISH.adoc`.
@@ -14,8 +22,8 @@ _Cadrage_ : `hyperframes-gradle/hyperframes-plugin/.agents/CADRAGE_EPIC_HF_YOUTU
 | US-3a | Adoption du modèle neutre (`formatTimestamp`/`FORBIDDEN_CHARS` délégués au noyau) | ✅ S-205
 | US-3b | Adaptateur `capsule.adapter.youtube` + `publishCapsuleToYouTube` (opt-in) | ✅ S-206
 | US-4 | **Capsule** : BDD `@publish` (5 scénarios, transport factice) + TestKit hermétique + rattachement shards CI (`media` BDD + `Functional · media`) | ✅ S-207
-| US-4 | **Dogfooding réel** (upload `@cccp.education`, accord pilote explicite requis) | 🟡 À FAIRE
-| US-3c | **Découverte S-207** — `PublishCapsuleToYouTubeTask` force `chapters = emptyList()` : la timeline de description (chapitres) n'est pas alimentable côté capsule (hyperframes expose `publishChapters`). Câbler `PublishConfig.chapters` (4 sources) + `task.chapters`. | 🟡 À FAIRE
+| US-4b | **Dogfooding réel** (upload `@cccp.education`) | ⏸️ GELÉ (S-037 : YouTube hors scope)
+| US-3c | **Chapitres** — `PublishCapsuleToYouTubeTask` force `chapters = emptyList()` ; câbler `PublishConfig.chapters` (4 sources) + `task.chapters`. | ⏸️ GELÉ (S-037 : YouTube hors scope)
 |===
 
 _Constat_ : la duplication N2 de l'adaptateur (hyperframes → capsule) est

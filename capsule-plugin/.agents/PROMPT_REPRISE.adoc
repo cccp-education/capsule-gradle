@@ -1,91 +1,48 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
 :session: 208
 :borough: Détroit
-:session_precedente: 207 — **HF-YOUTUBE-PUBLISH US-4 (capsule)** : BDD `@publish` + couverture fonctionnelle TestKit ✅
+:session_precedente: 208 — **Release `capsule-plugin 0.0.13`** ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
-_littérature_ : `.agents/CADRAGE_EPIC_CAP_DECOMPOSE.adoc` (✅ clos) ; `video-kernel/.agents/CADRAGE_EPIC_VK_SHARED_PORTS.adoc` (✅ clos) ; `.agents/CADRAGE_EPIC_KOOG_PIPELINE_DEDUP.adoc` (✅ clos S-200).
+_littérature_ : `CADRAGE_EPIC_CAP_DECOMPOSE` (✅), `CADRAGE_EPIC_VK_SHARED_PORTS` (✅),
+`CADRAGE_EPIC_KOOG_PIPELINE_DEDUP` (✅).
 
-== Mission session 204 (TERMINÉE) — Release corrective `capsule-plugin 0.0.12`
+== Session 208 (TERMINÉE) — Release `capsule-plugin 0.0.13`
 
-Release DAG N0→N1→N2 (accord pilote) : MEMPHIS catalogue/BOM `0.0.96` → toml
-`capsule 0.0.11 → 0.0.12` + alignement BOM interne `workspace-bom 0.0.92 → 0.0.96`
-→ **Central `0.0.12`** (bundle `fcab286c`). Contenu : fix bug audio-post BGM/ducking
-(S-203) + `AudioPostProcessorTest` renforcé. Rapport `.agents/sessions/204-release-0.0.12.adoc`.
+Release DAG N0→N2 : MEMPHIS BOM/catalog `0.0.106 → 0.0.107` (bundle
+`c572e214`, propagation repo1 200) → capsule re-pin `workspace-bom 0.0.96 →
+0.0.107`, bump `capsule 0.0.12 → 0.0.13` → **Central bundle `ab765133`**
+(AUTOMATIC), propagation repo1 200 (plugin + marker). Consommateur racine
+`capsule = 0.0.13`. Rapport `.agents/sessions/208-release-0.0.13.adoc`.
 
-== Mission session 203 (TERMINÉE) — Dogfooding réel + fix bug audio-post
+Contenu depuis `0.0.12` : US-3a (modèle neutre `video-kernel 0.5.0`), US-3b
+(adaptateur `capsule.adapter.youtube` + tâche `publishCapsuleToYouTube` opt-in),
+US-4 (BDD `@publish` + TestKit), correctif précédence 4 sources (YAML absent).
 
-Dogfooding réel des adaptateurs hyperframes (S-028) → **bug réel dupliqué** dans
-`capsule.audio.AudioPostCommand` (CAP-AUDIO S-104) : le chemin BGM/ducking **n'a
-jamais fonctionné** avec ffmpeg réel. Correctif : `…,aresample=48000` + `asplit=2`.
-Rapport `.agents/sessions/203-dogfooding-audio-post-fix.adoc`.
+== État
 
-== Mission session 202 (TERMINÉE) — Adoption ports vidéo partagés
+* `capsule-plugin 0.0.13` Central ; `video-kernel 0.5.0` ; BOM interne `0.0.107`.
+* **YouTube reste gelé** (décision pilote S-037).
+* Items ouverts : `HF-YOUTUBE-PUBLISH` US-4 dogfooding upload (gelé) + US-3c
+  chapitres (gelé). Aucun autre EPIC métier ouvert.
+* Dette possible : repin BOM `0.0.108` (non bloquant).
 
-Capsule adopte les ports `VK-4 US-4b→d` via `capsule.adapter.kernel.CapsuleKernelPorts` ;
-pin `video-kernel 0.3.0 → 0.4.0`. Rapport `.agents/sessions/202-adopt-shared-video-ports.adoc`.
+== Mission Session 209 — au choix pilote
 
-== Contexte transverse — EPIC `HF-YOUTUBE-PUBLISH`
-
-Cadrage : `hyperframes-gradle/.../.agents/CADRAGE_EPIC_HF_YOUTUBE_PUBLISH.adoc`.
-
-* **US-1/1b** (video-kernel) : noyau `video.kernel.publish` + publication `0.5.0` ✅.
-* **US-2** (hyperframes) : adaptateur `hyperframes.publish` + tâche
-  `publishHyperframesToYouTube` ✅.
-* **US-3a** (capsule, S-205 ✅) : adoption du modèle neutre —
-  `YouTubeChaptersFormatter.formatTimestamp` et
-  `VideoDescriptionBuilder.FORBIDDEN_CHARS` **délégués au noyau**
-  (`VideoDescriptionComposer` / `VideoPublicationLimits`) ; `video-kernel 0.5.0`.
-
-== Fait en session 206 — US-3b (option a : duplication verbatim N2)
-
-Adaptateur `capsule.adapter.youtube` (copie N2 de `hyperframes.publish`) +
-section de config `publish` (4 sources) + tâche `publishCapsuleToYouTube`
-(groupe deploy, opt-in). Décision (a) — doctrine « duplication verbatim N2 d'une
-implémentation de port N1 tolérée ». Tests unit (publisher fake transport,
-loader/rédaction, parser) + 2 merge. Compiles VERTS. Rapport
-`.agents/sessions/206-hf-youtube-publish-us3b-capsule.adoc`.
-
-== Fait en session 207 — US-4 (capsule) : BDD + fonctionnel
-
-* `capsule_publish.feature` — **5 scénarios** `@publish` (fake `HttpTransport`, zéro
-  réseau) : succès (URL), credentials incomplets (`Degraded` sans requête), jeton
-  refusé (`Failed`), désactivé, plateforme non supportée.
-* `CapsulePublishSteps` (steps préfixés `capsule publish`, S-088) +
-  `CapsulePublishCucumberRunner` (S-082) + `CucumberTaskSpec("cucumberTestPublish")`.
-* Feature rattachée au shard CI `media` (`CucumberShardMediaRunner`) — partition
-  exhaustive gardée par `CapsuleCucumberShardCoverageTest`.
-* `PublishCapsuleToYouTubeFunctionalTest` (TestKit hermétique, 3 tests) rattaché au
-  shard `Functional · media`.
-* `youtube_example.yaml` + garde secrets `.gitignore` (`youtube.yaml`,
-  `client_secret_*.json`).
-* **Bug réel corrigé** (révélé par le TestKit en CI) : les registrars appelaient
-  `CapsuleConfigMerger.merge(...)` sans `yamlLoaded` → un YAML absent laissait ses
-  défauts (`publish.enabled=false`) masquer `gradle.properties`. Les 2 call sites
-  passent `yamlLoaded = configFile.exists()` ; +2 tests `CapsuleConfigMergerTest`
-  (`NoYaml` props + CLI override section `publish`).
-* Compiles ×3 VERTS en local (Local = Build) ; **CI verte** (`Test` + `Full Tests`
-  run `40199925941` — BDD `media` et `Functional · media` incluent les nouveaux
-  scénarios/tests).
-
-== Mission Session 208 — au choix (pilote)
-
-* **Dogfooding réel** — upload `publishCapsuleToYouTube` sur `@cccp.education`
-  (accord pilote explicite ; `videos.insert` = 1600 unités de quota).
-* **EPIC `PUBLISH-ADAPTER-N1`** : extraire l'adaptateur YouTube commun en N1
-  (option b) — hyperframes + capsule (doctrine « seuil à 2 »).
-* **Release** `capsule-plugin 0.0.13` (DAG MEMPHIS).
-* Sinon : maintenance.
+. **Dogfooding réel local** du pipeline vidéo (sans upload) : chrome/entrées +
+   audio/sous-titres, consommateur `/tmp`.
+. **Repin BOM** `0.0.108` + maintenance.
+3. **YouTube** : ne pas rouvrir sans décision explicite.
 
 == Points d'attention
 
-* **Local = Build, Tests = CI** : ne jamais lancer `test`/`check` en local.
-* **Règle 2 — PUBLISH** : accord pilote. **Règle 6 — ZÉRO secret**.
-* **English only** ; **zéro Python** ; runner dédié par feature (S-082), steps préfixés (S-088).
-* **CI sharding** : toute nouvelle feature/scénario doit être rattachée à un shard
-  (garde `CapsuleCucumberShardCoverageTest` sinon rouge).
+* **Local = Build, Tests = CI** : jamais `test`/`check` local.
+* **Règle 2 — PUBLISH** : publication exécutée sur demande pilote (S-208).
+* **Règle 7** : capsule ne modifie jamais le deck source.
+* Zéro secret ; zéro Python ; English only code/tests/features.
+* Runner dédié par feature (S-082), steps préfixés (S-088), shards CI à jour.
 
 == Rappels
 
-* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.12** (Central).
-* `education.cccp:video-kernel:0.4.0` (Central, bundle `695c4ccd`). Catalogue interne `workspace-bom = "0.0.96"`.
+* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.13**.
+* `education.cccp:video-kernel:0.5.0` ; catalogue workspace `0.0.107` (BOM interne).
 * Doctrine de factorisation : **seuil `à 2`** (amendement S-195).
