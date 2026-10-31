@@ -14,7 +14,8 @@ on:
 jobs:
   cucumber-full:
     name: Full cucumberTest (diagnostic)
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest migrated to 26.04 (Playwright/Chromium unsupported).
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
 
     steps:

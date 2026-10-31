@@ -21,7 +21,8 @@ on:
 jobs:
   llm-smoke:
     name: Ollama smoke (cached image + model)
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest migrated to 26.04 (Playwright/Chromium unsupported).
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     env:

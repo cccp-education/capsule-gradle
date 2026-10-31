@@ -33,7 +33,9 @@ jobs:
   # pure-domain (NoOp engines) and need neither ffmpeg nor Chromium.
   bdd-shard:
     name: ${{ matrix.name }}
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest migrated to 26.04, where Playwright does not yet
+    # support Chromium and ffmpeg 8 breaks the deployCapsule BDD scenario.
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -130,7 +132,9 @@ jobs:
   # `--tests`. Guarded by capsule.ci.CapsuleCucumberShardCoverageTest.
   functional-shard:
     name: ${{ matrix.name }}
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest migrated to 26.04, where Playwright does not yet
+    # support Chromium and ffmpeg 8 breaks the deployCapsule BDD scenario.
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -181,7 +185,9 @@ jobs:
   # `binaries`: @integration + real-render need ffmpeg+Chromium; @manim uses NoOp.
   integration:
     name: ${{ matrix.name }}
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest migrated to 26.04, where Playwright does not yet
+    # support Chromium and ffmpeg 8 breaks the deployCapsule BDD scenario.
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
       fail-fast: false

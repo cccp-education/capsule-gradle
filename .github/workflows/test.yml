@@ -29,7 +29,8 @@ on:
 jobs:
   test:
     name: Fast Tests (PR Gate)
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest migrated to 26.04 (Playwright/Chromium unsupported).
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     steps:
