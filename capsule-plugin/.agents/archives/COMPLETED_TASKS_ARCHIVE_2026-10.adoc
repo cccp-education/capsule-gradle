@@ -7,6 +7,7 @@
 * [x] `youtube-auth-plugin 0.0.2` adopté (`alias(libs.plugins.youtube.auth)`).
 * [x] `workspace-bom 0.0.115`, `video-kernel 0.7.0`, `capsule 0.0.15`.
 * [x] Central bundle `309d98c6-912f-4d30-afb6-dca517b4ec66`, propagation 200.
+* [x] CI `Test` verte `41243897702` + `Full Tests` `41243897678`.
 * [x] Rapport `.agents/sessions/212-adoption-n1-youtube-auth-release-0.0.15.adoc`.
 
 == Session 207 — HF-YOUTUBE-PUBLISH US-4 (capsule) : BDD `@publish` + fonctionnel ✅

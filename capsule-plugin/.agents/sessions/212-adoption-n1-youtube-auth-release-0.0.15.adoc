@@ -40,3 +40,8 @@ Bump `workspace-bom 0.0.113 → 0.0.115`, `capsule 0.0.14 → 0.0.15`,
   `src/main/kotlin/capsule/publish/PublishCapsuleToYouTubeTask.kt`.
 * `gradle/libs.versions.toml`, `build.gradle.kts`.
 * Tests/steps de publication ré-alignés.
+
+== CI
+
+**CI verte** : `Test` run **`41243897702`** + `Full Tests` run **`41243897678`**
+(commit `3e18aac`).
