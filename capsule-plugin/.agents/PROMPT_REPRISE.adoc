@@ -21,6 +21,10 @@ Livré (baby-step DDD/TDD/BDD) :
   tout en gardant `degraded = true` ;
 * `VerifyCapsuleVoiceTask` vérifie `hasFailure` **avant** le retour dégradé ;
   `snrDb = null` sur silence (plus de `-Infinity`) ;
+* **bug réel révélé par le TestKit** : `AudioEnvelopeExtractor` laissait
+  `ffmpeg` refuser d'écraser le PCM temporaire (`exit 0`, fichier vide →
+  `null`) → correctif `-y` + assertion `AudioEnvelopeTest` ; vérifié sur un MP3
+  silencieux réel (50 frames, peak 0.0) ;
 * tests : 7 unit `AudioSilenceDetectorTest`, +2 `VoiceQualityGateTest`, +4
   `VoiceVerifierTest`, +2 scénarios `@voice-verify`, +1 TestKit (audio muet réel
   ffmpeg, skip-gardé) ;

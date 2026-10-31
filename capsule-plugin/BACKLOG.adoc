@@ -13,7 +13,7 @@ muet passait.
 [cols="1,3,1", options="header"]
 |===
 | US | Livrable | Statut
-| US-1 | Domaine pur `capsule.voice.AudioSilenceDetector` + `SilenceAnalysis` (pic RMS, seuil `0.001`, envelope vide = silence, `silentFraction` diagnostique) ; `VoiceQualityGate.REASON_SILENT_AUDIO` + paramètre `silence` ; `VoiceVerifier` (enveloppe partagée SNR + silence, `degraded` accepte `envelopeProvider`) ; `VerifyCapsuleVoiceTask` (échec `silent-audio` **avant** le retour dégradé, `snrDb = null` sur silence). 7 unit + 2 gate + 4 verifier + 2 scénarios `@voice-verify` + 1 TestKit (audio muet réel ffmpeg, skip-gardé). | ✅ S-209
+| US-1 | Domaine pur `capsule.voice.AudioSilenceDetector` + `SilenceAnalysis` (pic RMS, seuil `0.001`, envelope vide = silence, `silentFraction` diagnostique) ; `VoiceQualityGate.REASON_SILENT_AUDIO` + paramètre `silence` ; `VoiceVerifier` (enveloppe partagée SNR + silence, `degraded` accepte `envelopeProvider`) ; `VerifyCapsuleVoiceTask` (échec `silent-audio` **avant** le retour dégradé, `snrDb = null` sur silence). **Bug réel** : `AudioEnvelopeExtractor` laissait `ffmpeg` refuser d'écraser le PCM temporaire (`exit 0`, fichier vide → `null`) → `-y` + assertion `AudioEnvelopeTest` ; vérifié sur MP3 silencieux réel. 7 unit + 2 gate + 4 verifier + 2 scénarios `@voice-verify` + 1 TestKit (audio muet réel ffmpeg, skip-gardé). | ✅ S-209
 | US-2 | Promotion N1 `video-kernel` (2 consommateurs capsule + hyperframes) — **accord pilote + publication Central requis** (Règle 2). | 🟡 À PLANIFIER
 |===
 

@@ -8,6 +8,7 @@
 . [x] `VoiceQualityGate.REASON_SILENT_AUDIO` + paramètre `silence` optionnel.
 . [x] `VoiceVerifier` — enveloppe partagée SNR + silence ; `degraded` accepte `envelopeProvider` (take muet → `Fail(["silent-audio"])`, rapport toujours `degraded`) ; `snrDb = null` sur silence.
 . [x] `VerifyCapsuleVoiceTask` — `hasFailure` évalué **avant** le retour dégradé ; message enrichi des `reasons`.
+. [x] **Bug réel révélé par le TestKit** — `AudioEnvelopeExtractor` laissait `ffmpeg` refuser d'écraser le PCM temporaire (`exit 0`, fichier vide → `null`) → `-y` + assertion `AudioEnvelopeTest` ; vérifié sur MP3 silencieux réel (50 frames, peak 0.0).
 . [x] Tests — 7 unit `AudioSilenceDetectorTest` + 2 `VoiceQualityGateTest` + 4 `VoiceVerifierTest` + 2 scénarios `@voice-verify` + 1 TestKit (audio muet réel ffmpeg, skip-gardé). RED prouvé (19 erreurs `compileTestKotlin`).
 . [x] Compiles ×3 + `validatePlugins` + `assemble` VERTS ; hyperframes + video-kernel compilent (inchangés). Zéro bump, zéro publication.
 . [ ] **US-2** — promotion N1 `video-kernel` (2 consommateurs capsule + hyperframes) : **accord pilote + publication Central requis** (Règle 2).

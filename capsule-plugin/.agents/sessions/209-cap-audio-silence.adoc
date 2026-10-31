@@ -90,6 +90,21 @@ Preuve RED : `compileTestKotlin` → 19 erreurs (`Unresolved reference
 Résultat : **BUILD SUCCESSFUL** (compiles ×3, `validatePlugins`, `assemble`).
 Aucune suite exécutée localement (règle EAGER Local = Build, Tests = CI).
 
+=== Bug réel découvert par le TestKit (S-209)
+
+Le premier run CI du test fonctionnel a échoué `UnexpectedBuildSuccess` :
+`AudioEnvelopeExtractor.extract` retournait **`null`** sur un MP3 réellement
+silencieux. Cause : `File.createTempFile(...)` crée déjà le fichier PCM cible ;
+`ffmpeg` refuse de l'écraser sans `-y`, **sort avec le code 0** et laisse un
+fichier vide → `extract` dégrade en `null`, donc ni SNR ni silence.
+
+Correctif : `-y` ajouté à l'argv de `AudioEnvelopeExtractor.decodeArgs`, et
+assertion `"-y" in args` dans `AudioEnvelopeTest`. Vérification réelle :
+`extract(silent.mp3)` → **50 frames, peak 0.0, `isSilent = true`**.
+
+Ce bug latent existait avant S-209 (le SNR n'était jamais exercé avec un vrai
+ffmpeg) ; le test fonctionnel de silence l'a révélé.
+
 === Preuve cross-borough (compilation seule)
 
 |===
@@ -108,6 +123,8 @@ Aucune suite exécutée localement (règle EAGER Local = Build, Tests = CI).
 | `src/main/kotlin/capsule/voice/VoiceQuality.kt` | modifié (raison + param)
 | `src/main/kotlin/capsule/voice/VoiceVerifier.kt` | modifié (enveloppe + dégradé)
 | `src/main/kotlin/capsule/voice/VerifyCapsuleVoiceTask.kt` | modifié (ordre des gates)
+| `src/main/kotlin/capsule/voice/AudioEnvelopeExtractor.kt` | modifié (fix `-y`, bug réel)
+| `src/test/kotlin/capsule/voice/AudioEnvelopeTest.kt` | modifié (+1 assertion `-y`)
 | `src/test/kotlin/capsule/voice/AudioSilenceDetectorTest.kt` | créé (7 unit)
 | `src/test/kotlin/capsule/voice/VoiceQualityGateTest.kt` | modifié (+2)
 | `src/test/kotlin/capsule/voice/VoiceVerifierTest.kt` | modifié (+4)
