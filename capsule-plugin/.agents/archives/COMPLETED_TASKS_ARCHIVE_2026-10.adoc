@@ -933,6 +933,16 @@ Zéro code modifié. Gouvernance : rapport `.agents/sessions/138-cap-viral-cadra
 * Zéro bump, zéro publication, zéro secret.
 * Rapport `.agents/sessions/209-cap-audio-silence.adoc`.
 
+== S-211 — Release `capsule-plugin 0.0.14` ✅
+
+* DAG MEMPHIS `workspace-bom/catalog 0.0.113` (bundle `455f513d`, propagation
+  200) → capsule re-pin BOM `0.0.113`, bump `0.0.13 → 0.0.14`.
+* Central bundle `ba697bda-5405-4add-9df5-66e4fab686fb` (AUTOMATIC), propagation
+  repo1 200 (plugin + marker). Consommateur racine `0.0.14`.
+* Contenu : `CAP-AUDIO-SILENCE` US-1/US-2 + fix `AudioEnvelopeExtractor` (`-y`) ;
+  `video-kernel 0.6.0`.
+* Rapport `.agents/sessions/211-release-0.0.14.adoc`.
+
 == S-210 — CAP-AUDIO-SILENCE US-2 : adoption du noyau N1 ✅
 
 * Suppression des copies locales `capsule.voice.AudioSilenceDetector` /

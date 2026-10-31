@@ -1,5 +1,14 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-31 (S-210 — **CAP-AUDIO-SILENCE US-2** : adoption du noyau N1 `video-kernel 0.6.0` ; YouTube gelé.)
+:last_update: 2026-10-31 (S-211 — **Release `capsule-plugin 0.0.14`** ; YouTube gelé.)
+
+'''
+== ✅ S-211 — Release `capsule-plugin 0.0.14`
+
+. [x] MEMPHIS BOM/catalog `0.0.113` (`455f513d`, propagation repo1 200).
+. [x] Capsule re-pin BOM `0.0.113` + bump `0.0.13 → 0.0.14`.
+. [x] `publishToMavenLocal` VERT (POM 0.0.14 importe `workspace-bom:0.0.113`).
+. [x] Publication Central bundle `ba697bda-5405-4add-9df5-66e4fab686fb` (AUTOMATIC), propagation repo1 200 (plugin + marker).
+. [x] Consommateur racine `capsule = 0.0.14`.
 
 '''
 == ✅ S-210 — CAP-AUDIO-SILENCE US-2 (adoption N1)

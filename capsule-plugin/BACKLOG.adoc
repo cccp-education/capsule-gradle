@@ -1,6 +1,19 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-31 (S-210 — CAP-AUDIO-SILENCE TERMINÉ 2/2 : adoption du noyau N1 `video-kernel 0.6.0`. YouTube gelé.)
+:last_update: 2026-10-31 (S-211 — Release `capsule-plugin 0.0.14` : adoption `video-kernel 0.6.0` + CAP-AUDIO-SILENCE. YouTube gelé.)
+
+'''
+== ✅ Release `capsule-plugin 0.0.14` — Maven Central (S-211)
+
+DAG N0→N1→N2 (YouTube gelé) : MEMPHIS `workspace-bom/catalog 0.0.113`
+(bundle `455f513d`, propagation 200) → capsule re-pin BOM `0.0.113`, bump
+`0.0.13 → 0.0.14` → **Central bundle `ba697bda`** (AUTOMATIC), propagation
+repo1 200 (plugin + marker). Consommateur racine `capsule = 0.0.14`.
+
+Contenu depuis 0.0.13 : `CAP-AUDIO-SILENCE` US-1 (take muet indépendant de
+l'ASR) + US-2 (adoption `video-kernel.audio.*`) + fix `AudioEnvelopeExtractor`
+(`-y`). `video-kernel 0.6.0`, BOM `0.0.113`. Rapport
+`.agents/sessions/211-release-0.0.14.adoc`.
 
 '''
 == ✅ EPIC CAP-AUDIO-SILENCE — TERMINÉ 2/2 (S-209 + S-210)
