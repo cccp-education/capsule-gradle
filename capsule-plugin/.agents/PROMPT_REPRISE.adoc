@@ -38,7 +38,7 @@ Rapport `.agents/sessions/211-release-0.0.14.adoc`.
 == Points d'attention
 
 * **Local = Build, Tests = CI** : jamais `test`/`check` local.
-* **Règle 2 — PUBLISH** : publication uniquement sur accord pilote.
+* **Règle 2 — PUBLISH** : accord pilote permanent (toujours granted, décision 2026-10-31).
 * **Règle 7** : capsule ne modifie jamais le deck source.
 * Zéro secret ; zéro Python ; English only code/tests/features.
 * Runner dédié par feature (S-082), steps préfixés (S-088), shards CI à jour.
