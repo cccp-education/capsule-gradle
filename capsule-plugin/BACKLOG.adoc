@@ -23,6 +23,13 @@ mais l'enveloppe n'était exploitée que pour le SNR. Un audio muet produisait
 La tâche reste **opt-in** (`voice.verifyEnabled`) : c'est une garde de contenu,
 pas un prérequis de `check`.
 
+**Bug réel révélé par le TestKit** : `AudioEnvelopeExtractor` laissait `ffmpeg`
+refuser d'écraser le PCM temporaire (`exit 0`, fichier vide → `null`) → correctif
+`-y` + assertion `AudioEnvelopeTest` ; vérifié sur MP3 silencieux réel (50
+frames, peak 0.0). **CI verte** : `Test` `41205458553` + `Full Tests`
+`41205459199` **25/25 jobs** (dont `BDD · qc+voice` et
+`Functional · viral+voice+qc`).
+
 _Rapport_ : `.agents/sessions/209-cap-audio-silence.adoc`.
 
 '''

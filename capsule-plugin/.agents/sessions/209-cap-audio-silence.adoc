@@ -114,6 +114,20 @@ ffmpeg) ; le test fonctionnel de silence l'a révélé.
 | video-kernel | `compileKotlin compileTestKotlin` | ✅
 |===
 
+== Preuve CI (commit `d1cb265`)
+
+|===
+| Workflow | Run | Résultat
+| `Test` | `41205458553` | ✅
+| `Full Tests` | `41205459199` | ✅ **25/25 jobs** (dont `BDD · qc+voice` et `Functional · viral+voice+qc`)
+|===
+
+Le premier run (`41204386733`) était rouge pour deux raisons distinctes :
+(1) `ubuntu-latest` migré vers 26.04 → Playwright/Chromium non supporté et
+ffmpeg 8 cassait `deployCapsule` ; correctif CI `c4deea9` (pin `ubuntu-24.04`) ;
+(2) le TestKit a révélé le bug `AudioEnvelopeExtractor` (`-y` manquant),
+correctif `d1cb265`. Le re-run est **vert 25/25**.
+
 == Fichiers
 
 [cols="1,3", options="header"]

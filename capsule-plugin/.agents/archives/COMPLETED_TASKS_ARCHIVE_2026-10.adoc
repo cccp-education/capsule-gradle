@@ -922,7 +922,13 @@ Zéro code modifié. Gouvernance : rapport `.agents/sessions/138-cap-viral-cadra
 * Tests : 7 unit `AudioSilenceDetectorTest` + 2 gate + 4 verifier + 2 scénarios
   `@voice-verify` + 1 TestKit (audio muet réel ffmpeg, skip-gardé). RED prouvé
   (19 erreurs `compileTestKotlin`).
+* **Bug réel révélé par le TestKit** : `AudioEnvelopeExtractor` laissait
+  `ffmpeg` refuser d'écraser le PCM temporaire (`exit 0`, fichier vide →
+  `null`) → correctif `-y` + assertion `AudioEnvelopeTest` ; vérifié sur MP3
+  silencieux réel (50 frames, peak 0.0).
 * Gates locaux : compiles ×3 + `validatePlugins` + `assemble` VERTS
   (Local = Build). Cross-borough hyperframes + video-kernel compilent.
+* **CI verte** : `Test` `41205458553` + `Full Tests` `41205459199`
+  **25/25 jobs** (dont `BDD · qc+voice` et `Functional · viral+voice+qc`).
 * Zéro bump, zéro publication, zéro secret.
 * Rapport `.agents/sessions/209-cap-audio-silence.adoc`.

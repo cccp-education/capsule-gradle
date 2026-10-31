@@ -32,7 +32,9 @@ Livré (baby-step DDD/TDD/BDD) :
 
 Gates locaux (Local = Build) : compiles ×3 + `validatePlugins` + `assemble`
 VERTS. Aucune suite locale. Cross-borough : hyperframes + video-kernel
-compilent (inchangés). Zéro bump, zéro publication, zéro secret.
+compilent (inchangés). **CI verte** : `Test` `41205458553` + `Full Tests`
+`41205459199` **25/25 jobs** (dont `BDD · qc+voice` et
+`Functional · viral+voice+qc`). Zéro bump, zéro publication, zéro secret.
 
 Rapport `.agents/sessions/209-cap-audio-silence.adoc`.
 
