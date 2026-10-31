@@ -14,10 +14,10 @@ codebase = "0.0.18"
 # Plugin Gradle `education.cccp.codebase` — aligné sur la lib (0.0.18).
 codebase-gradle-plugin = "0.0.18"
 koog = "1.3.0"
-# BOM N0 courante (aligné sur le catalogue workspace MEMPHIS 0.0.107).
-workspace-bom = "0.0.107"
+# BOM N0 courante (aligné sur le catalogue workspace MEMPHIS 0.0.112).
+workspace-bom = "0.0.112"
 i18n-contracts = "0.0.4"
-video-kernel = "0.5.0"
+video-kernel = "0.6.0"
 codebase-contracts = "0.0.2"
 
 [libraries]

@@ -1,6 +1,7 @@
 package capsule.voice
 
 import java.io.File
+import video.kernel.audio.AudioSilenceDetector
 
 /**
  * One take to verify: the expected narration, the audio that was synthesised

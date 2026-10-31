@@ -79,8 +79,8 @@ capsule-plugin/
     │   ├── validation/    # VideoDurationValidator + VideoIntegrityChecker (PRT-04)
     │   ├── viral/         # CAP-VIRAL: storyboard, deck builder, campaign bundle/gate, thumbnail, karaoke
     │   └── voice/         # CAP-QC-VOICE: TextNormalizer, WordAligner, FidelityScorer, SnrEstimator,
-    │                      #   AudioSilenceDetector (silent take), PronunciationLexicon, NumberSpeller,
-    │                      #   SpeechRecognizer (port), TakeSelector
+    │                      #   PronunciationLexicon, NumberSpeller, SpeechRecognizer (port), TakeSelector
+    │                      #   (AudioSilenceDetector/RmsEnvelope = N1 video.kernel.audio, S-210)
     ├── main/resources/capsule/
     │   ├── i18n/Messages[_xx].properties   # 10 languages + base
     │   └── remotion/                        # Remotion composition (Capsule.jsx, Root.jsx, render.mjs)

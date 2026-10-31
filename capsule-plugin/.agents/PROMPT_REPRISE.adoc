@@ -1,58 +1,39 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 209
+:session: 210
 :borough: Détroit
-:session_precedente: 209 — **CAP-AUDIO-SILENCE US-1** ✅ (détection d'un take muet)
+:session_precedente: 210 — **CAP-AUDIO-SILENCE US-2** ✅ (adoption du noyau N1)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
-== Session 209 (TERMINÉE) — CAP-AUDIO-SILENCE US-1
+== Session 210 (TERMINÉE) — CAP-AUDIO-SILENCE US-2
 
-Un take **muet** (NoOp TTS, export audio cassé) échoue désormais
-`verifyCapsuleVoice` avec `silent-audio`, **même sans ASR** — la détection est
-indépendante du recogniser.
+Les copies locales `capsule.voice.AudioSilenceDetector` / `RmsEnvelope` sont
+**supprimées** ; capsule consomme le noyau partagé `video.kernel.audio.*` :
 
-Livré (baby-step DDD/TDD/BDD) :
-
-* domaine pur `capsule.voice.AudioSilenceDetector` + `SilenceAnalysis`
-  (`isSilent` sur le pic RMS, `silentFraction` diagnostique, seuil
-  `DEFAULT_RMS_THRESHOLD = 0.001`, envelope vide = silence) ;
-* `VoiceQualityGate.REASON_SILENT_AUDIO` + paramètre `silence` optionnel ;
-* `VoiceVerifier.verify` réutilise l'enveloppe (SNR + silence) ; `degraded`
-  accepte un `envelopeProvider` et marque un take muet `Fail(["silent-audio"])`
-  tout en gardant `degraded = true` ;
-* `VerifyCapsuleVoiceTask` vérifie `hasFailure` **avant** le retour dégradé ;
-  `snrDb = null` sur silence (plus de `-Infinity`) ;
-* **bug réel révélé par le TestKit** : `AudioEnvelopeExtractor` laissait
-  `ffmpeg` refuser d'écraser le PCM temporaire (`exit 0`, fichier vide →
-  `null`) → correctif `-y` + assertion `AudioEnvelopeTest` ; vérifié sur un MP3
-  silencieux réel (50 frames, peak 0.0) ;
-* tests : 7 unit `AudioSilenceDetectorTest`, +2 `VoiceQualityGateTest`, +4
-  `VoiceVerifierTest`, +2 scénarios `@voice-verify`, +1 TestKit (audio muet réel
-  ffmpeg, skip-gardé) ;
-* RED prouvé : 19 erreurs `compileTestKotlin` avant production.
+* `video-kernel 0.6.0` — `RmsEnvelope`, `AudioSilenceDetector`, `SilenceAnalysis`
+  (2 consommateurs réels : capsule + hyperframes) ;
+* MEMPHIS `workspace-bom/catalog 0.0.112` ;
+* capsule `video-kernel 0.6.0`, BOM `0.0.112` ;
+* imports N1 dans `AudioEnvelopeExtractor`, `VoiceQuality`, `VoiceVerifier` et
+  les tests ; suppression du test local du détecteur (le test N1 le couvre).
 
 Gates locaux (Local = Build) : compiles ×3 + `validatePlugins` + `assemble`
-VERTS. Aucune suite locale. Cross-borough : hyperframes + video-kernel
-compilent (inchangés). **CI verte** : `Test` `41205458553` + `Full Tests`
-`41205459199` **25/25 jobs** (dont `BDD · qc+voice` et
-`Functional · viral+voice+qc`). Zéro bump, zéro publication, zéro secret.
-
-Rapport `.agents/sessions/209-cap-audio-silence.adoc`.
+VERTS. Rapport `.agents/sessions/210-cap-audio-silence-n1-adoption.adoc`.
 
 == État
 
-* `capsule-plugin 0.0.13` Central ; `video-kernel 0.5.0` ; BOM interne `0.0.107`.
+* `capsule-plugin 0.0.13` Central (non bumpé) ; `video-kernel 0.6.0` ;
+  BOM interne `0.0.112`.
 * **YouTube reste gelé** (décision pilote S-037).
-* Aucun EPIC métier ouvert. `CAP-AUDIO-SILENCE` US-1 livrée.
+* `CAP-AUDIO-SILENCE` **TERMINÉ 2/2 US**.
+* Aucun EPIC métier ouvert.
 
-== Mission Session 210 — au choix pilote
+== Mission Session 211 — au choix pilote
 
-. **CAP-AUDIO-SILENCE US-2** : promouvoir le détecteur en N1 `video-kernel`
-   (2 consommateurs capsule + hyperframes). **Prérequis** : accord pilote +
-   publication Central `video-kernel 0.6.0` (Règle 2).
-. **Dogfooding local** (sans upload) : chrome/entrées + audio/sous-titres,
+. CI capsule sur le commit poussé (unit + functional + BDD).
+2. Dogfooding local (sans upload) : chrome/entrées + audio/sous-titres,
    consommateur `/tmp`.
-3. **Repin BOM** `0.0.108` + maintenance.
-4. **YouTube** : ne pas rouvrir sans décision explicite.
+3. Release `capsule-plugin` si le code consommateur doit être publié.
+4. Maintenance / repin éventuel.
 
 == Points d'attention
 
@@ -65,5 +46,5 @@ Rapport `.agents/sessions/209-cap-audio-silence.adoc`.
 == Rappels
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.13**.
-* `education.cccp:video-kernel:0.5.0` ; catalogue workspace `0.0.107`.
+* `education.cccp:video-kernel:0.6.0` ; catalogue workspace `0.0.112`.
 * Doctrine de factorisation : **seuil `à 2`** (amendement S-195).

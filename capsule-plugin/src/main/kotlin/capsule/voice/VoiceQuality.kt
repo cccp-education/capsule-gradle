@@ -1,5 +1,7 @@
 package capsule.voice
 
+import video.kernel.audio.SilenceAnalysis
+
 /**
  * Acceptance thresholds for voice-quality verification (CAP-QC-VOICE US-2).
  *

@@ -1,6 +1,7 @@
 package capsule.voice
 
 import kotlin.test.Test
+import video.kernel.audio.AudioSilenceDetector
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

@@ -3,6 +3,7 @@ package capsule.voice
 import capsule.ProcessRunner
 import java.io.ByteArrayOutputStream
 import java.io.File
+import video.kernel.audio.RmsEnvelope
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

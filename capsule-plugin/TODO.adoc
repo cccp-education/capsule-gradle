@@ -1,5 +1,13 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-31 (S-209 — **CAP-AUDIO-SILENCE US-1** : take muet détecté indépendamment de l'ASR ; YouTube gelé.)
+:last_update: 2026-10-31 (S-210 — **CAP-AUDIO-SILENCE US-2** : adoption du noyau N1 `video-kernel 0.6.0` ; YouTube gelé.)
+
+'''
+== ✅ S-210 — CAP-AUDIO-SILENCE US-2 (adoption N1)
+
+. [x] Suppression des copies locales `capsule.voice.AudioSilenceDetector` / `RmsEnvelope`.
+. [x] Imports `video.kernel.audio.*` dans `AudioEnvelopeExtractor`, `VoiceQuality`, `VoiceVerifier` et tests ; test local du détecteur supprimé (test N1).
+. [x] `video-kernel 0.6.0` (Central `9911e841`) + MEMPHIS `0.0.112` (Central `e8f32286`) ; capsule `video-kernel 0.6.0` + BOM `0.0.112`.
+. [x] Compiles ×3 + `validatePlugins` + `assemble` VERTS. **EPIC CAP-AUDIO-SILENCE TERMINÉ 2/2.**
 
 '''
 == ✅ S-209 — CAP-AUDIO-SILENCE US-1 (take muet)
@@ -11,7 +19,7 @@
 . [x] **Bug réel révélé par le TestKit** — `AudioEnvelopeExtractor` laissait `ffmpeg` refuser d'écraser le PCM temporaire (`exit 0`, fichier vide → `null`) → `-y` + assertion `AudioEnvelopeTest` ; vérifié sur MP3 silencieux réel (50 frames, peak 0.0).
 . [x] Tests — 7 unit `AudioSilenceDetectorTest` + 2 `VoiceQualityGateTest` + 4 `VoiceVerifierTest` + 2 scénarios `@voice-verify` + 1 TestKit (audio muet réel ffmpeg, skip-gardé). RED prouvé (19 erreurs `compileTestKotlin`).
 . [x] Compiles ×3 + `validatePlugins` + `assemble` VERTS ; hyperframes + video-kernel compilent (inchangés). **CI verte** : `Test` `41205458553` + `Full Tests` `41205459199` **25/25 jobs**. Zéro bump, zéro publication.
-. [ ] **US-2** — promotion N1 `video-kernel` (2 consommateurs capsule + hyperframes) : **accord pilote + publication Central requis** (Règle 2).
+. [x] **US-2** ✅ S-210 — promotion N1 `video-kernel` (2 consommateurs capsule + hyperframes) + adoption.
 
 '''
 == ✅ S-208 — Release `capsule-plugin 0.0.13`

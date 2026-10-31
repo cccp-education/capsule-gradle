@@ -2,6 +2,7 @@ package capsule.voice
 
 import capsule.ProcessRunner
 import java.io.File
+import video.kernel.audio.RmsEnvelope
 
 /**
  * I/O half of the SNR estimate (CAP-QC-VOICE US-2).
