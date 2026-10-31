@@ -45,6 +45,10 @@ Supprimer les copies locales `capsule.voice.AudioSilenceDetector` et
 
 BUILD SUCCESSFUL (les suites s'exécutent en CI).
 
+**CI** : `Test` `41214473820` ✅ + `Full Tests` `41214473586` ✅ **25/25 jobs**
+(dont `BDD · qc+voice`). Cross-borough : `video-kernel Test` `41214453154` ✅,
+MEMPHIS `runAllTests` `41214459791` ✅ 21/21, hyperframes `Test` `41214467362` ✅.
+
 == Effet
 
 Capsule et hyperframes consomment désormais **le même** détecteur de silence
