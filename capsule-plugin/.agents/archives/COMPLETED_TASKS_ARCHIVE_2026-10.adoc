@@ -1,6 +1,14 @@
 = COMPLETED_TASKS_ARCHIVE — Octobre 2026
 :date: 2026-10-17
 
+== Session 212 — Adoption `video-kernel 0.7.0` + youtube-auth + release `0.0.15` ✅
+
+* [x] Copies N2 de publication supprimées (N1 `video.kernel.publish.*`).
+* [x] `youtube-auth-plugin 0.0.2` adopté (`alias(libs.plugins.youtube.auth)`).
+* [x] `workspace-bom 0.0.115`, `video-kernel 0.7.0`, `capsule 0.0.15`.
+* [x] Central bundle `309d98c6-912f-4d30-afb6-dca517b4ec66`, propagation 200.
+* [x] Rapport `.agents/sessions/212-adoption-n1-youtube-auth-release-0.0.15.adoc`.
+
 == Session 207 — HF-YOUTUBE-PUBLISH US-4 (capsule) : BDD `@publish` + fonctionnel ✅
 
 * [x] `capsule_publish.feature` — 5 scénarios `@publish` (fake `HttpTransport`,

@@ -1,16 +1,16 @@
 package capsule.scenarios
 
 import capsule.adapter.youtube.CapsuleYouTubePublisherResolver
-import capsule.adapter.youtube.ChapterLineParser
-import capsule.adapter.youtube.HttpTransport
-import capsule.adapter.youtube.PublishHttpRequest
-import capsule.adapter.youtube.PublishHttpResponse
 import io.cucumber.java.After
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import java.io.File
 import java.nio.file.Files
+import video.kernel.publish.ChapterLineParser
+import video.kernel.publish.HttpTransport
+import video.kernel.publish.PublishHttpRequest
+import video.kernel.publish.PublishHttpResponse
 import video.kernel.publish.VideoPublication
 import video.kernel.publish.VideoPublicationResult
 import video.kernel.publish.VideoPublisher

@@ -1,39 +1,33 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 211
+:session: 213
 :borough: Détroit
-:session_precedente: 211 — **Release `capsule-plugin 0.0.14`** ✅
+:session_precedente: 212 — Adoption `video-kernel 0.7.0` + youtube-auth + release `0.0.15` ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
-== Session 211 (TERMINÉE) — Release `capsule-plugin 0.0.14`
+== Session 212 (TERMINÉE)
 
-Release DAG N0→N1→N2 (YouTube gelé) :
+* **PUBLISH-ADAPTER-N1 adopté** : `ChapterLineParser`, `YouTubeCredentials`
+  (+ loader), `YouTubePublishCommand` (sans Jackson), `DisabledVideoPublisher`,
+  seam HTTP déplacés au noyau `video-kernel 0.7.0` ; copies N2 supprimées.
+* **`youtube-auth-plugin 0.0.2` adopté** (`alias(libs.plugins.youtube.auth)`) —
+  upload YouTube toujours **gelé**.
+* **Release `capsule-plugin 0.0.15`** : `workspace-bom 0.0.115`,
+  `video-kernel 0.7.0` ; Central bundle `309d98c6`, propagation 200.
 
-* MEMPHIS `workspace-bom/catalog 0.0.113` (`455f513d`, propagation 200) ;
-* capsule re-pin BOM `0.0.113`, bump `0.0.13 → 0.0.14` ;
-* Central bundle **`ba697bda-5405-4add-9df5-66e4fab686fb`** (AUTOMATIC),
-  propagation repo1 200 (plugin + marker) ;
-* consommateur racine `capsule = 0.0.14`.
-
-Contenu depuis 0.0.13 : `CAP-AUDIO-SILENCE` US-1 (take muet indépendant de
-l'ASR) + US-2 (adoption `video-kernel.audio.*`) + fix `AudioEnvelopeExtractor`
-(`-y`). `video-kernel 0.6.0`.
-
-Gates locaux (Local = Build) : compiles ×3 + `publishToMavenLocal` VERTS.
-Rapport `.agents/sessions/211-release-0.0.14.adoc`.
+Rapport `.agents/sessions/212-adoption-n1-youtube-auth-release-0.0.15.adoc`.
 
 == État
 
-* `capsule-plugin 0.0.14` Central ; `video-kernel 0.6.0` ; BOM `0.0.113`.
+* `capsule-plugin 0.0.15` Central ; `video-kernel 0.7.0` ; BOM/catalog `0.0.115`.
 * **YouTube reste gelé** (décision pilote S-037).
-* `CAP-AUDIO-SILENCE` **TERMINÉ 2/2 US** ; aucun EPIC métier ouvert.
+* Aucun EPIC métier ouvert.
 
-== Mission Session 212 — au choix pilote
+== Mission Session 213 — au choix pilote
 
 . CI `Test` + `Full Tests` du commit de release.
-2. Dogfooding local (sans upload) : chrome/entrées + audio/sous-titres,
-   consommateur `/tmp`.
-3. Maintenance / repin éventuel.
-4. YouTube : ne pas rouvrir.
+. Dogfooding local (sans upload) : fond média / parallaxe hyperframes, audio.
+. Maintenance / repin éventuel.
+. YouTube : ne pas rouvrir.
 
 == Points d'attention
 
@@ -42,9 +36,3 @@ Rapport `.agents/sessions/211-release-0.0.14.adoc`.
 * **Règle 7** : capsule ne modifie jamais le deck source.
 * Zéro secret ; zéro Python ; English only code/tests/features.
 * Runner dédié par feature (S-082), steps préfixés (S-088), shards CI à jour.
-
-== Rappels
-
-* GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.14**.
-* `education.cccp:video-kernel:0.6.0` ; catalogue workspace `0.0.113`.
-* Doctrine de factorisation : **seuil `à 2`** (amendement S-195).

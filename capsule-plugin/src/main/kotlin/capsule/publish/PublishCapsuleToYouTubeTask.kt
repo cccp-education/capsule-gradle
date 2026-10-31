@@ -1,7 +1,6 @@
 package capsule.publish
 
 import capsule.adapter.youtube.CapsuleYouTubePublisherResolver
-import capsule.adapter.youtube.ChapterLineParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.File
 import org.gradle.api.DefaultTask
@@ -18,6 +17,7 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
+import video.kernel.publish.ChapterLineParser
 import video.kernel.publish.VideoDescriptionComposer
 import video.kernel.publish.VideoLink
 import video.kernel.publish.VideoLinks

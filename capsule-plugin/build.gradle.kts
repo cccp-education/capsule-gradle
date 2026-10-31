@@ -15,6 +15,7 @@ plugins {
     id("education.cccp.build.cucumber") version "0.0.7"
     alias(libs.plugins.kover)
     alias(libs.plugins.codebase)
+    alias(libs.plugins.youtube.auth)
 }
 
 group = "education.cccp"

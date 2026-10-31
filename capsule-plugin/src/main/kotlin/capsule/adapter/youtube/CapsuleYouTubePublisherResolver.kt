@@ -1,7 +1,10 @@
 package capsule.adapter.youtube
 
 import java.io.File
+import video.kernel.publish.DisabledVideoPublisher
+import video.kernel.publish.HttpTransport
 import video.kernel.publish.VideoPublisher
+import video.kernel.publish.YouTubeCredentialsLoader
 
 /**
  * Resolves the [VideoPublisher] for the capsule publish step

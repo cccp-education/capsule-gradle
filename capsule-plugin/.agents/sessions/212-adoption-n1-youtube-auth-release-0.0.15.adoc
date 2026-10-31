@@ -1,0 +1,42 @@
+= Session 212 — Adoption N1 + youtube-auth + release `capsule-plugin 0.0.15`
+:session: 212
+:date: 2026-10-31
+:borough: Détroit
+:epic: PUBLISH-ADAPTER-N1
+:statut: ✅ TERMINÉE
+
+== Mission
+
+. Adopter `video-kernel 0.7.0` (PUBLISH-ADAPTER-N1) : supprimer les copies N2
+  des briques de publication pures (identiques à hyperframes).
+. Adopter `youtube-auth-plugin 0.0.2`.
+. Publier `capsule-plugin 0.0.15`.
+
+== 1. Adoption PUBLISH-ADAPTER-N1
+
+Supprimés (désormais N1 `video.kernel.publish`) : `ChapterLineParser`,
+`YouTubeCredentials`, `YouTubeCredentialsLoader`, `YouTubePublishCommand`,
+`DisabledVideoPublisher`. `HttpTransport.kt` ne garde que `JdkHttpTransport`
+(N1 pour le seam et les DTO). `YouTubeDataApiPublisher`, le resolver et la tâche
+`publishCapsuleToYouTube` importent les types N1 ; steps BDD ré-alignés. Tests
+de commande/credentials/chapitres déplacés au noyau.
+
+== 2. Adoption youtube-auth
+
+`plugins { alias(libs.plugins.youtube.auth) }` + toml `youtube-auth = "0.0.2"`.
+YouTube (upload) reste gelé.
+
+== 3. Release `0.0.15`
+
+Bump `workspace-bom 0.0.113 → 0.0.115`, `capsule 0.0.14 → 0.0.15`,
+`video-kernel 0.6.0 → 0.7.0`. `assemble` / `validatePlugins` /
+`publishToMavenLocal` VERTS. Central bundle
+**`309d98c6-912f-4d30-afb6-dca517b4ec66`** (AUTOMATIC), propagation repo1 200
+(plugin + marker).
+
+== Fichiers
+
+* `src/main/kotlin/capsule/adapter/youtube/*` (suppressions + imports N1),
+  `src/main/kotlin/capsule/publish/PublishCapsuleToYouTubeTask.kt`.
+* `gradle/libs.versions.toml`, `build.gradle.kts`.
+* Tests/steps de publication ré-alignés.
