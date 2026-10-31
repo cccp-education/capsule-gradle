@@ -47,6 +47,10 @@ Publier la version consomatrice qui adopte le noyau audio partagé
 Central bundle `ba697bda-5405-4add-9df5-66e4fab686fb` (AUTOMATIC) ; propagation
 repo1 `capsule-plugin/0.0.14` HTTP 200 (après polling). YouTube reste gelé.
 
+**CI verte** : `Test` `41216985076` ✅ + `Full Tests` `41216985090` ✅ **25/25
+jobs**. Cross-borough : MEMPHIS `runAllTests` `41216979601` ✅ 21/21,
+hyperframes `Test` `41216989798` ✅.
+
 == Suite
 
 * CI `Test` + `Full Tests` sur le commit poussé.
