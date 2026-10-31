@@ -62,6 +62,7 @@ class AudioEnvelopeTest {
         val args = AudioEnvelopeExtractor.decodeArgs(audio, out, 16000, "ffmpeg")
 
         assertEquals("ffmpeg", args.first())
+        assertTrue("-y" in args, "ffmpeg must overwrite the temp PCM target (S-209 bug)")
         assertTrue(args.windowed(2).any { it == listOf("-ac", "1") })
         assertTrue(args.windowed(2).any { it == listOf("-ar", "16000") })
         assertTrue(args.windowed(2).any { it == listOf("-f", "s16le") })

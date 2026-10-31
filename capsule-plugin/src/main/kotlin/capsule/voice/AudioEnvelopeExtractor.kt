@@ -62,6 +62,10 @@ object AudioEnvelopeExtractor {
     ): List<String> = listOf(
         ffmpegPath,
         "-v", "error",
+        // The PCM target is a file created by `createTempFile`; without `-y`
+        // ffmpeg refuses to overwrite it, exits 0 with an empty file, and the
+        // caller silently degrades to "no envelope" (real bug caught by S-209).
+        "-y",
         "-i", audioFile.absolutePath,
         "-ac", "1",
         "-ar", sampleRate.toString(),
