@@ -32,6 +32,7 @@ class CapsuleVoiceVerificationSteps {
     private var transcript: String = ""
     private var recognitionFails: Boolean = false
     private var asrUnavailable: Boolean = false
+    private var envelope: DoubleArray? = null
     private var report: VoiceReport? = null
 
     private val candidates = mutableListOf<TakeVerification>()
@@ -64,16 +65,27 @@ class CapsuleVoiceVerificationSteps {
         asrUnavailable = true
     }
 
+    @Given("the voice verification audio envelope is silent")
+    fun theVoiceVerificationAudioEnvelopeIsSilent() {
+        envelope = DoubleArray(20) { 0.0 }
+    }
+
+    @Given("the voice verification audio envelope is audible")
+    fun theVoiceVerificationAudioEnvelopeIsAudible() {
+        envelope = DoubleArray(20) { 0.1 }
+    }
+
     @When("the voice verification runs")
     fun theVoiceVerificationRuns() {
         val thresholds = VoiceThresholds()
+        val envelopeProvider: (File) -> DoubleArray? = { envelope }
         report = if (asrUnavailable) {
-            VoiceVerifier.degraded(takes.toList(), thresholds)
+            VoiceVerifier.degraded(takes.toList(), thresholds, envelopeProvider = envelopeProvider)
         } else {
             val fake = SpeechRecognizer { _, _ ->
                 if (recognitionFails) throw SpeechRecognizerException("fake ASR failure") else transcript
             }
-            VoiceVerifier.verify(takes.toList(), fake, thresholds, "fr")
+            VoiceVerifier.verify(takes.toList(), fake, thresholds, "fr", envelopeProvider)
         }
     }
 

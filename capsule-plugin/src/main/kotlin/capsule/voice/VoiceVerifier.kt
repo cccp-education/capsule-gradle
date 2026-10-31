@@ -100,7 +100,11 @@ object VoiceVerifier {
             try {
                 val transcript = recognizer.transcribe(take.audioFile, language)
                 val score = FidelityScorer.score(take.expectedText, transcript)
-                val snr = envelopeProvider(take.audioFile)?.let { SnrEstimator.estimate(it) }
+                val envelope = runCatching { envelopeProvider(take.audioFile) }.getOrNull()
+                val silence = envelope?.let { AudioSilenceDetector.analyze(it) }
+                // A silent take has no meaningful SNR (the ratio is a log of zero);
+                // report the silence signal instead of a non-finite number.
+                val snr = if (silence?.isSilent == true) null else envelope?.let { SnrEstimator.estimate(it) }
                 TakeVerification(
                     deckName = take.deckName,
                     slideIndex = take.slideIndex,
@@ -110,7 +114,7 @@ object VoiceVerifier {
                     wordErrorRate = score.wordErrorRate,
                     surplus = score.surplus,
                     snrDb = snr,
-                    verdict = VoiceQualityGate.verdict(score, snr, thresholds),
+                    verdict = VoiceQualityGate.verdict(score, snr, thresholds, silence),
                 )
             } catch (e: Exception) {
                 TakeVerification(
@@ -130,16 +134,33 @@ object VoiceVerifier {
     }
 
     /**
-     * Builds the report of a run where the ASR is unavailable: every take is
-     * marked `Degraded` and **no** take is a failure — the QC is a signal, not
-     * a prerequisite (an explicit `strictMode` failure is the caller's call).
+     * Builds the report of a run where the ASR is unavailable: every non-silent
+     * take is marked `Degraded` — the QC is a signal, not a prerequisite (an
+     * explicit `strictMode` failure is the caller's call).
+     *
+     * Silence is **not** an ASR concern: when [envelopeProvider] yields a silent
+     * envelope, the take is a [VoiceVerdict.Fail] with
+     * [VoiceQualityGate.REASON_SILENT_AUDIO], even though the report stays
+     * `degraded = true` for the unverified fidelity half. The caller must check
+     * `hasFailure` before treating a degraded report as harmless.
+     *
+     * @param envelopeProvider per-frame RMS provider, or `null` when the
+     *        envelope cannot be extracted (the silence check is then skipped).
      */
     fun degraded(
         takes: List<VoiceTake>,
         thresholds: VoiceThresholds,
         reason: String = REASON_ASR_UNAVAILABLE,
+        envelopeProvider: (File) -> DoubleArray? = { null },
     ): VoiceReport {
         val results = takes.map { take ->
+            val envelope = runCatching { envelopeProvider(take.audioFile) }.getOrNull()
+            val silence = envelope?.let { AudioSilenceDetector.analyze(it) }
+            val verdict = if (silence?.isSilent == true) {
+                VoiceVerdict.Fail(listOf(VoiceQualityGate.REASON_SILENT_AUDIO))
+            } else {
+                VoiceVerdict.Degraded(reason)
+            }
             TakeVerification(
                 deckName = take.deckName,
                 slideIndex = take.slideIndex,
@@ -149,7 +170,7 @@ object VoiceVerifier {
                 wordErrorRate = null,
                 surplus = null,
                 snrDb = null,
-                verdict = VoiceVerdict.Degraded(reason),
+                verdict = verdict,
             )
         }
         return VoiceReport(degraded = true, takes = results, thresholds = thresholds)

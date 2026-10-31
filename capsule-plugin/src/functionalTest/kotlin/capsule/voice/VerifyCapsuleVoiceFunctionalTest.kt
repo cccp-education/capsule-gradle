@@ -1,10 +1,12 @@
 package capsule.voice
 
 import java.io.File
+import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 import kotlin.test.assertTrue
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Assumptions.assumeFalse
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.io.TempDir
 
 /**
@@ -108,6 +110,57 @@ class VerifyCapsuleVoiceFunctionalTest {
         System.getenv("PATH")?.split(File.pathSeparator).orEmpty().any { entry ->
             File(entry, "whisper").let { it.isFile && it.canExecute() }
         }
+
+    private fun ffmpegOnPath(): Boolean =
+        System.getenv("PATH")?.split(File.pathSeparator).orEmpty().any { entry ->
+            File(entry, "ffmpeg").let { it.isFile && it.canExecute() }
+        }
+
+    /** Overwrites `slide-01.mp3` with a real one second of digital silence. */
+    private fun writeScriptAndSilentAudio() {
+        writeScriptAndAudio()
+        val audio = projectDir.resolve("build/capsule/demo/slide-01.mp3")
+        val process = ProcessBuilder(
+            "ffmpeg", "-v", "error", "-y",
+            "-f", "lavfi", "-i", "anullsrc=r=16000:cl=mono",
+            "-t", "1", "-q:a", "9", audio.absolutePath,
+        ).redirectErrorStream(true).start()
+        val finished = process.waitFor(60, TimeUnit.SECONDS)
+        assumeTrue(finished && process.exitValue() == 0) {
+            "ffmpeg could not produce a silent mp3 (encoder unavailable) — silence detection not exercised here"
+        }
+    }
+
+    @Test
+    fun `enabled with a silent take fails even when the ASR is unavailable`() {
+        assumeTrue(ffmpegOnPath()) {
+            "ffmpeg is required to produce a real silent take — silence detection not exercised here"
+        }
+        setupBuild(
+            """
+            capsule {
+                voiceVerifyEnabled = true
+                voiceAsrExecutablePath = "definitely-not-a-real-asr"
+            }
+            """.trimIndent()
+        )
+        writeScriptAndSilentAudio()
+
+        val result = GradleRunner.create()
+            .forwardOutput()
+            .withPluginClasspath()
+            .withArguments("verifyCapsuleVoice")
+            .withProjectDir(projectDir)
+            .buildAndFail()
+
+        assertTrue(
+            result.output.contains("silent-audio") || result.output.contains("Voice verification failed"),
+            "Expected a silent-audio failure, got: ${result.output}"
+        )
+        val report = projectDir.resolve("build/capsule/voice-report.json")
+        assertTrue(report.isFile, "Expected the voice report to be written")
+        assertTrue(report.readText().contains("silent-audio"), "Expected silent-audio in the report")
+    }
 
     @Test
     fun `enabled with an unavailable ASR degrades without failing`() {

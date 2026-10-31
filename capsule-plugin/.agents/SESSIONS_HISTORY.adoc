@@ -1,13 +1,15 @@
 = SESSIONS_HISTORY — capsule-gradle
 
 _Date creation_ : 2026-05-14
-_Derniere rotation_ : 2026-10-17 (S-207) — BDD `@publish` capsule + couverture fonctionnelle (HF-YOUTUBE-PUBLISH US-4). Rapports détaillés dans `.agents/sessions/`.
+_Derniere rotation_ : 2026-10-31 (S-209) — CAP-AUDIO-SILENCE US-1 (take muet). Rapports détaillés dans `.agents/sessions/`.
 
-== Sessions récentes (126-207)
+== Sessions récentes (126-209)
 
 [cols="1,1,1,3,1"]
 |===
 |# |Date |Type |Sujet |Score
+
+| 209 | 2026-10-31 | feat+test | **CAP-AUDIO-SILENCE US-1 — détection d'un take muet indépendante de l'ASR.** Domaine pur `AudioSilenceDetector` + `SilenceAnalysis` (pic RMS, seuil `0.001`, envelope vide = silence, `silentFraction` diagnostique) ; `VoiceQualityGate.REASON_SILENT_AUDIO` + paramètre `silence` ; `VoiceVerifier.verify` réutilise l'enveloppe (SNR + silence) et `degraded` accepte un `envelopeProvider` (take muet → `Fail(["silent-audio"])`, rapport toujours `degraded`) ; `VerifyCapsuleVoiceTask` vérifie `hasFailure` **avant** le retour dégradé et n'émet plus `-Infinity`. Baby-step DDD/TDD/BDD : 7 unit `AudioSilenceDetectorTest` + 2 `VoiceQualityGateTest` + 4 `VoiceVerifierTest` + 2 scénarios `@voice-verify` + 1 TestKit (audio muet réel ffmpeg, skip-gardé). RED prouvé (19 erreurs `compileTestKotlin`). Compiles ×3 + `validatePlugins` + `assemble` VERTS ; cross-borough hyperframes + video-kernel compilent. Zéro bump, zéro publication, zéro secret. Rapport `.agents/sessions/209-cap-audio-silence.adoc`. | 9/10
 
 | 207 | 2026-10-17 | feat+test | **HF-YOUTUBE-PUBLISH US-4 (capsule) — BDD `@publish` + couverture fonctionnelle.** Baby-step DDD/TDD/BDD. `capsule_publish.feature` 5 scénarios (transport factice, zéro réseau) : publication réussie (URL `https://youtu.be/VID`), credentials incomplets → `Degraded` **sans requête**, jeton refusé → `Failed`, désactivé → `Degraded` sans requête, plateforme non supportée → `Degraded` sans requête. `CapsulePublishSteps` préfixés `capsule publish` (bug S-088) + runner dédié `CapsulePublishCucumberRunner` (pattern S-082) + `CucumberTaskSpec("cucumberTestPublish")` + rattachement shard `media` (garde `CapsuleCucumberShardCoverageTest`). `PublishCapsuleToYouTubeFunctionalTest` (TestKit hermétique, 3 tests : groupe deploy, skipped par défaut, degraded sans credentials) rattaché au shard `Functional · media`. `youtube_example.yaml` + garde secrets `.gitignore` (`youtube.yaml`, `client_secret_*.json`). **Bug réel corrigé** (révélé par le TestKit en CI) : les registrars appelaient `CapsuleConfigMerger.merge(...)` sans `yamlLoaded` → un YAML absent laissait ses défauts (`publish.enabled=false`) masquer `gradle.properties` ; 2 call sites corrigés + 2 tests `CapsuleConfigMergerTest` (`NoYaml` props + CLI override `publish`). Compiles ×3 VERTS (Local = Build) ; **CI verte** (run `40199925941`, `Functional · media` 3/3 + BDD `media` PASSED). **Reste** : dogfooding réel (accord pilote), EPIC `PUBLISH-ADAPTER-N1`, release `0.0.13`. Rapport `.agents/sessions/207-hf-youtube-publish-us4-bdd-capsule.adoc`. | 9/10
 
@@ -214,3 +216,17 @@ propagation repo1 200) → capsule re-pin `workspace-bom 0.0.96 → 0.0.107`, bu
 repo1 200 (plugin + marker). Consommateur racine `capsule = 0.0.13`. Contenu :
 US-3a/3b/4 `HF-YOUTUBE-PUBLISH` + fix précédence 4 sources. YouTube reste gelé.
 Rapport `.agents/sessions/208-release-0.0.13.adoc`.
+
+== Session 209 (2026-10-31) — CAP-AUDIO-SILENCE US-1 (take muet)
+
+Un take **muet** (NoOp TTS, export audio cassé) échoue désormais
+`verifyCapsuleVoice` avec `silent-audio`, **même sans ASR**. Domaine pur
+`AudioSilenceDetector` + `SilenceAnalysis` (pic RMS, seuil `0.001`, envelope
+vide = silence) ; `VoiceQualityGate.REASON_SILENT_AUDIO` ; `VoiceVerifier`
+(enveloppe partagée SNR + silence, `degraded` accepte `envelopeProvider`) ;
+`VerifyCapsuleVoiceTask` (échec `silent-audio` avant le retour dégradé,
+`snrDb = null` sur silence). Tests : 7 unit + 2 gate + 4 verifier + 2 scénarios
+`@voice-verify` + 1 TestKit (audio muet réel ffmpeg, skip-gardé). RED prouvé
+(19 erreurs `compileTestKotlin`). Compiles ×3 + `validatePlugins` + `assemble`
+VERTS ; hyperframes + video-kernel compilent (inchangés). Zéro bump, zéro
+publication, zéro secret. Rapport `.agents/sessions/209-cap-audio-silence.adoc`.

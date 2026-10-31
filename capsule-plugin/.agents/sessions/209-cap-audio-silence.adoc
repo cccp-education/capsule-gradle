@@ -1,0 +1,133 @@
+= Session 209 — CAP-AUDIO-SILENCE US-1 — détection d'un take silencieux
+:session: 209
+:date: 2026-10-31
+:borough: Détroit (capsule-gradle)
+:status: ✅ TERMINÉE
+:pattern: baby-step DDD/TDD/BDD (unit → functional → cucumber)
+:scope: capsule — hyperframes/video-kernel vérifiés en compilation, inchangés
+
+== Mission
+
+Le pipeline vidéo peut produire un MP3 **techniquement valide mais muet**
+(NoOp TTS, export audio cassé, mauvais fichier). Le QC voix existant
+(`verifyCapsuleVoice`) ne détectait ce cas que via l'ASR : sans ASR, le rapport
+restait `degraded` et le take muet passait. US-1 ajoute une détection de
+silence **indépendante de l'ASR**, sur l'enveloppe RMS déjà extraite par
+`AudioEnvelopeExtractor`.
+
+== Constat (audit)
+
+* `VoiceVerifier.degraded(...)` marquait **tous** les takes `Degraded` — un
+  audio muet n'était jamais un échec sans ASR.
+* `VoiceQualityGate` ne connaissait que WER / surplus / SNR ;
+  `AudioEnvelopeExtractor` + `RmsEnvelope` existaient déjà (US-2) mais
+  l'enveloppe n'était exploitée que pour le SNR.
+* Un audio muet produit un `snrDb = -Infinity` (log de zéro) : signal non
+  fini, inutilisable comme verdict exploitable.
+
+== Décisions
+
+. **DDD — domaine pur** : `capsule.voice.AudioSilenceDetector` +
+   `SilenceAnalysis` (aucun I/O, aucun ASR, aucun ffmpeg).
+. **Détection sur le pic RMS**, pas sur la fraction silencieuse : une narration
+   normale contient des pauses ; seul l'absence totale de signal (ou un
+   envelope vide) est un silence. `silentFraction` reste exposé pour le
+   diagnostic.
+. **Seuil** `0.001` RMS normalisé (~-60 dBFS), constante du domaine
+   (`DEFAULT_RMS_THRESHOLD`). Pas de nouvelle source de config pour cette US.
+. **Indépendance ASR** : `VoiceVerifier.degraded` accepte désormais un
+   `envelopeProvider` ; un take muet devient `Fail(["silent-audio"])` même si
+   l'ASR est absent. Le rapport reste `degraded = true` pour la moitié fidélité
+   non vérifiée.
+. **Ordre des gates** : `VerifyCapsuleVoiceTask` vérifie `hasFailure` **avant**
+   le retour dégradé — un défaut de contenu (silence) ne peut pas être masqué
+   par l'absence d'ASR.
+. **Pas de publication / pas de bump** : US additive et rétro-compatible ;
+   `silent-audio` n'apparaît que lorsque l'enveloppe est disponible.
+. **N1 non modifié** : promouvoir `AudioSilenceDetector` dans `video-kernel`
+   exigerait une publication Central (Règle 2) ; hyperframes expose déjà
+   `film_silent` côté CLI. La factorisation N1 reste un candidat ultérieur.
+
+== Baby-step DDD/TDD/BDD
+
+=== RED (preuve)
+
+Tests écrits avant le code :
+
+* `src/test/kotlin/capsule/voice/AudioSilenceDetectorTest.kt` (7 tests) ;
+* `VoiceQualityGateTest` (+2 : silence, absence d'analyse) ;
+* `VoiceVerifierTest` (+4 : silence avec ASR, dégradé + silence, dégradé +
+  audible, dégradé + enveloppe indisponible) ;
+* `capsule_voice_verification.feature` (+2 scénarios `@voice-verify`) ;
+* `VerifyCapsuleVoiceFunctionalTest` (+1 TestKit, audio muet réel ffmpeg).
+
+Preuve RED : `compileTestKotlin` → 19 erreurs (`Unresolved reference
+'AudioSilenceDetector'`, `'REASON_SILENT_AUDIO'`, `No parameter with name
+'envelopeProvider'/'silence'`).
+
+=== GREEN (production)
+
+* `AudioSilenceDetector.kt` : `SilenceAnalysis` (invariants, `silentFraction`,
+  `isSilent`) + `analyze(frames, threshold)` pur.
+* `VoiceQuality.kt` : `REASON_SILENT_AUDIO`, paramètre `silence` optionnel de
+  `VoiceQualityGate.verdict`.
+* `VoiceVerifier.kt` : analyse d'enveloppe réutilisée pour SNR + silence ;
+  `degraded(..., envelopeProvider)` ; `snrDb = null` sur silence (zéro
+  `-Infinity`).
+* `VerifyCapsuleVoiceTask.kt` : `degraded` reçoit l'enveloppe ; échec sur
+  `silent-audio` avant le retour dégradé ; message d'échec enrichi des
+  `reasons`.
+* Steps Cucumber : `audio envelope is silent/audible` + provider injecté.
+
+=== REFACTOR / gates locaux (Local = Build)
+
+[source,shell]
+----
+./gradlew compileKotlin compileTestKotlin compileFunctionalTestKotlin
+./gradlew validatePlugins assemble
+----
+
+Résultat : **BUILD SUCCESSFUL** (compiles ×3, `validatePlugins`, `assemble`).
+Aucune suite exécutée localement (règle EAGER Local = Build, Tests = CI).
+
+=== Preuve cross-borough (compilation seule)
+
+|===
+| Borough | Commande | Résultat
+| capsule | `compileKotlin compileTestKotlin compileFunctionalTestKotlin` | ✅
+| hyperframes | `compileKotlin compileTestKotlin compileFunctionalTestKotlin` | ✅
+| video-kernel | `compileKotlin compileTestKotlin` | ✅
+|===
+
+== Fichiers
+
+[cols="1,3", options="header"]
+|===
+| Fichier | Nature
+| `src/main/kotlin/capsule/voice/AudioSilenceDetector.kt` | créé
+| `src/main/kotlin/capsule/voice/VoiceQuality.kt` | modifié (raison + param)
+| `src/main/kotlin/capsule/voice/VoiceVerifier.kt` | modifié (enveloppe + dégradé)
+| `src/main/kotlin/capsule/voice/VerifyCapsuleVoiceTask.kt` | modifié (ordre des gates)
+| `src/test/kotlin/capsule/voice/AudioSilenceDetectorTest.kt` | créé (7 unit)
+| `src/test/kotlin/capsule/voice/VoiceQualityGateTest.kt` | modifié (+2)
+| `src/test/kotlin/capsule/voice/VoiceVerifierTest.kt` | modifié (+4)
+| `src/test/features/capsule_voice_verification.feature` | modifié (+2 scénarios)
+| `src/test/kotlin/capsule/scenarios/CapsuleVoiceVerificationSteps.kt` | modifié (steps)
+| `src/functionalTest/kotlin/capsule/voice/VerifyCapsuleVoiceFunctionalTest.kt` | modifié (+1 TestKit)
+|===
+
+== Effet produit
+
+Un capsule muette échoue désormais `verifyCapsuleVoice` (opt-in) avec
+`silent-audio`, **même sans ASR**. Le rapport JSON expose la raison ; le seuil
+reste le défaut du domaine. C'est une garde de contenu, pas un prérequis de
+`check` (la tâche reste opt-in via `voice.verifyEnabled`).
+
+== Suite
+
+* CI : exécuter `Full Tests` sur le commit poussé ; le job BDD `voice-verify`
+  et le shard functional `voice` portent les nouveaux tests.
+* Candidat US-2 : promouvoir `AudioSilenceDetector` en N1 `video-kernel`
+  (2 consommateurs capsule + hyperframes) — **accord pilote + publication
+  Central requis**.
+* Ne pas rouvrir YouTube (gel S-037).

@@ -78,6 +78,9 @@ object VoiceQualityGate {
     /** Reason code: the reference is non-empty but nothing was transcribed. */
     const val REASON_EMPTY_TRANSCRIPTION: String = "empty-transcription"
 
+    /** Reason code: the take carries no audible signal (mute audio). */
+    const val REASON_SILENT_AUDIO: String = "silent-audio"
+
     /**
      * Decides the verdict of a scored take.
      *
@@ -85,10 +88,17 @@ object VoiceQualityGate {
      * @param snrDb      the estimated SNR in dB, or `null` when the envelope was
      *                   not available (the SNR check is then skipped).
      * @param thresholds the acceptance thresholds.
+     * @param silence    the optional RMS-envelope silence analysis. `null` skips
+     *                   the silence check (envelope unavailable).
      * @return [VoiceVerdict.Pass] when every available check holds,
      *         [VoiceVerdict.Fail] with the breached reason codes otherwise.
      */
-    fun verdict(score: VoiceScore, snrDb: Double?, thresholds: VoiceThresholds): VoiceVerdict {
+    fun verdict(
+        score: VoiceScore,
+        snrDb: Double?,
+        thresholds: VoiceThresholds,
+        silence: SilenceAnalysis? = null,
+    ): VoiceVerdict {
         val reasons = mutableListOf<String>()
         if (score.referenceWordCount > 0 && score.hypothesisWordCount == 0) {
             reasons += REASON_EMPTY_TRANSCRIPTION
@@ -101,6 +111,9 @@ object VoiceQualityGate {
         }
         if (snrDb != null && snrDb < thresholds.minSnrDb) {
             reasons += REASON_SNR
+        }
+        if (silence?.isSilent == true) {
+            reasons += REASON_SILENT_AUDIO
         }
         return if (reasons.isEmpty()) VoiceVerdict.Pass else VoiceVerdict.Fail(reasons)
     }

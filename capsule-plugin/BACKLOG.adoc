@@ -1,6 +1,29 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-26 (S-208 — Release `capsule-plugin 0.0.13` : US-3a/3b/4 + fix précédence 4 sources. YouTube gelé.)
+:last_update: 2026-10-31 (S-209 — CAP-AUDIO-SILENCE US-1 : détection d'un take muet indépendante de l'ASR. YouTube gelé.)
+
+'''
+== ✅ EPIC CAP-AUDIO-SILENCE — US-1 take muet (S-209)
+
+_Déclencheur_ : un take `slide-NN.mp3` peut être techniquement valide mais
+**muet** (NoOp TTS, export audio cassé, mauvais fichier). Le QC voix ne le
+détectait que via l'ASR ; sans ASR le rapport restait `degraded` et le take
+muet passait.
+
+[cols="1,3,1", options="header"]
+|===
+| US | Livrable | Statut
+| US-1 | Domaine pur `capsule.voice.AudioSilenceDetector` + `SilenceAnalysis` (pic RMS, seuil `0.001`, envelope vide = silence, `silentFraction` diagnostique) ; `VoiceQualityGate.REASON_SILENT_AUDIO` + paramètre `silence` ; `VoiceVerifier` (enveloppe partagée SNR + silence, `degraded` accepte `envelopeProvider`) ; `VerifyCapsuleVoiceTask` (échec `silent-audio` **avant** le retour dégradé, `snrDb = null` sur silence). 7 unit + 2 gate + 4 verifier + 2 scénarios `@voice-verify` + 1 TestKit (audio muet réel ffmpeg, skip-gardé). | ✅ S-209
+| US-2 | Promotion N1 `video-kernel` (2 consommateurs capsule + hyperframes) — **accord pilote + publication Central requis** (Règle 2). | 🟡 À PLANIFIER
+|===
+
+_Constat_ : `AudioEnvelopeExtractor`/`RmsEnvelope` existaient déjà (US-2 voix)
+mais l'enveloppe n'était exploitée que pour le SNR. Un audio muet produisait
+`snrDb = -Infinity` (log de zéro) — désormais `null` + raison `silent-audio`.
+La tâche reste **opt-in** (`voice.verifyEnabled`) : c'est une garde de contenu,
+pas un prérequis de `check`.
+
+_Rapport_ : `.agents/sessions/209-cap-audio-silence.adoc`.
 
 '''
 == ✅ Release `capsule-plugin 0.0.13` — Maven Central (S-208)
@@ -913,6 +936,7 @@ Rapports par US dans `.agents/sessions/`._
 | CAP-ANIM | Remotion capture strategy | 3 | ✅ TERMINÉ (S-122)
 | CAP-PODCAST | Extraction audio-only podcast MP3 | 3 | ✅ TERMINÉ (S-127)
 | CAP-PREVIEW | Mode dry-run previewOnly | 3 | ✅ TERMINÉ (S-128)
+| CAP-AUDIO-SILENCE | Détection d'un take muet indépendante de l'ASR (US-1) | 1/2 | ✅ S-209 (US-2 promotion N1 à planifier)
 | SLD-11 | Expulsion slider.capsule → capsule.feed | 6 | ✅ TERMINÉ (S-058)
 | CAP-MAINT-PIPELINE | Robustesse pipeline processus + rendus Manim + sync anim Remotion (PR #2) | 6 | ✅ TERMINÉ (S-131)
 | CAP-ANIM-TEST | Couverture timing JS Remotion (`Capsule.jsx`) — `RemotionTiming` | 6 | ✅ TERMINÉ (S-132)

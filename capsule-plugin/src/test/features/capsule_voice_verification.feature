@@ -35,6 +35,23 @@ Feature: Voice quality verification (CAP-QC-VOICE US-2)
     And the voice verification is degraded
     And the voice verification take 1 is DEGRADED
 
+  Scenario: A silent take fails even when the ASR is unavailable
+    Given a voice verification take 1 expecting "bonjour le monde"
+    And the voice verification audio envelope is silent
+    And the voice recognition is unavailable
+    When the voice verification runs
+    Then the voice verification has 1 failure
+    And the voice verification report lists reason "silent-audio"
+    And the voice verification is degraded
+
+  Scenario: An audible take with an unavailable ASR remains degraded
+    Given a voice verification take 1 expecting "bonjour le monde"
+    And the voice verification audio envelope is audible
+    And the voice recognition is unavailable
+    When the voice verification runs
+    Then the voice verification has no failure
+    And the voice verification take 1 is DEGRADED
+
   Scenario: The best take is selected among a slide's candidates
     Given a voice verification candidate 1 named "slide-01-1.mp3" expecting "le chat noir" transcribed "le chat noir"
     And a voice verification candidate 1 named "slide-01-2.mp3" expecting "le chat noir" transcribed "le chien blanc"

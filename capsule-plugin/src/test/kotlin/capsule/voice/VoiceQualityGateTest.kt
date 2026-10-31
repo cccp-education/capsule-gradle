@@ -55,6 +55,26 @@ class VoiceQualityGateTest {
     }
 
     @Test
+    fun `a silent envelope fails with a silent-audio reason`() {
+        val verdict = VoiceQualityGate.verdict(
+            score("bonjour", "bonjour"),
+            70.0,
+            thresholds,
+            silence = AudioSilenceDetector.analyze(DoubleArray(20) { 0.0 }),
+        )
+
+        assertTrue(verdict is VoiceVerdict.Fail)
+        assertTrue(VoiceQualityGate.REASON_SILENT_AUDIO in verdict.reasons)
+    }
+
+    @Test
+    fun `a missing silence analysis skips the silence check`() {
+        val verdict = VoiceQualityGate.verdict(score("bonjour le monde", "bonjour le monde"), 70.0, thresholds)
+
+        assertEquals(VoiceVerdict.Pass, verdict)
+    }
+
+    @Test
     fun `a fail collects every breached reason`() {
         val verdict = VoiceQualityGate.verdict(score("a b c", "x y z w v u"), 20.0, thresholds)
         assertTrue(verdict is VoiceVerdict.Fail)

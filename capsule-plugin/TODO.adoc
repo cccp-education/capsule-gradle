@@ -1,5 +1,16 @@
 = TODO — capsule-gradle (Détroit)
-:last_update: 2026-10-26 (S-208 — **release `capsule-plugin 0.0.13`** (US-3a/3b/4 + fix précédence 4 sources ; YouTube gelé).)
+:last_update: 2026-10-31 (S-209 — **CAP-AUDIO-SILENCE US-1** : take muet détecté indépendamment de l'ASR ; YouTube gelé.)
+
+'''
+== ✅ S-209 — CAP-AUDIO-SILENCE US-1 (take muet)
+
+. [x] Domaine pur `AudioSilenceDetector` + `SilenceAnalysis` (pic RMS, seuil `0.001`, envelope vide = silence, `silentFraction` diagnostique).
+. [x] `VoiceQualityGate.REASON_SILENT_AUDIO` + paramètre `silence` optionnel.
+. [x] `VoiceVerifier` — enveloppe partagée SNR + silence ; `degraded` accepte `envelopeProvider` (take muet → `Fail(["silent-audio"])`, rapport toujours `degraded`) ; `snrDb = null` sur silence.
+. [x] `VerifyCapsuleVoiceTask` — `hasFailure` évalué **avant** le retour dégradé ; message enrichi des `reasons`.
+. [x] Tests — 7 unit `AudioSilenceDetectorTest` + 2 `VoiceQualityGateTest` + 4 `VoiceVerifierTest` + 2 scénarios `@voice-verify` + 1 TestKit (audio muet réel ffmpeg, skip-gardé). RED prouvé (19 erreurs `compileTestKotlin`).
+. [x] Compiles ×3 + `validatePlugins` + `assemble` VERTS ; hyperframes + video-kernel compilent (inchangés). Zéro bump, zéro publication.
+. [ ] **US-2** — promotion N1 `video-kernel` (2 consommateurs capsule + hyperframes) : **accord pilote + publication Central requis** (Règle 2).
 
 '''
 == ✅ S-208 — Release `capsule-plugin 0.0.13`

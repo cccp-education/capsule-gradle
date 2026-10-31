@@ -907,3 +907,22 @@ Zéro code modifié. Gouvernance : rapport `.agents/sessions/138-cap-viral-cadra
 * Bootstrap self-application codebase résolu (split-ref `codebase-gradle-plugin`).
 * Gates : compiles ×3 VERTS (Local = Build). Zéro bump capsule (0.0.10), zéro secret.
 * Rapport `.agents/sessions/200-koog-pipeline-dedup-bs2-adoption.adoc`.
+
+== S-209 — CAP-AUDIO-SILENCE US-1 : take muet ✅
+
+* Domaine pur `capsule.voice.AudioSilenceDetector` + `SilenceAnalysis` : détection
+  d'un take sans signal (pic RMS, seuil `0.001`, envelope vide = silence),
+  `silentFraction` diagnostique.
+* `VoiceQualityGate.REASON_SILENT_AUDIO` + paramètre `silence` optionnel.
+* `VoiceVerifier` : enveloppe partagée SNR + silence ; `degraded` accepte
+  `envelopeProvider` (take muet → `Fail(["silent-audio"])`, rapport toujours
+  `degraded`) ; `snrDb = null` sur silence (fin de `-Infinity`).
+* `VerifyCapsuleVoiceTask` : `hasFailure` évalué **avant** le retour dégradé ;
+  message d'échec enrichi des `reasons`.
+* Tests : 7 unit `AudioSilenceDetectorTest` + 2 gate + 4 verifier + 2 scénarios
+  `@voice-verify` + 1 TestKit (audio muet réel ffmpeg, skip-gardé). RED prouvé
+  (19 erreurs `compileTestKotlin`).
+* Gates locaux : compiles ×3 + `validatePlugins` + `assemble` VERTS
+  (Local = Build). Cross-borough hyperframes + video-kernel compilent.
+* Zéro bump, zéro publication, zéro secret.
+* Rapport `.agents/sessions/209-cap-audio-silence.adoc`.

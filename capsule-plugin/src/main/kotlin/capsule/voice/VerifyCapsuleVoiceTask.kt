@@ -131,10 +131,34 @@ abstract class VerifyCapsuleVoiceTask : DefaultTask() {
         val report = if (asrAvailable) {
             VoiceVerifier.verify(takes, recognizer, thresholds, language.get(), envelope)
         } else {
-            VoiceVerifier.degraded(takes, thresholds)
+            VoiceVerifier.degraded(takes, thresholds, envelopeProvider = envelope)
         }
 
         writeReport(report)
+
+        // Silence is a content defect, not an ASR concern: a mute take must fail
+        // even when the recogniser is unavailable (the report stays `degraded`
+        // for the unverified fidelity half).
+        if (report.hasFailure) {
+            report.failures.forEach { failure ->
+                val verdict = failure.verdict as VoiceVerdict.Fail
+                logger.error(
+                    "CAPSULE VOICE → FAIL {} slide {} [{}]: {}",
+                    failure.deckName,
+                    failure.slideIndex,
+                    verdict.reasons.joinToString(","),
+                    failure.audioFile,
+                )
+            }
+            val reasons = report.failures
+                .flatMap { (it.verdict as VoiceVerdict.Fail).reasons }
+                .distinct()
+            throw GradleException(
+                "Voice verification failed: ${report.failures.size} take(s) above threshold " +
+                    "(reasons=$reasons, maxWordErrorRate=${thresholds.maxWordErrorRate}, " +
+                    "minSnrDb=${thresholds.minSnrDb}, surplusThreshold=${thresholds.surplusThreshold})."
+            )
+        }
 
         if (report.degraded) {
             logger.warn(
@@ -156,24 +180,6 @@ abstract class VerifyCapsuleVoiceTask : DefaultTask() {
             report.failures.size,
             reportFile.asFile.get().absolutePath,
         )
-
-        if (report.hasFailure) {
-            report.failures.forEach { failure ->
-                val verdict = failure.verdict as VoiceVerdict.Fail
-                logger.error(
-                    "CAPSULE VOICE → FAIL {} slide {} [{}]: {}",
-                    failure.deckName,
-                    failure.slideIndex,
-                    verdict.reasons.joinToString(","),
-                    failure.audioFile,
-                )
-            }
-            throw GradleException(
-                "Voice verification failed: ${report.failures.size} take(s) above threshold " +
-                    "(maxWordErrorRate=${thresholds.maxWordErrorRate}, minSnrDb=${thresholds.minSnrDb}, " +
-                    "surplusThreshold=${thresholds.surplusThreshold})."
-            )
-        }
     }
 
     /** Resolves the takes from the capsule scripts and the produced MP3s. */

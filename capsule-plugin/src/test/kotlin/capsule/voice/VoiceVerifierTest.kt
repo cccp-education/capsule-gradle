@@ -69,6 +69,64 @@ class VoiceVerifierTest {
     }
 
     @Test
+    fun `a silent envelope fails the take even when the ASR succeeds`() {
+        val fake = SpeechRecognizer { _, _ -> "bonjour" }
+        val report = VoiceVerifier.verify(
+            listOf(take(1, "bonjour")),
+            fake,
+            thresholds,
+            "fr",
+            envelopeProvider = { DoubleArray(10) { 0.0 } },
+        )
+
+        assertTrue(report.hasFailure)
+        val verdict = report.takes.single().verdict
+        assertTrue(verdict is VoiceVerdict.Fail)
+        assertTrue(VoiceQualityGate.REASON_SILENT_AUDIO in verdict.reasons)
+    }
+
+    @Test
+    fun `degraded with a silent envelope reports a silent failure`() {
+        val report = VoiceVerifier.degraded(
+            listOf(take(1, "bonjour")),
+            thresholds,
+            envelopeProvider = { DoubleArray(10) { 0.0 } },
+        )
+
+        assertTrue(report.degraded)
+        assertTrue(report.hasFailure)
+        assertEquals(
+            VoiceVerdict.Fail(listOf(VoiceQualityGate.REASON_SILENT_AUDIO)),
+            report.takes.single().verdict,
+        )
+    }
+
+    @Test
+    fun `degraded with an audible envelope remains degraded without failure`() {
+        val report = VoiceVerifier.degraded(
+            listOf(take(1, "bonjour")),
+            thresholds,
+            envelopeProvider = { DoubleArray(10) { 0.1 } },
+        )
+
+        assertTrue(report.degraded)
+        assertFalse(report.hasFailure)
+        assertTrue(report.takes.single().verdict is VoiceVerdict.Degraded)
+    }
+
+    @Test
+    fun `degraded with an unavailable envelope remains degraded without failure`() {
+        val report = VoiceVerifier.degraded(
+            listOf(take(1, "bonjour")),
+            thresholds,
+            envelopeProvider = { null },
+        )
+
+        assertTrue(report.degraded)
+        assertFalse(report.hasFailure)
+    }
+
+    @Test
     fun `the degraded factory marks every take degraded without a failure`() {
         val report = VoiceVerifier.degraded(listOf(take(1, "a"), take(2, "b")), thresholds)
 

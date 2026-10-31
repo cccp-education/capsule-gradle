@@ -1,42 +1,57 @@
 = PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 208
+:session: 209
 :borough: Détroit
-:session_precedente: 208 — **Release `capsule-plugin 0.0.13`** ✅
+:session_precedente: 209 — **CAP-AUDIO-SILENCE US-1** ✅ (détection d'un take muet)
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
-_littérature_ : `CADRAGE_EPIC_CAP_DECOMPOSE` (✅), `CADRAGE_EPIC_VK_SHARED_PORTS` (✅),
-`CADRAGE_EPIC_KOOG_PIPELINE_DEDUP` (✅).
 
-== Session 208 (TERMINÉE) — Release `capsule-plugin 0.0.13`
+== Session 209 (TERMINÉE) — CAP-AUDIO-SILENCE US-1
 
-Release DAG N0→N2 : MEMPHIS BOM/catalog `0.0.106 → 0.0.107` (bundle
-`c572e214`, propagation repo1 200) → capsule re-pin `workspace-bom 0.0.96 →
-0.0.107`, bump `capsule 0.0.12 → 0.0.13` → **Central bundle `ab765133`**
-(AUTOMATIC), propagation repo1 200 (plugin + marker). Consommateur racine
-`capsule = 0.0.13`. Rapport `.agents/sessions/208-release-0.0.13.adoc`.
+Un take **muet** (NoOp TTS, export audio cassé) échoue désormais
+`verifyCapsuleVoice` avec `silent-audio`, **même sans ASR** — la détection est
+indépendante du recogniser.
 
-Contenu depuis `0.0.12` : US-3a (modèle neutre `video-kernel 0.5.0`), US-3b
-(adaptateur `capsule.adapter.youtube` + tâche `publishCapsuleToYouTube` opt-in),
-US-4 (BDD `@publish` + TestKit), correctif précédence 4 sources (YAML absent).
+Livré (baby-step DDD/TDD/BDD) :
+
+* domaine pur `capsule.voice.AudioSilenceDetector` + `SilenceAnalysis`
+  (`isSilent` sur le pic RMS, `silentFraction` diagnostique, seuil
+  `DEFAULT_RMS_THRESHOLD = 0.001`, envelope vide = silence) ;
+* `VoiceQualityGate.REASON_SILENT_AUDIO` + paramètre `silence` optionnel ;
+* `VoiceVerifier.verify` réutilise l'enveloppe (SNR + silence) ; `degraded`
+  accepte un `envelopeProvider` et marque un take muet `Fail(["silent-audio"])`
+  tout en gardant `degraded = true` ;
+* `VerifyCapsuleVoiceTask` vérifie `hasFailure` **avant** le retour dégradé ;
+  `snrDb = null` sur silence (plus de `-Infinity`) ;
+* tests : 7 unit `AudioSilenceDetectorTest`, +2 `VoiceQualityGateTest`, +4
+  `VoiceVerifierTest`, +2 scénarios `@voice-verify`, +1 TestKit (audio muet réel
+  ffmpeg, skip-gardé) ;
+* RED prouvé : 19 erreurs `compileTestKotlin` avant production.
+
+Gates locaux (Local = Build) : compiles ×3 + `validatePlugins` + `assemble`
+VERTS. Aucune suite locale. Cross-borough : hyperframes + video-kernel
+compilent (inchangés). Zéro bump, zéro publication, zéro secret.
+
+Rapport `.agents/sessions/209-cap-audio-silence.adoc`.
 
 == État
 
 * `capsule-plugin 0.0.13` Central ; `video-kernel 0.5.0` ; BOM interne `0.0.107`.
 * **YouTube reste gelé** (décision pilote S-037).
-* Items ouverts : `HF-YOUTUBE-PUBLISH` US-4 dogfooding upload (gelé) + US-3c
-  chapitres (gelé). Aucun autre EPIC métier ouvert.
-* Dette possible : repin BOM `0.0.108` (non bloquant).
+* Aucun EPIC métier ouvert. `CAP-AUDIO-SILENCE` US-1 livrée.
 
-== Mission Session 209 — au choix pilote
+== Mission Session 210 — au choix pilote
 
-. **Dogfooding réel local** du pipeline vidéo (sans upload) : chrome/entrées +
-   audio/sous-titres, consommateur `/tmp`.
-. **Repin BOM** `0.0.108` + maintenance.
-3. **YouTube** : ne pas rouvrir sans décision explicite.
+. **CAP-AUDIO-SILENCE US-2** : promouvoir le détecteur en N1 `video-kernel`
+   (2 consommateurs capsule + hyperframes). **Prérequis** : accord pilote +
+   publication Central `video-kernel 0.6.0` (Règle 2).
+. **Dogfooding local** (sans upload) : chrome/entrées + audio/sous-titres,
+   consommateur `/tmp`.
+3. **Repin BOM** `0.0.108` + maintenance.
+4. **YouTube** : ne pas rouvrir sans décision explicite.
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** : jamais `test`/`check` local.
-* **Règle 2 — PUBLISH** : publication exécutée sur demande pilote (S-208).
+* **Règle 2 — PUBLISH** : publication uniquement sur accord pilote.
 * **Règle 7** : capsule ne modifie jamais le deck source.
 * Zéro secret ; zéro Python ; English only code/tests/features.
 * Runner dédié par feature (S-082), steps préfixés (S-088), shards CI à jour.
@@ -44,5 +59,5 @@ US-4 (BDD `@publish` + TestKit), correctif précédence 4 sources (YAML absent).
 == Rappels
 
 * GroupId `education.cccp`, Plugin ID `education.cccp.capsule`, version **0.0.13**.
-* `education.cccp:video-kernel:0.5.0` ; catalogue workspace `0.0.107` (BOM interne).
+* `education.cccp:video-kernel:0.5.0` ; catalogue workspace `0.0.107`.
 * Doctrine de factorisation : **seuil `à 2`** (amendement S-195).
