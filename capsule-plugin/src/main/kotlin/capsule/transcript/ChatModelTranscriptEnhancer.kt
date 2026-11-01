@@ -21,9 +21,13 @@ import dev.langchain4j.model.chat.ChatModel
  * answer is not a failure, it is a no-op). A **transient** LLM error
  * (transport, 429/503, timeout) also degrades to [template] via [LlmResilience].
  */
-class ChatModelTranscriptEnhancer(private val model: ChatModel) : TranscriptLlmEnhancer {
-
-    override fun enhance(template: String, plan: TranscriptPlan): String {
+class ChatModelTranscriptEnhancer(
+    private val model: ChatModel,
+) : TranscriptLlmEnhancer {
+    override fun enhance(
+        template: String,
+        plan: TranscriptPlan,
+    ): String {
         if (template.isBlank()) return template
         val prompt = TranscriptPromptBuilder.buildEnhancePrompt(plan)
         return LlmResilience.guarded("transcript enhancement", template) {

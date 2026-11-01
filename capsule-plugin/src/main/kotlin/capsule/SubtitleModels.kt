@@ -1,21 +1,23 @@
 package capsule
 
 enum class SubtitleFormat {
-    SRT, VTT;
+    SRT,
+    VTT,
+    ;
 
     val fileExtension: String
-        get() = when (this) {
-            SRT -> ".srt"
-            VTT -> ".vtt"
-        }
+        get() =
+            when (this) {
+                SRT -> ".srt"
+                VTT -> ".vtt"
+            }
 
     companion object {
-        fun fromString(value: String): SubtitleFormat {
-            return when (value.lowercase()) {
+        fun fromString(value: String): SubtitleFormat =
+            when (value.lowercase()) {
                 "vtt" -> VTT
                 else -> SRT
             }
-        }
     }
 }
 
@@ -23,7 +25,7 @@ data class SubtitleEntry(
     val index: Int,
     val startTime: Double,
     val endTime: Double,
-    val text: String
+    val text: String,
 ) {
     init {
         require(startTime <= endTime) {
@@ -34,6 +36,7 @@ data class SubtitleEntry(
 
 interface SubtitleGenerator {
     fun generate(entries: List<SubtitleEntry>): String
+
     fun format(): SubtitleFormat
 }
 
@@ -41,7 +44,7 @@ data class SubtitleBurnInStyle(
     val fontSize: Int = 24,
     val fontColor: String = "&H00FFFFFF",
     val outlineColor: String = "&H00000000",
-    val position: String = "bottom"
+    val position: String = "bottom",
 ) {
     init {
         require(fontSize in 8..72) { "fontSize must be between 8 and 72, got $fontSize" }
@@ -51,12 +54,13 @@ data class SubtitleBurnInStyle(
     }
 
     fun toForceStyle(): String {
-        val alignment = when (position) {
-            "bottom" -> 2
-            "top" -> 8
-            "middle" -> 5
-            else -> 2
-        }
+        val alignment =
+            when (position) {
+                "bottom" -> 2
+                "top" -> 8
+                "middle" -> 5
+                else -> 2
+            }
         return "FontSize=$fontSize,PrimaryColour=$fontColor,OutlineColour=$outlineColor,Outline=1,Shadow=1,Alignment=$alignment"
     }
 

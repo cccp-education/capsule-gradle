@@ -1,9 +1,9 @@
 package capsule.voice
 
 import capsule.ProcessRunner
+import video.kernel.audio.RmsEnvelope
 import java.io.ByteArrayOutputStream
 import java.io.File
-import video.kernel.audio.RmsEnvelope
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -15,7 +15,6 @@ import kotlin.test.assertTrue
  * (CAP-QC-VOICE US-2). The decode is intercepted — no real ffmpeg needed.
  */
 class AudioEnvelopeTest {
-
     @AfterTest
     fun tearDown() {
         ProcessRunner.commandInterceptor = null

@@ -10,7 +10,6 @@ import kotlin.test.assertTrue
  * exists, plus the manifest round-trip parser it reads.
  */
 class ViralCampaignGateTest {
-
     private fun bundle(
         language: String = "fr",
         platform: ViralPlatform = ViralPlatform.TIKTOK,
@@ -23,13 +22,14 @@ class ViralCampaignGateTest {
         videoFile = video,
         thumbnailFile = thumbnail,
         subtitleFile = subtitle,
-        metadata = MarketCopy(
-            language = language,
-            platform = platform,
-            hook = "hook",
-            title = "title",
-            caption = "caption",
-        ),
+        metadata =
+            MarketCopy(
+                language = language,
+                platform = platform,
+                hook = "hook",
+                title = "title",
+                caption = "caption",
+            ),
     )
 
     // ─── gate ─────────────────────────────────────────────────────────
@@ -86,10 +86,11 @@ class ViralCampaignGateTest {
 
     @Test
     fun `aggregates every missing asset in bundle order`() {
-        val bundles = listOf(
-            bundle(language = "fr"),
-            bundle(language = "en", platform = ViralPlatform.YOUTUBE_SHORT, video = "build/viral/en-yt.mp4"),
-        )
+        val bundles =
+            listOf(
+                bundle(language = "fr"),
+                bundle(language = "en", platform = ViralPlatform.YOUTUBE_SHORT, video = "build/viral/en-yt.mp4"),
+            )
         val result = ViralCampaignGate.verdict(bundles) { false }
         assertEquals(
             listOf(
@@ -114,10 +115,11 @@ class ViralCampaignGateTest {
 
     @Test
     fun `manifest serialises then parses back to the same bundles`() {
-        val bundles = listOf(
-            bundle(language = "fr", thumbnail = "build/viral/fr-tiktok-30.png", subtitle = "build/viral/fr-tiktok-30.ass"),
-            bundle(language = "en", platform = ViralPlatform.YOUTUBE_SHORT, video = "build/viral/en-yt.mp4"),
-        )
+        val bundles =
+            listOf(
+                bundle(language = "fr", thumbnail = "build/viral/fr-tiktok-30.png", subtitle = "build/viral/fr-tiktok-30.ass"),
+                bundle(language = "en", platform = ViralPlatform.YOUTUBE_SHORT, video = "build/viral/en-yt.mp4"),
+            )
         val parsed = CampaignBundleSerializer.parseManifest(CampaignBundleSerializer.toManifestJson(bundles))
         assertEquals(bundles, parsed)
     }

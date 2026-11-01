@@ -22,15 +22,17 @@ class CliSpeechRecognizer(
     private val model: String = "",
     private val workingDir: File? = null,
 ) : SpeechRecognizer {
-
-    override fun transcribe(audio: File, language: String): String {
+    override fun transcribe(
+        audio: File,
+        language: String,
+    ): String {
         val outputDir = Files.createTempDirectory("capsule-whisper").toFile()
         try {
             val args = SpeechRecognizerCommand.args(executablePath, audio, model, language, outputDir)
             val result = ProcessRunner.run(args, workingDir = workingDir)
             if (!result.isSuccess) {
                 throw SpeechRecognizerException(
-                    "ASR engine '$executablePath' exited with code ${result.exitCode}: ${result.tail()}"
+                    "ASR engine '$executablePath' exited with code ${result.exitCode}: ${result.tail()}",
                 )
             }
             return readTranscript(outputDir, audio)
@@ -40,10 +42,14 @@ class CliSpeechRecognizer(
     }
 
     /** Reads `<audio>.txt`, else any `.txt` the CLI wrote, else an empty string. */
-    private fun readTranscript(outputDir: File, audio: File): String {
+    private fun readTranscript(
+        outputDir: File,
+        audio: File,
+    ): String {
         val expected = File(outputDir, audio.nameWithoutExtension + ".txt")
         if (expected.isFile) return expected.readText()
-        return outputDir.listFiles { f -> f.isFile && f.name.endsWith(".txt") }
+        return outputDir
+            .listFiles { f -> f.isFile && f.name.endsWith(".txt") }
             ?.firstOrNull()
             ?.readText()
             .orEmpty()
@@ -62,4 +68,6 @@ class CliSpeechRecognizer(
 }
 
 /** Raised when the CLI ASR could not produce a transcript. */
-class SpeechRecognizerException(message: String) : RuntimeException(message)
+class SpeechRecognizerException(
+    message: String,
+) : RuntimeException(message)

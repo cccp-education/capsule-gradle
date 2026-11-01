@@ -1,10 +1,10 @@
 package capsule.scenarios
 
-import java.io.File
-import org.assertj.core.api.Assertions.assertThat
 import io.cucumber.java.en.Given
-import io.cucumber.java.en.When
 import io.cucumber.java.en.Then
+import io.cucumber.java.en.When
+import org.assertj.core.api.Assertions.assertThat
+import java.io.File
 
 /**
  * CAP-PR2-COV US-4 — regression steps mirroring the static [capsule.ci.ProcessMigrationGuardTest]
@@ -14,7 +14,6 @@ import io.cucumber.java.en.Then
  * Steps are prefixed "pr2 coverage" to avoid glue collisions (S-088).
  */
 class CapsulePr2CoverageSteps {
-
     private lateinit var sourceDir: File
     private lateinit var offending: List<String>
 
@@ -35,7 +34,10 @@ class CapsulePr2CoverageSteps {
     }
 
     @Then("only {string} and {string} may contain process or rename APIs")
-    fun onlyAllowedFilesMayContain(matchA: String, matchB: String) {
+    fun onlyAllowedFilesMayContain(
+        matchA: String,
+        matchB: String,
+    ) {
         val leaks = offending.filter { path -> !path.endsWith(matchA) && !path.endsWith(matchB) }
         assertThat(leaks)
             .describedAs("process APIs must live only in $matchA / $matchB, found: $leaks")
@@ -52,7 +54,8 @@ class CapsulePr2CoverageSteps {
 
     private fun scanFor(vararg tokens: String): List<String> {
         val hits = mutableListOf<String>()
-        sourceDir.walkTopDown()
+        sourceDir
+            .walkTopDown()
             .filter { it.isFile && it.extension == "kt" }
             .forEach { file ->
                 val text = file.readText()

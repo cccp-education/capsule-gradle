@@ -1,11 +1,10 @@
 package capsule
 
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.GradleRunner
-import org.gradle.testkit.runner.TaskOutcome
-import org.junit.jupiter.api.io.TempDir
 
 /**
  * Functional tests for the CAP-MP4 US-2 format conversion wiring.
@@ -17,13 +16,13 @@ import org.junit.jupiter.api.io.TempDir
  * - Strict mode + missing ffmpeg + MP4 format → build fails with the StrictModeGuard message.
  */
 class FormatConversionFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
     private fun setupCapsuleProject(outputDir: String = "capsules") {
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -31,7 +30,8 @@ class FormatConversionFunctionalTest {
                 ttsEngine = "noop"
                 outputDir = "$outputDir"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Test
@@ -43,17 +43,18 @@ class FormatConversionFunctionalTest {
         capDir.resolve("demo.mp4").writeText("mp4-content")
         val destRoot = projectDir.resolve("office/videos").absolutePath
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(
-                "distributeCapsuleVideo",
-                "-Poutput.videoDestinationDir=$destRoot",
-                "-Poutput.versioning=incremental",
-                "-Poutput.format=mp4",
-            )
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(
+                    "distributeCapsuleVideo",
+                    "-Poutput.videoDestinationDir=$destRoot",
+                    "-Poutput.versioning=incremental",
+                    "-Poutput.format=mp4",
+                ).withProjectDir(projectDir)
+                .build()
 
         assertTrue(result.output.contains("CAPSULE DISTRIB"), "Expected summary log. Output: ${result.output.take(500)}")
 
@@ -72,17 +73,18 @@ class FormatConversionFunctionalTest {
         capDir.resolve("demo.mp4").writeText("mp4-content")
         val destRoot = projectDir.resolve("office/videos").absolutePath
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(
-                "distributeCapsuleVideo",
-                "-Poutput.videoDestinationDir=$destRoot",
-                "-Poutput.versioning=incremental",
-                "-Poutput.format=both",
-            )
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(
+                    "distributeCapsuleVideo",
+                    "-Poutput.videoDestinationDir=$destRoot",
+                    "-Poutput.versioning=incremental",
+                    "-Poutput.format=both",
+                ).withProjectDir(projectDir)
+                .build()
 
         val versionDirs = File(destRoot).listFiles { f -> f.isDirectory && f.name.startsWith("v") }?.toList() ?: emptyList()
         assertTrue(versionDirs.isNotEmpty(), "Should have at least one versioned dir")

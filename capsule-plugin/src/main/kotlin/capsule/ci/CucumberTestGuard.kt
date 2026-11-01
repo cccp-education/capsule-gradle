@@ -10,13 +10,16 @@ package capsule.ci
  */
 data class CucumberTestGuard(
     val hasRunCucumberProperty: Boolean,
-    val isCi: Boolean
+    val isCi: Boolean,
 ) {
     fun shouldRun(): Boolean = hasRunCucumberProperty || isCi
 
     fun shouldSkip(): Boolean = !shouldRun()
 
     fun skipReason(): String =
-        if (shouldRun()) ""
-        else "cucumberTest skipped (pass -PrunCucumber or set CI=true to enable)"
+        if (shouldRun()) {
+            ""
+        } else {
+            "cucumberTest skipped (pass -PrunCucumber or set CI=true to enable)"
+        }
 }

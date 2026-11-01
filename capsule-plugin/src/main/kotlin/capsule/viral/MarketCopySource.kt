@@ -13,7 +13,6 @@ package capsule.viral
  * bakery's `CopyPiece` JSON lives in [FileMarketCopySource].
  */
 interface MarketCopySource {
-
     /**
      * Reads the market copy for [language] × [platform].
      *
@@ -21,7 +20,10 @@ interface MarketCopySource {
      * @param platform target platform preset.
      * @return the [MarketCopy], or `null` when unavailable (degraded).
      */
-    fun read(language: String, platform: ViralPlatform): MarketCopy?
+    fun read(
+        language: String,
+        platform: ViralPlatform,
+    ): MarketCopy?
 
     /** `true` when the source can serve at least one copy. */
     fun isAvailable(): Boolean

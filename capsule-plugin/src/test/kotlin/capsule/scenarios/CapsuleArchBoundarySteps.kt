@@ -1,7 +1,6 @@
 package capsule.scenarios
 
 import com.sun.net.httpserver.HttpServer
-import io.cucumber.java.en.And
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
@@ -33,12 +32,12 @@ import java.net.InetSocketAddress
  * (bug S-088 DuplicateStepDefinitionException).
  */
 class CapsuleArchBoundarySteps {
-
     private var projectDir: File? = null
     private var mockServer: HttpServer? = null
     private var buildOutput: String = ""
 
-    private val validContentPlanJson = """
+    private val validContentPlanJson =
+        """
         {
           "deckName": "demo",
           "languageCode": "fr",
@@ -46,16 +45,17 @@ class CapsuleArchBoundarySteps {
           "speakerNotesFile": "demo-speaker-notes.adoc",
           "ttsScriptFile": "demo-script.txt"
         }
-    """.trimIndent()
+        """.trimIndent()
 
-    private val enrichedSpeakerNotes = """
+    private val enrichedSpeakerNotes =
+        """
         == Introduction
 
         [NOTE.speaker]
         --
         Enriched French narration for the demo deck.
         --
-    """.trimIndent()
+        """.trimIndent()
 
     // ─── Given ─────────────────────────────────────────────────────
 
@@ -81,13 +81,14 @@ class CapsuleArchBoundarySteps {
         val server = HttpServer.create(InetSocketAddress(0), 0)
         server.createContext("/api/chat") { exchange ->
             val index = callCounter[0]++ % responses.size
-            val body = """
+            val body =
+                """
                 {
                   "model": "smollm:135m",
                   "message": { "role": "assistant", "content": ${escapeJson(responses[index])} },
                   "done": true
                 }
-            """.trimIndent().toByteArray()
+                """.trimIndent().toByteArray()
             exchange.sendResponseHeaders(200, body.size.toLong())
             exchange.responseBody.use { it.write(body) }
         }
@@ -101,14 +102,24 @@ class CapsuleArchBoundarySteps {
         val project = projectDir ?: error("No Gradle project set up")
         val capsulesDir = project.resolve("build/capsules")
         capsulesDir.mkdirs()
-        val webm = capsulesDir.resolve("demo_${lang}.webm")
+        val webm = capsulesDir.resolve("demo_$lang.webm")
         // Generate a real 1-second WebM so ffprobe returns a positive duration
         // (the Economy-of-Ink skip rule requires probeDuration > 0). A bare
         // EBML header would probe at 0.0 and be re-rendered.
-        val proc = ProcessBuilder(
-            "ffmpeg", "-y", "-f", "lavfi", "-i", "anullsrc=r=8000:cl=mono",
-            "-t", "1", "-c:v", "libvpx", webm.absolutePath,
-        ).redirectErrorStream(true).start()
+        val proc =
+            ProcessBuilder(
+                "ffmpeg",
+                "-y",
+                "-f",
+                "lavfi",
+                "-i",
+                "anullsrc=r=8000:cl=mono",
+                "-t",
+                "1",
+                "-c:v",
+                "libvpx",
+                webm.absolutePath,
+            ).redirectErrorStream(true).start()
         proc.waitFor()
         Assertions.assertTrue(
             webm.exists() && webm.length() > 0,
@@ -126,11 +137,12 @@ class CapsuleArchBoundarySteps {
     @When("I run the capsule content generation task against the mock LLM")
     fun iRunTheCapsuleContentGenerationTaskAgainstTheMockLlm() {
         val port = mockServer!!.address.port
-        buildOutput = gradleRunner(
-            "generateCapsuleContent",
-            "-Pollama.baseUrl=http://localhost:$port",
-            "-Pdeck.file=${projectDir!!.resolve("slides/misc/demo.adoc").absolutePath}",
-        ).build().output
+        buildOutput =
+            gradleRunner(
+                "generateCapsuleContent",
+                "-Pollama.baseUrl=http://localhost:$port",
+                "-Pdeck.file=${projectDir!!.resolve("slides/misc/demo.adoc").absolutePath}",
+            ).build().output
     }
 
     @When("I run the capsule content and videos task against the mock LLM")
@@ -142,11 +154,12 @@ class CapsuleArchBoundarySteps {
         // its `demo_fr-deck.html` + `demo_fr-script.txt` pair.
         preGenerateFrenchVideoArtifacts()
         val port = mockServer!!.address.port
-        buildOutput = gradleRunner(
-            "generateCapsuleContentAndVideos",
-            "-Pollama.baseUrl=http://localhost:$port",
-            "-Pdeck.file=${projectDir!!.resolve("slides/misc/demo.adoc").absolutePath}",
-        ).build().output
+        buildOutput =
+            gradleRunner(
+                "generateCapsuleContentAndVideos",
+                "-Pollama.baseUrl=http://localhost:$port",
+                "-Pdeck.file=${projectDir!!.resolve("slides/misc/demo.adoc").absolutePath}",
+            ).build().output
     }
 
     // ─── Then ──────────────────────────────────────────────────────
@@ -208,38 +221,42 @@ class CapsuleArchBoundarySteps {
     // ─── Helpers ──────────────────────────────────────────────────
 
     private fun setupProject(noOpEngines: Boolean) {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-arch-boundary-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-arch-boundary-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir!!.resolve("settings.gradle").writeText("")
-        val buildGradle = buildString {
-            appendLine("plugins { id('education.cccp.capsule') }")
-            appendLine("capsule {")
-            if (noOpEngines) {
-                appendLine("    ttsEngine = 'noop'")
-                appendLine("    outputDir = 'capsules'")
+        val buildGradle =
+            buildString {
+                appendLine("plugins { id('education.cccp.capsule') }")
+                appendLine("capsule {")
+                if (noOpEngines) {
+                    appendLine("    ttsEngine = 'noop'")
+                    appendLine("    outputDir = 'capsules'")
+                }
+                appendLine("}")
+                // The composite task graph depends on slider's translateDeck, which is
+                // not applied in this isolated project. A fake task lets the graph
+                // resolve during the composite run without pulling slider in.
+                appendLine("tasks.register('translateDeck') { doLast { logger.lifecycle('FAKE translateDeck') } }")
             }
-            appendLine("}")
-            // The composite task graph depends on slider's translateDeck, which is
-            // not applied in this isolated project. A fake task lets the graph
-            // resolve during the composite run without pulling slider in.
-            appendLine("tasks.register('translateDeck') { doLast { logger.lifecycle('FAKE translateDeck') } }")
-        }
         projectDir!!.resolve("build.gradle").writeText(buildGradle)
 
         // generateCapsuleContent resolves its deckFile convention by scanning
         // slides/misc for the first .adoc file.
         val deckDir = projectDir!!.resolve("slides").resolve("misc")
         deckDir.mkdirs()
-        deckDir.resolve("demo.adoc").writeText("""
+        deckDir.resolve("demo.adoc").writeText(
+            """
             == Introduction
 
             [NOTE.speaker]
             --
             Base French narration.
             --
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     private fun preGenerateFrenchVideoArtifacts() {
@@ -251,7 +268,8 @@ class CapsuleArchBoundarySteps {
         val scriptDir = project.resolve("build/capsule").also { it.mkdirs() }
         project.resolve("build/capsules").also { it.mkdirs() }
 
-        deckDir.resolve("demo_fr-deck.html").writeText("""
+        deckDir.resolve("demo_fr-deck.html").writeText(
+            """
             <html><body>
             <div class="reveal">
               <div class="slides">
@@ -259,30 +277,35 @@ class CapsuleArchBoundarySteps {
               </div>
             </div>
             </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
-        scriptDir.resolve("demo_fr-script.txt").writeText("""
+        scriptDir.resolve("demo_fr-script.txt").writeText(
+            """
             === CAPSULE SCRIPT : demo_fr ===
             --- SLIDE 1 : Introduction ---
             Enriched French narration for the demo deck.
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     private fun gradleRunner(vararg args: String): GradleRunner =
-        GradleRunner.create()
+        GradleRunner
+            .create()
             .forwardOutput()
             .withPluginClasspath()
             .withArguments(*args)
             .withProjectDir(projectDir!!)
 
-    private fun escapeJson(raw: String): String =
-        "\"" + raw.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n") + "\""
+    private fun escapeJson(raw: String): String = "\"" + raw.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n") + "\""
 
     private companion object {
         // Minimal WebM EBML header (pattern NoOpPlaywrightCapture.MINIMAL_WEBM)
         // so the Economy-of-Ink skip rule sees a non-empty, probe-valid artifact.
         private val MINIMAL_WEBM: ByteArray =
             "1a45dfa301000000000000001f4286810142f7810142f2810442f381084282847765626d42878104428581021853806701000000000000001e1549a96601000000000000000d2ad7b1830f4240448984000000000000000000"
-                .chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+                .chunked(2)
+                .map { it.toInt(16).toByte() }
+                .toByteArray()
     }
 }

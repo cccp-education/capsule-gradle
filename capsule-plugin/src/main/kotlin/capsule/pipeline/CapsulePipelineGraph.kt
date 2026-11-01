@@ -37,7 +37,6 @@ class CapsulePipelineGraph(
     promptBuilder: CapsulePromptBuilder,
     llm: CapsuleLlm,
 ) {
-
     private val delegate = pipelineGraph(CapsulePipelineDefinition(promptBuilder, llm))
 
     val graph: AIAgentGraphStrategy<CapsuleState, CapsuleState> = delegate.graph

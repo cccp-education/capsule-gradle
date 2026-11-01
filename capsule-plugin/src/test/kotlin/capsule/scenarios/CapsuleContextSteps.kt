@@ -1,6 +1,5 @@
 package capsule.scenarios
 
-import io.cucumber.java.en.And
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
@@ -19,7 +18,6 @@ import java.io.File
  * execution.
  */
 class CapsuleContextSteps {
-
     private var projectDir: File? = null
     private var buildOutput: String = ""
     private var secondRunOutput: String = ""
@@ -28,15 +26,18 @@ class CapsuleContextSteps {
 
     @Given("a Capsule context Gradle project with the capsule plugin applied")
     fun aCapsuleContextGradleProjectWithTheCapsulePluginApplied() {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-context-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-context-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
         projectDir!!.resolve("settings.gradle").writeText("")
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Given("EAGER governance files are present")
@@ -61,28 +62,31 @@ class CapsuleContextSteps {
 
     @When("I collect the augmented context with RAG content {string}")
     fun iCollectTheAugmentedContextWithRagContent(rag: String) {
-        buildOutput = gradleRunner(
-            "collectCapsuleAugmentedContext",
-            "-Pcontext.ragContent=$rag",
-        ).build().output
+        buildOutput =
+            gradleRunner(
+                "collectCapsuleAugmentedContext",
+                "-Pcontext.ragContent=$rag",
+            ).build().output
     }
 
     @When("I collect the augmented context again with RAG content {string}")
     fun iCollectTheAugmentedContextAgainWithRagContent(rag: String) {
-        secondRunOutput = gradleRunner(
-            "collectCapsuleAugmentedContext",
-            "-Pcontext.ragContent=$rag",
-        ).build().output
+        secondRunOutput =
+            gradleRunner(
+                "collectCapsuleAugmentedContext",
+                "-Pcontext.ragContent=$rag",
+            ).build().output
     }
 
     @When("I collect the augmented context with a token budget of {int} and a large RAG block")
     fun iCollectTheAugmentedContextWithTightBudgetAndLargeRag(budget: Int) {
         val rag = (1..50).joinToString("\n") { "rag line number $it with filler words" }
-        buildOutput = gradleRunner(
-            "collectCapsuleAugmentedContext",
-            "-Pcontext.tokenBudget=$budget",
-            "-Pcontext.ragContent=$rag",
-        ).build().output
+        buildOutput =
+            gradleRunner(
+                "collectCapsuleAugmentedContext",
+                "-Pcontext.tokenBudget=$budget",
+                "-Pcontext.ragContent=$rag",
+            ).build().output
     }
 
     // ─── Then ──────────────────────────────────────────────────────
@@ -137,7 +141,8 @@ class CapsuleContextSteps {
     private fun artefact(): File = projectDir!!.resolve("build/capsule/augmented-context.txt")
 
     private fun gradleRunner(vararg args: String): GradleRunner =
-        GradleRunner.create()
+        GradleRunner
+            .create()
             .forwardOutput()
             .withPluginClasspath()
             .withArguments(*args)

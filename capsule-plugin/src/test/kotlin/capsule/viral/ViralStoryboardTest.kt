@@ -15,7 +15,6 @@ import kotlin.test.assertTrue
  * video. The validator is the editorial gate (mirror of rule A9).
  */
 class ViralStoryboardTest {
-
     private fun beat(
         role: String,
         intent: String = "intent",
@@ -26,12 +25,13 @@ class ViralStoryboardTest {
     ) = StoryboardBeat(role, intent, duration, type, manimScene, asset)
 
     private fun storyboard(
-        beats: List<StoryboardBeat> = listOf(
-            beat("hook", "Et si 30 secondes suffisaient ?", 3.0),
-            beat("development", "Les 4 activités types", 10.0),
-            beat("development", "Le rôle du développeur", 10.0),
-            beat("cta", "Découvrez Content", 7.0),
-        ),
+        beats: List<StoryboardBeat> =
+            listOf(
+                beat("hook", "Et si 30 secondes suffisaient ?", 3.0),
+                beat("development", "Les 4 activités types", 10.0),
+                beat("development", "Le rôle du développeur", 10.0),
+                beat("cta", "Découvrez Content", 7.0),
+            ),
         target: Int = 30,
     ) = ViralStoryboard(
         message = "Devenir développeur professionnel",
@@ -83,13 +83,15 @@ class ViralStoryboardTest {
 
     @Test
     fun `builder renders the manim scene when present`() {
-        val sb = storyboard(
-            beats = listOf(
-                beat("hook", "h", 3.0),
-                beat("development", "d", 24.0, type = SlideType.MANIM, manimScene = "MoveSquare"),
-                beat("cta", "c", 3.0),
-            ),
-        )
+        val sb =
+            storyboard(
+                beats =
+                    listOf(
+                        beat("hook", "h", 3.0),
+                        beat("development", "d", 24.0, type = SlideType.MANIM, manimScene = "MoveSquare"),
+                        beat("cta", "c", 3.0),
+                    ),
+            )
         assertTrue(ViralStoryboardBuilder.build(sb).contains("Manim scene: MoveSquare"))
     }
 
@@ -114,10 +116,11 @@ class ViralStoryboardTest {
 
     @Test
     fun `validator rejects a total duration too far from target`() {
-        val tooShort = storyboard(
-            beats = listOf(beat("hook", duration = 1.0), beat("cta", duration = 1.0)),
-            target = 30,
-        )
+        val tooShort =
+            storyboard(
+                beats = listOf(beat("hook", duration = 1.0), beat("cta", duration = 1.0)),
+                target = 30,
+            )
         val r = ViralStoryboardValidator.validate(tooShort)
         assertTrue(r is StoryboardValidationResult.Invalid)
         assertTrue((r as StoryboardValidationResult.Invalid).reasons.any { it.contains("deviates") })
@@ -125,9 +128,10 @@ class ViralStoryboardTest {
 
     @Test
     fun `validator rejects a beat longer than 10 seconds`() {
-        val sb = storyboard(
-            beats = listOf(beat("hook", duration = 3.0), beat("development", duration = 20.0), beat("cta", duration = 7.0)),
-        )
+        val sb =
+            storyboard(
+                beats = listOf(beat("hook", duration = 3.0), beat("development", duration = 20.0), beat("cta", duration = 7.0)),
+            )
         val r = ViralStoryboardValidator.validate(sb)
         assertTrue(r is StoryboardValidationResult.Invalid)
         assertTrue((r as StoryboardValidationResult.Invalid).reasons.any { it.contains("(> 10.0s)") })

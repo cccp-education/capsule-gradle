@@ -17,7 +17,6 @@ import java.util.Locale
  * seconds) so callers can log it regardless of the outcome.
  */
 sealed class ValidationResult {
-
     /**
      * The absolute difference between the video duration and the audio
      * sum, in seconds.
@@ -28,7 +27,9 @@ sealed class ValidationResult {
      * Validation passed — the video duration matches the audio sum
      * within the configured tolerance.
      */
-    data class Valid(override val delta: Double) : ValidationResult()
+    data class Valid(
+        override val delta: Double,
+    ) : ValidationResult()
 
     /**
      * Validation failed — the video duration diverges from the audio
@@ -42,22 +43,19 @@ sealed class ValidationResult {
         override val delta: Double,
         val videoDuration: Double,
         val sumAudio: Double,
-        val toleranceSecs: Double
+        val toleranceSecs: Double,
     ) : ValidationResult() {
-
         /**
          * Returns an actionable, human-readable error message explaining
          * the mismatch. Used as the `GradleException` message by the
          * `validateCapsuleVideoDuration` task.
          */
-        fun message(): String {
-            return "Duration mismatch: video=${formatDuration(videoDuration)}s, " +
+        fun message(): String =
+            "Duration mismatch: video=${formatDuration(videoDuration)}s, " +
                 "audio=${formatDuration(sumAudio)}s, " +
                 "delta=${formatDuration(delta)}s, " +
                 "tolerance=${formatDuration(toleranceSecs)}s"
-        }
 
-        private fun formatDuration(value: Double): String =
-            String.format(Locale.US, "%.2f", value)
+        private fun formatDuration(value: Double): String = String.format(Locale.US, "%.2f", value)
     }
 }

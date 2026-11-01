@@ -12,7 +12,6 @@ import kotlin.test.assertEquals
  * `PLAYWRIGHT` for unknown/blank values.
  */
 class CaptureStrategyTest {
-
     @Test
     fun `fromString returns PLAYWRIGHT for null`() {
         assertEquals(CaptureStrategy.PLAYWRIGHT, CaptureStrategy.fromString(null))

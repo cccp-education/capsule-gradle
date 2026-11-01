@@ -18,7 +18,6 @@ import kotlin.test.assertTrue
  * Uses [org.gradle.testfixtures.ProjectBuilder] — no daemon, no network.
  */
 class CapsuleLlmServiceTest {
-
     private fun project(properties: Map<String, Any?> = emptyMap()): org.gradle.api.Project {
         val p = ProjectBuilder.builder().build()
         properties.forEach { (k, v) -> p.extensions.extraProperties.set(k, v) }

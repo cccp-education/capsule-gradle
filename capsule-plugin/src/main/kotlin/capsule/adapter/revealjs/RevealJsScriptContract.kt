@@ -25,7 +25,6 @@ import java.io.File
  * Pure string transforms plus file I/O for [read]; no Gradle, no Playwright.
  */
 object RevealJsScriptContract {
-
     private val manimMarkerRegex = Regex("""\[manim:(\w+)]""")
     private const val HTML_MARKER = "[html]"
 
@@ -59,12 +58,16 @@ object RevealJsScriptContract {
     fun read(file: File): VideoScript {
         val lines = file.readLines()
         val header = lines.firstOrNull()?.trim().orEmpty()
-        val declaredName = if (header.startsWith("=== CAPSULE SCRIPT : ") && header.endsWith(" ===")) {
-            header.removePrefix("=== CAPSULE SCRIPT : ")
-                .removeSuffix(" ===")
-                .trim()
-                .ifBlank { null }
-        } else null
+        val declaredName =
+            if (header.startsWith("=== CAPSULE SCRIPT : ") && header.endsWith(" ===")) {
+                header
+                    .removePrefix("=== CAPSULE SCRIPT : ")
+                    .removeSuffix(" ===")
+                    .trim()
+                    .ifBlank { null }
+            } else {
+                null
+            }
         val resolvedName: String = declaredName ?: file.nameWithoutExtension
 
         val segments = mutableListOf<VideoSegment>()
@@ -82,16 +85,19 @@ object RevealJsScriptContract {
                     flushSegment(segments, currentIndex, currentTitle, currentKind, currentScene, noteLines)
                     val parts = line.removeSurrounding("--- SLIDE ", " ---")
                     val colonIdx = parts.indexOf(":")
-                    currentIndex = parts.substring(0, colonIdx).trim()
+                    currentIndex = parts
+                        .substring(0, colonIdx)
+                        .trim()
                         .toIntOrNull() ?: (segments.size + 1)
                     val rawTitle = parts.substring(colonIdx + 1).trim()
                     val manimMatch = manimMarkerRegex.find(rawTitle)
                     currentKind = if (manimMatch != null) VideoKind.ANIMATION else VideoKind.VISUAL
                     currentScene = manimMatch?.groupValues?.get(1)
-                    currentTitle = rawTitle
-                        .replace(manimMarkerRegex, "")
-                        .replace(HTML_MARKER, "")
-                        .trim()
+                    currentTitle =
+                        rawTitle
+                            .replace(manimMarkerRegex, "")
+                            .replace(HTML_MARKER, "")
+                            .trim()
                 }
                 line.isNotBlank() && currentIndex >= 0 -> noteLines.add(line)
             }
@@ -120,7 +126,7 @@ object RevealJsScriptContract {
                 narration = note,
                 kind = kind,
                 scene = scene,
-            )
+            ),
         )
         noteLines.clear()
     }

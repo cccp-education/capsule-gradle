@@ -1,10 +1,10 @@
 package capsule.qc
 
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.GradleRunner
-import org.junit.jupiter.api.io.TempDir
 
 /**
  * Functional tests for `preflightCapsuleContent` (PRT-05).
@@ -13,7 +13,6 @@ import org.junit.jupiter.api.io.TempDir
  * scripts and reports findings.
  */
 class PreflightCapsuleContentFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -31,7 +30,7 @@ class PreflightCapsuleContentFunctionalTest {
                 ttsEngine = "noop"
                 qcPreflightEnabled = $preflightEnabled
             }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -42,16 +41,18 @@ class PreflightCapsuleContentFunctionalTest {
             === CAPSULE SCRIPT : preflight ===
             --- SLIDE 1 : Title ---
             $note
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
-    private fun run() = GradleRunner.create()
-        .forwardOutput()
-        .withPluginClasspath()
-        .withArguments("preflightCapsuleContent")
-        .withProjectDir(projectDir)
-        .build()
+    private fun run() =
+        GradleRunner
+            .create()
+            .forwardOutput()
+            .withPluginClasspath()
+            .withArguments("preflightCapsuleContent")
+            .withProjectDir(projectDir)
+            .build()
 
     @Test
     fun `disabled by default is a no-op skip`() {
@@ -62,7 +63,7 @@ class PreflightCapsuleContentFunctionalTest {
 
         assertTrue(
             result.output.contains("skipped"),
-            "Expected a skip log when qcPreflightEnabled=false. Output: ${result.output.take(800)}"
+            "Expected a skip log when qcPreflightEnabled=false. Output: ${result.output.take(800)}",
         )
     }
 
@@ -75,7 +76,7 @@ class PreflightCapsuleContentFunctionalTest {
 
         assertTrue(
             result.output.contains("CAPSULE PREFLIGHT"),
-            "Expected a pre-flight log. Output: ${result.output.take(800)}"
+            "Expected a pre-flight log. Output: ${result.output.take(800)}",
         )
     }
 
@@ -84,16 +85,18 @@ class PreflightCapsuleContentFunctionalTest {
         setupBuild(preflightEnabled = true)
         writeScript("des **classes**")
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("preflightCapsuleContent")
-            .withProjectDir(projectDir)
-            .buildAndFail()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("preflightCapsuleContent")
+                .withProjectDir(projectDir)
+                .buildAndFail()
 
         assertTrue(
             result.output.contains("Content pre-flight failed"),
-            "Expected a pre-flight failure. Output: ${result.output.take(800)}"
+            "Expected a pre-flight failure. Output: ${result.output.take(800)}",
         )
     }
 }

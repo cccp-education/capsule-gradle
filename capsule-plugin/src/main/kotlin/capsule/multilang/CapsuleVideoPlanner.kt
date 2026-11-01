@@ -1,7 +1,7 @@
 package capsule.multilang
 
-import video.kernel.FileVisualSource
 import contracts.i18n.SupportedLanguage
+import video.kernel.FileVisualSource
 import java.io.File
 
 /**
@@ -30,7 +30,6 @@ import java.io.File
  * Output naming convention: `<outputDir>/<deckName>_<lang>.webm`.
  */
 object CapsuleVideoPlanner {
-
     /**
      * Build a [CapsuleVideoPlan] from the translated deck + script directories.
      *
@@ -51,9 +50,10 @@ object CapsuleVideoPlanner {
         val entries = mutableListOf<CapsuleVideoEntry>()
 
         for (language in targetLanguages) {
-            val deckFiles = deckDir.listFiles { f ->
-                f.isFile && f.name.endsWith("_${language.code}-deck.html")
-            } ?: emptyArray()
+            val deckFiles =
+                deckDir.listFiles { f ->
+                    f.isFile && f.name.endsWith("_${language.code}-deck.html")
+                } ?: emptyArray()
 
             for (deckFile in deckFiles) {
                 val deckName = deckNameOf(deckFile, language.code)
@@ -66,7 +66,7 @@ object CapsuleVideoPlanner {
                         scriptFile = scriptFile,
                         language = language,
                         outputVideo = outputVideo,
-                    )
+                    ),
                 )
             }
         }
@@ -86,10 +86,14 @@ object CapsuleVideoPlanner {
      * `<deckName>_<code>-deck-script.txt` variant is accepted. Returns `null`
      * when neither exists.
      */
-    private fun resolveScript(scriptDir: File, deckName: String, code: String): File? {
-        val exact = scriptDir.resolve("${deckName}_${code}-script.txt")
+    private fun resolveScript(
+        scriptDir: File,
+        deckName: String,
+        code: String,
+    ): File? {
+        val exact = scriptDir.resolve("${deckName}_$code-script.txt")
         if (exact.exists()) return exact
-        val deckSuffixed = scriptDir.resolve("${deckName}_${code}-deck-script.txt")
+        val deckSuffixed = scriptDir.resolve("${deckName}_$code-deck-script.txt")
         return deckSuffixed.takeIf { it.exists() }
     }
 
@@ -98,7 +102,10 @@ object CapsuleVideoPlanner {
      *
      * `kotlin-basics_fr-deck.html` → `kotlin-basics`.
      */
-    private fun deckNameOf(deckFile: File, code: String): String {
+    private fun deckNameOf(
+        deckFile: File,
+        code: String,
+    ): String {
         val name = deckFile.name
         val suffix = "_$code-deck.html"
         return if (name.endsWith(suffix)) name.removeSuffix(suffix) else name.removeSuffix(".html")

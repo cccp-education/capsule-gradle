@@ -1,6 +1,5 @@
 package capsule
 
-import capsule.transcript.TranscriptStrategy
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.UnknownPluginException
@@ -13,7 +12,7 @@ class CapsulePlugin : Plugin<Project> {
         } catch (e: UnknownPluginException) {
             project.logger.info(
                 "slider-gradle not on classpath, skipping auto-apply. " +
-                    "Add education.cccp.slider to buildscript dependencies if you need reveal.js deck generation."
+                    "Add education.cccp.slider to buildscript dependencies if you need reveal.js deck generation.",
             )
         }
 
@@ -32,16 +31,19 @@ class CapsulePlugin : Plugin<Project> {
             // CAP-FISH-AUDIO — the key pool is a secret living in a dedicated
             // git-ignored file, never in the committed capsule-context.yml. When
             // present it overrides the (usually empty) `fish-audio` member.
-            val fishKeys = CapsuleConfigLoader.loadFishAudio(
-                project.file(capsuleExt.fishAudioConfigPath.get())
-            )
+            val fishKeys =
+                CapsuleConfigLoader.loadFishAudio(
+                    project.file(capsuleExt.fishAudioConfigPath.get()),
+                )
 
             // Collect CLI -P params prefixed with "capsule."
             val cliParams = collectCliParams(project)
 
             // Merge: CLI > YAML > gradle.properties > ENV
-            val mergedConfig = CapsuleConfigMerger.merge(project.projectDir, yamlConfig, cliParams, yamlLoaded)
-                .let { if (fishKeys.isNotEmpty()) it.copy(fishAudio = fishKeys) else it }
+            val mergedConfig =
+                CapsuleConfigMerger
+                    .merge(project.projectDir, yamlConfig, cliParams, yamlLoaded)
+                    .let { if (fishKeys.isNotEmpty()) it.copy(fishAudio = fishKeys) else it }
 
             // Push resolved values into DSL Extension properties
             pushConfigIntoExtension(mergedConfig, capsuleExt)
@@ -62,27 +64,33 @@ class CapsulePlugin : Plugin<Project> {
      * i.e. the merged 4-source config with the explicit DSL values layered on top.
      * Only the sections rendered by [CapsuleConfigLogger] are refreshed.
      */
-    internal fun effectiveConfig(merged: CapsuleConfig, ext: CapsuleExtension): CapsuleConfig =
+    internal fun effectiveConfig(
+        merged: CapsuleConfig,
+        ext: CapsuleExtension,
+    ): CapsuleConfig =
         merged.copy(
-            tts = merged.tts.copy(
-                engine = ext.ttsEngine.get(),
-                voice = ext.ttsVoice.get(),
-                language = ext.ttsLanguage.get(),
-            ),
-            capture = merged.capture.copy(
-                viewportWidth = ext.viewportWidth.get(),
-                viewportHeight = ext.viewportHeight.get(),
-                parallelCaptureEnabled = ext.parallelCaptureEnabled.get(),
-                subtitleEnabled = ext.subtitleEnabled.get(),
-                subtitleFormat = ext.subtitleFormat.get(),
-                subtitleBurnIn = ext.subtitleBurnIn.get(),
-            ),
-            manim = merged.manim.copy(
-                executablePath = ext.manimExecutablePath.get(),
-                quality = ext.manimQuality.get(),
-                scriptsDir = ext.manimScriptsDir.get(),
-                outputDir = ext.manimOutputDir.get(),
-            ),
+            tts =
+                merged.tts.copy(
+                    engine = ext.ttsEngine.get(),
+                    voice = ext.ttsVoice.get(),
+                    language = ext.ttsLanguage.get(),
+                ),
+            capture =
+                merged.capture.copy(
+                    viewportWidth = ext.viewportWidth.get(),
+                    viewportHeight = ext.viewportHeight.get(),
+                    parallelCaptureEnabled = ext.parallelCaptureEnabled.get(),
+                    subtitleEnabled = ext.subtitleEnabled.get(),
+                    subtitleFormat = ext.subtitleFormat.get(),
+                    subtitleBurnIn = ext.subtitleBurnIn.get(),
+                ),
+            manim =
+                merged.manim.copy(
+                    executablePath = ext.manimExecutablePath.get(),
+                    quality = ext.manimQuality.get(),
+                    scriptsDir = ext.manimScriptsDir.get(),
+                    outputDir = ext.manimOutputDir.get(),
+                ),
         )
 
     /**
@@ -106,7 +114,10 @@ class CapsulePlugin : Plugin<Project> {
      * Only sets properties that still hold their original convention value,
      * preserving explicit DSL configuration: DSL > CLI > YAML > props > ENV.
      */
-    internal fun pushConfigIntoExtension(config: CapsuleConfig, ext: CapsuleExtension) {
+    internal fun pushConfigIntoExtension(
+        config: CapsuleConfig,
+        ext: CapsuleExtension,
+    ) {
         val conventions = ext.conventions
 
         // Input section — only fill if still at convention (DSL didn't override)
@@ -149,11 +160,19 @@ class CapsulePlugin : Plugin<Project> {
         if (ext.subtitleBurnIn.get() == conventions.subtitleBurnIn) ext.subtitleBurnIn.set(config.capture.subtitleBurnIn)
         if (ext.subtitleBurnInFontSize.get() == conventions.subtitleBurnInFontSize) ext.subtitleBurnInFontSize.set(config.capture.subtitleBurnInFontSize)
         if (ext.subtitleBurnInFontColor.get() == conventions.subtitleBurnInFontColor) ext.subtitleBurnInFontColor.set(config.capture.subtitleBurnInFontColor)
-        if (ext.subtitleBurnInOutlineColor.get() == conventions.subtitleBurnInOutlineColor) ext.subtitleBurnInOutlineColor.set(config.capture.subtitleBurnInOutlineColor)
+        if (ext.subtitleBurnInOutlineColor.get() ==
+            conventions.subtitleBurnInOutlineColor
+        ) {
+            ext.subtitleBurnInOutlineColor.set(config.capture.subtitleBurnInOutlineColor)
+        }
         if (ext.subtitleBurnInPosition.get() == conventions.subtitleBurnInPosition) ext.subtitleBurnInPosition.set(config.capture.subtitleBurnInPosition)
         if (ext.subtitleCartonsEnabled.get() == conventions.subtitleCartonsEnabled) ext.subtitleCartonsEnabled.set(config.capture.subtitleCartonsEnabled)
         if (ext.subtitleMaxChars.get() == conventions.subtitleMaxChars) ext.subtitleMaxChars.set(config.capture.subtitleMaxChars)
-        if (ext.reuseCapturedVideoEnabled.get() == conventions.reuseCapturedVideoEnabled) ext.reuseCapturedVideoEnabled.set(config.capture.reuseCapturedVideoEnabled)
+        if (ext.reuseCapturedVideoEnabled.get() ==
+            conventions.reuseCapturedVideoEnabled
+        ) {
+            ext.reuseCapturedVideoEnabled.set(config.capture.reuseCapturedVideoEnabled)
+        }
         if (!ext.captureStrategy.isPresent || ext.captureStrategy.get() == conventions.captureStrategy) ext.captureStrategy.set(config.capture.strategy)
 
         // Output format (CAP-MP4)
@@ -171,7 +190,11 @@ class CapsulePlugin : Plugin<Project> {
         if (ext.manimScriptsDir.get() == conventions.manimScriptsDir) ext.manimScriptsDir.set(config.manim.scriptsDir)
         if (ext.manimOutputDir.get() == conventions.manimOutputDir) ext.manimOutputDir.set(config.manim.outputDir)
         if (ext.manimParallelRender.get() == conventions.manimParallelRender) ext.manimParallelRender.set(config.manim.parallelRender)
-        if (ext.manimParallelRenderThreads.get() == conventions.manimParallelRenderThreads) ext.manimParallelRenderThreads.set(config.manim.parallelRenderThreads)
+        if (ext.manimParallelRenderThreads.get() ==
+            conventions.manimParallelRenderThreads
+        ) {
+            ext.manimParallelRenderThreads.set(config.manim.parallelRenderThreads)
+        }
 
         // StrictMode section (CAP-CR3-2)
         if (!ext.strictMode.isPresent || ext.strictMode.get() == false) ext.strictMode.set(config.strictMode.enabled)

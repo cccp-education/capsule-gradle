@@ -18,9 +18,9 @@ import kotlin.test.assertTrue
  * browser — mirror of [RemotionRootTemplateTest].
  */
 class CapsuleThemeTemplateTest {
-
     private fun capsuleSource(): String =
-        javaClass.classLoader.getResourceAsStream("capsule/remotion/src/Capsule.jsx")
+        javaClass.classLoader
+            .getResourceAsStream("capsule/remotion/src/Capsule.jsx")
             ?.use { it.readBytes().toString(Charsets.UTF_8) }
             ?: error("capsule/remotion/src/Capsule.jsx missing from the test classpath")
 

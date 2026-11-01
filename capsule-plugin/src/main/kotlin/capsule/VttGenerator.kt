@@ -1,21 +1,21 @@
 package capsule
 
 class VttGenerator : SubtitleGenerator {
-
     override fun format(): SubtitleFormat = SubtitleFormat.VTT
 
     override fun generate(entries: List<SubtitleEntry>): String {
-        val cues = if (entries.isEmpty()) {
-            ""
-        } else {
-            entries.joinToString("\n\n") { entry ->
-                buildString {
-                    appendLine(entry.index.toString())
-                    appendLine("${formatVttTimestamp(entry.startTime)} --> ${formatVttTimestamp(entry.endTime)}")
-                    append(entry.text)
+        val cues =
+            if (entries.isEmpty()) {
+                ""
+            } else {
+                entries.joinToString("\n\n") { entry ->
+                    buildString {
+                        appendLine(entry.index.toString())
+                        appendLine("${formatVttTimestamp(entry.startTime)} --> ${formatVttTimestamp(entry.endTime)}")
+                        append(entry.text)
+                    }
                 }
             }
-        }
 
         return buildString {
             appendLine("WEBVTT")

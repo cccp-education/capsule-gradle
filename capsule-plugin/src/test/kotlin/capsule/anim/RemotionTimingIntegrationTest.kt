@@ -11,13 +11,18 @@ import org.junit.jupiter.api.Test
  * Mirrors the `Capsule`/`Slide` composition from Capsule.jsx without rendering.
  */
 class RemotionTimingIntegrationTest {
-
     private val fps = 30
     private val crossfade = RemotionTiming.CROSSFADE_FRAMES
 
-    private data class Slide(val durationInFrames: Int, val first: Boolean)
+    private data class Slide(
+        val durationInFrames: Int,
+        val first: Boolean,
+    )
 
-    private fun mountedBgOpacityAt(frame: Int, slides: List<Slide>): Double {
+    private fun mountedBgOpacityAt(
+        frame: Int,
+        slides: List<Slide>,
+    ): Double {
         // Each slide sequence starts where the previous ended (prolonged by crossfade).
         var start = 0
         var best = 0.0
@@ -33,7 +38,10 @@ class RemotionTimingIntegrationTest {
         return best
     }
 
-    private fun contentAppearAt(frame: Int, slides: List<Slide>): Map<Int, Double> {
+    private fun contentAppearAt(
+        frame: Int,
+        slides: List<Slide>,
+    ): Map<Int, Double> {
         val result = mutableMapOf<Int, Double>()
         var start = 0
         slides.forEachIndexed { i, slide ->

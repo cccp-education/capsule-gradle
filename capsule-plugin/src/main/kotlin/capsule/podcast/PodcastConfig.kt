@@ -29,5 +29,5 @@ package capsule.podcast
  */
 data class PodcastConfig(
     val enabled: Boolean = false,
-    val outputFile: String = ""
+    val outputFile: String = "",
 )

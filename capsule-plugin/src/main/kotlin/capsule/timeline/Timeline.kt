@@ -11,9 +11,7 @@ package capsule.timeline
  * `avance` (the visual leads the voice within a slide — prepa's `AVANCE`).
  *
  * Pure — no I/O.
- */
-
-/**
+ *
  * @param fps          frames per second (must be > 0).
  * @param leadSeconds  silence before the first slide.
  * @param tailSeconds  silence after the last slide.
@@ -58,7 +56,10 @@ data class TimelineEntry(
 }
 
 /** A full capsule timeline at a fixed [fps]. */
-data class Timeline(val fps: Int, val entries: List<TimelineEntry>) {
+data class Timeline(
+    val fps: Int,
+    val entries: List<TimelineEntry>,
+) {
     val totalFrames: Long get() = entries.lastOrNull()?.endFrame ?: 0L
     val totalSeconds: Double get() = if (fps > 0) totalFrames.toDouble() / fps else 0.0
 }
@@ -67,14 +68,17 @@ data class Timeline(val fps: Int, val entries: List<TimelineEntry>) {
  * Pure builder of a [Timeline] from per-slide audio durations.
  */
 object TimelineBuilder {
-
     /** Rounds [seconds] to whole frames at [fps], never below zero. */
-    fun framesFor(seconds: Double, fps: Int): Long =
-        kotlin.math.max(0L, kotlin.math.round(seconds * fps).toLong())
+    fun framesFor(
+        seconds: Double,
+        fps: Int,
+    ): Long = kotlin.math.max(0L, kotlin.math.round(seconds * fps).toLong())
 
     /** Converts [frames] at [fps] back to an exact duration in seconds. */
-    fun secondsFor(frames: Long, fps: Int): Double =
-        if (fps > 0) frames.toDouble() / fps else 0.0
+    fun secondsFor(
+        frames: Long,
+        fps: Int,
+    ): Double = if (fps > 0) frames.toDouble() / fps else 0.0
 
     /**
      * Builds the timeline for [durations] (one audio duration per slide).
@@ -83,7 +87,10 @@ object TimelineBuilder {
      * the first starts after the `lead`, the last also carries the `tail`, and a
      * non-first slide's voice starts `avance` frames after its visual start.
      */
-    fun build(durations: List<Double>, config: TimelineConfig = TimelineConfig()): Timeline {
+    fun build(
+        durations: List<Double>,
+        config: TimelineConfig = TimelineConfig(),
+    ): Timeline {
         val fps = config.fps
         val leadFrames = framesFor(config.leadSeconds, fps)
         val tailFrames = framesFor(config.tailSeconds, fps)

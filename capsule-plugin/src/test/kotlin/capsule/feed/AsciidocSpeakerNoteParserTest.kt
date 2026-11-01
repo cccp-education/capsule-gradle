@@ -4,10 +4,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class AsciidocSpeakerNoteParserTest {
-
     @Test
     fun `parse should extract one segment per slide with a NOTE speaker block`() {
-        val adoc = """
+        val adoc =
+            """
             = Deck title
             author
             :revealjs_theme: sky
@@ -29,7 +29,7 @@ class AsciidocSpeakerNoteParserTest {
             --
             Second speaker note.
             --
-        """.trimIndent()
+            """.trimIndent()
 
         val script = AsciidocSpeakerNoteParser.parse(adoc, deckName = "deck")
 
@@ -45,7 +45,8 @@ class AsciidocSpeakerNoteParserTest {
 
     @Test
     fun `parse should skip slides without a NOTE speaker block`() {
-        val adoc = """
+        val adoc =
+            """
             = Deck
 
             == Slide With Note
@@ -58,7 +59,7 @@ class AsciidocSpeakerNoteParserTest {
             == Slide Without Note
 
             No speaker note here.
-        """.trimIndent()
+            """.trimIndent()
 
         val script = AsciidocSpeakerNoteParser.parse(adoc, deckName = "deck")
 
@@ -68,7 +69,8 @@ class AsciidocSpeakerNoteParserTest {
 
     @Test
     fun `parse should preserve multi-line speaker notes`() {
-        val adoc = """
+        val adoc =
+            """
             = Deck
 
             == Slide
@@ -79,7 +81,7 @@ class AsciidocSpeakerNoteParserTest {
             Line two.
             Line three.
             --
-        """.trimIndent()
+            """.trimIndent()
 
         val script = AsciidocSpeakerNoteParser.parse(adoc, deckName = "deck")
 
@@ -88,7 +90,8 @@ class AsciidocSpeakerNoteParserTest {
 
     @Test
     fun `parse should handle NOTE speaker with attributes after the bracket`() {
-        val adoc = """
+        val adoc =
+            """
             = Deck
 
             == Slide
@@ -97,7 +100,7 @@ class AsciidocSpeakerNoteParserTest {
             --
             Note text.
             --
-        """.trimIndent()
+            """.trimIndent()
 
         val script = AsciidocSpeakerNoteParser.parse(adoc, deckName = "deck")
 
@@ -107,7 +110,8 @@ class AsciidocSpeakerNoteParserTest {
 
     @Test
     fun `parse should ignore slides attribute lines preceding the heading`() {
-        val adoc = """
+        val adoc =
+            """
             = Deck
 
             [.slide,data-transition="zoom"]
@@ -117,7 +121,7 @@ class AsciidocSpeakerNoteParserTest {
             --
             Note.
             --
-        """.trimIndent()
+            """.trimIndent()
 
         val script = AsciidocSpeakerNoteParser.parse(adoc, deckName = "deck")
 
@@ -126,7 +130,8 @@ class AsciidocSpeakerNoteParserTest {
 
     @Test
     fun `parse should return empty segments when no slide has speaker notes`() {
-        val adoc = """
+        val adoc =
+            """
             = Deck
 
             == Slide One
@@ -136,7 +141,7 @@ class AsciidocSpeakerNoteParserTest {
             == Slide Two
 
             no note either
-        """.trimIndent()
+            """.trimIndent()
 
         val script = AsciidocSpeakerNoteParser.parse(adoc, deckName = "deck")
 
@@ -145,7 +150,8 @@ class AsciidocSpeakerNoteParserTest {
 
     @Test
     fun `parse should trim whitespace in titles`() {
-        val adoc = """
+        val adoc =
+            """
             = Deck
 
             ==   Spaced Title  
@@ -154,7 +160,7 @@ class AsciidocSpeakerNoteParserTest {
             --
             Note.
             --
-        """.trimIndent()
+            """.trimIndent()
 
         val script = AsciidocSpeakerNoteParser.parse(adoc, deckName = "deck")
 
@@ -163,7 +169,8 @@ class AsciidocSpeakerNoteParserTest {
 
     @Test
     fun `parse should only treat level-2 headings as slides`() {
-        val adoc = """
+        val adoc =
+            """
             = Deck Title
 
             == Real Slide
@@ -179,7 +186,7 @@ class AsciidocSpeakerNoteParserTest {
             --
             Should be ignored.
             --
-        """.trimIndent()
+            """.trimIndent()
 
         val script = AsciidocSpeakerNoteParser.parse(adoc, deckName = "deck")
 
@@ -189,7 +196,8 @@ class AsciidocSpeakerNoteParserTest {
 
     @Test
     fun `parse should number segments sequentially by occurrence`() {
-        val adoc = """
+        val adoc =
+            """
             = Deck
 
             == Third
@@ -212,7 +220,7 @@ class AsciidocSpeakerNoteParserTest {
             --
             Note 2.
             --
-        """.trimIndent()
+            """.trimIndent()
 
         val script = AsciidocSpeakerNoteParser.parse(adoc, deckName = "deck")
 

@@ -1,10 +1,11 @@
 package capsule
 
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
 
 class SubtitleBurnInStyleTest {
-
     @Test
     fun `default style has fontSize 24 white color and bottom position`() {
         val style = SubtitleBurnInStyle()
@@ -16,12 +17,13 @@ class SubtitleBurnInStyleTest {
 
     @Test
     fun `custom style accepts valid values`() {
-        val style = SubtitleBurnInStyle(
-            fontSize = 36,
-            fontColor = "&H000000FF",
-            outlineColor = "&H00FF0000",
-            position = "top"
-        )
+        val style =
+            SubtitleBurnInStyle(
+                fontSize = 36,
+                fontColor = "&H000000FF",
+                outlineColor = "&H00FF0000",
+                position = "top",
+            )
         assertEquals(36, style.fontSize)
         assertEquals("&H000000FF", style.fontColor)
         assertEquals("&H00FF0000", style.outlineColor)
@@ -30,17 +32,19 @@ class SubtitleBurnInStyleTest {
 
     @Test
     fun `fontSize below 8 throws IllegalArgumentException`() {
-        val ex = assertThrows(IllegalArgumentException::class.java) {
-            SubtitleBurnInStyle(fontSize = 7)
-        }
+        val ex =
+            assertThrows(IllegalArgumentException::class.java) {
+                SubtitleBurnInStyle(fontSize = 7)
+            }
         assertTrue(ex.message!!.contains("fontSize"))
     }
 
     @Test
     fun `fontSize above 72 throws IllegalArgumentException`() {
-        val ex = assertThrows(IllegalArgumentException::class.java) {
-            SubtitleBurnInStyle(fontSize = 73)
-        }
+        val ex =
+            assertThrows(IllegalArgumentException::class.java) {
+                SubtitleBurnInStyle(fontSize = 73)
+            }
         assertTrue(ex.message!!.contains("fontSize"))
     }
 
@@ -58,25 +62,28 @@ class SubtitleBurnInStyleTest {
 
     @Test
     fun `invalid fontColor format throws IllegalArgumentException`() {
-        val ex = assertThrows(IllegalArgumentException::class.java) {
-            SubtitleBurnInStyle(fontColor = "white")
-        }
+        val ex =
+            assertThrows(IllegalArgumentException::class.java) {
+                SubtitleBurnInStyle(fontColor = "white")
+            }
         assertTrue(ex.message!!.contains("fontColor"))
     }
 
     @Test
     fun `invalid outlineColor format throws IllegalArgumentException`() {
-        val ex = assertThrows(IllegalArgumentException::class.java) {
-            SubtitleBurnInStyle(outlineColor = "black")
-        }
+        val ex =
+            assertThrows(IllegalArgumentException::class.java) {
+                SubtitleBurnInStyle(outlineColor = "black")
+            }
         assertTrue(ex.message!!.contains("outlineColor"))
     }
 
     @Test
     fun `invalid position throws IllegalArgumentException`() {
-        val ex = assertThrows(IllegalArgumentException::class.java) {
-            SubtitleBurnInStyle(position = "left")
-        }
+        val ex =
+            assertThrows(IllegalArgumentException::class.java) {
+                SubtitleBurnInStyle(position = "left")
+            }
         assertTrue(ex.message!!.contains("position"))
     }
 
@@ -86,7 +93,7 @@ class SubtitleBurnInStyleTest {
         val forceStyle = style.toForceStyle()
         assertEquals(
             "FontSize=24,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,Outline=1,Shadow=1,Alignment=2",
-            forceStyle
+            forceStyle,
         )
     }
 

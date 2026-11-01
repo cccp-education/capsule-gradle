@@ -1,14 +1,13 @@
 package capsule
 
-import java.io.File
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class ManimEngineTest {
-
     // ─── NoOp engine ─────────────────────────────────────────────
 
     @Test
@@ -128,34 +127,39 @@ class ManimEngineTest {
      * MP4 dans le dossier de *résolution* que le vrai Manim utilise, et vérifie
      * au passage qu'on lui a bien passé `--media_dir`.
      */
-    private fun fakeManim(dir: File, resolutionDir: String, verbose: Boolean = false): File {
-        val script = File(dir, "fake-manim").apply {
-            writeText(
-                """
-                #!/bin/sh
-                if [ "${'$'}1" = "--version" ]; then echo "Manim Community v0.18.0"; exit 0; fi
-                media_dir=""
-                scene=""
-                script_path=""
-                while [ ${'$'}# -gt 0 ]; do
-                  case "${'$'}1" in
-                    --media_dir) media_dir="${'$'}2"; shift 2 ;;
-                    -q*) shift ;;
-                    *.py) script_path="${'$'}1"; shift ;;
-                    *) scene="${'$'}1"; shift ;;
-                  esac
-                done
-                if [ -z "${'$'}media_dir" ]; then echo "pas de --media_dir" 1>&2; exit 2; fi
-                stem=`basename "${'$'}script_path" .py`
-                out="${'$'}media_dir/videos/${'$'}stem/$resolutionDir"
-                mkdir -p "${'$'}out"
-                echo "faux rendu" > "${'$'}out/${'$'}scene.mp4"
-                ${if (verbose) "i=0; while [ ${'$'}i -lt 20000 ]; do echo rendu-image-${'$'}i; i=`expr ${'$'}i + 1`; done" else "echo 'rendu termine'"}
-                exit 0
-                """.trimIndent()
-            )
-            setExecutable(true)
-        }
+    private fun fakeManim(
+        dir: File,
+        resolutionDir: String,
+        verbose: Boolean = false,
+    ): File {
+        val script =
+            File(dir, "fake-manim").apply {
+                writeText(
+                    """
+                    #!/bin/sh
+                    if [ "${'$'}1" = "--version" ]; then echo "Manim Community v0.18.0"; exit 0; fi
+                    media_dir=""
+                    scene=""
+                    script_path=""
+                    while [ ${'$'}# -gt 0 ]; do
+                      case "${'$'}1" in
+                        --media_dir) media_dir="${'$'}2"; shift 2 ;;
+                        -q*) shift ;;
+                        *.py) script_path="${'$'}1"; shift ;;
+                        *) scene="${'$'}1"; shift ;;
+                      esac
+                    done
+                    if [ -z "${'$'}media_dir" ]; then echo "pas de --media_dir" 1>&2; exit 2; fi
+                    stem=`basename "${'$'}script_path" .py`
+                    out="${'$'}media_dir/videos/${'$'}stem/$resolutionDir"
+                    mkdir -p "${'$'}out"
+                    echo "faux rendu" > "${'$'}out/${'$'}scene.mp4"
+                    ${if (verbose) "i=0; while [ ${'$'}i -lt 20000 ]; do echo rendu-image-${'$'}i; i=`expr ${'$'}i + 1`; done" else "echo 'rendu termine'"}
+                    exit 0
+                    """.trimIndent(),
+                )
+                setExecutable(true)
+            }
         return script
     }
 
@@ -167,7 +171,9 @@ class ManimEngineTest {
      * que le fichier était là, un dossier à côté.
      */
     @Test
-    fun `render finds the mp4 in the resolution directory manim actually uses`(@TempDir tempDir: File) {
+    fun `render finds the mp4 in the resolution directory manim actually uses`(
+        @TempDir tempDir: File,
+    ) {
         val manim = fakeManim(tempDir, "480p15")
         val scriptsDir = File(tempDir, "scripts").apply { mkdirs() }
         val scriptPath = File(scriptsDir, "MaScene.py").apply { writeText("# scene") }
@@ -181,7 +187,9 @@ class ManimEngineTest {
     }
 
     @Test
-    fun `render also finds the mp4 under another quality directory`(@TempDir tempDir: File) {
+    fun `render also finds the mp4 under another quality directory`(
+        @TempDir tempDir: File,
+    ) {
         val manim = fakeManim(tempDir, "1080p60")
         val scriptsDir = File(tempDir, "scripts").apply { mkdirs() }
         val scriptPath = File(scriptsDir, "Autre.py").apply { writeText("# scene") }
@@ -198,7 +206,9 @@ class ManimEngineTest {
      * Le test échoue par le délai de garde de la suite si la régression revient.
      */
     @Test
-    fun `render survives a very verbose manim`(@TempDir tempDir: File) {
+    fun `render survives a very verbose manim`(
+        @TempDir tempDir: File,
+    ) {
         val manim = fakeManim(tempDir, "480p15", verbose = true)
         val scriptsDir = File(tempDir, "scripts").apply { mkdirs() }
         val scriptPath = File(scriptsDir, "Bavarde.py").apply { writeText("# scene") }
@@ -209,38 +219,46 @@ class ManimEngineTest {
     }
 
     @Test
-    fun `render reports a manim that produced nothing`(@TempDir tempDir: File) {
-        val silent = File(tempDir, "silent-manim").apply {
-            writeText("#!/bin/sh\nexit 0\n")
-            setExecutable(true)
-        }
+    fun `render reports a manim that produced nothing`(
+        @TempDir tempDir: File,
+    ) {
+        val silent =
+            File(tempDir, "silent-manim").apply {
+                writeText("#!/bin/sh\nexit 0\n")
+                setExecutable(true)
+            }
         val scriptPath = File(tempDir, "Absente.py").apply { writeText("# scene") }
 
         val engine = ManimEngineImpl(ManimConfig(executablePath = silent.absolutePath, quality = "l"))
-        val failure = assertFailsWith<ManimException> {
-            engine.render("Absente", scriptPath, File(tempDir, "out"))
-        }
+        val failure =
+            assertFailsWith<ManimException> {
+                engine.render("Absente", scriptPath, File(tempDir, "out"))
+            }
 
         assertTrue(failure.message!!.contains("Absente"), failure.message!!)
     }
 
     @Test
-    fun `render reports a manim that failed, with its output`(@TempDir tempDir: File) {
-        val broken = File(tempDir, "broken-manim").apply {
-            writeText("#!/bin/sh\nif [ \"$1\" = \"--version\" ]; then exit 0; fi\necho 'ValueError: scene introuvable' 1>&2\nexit 1\n")
-            setExecutable(true)
-        }
+    fun `render reports a manim that failed, with its output`(
+        @TempDir tempDir: File,
+    ) {
+        val broken =
+            File(tempDir, "broken-manim").apply {
+                writeText("#!/bin/sh\nif [ \"$1\" = \"--version\" ]; then exit 0; fi\necho 'ValueError: scene introuvable' 1>&2\nexit 1\n")
+                setExecutable(true)
+            }
         val scriptPath = File(tempDir, "Cassee.py").apply { writeText("# scene") }
 
         val engine = ManimEngineImpl(ManimConfig(executablePath = broken.absolutePath, quality = "l"))
-        val failure = assertFailsWith<ManimException> {
-            engine.render("Cassee", scriptPath, File(tempDir, "out"))
-        }
+        val failure =
+            assertFailsWith<ManimException> {
+                engine.render("Cassee", scriptPath, File(tempDir, "out"))
+            }
 
         assertTrue(failure.message!!.contains("exited with code 1"), failure.message!!)
         assertTrue(
             failure.message!!.contains("scene introuvable"),
-            "le diagnostic de manim doit remonter, pas seulement le code : ${failure.message}"
+            "le diagnostic de manim doit remonter, pas seulement le code : ${failure.message}",
         )
     }
 }

@@ -30,15 +30,15 @@ import java.io.File
  * from US-2).
  */
 class CapsuleAudioPostSteps {
-
     private var projectDir: File? = null
     private var buildOutput: String = ""
 
     @Given("a Capsule audio post Gradle project with the capsule plugin applied")
     fun aCapsuleAudioPostGradleProjectWithTheCapsulePluginApplied() {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-audio-post-${System.currentTimeMillis()}-${System.nanoTime()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-audio-post-${System.currentTimeMillis()}-${System.nanoTime()}")
+                .also { it.mkdirs() }
         projectDir!!.resolve("settings.gradle").writeText("")
         writeBuildGradle("")
     }
@@ -46,14 +46,17 @@ class CapsuleAudioPostSteps {
     @And("a demo deck and script are present for audio post")
     fun aDemoDeckAndScriptArePresentForAudioPost() {
         val scriptDir = projectDir!!.resolve("build/capsule").also { it.mkdirs() }
-        scriptDir.resolve("demo-script.txt").writeText("""
+        scriptDir.resolve("demo-script.txt").writeText(
+            """
             === CAPSULE SCRIPT : demo ===
             --- SLIDE 1 : Title ---
             Note content for audio post test.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val decksDir = projectDir!!.resolve("build/docs/asciidocRevealJs").also { it.mkdirs() }
-        decksDir.resolve("demo-deck.html").writeText("""
+        decksDir.resolve("demo-deck.html").writeText(
+            """
             <html><body>
             <div class="reveal">
               <div class="slides">
@@ -61,32 +64,38 @@ class CapsuleAudioPostSteps {
               </div>
             </div>
             </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     private fun writeBuildGradle(capsuleBlock: String) {
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             $capsuleBlock
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @When("I generate the capsule video with the default audio post config")
     fun iGenerateTheCapsuleVideoWithTheDefaultAudioPostConfig() {
-        writeBuildGradle("""
+        writeBuildGradle(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         runAudioPostBuild()
     }
 
     @When("I generate the capsule video with BGM enabled and a NoOp ffmpeg path")
     fun iGenerateTheCapsuleVideoWithBgmEnabledAndANoOpFfmpegPath() {
-        writeBuildGradle("""
+        writeBuildGradle(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
@@ -94,13 +103,15 @@ class CapsuleAudioPostSteps {
                 audioPostBgmFile = "/nonexistent/bgm.mp3"
                 ffmpegExecutablePath = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         runAudioPostBuild()
     }
 
     @When("I generate the capsule video with ducking enabled and BGM disabled and a NoOp ffmpeg path")
     fun iGenerateTheCapsuleVideoWithDuckingEnabledAndBgmDisabledAndANoOpFfmpegPath() {
-        writeBuildGradle("""
+        writeBuildGradle(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
@@ -108,13 +119,15 @@ class CapsuleAudioPostSteps {
                 audioPostBgmEnabled = false
                 ffmpegExecutablePath = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         runAudioPostBuild()
     }
 
     @When("I generate the capsule video with ducking and BGM enabled and a NoOp ffmpeg path")
     fun iGenerateTheCapsuleVideoWithDuckingAndBgmEnabledAndANoOpFfmpegPath() {
-        writeBuildGradle("""
+        writeBuildGradle(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
@@ -123,17 +136,20 @@ class CapsuleAudioPostSteps {
                 audioPostDuckingEnabled = true
                 ffmpegExecutablePath = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         runAudioPostBuild()
     }
 
     private fun runAudioPostBuild() {
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("generateCapsuleVideo")
-            .withProjectDir(projectDir!!)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("generateCapsuleVideo")
+                .withProjectDir(projectDir!!)
+                .build()
         buildOutput = result.output
     }
 

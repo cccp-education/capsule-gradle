@@ -13,7 +13,6 @@ import kotlin.test.assertTrue
  * `burnIn=`, `scriptsDir=`) MUST be preserved verbatim.
  */
 class CapsuleConfigLoggerTest {
-
     @Test
     fun `formatConfigLog returns 4 lines for default config`() {
         val lines = CapsuleConfigLogger.formatConfigLog(CapsuleConfig())

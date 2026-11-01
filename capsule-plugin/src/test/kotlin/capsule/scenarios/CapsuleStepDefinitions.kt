@@ -12,42 +12,47 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class CapsuleStepDefinitions {
-
-    private var _projectDir: File? = null
+    private var projectDirCache: File? = null
     private val projectDir: File
-        get() = _projectDir ?: error("Background not executed")
+        get() = projectDirCache ?: error("Background not executed")
 
     private var lastBuildResult = ""
 
     @Given("a Gradle project with the capsule plugin applied")
     fun aGradleProjectWithTheCapsulePluginApplied() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             capsule {
                 ttsEngine = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
-    private fun decksDir(): File =
-        projectDir.resolve("build/docs/asciidocRevealJs").also { it.mkdirs() }
+    private fun decksDir(): File = projectDir.resolve("build/docs/asciidocRevealJs").also { it.mkdirs() }
 
-    private fun scriptsDir(): File =
-        projectDir.resolve("build/capsule").also { it.mkdirs() }
+    private fun scriptsDir(): File = projectDir.resolve("build/capsule").also { it.mkdirs() }
 
     @Given("a reveal.js deck {string} with {int} slides and data-capsule-slide attributes")
-    fun aRevealJsDeckWithSlidesAndDataCapsuleSlideAttributes(deckName: String, slideCount: Int) {
-        val slides = (1..slideCount).joinToString("\n") { i ->
-            """    <section data-capsule-slide="$i"><h2>Slide $i</h2><p>Content $i</p></section>"""
-        }
-        val deckHtml = """
+    fun aRevealJsDeckWithSlidesAndDataCapsuleSlideAttributes(
+        deckName: String,
+        slideCount: Int,
+    ) {
+        val slides =
+            (1..slideCount).joinToString("\n") { i ->
+                """    <section data-capsule-slide="$i"><h2>Slide $i</h2><p>Content $i</p></section>"""
+            }
+        val deckHtml =
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -55,16 +60,21 @@ $slides
   </div>
 </div>
 </body></html>
-        """.trimIndent()
+            """.trimIndent()
         decksDir().resolve(deckName).writeText(deckHtml)
     }
 
     @Given("a reveal.js deck {string} with {int} slides without data-capsule-slide attributes")
-    fun aRevealJsDeckWithoutDataCapsuleSlideAttributes(deckName: String, slideCount: Int) {
-        val slides = (1..slideCount).joinToString("\n") { i ->
-            """    <section><h2>Slide $i</h2></section>"""
-        }
-        val deckHtml = """
+    fun aRevealJsDeckWithoutDataCapsuleSlideAttributes(
+        deckName: String,
+        slideCount: Int,
+    ) {
+        val slides =
+            (1..slideCount).joinToString("\n") { i ->
+                """    <section><h2>Slide $i</h2></section>"""
+            }
+        val deckHtml =
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -72,13 +82,14 @@ $slides
   </div>
 </div>
 </body></html>
-        """.trimIndent()
+            """.trimIndent()
         decksDir().resolve(deckName).writeText(deckHtml)
     }
 
     @Given("a reveal.js deck {string} with nested vertical stack sections")
     fun aRevealJsDeckWithNestedVerticalStackSections(deckName: String) {
-        val deckHtml = """
+        val deckHtml =
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -90,35 +101,49 @@ $slides
   </div>
 </div>
 </body></html>
-        """.trimIndent()
+            """.trimIndent()
         decksDir().resolve(deckName).writeText(deckHtml)
     }
 
     @And("a capsule script {string} with {int} slide segment")
-    fun aCapsuleScriptWithOneSlideSegment(scriptName: String, count: Int) {
+    fun aCapsuleScriptWithOneSlideSegment(
+        scriptName: String,
+        count: Int,
+    ) {
         writeScript(scriptName, count)
     }
 
     @And("a capsule script {string} with {int} slide segments")
-    fun aCapsuleScriptWithNSlideSegments(scriptName: String, count: Int) {
+    fun aCapsuleScriptWithNSlideSegments(
+        scriptName: String,
+        count: Int,
+    ) {
         writeScript(scriptName, count)
     }
 
     @And("a capsule script {string} with {int} sequentially ordered slide segments")
-    fun aCapsuleScriptSequentiallyOrdered(scriptName: String, count: Int) {
+    fun aCapsuleScriptSequentiallyOrdered(
+        scriptName: String,
+        count: Int,
+    ) {
         writeScript(scriptName, count)
     }
 
-    private fun writeScript(scriptName: String, count: Int) {
+    private fun writeScript(
+        scriptName: String,
+        count: Int,
+    ) {
         val deckBase = scriptName.replace("-script.txt", "")
-        val slides = (1..count).joinToString("\n") { i ->
-            """--- SLIDE $i : Slide $i ---
+        val slides =
+            (1..count).joinToString("\n") { i ->
+                """--- SLIDE $i : Slide $i ---
 Speaker note for slide $i."""
-        }
-        val script = """
+            }
+        val script =
+            """
 === CAPSULE SCRIPT : $deckBase ===
 $slides
-        """.trimIndent()
+            """.trimIndent()
         scriptsDir().resolve(scriptName).writeText(script)
     }
 
@@ -162,7 +187,7 @@ $slides
     fun aPlaceholderVideoIsGenerated() {
         assertTrue(
             lastBuildResult.contains("PLAYWRIGHT CAPTURE PLACEHOLDER") ||
-            lastBuildResult.contains("CAPSULE →")
+                lastBuildResult.contains("CAPSULE →"),
         )
     }
 
@@ -241,12 +266,14 @@ $slides
 
     @Given("a Gradle project with the capsule plugin configured for espeak TTS")
     fun aGradleProjectWithTheCapsulePluginConfiguredForEspeakTts() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-espeak-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-espeak-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -254,17 +281,20 @@ $slides
                 ttsEngine = "espeak"
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Given("a Gradle project with the capsule plugin configured for noop TTS")
     fun aGradleProjectWithTheCapsulePluginConfiguredForNoopTts() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-noop-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-noop-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -272,7 +302,8 @@ $slides
                 ttsEngine = "noop"
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @When("I run the task {string} with espeak TTS")
@@ -283,9 +314,11 @@ $slides
     @Then("the generated MP3 files must be binary audio not text placeholder")
     fun theGeneratedMp3FilesMustBeBinaryAudioNotTextPlaceholder() {
         val capDir = projectDir.resolve("build/capsules")
-        val mp3Files = capDir.walk()
-            .filter { it.name.endsWith(".mp3") }
-            .toList()
+        val mp3Files =
+            capDir
+                .walk()
+                .filter { it.name.endsWith(".mp3") }
+                .toList()
         assertTrue(mp3Files.isNotEmpty(), "Must produce MP3 files in capsules/")
         for (mp3 in mp3Files) {
             assertTrue(mp3.length() > 500, "MP3 must be > 500 bytes, got ${mp3.length()} for ${mp3.name}")
@@ -295,7 +328,10 @@ $slides
     }
 
     @Then("the video file {string} exists in the build {string} directory")
-    fun theVideoFileExistsInTheBuildDirectory(videoName: String, dirName: String) {
+    fun theVideoFileExistsInTheBuildDirectory(
+        videoName: String,
+        dirName: String,
+    ) {
         val videoFile = projectDir.resolve("build/$dirName/$videoName")
         assertTrue(videoFile.exists(), "Video must be in build/$dirName/$videoName, expected: ${videoFile.absolutePath}")
     }
@@ -335,135 +371,172 @@ $slides
 
     @Given("a Gradle project with the capsule plugin applied and an existing capsule-context.yml")
     fun aGradleProjectWithExistingCapsuleContextYml() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-existing-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-existing-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             capsule {
                 ttsEngine = "noop"
             }
-        """.trimIndent())
-        projectDir.resolve("capsule-context.yml").writeText("""# Custom existing config
+            """.trimIndent(),
+        )
+        projectDir.resolve("capsule-context.yml").writeText(
+            """# Custom existing config
 tts:
   engine: piper
-""")
+""",
+        )
     }
 
     @Then("the existing capsule-context.yml is preserved unchanged")
     fun theExistingCapsuleContextYmlIsPreservedUnchanged() {
         val scaffoldFile = projectDir.resolve("capsule-context.yml")
         assertTrue(scaffoldFile.exists(), "File should still exist")
-        assertTrue(scaffoldFile.readText().contains("Custom existing config"), 
-            "Existing file content should be preserved")
+        assertTrue(
+            scaffoldFile.readText().contains("Custom existing config"),
+            "Existing file content should be preserved",
+        )
     }
 
     @Given("a Gradle project with the capsule plugin applied and a capsule-context.yml setting espeak TTS")
     fun aGradleProjectWithCapsuleContextYmlEspeak() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-yaml-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-yaml-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
-        projectDir.resolve("capsule-context.yml").writeText("""
+            """.trimIndent(),
+        )
+        projectDir.resolve("capsule-context.yml").writeText(
+            """
 tts:
   engine: espeak
   espeakVoice: fr
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Given("a Gradle project with the capsule plugin applied and gradle.properties setting espeak TTS")
     fun aGradleProjectWithGradlePropertiesEspeak() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-no-yaml-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-no-yaml-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
-        projectDir.resolve("gradle.properties").writeText("""
+            """.trimIndent(),
+        )
+        projectDir.resolve("gradle.properties").writeText(
+            """
 capsule.tts.engine=espeak
 capsule.tts.espeakVoice=fr
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Then("the resolved TTS engine is {string}")
     fun theResolvedTtsEngineIsString(expectedEngine: String) {
         assertTrue(
             lastBuildResult.contains("engine=$expectedEngine") || lastBuildResult.contains("SUCCESS"),
-            "Resolved TTS engine should be '$expectedEngine'. Build output: ${lastBuildResult.take(2000)}"
+            "Resolved TTS engine should be '$expectedEngine'. Build output: ${lastBuildResult.take(2000)}",
         )
     }
 
     @Given("a Gradle project with the capsule plugin applied and a capsule-context.yml setting manim quality to {string} and scriptsDir to {string}")
-    fun aGradleProjectWithCapsuleContextYmlManimQualityAndScriptsDir(quality: String, scriptsDir: String) {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-manim-yaml-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+    fun aGradleProjectWithCapsuleContextYmlManimQualityAndScriptsDir(
+        quality: String,
+        scriptsDir: String,
+    ) {
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-manim-yaml-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             capsule {
                 ttsEngine = "noop"
             }
-        """.trimIndent())
-        projectDir.resolve("capsule-context.yml").writeText("""
+            """.trimIndent(),
+        )
+        projectDir.resolve("capsule-context.yml").writeText(
+            """
 manim:
   quality: $quality
   scriptsDir: $scriptsDir
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Then("the resolved manim quality is {string}")
     fun theResolvedManimQualityIs(expectedQuality: String) {
-        assertTrue(lastBuildResult.contains("quality=$expectedQuality") || lastBuildResult.contains("quality=$expectedQuality,"),
-            "Resolved manim quality should be '$expectedQuality'. Build output: ${lastBuildResult.take(2000)}")
+        assertTrue(
+            lastBuildResult.contains("quality=$expectedQuality") || lastBuildResult.contains("quality=$expectedQuality,"),
+            "Resolved manim quality should be '$expectedQuality'. Build output: ${lastBuildResult.take(2000)}",
+        )
     }
 
     @Then("the resolved manim scriptsDir is {string}")
     fun theResolvedManimScriptsDirIs(expectedScriptsDir: String) {
-        assertTrue(lastBuildResult.contains("scriptsDir=$expectedScriptsDir"),
-            "Resolved manim scriptsDir should be '$expectedScriptsDir'. Build output: ${lastBuildResult.take(2000)}")
+        assertTrue(
+            lastBuildResult.contains("scriptsDir=$expectedScriptsDir"),
+            "Resolved manim scriptsDir should be '$expectedScriptsDir'. Build output: ${lastBuildResult.take(2000)}",
+        )
     }
 
     @Given("a Gradle project with the capsule plugin applied and a capsule-context.yml setting manim quality to {string}")
     fun aGradleProjectWithCapsuleContextYmlManimQuality(quality: String) {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-manim-quality-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-manim-quality-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             capsule {
                 ttsEngine = "noop"
             }
-        """.trimIndent())
-        projectDir.resolve("capsule-context.yml").writeText("""
+            """.trimIndent(),
+        )
+        projectDir.resolve("capsule-context.yml").writeText(
+            """
 manim:
   quality: $quality
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @When("I run the task {string} with CLI param {string}")
-    fun iRunTheTaskWithCLIParam(taskName: String, cliParam: String) {
+    fun iRunTheTaskWithCLIParam(
+        taskName: String,
+        cliParam: String,
+    ) {
         val runner = GradleRunner.create()
         runner.forwardOutput()
         runner.withPluginClasspath()
@@ -475,29 +548,36 @@ manim:
 
     @Given("a Gradle project with the capsule plugin applied and a capsule-context.yml setting manim outputDir to {string}")
     fun aGradleProjectWithCapsuleContextYmlManimOutputDir(outputDir: String) {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-manim-outputdir-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-manim-outputdir-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             capsule {
                 ttsEngine = "noop"
             }
-        """.trimIndent())
-        projectDir.resolve("capsule-context.yml").writeText("""
+            """.trimIndent(),
+        )
+        projectDir.resolve("capsule-context.yml").writeText(
+            """
 manim:
   outputDir: $outputDir
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Then("the resolved manim outputDir is {string}")
     fun theResolvedManimOutputDirIs(expectedOutputDir: String) {
-        assertTrue(lastBuildResult.contains("outputDir=$expectedOutputDir"),
-            "Resolved manim outputDir should be '$expectedOutputDir'. Build output: ${lastBuildResult.take(2000)}")
+        assertTrue(
+            lastBuildResult.contains("outputDir=$expectedOutputDir"),
+            "Resolved manim outputDir should be '$expectedOutputDir'. Build output: ${lastBuildResult.take(2000)}",
+        )
     }
 
     @Then("the scaffold file contains the manim section with executablePath, quality, scriptsDir, and outputDir")
@@ -515,16 +595,21 @@ manim:
     // ─── Manim steps ─────────────────────────────────────────────
 
     @And("a capsule script {string} with {int} manim slide segments")
-    fun aCapsuleScriptWithManimSlideSegments(scriptName: String, count: Int) {
+    fun aCapsuleScriptWithManimSlideSegments(
+        scriptName: String,
+        count: Int,
+    ) {
         val deckBase = scriptName.replace("-script.txt", "")
-        val slides = (1..count).joinToString("\n") { i ->
-            """--- SLIDE $i : Animation $i [manim:Scene$i] ---
+        val slides =
+            (1..count).joinToString("\n") { i ->
+                """--- SLIDE $i : Animation $i [manim:Scene$i] ---
 Explication de l'animation $i."""
-        }
-        val script = """
+            }
+        val script =
+            """
 === CAPSULE SCRIPT : $deckBase ===
 $slides
-        """.trimIndent()
+            """.trimIndent()
         scriptsDir().resolve(scriptName).writeText(script)
     }
 
@@ -541,7 +626,7 @@ $slides
             // Fallback: verify the build output indicates manim processing
             assertTrue(
                 lastBuildResult.contains("SUCCESS") || lastBuildResult.contains("manim") || lastBuildResult.contains("MANIM"),
-                "Build should indicate manim slide processing. Output: $lastBuildResult"
+                "Build should indicate manim slide processing. Output: $lastBuildResult",
             )
         }
     }
@@ -558,12 +643,12 @@ $slides
             // Either we find manim-related files, or the build completed successfully
             assertTrue(
                 lastBuildResult.contains("SUCCESS"),
-                "ManimEngine should be invoked for MANIM slides. Output: $lastBuildResult"
+                "ManimEngine should be invoked for MANIM slides. Output: $lastBuildResult",
             )
         } else {
             assertTrue(
                 lastBuildResult.contains("SUCCESS"),
-                "Build should succeed when processing manim slides. Output: $lastBuildResult"
+                "Build should succeed when processing manim slides. Output: $lastBuildResult",
             )
         }
     }
@@ -584,14 +669,14 @@ $slides
             val content = muxedFiles.first().readText()
             assertTrue(
                 content.contains("MANIM MIXER PLACEHOLDER") || content.contains("mp4"),
-                "Muxed file should contain mixer output marker. Got: $content"
+                "Muxed file should contain mixer output marker. Got: $content",
             )
         }
 
         // The build must have succeeded — that's the primary e2e validation
         assertTrue(
             lastBuildResult.contains("SUCCESS"),
-            "Build should succeed when processing manim slides with ManimVideoMixer. Output: $lastBuildResult"
+            "Build should succeed when processing manim slides with ManimVideoMixer. Output: $lastBuildResult",
         )
     }
 
@@ -607,7 +692,7 @@ $slides
                 val content = replacedFiles.first().readText()
                 assertTrue(
                     content.contains("<video") || content.contains("video"),
-                    "Replaced deck should contain a <video> tag for manim slide. Got: ${content.take(500)}"
+                    "Replaced deck should contain a <video> tag for manim slide. Got: ${content.take(500)}",
                 )
             }
         }
@@ -615,7 +700,7 @@ $slides
         // The build must have succeeded — primary e2e validation
         assertTrue(
             lastBuildResult.contains("SUCCESS"),
-            "Build should succeed when processing manim slide replacement. Output: $lastBuildResult"
+            "Build should succeed when processing manim slide replacement. Output: $lastBuildResult",
         )
     }
 
@@ -623,12 +708,14 @@ $slides
 
     @Given("a Gradle project with the capsule plugin configured for noop Manim")
     fun aGradleProjectWithTheCapsulePluginConfiguredForNoopManim() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-manim-e2e-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-manim-e2e-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -637,7 +724,8 @@ $slides
                 manimExecutablePath = "noop"
                 manimScriptsDir = "src/manim"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         // Create the manim scripts directory
         projectDir.resolve("src/manim").mkdirs()
@@ -648,13 +736,14 @@ $slides
         val manimDir = projectDir.resolve("src/manim")
         manimDir.mkdirs()
         val sceneName = scriptName.removeSuffix(".py")
-        val manimScript = """
+        val manimScript =
+            """
 from manim import *
 
 class $sceneName(Scene):
     def construct(self):
         self.add(Text("Hello Manim"))
-        """.trimIndent()
+            """.trimIndent()
         manimDir.resolve(scriptName).writeText(manimScript)
     }
 
@@ -664,22 +753,24 @@ class $sceneName(Scene):
         assertTrue(capsuleDir.exists(), "Capsule output directory should exist after Manim E2E pipeline")
 
         // NoOpManimEngine creates a placeholder .mp4 file containing "MANIM PLACEHOLDER"
-        val mp4Files = capsuleDir.walkTopDown()
-            .filter { it.name.endsWith(".mp4") }
-            .toList()
+        val mp4Files =
+            capsuleDir
+                .walkTopDown()
+                .filter { it.name.endsWith(".mp4") }
+                .toList()
 
         if (mp4Files.isNotEmpty()) {
             // At least one MP4 placeholder should contain the NoOp marker
             val hasPlaceholder = mp4Files.any { it.readText(Charsets.ISO_8859_1).contains("MANIM PLACEHOLDER") }
             assertTrue(
                 hasPlaceholder || lastBuildResult.contains("SUCCESS"),
-                "ManimEngine should produce a placeholder MP4. Files found: ${mp4Files.map { it.name }}, Build output: ${lastBuildResult.take(500)}"
+                "ManimEngine should produce a placeholder MP4. Files found: ${mp4Files.map { it.name }}, Build output: ${lastBuildResult.take(500)}",
             )
         } else {
             // If no MP4 files, the build should still succeed with NoOp processing
             assertTrue(
                 lastBuildResult.contains("SUCCESS"),
-                "Build should succeed even if no Manim MP4 files produced (NoOp fallback). Output: ${lastBuildResult.take(500)}"
+                "Build should succeed even if no Manim MP4 files produced (NoOp fallback). Output: ${lastBuildResult.take(500)}",
             )
         }
     }
@@ -690,22 +781,24 @@ class $sceneName(Scene):
         assertTrue(capsuleDir.exists(), "Capsule output directory should exist for ManimVideoMixer validation")
 
         // NoOpManimVideoMixer creates a placeholder containing "MANIM MIXER PLACEHOLDER"
-        val muxedFiles = capsuleDir.walkTopDown()
-            .filter { it.name.contains("-muxed") }
-            .toList()
+        val muxedFiles =
+            capsuleDir
+                .walkTopDown()
+                .filter { it.name.contains("-muxed") }
+                .toList()
 
         if (muxedFiles.isNotEmpty()) {
             val hasPlaceholder = muxedFiles.any { it.readText(Charsets.ISO_8859_1).contains("MANIM MIXER PLACEHOLDER") }
             assertTrue(
                 hasPlaceholder || lastBuildResult.contains("SUCCESS"),
-                "ManimVideoMixer should produce a muxed placeholder. Files: ${muxedFiles.map { it.name }}, Output: ${lastBuildResult.take(500)}"
+                "ManimVideoMixer should produce a muxed placeholder. Files: ${muxedFiles.map { it.name }}, Output: ${lastBuildResult.take(500)}",
             )
         } else {
             // Muxed file may not exist if NoOp engine is used without actual manim render
             // The build should still succeed with NoOp processing
             assertTrue(
                 lastBuildResult.contains("SUCCESS"),
-                "Build should succeed even if no muxed files produced (NoOp fallback). Output: ${lastBuildResult.take(500)}"
+                "Build should succeed even if no muxed files produced (NoOp fallback). Output: ${lastBuildResult.take(500)}",
             )
         }
     }
@@ -722,11 +815,11 @@ class $sceneName(Scene):
         val content = replacedFiles.first().readText()
         assertTrue(
             content.contains("<video"),
-            "Replaced deck should contain <video> tag. Got: ${content.take(500)}"
+            "Replaced deck should contain <video> tag. Got: ${content.take(500)}",
         )
         assertTrue(
             content.contains("data-capsule-slide"),
-            "Replaced deck should preserve data-capsule-slide attribute. Got: ${content.take(500)}"
+            "Replaced deck should preserve data-capsule-slide attribute. Got: ${content.take(500)}",
         )
     }
 
@@ -740,24 +833,27 @@ class $sceneName(Scene):
         assertTrue(capsuleDir.exists(), "Capsule output directory should exist after parallel render")
 
         // Search for manim placeholder output (NoOpManimEngine produces .mp4 with placeholder text)
-        val manimFiles = capsuleDir.walkTopDown()
-            .filter { it.name.endsWith(".mp4") }
-            .toList()
+        val manimFiles =
+            capsuleDir
+                .walkTopDown()
+                .filter { it.name.endsWith(".mp4") }
+                .toList()
 
         if (manimFiles.isNotEmpty()) {
             // At least one MP4 should contain the NoOp placeholder marker
-            val hasManimPlaceholder = manimFiles.any {
-                it.readText(Charsets.ISO_8859_1).contains("MANIM PLACEHOLDER")
-            }
+            val hasManimPlaceholder =
+                manimFiles.any {
+                    it.readText(Charsets.ISO_8859_1).contains("MANIM PLACEHOLDER")
+                }
             assertTrue(
                 hasManimPlaceholder || lastBuildResult.contains("SUCCESS"),
-                "ManimEngine should render all manim slides. Files: ${manimFiles.map { it.name }}, Output: ${lastBuildResult.take(500)}"
+                "ManimEngine should render all manim slides. Files: ${manimFiles.map { it.name }}, Output: ${lastBuildResult.take(500)}",
             )
         } else {
             // Build should succeed even if NoOp engine produces text files
             assertTrue(
                 lastBuildResult.contains("SUCCESS"),
-                "Build should succeed when processing manim slides in parallel. Output: ${lastBuildResult.take(500)}"
+                "Build should succeed when processing manim slides in parallel. Output: ${lastBuildResult.take(500)}",
             )
         }
     }
@@ -769,24 +865,27 @@ class $sceneName(Scene):
         assertTrue(capsuleDir.exists(), "Capsule output directory should exist")
 
         // The parallel renderer outputs files in manim subdirectory
-        val manimDirs = capsuleDir.walkTopDown()
-            .filter { it.isDirectory && it.name == "manim" }
-            .toList()
+        val manimDirs =
+            capsuleDir
+                .walkTopDown()
+                .filter { it.isDirectory && it.name == "manim" }
+                .toList()
 
         if (manimDirs.isNotEmpty()) {
-            val mp4Files = manimDirs.flatMap { dir ->
-                dir.walkTopDown().filter { it.name.endsWith(".mp4") }.toList()
-            }
+            val mp4Files =
+                manimDirs.flatMap { dir ->
+                    dir.walkTopDown().filter { it.name.endsWith(".mp4") }.toList()
+                }
             assertTrue(
                 mp4Files.isNotEmpty(),
-                "Should have rendered .mp4 files in manim output directory. Dirs: ${manimDirs.map { it.absolutePath }}, Files: ${mp4Files.map { it.name }}"
+                "Should have rendered .mp4 files in manim output directory. Dirs: ${manimDirs.map { it.absolutePath }}, Files: ${mp4Files.map { it.name }}",
             )
         }
 
         // Primary validation: build succeeded
         assertTrue(
             lastBuildResult.contains("SUCCESS"),
-            "Build should succeed when rendering manim slides. Output: ${lastBuildResult.take(500)}"
+            "Build should succeed when rendering manim slides. Output: ${lastBuildResult.take(500)}",
         )
     }
 
@@ -794,12 +893,14 @@ class $sceneName(Scene):
 
     @Given("a Gradle project with the capsule plugin configured for English TTS")
     fun aGradleProjectWithTheCapsulePluginConfiguredForEnglishTts() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-tts-en-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-tts-en-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -807,17 +908,20 @@ class $sceneName(Scene):
                 ttsEngine = "noop"
                 ttsLanguage = "en"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Given("a Gradle project with the capsule plugin configured for Spanish TTS")
     fun aGradleProjectWithTheCapsulePluginConfiguredForSpanishTts() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-tts-es-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-tts-es-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -825,17 +929,20 @@ class $sceneName(Scene):
                 ttsEngine = "noop"
                 ttsLanguage = "es"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Given("a Gradle project with the capsule plugin configured for German TTS")
     fun aGradleProjectWithTheCapsulePluginConfiguredForGermanTts() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-tts-de-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-tts-de-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -843,17 +950,20 @@ class $sceneName(Scene):
                 ttsEngine = "noop"
                 ttsLanguage = "de"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Given("a Gradle project with the capsule plugin configured for English Piper TTS")
     fun aGradleProjectWithTheCapsulePluginConfiguredForEnglishPiperTts() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-piper-en-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-piper-en-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -861,17 +971,20 @@ class $sceneName(Scene):
                 ttsEngine = "piper"
                 ttsLanguage = "en"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Given("a Gradle project with the capsule plugin configured for German espeak TTS")
     fun aGradleProjectWithTheCapsulePluginConfiguredForGermanEspeakTts() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-espeak-de-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-espeak-de-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -879,14 +992,15 @@ class $sceneName(Scene):
                 ttsEngine = "espeak"
                 ttsLanguage = "de"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Then("the resolved TTS language is {string}")
     fun theResolvedTtsLanguageIs(expectedLanguage: String) {
         assertTrue(
             lastBuildResult.contains("language=$expectedLanguage") || lastBuildResult.contains("SUCCESS"),
-            "Resolved TTS language should be '$expectedLanguage'. Build output: ${lastBuildResult.take(2000)}"
+            "Resolved TTS language should be '$expectedLanguage'. Build output: ${lastBuildResult.take(2000)}",
         )
     }
 
@@ -894,12 +1008,14 @@ class $sceneName(Scene):
 
     @Given("a Gradle project with the capsule plugin configured for SRT subtitles")
     fun aGradleProjectWithTheCapsulePluginConfiguredForSrtSubtitles() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-sub-srt-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-sub-srt-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -908,17 +1024,20 @@ class $sceneName(Scene):
                 subtitleEnabled = true
                 subtitleFormat = "srt"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Given("a Gradle project with the capsule plugin configured for VTT subtitles")
     fun aGradleProjectWithTheCapsulePluginConfiguredForVttSubtitles() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-sub-vtt-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-sub-vtt-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -927,14 +1046,15 @@ class $sceneName(Scene):
                 subtitleEnabled = true
                 subtitleFormat = "vtt"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Then("the resolved subtitle enabled is {string}")
     fun theResolvedSubtitleEnabledIs(expected: String) {
         assertTrue(
             lastBuildResult.contains("subtitle=$expected") || lastBuildResult.contains("SUCCESS"),
-            "Resolved subtitle enabled should be '$expected'. Build output: ${lastBuildResult.take(2000)}"
+            "Resolved subtitle enabled should be '$expected'. Build output: ${lastBuildResult.take(2000)}",
         )
     }
 
@@ -942,7 +1062,7 @@ class $sceneName(Scene):
     fun theResolvedSubtitleFormatIs(expected: String) {
         assertTrue(
             lastBuildResult.contains("subtitleFormat=$expected") || lastBuildResult.contains("SUCCESS"),
-            "Resolved subtitle format should be '$expected'. Build output: ${lastBuildResult.take(2000)}"
+            "Resolved subtitle format should be '$expected'. Build output: ${lastBuildResult.take(2000)}",
         )
     }
 
@@ -988,12 +1108,14 @@ class $sceneName(Scene):
 
     @Given("a Gradle project with the capsule plugin configured for SRT subtitles with burn-in")
     fun aGradleProjectWithTheCapsulePluginConfiguredForSrtSubtitlesWithBurnIn() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-burnin-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-burnin-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -1003,14 +1125,15 @@ class $sceneName(Scene):
                 subtitleFormat = "srt"
                 subtitleBurnIn = true
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Then("the resolved subtitle burn-in is {string}")
     fun theResolvedSubtitleBurnInIs(expected: String) {
         assertTrue(
             lastBuildResult.contains("burnIn=$expected") || lastBuildResult.contains("SUCCESS"),
-            "Resolved subtitle burn-in should be '$expected'. Build output: ${lastBuildResult.take(2000)}"
+            "Resolved subtitle burn-in should be '$expected'. Build output: ${lastBuildResult.take(2000)}",
         )
     }
 
@@ -1018,18 +1141,20 @@ class $sceneName(Scene):
     fun theSubtitleBurnInServiceIsInvokedForTheFinalVideo() {
         assertTrue(
             lastBuildResult.contains("Subtitle burn-in service:") || lastBuildResult.contains("Subtitle burn-in:"),
-            "Build output should mention subtitle burn-in service invocation. Got: ${lastBuildResult.take(2000)}"
+            "Build output should mention subtitle burn-in service invocation. Got: ${lastBuildResult.take(2000)}",
         )
     }
 
     @Given("a Gradle project with the capsule plugin configured for SRT subtitles with burn-in and real ffmpeg")
     fun aGradleProjectWithTheCapsulePluginConfiguredForSrtSubtitlesWithBurnInAndRealFfmpeg() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-burnin-e2e-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-burnin-e2e-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -1041,14 +1166,15 @@ class $sceneName(Scene):
                 ffmpegExecutablePath = "ffmpeg"
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Then("the burn-in operation completed successfully on the final video")
     fun theBurnInOperationCompletedSuccessfullyOnTheFinalVideo() {
         assertTrue(
             lastBuildResult.contains("Subtitle burn-in:") && lastBuildResult.contains("burned into"),
-            "Build output should indicate successful burn-in. Got: ${lastBuildResult.take(2000)}"
+            "Build output should indicate successful burn-in. Got: ${lastBuildResult.take(2000)}",
         )
     }
 
@@ -1056,12 +1182,14 @@ class $sceneName(Scene):
 
     @Given("a Gradle project with the capsule plugin configured for SRT subtitles with burn-in and custom style")
     fun aGradleProjectWithTheCapsulePluginConfiguredForSrtSubtitlesWithBurnInAndCustomStyle() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-burnin-style-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-burnin-style-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -1075,14 +1203,15 @@ class $sceneName(Scene):
                 subtitleBurnInOutlineColor = "&H00FF0000"
                 subtitleBurnInPosition = "top"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Then("the resolved subtitle burn-in style has fontSize {int}")
     fun theResolvedSubtitleBurnInStyleHasFontSize(expected: Int) {
         assertTrue(
             lastBuildResult.contains("fontSize=$expected"),
-            "Build output should mention fontSize=$expected. Got: ${lastBuildResult.take(2000)}"
+            "Build output should mention fontSize=$expected. Got: ${lastBuildResult.take(2000)}",
         )
     }
 
@@ -1090,7 +1219,7 @@ class $sceneName(Scene):
     fun theResolvedSubtitleBurnInStyleHasFontColor(expected: String) {
         assertTrue(
             lastBuildResult.contains("color=$expected"),
-            "Build output should mention color=$expected. Got: ${lastBuildResult.take(2000)}"
+            "Build output should mention color=$expected. Got: ${lastBuildResult.take(2000)}",
         )
     }
 
@@ -1098,7 +1227,7 @@ class $sceneName(Scene):
     fun theResolvedSubtitleBurnInStyleHasPosition(expected: String) {
         assertTrue(
             lastBuildResult.contains("position=$expected"),
-            "Build output should mention position=$expected. Got: ${lastBuildResult.take(2000)}"
+            "Build output should mention position=$expected. Got: ${lastBuildResult.take(2000)}",
         )
     }
 
@@ -1106,12 +1235,14 @@ class $sceneName(Scene):
 
     @Given("a Gradle project with the capsule plugin configured for VTT subtitles with burn-in")
     fun aGradleProjectWithTheCapsulePluginConfiguredForVttSubtitlesWithBurnIn() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-vtt-burnin-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-vtt-burnin-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -1121,17 +1252,20 @@ class $sceneName(Scene):
                 subtitleFormat = "vtt"
                 subtitleBurnIn = true
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Given("a Gradle project with the capsule plugin configured for VTT subtitles with burn-in and real ffmpeg")
     fun aGradleProjectWithTheCapsulePluginConfiguredForVttSubtitlesWithBurnInAndRealFfmpeg() {
-        _projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capsule-vtt-burnin-e2e-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDirCache =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capsule-vtt-burnin-e2e-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -1143,18 +1277,21 @@ class $sceneName(Scene):
                 ffmpegExecutablePath = "ffmpeg"
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     // ─── CR-8 Structured config logging steps ─────────────────────
 
     @Then("the build output contains 4 structured config log lines")
     fun theBuildOutputContains4StructuredConfigLogLines() {
-        val count = listOf("Capsule TTS:", "Capsule Capture:", "Capsule Subtitles:", "Capsule Manim:")
-            .count { lastBuildResult.contains(it) }
+        val count =
+            listOf("Capsule TTS:", "Capsule Capture:", "Capsule Subtitles:", "Capsule Manim:")
+                .count { lastBuildResult.contains(it) }
         assertEquals(
-            4, count,
-            "Build output should contain 4 structured config log lines (TTS, Capture, Subtitles, Manim). Got: ${lastBuildResult.take(2000)}"
+            4,
+            count,
+            "Build output should contain 4 structured config log lines (TTS, Capture, Subtitles, Manim). Got: ${lastBuildResult.take(2000)}",
         )
     }
 
@@ -1162,7 +1299,7 @@ class $sceneName(Scene):
     fun theBuildOutputContainsATtsConfigLogLineWithEngineToken() {
         assertTrue(
             lastBuildResult.contains("Capsule TTS:") && lastBuildResult.contains("engine="),
-            "Build output should contain a TTS config log line with engine= token. Got: ${lastBuildResult.take(2000)}"
+            "Build output should contain a TTS config log line with engine= token. Got: ${lastBuildResult.take(2000)}",
         )
     }
 
@@ -1170,7 +1307,7 @@ class $sceneName(Scene):
     fun theBuildOutputContainsACaptureConfigLogLineWithVwToken() {
         assertTrue(
             lastBuildResult.contains("Capsule Capture:") && lastBuildResult.contains("vw="),
-            "Build output should contain a Capture config log line with vw= token. Got: ${lastBuildResult.take(2000)}"
+            "Build output should contain a Capture config log line with vw= token. Got: ${lastBuildResult.take(2000)}",
         )
     }
 
@@ -1178,7 +1315,7 @@ class $sceneName(Scene):
     fun theBuildOutputContainsASubtitleConfigLogLineWithSubtitleToken() {
         assertTrue(
             lastBuildResult.contains("Capsule Subtitles:") && lastBuildResult.contains("subtitle="),
-            "Build output should contain a Subtitle config log line with subtitle= token. Got: ${lastBuildResult.take(2000)}"
+            "Build output should contain a Subtitle config log line with subtitle= token. Got: ${lastBuildResult.take(2000)}",
         )
     }
 
@@ -1186,7 +1323,7 @@ class $sceneName(Scene):
     fun theBuildOutputContainsAManimConfigLogLineWithQualityToken() {
         assertTrue(
             lastBuildResult.contains("Capsule Manim:") && lastBuildResult.contains("quality="),
-            "Build output should contain a Manim config log line with quality= token. Got: ${lastBuildResult.take(2000)}"
+            "Build output should contain a Manim config log line with quality= token. Got: ${lastBuildResult.take(2000)}",
         )
     }
 
@@ -1195,11 +1332,9 @@ class $sceneName(Scene):
     // in the Cucumber project build.gradle instead of hardcoding `build/capsule/`.
     // See [capsule.support.CapsuleOutputDirResolver].
 
-    private fun capsuleBuildGradleContent(): String =
-        projectDir.resolve("build.gradle").takeIf { it.exists() }?.readText() ?: ""
+    private fun capsuleBuildGradleContent(): String = projectDir.resolve("build.gradle").takeIf { it.exists() }?.readText() ?: ""
 
-    private fun capsuleOutputDir(): File =
-        CapsuleOutputDirResolver.resolveBuildOutputPath(projectDir, capsuleBuildGradleContent())
+    private fun capsuleOutputDir(): File = CapsuleOutputDirResolver.resolveBuildOutputPath(projectDir, capsuleBuildGradleContent())
 
     private fun capsuleOutputSubtitleFile(fileName: String): File =
         CapsuleOutputDirResolver.resolveSubtitleFile(projectDir, capsuleBuildGradleContent(), fileName)

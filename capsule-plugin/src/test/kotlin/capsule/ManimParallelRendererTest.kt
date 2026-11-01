@@ -5,8 +5,8 @@ import video.kernel.segment.VideoKind
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /**
  * TDD Baby Step — ManimParallelRenderer unit tests.
@@ -21,7 +21,6 @@ import kotlin.test.assertFalse
  * - Factory: CapsuleFactory.resolveManimParallelRenderer()
  */
 class ManimParallelRendererTest {
-
     // ─── NoOpManimParallelRenderer ──────────────────────────────────────
 
     @Test
@@ -33,10 +32,11 @@ class ManimParallelRendererTest {
         tmpDir.deleteOnExit()
 
         val engine = NoOpManimEngine()
-        val slides = listOf(
-            SlideSegment(1, "Scene1", "Note 1", kind = VideoKind.ANIMATION, scene = "Scene1"),
-            SlideSegment(2, "Scene2", "Note 2", kind = VideoKind.ANIMATION, scene = "Scene2")
-        )
+        val slides =
+            listOf(
+                SlideSegment(1, "Scene1", "Note 1", kind = VideoKind.ANIMATION, scene = "Scene1"),
+                SlideSegment(2, "Scene2", "Note 2", kind = VideoKind.ANIMATION, scene = "Scene2"),
+            )
         val scriptsDir = tmpDir.resolve("manim-scripts")
         scriptsDir.mkdirs()
 
@@ -87,9 +87,10 @@ class ManimParallelRendererTest {
         tmpDir.deleteOnExit()
 
         val engine = NoOpManimEngine()
-        val slides = listOf(
-            SlideSegment(1, "NoScene", "Note", kind = VideoKind.ANIMATION, scene = null)
-        )
+        val slides =
+            listOf(
+                SlideSegment(1, "NoScene", "Note", kind = VideoKind.ANIMATION, scene = null),
+            )
         val scriptsDir = tmpDir.resolve("manim-scripts")
         scriptsDir.mkdirs()
 
@@ -110,9 +111,10 @@ class ManimParallelRendererTest {
         tmpDir.deleteOnExit()
 
         val engine = NoOpManimEngine()
-        val slides = listOf(
-            SlideSegment(1, "Missing", "Note", kind = VideoKind.ANIMATION, scene = "MissingScene")
-        )
+        val slides =
+            listOf(
+                SlideSegment(1, "Missing", "Note", kind = VideoKind.ANIMATION, scene = "MissingScene"),
+            )
         val scriptsDir = tmpDir.resolve("manim-scripts")
         scriptsDir.mkdirs()
         // No .py file created for MissingScene
@@ -136,9 +138,10 @@ class ManimParallelRendererTest {
         tmpDir.deleteOnExit()
 
         val failingEngine = ManimEngineImpl(ManimConfig(executablePath = "/nonexistent/path/manim"))
-        val slides = listOf(
-            SlideSegment(1, "Fail", "Note", kind = VideoKind.ANIMATION, scene = "FailScene")
-        )
+        val slides =
+            listOf(
+                SlideSegment(1, "Fail", "Note", kind = VideoKind.ANIMATION, scene = "FailScene"),
+            )
         val scriptsDir = tmpDir.resolve("manim-scripts")
         scriptsDir.mkdirs()
         File(scriptsDir, "FailScene.py").writeText("# FailScene")
@@ -170,11 +173,12 @@ class ManimParallelRendererTest {
         tmpDir.deleteOnExit()
 
         val engine = NoOpManimEngine()
-        val slides = listOf(
-            SlideSegment(1, "Scene1", "Note 1", kind = VideoKind.ANIMATION, scene = "Scene1"),
-            SlideSegment(2, "Scene2", "Note 2", kind = VideoKind.ANIMATION, scene = "Scene2"),
-            SlideSegment(3, "Scene3", "Note 3", kind = VideoKind.ANIMATION, scene = "Scene3")
-        )
+        val slides =
+            listOf(
+                SlideSegment(1, "Scene1", "Note 1", kind = VideoKind.ANIMATION, scene = "Scene1"),
+                SlideSegment(2, "Scene2", "Note 2", kind = VideoKind.ANIMATION, scene = "Scene2"),
+                SlideSegment(3, "Scene3", "Note 3", kind = VideoKind.ANIMATION, scene = "Scene3"),
+            )
         val scriptsDir = tmpDir.resolve("manim-scripts")
         scriptsDir.mkdirs()
         File(scriptsDir, "Scene1.py").writeText("# Scene1")
@@ -215,10 +219,11 @@ class ManimParallelRendererTest {
         tmpDir.deleteOnExit()
 
         val engine = NoOpManimEngine()
-        val slides = listOf(
-            SlideSegment(1, "NoScene", "Note", kind = VideoKind.ANIMATION, scene = null),
-            SlideSegment(2, "WithScene", "Note", kind = VideoKind.ANIMATION, scene = "WithScene")
-        )
+        val slides =
+            listOf(
+                SlideSegment(1, "NoScene", "Note", kind = VideoKind.ANIMATION, scene = null),
+                SlideSegment(2, "WithScene", "Note", kind = VideoKind.ANIMATION, scene = "WithScene"),
+            )
         val scriptsDir = tmpDir.resolve("manim-scripts")
         scriptsDir.mkdirs()
         File(scriptsDir, "WithScene.py").writeText("# WithScene")
@@ -250,9 +255,10 @@ class ManimParallelRendererTest {
         val config = ManimConfig(executablePath = "/nonexistent/path/manim")
         val failingEngine = ManimEngineImpl(config)
 
-        val slides = listOf(
-            SlideSegment(1, "Fail", "Note", kind = VideoKind.ANIMATION, scene = "FailScene")
-        )
+        val slides =
+            listOf(
+                SlideSegment(1, "Fail", "Note", kind = VideoKind.ANIMATION, scene = "FailScene"),
+            )
         val scriptsDir = tmpDir.resolve("manim-scripts")
         scriptsDir.mkdirs()
         File(scriptsDir, "FailScene.py").writeText("# FailScene")

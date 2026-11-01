@@ -19,17 +19,18 @@ import kotlin.test.assertTrue
  * - Empty globs + empty docsContent = no-op (Docs channel dropped).
  */
 class DocContextFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
     private fun writeBuildFile() {
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     private fun writeEagerFiles() {
@@ -40,7 +41,8 @@ class DocContextFunctionalTest {
     }
 
     private fun runner(vararg args: String): GradleRunner =
-        GradleRunner.create()
+        GradleRunner
+            .create()
             .forwardOutput()
             .withPluginClasspath()
             .withArguments(*args)
@@ -50,10 +52,11 @@ class DocContextFunctionalTest {
     fun `docsContent CLI param still works when no globs configured (retrocompat)`() {
         writeBuildFile()
         writeEagerFiles()
-        val result = runner(
-            "collectCapsuleAugmentedContext",
-            "-Pcontext.docsContent=Referential grading manual content via CLI",
-        ).build()
+        val result =
+            runner(
+                "collectCapsuleAugmentedContext",
+                "-Pcontext.docsContent=Referential grading manual content via CLI",
+            ).build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":collectCapsuleAugmentedContext")?.outcome)
         val artefact = projectDir.resolve("build/capsule/augmented-context.txt")
         assertTrue(artefact.exists(), "Expected augmented context artefact")
@@ -69,10 +72,11 @@ class DocContextFunctionalTest {
         val docsDir = projectDir.resolve("docs/referential").apply { mkdirs() }
         docsDir.resolve("grading-rules.adoc").writeText("Referential grading rules for content.")
         docsDir.resolve("evaluation-criteria.adoc").writeText("Evaluation criteria for competency blocks.")
-        val result = runner(
-            "collectCapsuleAugmentedContext",
-            "-Pcapsule.context.docsGlobs=docs/referential/**/*.adoc",
-        ).build()
+        val result =
+            runner(
+                "collectCapsuleAugmentedContext",
+                "-Pcapsule.context.docsGlobs=docs/referential/**/*.adoc",
+            ).build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":collectCapsuleAugmentedContext")?.outcome)
         val artefact = projectDir.resolve("build/capsule/augmented-context.txt")
         assertTrue(artefact.exists(), "Expected augmented context artefact")

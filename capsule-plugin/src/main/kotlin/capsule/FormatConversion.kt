@@ -22,7 +22,6 @@ import java.io.File
  * `probeDuration` lambda. Fully testable.
  */
 object FormatConversion {
-
     /**
      * @param finalVideo    the WebM produced by the capture+burn-in step
      * @param format        the resolved output format
@@ -36,7 +35,7 @@ object FormatConversion {
         finalVideo: File,
         format: OutputFormat,
         converter: VideoFormatConverter,
-        probeDuration: (File) -> Double
+        probeDuration: (File) -> Double,
     ): File {
         if (format == OutputFormat.WEBM) return finalVideo
 

@@ -40,7 +40,6 @@ import java.io.File
  */
 @DisableCachingByDefault(because = "Runs the external ASR engine; the verdict is a function of the audio content")
 abstract class SelectBestVoiceTakeTask : DefaultTask() {
-
     /** Master switch — when false, the task is a no-op (opt-in, backward compat). */
     @get:Input
     val enabled: Property<Boolean> = project.objects.property(Boolean::class.java).convention(false)
@@ -80,10 +79,12 @@ abstract class SelectBestVoiceTakeTask : DefaultTask() {
 
     @get:Internal
     internal var capsuleExtension: CapsuleExtension
-        get() = _capsuleExtension ?: project.extensions.getByType(CapsuleExtension::class.java).also { _capsuleExtension = it }
-        set(value) { _capsuleExtension = value }
+        get() = capsuleExtensionCache ?: project.extensions.getByType(CapsuleExtension::class.java).also { capsuleExtensionCache = it }
+        set(value) {
+            capsuleExtensionCache = value
+        }
 
-    private var _capsuleExtension: CapsuleExtension? = null
+    private var capsuleExtensionCache: CapsuleExtension? = null
 
     @get:Internal
     internal var recognizerOverride: SpeechRecognizer? = null
@@ -144,14 +145,19 @@ abstract class SelectBestVoiceTakeTask : DefaultTask() {
         val scripts = CapsuleFactory.readScriptFiles(scriptDir)
         if (scripts.isEmpty()) return emptyList()
 
-        val outputRoot = project.layout.buildDirectory.dir(capsuleExtension.outputDir.get()).get().asFile
+        val outputRoot =
+            project.layout.buildDirectory
+                .dir(capsuleExtension.outputDir.get())
+                .get()
+                .asFile
         val takes = mutableListOf<VoiceTake>()
         for (script in scripts) {
             val parsed = CapsuleScriptReader.read(script)
             val deckDir = File(outputRoot, parsed.deckName)
             for (segment in parsed.segments) {
                 val prefix = "slide-%02d".format(segment.index)
-                deckDir.listFiles { f -> f.isFile && f.name.endsWith(".mp3") && f.name.startsWith(prefix) }
+                deckDir
+                    .listFiles { f -> f.isFile && f.name.endsWith(".mp3") && f.name.startsWith(prefix) }
                     ?.sortedBy { it.name }
                     ?.forEach { candidate ->
                         if (candidate.length() > 0) {

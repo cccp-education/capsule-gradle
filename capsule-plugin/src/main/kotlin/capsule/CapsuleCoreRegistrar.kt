@@ -13,7 +13,6 @@ import java.io.File
  * `CapsuleViralRegistrar` / `CapsuleQcRegistrar`.
  */
 internal object CapsuleCoreRegistrar {
-
     /** Registers every core production task on [project]. */
     fun register(project: Project) {
         project.registerExtractSpeakerNotesTask()
@@ -126,12 +125,13 @@ internal object CapsuleCoreRegistrar {
             task.description = CapsuleMessages.get("task.distributeCapsuleVideo.description", lang)
             val configFile = File(project.projectDir, "capsule-context.yml")
             val config = CapsuleConfigLoader.load(configFile)
-            val merged = CapsuleConfigMerger.merge(
-                project.projectDir,
-                config,
-                emptyMap(),
-                yamlLoaded = configFile.exists(),
-            )
+            val merged =
+                CapsuleConfigMerger.merge(
+                    project.projectDir,
+                    config,
+                    emptyMap(),
+                    yamlLoaded = configFile.exists(),
+                )
             task.videoDestinationDir.set(merged.output.videoDestinationDir)
             task.versioning.set(merged.output.versioning.name)
             task.versionPrefix.set(merged.output.versionPrefix)

@@ -4,7 +4,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class HtmlEscapeTest {
-
     @Test
     fun `escapeHtml encodes ampersand`() {
         assertEquals("a&amp;b", HtmlEscape.escape("a&b"))

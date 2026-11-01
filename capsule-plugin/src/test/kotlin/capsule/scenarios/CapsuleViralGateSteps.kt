@@ -19,7 +19,6 @@ import org.assertj.core.api.Assertions.assertThat
  * the existence predicate is simulated.
  */
 class CapsuleViralGateSteps {
-
     private var videoPath: String = ""
     private var videoExists: Boolean = true
     private var thumbnailPath: String = ""
@@ -28,22 +27,24 @@ class CapsuleViralGateSteps {
     private var verdict: ViralCampaignGateResult? = null
     private var parsed: List<CampaignBundle> = emptyList()
 
-    private fun sampleBundle() = CampaignBundle(
-        language = "fr",
-        platform = ViralPlatform.TIKTOK,
-        videoFile = videoPath,
-        thumbnailFile = thumbnailPath,
-        metadata = MarketCopy(
+    private fun sampleBundle() =
+        CampaignBundle(
             language = "fr",
             platform = ViralPlatform.TIKTOK,
-            hook = "h",
-            title = "t",
-            caption = "c",
-        ),
-    )
+            videoFile = videoPath,
+            thumbnailFile = thumbnailPath,
+            metadata =
+                MarketCopy(
+                    language = "fr",
+                    platform = ViralPlatform.TIKTOK,
+                    hook = "h",
+                    title = "t",
+                    caption = "c",
+                ),
+        )
 
     @Given("a campaign gate manifest with a present video {string}")
-    fun `a campaign gate manifest with a present video`(path: String) {
+    fun aCampaignGateManifestWithAPresentVideo(path: String) {
         videoPath = path
         videoExists = true
         thumbnailPath = ""
@@ -52,50 +53,51 @@ class CapsuleViralGateSteps {
     }
 
     @Given("a campaign gate manifest with a missing video {string}")
-    fun `a campaign gate manifest with a missing video`(path: String) {
+    fun aCampaignGateManifestWithAMissingVideo(path: String) {
         videoPath = path
         videoExists = false
         bundles = listOf(sampleBundle())
     }
 
     @Given("a missing thumbnail {string}")
-    fun `a missing thumbnail`(path: String) {
+    fun aMissingThumbnail(path: String) {
         thumbnailPath = path
         thumbnailExists = false
         bundles = listOf(sampleBundle())
     }
 
     @When("the campaign gate is evaluated")
-    fun `the campaign gate is evaluated`() {
-        verdict = ViralCampaignGate.verdict(bundles) { path ->
-            (path == videoPath && videoExists) || (path == thumbnailPath && thumbnailExists)
-        }
+    fun theCampaignGateIsEvaluated() {
+        verdict =
+            ViralCampaignGate.verdict(bundles) { path ->
+                (path == videoPath && videoExists) || (path == thumbnailPath && thumbnailExists)
+            }
     }
 
     @Then("the campaign gate verdict is valid")
-    fun `the campaign gate verdict is valid`() {
+    fun theCampaignGateVerdictIsValid() {
         assertThat(verdict).isEqualTo(ViralCampaignGateResult.Valid)
     }
 
     @Then("the campaign gate verdict is invalid")
-    fun `the campaign gate verdict is invalid`() {
+    fun theCampaignGateVerdictIsInvalid() {
         assertThat(verdict).isInstanceOf(ViralCampaignGateResult.Invalid::class.java)
     }
 
     @Then("the campaign gate reports {string}")
-    fun `the campaign gate reports`(descriptor: String) {
+    fun theCampaignGateReports(descriptor: String) {
         val invalid = verdict as ViralCampaignGateResult.Invalid
         assertThat(invalid.missing).contains(descriptor)
     }
 
     @When("the campaign manifest round-trips")
-    fun `the campaign manifest round-trips`() {
+    fun theCampaignManifestRoundTrips() {
         val json = CampaignBundleSerializer.toManifestJson(bundles)
         parsed = CampaignBundleSerializer.parseManifest(json)
     }
 
     @Then("the campaign gate bundles are preserved")
-    fun `the campaign gate bundles are preserved`() {
+    fun theCampaignGateBundlesArePreserved() {
         assertThat(parsed).isEqualTo(bundles)
     }
 }

@@ -10,37 +10,38 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class CapsuleMessagesTest {
-
     @ParameterizedTest
-    @ValueSource(strings = [
-        "task.group.generate",
-        "task.group.collect",
-        "task.group.deploy",
-        "task.group.distribute",
-        "task.group.transform",
-        "task.group.capsule",
-        "task.generateCapsuleScript.description",
-        "task.generateCapsule.description",
-        "task.generateCapsuleVideo.description",
-        "task.generateCapsuleVideoAllLanguages.description",
-        "task.deployCapsule.description",
-        "task.distributeCapsuleVideo.description",
-        "task.collectCapsuleContext.description",
-        "task.transformCapsuleContext.description",
-        "task.collectCapsuleRetrieve.description",
-        "task.scaffoldCapsuleContext.description",
-        "task.capsuleAiSmokeTest.description",
-        "task.collectCapsuleAugmentedContext.description",
-        "task.generateCapsuleContent.description",
-        "task.extractSpeakerNotes.description",
-        "task.translateAndExtractSpeakerNotes.description",
-        "task.translateAndGenerateCapsuleVideos.description",
-        "task.generateCapsuleContentAndVideos.description",
-        "task.validateCapsuleVideoDuration.description",
-        "task.generateCapsuleTranscript.description",
-        "task.generateCapsulePodcast.description",
-        "task.generateViralCampaign.description"
-    ])
+    @ValueSource(
+        strings = [
+            "task.group.generate",
+            "task.group.collect",
+            "task.group.deploy",
+            "task.group.distribute",
+            "task.group.transform",
+            "task.group.capsule",
+            "task.generateCapsuleScript.description",
+            "task.generateCapsule.description",
+            "task.generateCapsuleVideo.description",
+            "task.generateCapsuleVideoAllLanguages.description",
+            "task.deployCapsule.description",
+            "task.distributeCapsuleVideo.description",
+            "task.collectCapsuleContext.description",
+            "task.transformCapsuleContext.description",
+            "task.collectCapsuleRetrieve.description",
+            "task.scaffoldCapsuleContext.description",
+            "task.capsuleAiSmokeTest.description",
+            "task.collectCapsuleAugmentedContext.description",
+            "task.generateCapsuleContent.description",
+            "task.extractSpeakerNotes.description",
+            "task.translateAndExtractSpeakerNotes.description",
+            "task.translateAndGenerateCapsuleVideos.description",
+            "task.generateCapsuleContentAndVideos.description",
+            "task.validateCapsuleVideoDuration.description",
+            "task.generateCapsuleTranscript.description",
+            "task.generateCapsulePodcast.description",
+            "task.generateViralCampaign.description",
+        ],
+    )
     fun `all task keys resolve in English`(key: String) {
         val value = CapsuleMessages.get(key, "en")
         assertNotNull(value)
@@ -48,35 +49,37 @@ class CapsuleMessagesTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = [
-        "task.group.generate",
-        "task.group.collect",
-        "task.group.deploy",
-        "task.group.distribute",
-        "task.group.transform",
-        "task.group.capsule",
-        "task.generateCapsuleScript.description",
-        "task.generateCapsule.description",
-        "task.generateCapsuleVideo.description",
-        "task.generateCapsuleVideoAllLanguages.description",
-        "task.deployCapsule.description",
-        "task.distributeCapsuleVideo.description",
-        "task.collectCapsuleContext.description",
-        "task.transformCapsuleContext.description",
-        "task.collectCapsuleRetrieve.description",
-        "task.scaffoldCapsuleContext.description",
-        "task.capsuleAiSmokeTest.description",
-        "task.collectCapsuleAugmentedContext.description",
-        "task.generateCapsuleContent.description",
-        "task.extractSpeakerNotes.description",
-        "task.translateAndExtractSpeakerNotes.description",
-        "task.translateAndGenerateCapsuleVideos.description",
-        "task.generateCapsuleContentAndVideos.description",
-        "task.validateCapsuleVideoDuration.description",
-        "task.generateCapsuleTranscript.description",
-        "task.generateCapsulePodcast.description",
-        "task.generateViralCampaign.description"
-    ])
+    @ValueSource(
+        strings = [
+            "task.group.generate",
+            "task.group.collect",
+            "task.group.deploy",
+            "task.group.distribute",
+            "task.group.transform",
+            "task.group.capsule",
+            "task.generateCapsuleScript.description",
+            "task.generateCapsule.description",
+            "task.generateCapsuleVideo.description",
+            "task.generateCapsuleVideoAllLanguages.description",
+            "task.deployCapsule.description",
+            "task.distributeCapsuleVideo.description",
+            "task.collectCapsuleContext.description",
+            "task.transformCapsuleContext.description",
+            "task.collectCapsuleRetrieve.description",
+            "task.scaffoldCapsuleContext.description",
+            "task.capsuleAiSmokeTest.description",
+            "task.collectCapsuleAugmentedContext.description",
+            "task.generateCapsuleContent.description",
+            "task.extractSpeakerNotes.description",
+            "task.translateAndExtractSpeakerNotes.description",
+            "task.translateAndGenerateCapsuleVideos.description",
+            "task.generateCapsuleContentAndVideos.description",
+            "task.validateCapsuleVideoDuration.description",
+            "task.generateCapsuleTranscript.description",
+            "task.generateCapsulePodcast.description",
+            "task.generateViralCampaign.description",
+        ],
+    )
     fun `all task keys resolve in French`(key: String) {
         val value = CapsuleMessages.get(key, "fr")
         assertNotNull(value)
@@ -114,14 +117,16 @@ class CapsuleMessagesTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = [
-        "task.group.generate",
-        "task.group.collect",
-        "task.group.deploy",
-        "task.group.distribute",
-        "task.group.transform",
-        "task.group.capsule"
-    ])
+    @ValueSource(
+        strings = [
+            "task.group.generate",
+            "task.group.collect",
+            "task.group.deploy",
+            "task.group.distribute",
+            "task.group.transform",
+            "task.group.capsule",
+        ],
+    )
     fun `group keys resolve to non-blank values in English`(key: String) {
         val value = CapsuleMessages.get(key, "en")
         assertTrue(value.isNotBlank(), "Group key '$key' should not be blank")

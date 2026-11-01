@@ -24,7 +24,6 @@ import java.io.File
  * `-c:a copy` preserves the audio stream unchanged.
  */
 object SubtitleBurnInCommand {
-
     /**
      * Builds the full FFmpeg argv for subtitle burn-in.
      *
@@ -42,15 +41,19 @@ object SubtitleBurnInCommand {
         subtitleFile: File,
         outputFile: File,
         style: SubtitleBurnInStyle,
-        ffmpegPath: String
+        ffmpegPath: String,
     ): List<String> {
         val filter = "subtitles=${subtitleFile.absolutePath}:force_style='${style.toForceStyle()}'"
         return listOf(
-            ffmpegPath, "-y",
-            "-i", videoFile.absolutePath,
-            "-vf", filter,
-            "-c:a", "copy",
-            outputFile.absolutePath
+            ffmpegPath,
+            "-y",
+            "-i",
+            videoFile.absolutePath,
+            "-vf",
+            filter,
+            "-c:a",
+            "copy",
+            outputFile.absolutePath,
         )
     }
 }

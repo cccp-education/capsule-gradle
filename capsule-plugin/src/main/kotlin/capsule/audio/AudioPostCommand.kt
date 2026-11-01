@@ -23,7 +23,6 @@ import java.io.File
  * used. When BGM is disabled, only `-af` is used (single input).
  */
 object AudioPostCommand {
-
     /**
      * Builds the FFmpeg filter graph string for [config].
      *
@@ -33,7 +32,10 @@ object AudioPostCommand {
      *        skipped — degraded mode is the caller's responsibility)
      * @return the filter graph string (for `-filter_complex` or `-af`)
      */
-    fun buildFilterGraph(config: AudioPostConfig, hasBgmInput: Boolean): String {
+    fun buildFilterGraph(
+        config: AudioPostConfig,
+        hasBgmInput: Boolean,
+    ): String {
         // S-203 (dogfooding réel) — two real-ffmpeg fixes:
         //  1. `loudnorm` outputs 192 kHz; without a resample, a following `amix`
         //     (BGM mix) truncates the stream. Re-sample back to 48 kHz.
@@ -55,18 +57,18 @@ object AudioPostCommand {
 
         if (!config.duckingEnabled) {
             // loudness on voice, volume on BGM, amix — filter_complex chain.
-            return "[0:a]${loudness}[voice];" +
-                "[1:a]${bgmVolume}[bgm];" +
-                "[voice][bgm]${amix}[aout]"
+            return "[0:a]$loudness[voice];" +
+                "[1:a]$bgmVolume[bgm];" +
+                "[voice][bgm]$amix[aout]"
         }
 
         // Ducking: sidechaincompress on BGM driven by voice; voice split for mix.
         val ducking = "sidechaincompress=threshold=0.1:ratio=4:attack=5:release=300"
-        return "[0:a]${loudness}[voice];" +
-            "[1:a]${bgmVolume}[bgm];" +
+        return "[0:a]$loudness[voice];" +
+            "[1:a]$bgmVolume[bgm];" +
             "[voice]asplit=2[vsc][vmix];" +
-            "[vsc][bgm]${ducking}[ducked];" +
-            "[vmix][ducked]${amix}[aout]"
+            "[vsc][bgm]$ducking[ducked];" +
+            "[vmix][ducked]$amix[aout]"
     }
 
     /**
@@ -84,7 +86,7 @@ object AudioPostCommand {
         bgmFile: File?,
         outputFile: File,
         config: AudioPostConfig,
-        ffmpegPath: String
+        ffmpegPath: String,
     ): List<String> {
         val argv = mutableListOf(ffmpegPath, "-y", "-i", videoFile.absolutePath)
 
@@ -124,11 +126,21 @@ object AudioPostCommand {
      * Ported from `prepa_electricite_complet/assemble.py`, which measures once
      * then normalises with the measured values plus a make-up gain and a limiter.
      */
-    fun loudnormMeasureArgs(videoFile: File, config: AudioPostConfig, ffmpegPath: String): List<String> =
+    fun loudnormMeasureArgs(
+        videoFile: File,
+        config: AudioPostConfig,
+        ffmpegPath: String,
+    ): List<String> =
         listOf(
-            ffmpegPath, "-hide_banner", "-i", videoFile.absolutePath,
-            "-af", "loudnorm=I=${config.loudnessTarget}:TP=$TWO_PASS_TP:LRA=11:print_format=json",
-            "-f", "null", "-",
+            ffmpegPath,
+            "-hide_banner",
+            "-i",
+            videoFile.absolutePath,
+            "-af",
+            "loudnorm=I=${config.loudnessTarget}:TP=$TWO_PASS_TP:LRA=11:print_format=json",
+            "-f",
+            "null",
+            "-",
         )
 
     /**
@@ -167,15 +179,23 @@ object AudioPostCommand {
         config: AudioPostConfig,
         measured: LoudnormMeasurement,
         ffmpegPath: String,
-    ): List<String> = listOf(
-        ffmpegPath, "-y", "-i", videoFile.absolutePath,
-        "-af", buildTwoPassLoudnorm(config, measured),
-        "-c:v", "copy", "-c:a", "libvorbis", "-shortest",
-        outputFile.absolutePath,
-    )
+    ): List<String> =
+        listOf(
+            ffmpegPath,
+            "-y",
+            "-i",
+            videoFile.absolutePath,
+            "-af",
+            buildTwoPassLoudnorm(config, measured),
+            "-c:v",
+            "copy",
+            "-c:a",
+            "libvorbis",
+            "-shortest",
+            outputFile.absolutePath,
+        )
 
-    private fun fmt(value: Double): String =
-        String.format(java.util.Locale.US, "%.2f", value)
+    private fun fmt(value: Double): String = String.format(java.util.Locale.US, "%.2f", value)
 
     /** True-peak target used by the two-pass chain (reference value). */
     const val TWO_PASS_TP: String = "-2"

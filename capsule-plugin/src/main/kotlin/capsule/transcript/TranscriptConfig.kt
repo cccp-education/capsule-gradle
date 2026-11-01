@@ -27,7 +27,7 @@ package capsule.transcript
  */
 data class TranscriptConfig(
     val enabled: Boolean = false,
-    val strategy: TranscriptStrategy = TranscriptStrategy.TEMPLATE
+    val strategy: TranscriptStrategy = TranscriptStrategy.TEMPLATE,
 )
 
 /**
@@ -45,7 +45,8 @@ data class TranscriptConfig(
  */
 enum class TranscriptStrategy {
     TEMPLATE,
-    LLM;
+    LLM,
+    ;
 
     companion object {
         /**
@@ -54,7 +55,6 @@ enum class TranscriptStrategy {
          * configs without `transcript.strategy` keep the template
          * behavior).
          */
-        fun fromString(value: String?): TranscriptStrategy =
-            entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: TEMPLATE
+        fun fromString(value: String?): TranscriptStrategy = entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: TEMPLATE
     }
 }

@@ -14,12 +14,13 @@ import kotlin.test.assertTrue
  * `fish` engine is then unavailable, never a failure.
  */
 class FishAudioConfigLoaderTest {
-
     @field:TempDir
     lateinit var dir: File
 
-    private fun write(name: String, body: String): File =
-        File(dir, name).apply { writeText(body) }
+    private fun write(
+        name: String,
+        body: String,
+    ): File = File(dir, name).apply { writeText(body) }
 
     @Test
     fun `loads a single key from the fish-audio pool`() {

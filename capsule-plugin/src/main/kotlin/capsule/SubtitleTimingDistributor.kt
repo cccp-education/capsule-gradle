@@ -12,14 +12,17 @@ package capsule
  * Pure — no I/O.
  */
 object SubtitleTimingDistributor {
-
     /**
      * @param cartons  the cartons in order (each non-empty).
      * @param start    the take's start time in seconds (>= 0).
      * @param duration the take's duration in seconds (>= 0).
      * @return one closed range per carton, contiguous and covering the take.
      */
-    fun distribute(cartons: List<String>, start: Double, duration: Double): List<ClosedRange<Double>> {
+    fun distribute(
+        cartons: List<String>,
+        start: Double,
+        duration: Double,
+    ): List<ClosedRange<Double>> {
         require(start >= 0.0) { "start must be >= 0, got $start" }
         require(duration >= 0.0) { "duration must be >= 0, got $duration" }
         if (cartons.isEmpty()) return emptyList()

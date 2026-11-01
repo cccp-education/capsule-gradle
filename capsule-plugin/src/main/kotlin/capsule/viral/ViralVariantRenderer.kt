@@ -17,7 +17,9 @@ data class ViralVariantRenderEntry(
  * Ordered render plan for a viral campaign (CAP-SHORT US-1b): one MP4 per
  * variant, in the batch matrix order.
  */
-data class ViralVariantRenderPlan(val entries: List<ViralVariantRenderEntry>) {
+data class ViralVariantRenderPlan(
+    val entries: List<ViralVariantRenderEntry>,
+) {
     val size: Int get() = entries.size
     val isEmpty: Boolean get() = entries.isEmpty()
 
@@ -57,14 +59,16 @@ data class ViralRenderResult(
  * predicate is injected).
  */
 object ViralVariantRenderer {
-
     /** Container of the per-variant short-form video. */
     const val VIDEO_EXTENSION: String = "mp4"
 
     /**
      * Names the per-variant output file `<variant.id>.mp4` under [renderedVideoDir].
      */
-    fun plan(variants: List<ViralVariant>, renderedVideoDir: File): ViralVariantRenderPlan =
+    fun plan(
+        variants: List<ViralVariant>,
+        renderedVideoDir: File,
+    ): ViralVariantRenderPlan =
         ViralVariantRenderPlan(
             variants.map { variant ->
                 ViralVariantRenderEntry(
@@ -104,14 +108,15 @@ object ViralVariantRenderer {
         val skipped = mutableListOf<String>()
         val failed = mutableListOf<String>()
 
-        val pending = plan.entries.filterNot { entry ->
-            if (isRenderable(entry.videoFile)) {
-                skipped += entry.variant.id
-                true
-            } else {
-                false
+        val pending =
+            plan.entries.filterNot { entry ->
+                if (isRenderable(entry.videoFile)) {
+                    skipped += entry.variant.id
+                    true
+                } else {
+                    false
+                }
             }
-        }
         if (pending.isEmpty()) return ViralRenderResult(rendered, skipped, failed)
 
         val primary = pending.first()

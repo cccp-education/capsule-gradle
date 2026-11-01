@@ -18,7 +18,6 @@ import contracts.i18n.SupportedLanguage
  * and the shard coverage is guarded by [CapsuleCucumberShardCoverageTest].
  */
 object MultiLangShardPartition {
-
     /** The language-group letters, in partition order. */
     val GROUP_LETTERS: List<String> = listOf("a", "b", "c", "d")
 
@@ -29,7 +28,10 @@ object MultiLangShardPartition {
      *
      * @throws IllegalArgumentException when [group] is not a known letter.
      */
-    fun partition(group: String, all: List<SupportedLanguage>): List<SupportedLanguage> {
+    fun partition(
+        group: String,
+        all: List<SupportedLanguage>,
+    ): List<SupportedLanguage> {
         val index = GROUP_LETTERS.indexOf(group.lowercase())
         require(index >= 0) { "Unknown language group: '$group' (expected one of ${GROUP_LETTERS.joinToString(", ")})" }
 

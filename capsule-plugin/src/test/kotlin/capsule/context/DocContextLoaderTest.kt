@@ -5,9 +5,8 @@ import contracts.context.ContextChannel
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /**
  * TDD unit tests for [DocContextLoader] (CAP-DOCCONTEXT-2).
@@ -18,7 +17,6 @@ import kotlin.test.assertFalse
  * channel token budget (`budget.docsTokens` = 10% of total).
  */
 class DocContextLoaderTest {
-
     @TempDir
     lateinit var tempDir: File
 
@@ -54,14 +52,18 @@ class DocContextLoaderTest {
         val result = DocContextLoader.load(listOf(file), budget)
         val maxTokens = budget.docsTokens
         val estimatedTokens = ContextChannel.estimateTokens(result)
-        assertTrue(estimatedTokens <= maxTokens + 50, "Result ($estimatedTokens tokens) should be truncated near budget ($maxTokens tokens), not full 200 lines")
+        assertTrue(
+            estimatedTokens <= maxTokens + 50,
+            "Result ($estimatedTokens tokens) should be truncated near budget ($maxTokens tokens), not full 200 lines",
+        )
         assertFalse(result.contains("line 200"), "Truncated result should not contain the last line")
     }
 
     @Test
     fun `load with zero docs budget returns blank string`() {
         val file = File(tempDir, "referential.adoc").also { it.writeText("Some content.") }
-        val budget = ChannelBudget(totalTokenBudget = 8000, budgetEager = 0.40, budgetRag = 0.30, budgetGraphify = 0.20, budgetDocs = 0.0, budgetResource = 0.10)
+        val budget =
+            ChannelBudget(totalTokenBudget = 8000, budgetEager = 0.40, budgetRag = 0.30, budgetGraphify = 0.20, budgetDocs = 0.0, budgetResource = 0.10)
         val result = DocContextLoader.load(listOf(file), budget)
         assertTrue(result.isBlank(), "Zero docs budget should yield a blank string")
     }

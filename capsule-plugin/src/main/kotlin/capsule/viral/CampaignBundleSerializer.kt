@@ -20,12 +20,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode
  * Pure — no Gradle, no I/O.
  */
 object CampaignBundleSerializer {
-
     private val mapper = ObjectMapper()
 
     /** Serializes [bundle] to a pretty JSON string (deterministic key order). */
-    fun toJson(bundle: CampaignBundle): String =
-        mapper.writerWithDefaultPrettyPrinter().writeValueAsString(bundleNode(bundle))
+    fun toJson(bundle: CampaignBundle): String = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(bundleNode(bundle))
 
     /**
      * Serializes a whole campaign (ordered list of bundles) to the stable JSON
@@ -58,14 +56,15 @@ object CampaignBundleSerializer {
                 videoFile = node.get("videoFile")?.asText().orEmpty(),
                 thumbnailFile = node.get("thumbnailFile")?.asText().orEmpty(),
                 subtitleFile = node.get("subtitleFile")?.asText().orEmpty(),
-                metadata = MarketCopy(
-                    language = node.get("language")?.asText().orEmpty(),
-                    platform = ViralPlatform.fromString(node.get("platform")?.asText().orEmpty()),
-                    hook = metadata?.get("hook")?.asText().orEmpty(),
-                    title = metadata?.get("title")?.asText().orEmpty(),
-                    caption = metadata?.get("caption")?.asText().orEmpty(),
-                    hashtags = metadata?.get("hashtags")?.map { it.asText() } ?: emptyList(),
-                ),
+                metadata =
+                    MarketCopy(
+                        language = node.get("language")?.asText().orEmpty(),
+                        platform = ViralPlatform.fromString(node.get("platform")?.asText().orEmpty()),
+                        hook = metadata?.get("hook")?.asText().orEmpty(),
+                        title = metadata?.get("title")?.asText().orEmpty(),
+                        caption = metadata?.get("caption")?.asText().orEmpty(),
+                        hashtags = metadata?.get("hashtags")?.map { it.asText() } ?: emptyList(),
+                    ),
             )
         }
     }

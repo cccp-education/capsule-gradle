@@ -14,29 +14,31 @@ import kotlin.test.assertTrue
  * it never accesses [capsule.context.CapsuleScenario] directly.
  */
 class DefaultCapsulePromptBuilderTest {
-
     private val builder = DefaultCapsulePromptBuilder()
 
+    @Suppress("ktlint:standard:max-line-length") // single-line JSON fixture literal
     private fun state(
         deckName: String = "demo",
         language: String = "fr",
         augmentedContext: String = "",
         contentPlanJson: String = """{"deckName":"demo","languageCode":"fr","slideCount":3,"speakerNotesFile":"demo-speaker-notes.adoc","ttsScriptFile":"demo-script.txt"}""",
-    ): CapsuleState = CapsuleState(
-        deckName = deckName,
-        language = language,
-        sourceAdoc = "= Demo\n\n== Slide A\nspeaker A\n",
-        augmentedContext = augmentedContext,
-        contentPlanJson = contentPlanJson,
-        contextValid = true,
-        stage = CapsuleStage.CONTEXT_PROPOSED,
-    )
+    ): CapsuleState =
+        CapsuleState(
+            deckName = deckName,
+            language = language,
+            sourceAdoc = "= Demo\n\n== Slide A\nspeaker A\n",
+            augmentedContext = augmentedContext,
+            contentPlanJson = contentPlanJson,
+            contextValid = true,
+            stage = CapsuleStage.CONTEXT_PROPOSED,
+        )
 
     @Test
     fun `buildGeneratePrompt with scenario-augmented context contains the scenario instruction line`() {
-        val prompt = builder.buildGeneratePrompt(
-            state(augmentedContext = "==== Pedagogical Scenario (scenario)\nSession: Bienvenue\nObjectives: Goal A"),
-        )
+        val prompt =
+            builder.buildGeneratePrompt(
+                state(augmentedContext = "==== Pedagogical Scenario (scenario)\nSession: Bienvenue\nObjectives: Goal A"),
+            )
         assertTrue(
             prompt.contains("pedagogical scenario objectives"),
             "Generate prompt must reference scenario objectives when scenario context is present",
@@ -63,9 +65,10 @@ class DefaultCapsulePromptBuilderTest {
 
     @Test
     fun `buildGeneratePrompt with augmented context but no scenario section keeps generic prompt`() {
-        val prompt = builder.buildGeneratePrompt(
-            state(augmentedContext = "==== EAGER Context (EAGER/LAZY)\nINDEX.adoc content only"),
-        )
+        val prompt =
+            builder.buildGeneratePrompt(
+                state(augmentedContext = "==== EAGER Context (EAGER/LAZY)\nINDEX.adoc content only"),
+            )
         assertTrue(prompt.contains("pedagogical scriptwriter"))
         assertTrue(
             !prompt.contains("Pedagogical Scenario"),
@@ -77,11 +80,12 @@ class DefaultCapsulePromptBuilderTest {
 
     @Test
     fun `buildGeneratePrompt with glossary-augmented context contains the official terminology instruction line`() {
-        val prompt = builder.buildGeneratePrompt(
-            state(
-                augmentedContext = "==== Official Glossary (glossary)\ncompétence: savoir-faire",
-            ),
-        )
+        val prompt =
+            builder.buildGeneratePrompt(
+                state(
+                    augmentedContext = "==== Official Glossary (glossary)\ncompétence: savoir-faire",
+                ),
+            )
         assertTrue(
             prompt.contains("official terminology"),
             "Generate prompt must reference official terminology when glossary context is present",
@@ -94,9 +98,10 @@ class DefaultCapsulePromptBuilderTest {
 
     @Test
     fun `buildGeneratePrompt with augmented context without Official Glossary section keeps generic prompt`() {
-        val prompt = builder.buildGeneratePrompt(
-            state(augmentedContext = "==== EAGER Context (EAGER/LAZY)\nINDEX.adoc content only"),
-        )
+        val prompt =
+            builder.buildGeneratePrompt(
+                state(augmentedContext = "==== EAGER Context (EAGER/LAZY)\nINDEX.adoc content only"),
+            )
         assertTrue(
             !prompt.contains("official terminology"),
             "Augmented context without Official Glossary section must not emit the glossary instruction line",

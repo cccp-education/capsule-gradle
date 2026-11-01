@@ -9,8 +9,10 @@ import kotlin.test.assertTrue
  * TDD unit tests for [ContentPreflight] (PRT-05). Pure — no I/O.
  */
 class ContentPreflightTest {
-
-    private fun slide(index: Int, note: String) = SlideSegment(index = index, title = "s$index", narration = note)
+    private fun slide(
+        index: Int,
+        note: String,
+    ) = SlideSegment(index = index, title = "s$index", narration = note)
 
     @Test
     fun `clean slides yield no finding`() {

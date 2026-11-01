@@ -1,19 +1,18 @@
 package capsule.multilang
 
-import video.kernel.FileVisualSource
 import contracts.i18n.LanguageCatalog
 import contracts.i18n.SupportedLanguage
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import video.kernel.FileVisualSource
 import java.io.File
 import java.nio.file.Path
 
 class CapsuleVideoPlanTest {
-
     @TempDir
     lateinit var tempDir: Path
 
@@ -24,8 +23,7 @@ class CapsuleVideoPlanTest {
         return file
     }
 
-    private fun supportedLanguage(code: String): SupportedLanguage =
-        LanguageCatalog.findByCode(code)!!
+    private fun supportedLanguage(code: String): SupportedLanguage = LanguageCatalog.findByCode(code)!!
 
     private fun entry(
         code: String = "fr",
@@ -50,19 +48,23 @@ class CapsuleVideoPlanTest {
 
     @Test
     fun `plan with multiple entries is valid`() {
-        val plan = CapsuleVideoPlan(listOf(
-            entry("fr"),
-            entry("en"),
-            entry("ar"),
-        ))
+        val plan =
+            CapsuleVideoPlan(
+                listOf(
+                    entry("fr"),
+                    entry("en"),
+                    entry("ar"),
+                ),
+            )
         assertEquals(3, plan.size())
     }
 
     @Test
     fun `plan with empty entries throws IllegalArgumentException`() {
-        val ex = assertThrows(IllegalArgumentException::class.java) {
-            CapsuleVideoPlan(emptyList())
-        }
+        val ex =
+            assertThrows(IllegalArgumentException::class.java) {
+                CapsuleVideoPlan(emptyList())
+            }
         assertTrue(ex.message!!.contains("at least one", ignoreCase = true))
     }
 
@@ -89,28 +91,30 @@ class CapsuleVideoPlanTest {
     @Test
     fun `entry with non-existent deck file throws IllegalArgumentException`() {
         val scriptFile = touch("scripts/kotlin-basics_fr-script.txt")
-        val ex = assertThrows(IllegalArgumentException::class.java) {
-            CapsuleVideoEntry(
-                visual = FileVisualSource(tempDir.resolve("decks/missing_fr-deck.html").toFile()),
-                scriptFile = scriptFile,
-                language = supportedLanguage("fr"),
-                outputVideo = tempDir.resolve("out/kotlin-basics_fr.webm").toFile(),
-            )
-        }
+        val ex =
+            assertThrows(IllegalArgumentException::class.java) {
+                CapsuleVideoEntry(
+                    visual = FileVisualSource(tempDir.resolve("decks/missing_fr-deck.html").toFile()),
+                    scriptFile = scriptFile,
+                    language = supportedLanguage("fr"),
+                    outputVideo = tempDir.resolve("out/kotlin-basics_fr.webm").toFile(),
+                )
+            }
         assertTrue(ex.message!!.contains("deck", ignoreCase = true))
     }
 
     @Test
     fun `entry with non-existent script file throws IllegalArgumentException`() {
         val deckFile = touch("decks/kotlin-basics_fr-deck.html")
-        val ex = assertThrows(IllegalArgumentException::class.java) {
-            CapsuleVideoEntry(
-                visual = FileVisualSource(deckFile),
-                scriptFile = tempDir.resolve("scripts/missing_fr-script.txt").toFile(),
-                language = supportedLanguage("fr"),
-                outputVideo = tempDir.resolve("out/kotlin-basics_fr.webm").toFile(),
-            )
-        }
+        val ex =
+            assertThrows(IllegalArgumentException::class.java) {
+                CapsuleVideoEntry(
+                    visual = FileVisualSource(deckFile),
+                    scriptFile = tempDir.resolve("scripts/missing_fr-script.txt").toFile(),
+                    language = supportedLanguage("fr"),
+                    outputVideo = tempDir.resolve("out/kotlin-basics_fr.webm").toFile(),
+                )
+            }
         assertTrue(ex.message!!.contains("script", ignoreCase = true))
     }
 
@@ -118,14 +122,15 @@ class CapsuleVideoPlanTest {
     fun `entry with unknown language code throws IllegalArgumentException`() {
         val deckFile = touch("decks/kotlin-basics_xx-deck.html")
         val scriptFile = touch("scripts/kotlin-basics_xx-script.txt")
-        val ex = assertThrows(IllegalArgumentException::class.java) {
-            CapsuleVideoEntry(
-                visual = FileVisualSource(deckFile),
-                scriptFile = scriptFile,
-                language = SupportedLanguage(code = "xx", name = "Unknown", nativeName = "Unknown"),
-                outputVideo = tempDir.resolve("out/kotlin-basics_xx.webm").toFile(),
-            )
-        }
+        val ex =
+            assertThrows(IllegalArgumentException::class.java) {
+                CapsuleVideoEntry(
+                    visual = FileVisualSource(deckFile),
+                    scriptFile = scriptFile,
+                    language = SupportedLanguage(code = "xx", name = "Unknown", nativeName = "Unknown"),
+                    outputVideo = tempDir.resolve("out/kotlin-basics_xx.webm").toFile(),
+                )
+            }
         assertTrue(ex.message!!.contains("catalog", ignoreCase = true))
     }
 

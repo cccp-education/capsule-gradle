@@ -13,7 +13,6 @@ import kotlin.test.assertTrue
  * (CAP-QC-VOICE US-2). The process is intercepted — no real whisper needed.
  */
 class CliSpeechRecognizerTest {
-
     @AfterTest
     fun tearDown() {
         ProcessRunner.commandInterceptor = null

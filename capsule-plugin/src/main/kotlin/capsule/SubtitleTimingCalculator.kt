@@ -3,8 +3,10 @@ package capsule
 import capsule.feed.SlideSegment
 
 object SubtitleTimingCalculator {
-
-    fun calculate(slides: List<SlideSegment>, durations: List<Double>): List<SubtitleEntry> {
+    fun calculate(
+        slides: List<SlideSegment>,
+        durations: List<Double>,
+    ): List<SubtitleEntry> {
         if (slides.isEmpty()) return emptyList()
 
         val entries = mutableListOf<SubtitleEntry>()
@@ -20,8 +22,8 @@ object SubtitleTimingCalculator {
                     index = slide.index,
                     startTime = currentTime,
                     endTime = endTime,
-                    text = slide.speakerNote
-                )
+                    text = slide.speakerNote,
+                ),
             )
 
             currentTime = endTime
@@ -71,7 +73,7 @@ object SubtitleTimingCalculator {
                             startTime = range.start,
                             endTime = range.endInclusive,
                             text = carton,
-                        )
+                        ),
                     )
                     cueIndex++
                 }

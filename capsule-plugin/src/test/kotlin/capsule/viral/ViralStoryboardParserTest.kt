@@ -17,20 +17,21 @@ import kotlin.test.assertNull
  * Round-trip invariant: `parse(build(sb)) == sb` for every valid storyboard.
  */
 class ViralStoryboardParserTest {
-
-    private fun storyboard() = ViralStoryboard(
-        message = "Devenir développeur professionnel",
-        angle = "Le métier en 30 secondes",
-        beats = listOf(
-            StoryboardBeat("hook", "Et si 30 secondes suffisaient ?", 3.0),
-            StoryboardBeat("development", "Les 4 activités types", 10.0),
-            StoryboardBeat("development", "Le rôle du développeur", 10.0),
-            StoryboardBeat("cta", "Découvrez Content", 7.0),
-        ),
-        platform = ViralPlatform.TIKTOK,
-        language = "fr",
-        targetDurationSeconds = 30,
-    )
+    private fun storyboard() =
+        ViralStoryboard(
+            message = "Devenir développeur professionnel",
+            angle = "Le métier en 30 secondes",
+            beats =
+                listOf(
+                    StoryboardBeat("hook", "Et si 30 secondes suffisaient ?", 3.0),
+                    StoryboardBeat("development", "Les 4 activités types", 10.0),
+                    StoryboardBeat("development", "Le rôle du développeur", 10.0),
+                    StoryboardBeat("cta", "Découvrez Content", 7.0),
+                ),
+            platform = ViralPlatform.TIKTOK,
+            language = "fr",
+            targetDurationSeconds = 30,
+        )
 
     @Test
     fun `parse is the inverse of build for a plain storyboard`() {
@@ -41,13 +42,15 @@ class ViralStoryboardParserTest {
 
     @Test
     fun `parse round-trips a manim beat with its scene`() {
-        val source = storyboard().copy(
-            beats = listOf(
-                StoryboardBeat("hook", "h", 3.0),
-                StoryboardBeat("development", "d", 24.0, type = SlideType.MANIM, manimScene = "MoveSquare"),
-                StoryboardBeat("cta", "c", 3.0),
-            ),
-        )
+        val source =
+            storyboard().copy(
+                beats =
+                    listOf(
+                        StoryboardBeat("hook", "h", 3.0),
+                        StoryboardBeat("development", "d", 24.0, type = SlideType.MANIM, manimScene = "MoveSquare"),
+                        StoryboardBeat("cta", "c", 3.0),
+                    ),
+            )
         val parsed = assertNotNull(ViralStoryboardParser.parse(ViralStoryboardBuilder.build(source)))
         assertEquals(source, parsed)
         assertEquals(SlideType.MANIM, parsed.beats[1].type)
@@ -56,13 +59,15 @@ class ViralStoryboardParserTest {
 
     @Test
     fun `parse round-trips a beat asset`() {
-        val source = storyboard().copy(
-            beats = listOf(
-                StoryboardBeat("hook", "h", 3.0),
-                StoryboardBeat("development", "d", 20.0, asset = "mind-map.png"),
-                StoryboardBeat("cta", "c", 7.0),
-            ),
-        )
+        val source =
+            storyboard().copy(
+                beats =
+                    listOf(
+                        StoryboardBeat("hook", "h", 3.0),
+                        StoryboardBeat("development", "d", 20.0, asset = "mind-map.png"),
+                        StoryboardBeat("cta", "c", 7.0),
+                    ),
+            )
         val parsed = assertNotNull(ViralStoryboardParser.parse(ViralStoryboardBuilder.build(source)))
         assertEquals(source, parsed)
         assertEquals("mind-map.png", parsed.beats[1].asset)
@@ -81,7 +86,8 @@ class ViralStoryboardParserTest {
 
     @Test
     fun `parse returns null when there is no beat`() {
-        val broken = """
+        val broken =
+            """
             = Storyboard — Devenir développeur professionnel
             :platform: TIKTOK
             :language: fr
@@ -92,7 +98,7 @@ class ViralStoryboardParserTest {
             Le métier en 30 secondes
 
             == Beats
-        """.trimIndent()
+            """.trimIndent()
         assertNull(ViralStoryboardParser.parse(broken))
     }
 }

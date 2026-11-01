@@ -14,7 +14,6 @@ import kotlin.test.assertTrue
  * No I/O, no ffmpeg — the numbers are passed directly.
  */
 class VideoIntegrityCheckerTest {
-
     @Test
     fun `clean when decoder exits zero with no diagnostic`() {
         val result = VideoIntegrityChecker.verdict(exitCode = 0, stderr = "")
@@ -52,10 +51,11 @@ class VideoIntegrityCheckerTest {
 
     @Test
     fun `corrupt when decoder times out`() {
-        val result = VideoIntegrityChecker.verdict(
-            exitCode = capsule.ProcessRunner.TIMED_OUT,
-            stderr = "killed"
-        )
+        val result =
+            VideoIntegrityChecker.verdict(
+                exitCode = capsule.ProcessRunner.TIMED_OUT,
+                stderr = "killed",
+            )
         assertIs<IntegrityResult.Corrupt>(result)
     }
 }

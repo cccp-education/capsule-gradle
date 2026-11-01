@@ -16,7 +16,6 @@ package capsule.viral
  * Pure — no Gradle, no I/O.
  */
 object ViralThumbnailPlanner {
-
     /** YouTube thumbnail landscape width (px). */
     const val LANDSCAPE_WIDTH: Int = 1280
 
@@ -30,12 +29,18 @@ object ViralThumbnailPlanner {
      * @return the thumbnail plan (overlay text + dimensions + source beat role).
      */
     fun plan(storyboard: ViralStoryboard): ThumbnailPlan {
-        val overlay = storyboard.hookBeat?.intent?.trim().orEmpty().ifBlank { storyboard.message }
-        val (width, height) = ViralViewport.resolve(
-            viralEnabled = true,
-            defaultWidth = LANDSCAPE_WIDTH,
-            defaultHeight = LANDSCAPE_HEIGHT,
-        )
+        val overlay =
+            storyboard.hookBeat
+                ?.intent
+                ?.trim()
+                .orEmpty()
+                .ifBlank { storyboard.message }
+        val (width, height) =
+            ViralViewport.resolve(
+                viralEnabled = true,
+                defaultWidth = LANDSCAPE_WIDTH,
+                defaultHeight = LANDSCAPE_HEIGHT,
+            )
         return ThumbnailPlan(
             overlayText = overlay,
             language = storyboard.language,

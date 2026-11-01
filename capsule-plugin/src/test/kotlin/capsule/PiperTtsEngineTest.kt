@@ -14,7 +14,6 @@ import kotlin.test.assertNull
  * out of scope for CAP-28.
  */
 class PiperTtsEngineTest {
-
     @Test
     fun `language() returns injected language when non-null`() {
         val en = LanguageCatalog.findByCode("en")
@@ -24,31 +23,34 @@ class PiperTtsEngineTest {
 
     @Test
     fun `language() resolves from default model when language is null`() {
-        val engine = PiperTtsEngine(
-            executablePath = "/nonexistent/piper",
-            model = "fr_FR-siwis-medium"
-        )
+        val engine =
+            PiperTtsEngine(
+                executablePath = "/nonexistent/piper",
+                model = "fr_FR-siwis-medium",
+            )
         val resolved = engine.language()
         assertEquals("fr", resolved?.code)
     }
 
     @Test
     fun `resolvedModel uses default model when language is null`() {
-        val engine = PiperTtsEngine(
-            executablePath = "/nonexistent/piper",
-            model = "custom-model"
-        )
+        val engine =
+            PiperTtsEngine(
+                executablePath = "/nonexistent/piper",
+                model = "custom-model",
+            )
         assertNull(engine.language())
     }
 
     @Test
     fun `language() returns injected ES language and does not fall back to default model`() {
         val es = LanguageCatalog.findByCode("es")
-        val engine = PiperTtsEngine(
-            executablePath = "/nonexistent/piper",
-            model = "fr_FR-siwis-medium",
-            language = es
-        )
+        val engine =
+            PiperTtsEngine(
+                executablePath = "/nonexistent/piper",
+                model = "fr_FR-siwis-medium",
+                language = es,
+            )
         assertEquals(es, engine.language())
         assertEquals("es", engine.language()?.code)
     }

@@ -38,7 +38,6 @@ data class KaraokeWord(
  * builder).
  */
 object KaraokeSubtitleBuilder {
-
     /** Container of the per-variant karaoke caption file. */
     const val SUBTITLE_EXTENSION: String = "ass"
 

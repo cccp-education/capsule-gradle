@@ -9,4 +9,6 @@ package capsule.audio
  * *not* throw — they return `false` so the caller keeps the original
  * video (backward compatibility, pattern [capsule.VideoFormatConverter]).
  */
-class AudioPostException(message: String) : RuntimeException(message)
+class AudioPostException(
+    message: String,
+) : RuntimeException(message)

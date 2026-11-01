@@ -17,17 +17,18 @@ import kotlin.test.assertTrue
  * UP-TO-DATE skip on an unchanged build (law of economy of ink — AGENT.adoc).
  */
 class CapsuleAugmentedContextFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
     private fun writeBuildFile() {
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     private fun writeEagerFiles() {
@@ -47,7 +48,8 @@ class CapsuleAugmentedContextFunctionalTest {
     }
 
     private fun runner(vararg args: String): GradleRunner =
-        GradleRunner.create()
+        GradleRunner
+            .create()
             .forwardOutput()
             .withPluginClasspath()
             .withArguments(*args)
@@ -67,11 +69,12 @@ class CapsuleAugmentedContextFunctionalTest {
     fun `collectCapsuleAugmentedContext produces the augmented context artefact`() {
         writeBuildFile()
         writeEagerFiles()
-        val result = runner(
-            "collectCapsuleAugmentedContext",
-            "-Pcontext.ragContent=similarity: 0.98 — RAG nugget about grading",
-            "-Pcontext.graphifyContent=node: capsule -> edge: feeds -> node: video",
-        ).build()
+        val result =
+            runner(
+                "collectCapsuleAugmentedContext",
+                "-Pcontext.ragContent=similarity: 0.98 — RAG nugget about grading",
+                "-Pcontext.graphifyContent=node: capsule -> edge: feeds -> node: video",
+            ).build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":collectCapsuleAugmentedContext")?.outcome)
         assertTrue(result.output.contains("CAPSULE CONTEXT"), "Expected summary log line")
 
@@ -93,10 +96,11 @@ class CapsuleAugmentedContextFunctionalTest {
             "collectCapsuleAugmentedContext",
             "-Pcontext.ragContent=unchanged",
         ).build()
-        val second = runner(
-            "collectCapsuleAugmentedContext",
-            "-Pcontext.ragContent=unchanged",
-        ).build()
+        val second =
+            runner(
+                "collectCapsuleAugmentedContext",
+                "-Pcontext.ragContent=unchanged",
+            ).build()
         assertEquals(
             TaskOutcome.UP_TO_DATE,
             second.task(":collectCapsuleAugmentedContext")?.outcome,

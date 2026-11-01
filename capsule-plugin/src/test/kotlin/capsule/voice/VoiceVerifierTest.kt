@@ -10,11 +10,12 @@ import kotlin.test.assertTrue
  * TDD unit tests for [VoiceVerifier] (CAP-QC-VOICE US-2). Fake ASR — no I/O.
  */
 class VoiceVerifierTest {
-
     private val thresholds = VoiceThresholds(maxWordErrorRate = 0.15, minSnrDb = 66.0, surplusThreshold = 3)
 
-    private fun take(index: Int, expected: String) =
-        VoiceTake(deckName = "deck", slideIndex = index, expectedText = expected, audioFile = File("slide-%02d.mp3".format(index)))
+    private fun take(
+        index: Int,
+        expected: String,
+    ) = VoiceTake(deckName = "deck", slideIndex = index, expectedText = expected, audioFile = File("slide-%02d.mp3".format(index)))
 
     @Test
     fun `a faithful take passes`() {
@@ -41,13 +42,14 @@ class VoiceVerifierTest {
     @Test
     fun `the envelope provider feeds the snr check`() {
         val fake = SpeechRecognizer { _, _ -> "bonjour" }
-        val report = VoiceVerifier.verify(
-            listOf(take(1, "bonjour")),
-            fake,
-            thresholds,
-            "fr",
-            envelopeProvider = { DoubleArray(10) { 1.0 } },
-        )
+        val report =
+            VoiceVerifier.verify(
+                listOf(take(1, "bonjour")),
+                fake,
+                thresholds,
+                "fr",
+                envelopeProvider = { DoubleArray(10) { 1.0 } },
+            )
 
         val verdict = report.takes.single().verdict
         assertTrue(verdict is VoiceVerdict.Fail)
@@ -71,13 +73,14 @@ class VoiceVerifierTest {
     @Test
     fun `a silent envelope fails the take even when the ASR succeeds`() {
         val fake = SpeechRecognizer { _, _ -> "bonjour" }
-        val report = VoiceVerifier.verify(
-            listOf(take(1, "bonjour")),
-            fake,
-            thresholds,
-            "fr",
-            envelopeProvider = { DoubleArray(10) { 0.0 } },
-        )
+        val report =
+            VoiceVerifier.verify(
+                listOf(take(1, "bonjour")),
+                fake,
+                thresholds,
+                "fr",
+                envelopeProvider = { DoubleArray(10) { 0.0 } },
+            )
 
         assertTrue(report.hasFailure)
         val verdict = report.takes.single().verdict
@@ -87,11 +90,12 @@ class VoiceVerifierTest {
 
     @Test
     fun `degraded with a silent envelope reports a silent failure`() {
-        val report = VoiceVerifier.degraded(
-            listOf(take(1, "bonjour")),
-            thresholds,
-            envelopeProvider = { DoubleArray(10) { 0.0 } },
-        )
+        val report =
+            VoiceVerifier.degraded(
+                listOf(take(1, "bonjour")),
+                thresholds,
+                envelopeProvider = { DoubleArray(10) { 0.0 } },
+            )
 
         assertTrue(report.degraded)
         assertTrue(report.hasFailure)
@@ -103,11 +107,12 @@ class VoiceVerifierTest {
 
     @Test
     fun `degraded with an audible envelope remains degraded without failure`() {
-        val report = VoiceVerifier.degraded(
-            listOf(take(1, "bonjour")),
-            thresholds,
-            envelopeProvider = { DoubleArray(10) { 0.1 } },
-        )
+        val report =
+            VoiceVerifier.degraded(
+                listOf(take(1, "bonjour")),
+                thresholds,
+                envelopeProvider = { DoubleArray(10) { 0.1 } },
+            )
 
         assertTrue(report.degraded)
         assertFalse(report.hasFailure)
@@ -116,11 +121,12 @@ class VoiceVerifierTest {
 
     @Test
     fun `degraded with an unavailable envelope remains degraded without failure`() {
-        val report = VoiceVerifier.degraded(
-            listOf(take(1, "bonjour")),
-            thresholds,
-            envelopeProvider = { null },
-        )
+        val report =
+            VoiceVerifier.degraded(
+                listOf(take(1, "bonjour")),
+                thresholds,
+                envelopeProvider = { null },
+            )
 
         assertTrue(report.degraded)
         assertFalse(report.hasFailure)

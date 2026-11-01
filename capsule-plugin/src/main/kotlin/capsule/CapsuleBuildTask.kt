@@ -17,16 +17,17 @@ import java.util.concurrent.atomic.AtomicInteger
 
 @DisableCachingByDefault(because = "Filesystem-bound: reads script files and writes TTS placeholder audio")
 open class CapsuleBuildTask : DefaultTask() {
-
     @get:OutputDirectory
     val outputDir: DirectoryProperty = project.objects.directoryProperty()
 
     @get:Internal
     internal var capsuleExtension: CapsuleExtension
-        get() = _capsuleExtension ?: project.extensions.getByType(CapsuleExtension::class.java).also { _capsuleExtension = it }
-        set(value) { _capsuleExtension = value }
+        get() = capsuleExtensionCache ?: project.extensions.getByType(CapsuleExtension::class.java).also { capsuleExtensionCache = it }
+        set(value) {
+            capsuleExtensionCache = value
+        }
 
-    private var _capsuleExtension: CapsuleExtension? = null
+    private var capsuleExtensionCache: CapsuleExtension? = null
 
     init {
         outputDir.convention(project.layout.buildDirectory.dir("capsule"))
@@ -56,7 +57,7 @@ open class CapsuleBuildTask : DefaultTask() {
                         strict = capsuleExtension.strictMode.get(),
                         engineName = "piper",
                         isAvailable = false,
-                        path = piperPath
+                        path = piperPath,
                     )
                     NoOpTtsEngine()
                 } else {
@@ -76,26 +77,31 @@ open class CapsuleBuildTask : DefaultTask() {
                         strict = capsuleExtension.strictMode.get(),
                         engineName = "espeak",
                         isAvailable = false,
-                        path = "espeak"
+                        path = "espeak",
                     )
                     NoOpTtsEngine()
                 }
             }
             "fish", "fish-audio" -> {
-                val keys = CapsuleConfigLoader.loadFishAudio(
-                    project.file(capsuleExtension.fishAudioConfigPath.get())
-                )
-                val params = FishAudioParams(
-                    voice = capsuleExtension.ttsFishVoice.get(),
-                    model = capsuleExtension.ttsFishModel.get(),
-                    format = capsuleExtension.ttsFishFormat.get(),
-                    temperature = capsuleExtension.ttsFishTemperature.get(),
-                    topP = capsuleExtension.ttsFishTopP.get(),
-                    endpoint = capsuleExtension.ttsFishEndpoint.get(),
-                )
-                val engine = FishAudioTtsEngine(
-                    params, keys, ffmpegPath = capsuleExtension.ffmpegExecutablePath.get(),
-                )
+                val keys =
+                    CapsuleConfigLoader.loadFishAudio(
+                        project.file(capsuleExtension.fishAudioConfigPath.get()),
+                    )
+                val params =
+                    FishAudioParams(
+                        voice = capsuleExtension.ttsFishVoice.get(),
+                        model = capsuleExtension.ttsFishModel.get(),
+                        format = capsuleExtension.ttsFishFormat.get(),
+                        temperature = capsuleExtension.ttsFishTemperature.get(),
+                        topP = capsuleExtension.ttsFishTopP.get(),
+                        endpoint = capsuleExtension.ttsFishEndpoint.get(),
+                    )
+                val engine =
+                    FishAudioTtsEngine(
+                        params,
+                        keys,
+                        ffmpegPath = capsuleExtension.ffmpegExecutablePath.get(),
+                    )
                 if (engine.isAvailable()) {
                     logger.lifecycle("TTS engine: fish (voice={})", params.voice)
                     engine
@@ -108,7 +114,7 @@ open class CapsuleBuildTask : DefaultTask() {
                         strict = capsuleExtension.strictMode.get(),
                         engineName = "fish",
                         isAvailable = false,
-                        path = capsuleExtension.fishAudioConfigPath.get()
+                        path = capsuleExtension.fishAudioConfigPath.get(),
                     )
                     NoOpTtsEngine()
                 }
@@ -134,9 +140,12 @@ open class CapsuleBuildTask : DefaultTask() {
             return
         }
 
-        val outDir = project.layout.buildDirectory.dir(
-            capsuleExtension.outputDir.get()
-        ).get().asFile
+        val outDir =
+            project.layout.buildDirectory
+                .dir(
+                    capsuleExtension.outputDir.get(),
+                ).get()
+                .asFile
         outDir.mkdirs()
 
         val engine = resolveTtsEngine()
@@ -169,31 +178,33 @@ open class CapsuleBuildTask : DefaultTask() {
                 val spoken = if (pronunciation) PronunciationLexicon.spoken(seg.speakerNote) else seg.speakerNote
                 val cacheKey = if (pronunciation) PronunciationLexicon.cacheKey(spoken) else null
 
-                futures.add(executor.submit {
-                    try {
-                        // Une narration déjà présente est respectée, comme le fait
-                        // CapsuleVideoTask : elle vient d'un moteur externe (voix
-                        // clonée, prise retenue à la main) que ce moteur local ne
-                        // sait pas reproduire. Sans ce garde-fou, la relance du
-                        // rendu remplace en silence la voix par le repli piper, et
-                        // rien dans le journal ne dit qu'une piste a été perdue.
-                        // PRT-01 : le cache n'est « frais » que si la clé du texte
-                        // dit correspond (mode prononciation), sinon on conserve
-                        // l'existant comme avant.
-                        if (ttsFile.exists() && ttsFile.length() > 0 && cacheFresh(ttsFile, cacheKey)) {
-                            skipped.incrementAndGet()
-                            logger.lifecycle("  TTS ↷ {} (déjà présent, conservé)", ttsFile.name)
-                            return@submit
+                futures.add(
+                    executor.submit {
+                        try {
+                            // Une narration déjà présente est respectée, comme le fait
+                            // CapsuleVideoTask : elle vient d'un moteur externe (voix
+                            // clonée, prise retenue à la main) que ce moteur local ne
+                            // sait pas reproduire. Sans ce garde-fou, la relance du
+                            // rendu remplace en silence la voix par le repli piper, et
+                            // rien dans le journal ne dit qu'une piste a été perdue.
+                            // PRT-01 : le cache n'est « frais » que si la clé du texte
+                            // dit correspond (mode prononciation), sinon on conserve
+                            // l'existant comme avant.
+                            if (ttsFile.exists() && ttsFile.length() > 0 && cacheFresh(ttsFile, cacheKey)) {
+                                skipped.incrementAndGet()
+                                logger.lifecycle("  TTS ↷ {} (déjà présent, conservé)", ttsFile.name)
+                                return@submit
+                            }
+                            engine.synthesize(spoken, ttsFile)
+                            if (cacheKey != null) writeCacheKey(ttsFile, cacheKey)
+                            synthesized.incrementAndGet()
+                            logger.lifecycle("  TTS → {} ({} chars)", ttsFile.name, spoken.length)
+                        } catch (e: TtsException) {
+                            failed.incrementAndGet()
+                            logger.error("  TTS FAILED slide {}: {}", seg.index, e.message)
                         }
-                        engine.synthesize(spoken, ttsFile)
-                        if (cacheKey != null) writeCacheKey(ttsFile, cacheKey)
-                        synthesized.incrementAndGet()
-                        logger.lifecycle("  TTS → {} ({} chars)", ttsFile.name, spoken.length)
-                    } catch (e: TtsException) {
-                        failed.incrementAndGet()
-                        logger.error("  TTS FAILED slide {}: {}", seg.index, e.message)
-                    }
-                })
+                    },
+                )
             }
         }
 
@@ -212,7 +223,11 @@ open class CapsuleBuildTask : DefaultTask() {
 
         logger.lifecycle(
             "TTS generation: {} synthesized, {} kept, {} failed, {} engine, {} cores",
-            synthesized.get(), skipped.get(), failed.get(), engine.name(), cores
+            synthesized.get(),
+            skipped.get(),
+            failed.get(),
+            engine.name(),
+            cores,
         )
     }
 
@@ -220,14 +235,20 @@ open class CapsuleBuildTask : DefaultTask() {
      * PRT-01 — whether an existing take may be reused: always (no key, backward
      * compat), else only when the sidecar `<file>.key` matches [cacheKey].
      */
-    private fun cacheFresh(ttsFile: File, cacheKey: String?): Boolean {
+    private fun cacheFresh(
+        ttsFile: File,
+        cacheKey: String?,
+    ): Boolean {
         if (cacheKey == null) return true
         val keyFile = File(ttsFile.parentFile, ttsFile.name + CACHE_KEY_SUFFIX)
         return keyFile.isFile && keyFile.readText().trim() == cacheKey
     }
 
     /** PRT-01 — records the spoken-text key next to the synthesised take. */
-    private fun writeCacheKey(ttsFile: File, cacheKey: String) {
+    private fun writeCacheKey(
+        ttsFile: File,
+        cacheKey: String,
+    ) {
         File(ttsFile.parentFile, ttsFile.name + CACHE_KEY_SUFFIX).writeText(cacheKey)
     }
 

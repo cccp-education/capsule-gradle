@@ -1,8 +1,8 @@
 package capsule.scenarios
 
 import capsule.feed.SlideSegment
-import capsule.transcript.TranscriptLlmEnhancer
 import capsule.transcript.TranscriptBuilder
+import capsule.transcript.TranscriptLlmEnhancer
 import capsule.transcript.TranscriptPlan
 import capsule.transcript.TranscriptStrategy
 import io.cucumber.datatable.DataTable
@@ -12,44 +12,53 @@ import io.cucumber.java.en.When
 import org.assertj.core.api.Assertions.assertThat
 
 class CapsuleTranscriptSteps {
-
     private var transcriptPlan: TranscriptPlan? = null
     private var generatedTranscript: String? = null
     private var existingOutputContent: String? = null
     private var strategy: TranscriptStrategy? = null
     private var enhancementResult: String? = null
-    private var llmEnhancer: TranscriptLlmEnhancer = object : TranscriptLlmEnhancer {
-        override fun enhance(template: String, plan: TranscriptPlan): String {
-            return enhancementResult ?: template
+    private var llmEnhancer: TranscriptLlmEnhancer =
+        object : TranscriptLlmEnhancer {
+            override fun enhance(
+                template: String,
+                plan: TranscriptPlan,
+            ): String = enhancementResult ?: template
         }
-    }
 
     @Given("a transcript plan for deck {string} with language {string} and strategy TEMPLATE")
-    fun `a transcript plan for deck with language and strategy template`(deckName: String, language: String) {
-        transcriptPlan = TranscriptPlan(
-            deckName = deckName,
-            segments = emptyList(),
-            language = language,
-            outputPath = "${deckName}-transcript.adoc"
-        )
+    fun aTranscriptPlanForDeckWithLanguageAndStrategyTemplate(
+        deckName: String,
+        language: String,
+    ) {
+        transcriptPlan =
+            TranscriptPlan(
+                deckName = deckName,
+                segments = emptyList(),
+                language = language,
+                outputPath = "$deckName-transcript.adoc",
+            )
         strategy = TranscriptStrategy.TEMPLATE
         enhancementResult = null
     }
 
     @Given("a transcript plan for deck {string} with language {string} and strategy LLM")
-    fun `a transcript plan for deck with language and strategy llm`(deckName: String, language: String) {
-        transcriptPlan = TranscriptPlan(
-            deckName = deckName,
-            segments = emptyList(),
-            language = language,
-            outputPath = "${deckName}-transcript.adoc"
-        )
+    fun aTranscriptPlanForDeckWithLanguageAndStrategyLlm(
+        deckName: String,
+        language: String,
+    ) {
+        transcriptPlan =
+            TranscriptPlan(
+                deckName = deckName,
+                segments = emptyList(),
+                language = language,
+                outputPath = "$deckName-transcript.adoc",
+            )
         strategy = TranscriptStrategy.LLM
         enhancementResult = null
     }
 
     @Given("the plan contains slide segments:")
-    fun `the plan contains slide segments`(dataTable: DataTable) {
+    fun thePlanContainsSlideSegments(dataTable: DataTable) {
         val segments = mutableListOf<SlideSegment>()
         val maps = dataTable.asMaps()
         for ((index, map) in maps.withIndex()) {
@@ -61,7 +70,7 @@ class CapsuleTranscriptSteps {
     }
 
     @When("the transcript is generated")
-    fun `the transcript is generated`() {
+    fun theTranscriptIsGenerated() {
         val plan = transcriptPlan ?: throw IllegalStateException("Transcript plan not set")
         val strat = strategy ?: throw IllegalStateException("Strategy not set")
         val content = existingOutputContent
@@ -82,19 +91,19 @@ class CapsuleTranscriptSteps {
     }
 
     @When("the transcript is generated with LLM enhancement")
-    fun `the transcript is generated with LLM enhancement`() {
-        `the transcript is generated`()
+    fun theTranscriptIsGeneratedWithLlmEnhancement() {
+        theTranscriptIsGenerated()
     }
 
     @Then("the transcript should contain:")
-    fun `the transcript should contain`(expected: String) {
+    fun theTranscriptShouldContain(expected: String) {
         val actual = generatedTranscript ?: throw IllegalStateException("Transcript not generated")
         val actualWithoutTrailingNewline = actual.trimEnd()
         assertThat(actualWithoutTrailingNewline).isEqualTo(expected)
     }
 
     @Then("the transcript should contain enhanced content for each slide")
-    fun `the transcript should contain enhanced content for each slide`() {
+    fun theTranscriptShouldContainEnhancedContentForEachSlide() {
         val actual = generatedTranscript ?: throw IllegalStateException("Transcript not generated")
         val plan = transcriptPlan ?: throw IllegalStateException("Transcript plan not set")
         plan.segments.forEach { segment ->
@@ -106,7 +115,7 @@ class CapsuleTranscriptSteps {
     }
 
     @Then("the enhanced content should include the original speaker notes")
-    fun `the enhanced content should include the original speaker notes`() {
+    fun theEnhancedContentShouldIncludeTheOriginalSpeakerNotes() {
         val actual = generatedTranscript ?: throw IllegalStateException("Transcript not generated")
         val plan = transcriptPlan ?: throw IllegalStateException("Transcript plan not set")
         plan.segments.forEach { segment ->
@@ -115,7 +124,7 @@ class CapsuleTranscriptSteps {
     }
 
     @Then("the enhanced content should be in English")
-    fun `the enhanced content should be in English`() {
+    fun theEnhancedContentShouldBeInEnglish() {
         val actual = generatedTranscript ?: throw IllegalStateException("Transcript not generated")
         val plan = transcriptPlan ?: throw IllegalStateException("Transcript plan not set")
         if (plan.language == "en") {
@@ -124,38 +133,39 @@ class CapsuleTranscriptSteps {
     }
 
     @Given("an empty transcript plan for deck {string}")
-    fun `an empty transcript plan for deck`(deckName: String) {
-        transcriptPlan = TranscriptPlan(
-            deckName = deckName,
-            segments = emptyList(),
-            language = "fr",
-            outputPath = "${deckName}-transcript.adoc"
-        )
+    fun anEmptyTranscriptPlanForDeck(deckName: String) {
+        transcriptPlan =
+            TranscriptPlan(
+                deckName = deckName,
+                segments = emptyList(),
+                language = "fr",
+                outputPath = "$deckName-transcript.adoc",
+            )
         strategy = TranscriptStrategy.TEMPLATE
         enhancementResult = null
     }
 
     @Then("the transcript should be:")
-    fun the_transcript_should_be(docString: String) {
+    fun theTranscriptShouldBeDocString(docString: String) {
         val actual = generatedTranscript ?: throw IllegalStateException("Transcript not generated")
         val actualWithoutTrailingNewline = actual.trimEnd()
         assertThat(actualWithoutTrailingNewline).isEqualTo(docString)
     }
 
     @Given("the output file already exists and contains {string}")
-    fun `the output file already exists and contains`(content: String) {
+    fun theOutputFileAlreadyExistsAndContains(content: String) {
         existingOutputContent = content
     }
 
     @Then("the transcript should be {string}")
-    fun `the transcript should be`(expected: String) {
+    fun theTranscriptShouldBe(expected: String) {
         val actual = generatedTranscript ?: throw IllegalStateException("Transcript not generated")
         val actualWithoutTrailingNewline = actual.trimEnd()
         assertThat(actualWithoutTrailingNewline).isEqualTo(expected)
     }
 
     @Then("no enhancement should occur")
-    fun `no enhancement should occur`() {
+    fun noEnhancementShouldOccur() {
         val strat = strategy ?: throw IllegalStateException("Strategy not set")
         if (strat == TranscriptStrategy.LLM) {
             val plan = transcriptPlan ?: throw IllegalStateException("Transcript plan not set")

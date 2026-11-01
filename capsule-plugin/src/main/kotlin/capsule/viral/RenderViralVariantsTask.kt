@@ -1,8 +1,8 @@
 package capsule.viral
 
+import capsule.CapsuleFactory
 import capsule.CaptureResolver
 import capsule.CaptureStrategy
-import capsule.CapsuleFactory
 import capsule.MediaProbeUtil
 import capsule.NoOpPlaywrightCapture
 import capsule.PlaywrightCapture
@@ -47,7 +47,6 @@ import java.io.File
  */
 @DisableCachingByDefault(because = "Viral render — Playwright + FFmpeg capture, may call the LLM upstream")
 abstract class RenderViralVariantsTask : DefaultTask() {
-
     /** Master switch — when false (default), the task is a no-op skip. */
     @get:Input
     abstract val viralEnabled: Property<Boolean>
@@ -122,8 +121,9 @@ abstract class RenderViralVariantsTask : DefaultTask() {
         if (storyboard == null || !storyboard.exists()) {
             error("CAPSULE VIRAL RENDER → no storyboard (set -Pcapsule.viral.storyboardFile=<path>).")
         }
-        val parsed = ViralStoryboardParser.parse(storyboard.readText())
-            ?: error("CAPSULE VIRAL RENDER → storyboard '${storyboard.path}' is not a validable storyboard.")
+        val parsed =
+            ViralStoryboardParser.parse(storyboard.readText())
+                ?: error("CAPSULE VIRAL RENDER → storyboard '${storyboard.path}' is not a validable storyboard.")
 
         val rawDurations = parsed.beats.map { it.durationSeconds }
         val target = targetDurationSeconds.get()
@@ -132,8 +132,10 @@ abstract class RenderViralVariantsTask : DefaultTask() {
             "CAPSULE VIRAL RENDER → time-fit: Σ${"%.2f".format(rawDurations.sum())}s " +
                 "→ ${"%.2f".format(durations.sum())}s (target ${target}s, ±${toleranceSecs.get()}s)",
         )
-        val resolvedPlatforms = platforms.get()
-            .mapNotNull { name -> name.takeIf { it.isNotBlank() }?.let { ViralPlatform.fromString(it) } }
+        val resolvedPlatforms =
+            platforms
+                .get()
+                .mapNotNull { name -> name.takeIf { it.isNotBlank() }?.let { ViralPlatform.fromString(it) } }
         val variants = ViralBatchPlanner.plan(languages.get(), resolvedPlatforms, targetDurationSeconds.get())
         if (variants.isEmpty()) {
             logger.lifecycle("CAPSULE VIRAL RENDER → skipped (empty variant matrix)")
@@ -147,22 +149,24 @@ abstract class RenderViralVariantsTask : DefaultTask() {
         val engine = resolveCapture()
         val converter = resolveConverter()
         try {
-            val result = ViralVariantRenderer.render(
-                plan = plan,
-                isRenderable = { it.exists() && it.length() > 0L },
-                // US-3: the deck is captured once and replicated to every variant.
-                capture = { output ->
-                    captureDeckToTarget(output, deck, durations, target, toleranceSecs.get(), engine, converter)
-                },
-                replicate = { source, target -> replicateVideo(source, target) },
-            )
+            val result =
+                ViralVariantRenderer.render(
+                    plan = plan,
+                    isRenderable = { it.exists() && it.length() > 0L },
+                    // US-3: the deck is captured once and replicated to every variant.
+                    capture = { output ->
+                        captureDeckToTarget(output, deck, durations, target, toleranceSecs.get(), engine, converter)
+                    },
+                    replicate = { source, target -> replicateVideo(source, target) },
+                )
             logger.lifecycle(
                 "CAPSULE VIRAL RENDER → ${result.renderedCount} rendered, " +
                     "${result.skippedCount} skipped, ${result.failedCount} failed → ${videoDir.absolutePath}",
             )
             if (result.failedCount > 0) {
-                val message = "CAPSULE VIRAL RENDER → ${result.failedCount} variant(s) failed: " +
-                    result.failed.joinToString(", ")
+                val message =
+                    "CAPSULE VIRAL RENDER → ${result.failedCount} variant(s) failed: " +
+                        result.failed.joinToString(", ")
                 if (strict.get()) error(message) else logger.warn(message)
             }
         } finally {
@@ -208,7 +212,9 @@ abstract class RenderViralVariantsTask : DefaultTask() {
                     else -> {
                         logger.warn(
                             "CAPSULE VIRAL RENDER → produced {}s, outside target {}s ±{}s",
-                            seconds, targetSeconds, toleranceSecs,
+                            seconds,
+                            targetSeconds,
+                            toleranceSecs,
                         )
                         false
                     }
@@ -223,7 +229,10 @@ abstract class RenderViralVariantsTask : DefaultTask() {
     }
 
     /** Copies a produced video to another variant's file (batch replication, US-3). */
-    private fun replicateVideo(source: File, target: File): Boolean =
+    private fun replicateVideo(
+        source: File,
+        target: File,
+    ): Boolean =
         runCatching {
             target.parentFile?.mkdirs()
             source.copyTo(target, overwrite = true)
@@ -243,6 +252,5 @@ abstract class RenderViralVariantsTask : DefaultTask() {
     }
 
     /** Resolves the MP4 converter (FFmpeg, or NoOp when unavailable / ffmpegPath=noop). */
-    private fun resolveConverter(): VideoFormatConverter =
-        formatConverter ?: CapsuleFactory.resolveFormatConverter(ffmpegPath.get(), strict.get())
+    private fun resolveConverter(): VideoFormatConverter = formatConverter ?: CapsuleFactory.resolveFormatConverter(ffmpegPath.get(), strict.get())
 }

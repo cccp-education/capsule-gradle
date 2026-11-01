@@ -65,8 +65,13 @@ data class CapsuleState(
         }
 
         // speakerNotesAdoc non-blank requires stage CONTENT_GENERATED or FAILED.
-        require(!(speakerNotesAdoc.isNotBlank() &&
-                stage != CapsuleStage.CONTENT_GENERATED && stage != CapsuleStage.FAILED)) {
+        require(
+            !(
+                speakerNotesAdoc.isNotBlank() &&
+                    stage != CapsuleStage.CONTENT_GENERATED &&
+                    stage != CapsuleStage.FAILED
+            ),
+        ) {
             "CapsuleState.speakerNotesAdoc must be blank when stage is $stage"
         }
 

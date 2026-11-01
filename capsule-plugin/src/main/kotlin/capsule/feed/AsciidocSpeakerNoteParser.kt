@@ -12,7 +12,8 @@ import capsule.adapter.revealjs.RevealJsSpeakerNoteParser
  * [video.kernel.segment.SegmentSource] port) in new code.
  */
 object AsciidocSpeakerNoteParser {
-
-    fun parse(adocContent: String, deckName: String): CapsuleScript =
-        RevealJsSpeakerNoteParser.parse(adocContent, deckName)
+    fun parse(
+        adocContent: String,
+        deckName: String,
+    ): CapsuleScript = RevealJsSpeakerNoteParser.parse(adocContent, deckName)
 }

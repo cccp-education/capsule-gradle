@@ -12,17 +12,17 @@ import java.io.File
  * dependency tree is installed once, next to it.
  */
 object RemotionTemplate {
-
     private val logger = Logging.getLogger(RemotionTemplate::class.java)
 
     /** Resource paths, relative to `capsule/remotion/` in the plugin jar. */
-    internal val FILES: List<String> = listOf(
-        "package.json",
-        "render.mjs",
-        "src/index.js",
-        "src/Root.jsx",
-        "src/Capsule.jsx",
-    )
+    internal val FILES: List<String> =
+        listOf(
+            "package.json",
+            "render.mjs",
+            "src/index.js",
+            "src/Root.jsx",
+            "src/Capsule.jsx",
+        )
 
     private const val RESOURCE_ROOT = "capsule/remotion"
 
@@ -49,7 +49,7 @@ object RemotionTemplate {
     private fun readResource(path: String): ByteArray =
         javaClass.classLoader.getResourceAsStream(path)?.use { it.readBytes() }
             ?: throw IllegalStateException(
-                "Remotion template resource '$path' missing from the plugin jar"
+                "Remotion template resource '$path' missing from the plugin jar",
             )
 
     /**
@@ -66,22 +66,23 @@ object RemotionTemplate {
 
         logger.lifecycle("  Remotion: installing the composition dependencies (first run)")
         val logFile = File(projectDir, "npm-install.log")
-        val result = try {
-            ProcessRunner.run(
-                listOf("npm", "install", "--no-audit", "--no-fund", "--loglevel", "error"),
-                workingDir = projectDir,
-                logFile = logFile,
-            )
-        } catch (e: Exception) {
-            throw CapturingException(
-                "Remotion needs npm to install its dependencies, and npm could not be run " +
-                    "(${e.message}). Install Node/npm, or provide ${nodeModules.absolutePath} yourself."
-            )
-        }
+        val result =
+            try {
+                ProcessRunner.run(
+                    listOf("npm", "install", "--no-audit", "--no-fund", "--loglevel", "error"),
+                    workingDir = projectDir,
+                    logFile = logFile,
+                )
+            } catch (e: Exception) {
+                throw CapturingException(
+                    "Remotion needs npm to install its dependencies, and npm could not be run " +
+                        "(${e.message}). Install Node/npm, or provide ${nodeModules.absolutePath} yourself.",
+                )
+            }
         if (!result.isSuccess) {
             val tail = result.tail(15)
             throw CapturingException(
-                "Remotion dependency install failed (npm exit ${result.exitCode}): $tail"
+                "Remotion dependency install failed (npm exit ${result.exitCode}): $tail",
             )
         }
         logFile.delete()

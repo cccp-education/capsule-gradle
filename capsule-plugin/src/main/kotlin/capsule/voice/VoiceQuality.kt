@@ -31,7 +31,6 @@ data class VoiceThresholds(
  *   **not** a failure, it is an explicit "not checked" signal.
  */
 sealed interface VoiceVerdict {
-
     /** The take passed every threshold. */
     data object Pass : VoiceVerdict
 
@@ -41,7 +40,9 @@ sealed interface VoiceVerdict {
      * @param reasons stable machine-readable reason codes (e.g. `"word-error-rate"`,
      *        `"surplus"`, `"empty-transcription"`, `"snr"`).
      */
-    data class Fail(val reasons: List<String>) : VoiceVerdict
+    data class Fail(
+        val reasons: List<String>,
+    ) : VoiceVerdict
 
     /**
      * The take could not be verified.
@@ -49,7 +50,9 @@ sealed interface VoiceVerdict {
      * @param reason why verification was skipped (e.g. `"asr-unavailable"`,
      *        `"asr-error"`).
      */
-    data class Degraded(val reason: String) : VoiceVerdict
+    data class Degraded(
+        val reason: String,
+    ) : VoiceVerdict
 
     /** `true` when this verdict is a [Fail]. */
     val isFail: Boolean get() = this is Fail
@@ -67,7 +70,6 @@ sealed interface VoiceVerdict {
  * in addition to the mechanical `word-error-rate` breach it implies.
  */
 object VoiceQualityGate {
-
     /** Reason code: word error rate above the ceiling. */
     const val REASON_WORD_ERROR_RATE: String = "word-error-rate"
 

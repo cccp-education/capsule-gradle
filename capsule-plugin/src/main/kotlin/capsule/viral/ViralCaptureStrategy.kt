@@ -18,7 +18,6 @@ import capsule.CaptureStrategy
  * Pure — no Gradle, no I/O.
  */
 object ViralCaptureStrategy {
-
     /**
      * Resolves the effective capture strategy.
      *
@@ -28,7 +27,10 @@ object ViralCaptureStrategy {
      *         configured strategy is the excluded [CaptureStrategy.PLAYWRIGHT];
      *         otherwise the configured strategy unchanged (backward compat).
      */
-    fun resolve(configured: CaptureStrategy, viralEnabled: Boolean): CaptureStrategy =
+    fun resolve(
+        configured: CaptureStrategy,
+        viralEnabled: Boolean,
+    ): CaptureStrategy =
         if (viralEnabled && configured == CaptureStrategy.PLAYWRIGHT) {
             CaptureStrategy.SCREENSHOT
         } else {

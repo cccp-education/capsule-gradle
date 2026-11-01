@@ -33,7 +33,6 @@ import java.io.File
  */
 @DisableCachingByDefault(because = "Renders Java2D PNG boards to disk")
 abstract class RenderQcBoardsTask : DefaultTask() {
-
     /** Master switch — when false, the task is a no-op (opt-in, backward compat). */
     @get:Input
     val enabled: Property<Boolean> = project.objects.property(Boolean::class.java).convention(false)
@@ -44,10 +43,12 @@ abstract class RenderQcBoardsTask : DefaultTask() {
 
     @get:Internal
     internal var capsuleExtension: CapsuleExtension
-        get() = _capsuleExtension ?: project.extensions.getByType(CapsuleExtension::class.java).also { _capsuleExtension = it }
-        set(value) { _capsuleExtension = value }
+        get() = capsuleExtensionCache ?: project.extensions.getByType(CapsuleExtension::class.java).also { capsuleExtensionCache = it }
+        set(value) {
+            capsuleExtensionCache = value
+        }
 
-    private var _capsuleExtension: CapsuleExtension? = null
+    private var capsuleExtensionCache: CapsuleExtension? = null
 
     @get:Internal
     internal var scriptDirOverride: File? = null
@@ -66,7 +67,11 @@ abstract class RenderQcBoardsTask : DefaultTask() {
             return
         }
 
-        val outputRoot = project.layout.buildDirectory.dir(capsuleExtension.outputDir.get()).get().asFile
+        val outputRoot =
+            project.layout.buildDirectory
+                .dir(capsuleExtension.outputDir.get())
+                .get()
+                .asFile
         val qcDir = outputDir.get().asFile
         var boards = 0
 
@@ -74,9 +79,10 @@ abstract class RenderQcBoardsTask : DefaultTask() {
             val parsed = CapsuleScriptReader.read(script)
             if (parsed.segments.isEmpty()) continue
             val deckDir = File(outputRoot, parsed.deckName)
-            val images = parsed.segments.associate { segment ->
-                segment.index to File(deckDir, "slide-%02d.png".format(segment.index)).takeIf { it.isFile }
-            }
+            val images =
+                parsed.segments.associate { segment ->
+                    segment.index to File(deckDir, "slide-%02d.png".format(segment.index)).takeIf { it.isFile }
+                }
 
             QcBoardRenderer.render(
                 BeatsBoardPlanner.plan(parsed.deckName, parsed.segments, images.filterValues { it != null }.mapValues { it.value!! }),

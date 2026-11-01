@@ -8,8 +8,9 @@ import org.gradle.api.Project
  * Every task family is registered by its per-domain registrar; `registerTasks()`
  * only delegates. Mirrors the pattern proven by slider `SLD-6`.
  */
-class CapsuleManager(private val project: Project) {
-
+class CapsuleManager(
+    private val project: Project,
+) {
     fun registerTasks() {
         CapsuleCoreRegistrar.register(project)
         CapsuleContextRegistrar.register(project)

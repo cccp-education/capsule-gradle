@@ -14,7 +14,6 @@ import java.io.File
  * bakery S-243 / capsule S-139).
  */
 object BinaryAvailability {
-
     /** Skips the calling test (via `assumeTrue`) when [binary] is absent. */
     fun assumeAvailable(binary: String) {
         assumeTrue(isAvailable(binary)) {

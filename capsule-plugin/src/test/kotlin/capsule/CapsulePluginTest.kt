@@ -1,28 +1,26 @@
 package capsule
 
-import capsule.feed.CapsuleScript
-import capsule.feed.CapsuleScriptReader
 import capsule.adapter.revealjs.RevealJsDeckHtml
 import capsule.adapter.revealjs.RevealJsEngineAdapter
-import video.kernel.segment.VideoKind
+import capsule.feed.CapsuleScript
 import capsule.feed.SlideSegment
 import capsule.test.BinaryAvailability
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import contracts.i18n.LanguageCatalog
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.io.TempDir
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import video.kernel.segment.VideoKind
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import kotlin.test.assertFailsWith
 
 class CapsulePluginTest {
-
     @Test
     fun `plugin registers generateCapsuleScript task`() {
         val project = ProjectBuilder.builder().build()
@@ -83,7 +81,6 @@ class CapsulePluginTest {
 }
 
 class TtsEngineTest {
-
     @Test
     fun `noop engine creates placeholder file`() {
         val engine = NoOpTtsEngine()
@@ -230,9 +227,7 @@ class TtsEngineTest {
     }
 }
 
-
 class PlaywrightCaptureTest {
-
     private val webmSignature = byteArrayOf(0x1a.toByte(), 0x45.toByte(), 0xdf.toByte(), 0xa3.toByte())
 
     @Test
@@ -278,7 +273,6 @@ class PlaywrightCaptureTest {
 }
 
 class ScreenshotCaptureTest {
-
     @Test
     fun `screenshot capture reports name correctly`() {
         val capture = ScreenshotCaptureImpl()
@@ -311,7 +305,7 @@ class ScreenshotCaptureTest {
                 outputDir = File(System.getProperty("java.io.tmpdir")),
                 viewportWidth = 1280,
                 viewportHeight = 720,
-                slideDurations = emptyList()
+                slideDurations = emptyList(),
             )
         }
     }
@@ -332,17 +326,23 @@ class ScreenshotCaptureTest {
 }
 
 class CapsuleBuildTaskTest {
-
     @TempDir
     lateinit var tempDir: File
 
     private fun createBuildTask(
         scriptDir: File,
-        engine: TtsEngine? = null
+        engine: TtsEngine? = null,
     ): CapsuleBuildTask {
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         val ext = CapsuleExtension(project.objects)
-        ext.sliderScriptDir.set(scriptDir.relativeTo(project.layout.buildDirectory.get().asFile).path)
+        ext.sliderScriptDir.set(
+            scriptDir
+                .relativeTo(
+                    project.layout.buildDirectory
+                        .get()
+                        .asFile,
+                ).path,
+        )
         ext.ttsEngine.set("noop")
         ext.outputDir.set("capsule")
 
@@ -357,7 +357,8 @@ class CapsuleBuildTaskTest {
         val buildDir = File(tempDir, "build")
         val scriptDir = File(buildDir, "capsule").also { it.mkdirs() }
         val scriptFile = File(scriptDir, "parallel-test-script.txt")
-        scriptFile.writeText("""
+        scriptFile.writeText(
+            """
 === CAPSULE SCRIPT : parallel-test ===
 --- SLIDE 1 : Intro ---
 Première diapositive.
@@ -365,30 +366,37 @@ Première diapositive.
 Deuxième diapositive.
 --- SLIDE 3 : Fin ---
 Troisième diapositive.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val concurrentCalls = AtomicInteger(0)
         val maxConcurrent = AtomicInteger(0)
         val totalCalls = AtomicInteger(0)
 
-        val countingEngine = object : TtsEngine {
-            override fun synthesize(text: String, outputFile: File) {
-                val current = concurrentCalls.incrementAndGet()
-                totalCalls.incrementAndGet()
-                // Track max concurrency
-                var old: Int
-                do {
-                    old = maxConcurrent.get()
-                    if (current <= old) break
-                } while (!maxConcurrent.compareAndSet(old, current))
-                outputFile.parentFile.mkdirs()
-                outputFile.writeText("# TTS PLACEHOLDER (counting engine)\n# Text: ${text.take(50)}...")
-                Thread.sleep(50) // simulate work
-                concurrentCalls.decrementAndGet()
+        val countingEngine =
+            object : TtsEngine {
+                override fun synthesize(
+                    text: String,
+                    outputFile: File,
+                ) {
+                    val current = concurrentCalls.incrementAndGet()
+                    totalCalls.incrementAndGet()
+                    // Track max concurrency
+                    var old: Int
+                    do {
+                        old = maxConcurrent.get()
+                        if (current <= old) break
+                    } while (!maxConcurrent.compareAndSet(old, current))
+                    outputFile.parentFile.mkdirs()
+                    outputFile.writeText("# TTS PLACEHOLDER (counting engine)\n# Text: ${text.take(50)}...")
+                    Thread.sleep(50) // simulate work
+                    concurrentCalls.decrementAndGet()
+                }
+
+                override fun isAvailable(): Boolean = true
+
+                override fun name(): String = "counting"
             }
-            override fun isAvailable(): Boolean = true
-            override fun name(): String = "counting"
-        }
 
         val task = createBuildTask(scriptDir, engine = countingEngine)
         task.execute()
@@ -402,7 +410,8 @@ Troisième diapositive.
         val buildDir = File(tempDir, "build")
         val scriptDir = File(buildDir, "capsule").also { it.mkdirs() }
         val scriptFile = File(scriptDir, "fail-test-script.txt")
-        scriptFile.writeText("""
+        scriptFile.writeText(
+            """
 === CAPSULE SCRIPT : fail-test ===
 --- SLIDE 1 : OK ---
 Celui-ci marche.
@@ -410,21 +419,28 @@ Celui-ci marche.
 Celui-ci échoue.
 --- SLIDE 3 : Also OK ---
 Celui-ci aussi.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         var callCount = 0
-        val failingEngine = object : TtsEngine {
-            override fun synthesize(text: String, outputFile: File) {
-                callCount++
-                if (text.contains("échoue")) {
-                    throw TtsException("Simulated failure for slide 2")
+        val failingEngine =
+            object : TtsEngine {
+                override fun synthesize(
+                    text: String,
+                    outputFile: File,
+                ) {
+                    callCount++
+                    if (text.contains("échoue")) {
+                        throw TtsException("Simulated failure for slide 2")
+                    }
+                    outputFile.parentFile.mkdirs()
+                    outputFile.writeText("# TTS PLACEHOLDER\n# Text: ${text.take(50)}...")
                 }
-                outputFile.parentFile.mkdirs()
-                outputFile.writeText("# TTS PLACEHOLDER\n# Text: ${text.take(50)}...")
+
+                override fun isAvailable(): Boolean = true
+
+                override fun name(): String = "failing"
             }
-            override fun isAvailable(): Boolean = true
-            override fun name(): String = "failing"
-        }
 
         val task = createBuildTask(scriptDir, engine = failingEngine)
         task.execute()
@@ -442,7 +458,6 @@ Celui-ci aussi.
 }
 
 class CapsuleVideoTaskTest {
-
     private val webmSignature = byteArrayOf(0x1a.toByte(), 0x45.toByte(), 0xdf.toByte(), 0xa3.toByte())
 
     @TempDir
@@ -452,7 +467,7 @@ class CapsuleVideoTaskTest {
         deckDir: File,
         scriptDir: File,
         capture: PlaywrightCapture? = null,
-        engine: TtsEngine? = null
+        engine: TtsEngine? = null,
     ): CapsuleVideoTask {
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         val ext = CapsuleExtension(project.objects)
@@ -489,7 +504,8 @@ class CapsuleVideoTaskTest {
     fun `execute produces webm with noop capture`() {
         val deckDir = File(tempDir, "decks").also { it.mkdirs() }
         val deckFile = File(deckDir, "mon-cours-deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -498,24 +514,28 @@ class CapsuleVideoTaskTest {
   </div>
 </div>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val scriptDir = File(tempDir, "scripts").also { it.mkdirs() }
         val scriptFile = File(scriptDir, "mon-cours-script.txt")
-        scriptFile.writeText("""
+        scriptFile.writeText(
+            """
 === CAPSULE SCRIPT : mon-cours ===
 --- SLIDE 1 : Intro ---
 Bienvenue dans le contenu.
 --- SLIDE 2 : Topic ---
 Voici le contenu principal.
-        """.trimIndent())
-
-        val task = createTask(
-            deckDir,
-            scriptDir,
-            capture = NoOpPlaywrightCapture(),
-            engine = NoOpTtsEngine()
+            """.trimIndent(),
         )
+
+        val task =
+            createTask(
+                deckDir,
+                scriptDir,
+                capture = NoOpPlaywrightCapture(),
+                engine = NoOpTtsEngine(),
+            )
         task.execute()
 
         val expectedVideo = File(tempDir, "build/capsule/mon-cours.webm")
@@ -541,14 +561,16 @@ Voici le contenu principal.
         task.capsuleExtension = ext
 
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
-        val parsed = CapsuleScript(
-            name = "test",
-            segments = listOf(
-                SlideSegment(1, "Intro", "Bienvenue."),
-                SlideSegment(2, "Topic", "Contenu principal."),
-                SlideSegment(3, "End", "Conclusion.")
+        val parsed =
+            CapsuleScript(
+                name = "test",
+                segments =
+                    listOf(
+                        SlideSegment(1, "Intro", "Bienvenue."),
+                        SlideSegment(2, "Topic", "Contenu principal."),
+                        SlideSegment(3, "End", "Conclusion."),
+                    ),
             )
-        )
         val engine = NoOpTtsEngine()
 
         task.synthesizeTtsForScript(parsed, audioDir, engine)
@@ -572,13 +594,15 @@ Voici le contenu principal.
         val existingFile = audioDir.resolve("slide-01.mp3")
         existingFile.writeText("existing content")
 
-        val parsed = CapsuleScript(
-            name = "test",
-            segments = listOf(
-                SlideSegment(1, "Intro", "Bienvenue."),
-                SlideSegment(2, "Topic", "Contenu.")
+        val parsed =
+            CapsuleScript(
+                name = "test",
+                segments =
+                    listOf(
+                        SlideSegment(1, "Intro", "Bienvenue."),
+                        SlideSegment(2, "Topic", "Contenu."),
+                    ),
             )
-        )
         val engine = NoOpTtsEngine()
 
         task.synthesizeTtsForScript(parsed, audioDir, engine)
@@ -598,26 +622,34 @@ Voici le contenu principal.
         task.capsuleExtension = ext
 
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
-        val parsed = CapsuleScript(
-            name = "test",
-            segments = listOf(
-                SlideSegment(1, "OK", "OK."),
-                SlideSegment(2, "Fail", "Échoue."),
-                SlideSegment(3, "AlsoOK", "OK aussi.")
+        val parsed =
+            CapsuleScript(
+                name = "test",
+                segments =
+                    listOf(
+                        SlideSegment(1, "OK", "OK."),
+                        SlideSegment(2, "Fail", "Échoue."),
+                        SlideSegment(3, "AlsoOK", "OK aussi."),
+                    ),
             )
-        )
 
         var callCount = 0
-        val failingEngine = object : TtsEngine {
-            override fun synthesize(text: String, outputFile: File) {
-                callCount++
-                if (text.contains("Échoue")) throw TtsException("Simulated failure")
-                outputFile.parentFile.mkdirs()
-                outputFile.writeText("# TTS PLACEHOLDER\n# Text: $text")
+        val failingEngine =
+            object : TtsEngine {
+                override fun synthesize(
+                    text: String,
+                    outputFile: File,
+                ) {
+                    callCount++
+                    if (text.contains("Échoue")) throw TtsException("Simulated failure")
+                    outputFile.parentFile.mkdirs()
+                    outputFile.writeText("# TTS PLACEHOLDER\n# Text: $text")
+                }
+
+                override fun isAvailable() = true
+
+                override fun name() = "failing"
             }
-            override fun isAvailable() = true
-            override fun name() = "failing"
-        }
 
         task.synthesizeTtsForScript(parsed, audioDir, failingEngine)
 
@@ -657,21 +689,29 @@ Voici le contenu principal.
         val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
         task.capsuleExtension = ext
 
-        val parsed = CapsuleScript(
-            name = "test",
-            segments = listOf(
-                SlideSegment(1, "Intro", "Bienvenue.", kind = VideoKind.VISUAL),
-                SlideSegment(2, "Topic", "Contenu.", kind = VideoKind.VISUAL)
+        val parsed =
+            CapsuleScript(
+                name = "test",
+                segments =
+                    listOf(
+                        SlideSegment(1, "Intro", "Bienvenue.", kind = VideoKind.VISUAL),
+                        SlideSegment(2, "Topic", "Contenu.", kind = VideoKind.VISUAL),
+                    ),
             )
-        )
         val manimOutputDir = File(tempDir, "manim").also { it.mkdirs() }
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val durations = mutableMapOf<Int, Double>()
 
-        val result = task.renderManimSlides(
-            parsed, NoOpManimEngine(), NoOpManimVideoMixer(),
-            File(tempDir, "src/manim"), manimOutputDir, audioDir, durations
-        )
+        val result =
+            task.renderManimSlides(
+                parsed,
+                NoOpManimEngine(),
+                NoOpManimVideoMixer(),
+                File(tempDir, "src/manim"),
+                manimOutputDir,
+                audioDir,
+                durations,
+            )
 
         assertTrue(result.isEmpty(), "Should return empty map when no MANIM slides")
     }
@@ -686,22 +726,30 @@ Voici le contenu principal.
         val task = project.tasks.register("generateCapsuleVideo", CapsuleVideoTask::class.java).get()
         task.capsuleExtension = ext
 
-        val parsed = CapsuleScript(
-            name = "test",
-            segments = listOf(
-                SlideSegment(1, "Anim", "Animation.", kind = VideoKind.ANIMATION, scene = "Scene1")
+        val parsed =
+            CapsuleScript(
+                name = "test",
+                segments =
+                    listOf(
+                        SlideSegment(1, "Anim", "Animation.", kind = VideoKind.ANIMATION, scene = "Scene1"),
+                    ),
             )
-        )
         val manimScriptsDir = File(tempDir, "src/manim").also { it.mkdirs() }
         File(manimScriptsDir, "Scene1.py").writeText("# manim script")
         val manimOutputDir = File(tempDir, "manim").also { it.mkdirs() }
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val durations = mutableMapOf<Int, Double>()
 
-        val result = task.renderManimSlides(
-            parsed, NoOpManimEngine(), NoOpManimVideoMixer(),
-            manimScriptsDir, manimOutputDir, audioDir, durations
-        )
+        val result =
+            task.renderManimSlides(
+                parsed,
+                NoOpManimEngine(),
+                NoOpManimVideoMixer(),
+                manimScriptsDir,
+                manimOutputDir,
+                audioDir,
+                durations,
+            )
 
         assertTrue(result.isNotEmpty(), "Should render MANIM slides")
         assertTrue(result.containsKey(1), "Should contain slide index 1")
@@ -720,15 +768,22 @@ Voici le contenu principal.
         val deckFile = File(tempDir, "deck.html")
         deckFile.writeText("<html><body><section>Slide 1</section></body></html>")
 
-        val parsed = CapsuleScript(
-            name = "test",
-            segments = listOf(SlideSegment(1, "Intro", "Note.", kind = VideoKind.VISUAL))
-        )
+        val parsed =
+            CapsuleScript(
+                name = "test",
+                segments = listOf(SlideSegment(1, "Intro", "Note.", kind = VideoKind.VISUAL)),
+            )
         val manimOutputDir = File(tempDir, "manim").also { it.mkdirs() }
 
-        val result = task.replaceManimSlidesInDeck(
-            parsed, deckFile, manimOutputDir, emptyMap(), NoOpManimSlideReplacer(), null
-        )
+        val result =
+            task.replaceManimSlidesInDeck(
+                parsed,
+                deckFile,
+                manimOutputDir,
+                emptyMap(),
+                NoOpManimSlideReplacer(),
+                null,
+            )
 
         assertEquals(deckFile.absolutePath, result.absolutePath, "Should return original deck unchanged")
     }
@@ -744,24 +799,33 @@ Voici le contenu principal.
         task.capsuleExtension = ext
 
         val deckFile = File(tempDir, "deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><body>
 <div class="reveal"><div class="slides">
 <section data-capsule-slide="1"><h2>Anim</h2></section>
 </div></div>
 </body></html>
-        """.trimIndent())
-
-        val parsed = CapsuleScript(
-            name = "test",
-            segments = listOf(SlideSegment(1, "Anim", "Note.", kind = VideoKind.ANIMATION, scene = "Scene1"))
+            """.trimIndent(),
         )
+
+        val parsed =
+            CapsuleScript(
+                name = "test",
+                segments = listOf(SlideSegment(1, "Anim", "Note.", kind = VideoKind.ANIMATION, scene = "Scene1")),
+            )
         val manimOutputDir = File(tempDir, "manim").also { it.mkdirs() }
         val renderedFiles = mapOf(1 to File(manimOutputDir, "Scene1.mp4").also { it.writeText("fake mp4") })
 
-        val result = task.replaceManimSlidesInDeck(
-            parsed, deckFile, manimOutputDir, renderedFiles, ManimSlideReplacerImpl(), null
-        )
+        val result =
+            task.replaceManimSlidesInDeck(
+                parsed,
+                deckFile,
+                manimOutputDir,
+                renderedFiles,
+                ManimSlideReplacerImpl(),
+                null,
+            )
 
         assertTrue(result.exists(), "Should produce replaced deck file")
         val content = result.readText()
@@ -812,7 +876,8 @@ Voici le contenu principal.
         task.playwrightCapture = NoOpPlaywrightCapture()
 
         val deckFile = File(tempDir, "deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><head><style>body{margin:0}</style></head><body>
 <div class="reveal"><div class="slides">
 <section data-capsule-slide="1"><h2>Slide 1</h2></section>
@@ -821,15 +886,20 @@ Voici le contenu principal.
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
 <script>Reveal.initialize();</script>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val videoOutputDir = File(tempDir, "video").also { it.mkdirs() }
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val outDir = File(tempDir, "out").also { it.mkdirs() }
 
-        val parsed = CapsuleScript("test", listOf(
-            SlideSegment(1, "S1", "Note 1."),
-            SlideSegment(2, "S2", "Note 2.")
-        ))
+        val parsed =
+            CapsuleScript(
+                "test",
+                listOf(
+                    SlideSegment(1, "S1", "Note 1."),
+                    SlideSegment(2, "S2", "Note 2."),
+                ),
+            )
 
         task.captureDeckParallel(parsed, deckFile, videoOutputDir, audioDir, outDir, null)
 
@@ -841,7 +911,8 @@ Voici le contenu principal.
     fun `sequential fallback injects audio into sections without data-capsule-slide`() {
         val deckDir = File(tempDir, "decks").also { it.mkdirs() }
         val deckFile = File(deckDir, "cours-deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -851,11 +922,13 @@ Voici le contenu principal.
   </div>
 </div>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val scriptDir = File(tempDir, "scripts").also { it.mkdirs() }
         val scriptFile = File(scriptDir, "cours-script.txt")
-        scriptFile.writeText("""
+        scriptFile.writeText(
+            """
 === CAPSULE SCRIPT : cours ===
 --- SLIDE 1 : Slide 1 ---
 Contenu slide 1.
@@ -863,14 +936,16 @@ Contenu slide 1.
 Contenu slide 2.
 --- SLIDE 3 : Slide 3 ---
 Contenu slide 3.
-        """.trimIndent())
-
-        val task = createTask(
-            deckDir,
-            scriptDir,
-            capture = NoOpPlaywrightCapture(),
-            engine = NoOpTtsEngine()
+            """.trimIndent(),
         )
+
+        val task =
+            createTask(
+                deckDir,
+                scriptDir,
+                capture = NoOpPlaywrightCapture(),
+                engine = NoOpTtsEngine(),
+            )
         task.execute()
 
         val injectedDeck = File(tempDir, "build/capsule/injected/cours-deck.html")
@@ -885,7 +960,8 @@ Contenu slide 3.
     fun `sequential fallback skips nested sections in vertical stack`() {
         val deckDir = File(tempDir, "decks").also { it.mkdirs() }
         val deckFile = File(deckDir, "vertical-deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -897,24 +973,28 @@ Contenu slide 3.
   </div>
 </div>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val scriptDir = File(tempDir, "scripts").also { it.mkdirs() }
         val scriptFile = File(scriptDir, "vertical-script.txt")
-        scriptFile.writeText("""
+        scriptFile.writeText(
+            """
 === CAPSULE SCRIPT : vertical ===
 --- SLIDE 1 : Vertical Stack ---
 Top-level slide with nested subs.
 --- SLIDE 2 : Slide 2 ---
 Second top-level slide.
-        """.trimIndent())
-
-        val task = createTask(
-            deckDir,
-            scriptDir,
-            capture = NoOpPlaywrightCapture(),
-            engine = NoOpTtsEngine()
+            """.trimIndent(),
         )
+
+        val task =
+            createTask(
+                deckDir,
+                scriptDir,
+                capture = NoOpPlaywrightCapture(),
+                engine = NoOpTtsEngine(),
+            )
         task.execute()
 
         val injectedDeck = File(tempDir, "build/capsule/injected/vertical-deck.html")
@@ -929,7 +1009,8 @@ Second top-level slide.
     fun `multi-deck build produces separate videos`() {
         val deckDir = File(tempDir, "decks").also { it.mkdirs() }
         val deck1 = File(deckDir, "cours-a-deck.html")
-        deck1.writeText("""
+        deck1.writeText(
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -937,9 +1018,11 @@ Second top-level slide.
   </div>
 </div>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val deck2 = File(deckDir, "cours-b-deck.html")
-        deck2.writeText("""
+        deck2.writeText(
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -947,26 +1030,32 @@ Second top-level slide.
   </div>
 </div>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val scriptDir = File(tempDir, "scripts").also { it.mkdirs() }
-        File(scriptDir, "cours-a-script.txt").writeText("""
+        File(scriptDir, "cours-a-script.txt").writeText(
+            """
 === CAPSULE SCRIPT : cours-a ===
 --- SLIDE 1 : A1 ---
 Deck A.
-        """.trimIndent())
-        File(scriptDir, "cours-b-script.txt").writeText("""
+            """.trimIndent(),
+        )
+        File(scriptDir, "cours-b-script.txt").writeText(
+            """
 === CAPSULE SCRIPT : cours-b ===
 --- SLIDE 1 : B1 ---
 Deck B.
-        """.trimIndent())
-
-        val task = createTask(
-            deckDir,
-            scriptDir,
-            capture = NoOpPlaywrightCapture(),
-            engine = NoOpTtsEngine()
+            """.trimIndent(),
         )
+
+        val task =
+            createTask(
+                deckDir,
+                scriptDir,
+                capture = NoOpPlaywrightCapture(),
+                engine = NoOpTtsEngine(),
+            )
         task.execute()
 
         val capDir = File(tempDir, "build/capsule")
@@ -988,7 +1077,8 @@ Deck B.
 
         val deckDir = File(tempDir, "integration-decks").also { it.mkdirs() }
         val deckFile = File(deckDir, "test-deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><head>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
@@ -1004,7 +1094,8 @@ Deck B.
   Reveal.initialize({ autoSlide: 500, autoSlideStoppable: false });
 </script>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val outputDir = File(tempDir, "integration-video").also { it.mkdirs() }
 
@@ -1025,13 +1116,12 @@ Deck B.
 }
 
 class CapsuleDistribTaskTest {
-
     @TempDir
     lateinit var tempDir: File
 
     private fun createTask(
         captDir: File,
-        ffmpegAvailable: Boolean = false
+        ffmpegAvailable: Boolean = false,
     ): CapsuleDistribTask {
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         val ext = CapsuleExtension(project.objects)
@@ -1083,21 +1173,27 @@ class CapsuleDistribTaskTest {
 }
 
 class CapsuleCompositeContextTaskTest {
-
     @TempDir
     lateinit var tempDir: File
 
     private fun createTask(
         scriptDir: File,
         captDir: File,
-        distribDir: File
+        distribDir: File,
     ): CapsuleCompositeContextTask {
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         project.version = "0.1.0-SNAPSHOT"
 
         val ext = CapsuleExtension(project.objects)
         ext.outputDir.set("capsule")
-        ext.sliderScriptDir.set(scriptDir.relativeTo(project.layout.buildDirectory.get().asFile).path)
+        ext.sliderScriptDir.set(
+            scriptDir
+                .relativeTo(
+                    project.layout.buildDirectory
+                        .get()
+                        .asFile,
+                ).path,
+        )
         ext.viewportWidth.set(1408)
         ext.viewportHeight.set(792)
         ext.ttsEngine.set("piper")
@@ -1116,13 +1212,15 @@ class CapsuleCompositeContextTaskTest {
         val distDir = File(buildDir, "capsule/distrib").also { it.mkdirs() }
 
         val scriptFile = File(scriptDir, "test-cours-script.txt")
-        scriptFile.writeText("""
+        scriptFile.writeText(
+            """
 === CAPSULE SCRIPT : test-cours ===
 --- SLIDE 1 : Introduction ---
 Bienvenue dans le cours.
 --- SLIDE 2 : Contenu ---
 Voici le contenu principal.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val task = createTask(scriptDir, capDir, distDir)
         task.execute()
@@ -1144,16 +1242,20 @@ Voici le contenu principal.
         val capDir = File(buildDir, "capsule").also { it.mkdirs() }
         val distDir = File(buildDir, "capsule/distrib").also { it.mkdirs() }
 
-        File(scriptDir, "cours-a-script.txt").writeText("""
+        File(scriptDir, "cours-a-script.txt").writeText(
+            """
 === CAPSULE SCRIPT : cours-a ===
 --- SLIDE 1 : A1 ---
 Deck A.
-        """.trimIndent())
-        File(scriptDir, "cours-b-script.txt").writeText("""
+            """.trimIndent(),
+        )
+        File(scriptDir, "cours-b-script.txt").writeText(
+            """
 === CAPSULE SCRIPT : cours-b ===
 --- SLIDE 1 : B1 ---
 Deck B.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val task = createTask(scriptDir, capDir, distDir)
         task.execute()
@@ -1173,11 +1275,13 @@ Deck B.
 
         File(distDir, "cours.webm").writeText("fake distrib video")
 
-        File(scriptDir, "cours-script.txt").writeText("""
+        File(scriptDir, "cours-script.txt").writeText(
+            """
 === CAPSULE SCRIPT : cours ===
 --- SLIDE 1 : X ---
 Note.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val task = createTask(scriptDir, capDir, distDir)
         task.execute()
@@ -1194,11 +1298,13 @@ Note.
         val capDir = File(buildDir, "capsule").also { it.mkdirs() }
         val distDir = File(buildDir, "capsule/distrib").also { it.mkdirs() }
 
-        File(scriptDir, "json-test-script.txt").writeText("""
+        File(scriptDir, "json-test-script.txt").writeText(
+            """
 === CAPSULE SCRIPT : json-test ===
 --- SLIDE 1 : Verif ---
 Test de validité JSON.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val task = createTask(scriptDir, capDir, distDir)
         task.execute()
@@ -1214,13 +1320,12 @@ Test de validité JSON.
 }
 
 class CapsuleParseContextTaskTest {
-
     @TempDir
     lateinit var tempDir: File
 
     private fun createTask(
         contextJsonFile: File,
-        outputFile: File
+        outputFile: File,
     ): CapsuleParseContextTask {
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         val t = project.tasks.register("transformCapsuleContext", CapsuleParseContextTask::class.java).get()
@@ -1232,7 +1337,8 @@ class CapsuleParseContextTaskTest {
     @Test
     fun `parses capsule-context json and outputs list of maps`() {
         val contextFile = File(tempDir, "capsule-context.json")
-        contextFile.writeText("""
+        contextFile.writeText(
+            """
 {
   "source": "capsule",
   "version": "0.1.0",
@@ -1255,7 +1361,8 @@ class CapsuleParseContextTaskTest {
   ],
   "timestamp": 1234567890
 }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val outputFile = File(tempDir, "parsed-results.json")
 
@@ -1273,14 +1380,16 @@ class CapsuleParseContextTaskTest {
     @Test
     fun `returns empty list when no entries`() {
         val contextFile = File(tempDir, "capsule-context.json")
-        contextFile.writeText("""
+        contextFile.writeText(
+            """
 {
   "source": "capsule",
   "version": "0.1.0",
   "entries": [],
   "timestamp": 1234567890
 }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val outputFile = File(tempDir, "parsed-results.json")
 
@@ -1307,16 +1416,16 @@ class CapsuleParseContextTaskTest {
 }
 
 class AudioQualityConstraintTest {
-
     private val webmSignature = byteArrayOf(0x1a.toByte(), 0x45.toByte(), 0xdf.toByte(), 0xa3.toByte())
 
-    private val mp3Signatures = listOf(
-        byteArrayOf(0xFF.toByte(), 0xFB.toByte()),
-        byteArrayOf(0xFF.toByte(), 0xF3.toByte()),
-        byteArrayOf(0xFF.toByte(), 0xF2.toByte()),
-        byteArrayOf(0x49, 0x44, 0x33),
-        byteArrayOf(0xFF.toByte(), 0xFA.toByte())
-    )
+    private val mp3Signatures =
+        listOf(
+            byteArrayOf(0xFF.toByte(), 0xFB.toByte()),
+            byteArrayOf(0xFF.toByte(), 0xF3.toByte()),
+            byteArrayOf(0xFF.toByte(), 0xF2.toByte()),
+            byteArrayOf(0x49, 0x44, 0x33),
+            byteArrayOf(0xFF.toByte(), 0xFA.toByte()),
+        )
 
     /**
      * Debian et Ubuntu ne livrent plus `espeak` : le paquet installé est
@@ -1332,12 +1441,13 @@ class AudioQualityConstraintTest {
         val engine = EspeakTtsEngine(executablePath = "/nonexistent/path/mon-espeak")
         assertEquals(false, engine.isAvailable())
 
-        val failure = assertFailsWith<TtsException> {
-            engine.synthesize("bonjour", File.createTempFile("espeak-borne", ".mp3").apply { deleteOnExit() })
-        }
+        val failure =
+            assertFailsWith<TtsException> {
+                engine.synthesize("bonjour", File.createTempFile("espeak-borne", ".mp3").apply { deleteOnExit() })
+            }
         assertTrue(
             failure.message!!.contains("/nonexistent/path/mon-espeak"),
-            "le diagnostic doit nommer le chemin demandé : ${failure.message}"
+            "le diagnostic doit nommer le chemin demandé : ${failure.message}",
         )
     }
 
@@ -1380,7 +1490,8 @@ class AudioQualityConstraintTest {
         tmpDir.deleteOnExit()
 
         val deckFile = File(tmpDir, "test-deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><head>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
 </head><body>
@@ -1392,7 +1503,8 @@ class AudioQualityConstraintTest {
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
 <script>Reveal.initialize();</script>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val outputDir = File(tmpDir, "video").also { it.mkdirs() }
 
@@ -1416,15 +1528,22 @@ class AudioQualityConstraintTest {
 }
 
 class ParallelCaptureTest {
-
     @TempDir
     lateinit var tempDir: File
 
     private fun createTinyWebm(output: File) {
-        val proc = ProcessBuilder(
-            "ffmpeg", "-y", "-f", "lavfi", "-i", "testsrc=duration=1:size=2x2:rate=1",
-            "-pix_fmt", "yuv420p", output.absolutePath
-        ).redirectErrorStream(true).start()
+        val proc =
+            ProcessBuilder(
+                "ffmpeg",
+                "-y",
+                "-f",
+                "lavfi",
+                "-i",
+                "testsrc=duration=1:size=2x2:rate=1",
+                "-pix_fmt",
+                "yuv420p",
+                output.absolutePath,
+            ).redirectErrorStream(true).start()
         proc.waitFor()
     }
 
@@ -1494,15 +1613,25 @@ class ParallelCaptureTest {
         val maxConcurrentFactories = AtomicInteger(0)
         val totalCreated = AtomicInteger(0)
 
-        val fakeCapture = object : PlaywrightCapture {
-            override fun capture(deckHtmlPath: String, outputDir: File, viewportWidth: Int, viewportHeight: Int, slideDurations: List<Double>) {
-                outputDir.mkdirs()
-                outputDir.resolve("slide.webm").writeText("fake")
+        val fakeCapture =
+            object : PlaywrightCapture {
+                override fun capture(
+                    deckHtmlPath: String,
+                    outputDir: File,
+                    viewportWidth: Int,
+                    viewportHeight: Int,
+                    slideDurations: List<Double>,
+                ) {
+                    outputDir.mkdirs()
+                    outputDir.resolve("slide.webm").writeText("fake")
+                }
+
+                override fun isAvailable() = true
+
+                override fun name() = "fake"
+
+                override fun close() {}
             }
-            override fun isAvailable() = true
-            override fun name() = "fake"
-            override fun close() {}
-        }
 
         val factory: () -> PlaywrightCapture = {
             val current = activeFactories.incrementAndGet()
@@ -1517,16 +1646,18 @@ class ParallelCaptureTest {
             fakeCapture
         }
 
-        val script = CapsuleScript(
-            name = "parallel-test",
-            segments = (1..6).map { SlideSegment(it, "Slide $it", "Note $it") }
-        )
+        val script =
+            CapsuleScript(
+                name = "parallel-test",
+                segments = (1..6).map { SlideSegment(it, "Slide $it", "Note $it") },
+            )
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val outputDir = File(tempDir, "video").also { it.mkdirs() }
 
         // Create a minimal deck.html for createSingleSlideHtml
         val deckFile = File(tempDir, "deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><head><style>body{margin:0}</style></head><body>
 <div class="reveal"><div class="slides">
 ${(1..6).map { i -> """<section data-capsule-slide="$i"><h2>Slide $i</h2></section>""" }.joinToString("\n")}
@@ -1534,7 +1665,8 @@ ${(1..6).map { i -> """<section data-capsule-slide="$i"><h2>Slide $i</h2></secti
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
 <script>Reveal.initialize();</script>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         task.captureSlideParallel(
             deckHtmlPath = File(tempDir, "deck.html").absolutePath,
@@ -1543,7 +1675,7 @@ ${(1..6).map { i -> """<section data-capsule-slide="$i"><h2>Slide $i</h2></secti
             viewportHeight = 792,
             parsed = script,
             audioDir = audioDir,
-            captureFactory = factory
+            captureFactory = factory,
         )
 
         // One engine per worker thread, not one per slide: resolving an engine
@@ -1551,13 +1683,13 @@ ${(1..6).map { i -> """<section data-capsule-slide="$i"><h2>Slide $i</h2></secti
         // so 6 slides on a 4-thread pool must not cost 6 launches.
         assertTrue(
             totalCreated.get() <= 4,
-            "At most one engine per worker thread should be created, was ${totalCreated.get()}"
+            "At most one engine per worker thread should be created, was ${totalCreated.get()}",
         )
         assertTrue(maxConcurrentFactories.get() <= 4, "Max concurrency should be capped at 4, was ${maxConcurrentFactories.get()}")
         (1..6).forEach { i ->
             assertTrue(
                 outputDir.resolve("slide-%02d.webm".format(i)).exists(),
-                "Slide $i must still be captured despite the engine being shared"
+                "Slide $i must still be captured despite the engine being shared",
             )
         }
     }
@@ -1577,27 +1709,39 @@ ${(1..6).map { i -> """<section data-capsule-slide="$i"><h2>Slide $i</h2></secti
         task.capsuleExtension = ext
 
         val capturedSlides = AtomicInteger(0)
-        val fakeCapture = object : PlaywrightCapture {
-            override fun capture(deckHtmlPath: String, outputDir: File, viewportWidth: Int, viewportHeight: Int, slideDurations: List<Double>) {
-                outputDir.mkdirs()
-                outputDir.resolve("slide.webm").writeText("fake webm content")
-                capturedSlides.incrementAndGet()
-            }
-            override fun isAvailable() = true
-            override fun name() = "fake"
-            override fun close() {}
-        }
+        val fakeCapture =
+            object : PlaywrightCapture {
+                override fun capture(
+                    deckHtmlPath: String,
+                    outputDir: File,
+                    viewportWidth: Int,
+                    viewportHeight: Int,
+                    slideDurations: List<Double>,
+                ) {
+                    outputDir.mkdirs()
+                    outputDir.resolve("slide.webm").writeText("fake webm content")
+                    capturedSlides.incrementAndGet()
+                }
 
-        val script = CapsuleScript(
-            name = "one-per-slide",
-            segments = (1..3).map { SlideSegment(it, "Slide $it", "Note $it") }
-        )
+                override fun isAvailable() = true
+
+                override fun name() = "fake"
+
+                override fun close() {}
+            }
+
+        val script =
+            CapsuleScript(
+                name = "one-per-slide",
+                segments = (1..3).map { SlideSegment(it, "Slide $it", "Note $it") },
+            )
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val outputDir = File(tempDir, "video").also { it.mkdirs() }
 
         // Create a minimal deck.html for createSingleSlideHtml
         val deckFile = File(tempDir, "deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><head><style>body{margin:0}</style></head><body>
 <div class="reveal"><div class="slides">
 ${(1..3).map { i -> """<section data-capsule-slide="$i"><h2>Slide $i</h2></section>""" }.joinToString("\n")}
@@ -1605,7 +1749,8 @@ ${(1..3).map { i -> """<section data-capsule-slide="$i"><h2>Slide $i</h2></secti
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
 <script>Reveal.initialize();</script>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         task.captureSlideParallel(
             deckHtmlPath = File(tempDir, "deck.html").absolutePath,
@@ -1614,7 +1759,7 @@ ${(1..3).map { i -> """<section data-capsule-slide="$i"><h2>Slide $i</h2></secti
             viewportHeight = 792,
             parsed = script,
             audioDir = audioDir,
-            captureFactory = { fakeCapture }
+            captureFactory = { fakeCapture },
         )
 
         assertEquals(3, capturedSlides.get(), "Should capture 3 slides")
@@ -1624,14 +1769,14 @@ ${(1..3).map { i -> """<section data-capsule-slide="$i"><h2>Slide $i</h2></secti
 }
 
 class CapsuleConfigLoaderTest {
-
     @TempDir
     lateinit var tempDir: File
 
     @Test
     fun `ConfigLoader loads YAML file into CapsuleConfig`() {
         val yamlFile = File(tempDir, "capsule-context.yml")
-        yamlFile.writeText("""
+        yamlFile.writeText(
+            """
 tts:
   engine: espeak
   espeakVoice: de
@@ -1640,7 +1785,8 @@ capture:
   viewportWidth: 1920
   viewportHeight: 1080
   parallelCaptureEnabled: true
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val config = CapsuleConfigLoader.load(yamlFile)
         assertEquals("espeak", config.tts.engine)
@@ -1653,26 +1799,30 @@ capture:
     @Test
     fun `ConfigLoader uses defaults for missing YAML sections`() {
         val yamlFile = File(tempDir, "capsule-context.yml")
-        yamlFile.writeText("""
+        yamlFile.writeText(
+            """
 tts:
   engine: piper
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val config = CapsuleConfigLoader.load(yamlFile)
         assertEquals("piper", config.tts.engine)
         assertEquals("fr_FR-siwis-medium", config.tts.voice) // default
-        assertEquals(1408, config.capture.viewportWidth)       // default
+        assertEquals(1408, config.capture.viewportWidth) // default
         assertEquals("ffmpeg", config.distrib.ffmpegExecutablePath) // default
     }
 
     @Test
     fun `ConfigLoader resolves environment variables in YAML`() {
         val yamlFile = File(tempDir, "capsule-context.yml")
-        yamlFile.writeText("""
+        yamlFile.writeText(
+            """
 tts:
   engine: espeak
   espeakVoice: ${'$'}{CAPSULE_TEST_VOICE}
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val resolved = CapsuleConfigLoader.resolveEnvironmentVariables(yamlFile.readText())
         // If CAPSULE_TEST_VOICE is not set, the ${} syntax is preserved
@@ -1683,10 +1833,12 @@ tts:
     @Test
     fun `ConfigLoader falls back to defaults on malformed YAML`() {
         val yamlFile = File(tempDir, "malformed.yml")
-        yamlFile.writeText("""
+        yamlFile.writeText(
+            """
 {{{invalid yaml: : :
   : : : [[[
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val config = CapsuleConfigLoader.load(yamlFile)
 
@@ -1721,7 +1873,6 @@ tts:
 }
 
 class CapsuleConfigTest {
-
     @Test
     fun `CapsuleConfig has sensible defaults`() {
         val config = CapsuleConfig()
@@ -1762,12 +1913,13 @@ class CapsuleConfigTest {
 
     @Test
     fun `CapsuleConfig can be constructed with custom values`() {
-        val config = CapsuleConfig(
-            tts = TtsConfig(engine = "espeak", voice = "de", espeakVoice = "de", espeakSpeed = 120),
-            capture = CaptureConfig(viewportWidth = 1920, viewportHeight = 1080, parallelCaptureEnabled = true),
-            distrib = DistribConfig(outputWidth = 720, outputHeight = 1280),
-            manim = ManimConfig(quality = "h", scriptsDir = "scripts/manim")
-        )
+        val config =
+            CapsuleConfig(
+                tts = TtsConfig(engine = "espeak", voice = "de", espeakVoice = "de", espeakSpeed = 120),
+                capture = CaptureConfig(viewportWidth = 1920, viewportHeight = 1080, parallelCaptureEnabled = true),
+                distrib = DistribConfig(outputWidth = 720, outputHeight = 1280),
+                manim = ManimConfig(quality = "h", scriptsDir = "scripts/manim"),
+            )
         assertEquals("espeak", config.tts.engine)
         assertEquals("de", config.tts.espeakVoice)
         assertEquals(1920, config.capture.viewportWidth)
@@ -1787,8 +1939,8 @@ class CapsuleConfigTest {
 }
 
 class CreateSingleSlideHtmlTest {
-
-    private val threeSlideDeck = """
+    private val threeSlideDeck =
+        """
 <html><head>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
@@ -1804,7 +1956,7 @@ class CreateSingleSlideHtmlTest {
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
 <script>Reveal.initialize();</script>
 </body></html>
-    """.trimIndent()
+        """.trimIndent()
 
     @Test
     fun `createSingleSlideHtml extracts first slide as standalone HTML`() {
@@ -1843,11 +1995,11 @@ class CreateSingleSlideHtmlTest {
         // is preserved; what must not happen is a *second* copy being added.
         assertTrue(
             !result.contains("Reveal.initialize()"),
-            "Must not re-initialize a presentation runtime over the deck's own: $result"
+            "Must not re-initialize a presentation runtime over the deck's own: $result",
         )
         assertTrue(
             result.contains("display:block!important"),
-            "The extracted slide must be forced visible whatever the deck CSS does: $result"
+            "The extracted slide must be forced visible whatever the deck CSS does: $result",
         )
     }
 
@@ -1863,7 +2015,8 @@ class CreateSingleSlideHtmlTest {
      */
     @Test
     fun `createSingleSlideHtml isolates a slide even when slides contain divs`() {
-        val deckWithDivs = """
+        val deckWithDivs =
+            """
 <html><head><style>body{margin:0}</style></head><body>
 <div class="reveal">
   <div class="slides">
@@ -1873,7 +2026,7 @@ class CreateSingleSlideHtmlTest {
   </div>
 </div>
 </body></html>
-        """.trimIndent()
+            """.trimIndent()
 
         val result = RevealJsDeckHtml.singleSlideHtml(deckWithDivs, 1)
 
@@ -1892,7 +2045,8 @@ class CreateSingleSlideHtmlTest {
 
     @Test
     fun `createSingleSlideHtml preserves data-audio attribute on section`() {
-        val deckWithAudio = """
+        val deckWithAudio =
+            """
 <html><head>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
 </head><body>
@@ -1905,7 +2059,7 @@ class CreateSingleSlideHtmlTest {
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
 <script>Reveal.initialize();</script>
 </body></html>
-        """.trimIndent()
+            """.trimIndent()
         val result = RevealJsDeckHtml.singleSlideHtml(deckWithAudio, 0)
         assertTrue(result.contains("data-audio"), "Should preserve data-audio attribute")
         assertTrue(result.contains("slide-01.mp3"), "Should preserve audio file path")
@@ -1914,7 +2068,8 @@ class CreateSingleSlideHtmlTest {
 
     @Test
     fun `createSingleSlideHtml handles nested sections`() {
-        val deckWithNested = """
+        val deckWithNested =
+            """
 <html><head>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
 </head><body>
@@ -1929,7 +2084,7 @@ class CreateSingleSlideHtmlTest {
 </div>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
 </body></html>
-        """.trimIndent()
+            """.trimIndent()
         val result = RevealJsDeckHtml.singleSlideHtml(deckWithNested, 0)
         assertTrue(result.contains("Sub A"), "Should contain nested subsection A")
         assertTrue(result.contains("Sub B"), "Should contain nested subsection B")
@@ -1938,7 +2093,6 @@ class CreateSingleSlideHtmlTest {
 }
 
 class ParallelCaptureSwitchTest {
-
     private val webmSignature = byteArrayOf(0x1a.toByte(), 0x45.toByte(), 0xdf.toByte(), 0xa3.toByte())
 
     @TempDir
@@ -1948,7 +2102,8 @@ class ParallelCaptureSwitchTest {
     fun `execute uses sequential capture when parallelCaptureEnabled is false`() {
         val deckDir = File(tempDir, "decks").also { it.mkdirs() }
         val deckFile = File(deckDir, "test-deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -1956,15 +2111,18 @@ class ParallelCaptureSwitchTest {
   </div>
 </div>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val scriptDir = File(tempDir, "scripts").also { it.mkdirs() }
         val scriptFile = File(scriptDir, "test-script.txt")
-        scriptFile.writeText("""
+        scriptFile.writeText(
+            """
 === CAPSULE SCRIPT : test ===
 --- SLIDE 1 : Slide 1 ---
 Speaker note.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         val ext = CapsuleExtension(project.objects)
@@ -1993,7 +2151,8 @@ Speaker note.
     fun `execute uses captureSlideParallel when parallelCaptureEnabled is true`() {
         val deckDir = File(tempDir, "decks").also { it.mkdirs() }
         val deckFile = File(deckDir, "parallel-deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -2002,17 +2161,20 @@ Speaker note.
   </div>
 </div>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val scriptDir = File(tempDir, "scripts").also { it.mkdirs() }
         val scriptFile = File(scriptDir, "parallel-script.txt")
-        scriptFile.writeText("""
+        scriptFile.writeText(
+            """
 === CAPSULE SCRIPT : parallel-deck ===
 --- SLIDE 1 : Slide 1 ---
 Note 1.
 --- SLIDE 2 : Slide 2 ---
 Note 2.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         val ext = CapsuleExtension(project.objects)
@@ -2031,13 +2193,14 @@ Note 2.
         // With parallel capture enabled, the final video should be produced
         val videoDir = File(tempDir, "build/capsule/parallel-deck/video")
         // Parallel path creates per-slide subdirectories (slide-XX/)
-        assertTrue(videoDir.exists() || File(tempDir, "build/capsule/parallel-deck.webm").exists(),
-            "Parallel capture should produce video artifacts")
+        assertTrue(
+            videoDir.exists() || File(tempDir, "build/capsule/parallel-deck.webm").exists(),
+            "Parallel capture should produce video artifacts",
+        )
     }
 }
 
 class ManimEngineWiringTest {
-
     @TempDir
     lateinit var tempDir: File
 
@@ -2045,7 +2208,8 @@ class ManimEngineWiringTest {
     fun `MANIM slide triggers ManimEngine render instead of Playwright`() {
         val deckDir = File(tempDir, "decks").also { it.mkdirs() }
         val deckFile = File(deckDir, "manim-deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -2054,28 +2218,33 @@ class ManimEngineWiringTest {
   </div>
 </div>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val scriptDir = File(tempDir, "scripts").also { it.mkdirs() }
         val scriptFile = File(scriptDir, "manim-deck-script.txt")
-        scriptFile.writeText("""
+        scriptFile.writeText(
+            """
 === CAPSULE SCRIPT : manim-deck ===
 --- SLIDE 1 : Intro ---
 Text introduction.
 --- SLIDE 2 : Anim [manim:MoveSquare] ---
 Voici l'animation.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         // Create manim scripts directory
         val manimDir = File(tempDir, "src/manim").also { it.mkdirs() }
-        File(manimDir, "MoveSquare.py").writeText("""
+        File(manimDir, "MoveSquare.py").writeText(
+            """
 from manim import *
 
 class MoveSquare(Scene):
     def construct(self):
         sq = Square()
         self.play(Create(sq))
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         val ext = CapsuleExtension(project.objects)
@@ -2100,7 +2269,8 @@ class MoveSquare(Scene):
     fun `MANIM slide video is produced by ManimEngine when NoOp captures`() {
         val deckDir = File(tempDir, "decks2").also { it.mkdirs() }
         val deckFile = File(deckDir, "manim-cours-deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -2109,17 +2279,20 @@ class MoveSquare(Scene):
   </div>
 </div>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val scriptDir = File(tempDir, "scripts2").also { it.mkdirs() }
         val scriptFile = File(scriptDir, "manim-cours-script.txt")
-        scriptFile.writeText("""
+        scriptFile.writeText(
+            """
 === CAPSULE SCRIPT : manim-cours ===
 --- SLIDE 1 : Text Slide ---
 Just text.
 --- SLIDE 2 : Math Animation [manim:Scene1] ---
 An animation.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         val ext = CapsuleExtension(project.objects)
@@ -2156,7 +2329,6 @@ An animation.
 }
 
 class CapsuleManagerResolveManimEngineTest {
-
     @Test
     fun `resolveManimEngine returns NoOpManimEngine when config says noop`() {
         val config = ManimConfig(executablePath = "noop", quality = "l", scriptsDir = "src/manim")
@@ -2194,7 +2366,6 @@ class CapsuleManagerResolveManimEngineTest {
 }
 
 class RevealJsRenderingConstraintTest {
-
     @Test
     @Tag("integration")
     fun `playwright capture must render reveal js slides individually not all on one page`() {
@@ -2207,7 +2378,8 @@ class RevealJsRenderingConstraintTest {
         tmpDir.deleteOnExit()
 
         val deckFile = File(tmpDir, "reveal-test.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><head>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
 </head><body>
@@ -2221,7 +2393,8 @@ class RevealJsRenderingConstraintTest {
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
 <script>Reveal.initialize();</script>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val outputDir = File(tmpDir, "video").also { it.mkdirs() }
 
@@ -2241,7 +2414,6 @@ class RevealJsRenderingConstraintTest {
 }
 
 class CapsuleScaffoldTaskTest {
-
     @TempDir
     lateinit var tempDir: File
 
@@ -2284,12 +2456,16 @@ class CapsuleScaffoldTaskTest {
 
         val content = File(tempDir, "capsule-context.yml").readText()
         // All config lines should be commented (start with #, optionally indented)
-        val configLines = content.lines()
-            .filter { it.isNotBlank() }
-            .filter { !it.trim().startsWith("#") }
+        val configLines =
+            content
+                .lines()
+                .filter { it.isNotBlank() }
+                .filter { !it.trim().startsWith("#") }
         // Only the section headers (e.g. "input:") should be uncommented
-        assertTrue(configLines.all { it.trim().endsWith(":") }, 
-            "Non-commented lines should only be section headers, got: $configLines")
+        assertTrue(
+            configLines.all { it.trim().endsWith(":") },
+            "Non-commented lines should only be section headers, got: $configLines",
+        )
     }
 
     @Test
@@ -2325,7 +2501,6 @@ class CapsuleScaffoldTaskTest {
 }
 
 class ManimVideoMixerWiringTest {
-
     @TempDir
     lateinit var tempDir: File
 
@@ -2333,7 +2508,8 @@ class ManimVideoMixerWiringTest {
     fun `MANIM slide muxes video with TTS audio via ManimVideoMixer`() {
         val deckDir = File(tempDir, "decks").also { it.mkdirs() }
         val deckFile = File(deckDir, "mux-deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -2341,15 +2517,18 @@ class ManimVideoMixerWiringTest {
   </div>
 </div>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val scriptDir = File(tempDir, "scripts").also { it.mkdirs() }
         val scriptFile = File(scriptDir, "mux-deck-script.txt")
-        scriptFile.writeText("""
+        scriptFile.writeText(
+            """
 === CAPSULE SCRIPT : mux-deck ===
 --- SLIDE 1 : Animation [manim:Scene1] ---
 Explication de l'animation.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         val ext = CapsuleExtension(project.objects)
@@ -2376,7 +2555,8 @@ Explication de l'animation.
     fun `MANIM slide with mixed HTML and MANIM slides processes both types`() {
         val deckDir = File(tempDir, "decks-mix").also { it.mkdirs() }
         val deckFile = File(deckDir, "mixed-deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -2386,11 +2566,13 @@ Explication de l'animation.
   </div>
 </div>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val scriptDir = File(tempDir, "scripts-mix").also { it.mkdirs() }
         val scriptFile = File(scriptDir, "mixed-deck-script.txt")
-        scriptFile.writeText("""
+        scriptFile.writeText(
+            """
 === CAPSULE SCRIPT : mixed-deck ===
 --- SLIDE 1 : Intro ---
 Text introduction.
@@ -2398,7 +2580,8 @@ Text introduction.
 Voici l'animation.
 --- SLIDE 3 : Conclusion ---
 Fin du cours.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val manimDir = File(tempDir, "src/manim").also { it.mkdirs() }
         File(manimDir, "RotateSquare.py").writeText("# manim script")
@@ -2469,7 +2652,6 @@ Fin du cours.
 }
 
 class ManimSlideReplacementWiringTest {
-
     @TempDir
     lateinit var tempDir: File
 
@@ -2477,7 +2659,8 @@ class ManimSlideReplacementWiringTest {
     fun `ManimSlideReplacer replaces HTML slide with video embed during task execution`() {
         val deckDir = File(tempDir, "decks-replace").also { it.mkdirs() }
         val deckFile = File(deckDir, "replace-deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -2486,17 +2669,20 @@ class ManimSlideReplacementWiringTest {
   </div>
 </div>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val scriptDir = File(tempDir, "scripts-replace").also { it.mkdirs() }
         val scriptFile = File(scriptDir, "replace-deck-script.txt")
-        scriptFile.writeText("""
+        scriptFile.writeText(
+            """
 === CAPSULE SCRIPT : replace-deck ===
 --- SLIDE 1 : Intro ---
 Text introduction.
 --- SLIDE 2 : Anim [manim:SlideAnim] ---
 Voici l'animation.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val manimDir = File(tempDir, "src/manim").also { it.mkdirs() }
         File(manimDir, "SlideAnim.py").writeText("# manim script for slide animation")
@@ -2525,8 +2711,10 @@ Voici l'animation.
             if (replacedFiles != null && replacedFiles.isNotEmpty()) {
                 val content = replacedFiles.first().readText()
                 assertTrue(content.contains("<video"), "Replaced deck should contain <video> tag for manim slide")
-                assertTrue(content.contains("SlideAnim-muxed.mp4") || content.contains("SlideAnim.mp4"),
-                    "Replaced deck should reference the manim video file")
+                assertTrue(
+                    content.contains("SlideAnim-muxed.mp4") || content.contains("SlideAnim.mp4"),
+                    "Replaced deck should reference the manim video file",
+                )
                 assertTrue(content.contains("Intro"), "Slide 1 (HTML) should still contain 'Intro'")
             }
         }
@@ -2539,7 +2727,8 @@ Voici l'animation.
     fun `ManimSlideReplacer NoOp does not modify deck during task execution`() {
         val deckDir = File(tempDir, "decks-noop").also { it.mkdirs() }
         val deckFile = File(deckDir, "noop-deck.html")
-        deckFile.writeText("""
+        deckFile.writeText(
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -2547,15 +2736,18 @@ Voici l'animation.
   </div>
 </div>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val scriptDir = File(tempDir, "scripts-noop").also { it.mkdirs() }
         val scriptFile = File(scriptDir, "noop-deck-script.txt")
-        scriptFile.writeText("""
+        scriptFile.writeText(
+            """
 === CAPSULE SCRIPT : noop-deck ===
 --- SLIDE 1 : Slide 1 ---
 Note.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val project = ProjectBuilder.builder().withProjectDir(tempDir).build()
         val ext = CapsuleExtension(project.objects)
@@ -2587,7 +2779,6 @@ Note.
 }
 
 class LanguageVoiceMappingTest {
-
     @Test
     fun `MultiLanguageResolver resolves all LanguageCatalog codes`() {
         contracts.i18n.LanguageCatalog.supportedCodes().forEach { code ->
@@ -2604,7 +2795,6 @@ class LanguageVoiceMappingTest {
 }
 
 class CapsulePluginWiringTest {
-
     @Test
     fun `collectCliParams extracts capsule-prefixed project properties`() {
         val project = ProjectBuilder.builder().build()
@@ -2625,13 +2815,14 @@ class CapsulePluginWiringTest {
         val ext = CapsuleExtension(project.objects)
         val plugin = CapsulePlugin()
 
-        val mergedConfig = CapsuleConfig(
-            input = InputConfig(outputDir = "custom-output", deckSourceDir = "custom-decks"),
-            tts = TtsConfig(engine = "espeak", voice = "de-voice", espeakVoice = "de", espeakSpeed = 200),
-            capture = CaptureConfig(viewportWidth = 1920, viewportHeight = 1080, parallelCaptureEnabled = true),
-            distrib = DistribConfig(ffmpegExecutablePath = "/usr/bin/ffmpeg", outputWidth = 720),
-            manim = ManimConfig(quality = "h", scriptsDir = "scripts")
-        )
+        val mergedConfig =
+            CapsuleConfig(
+                input = InputConfig(outputDir = "custom-output", deckSourceDir = "custom-decks"),
+                tts = TtsConfig(engine = "espeak", voice = "de-voice", espeakVoice = "de", espeakSpeed = 200),
+                capture = CaptureConfig(viewportWidth = 1920, viewportHeight = 1080, parallelCaptureEnabled = true),
+                distrib = DistribConfig(ffmpegExecutablePath = "/usr/bin/ffmpeg", outputWidth = 720),
+                manim = ManimConfig(quality = "h", scriptsDir = "scripts"),
+            )
 
         plugin.pushConfigIntoExtension(mergedConfig, ext)
 

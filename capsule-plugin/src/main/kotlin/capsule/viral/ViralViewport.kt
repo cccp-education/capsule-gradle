@@ -16,7 +16,6 @@ package capsule.viral
  * metadata, not the encoding).
  */
 object ViralViewport {
-
     /** Portrait width (px) — 9:16. */
     const val PORTRAIT_WIDTH: Int = 1080
 
@@ -35,13 +34,14 @@ object ViralViewport {
         viralEnabled: Boolean,
         defaultWidth: Int,
         defaultHeight: Int,
-    ): Pair<Int, Int> =
-        if (viralEnabled) PORTRAIT_WIDTH to PORTRAIT_HEIGHT else defaultWidth to defaultHeight
+    ): Pair<Int, Int> = if (viralEnabled) PORTRAIT_WIDTH to PORTRAIT_HEIGHT else defaultWidth to defaultHeight
 
     /**
      * `true` when the (width, height) pair is the portrait 9:16 short-form
      * viewport.
      */
-    fun isPortrait(width: Int, height: Int): Boolean =
-        width == PORTRAIT_WIDTH && height == PORTRAIT_HEIGHT
+    fun isPortrait(
+        width: Int,
+        height: Int,
+    ): Boolean = width == PORTRAIT_WIDTH && height == PORTRAIT_HEIGHT
 }

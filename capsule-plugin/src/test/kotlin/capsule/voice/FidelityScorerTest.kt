@@ -7,7 +7,6 @@ import kotlin.test.assertEquals
  * TDD unit tests for [FidelityScorer] (CAP-QC-VOICE US-1). Pure — no I/O.
  */
 class FidelityScorerTest {
-
     @Test
     fun `an exact match scores a zero word error rate`() {
         val score = FidelityScorer.score("bonjour le monde", "bonjour le monde")

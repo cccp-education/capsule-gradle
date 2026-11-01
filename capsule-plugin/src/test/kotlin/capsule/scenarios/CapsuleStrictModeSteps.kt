@@ -20,7 +20,6 @@ import kotlin.test.assertTrue
  * other step classes in the same glue package.
  */
 class CapsuleStrictModeSteps {
-
     private var projectDir: File? = null
     private var lastBuildOutput: String = ""
     private var lastBuildFailed: Boolean = false
@@ -30,10 +29,14 @@ class CapsuleStrictModeSteps {
     private var extraCliArgs: List<String> = emptyList()
 
     @Given("a capsule strict project with ttsEngine {string} and piperExecutablePath {string}")
-    fun aCapsuleStrictProject(ttsEngine: String, piperPath: String) {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-strict-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+    fun aCapsuleStrictProject(
+        ttsEngine: String,
+        piperPath: String,
+    ) {
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-strict-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir!!.resolve("settings.gradle").writeText("")
         this.ttsEngine = ttsEngine
@@ -56,22 +59,26 @@ class CapsuleStrictModeSteps {
     @And("a capsule script {string} with one slide")
     fun aCapsuleScriptWithOneSlide(scriptName: String) {
         val scriptDir = projectDir!!.resolve("build/capsule").also { it.mkdirs() }
-        scriptDir.resolve("$scriptName-script.txt").writeText("""
+        scriptDir.resolve("$scriptName-script.txt").writeText(
+            """
             === CAPSULE SCRIPT : $scriptName ===
             --- SLIDE 1 : Test ---
             This is a test of strict mode.
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @When("the generateCapsule task is run")
     fun theGenerateCapsuleTaskIsRun() {
         val args = mutableListOf("generateCapsule")
         args.addAll(extraCliArgs)
-        val runner = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(args)
-            .withProjectDir(projectDir!!)
+        val runner =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(args)
+                .withProjectDir(projectDir!!)
 
         try {
             val result = runner.build()
@@ -103,13 +110,14 @@ class CapsuleStrictModeSteps {
     fun theStrictBuildOutputContains(expected: String) {
         assertTrue(
             lastBuildOutput.contains(expected),
-            "Expected build output to contain '$expected' but got: $lastBuildOutput"
+            "Expected build output to contain '$expected' but got: $lastBuildOutput",
         )
     }
 
     private fun writeBuildFile() {
         val strictLine = if (strictEnabled) "strictMode = true" else ""
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -119,6 +127,7 @@ class CapsuleStrictModeSteps {
                 ttsFallbackEnabled = true
                 $strictLine
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 }

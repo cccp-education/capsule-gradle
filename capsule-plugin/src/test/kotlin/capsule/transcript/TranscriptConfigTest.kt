@@ -14,7 +14,6 @@ import kotlin.test.assertFalse
  * required, deterministic).
  */
 class TranscriptConfigTest {
-
     @Test
     fun `TranscriptConfig defaults are backward-compat disabled`() {
         val config = TranscriptConfig()

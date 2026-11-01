@@ -15,7 +15,6 @@ import java.io.File
  * Pure — no I/O.
  */
 object SpeechRecognizerCommand {
-
     /**
      * Builds the argv that transcribes [audio] into [outputDir].
      *

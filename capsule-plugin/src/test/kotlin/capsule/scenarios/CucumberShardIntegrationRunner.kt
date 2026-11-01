@@ -27,10 +27,10 @@ import org.junit.platform.suite.api.Suite
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-shard-integration.html, json:build/reports/cucumber-shard-integration.json"
+    value = "pretty, html:build/reports/cucumber-shard-integration.html, json:build/reports/cucumber-shard-integration.json",
 )
 @ConfigurationParameter(
     key = FILTER_TAGS_PROPERTY_NAME,
-    value = "@integration and not @wip and not @viral-render"
+    value = "@integration and not @wip and not @viral-render",
 )
 class CucumberShardIntegrationRunner

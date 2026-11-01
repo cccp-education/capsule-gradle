@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Assertions
 import java.io.File
 
 class CapsuleSpeakerNotesSteps {
-
     private var deckName: String = ""
     private var adocContent: String = ""
     private var script: CapsuleScript? = null
@@ -20,7 +19,10 @@ class CapsuleSpeakerNotesSteps {
     private var caught: Throwable? = null
 
     @Given("an AsciiDoc deck {string} with content")
-    fun anAsciidocDeckWithContent(name: String, content: String) {
+    fun anAsciidocDeckWithContent(
+        name: String,
+        content: String,
+    ) {
         deckName = name
         adocContent = content.trimIndent()
     }
@@ -29,10 +31,11 @@ class CapsuleSpeakerNotesSteps {
     fun theRealDemoDeckIsLoaded(deckBasename: String) {
         deckName = deckBasename
         val repoRoot = resolveRepoRoot()
-        val deck = File(repoRoot, "slides/misc/$deckBasename.adoc")
-            .takeIf { it.exists() }
-            ?: File(repoRoot, "foundry/public/capsule-gradle/slides/misc/$deckBasename.adoc")
+        val deck =
+            File(repoRoot, "slides/misc/$deckBasename.adoc")
                 .takeIf { it.exists() }
+                ?: File(repoRoot, "foundry/public/capsule-gradle/slides/misc/$deckBasename.adoc")
+                    .takeIf { it.exists() }
                 ?: error("Demo deck not found: $deckBasename")
         adocContent = deck.readText()
     }
@@ -72,17 +75,26 @@ class CapsuleSpeakerNotesSteps {
     }
 
     @And("the segment {int} should have title {string}")
-    fun theSegmentShouldHaveTitle(idx: Int, title: String) {
+    fun theSegmentShouldHaveTitle(
+        idx: Int,
+        title: String,
+    ) {
         Assertions.assertEquals(title, script?.segments?.get(idx - 1)?.title)
     }
 
     @And("the segment {int} should have speakerNote {string}")
-    fun theSegmentShouldHaveSpeakerNote(idx: Int, note: String) {
+    fun theSegmentShouldHaveSpeakerNote(
+        idx: Int,
+        note: String,
+    ) {
         Assertions.assertEquals(note, script?.segments?.get(idx - 1)?.speakerNote)
     }
 
     @And("the segment {int} should have index {int}")
-    fun theSegmentShouldHaveIndex(idx: Int, expected: Int) {
+    fun theSegmentShouldHaveIndex(
+        idx: Int,
+        expected: Int,
+    ) {
         Assertions.assertEquals(expected, script?.segments?.get(idx - 1)?.index)
     }
 

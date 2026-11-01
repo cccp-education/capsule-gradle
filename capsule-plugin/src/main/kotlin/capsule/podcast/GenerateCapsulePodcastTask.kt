@@ -49,7 +49,6 @@ import org.gradle.work.DisableCachingByDefault
  */
 @DisableCachingByDefault(because = "Concatenates external MP3 files via ffmpeg, not a pure function of inputs")
 abstract class GenerateCapsulePodcastTask : DefaultTask() {
-
     /** Per-slide TTS MP3 files (`slide-XX.mp3`) produced by `generateCapsuleVideo`. */
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -88,14 +87,18 @@ abstract class GenerateCapsulePodcastTask : DefaultTask() {
             return
         }
 
-        val ffmpegPath = project.extensions
-            .findByType(capsule.CapsuleExtension::class.java)
-            ?.ffmpegExecutablePath?.get()
-            ?: "ffmpeg"
-        val strict = project.extensions
-            .findByType(capsule.CapsuleExtension::class.java)
-            ?.strictMode?.get()
-            ?: false
+        val ffmpegPath =
+            project.extensions
+                .findByType(capsule.CapsuleExtension::class.java)
+                ?.ffmpegExecutablePath
+                ?.get()
+                ?: "ffmpeg"
+        val strict =
+            project.extensions
+                .findByType(capsule.CapsuleExtension::class.java)
+                ?.strictMode
+                ?.get()
+                ?: false
         val concatenator = capsule.CapsuleFactory.resolvePodcastConcatenator(ffmpegPath, strict)
 
         if (!concatenator.isAvailable()) {

@@ -26,7 +26,11 @@ interface ManimSlideReplacer {
      * @param videoPath Path to the Manim MP4 video (muxed with TTS audio)
      * @return Modified deck HTML with the slide replaced
      */
-    fun replaceSlideAt(deckHtml: String, slideIndex: Int, videoPath: String): String
+    fun replaceSlideAt(
+        deckHtml: String,
+        slideIndex: Int,
+        videoPath: String,
+    ): String
 
     /** Returns true if the replacer is available */
     fun isAvailable(): Boolean
@@ -36,14 +40,17 @@ interface ManimSlideReplacer {
 }
 
 class ManimSlideReplacerImpl : ManimSlideReplacer {
-
     private val logger = Logging.getLogger(ManimSlideReplacerImpl::class.java)
 
     override fun isAvailable(): Boolean = true
 
     override fun name(): String = "html-replacer"
 
-    override fun replaceSlideAt(deckHtml: String, slideIndex: Int, videoPath: String): String {
+    override fun replaceSlideAt(
+        deckHtml: String,
+        slideIndex: Int,
+        videoPath: String,
+    ): String {
         if (slideIndex < 0) {
             logger.warn("ManimSlideReplacer: negative slide index {} — returning deck unchanged", slideIndex)
             return deckHtml
@@ -69,17 +76,18 @@ class ManimSlideReplacerImpl : ManimSlideReplacer {
         val capsuleSlideMatch = Regex("""data-capsule-slide="(\d+)"""").find(originalSection)
         val slideAttr = capsuleSlideMatch?.groupValues?.get(1)
 
-        val videoEmbed = buildString {
-            append("<section")
-            if (slideAttr != null) {
-                append(" data-capsule-slide=\"$slideAttr\"")
+        val videoEmbed =
+            buildString {
+                append("<section")
+                if (slideAttr != null) {
+                    append(" data-capsule-slide=\"$slideAttr\"")
+                }
+                appendLine(">")
+                appendLine("  <video src=\"$videoPath\" autoplay loop muted style=\"width:100%;height:100%;object-fit:contain;\">")
+                appendLine("    Your browser does not support the video tag.")
+                appendLine("  </video>")
+                appendLine("</section>")
             }
-            appendLine(">")
-            appendLine("  <video src=\"$videoPath\" autoplay loop muted style=\"width:100%;height:100%;object-fit:contain;\">")
-            appendLine("    Your browser does not support the video tag.")
-            appendLine("  </video>")
-            appendLine("</section>")
-        }
 
         // Replace the specific top-level section in the deck HTML
         val originalRange = slidesDivMatch.groups[1]!!.range
@@ -87,18 +95,19 @@ class ManimSlideReplacerImpl : ManimSlideReplacer {
         val afterSlides = deckHtml.substring(originalRange.last + 1)
 
         // Rebuild slides content with the replacement
-        val newSlidesContent = buildString {
-            var offset = 0
-            for ((i, section) in topSections.withIndex()) {
-                val sectionStart = slidesContent.indexOf(section, offset)
-                if (sectionStart == -1) continue
+        val newSlidesContent =
+            buildString {
+                var offset = 0
+                for ((i, section) in topSections.withIndex()) {
+                    val sectionStart = slidesContent.indexOf(section, offset)
+                    if (sectionStart == -1) continue
 
-                append(slidesContent.substring(offset, sectionStart))
-                append(if (i == slideIndex) videoEmbed else section)
-                offset = sectionStart + section.length
+                    append(slidesContent.substring(offset, sectionStart))
+                    append(if (i == slideIndex) videoEmbed else section)
+                    offset = sectionStart + section.length
+                }
+                append(slidesContent.substring(offset))
             }
-            append(slidesContent.substring(offset))
-        }
 
         return beforeSlides + newSlidesContent + afterSlides
     }
@@ -106,9 +115,12 @@ class ManimSlideReplacerImpl : ManimSlideReplacer {
 
 class NoOpManimSlideReplacer : ManimSlideReplacer {
     override fun isAvailable(): Boolean = true
+
     override fun name(): String = "noop-replacer"
 
-    override fun replaceSlideAt(deckHtml: String, slideIndex: Int, videoPath: String): String {
-        return deckHtml
-    }
+    override fun replaceSlideAt(
+        deckHtml: String,
+        slideIndex: Int,
+        videoPath: String,
+    ): String = deckHtml
 }

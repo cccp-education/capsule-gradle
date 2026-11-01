@@ -17,7 +17,6 @@ package capsule
  * compatibility).
  */
 object StrictModeGuard {
-
     /**
      * Asserts that an engine is available when strict mode is enabled.
      *
@@ -32,14 +31,14 @@ object StrictModeGuard {
         strict: Boolean,
         engineName: String,
         isAvailable: Boolean,
-        path: String
+        path: String,
     ) {
         if (!strict || isAvailable) return
 
         val pathSegment = if (path.isNotBlank()) " at '$path'" else ""
         throw IllegalStateException(
             "strictMode is enabled: $engineName is not available$pathSegment. " +
-                "Disable strictMode (capsule.strictMode.enabled=false) or install $engineName."
+                "Disable strictMode (capsule.strictMode.enabled=false) or install $engineName.",
         )
     }
 }

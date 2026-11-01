@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ChapterEntryParserTest {
-
     @Test
     fun `parseSlideSegments with empty array returns empty list`() {
         assertTrue(ChapterEntryParser.parseSlideSegments("[]").isEmpty())
@@ -53,10 +52,11 @@ class ChapterEntryParserTest {
 
     @Test
     fun `buildChapterEntries with segments creates intro plus segments plus outro`() {
-        val segments = listOf(
-            ChapterEntryParser.SlideSegmentData("Slide A", 5000, 15000),
-            ChapterEntryParser.SlideSegmentData("Slide B", 15000, 25000)
-        )
+        val segments =
+            listOf(
+                ChapterEntryParser.SlideSegmentData("Slide A", 5000, 15000),
+                ChapterEntryParser.SlideSegmentData("Slide B", 15000, 25000),
+            )
         val chapters = ChapterEntryParser.buildChapterEntries(segments, "Start", "End")
         assertEquals(4, chapters.size)
         assertEquals("Start", chapters[0].title)
@@ -83,15 +83,17 @@ class ChapterEntryParserTest {
 
     @Test
     fun `buildChapterEntries outro starts at last segment end`() {
-        val segments = listOf(
-            ChapterEntryParser.SlideSegmentData("A", 0, 10000),
-            ChapterEntryParser.SlideSegmentData("B", 10000, 20000)
-        )
+        val segments =
+            listOf(
+                ChapterEntryParser.SlideSegmentData("A", 0, 10000),
+                ChapterEntryParser.SlideSegmentData("B", 10000, 20000),
+            )
         val chapters = ChapterEntryParser.buildChapterEntries(segments, "I", "O")
         assertEquals(20000L, chapters.last().startMs, "Outro should start at last segment end")
         assertEquals(25000L, chapters.last().endMs, "Outro should end at last segment end + 5000")
     }
 
+    @Suppress("ktlint:standard:max-line-length") // single-line JSON fixture literal
     @Test
     fun `parseSlideSegments with three segments`() {
         val json = """[{"title": "A", "start_ms": 0, "end_ms": 1000}, {"title": "B", "start_ms": 1000, "end_ms": 2000}, {"title": "C", "start_ms": 2000, "end_ms": 3000}]"""

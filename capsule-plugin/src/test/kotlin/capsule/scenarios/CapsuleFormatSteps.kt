@@ -28,7 +28,6 @@ import java.io.File
  * tests for `FormatConversion` / `VideoFormatConverter` from US-2).
  */
 class CapsuleFormatSteps {
-
     private var projectDir: File? = null
     private var destRoot: File? = null
     private var lastBuildOutput: String = ""
@@ -64,7 +63,10 @@ class CapsuleFormatSteps {
     }
 
     @Given("a capsule format distribution project with a fake WebM {string} and a fake MP4 {string} in the build output directory")
-    fun aCapsuleFormatProjectWithAFakeWebMAndMp4(webmName: String, mp4Name: String) {
+    fun aCapsuleFormatProjectWithAFakeWebMAndMp4(
+        webmName: String,
+        mp4Name: String,
+    ) {
         setupFormatProject()
         val capDir = projectDir!!.resolve("build/capsules").also { it.mkdirs() }
         capDir.resolve(webmName).writeText("fake-webm-content-for-format-cucumber-test")
@@ -72,11 +74,13 @@ class CapsuleFormatSteps {
     }
 
     private fun setupFormatProject() {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-format-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-format-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
         projectDir!!.resolve("settings.gradle").writeText("")
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -84,25 +88,29 @@ class CapsuleFormatSteps {
                 ttsEngine = "noop"
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         destRoot = projectDir!!.resolve("office/videos").also { it.mkdirs() }
     }
 
     @When("the distributeCapsuleVideo task is run with format {string}")
     fun theDistributeCapsuleVideoTaskIsRunWithFormat(format: String) {
         val destPath = destRoot!!.absolutePath
-        val args = listOf(
-            "distributeCapsuleVideo",
-            "-Poutput.videoDestinationDir=$destPath",
-            "-Poutput.versioning=timestamp",
-            "-Poutput.format=$format",
-        )
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(args)
-            .withProjectDir(projectDir!!)
-            .build()
+        val args =
+            listOf(
+                "distributeCapsuleVideo",
+                "-Poutput.videoDestinationDir=$destPath",
+                "-Poutput.versioning=timestamp",
+                "-Poutput.format=$format",
+            )
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(args)
+                .withProjectDir(projectDir!!)
+                .build()
         lastBuildOutput = result.output
     }
 
@@ -123,7 +131,8 @@ class CapsuleFormatSteps {
         )
         // Only one file should be present — the other format must be filtered out.
         Assertions.assertEquals(
-            1, copied.size,
+            1,
+            copied.size,
             "Expected only $videoFileName in the destination, but found: ${copied.map { it.name }}",
         )
     }

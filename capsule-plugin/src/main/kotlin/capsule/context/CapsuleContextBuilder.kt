@@ -19,7 +19,6 @@ import contracts.context.ContextChannel
  * [CompositeContext.channelsWithBudget], and the rendering from [merge].
  */
 object CapsuleContextBuilder {
-
     /** The 5 canonical channels of [composite], in contract order. */
     fun toChannels(composite: CompositeContext): List<ContextChannel> = composite.toChannels()
 
@@ -99,7 +98,11 @@ object CapsuleContextBuilder {
         )
     }
 
-    private fun buildRendered(channelBlock: String, trimmedScenario: String, trimmedGlossary: String): String {
+    private fun buildRendered(
+        channelBlock: String,
+        trimmedScenario: String,
+        trimmedGlossary: String,
+    ): String {
         val parts = listOf(channelBlock, trimmedScenario, trimmedGlossary).filter { it.isNotBlank() }
         return parts.joinToString("\n\n")
     }

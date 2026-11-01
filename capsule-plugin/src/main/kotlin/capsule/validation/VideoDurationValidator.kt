@@ -20,7 +20,6 @@ package capsule.validation
  * object pur, sealed result).
  */
 object VideoDurationValidator {
-
     /**
      * Validates that the [videoDurationSecs] matches the sum of
      * [audioDurationsSecs] within [toleranceSecs].
@@ -43,7 +42,7 @@ object VideoDurationValidator {
     fun validate(
         videoDurationSecs: Double,
         audioDurationsSecs: List<Double>,
-        toleranceSecs: Double
+        toleranceSecs: Double,
     ): ValidationResult {
         val sumAudio = audioDurationsSecs.sum()
         val delta = kotlin.math.abs(videoDurationSecs - sumAudio)

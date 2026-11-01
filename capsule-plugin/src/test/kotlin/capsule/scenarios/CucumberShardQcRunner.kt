@@ -27,15 +27,16 @@ import org.junit.platform.suite.api.Suite
 @SelectClasspathResource("features/capsule_qc_boards.feature")
 @ConfigurationParameter(
     key = FEATURES_PROPERTY_NAME,
-    value = "src/test/features/capsule_duration_validation.feature,src/test/features/capsule_video_integrity.feature," +
-        "src/test/features/capsule_subtitles_cartons.feature,src/test/features/capsule_render_signature.feature," +
-        "src/test/features/capsule_timeline.feature,src/test/features/capsule_voice_quality.feature," +
-        "src/test/features/capsule_voice_verification.feature,src/test/features/capsule_qc_boards.feature"
+    value =
+        "src/test/features/capsule_duration_validation.feature,src/test/features/capsule_video_integrity.feature," +
+            "src/test/features/capsule_subtitles_cartons.feature,src/test/features/capsule_render_signature.feature," +
+            "src/test/features/capsule_timeline.feature,src/test/features/capsule_voice_quality.feature," +
+            "src/test/features/capsule_voice_verification.feature,src/test/features/capsule_qc_boards.feature",
 )
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-shard-qc.html, json:build/reports/cucumber-shard-qc.json"
+    value = "pretty, html:build/reports/cucumber-shard-qc.html, json:build/reports/cucumber-shard-qc.json",
 )
 @ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @wip and not @integration and not @viral-render")
 class CucumberShardQcRunner

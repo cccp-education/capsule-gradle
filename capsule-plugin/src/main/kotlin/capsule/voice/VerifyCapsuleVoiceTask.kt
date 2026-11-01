@@ -39,7 +39,6 @@ import java.io.File
  */
 @DisableCachingByDefault(because = "Runs the external ASR engine; the verdict is a function of the audio content")
 abstract class VerifyCapsuleVoiceTask : DefaultTask() {
-
     /** Master switch — when false, the task is a no-op (opt-in, backward compat). */
     @get:Input
     val enabled: Property<Boolean> = project.objects.property(Boolean::class.java).convention(false)
@@ -87,10 +86,12 @@ abstract class VerifyCapsuleVoiceTask : DefaultTask() {
 
     @get:Internal
     internal var capsuleExtension: CapsuleExtension
-        get() = _capsuleExtension ?: project.extensions.getByType(CapsuleExtension::class.java).also { _capsuleExtension = it }
-        set(value) { _capsuleExtension = value }
+        get() = capsuleExtensionCache ?: project.extensions.getByType(CapsuleExtension::class.java).also { capsuleExtensionCache = it }
+        set(value) {
+            capsuleExtensionCache = value
+        }
 
-    private var _capsuleExtension: CapsuleExtension? = null
+    private var capsuleExtensionCache: CapsuleExtension? = null
 
     /** Test seam: when set, replaces the CLI ASR adapter. */
     @get:Internal
@@ -117,22 +118,24 @@ abstract class VerifyCapsuleVoiceTask : DefaultTask() {
             return
         }
 
-        val thresholds = VoiceThresholds(
-            maxWordErrorRate = maxWordErrorRate.get(),
-            minSnrDb = minSnrDb.get(),
-            surplusThreshold = surplusThreshold.get(),
-        )
+        val thresholds =
+            VoiceThresholds(
+                maxWordErrorRate = maxWordErrorRate.get(),
+                minSnrDb = minSnrDb.get(),
+                surplusThreshold = surplusThreshold.get(),
+            )
 
         val override = recognizerOverride
         val asrAvailable = override != null || CliSpeechRecognizer.isAvailable(asrExecutablePath.get())
         val recognizer = override ?: CliSpeechRecognizer(asrExecutablePath.get(), asrModel.get())
         val envelope = envelopeOverride ?: { file: File -> AudioEnvelopeExtractor.extract(file, ffmpegPath.get()) }
 
-        val report = if (asrAvailable) {
-            VoiceVerifier.verify(takes, recognizer, thresholds, language.get(), envelope)
-        } else {
-            VoiceVerifier.degraded(takes, thresholds, envelopeProvider = envelope)
-        }
+        val report =
+            if (asrAvailable) {
+                VoiceVerifier.verify(takes, recognizer, thresholds, language.get(), envelope)
+            } else {
+                VoiceVerifier.degraded(takes, thresholds, envelopeProvider = envelope)
+            }
 
         writeReport(report)
 
@@ -150,13 +153,14 @@ abstract class VerifyCapsuleVoiceTask : DefaultTask() {
                     failure.audioFile,
                 )
             }
-            val reasons = report.failures
-                .flatMap { (it.verdict as VoiceVerdict.Fail).reasons }
-                .distinct()
+            val reasons =
+                report.failures
+                    .flatMap { (it.verdict as VoiceVerdict.Fail).reasons }
+                    .distinct()
             throw GradleException(
                 "Voice verification failed: ${report.failures.size} take(s) above threshold " +
                     "(reasons=$reasons, maxWordErrorRate=${thresholds.maxWordErrorRate}, " +
-                    "minSnrDb=${thresholds.minSnrDb}, surplusThreshold=${thresholds.surplusThreshold})."
+                    "minSnrDb=${thresholds.minSnrDb}, surplusThreshold=${thresholds.surplusThreshold}).",
             )
         }
 
@@ -168,7 +172,7 @@ abstract class VerifyCapsuleVoiceTask : DefaultTask() {
             )
             if (strict.get()) {
                 throw GradleException(
-                    "Voice verification is degraded (ASR '${asrExecutablePath.get()}' unavailable) and strictMode is enabled."
+                    "Voice verification is degraded (ASR '${asrExecutablePath.get()}' unavailable) and strictMode is enabled.",
                 )
             }
             return
@@ -188,7 +192,11 @@ abstract class VerifyCapsuleVoiceTask : DefaultTask() {
         val scripts = CapsuleFactory.readScriptFiles(scriptDir)
         if (scripts.isEmpty()) return emptyList()
 
-        val outputRoot = project.layout.buildDirectory.dir(capsuleExtension.outputDir.get()).get().asFile
+        val outputRoot =
+            project.layout.buildDirectory
+                .dir(capsuleExtension.outputDir.get())
+                .get()
+                .asFile
         val takes = mutableListOf<VoiceTake>()
         for (script in scripts) {
             val parsed = CapsuleScriptReader.read(script)

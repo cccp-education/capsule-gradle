@@ -11,8 +11,13 @@ import java.io.File
  * - unavailable + strict → throw
  */
 interface ChapterMarker {
-    fun format(chapters: List<ChapterEntry>, outputFile: File): Boolean
+    fun format(
+        chapters: List<ChapterEntry>,
+        outputFile: File,
+    ): Boolean
+
     fun isAvailable(): Boolean
+
     fun name(): String
 }
 
@@ -22,7 +27,7 @@ interface ChapterMarker {
 data class ChapterEntry(
     val title: String,
     val startMs: Long,
-    val endMs: Long
+    val endMs: Long,
 )
 
 /**
@@ -30,7 +35,6 @@ data class ChapterEntry(
  * No I/O, no Gradle dependencies, fully unit-testable.
  */
 object ChapterMetadataCommand {
-
     fun buildJson(chapters: List<ChapterEntry>): String {
         val sb = StringBuilder()
         sb.appendLine("[")
@@ -47,20 +51,25 @@ object ChapterMetadataCommand {
         return sb.toString()
     }
 
-    private fun escapeJson(s: String): String {
-        return s.replace("\\", "\\\\")
+    private fun escapeJson(s: String): String =
+        s
+            .replace("\\", "\\\\")
             .replace("\"", "\\\"")
             .replace("\n", "\\n")
             .replace("\r", "\\r")
             .replace("\t", "\\t")
-    }
 }
 
 /**
  * Real implementation — writes chapter metadata JSON to disk.
  */
-class ChapterMarkerImpl(private val ffmpegPath: String) : ChapterMarker {
-    override fun format(chapters: List<ChapterEntry>, outputFile: File): Boolean {
+class ChapterMarkerImpl(
+    private val ffmpegPath: String,
+) : ChapterMarker {
+    override fun format(
+        chapters: List<ChapterEntry>,
+        outputFile: File,
+    ): Boolean {
         val json = ChapterMetadataCommand.buildJson(chapters)
         outputFile.parentFile?.mkdirs()
         outputFile.writeText(json)
@@ -77,7 +86,10 @@ class ChapterMarkerImpl(private val ffmpegPath: String) : ChapterMarker {
  * Used when chapters are disabled or ffmpeg is unavailable.
  */
 class NoOpChapterMarker : ChapterMarker {
-    override fun format(chapters: List<ChapterEntry>, outputFile: File): Boolean {
+    override fun format(
+        chapters: List<ChapterEntry>,
+        outputFile: File,
+    ): Boolean {
         outputFile.parentFile?.mkdirs()
         outputFile.writeText("[]")
         return false

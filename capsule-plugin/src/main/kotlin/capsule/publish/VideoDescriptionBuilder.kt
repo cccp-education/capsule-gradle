@@ -17,7 +17,6 @@ import video.kernel.publish.VideoPublicationLimits
  * Pure — no I/O.
  */
 object VideoDescriptionBuilder {
-
     /** Characters YouTube rejects in a description (neutral kernel source of truth). */
     val FORBIDDEN_CHARS: Set<Char> = VideoPublicationLimits.FORBIDDEN_CHARS
 
@@ -25,7 +24,10 @@ object VideoDescriptionBuilder {
      * @param text                   the description, free of [FORBIDDEN_CHARS].
      * @param strippedForbiddenChars how many forbidden characters were removed.
      */
-    data class Result(val text: String, val strippedForbiddenChars: Int)
+    data class Result(
+        val text: String,
+        val strippedForbiddenChars: Int,
+    )
 
     /**
      * Assembles a description from an optional [header], a [title], chapter

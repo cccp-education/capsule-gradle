@@ -13,7 +13,6 @@ import kotlin.test.assertTrue
  * [ScreenshotCapturePlan] from slide durations — no I/O, fully testable.
  */
 class ScreenshotPlannerTest {
-
     private val outputDir = File("/tmp/capsule-test")
 
     @Test

@@ -13,9 +13,7 @@ import java.io.File
  * own [SegmentSource].
  */
 object RevealJsSpeakerNoteSource : SegmentSource {
-
     override fun name(): String = "revealjs-speaker-notes"
 
-    override fun segments(source: File): List<VideoSegment> =
-        RevealJsSpeakerNoteParser.parse(source.readText(), source.nameWithoutExtension).segments
+    override fun segments(source: File): List<VideoSegment> = RevealJsSpeakerNoteParser.parse(source.readText(), source.nameWithoutExtension).segments
 }

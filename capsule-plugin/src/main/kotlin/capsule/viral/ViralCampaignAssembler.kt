@@ -20,7 +20,6 @@ package capsule.viral
  * - US-10: the output is the [CampaignBundle] contract for GBL-002.
  */
 object ViralCampaignAssembler {
-
     /**
      * Assembles the campaign bundles.
      *
@@ -42,18 +41,20 @@ object ViralCampaignAssembler {
         videoPathFor: (ViralVariant) -> String,
         thumbnailFor: (ViralVariant) -> String = { "" },
         subtitleFor: (ViralVariant) -> String = { "" },
-    ): List<CampaignBundle> = variants.map { variant ->
-        val metadata = copySource.read(variant.language, variant.platform)
-            ?: degradedMetadata(variant, storyboard, hook)
-        CampaignBundle(
-            language = variant.language,
-            platform = variant.platform,
-            videoFile = videoPathFor(variant),
-            thumbnailFile = thumbnailFor(variant),
-            subtitleFile = subtitleFor(variant),
-            metadata = metadata,
-        )
-    }
+    ): List<CampaignBundle> =
+        variants.map { variant ->
+            val metadata =
+                copySource.read(variant.language, variant.platform)
+                    ?: degradedMetadata(variant, storyboard, hook)
+            CampaignBundle(
+                language = variant.language,
+                platform = variant.platform,
+                videoFile = videoPathFor(variant),
+                thumbnailFile = thumbnailFor(variant),
+                subtitleFile = subtitleFor(variant),
+                metadata = metadata,
+            )
+        }
 
     /**
      * Degraded metadata when no market copy is available: the hook becomes both

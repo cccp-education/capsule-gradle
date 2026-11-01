@@ -20,10 +20,10 @@ import org.junit.platform.suite.api.Suite
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-content-preflight.html, json:build/reports/cucumber-content-preflight.json"
+    value = "pretty, html:build/reports/cucumber-content-preflight.html, json:build/reports/cucumber-content-preflight.json",
 )
 @ConfigurationParameter(
     key = FILTER_TAGS_PROPERTY_NAME,
-    value = "@qc and @preflight and not @wip and not @integration"
+    value = "@qc and @preflight and not @wip and not @integration",
 )
 class CapsuleContentPreflightCucumberRunner

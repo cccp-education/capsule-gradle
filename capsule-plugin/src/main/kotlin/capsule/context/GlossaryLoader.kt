@@ -27,7 +27,6 @@ import java.io.File
  * Glossary absent → video not blocked (fallback no-op, backward compat strict).
  */
 object GlossaryLoader {
-
     /**
      * Loads the glossary section from [glossaryFile], truncated to
      * [maxTokens].
@@ -39,7 +38,10 @@ object GlossaryLoader {
      * @return the `==== Official Glossary (glossary)\n...` section, truncated
      *         to [maxTokens]. Blank when no usable payload or zero budget.
      */
-    fun load(glossaryFile: File, maxTokens: Int): String {
+    fun load(
+        glossaryFile: File,
+        maxTokens: Int,
+    ): String {
         if (maxTokens <= 0) return ""
         if (!glossaryFile.exists()) return ""
 

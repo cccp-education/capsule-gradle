@@ -15,5 +15,5 @@ package capsule
  *        to fall back to NoOp engines with a warning.
  */
 data class StrictModeConfig(
-    val enabled: Boolean = false
+    val enabled: Boolean = false,
 )

@@ -3,12 +3,11 @@ package capsule.chapters
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
-import org.junit.jupiter.api.Test
 
 class CardRendererTest {
-
     @TempDir
     lateinit var tempDir: File
 
@@ -30,8 +29,10 @@ class CardRendererTest {
     @Test
     fun `CardRendererCommand buildCardHtml escapes HTML entities`() {
         val html = CardRendererCommand.buildCardHtml("A <b>bold</b> & \"quoted\" title", "intro")
-        assertTrue(html.contains("A &lt;b&gt;bold&lt;/b&gt; &amp; &quot;quoted&quot; title"),
-            "HTML entities should be escaped")
+        assertTrue(
+            html.contains("A &lt;b&gt;bold&lt;/b&gt; &amp; &quot;quoted&quot; title"),
+            "HTML entities should be escaped",
+        )
         assertFalse(html.contains("<b>bold</b>"), "Raw HTML tags should not appear")
     }
 
@@ -155,7 +156,9 @@ class CardRendererTest {
     @Test
     fun `CardRendererCommand buildCardHtml preserves special characters`() {
         val html = CardRendererCommand.buildCardHtml("Session 1/2: Introduction & Overview", "intro")
-        assertTrue(html.contains("Session 1/2: Introduction &amp; Overview"),
-            "Ampersand should be escaped in HTML")
+        assertTrue(
+            html.contains("Session 1/2: Introduction &amp; Overview"),
+            "Ampersand should be escaped in HTML",
+        )
     }
 }

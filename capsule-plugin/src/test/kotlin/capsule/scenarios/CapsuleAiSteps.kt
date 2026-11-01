@@ -1,7 +1,6 @@
 package capsule.scenarios
 
 import com.sun.net.httpserver.HttpServer
-import io.cucumber.java.en.And
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
@@ -18,7 +17,6 @@ import java.net.InetSocketAddress
  * end-to-end chat call through the CapsuleLlmService bridge.
  */
 class CapsuleAiSteps {
-
     private var projectDir: File? = null
     private var mockServer: HttpServer? = null
     private var buildOutput: String = ""
@@ -27,27 +25,31 @@ class CapsuleAiSteps {
 
     @Given("a Capsule AI Gradle project with the capsule plugin applied")
     fun aCapsuleAiGradleProjectWithTheCapsulePluginApplied() {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-ai-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-ai-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
         projectDir!!.resolve("settings.gradle").writeText("")
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Given("a mock Ollama LLM server answering {string}")
     fun aMockOllamaLlmServerAnswering(responseBody: String) {
         val server = HttpServer.create(InetSocketAddress(0), 0)
-        val ollamaResponse = """
+        val ollamaResponse =
+            """
             {
               "model": "smollm:135m",
               "message": { "role": "assistant", "content": "$responseBody" },
               "done": true
             }
-        """.trimIndent().toByteArray()
+            """.trimIndent().toByteArray()
         server.createContext("/api/chat") { exchange ->
             exchange.sendResponseHeaders(200, ollamaResponse.size.toLong())
             exchange.responseBody.use { it.write(ollamaResponse) }
@@ -67,19 +69,21 @@ class CapsuleAiSteps {
     @When("I run the capsule AI smoke test against the mock LLM")
     fun iRunTheCapsuleAiSmokeTestAgainstTheMockLlm() {
         val port = mockServer!!.address.port
-        buildOutput = gradleRunner(
-            "capsuleAiSmokeTest",
-            "-Pollama.baseUrl=http://localhost:$port",
-        ).build().output
+        buildOutput =
+            gradleRunner(
+                "capsuleAiSmokeTest",
+                "-Pollama.baseUrl=http://localhost:$port",
+            ).build().output
     }
 
     @When("I run the capsule AI smoke test without a reachable LLM")
     fun iRunTheCapsuleAiSmokeTestWithoutAReachableLlm() {
-        buildOutput = gradleRunner(
-            "capsuleAiSmokeTest",
-            "-Pollama.baseUrl=http://localhost:1",
-            "-Pollama.timeout=1",
-        ).buildAndFail().output
+        buildOutput =
+            gradleRunner(
+                "capsuleAiSmokeTest",
+                "-Pollama.baseUrl=http://localhost:1",
+                "-Pollama.timeout=1",
+            ).buildAndFail().output
     }
 
     // ─── Then ──────────────────────────────────────────────────────
@@ -122,7 +126,8 @@ class CapsuleAiSteps {
     }
 
     private fun gradleRunner(vararg args: String): GradleRunner =
-        GradleRunner.create()
+        GradleRunner
+            .create()
             .forwardOutput()
             .withPluginClasspath()
             .withArguments(*args)

@@ -22,7 +22,6 @@ import kotlin.test.assertTrue
  * LLM pool.
  */
 class GenerateCapsuleContentFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -30,7 +29,8 @@ class GenerateCapsuleContentFunctionalTest {
         val counters = mutableMapOf("propose" to 0, "generate" to 0)
         val server = HttpServer.create(InetSocketAddress(0), 0)
         val port = server.address.port
-        val plan = """
+        val plan =
+            """
             {
               "deckName": "kotlin-coroutines",
               "languageCode": "fr",
@@ -38,8 +38,9 @@ class GenerateCapsuleContentFunctionalTest {
               "speakerNotesFile": "kotlin-coroutines-speaker-notes.adoc",
               "ttsScriptFile": "kotlin-coroutines-script.txt"
             }
-        """.trimIndent()
-        val notes = """
+            """.trimIndent()
+        val notes =
+            """
             == Introduction
 
             [NOTE.speaker]
@@ -53,28 +54,31 @@ class GenerateCapsuleContentFunctionalTest {
             --
             Enriched details narration about async.
             --
-        """.trimIndent()
+            """.trimIndent()
         server.createContext("/api/chat") { exchange ->
             val body = exchange.requestBody.bufferedReader().use { it.readText() }
-            val responseContent = if (body.contains("Propose a content plan")) {
-                counters["propose"] = counters["propose"]!! + 1
-                plan
-            } else {
-                counters["generate"] = counters["generate"]!! + 1
-                notes
-            }
-            val escaped = responseContent
-                .replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\r\n", "\\n")
-                .replace("\n", "\\n")
-            val response = """
+            val responseContent =
+                if (body.contains("Propose a content plan")) {
+                    counters["propose"] = counters["propose"]!! + 1
+                    plan
+                } else {
+                    counters["generate"] = counters["generate"]!! + 1
+                    notes
+                }
+            val escaped =
+                responseContent
+                    .replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\r\n", "\\n")
+                    .replace("\n", "\\n")
+            val response =
+                """
                 {
                   "model": "smollm:135m",
                   "message": { "role": "assistant", "content": "$escaped" },
                   "done": true
                 }
-            """.trimIndent().toByteArray()
+                """.trimIndent().toByteArray()
             exchange.sendResponseHeaders(200, response.size.toLong())
             exchange.responseBody.use { it.write(response) }
         }
@@ -85,22 +89,26 @@ class GenerateCapsuleContentFunctionalTest {
 
     private fun writeBuildFile() {
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Test
     fun `generateCapsuleContent task is registered`() {
         writeBuildFile()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("tasks", "--all", "--quiet")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("tasks", "--all", "--quiet")
+                .withProjectDir(projectDir)
+                .build()
         assertTrue(result.output.contains("generateCapsuleContent"), "Expected task in tasks list")
     }
 
@@ -110,7 +118,8 @@ class GenerateCapsuleContentFunctionalTest {
         writeBuildFile()
         val deckDir = projectDir.resolve("slides").resolve("misc")
         deckDir.mkdirs()
-        deckDir.resolve("kotlin-coroutines.adoc").writeText("""
+        deckDir.resolve("kotlin-coroutines.adoc").writeText(
+            """
             == Slide 1
 
             [NOTE.speaker]
@@ -124,22 +133,30 @@ class GenerateCapsuleContentFunctionalTest {
             --
             More narration.
             --
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(
-                "generateCapsuleContent",
-                "-Pollama.baseUrl=http://localhost:$port",
-            )
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(
+                    "generateCapsuleContent",
+                    "-Pollama.baseUrl=http://localhost:$port",
+                ).withProjectDir(projectDir)
+                .build()
 
-        val notes = projectDir.resolve("build").resolve("capsule")
-            .resolve("kotlin-coroutines-speaker-notes.adoc")
-        val script = projectDir.resolve("build").resolve("capsule")
-            .resolve("kotlin-coroutines-script.txt")
+        val notes =
+            projectDir
+                .resolve("build")
+                .resolve("capsule")
+                .resolve("kotlin-coroutines-speaker-notes.adoc")
+        val script =
+            projectDir
+                .resolve("build")
+                .resolve("capsule")
+                .resolve("kotlin-coroutines-script.txt")
         assertTrue(notes.exists(), "Expected enriched speaker notes output, got ${projectDir.resolve("build").listFiles()?.joinToString { it.name }}")
         assertTrue(script.exists(), "Expected TTS script output")
         assertTrue(notes.readText().contains("Enriched intro narration"), "Speaker notes must contain enriched content")
@@ -150,12 +167,14 @@ class GenerateCapsuleContentFunctionalTest {
     @Test
     fun `generateCapsuleContent fails with a clear message when no deck is present`() {
         writeBuildFile()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("generateCapsuleContent", "-Pollama.baseUrl=http://localhost:1")
-            .withProjectDir(projectDir)
-            .buildAndFail()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("generateCapsuleContent", "-Pollama.baseUrl=http://localhost:1")
+                .withProjectDir(projectDir)
+                .buildAndFail()
         assertTrue(result.output.contains("No deck found"), "Expected clear deck resolution error")
     }
 }

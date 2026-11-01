@@ -17,7 +17,6 @@ import video.kernel.publish.VideoDescriptionComposer
  * Pure — no I/O.
  */
 object YouTubeChaptersFormatter {
-
     /**
      * Formats [entries] as newline-separated `<timestamp> <title>` lines, or an
      * empty string when [entries] is empty.
@@ -31,6 +30,5 @@ object YouTubeChaptersFormatter {
      * `M:SS`, or `H:MM:SS` once the timestamp reaches one hour — the two forms
      * YouTube accepts. Delegates to the neutral kernel.
      */
-    fun formatTimestamp(startMs: Long): String =
-        VideoDescriptionComposer.chapterTimestamp((startMs / 1000).coerceAtLeast(0).toInt())
+    fun formatTimestamp(startMs: Long): String = VideoDescriptionComposer.chapterTimestamp((startMs / 1000).coerceAtLeast(0).toInt())
 }

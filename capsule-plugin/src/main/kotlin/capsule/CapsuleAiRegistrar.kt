@@ -11,7 +11,6 @@ import org.gradle.api.Project
  * was moved verbatim (no logic change). Mirrors the pattern proven by slider `SLD-6`.
  */
 internal object CapsuleAiRegistrar {
-
     /** Registers every AI task on [project]. */
     fun register(project: Project) {
         project.registerAiSmokeTestTask()

@@ -14,7 +14,6 @@ import kotlin.test.assertTrue
  * [ViralConfig.effectiveDurationSeconds].
  */
 class ViralConfigTest {
-
     @Test
     fun `ViralConfig defaults are backward-compat disabled`() {
         val config = ViralConfig()
@@ -48,15 +47,16 @@ class ViralConfigTest {
 
     @Test
     fun `ViralConfig can be fully enabled with explicit fields`() {
-        val config = ViralConfig(
-            enabled = true,
-            platform = ViralPlatform.YOUTUBE_SHORT,
-            targetDurationSeconds = 45,
-            hook = "Et si votre contenu ne durait que 30 secondes ?",
-            cta = "Découvrez Content sur talaria.school",
-            storyboardRequired = true,
-            storyboardFile = "storyboard.adoc"
-        )
+        val config =
+            ViralConfig(
+                enabled = true,
+                platform = ViralPlatform.YOUTUBE_SHORT,
+                targetDurationSeconds = 45,
+                hook = "Et si votre contenu ne durait que 30 secondes ?",
+                cta = "Découvrez Content sur talaria.school",
+                storyboardRequired = true,
+                storyboardFile = "storyboard.adoc",
+            )
         assertTrue(config.enabled)
         assertEquals(ViralPlatform.YOUTUBE_SHORT, config.platform)
         assertEquals(45, config.effectiveDurationSeconds)
@@ -86,7 +86,6 @@ class ViralConfigTest {
  * TDD unit tests for [ViralPlatform.fromString] — CAP-VIRAL US-3.
  */
 class ViralPlatformTest {
-
     @Test
     fun `fromString parses known platforms case-insensitively`() {
         assertEquals(ViralPlatform.YOUTUBE_SHORT, ViralPlatform.fromString("youtube_short"))

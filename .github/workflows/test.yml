@@ -45,6 +45,13 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      # LINT-ADOPT-11 — the push pipeline is test-only (no `check`), so the
+      # convention plugin alone would never run ktlint. Gate the same job that
+      # runs `./gradlew test` (same daemon, no new job).
+      - name: Lint (ktlint)
+        run: ./gradlew ktlintCheck
+        working-directory: capsule-plugin
+
       # Fast PR gate: unit tests only — no real ffmpeg/espeak/node/Chromium.
       # functionalTest + cucumberTest require those binaries and run in the
       # `Full Tests` job which installs them. (Mirror codebase `testFast`.)

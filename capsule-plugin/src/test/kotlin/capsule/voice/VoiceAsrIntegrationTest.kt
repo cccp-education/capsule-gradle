@@ -1,11 +1,11 @@
 package capsule.voice
 
 import capsule.ProcessRunner
+import org.junit.jupiter.api.Assumptions.assumeTrue
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.junit.jupiter.api.Assumptions.assumeTrue
-import org.junit.jupiter.api.io.TempDir
 
 /**
  * Real-ASR dogfooding for the voice-quality pipeline (CAP-QC-VOICE US-4).
@@ -20,7 +20,6 @@ import org.junit.jupiter.api.io.TempDir
  * decision, this proves the wiring against real audio.
  */
 class VoiceAsrIntegrationTest {
-
     @field:TempDir
     lateinit var workDir: File
 

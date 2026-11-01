@@ -1,13 +1,12 @@
 package capsule.feed
 
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.GradleRunner
-import org.junit.jupiter.api.io.TempDir
 
 class GenerateCapsuleScriptIntegrationFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -16,26 +15,30 @@ class GenerateCapsuleScriptIntegrationFunctionalTest {
 
     private fun setupBuild() {
         settingsFile.writeText("")
-        buildFile.writeText("""
+        buildFile.writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             capsule {
                 ttsEngine = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Test
     fun `generateCapsuleScript depends on extractSpeakerNotes`() {
         setupBuild()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("generateCapsuleScript", "--dry-run")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("generateCapsuleScript", "--dry-run")
+                .withProjectDir(projectDir)
+                .build()
 
         val output = result.output
         assertTrue(output.contains("generateCapsuleScript"))
@@ -47,7 +50,8 @@ class GenerateCapsuleScriptIntegrationFunctionalTest {
         setupBuild()
         // Write a deck with speaker notes so extractSpeakerNotes produces a script.
         val miscDir = projectDir.resolve("slides/misc").apply { mkdirs() }
-        miscDir.resolve("demo-deck.adoc").writeText("""
+        miscDir.resolve("demo-deck.adoc").writeText(
+            """
             = Demo Deck
 
             == Intro
@@ -56,14 +60,17 @@ class GenerateCapsuleScriptIntegrationFunctionalTest {
             --
             Welcome to the demo.
             --
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("generateCapsuleScript")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("generateCapsuleScript")
+                .withProjectDir(projectDir)
+                .build()
 
         // extractSpeakerNotes writes build/capsule/demo-deck-script.txt,
         // then generateCapsuleScript reads it and logs the parsed deck name.

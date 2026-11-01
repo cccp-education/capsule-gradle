@@ -19,7 +19,6 @@ import java.io.File
  * controlled build scripts, so a full Gradle DSL parser is overkill.
  */
 object CapsuleOutputDirResolver {
-
     private val OUTPUT_DIR_REGEX = Regex("""outputDir\s*=\s*["']([^"']+)["']""")
     private const val DEFAULT_OUTPUT_DIR = "capsule"
 
@@ -28,7 +27,10 @@ object CapsuleOutputDirResolver {
      * [DEFAULT_OUTPUT_DIR] when absent.
      */
     fun resolveOutputDir(buildGradleContent: String): String =
-        OUTPUT_DIR_REGEX.find(buildGradleContent)?.groupValues?.getOrNull(1)
+        OUTPUT_DIR_REGEX
+            .find(buildGradleContent)
+            ?.groupValues
+            ?.getOrNull(1)
             ?.takeIf { it.isNotBlank() }
             ?: DEFAULT_OUTPUT_DIR
 
@@ -37,14 +39,19 @@ object CapsuleOutputDirResolver {
      * [projectDir], honoring the `outputDir` configured in
      * [buildGradleContent].
      */
-    fun resolveBuildOutputPath(projectDir: File, buildGradleContent: String): File =
-        File(projectDir, "build/${resolveOutputDir(buildGradleContent)}")
+    fun resolveBuildOutputPath(
+        projectDir: File,
+        buildGradleContent: String,
+    ): File = File(projectDir, "build/${resolveOutputDir(buildGradleContent)}")
 
     /**
      * Resolves the subtitle file path `build/<outputDir>/<subtitleFileName>`
      * under [projectDir], honoring the `outputDir` configured in
      * [buildGradleContent].
      */
-    fun resolveSubtitleFile(projectDir: File, buildGradleContent: String, subtitleFileName: String): File =
-        File(resolveBuildOutputPath(projectDir, buildGradleContent), subtitleFileName)
+    fun resolveSubtitleFile(
+        projectDir: File,
+        buildGradleContent: String,
+        subtitleFileName: String,
+    ): File = File(resolveBuildOutputPath(projectDir, buildGradleContent), subtitleFileName)
 }

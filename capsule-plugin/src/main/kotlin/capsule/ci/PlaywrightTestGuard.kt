@@ -18,13 +18,16 @@ package capsule.ci
  */
 data class PlaywrightTestGuard(
     val hasRunPlaywrightTestsProperty: Boolean,
-    val isCi: Boolean
+    val isCi: Boolean,
 ) {
     fun shouldRun(): Boolean = hasRunPlaywrightTestsProperty || isCi
 
     fun shouldSkip(): Boolean = !shouldRun()
 
     fun skipReason(): String =
-        if (shouldRun()) ""
-        else "Playwright test skipped (pass -PrunPlaywrightTests or set CI=true to enable)"
+        if (shouldRun()) {
+            ""
+        } else {
+            "Playwright test skipped (pass -PrunPlaywrightTests or set CI=true to enable)"
+        }
 }

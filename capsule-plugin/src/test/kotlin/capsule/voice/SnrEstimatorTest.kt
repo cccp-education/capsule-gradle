@@ -8,7 +8,6 @@ import kotlin.test.assertTrue
  * TDD unit tests for [SnrEstimator] (CAP-QC-VOICE US-1). Pure — no I/O.
  */
 class SnrEstimatorTest {
-
     @Test
     fun `empty frames estimate to zero`() {
         assertEquals(0.0, SnrEstimator.estimate(doubleArrayOf()))

@@ -5,7 +5,6 @@ import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import org.gradle.testkit.runner.GradleRunner
-import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Assertions
 import java.io.File
 
@@ -27,7 +26,6 @@ import java.io.File
  * which is within any tolerance).
  */
 class CapsuleDurationValidationSteps {
-
     private var projectDir: File? = null
     private var lastBuildOutput: String = ""
     private var buildFailed: Boolean = false
@@ -38,7 +36,10 @@ class CapsuleDurationValidationSteps {
     }
 
     @Given("a capsule duration validation project with a fake video {string} and {int} fake audio files in the build output directory")
-    fun aCapsuleDurationValidationProjectWithFakeVideoAndAudio(videoName: String, audioCount: Int) {
+    fun aCapsuleDurationValidationProjectWithFakeVideoAndAudio(
+        videoName: String,
+        audioCount: Int,
+    ) {
         setupDurationProject()
         val capDir = projectDir!!.resolve("build/capsules").also { it.mkdirs() }
         capDir.resolve(videoName).writeText("fake-video-content-for-duration-cucumber-test")
@@ -50,11 +51,13 @@ class CapsuleDurationValidationSteps {
     }
 
     private fun setupDurationProject() {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-duration-${System.currentTimeMillis()}-${System.nanoTime()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-duration-${System.currentTimeMillis()}-${System.nanoTime()}")
+                .also { it.mkdirs() }
         projectDir!!.resolve("settings.gradle").writeText("")
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -62,7 +65,8 @@ class CapsuleDurationValidationSteps {
                 ttsEngine = "noop"
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @When("the validateCapsuleVideoDuration task is run with duration validation disabled")
@@ -80,17 +84,22 @@ class CapsuleDurationValidationSteps {
         runDurationTask(enabled = true, tolerance = tolerance)
     }
 
-    private fun runDurationTask(enabled: Boolean, tolerance: String?) {
+    private fun runDurationTask(
+        enabled: Boolean,
+        tolerance: String?,
+    ) {
         val args = mutableListOf("validateCapsuleVideoDuration")
         args.add("-Pcapsule.validation.durationEnabled=$enabled")
         if (tolerance != null) {
             args.add("-Pcapsule.validation.toleranceSecs=$tolerance")
         }
-        val runner = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(args)
-            .withProjectDir(projectDir!!)
+        val runner =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(args)
+                .withProjectDir(projectDir!!)
         val result = runner.build()
         lastBuildOutput = result.output
         buildFailed = false

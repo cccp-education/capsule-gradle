@@ -5,8 +5,6 @@ import io.cucumber.java.After
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
-import java.io.File
-import java.nio.file.Files
 import video.kernel.publish.ChapterLineParser
 import video.kernel.publish.HttpTransport
 import video.kernel.publish.PublishHttpRequest
@@ -14,6 +12,8 @@ import video.kernel.publish.PublishHttpResponse
 import video.kernel.publish.VideoPublication
 import video.kernel.publish.VideoPublicationResult
 import video.kernel.publish.VideoPublisher
+import java.io.File
+import java.nio.file.Files
 
 /**
  * HF-YOUTUBE-PUBLISH US-3b — steps for the capsule YouTube publication flow.
@@ -23,9 +23,11 @@ import video.kernel.publish.VideoPublisher
  * `youtube.yaml` shaped fixture (never a real secret).
  */
 class CapsulePublishSteps {
-
-    private class RecordingTransport(private val responses: MutableList<PublishHttpResponse>) : HttpTransport {
+    private class RecordingTransport(
+        private val responses: MutableList<PublishHttpResponse>,
+    ) : HttpTransport {
         val requests = mutableListOf<PublishHttpRequest>()
+
         override fun send(request: PublishHttpRequest): PublishHttpResponse {
             requests += request
             return if (responses.isEmpty()) PublishHttpResponse(500, "") else responses.removeAt(0)
@@ -41,13 +43,14 @@ class CapsulePublishSteps {
 
     @Given("a capsule publish fake transport returning a token and a session and the video id {string}")
     fun transportHappyPath(videoId: String) {
-        transport = RecordingTransport(
-            mutableListOf(
-                PublishHttpResponse(200, """{"access_token":"AT"}"""),
-                PublishHttpResponse(200, "", mapOf("location" to "https://session")),
-                PublishHttpResponse(200, """{"id":"$videoId"}"""),
-            ),
-        )
+        transport =
+            RecordingTransport(
+                mutableListOf(
+                    PublishHttpResponse(200, """{"access_token":"AT"}"""),
+                    PublishHttpResponse(200, "", mapOf("location" to "https://session")),
+                    PublishHttpResponse(200, """{"id":"$videoId"}"""),
+                ),
+            )
     }
 
     @Given("a capsule publish fake transport refusing the token")
@@ -80,18 +83,20 @@ class CapsulePublishSteps {
         val video = File.createTempFile("capsule-publish-", ".mp4").apply { writeText("video-bytes") }
         try {
             val file = credentialsFile ?: tempCredentials(refreshToken = "refresh").also { credentialsFile = it }
-            publisher = CapsuleYouTubePublisherResolver.resolve(
-                enabled = enabled,
-                platform = platform,
-                credentialsFile = file,
-                transport = transport,
-            )
-            val publication = VideoPublication(
-                videoFile = video,
-                title = "A title",
-                description = "Body",
-                chapters = ChapterLineParser.parse(listOf("0:00 Intro", "0:10 Setup", "0:20 Outro")),
-            )
+            publisher =
+                CapsuleYouTubePublisherResolver.resolve(
+                    enabled = enabled,
+                    platform = platform,
+                    credentialsFile = file,
+                    transport = transport,
+                )
+            val publication =
+                VideoPublication(
+                    videoFile = video,
+                    title = "A title",
+                    description = "Body",
+                    chapters = ChapterLineParser.parse(listOf("0:00 Intro", "0:10 Setup", "0:20 Outro")),
+                )
             result = publisher.publish(publication)
         } finally {
             video.delete()

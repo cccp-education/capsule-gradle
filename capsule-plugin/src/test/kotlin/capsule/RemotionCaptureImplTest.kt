@@ -4,9 +4,9 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import kotlin.test.assertFailsWith
 
 /**
  * TDD unit tests for [RemotionCaptureImpl] — CAP-ANIM US-1.
@@ -20,7 +20,6 @@ import kotlin.test.assertFailsWith
  * The real render path is covered by dogfooding/CI.
  */
 class RemotionCaptureImplTest {
-
     @TempDir
     lateinit var tempDir: File
 
@@ -36,19 +35,21 @@ class RemotionCaptureImplTest {
 
     @Test
     fun `isAvailable is false when node cannot be found`() {
-        val capture = RemotionCaptureImpl(
-            projectDir = tempDir,
-            nodeExecutablePath = "this-node-binary-does-not-exist-anywhere-12345",
-        )
+        val capture =
+            RemotionCaptureImpl(
+                projectDir = tempDir,
+                nodeExecutablePath = "this-node-binary-does-not-exist-anywhere-12345",
+            )
         assertFalse(capture.isAvailable())
     }
 
     @Test
     fun `isAvailable caches its probe across calls`() {
-        val capture = RemotionCaptureImpl(
-            projectDir = tempDir,
-            nodeExecutablePath = "this-node-binary-does-not-exist-anywhere-67890",
-        )
+        val capture =
+            RemotionCaptureImpl(
+                projectDir = tempDir,
+                nodeExecutablePath = "this-node-binary-does-not-exist-anywhere-67890",
+            )
         assertFalse(capture.isAvailable())
         // A second call must not re-probe — the availabilityProbe field is
         // the cache. We cannot observe the probe itself, but we can assert
@@ -58,10 +59,11 @@ class RemotionCaptureImplTest {
 
     @Test
     fun `close resets the availability cache so the next call re-probes`() {
-        val capture = RemotionCaptureImpl(
-            projectDir = tempDir,
-            nodeExecutablePath = "this-node-binary-does-not-exist-anywhere-reset",
-        )
+        val capture =
+            RemotionCaptureImpl(
+                projectDir = tempDir,
+                nodeExecutablePath = "this-node-binary-does-not-exist-anywhere-reset",
+            )
         assertFalse(capture.isAvailable())
         capture.close()
         assertFalse(capture.isAvailable())
@@ -69,11 +71,12 @@ class RemotionCaptureImplTest {
 
     @Test
     fun `slidesMarkup extracts the div-dot-slides container from a reveal deck`() {
-        val deck = """
+        val deck =
+            """
             <html><head></head><body><div class="reveal"><div class="slides">
             <section>one</section><section>two</section>
             </div></div></body></html>
-        """.trimIndent()
+            """.trimIndent()
         val markup = RemotionCaptureImpl.slidesMarkup(deck)
         assertTrue(markup.contains("one"))
         assertTrue(markup.contains("two"))
@@ -88,12 +91,13 @@ class RemotionCaptureImplTest {
     @Test
     fun `slidesMarkup is greedy so a slide containing a div is not truncated`() {
         // Non-greedy would stop at the first </div> inside a slide.
-        val deck = """
+        val deck =
+            """
             <div class="slides">
             <section><div class="fig">one</div></section>
             <section><div class="fig">two</div></section>
             </div>
-        """.trimIndent()
+            """.trimIndent()
         val markup = RemotionCaptureImpl.slidesMarkup(deck)
         assertTrue(markup.contains("one") && markup.contains("two"), "Deck truncated: $markup")
     }
@@ -111,9 +115,10 @@ class RemotionCaptureImplTest {
 
     @Test
     fun `capture rejects an empty deck with no sections`() {
-        val deckHtml = File(tempDir, "deck.html").apply {
-            writeText("<html><head></head><body><div class='slides'></div></body></html>")
-        }
+        val deckHtml =
+            File(tempDir, "deck.html").apply {
+                writeText("<html><head></head><body><div class='slides'></div></body></html>")
+            }
         val capture = RemotionCaptureImpl(projectDir = tempDir, nodeExecutablePath = "node")
         assertFailsWith<CapturingException> {
             capture.capture(
@@ -128,9 +133,10 @@ class RemotionCaptureImplTest {
 
     @Test
     fun `capture rejects empty slideDurations`() {
-        val deckHtml = File(tempDir, "deck.html").apply {
-            writeText("<html><head></head><body><section>one</section></body></html>")
-        }
+        val deckHtml =
+            File(tempDir, "deck.html").apply {
+                writeText("<html><head></head><body><section>one</section></body></html>")
+            }
         val capture = RemotionCaptureImpl(projectDir = tempDir, nodeExecutablePath = "node")
         assertFailsWith<IllegalArgumentException> {
             capture.capture(

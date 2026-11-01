@@ -1,8 +1,8 @@
 package capsule
 
-import org.gradle.api.DefaultTask
 import capsule.feed.CapsuleScriptReader
 import capsule.feed.deckName
+import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
@@ -11,16 +11,17 @@ import org.gradle.work.DisableCachingByDefault
 
 @DisableCachingByDefault(because = "Filesystem-bound: reads slider output and produces TTS artifacts")
 open class CapsuleScriptTask : DefaultTask() {
-
     @get:OutputDirectory
     val outputDir: DirectoryProperty = project.objects.directoryProperty()
 
     @get:Internal
     internal var capsuleExtension: CapsuleExtension
-        get() = _capsuleExtension ?: project.extensions.getByType(CapsuleExtension::class.java).also { _capsuleExtension = it }
-        set(value) { _capsuleExtension = value }
+        get() = capsuleExtensionCache ?: project.extensions.getByType(CapsuleExtension::class.java).also { capsuleExtensionCache = it }
+        set(value) {
+            capsuleExtensionCache = value
+        }
 
-    private var _capsuleExtension: CapsuleExtension? = null
+    private var capsuleExtensionCache: CapsuleExtension? = null
 
     init {
         outputDir.convention(project.layout.buildDirectory.dir("capsule"))
@@ -40,11 +41,16 @@ open class CapsuleScriptTask : DefaultTask() {
         for (script in scripts) {
             val parsed = CapsuleScriptReader.read(script)
             logger.lifecycle(
-                "Capsule script '{}' → {} slides", parsed.deckName, parsed.segments.size
+                "Capsule script '{}' → {} slides",
+                parsed.deckName,
+                parsed.segments.size,
             )
             for (seg in parsed.segments) {
                 logger.lifecycle(
-                    "  [{}] {} ({} chars)", seg.index, seg.title, seg.speakerNote.length
+                    "  [{}] {} ({} chars)",
+                    seg.index,
+                    seg.title,
+                    seg.speakerNote.length,
                 )
             }
         }

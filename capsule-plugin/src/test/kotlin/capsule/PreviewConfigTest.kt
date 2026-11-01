@@ -17,7 +17,6 @@ import kotlin.test.assertFalse
  * Pattern: [PodcastConfig] (CAP-PODCAST US-1).
  */
 class PreviewConfigTest {
-
     @Test
     fun `default config has preview disabled`() {
         val config = PreviewConfig()

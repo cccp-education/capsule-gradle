@@ -32,17 +32,18 @@ import org.junit.platform.suite.api.Suite
 @SelectClasspathResource("features/capsule_viral_render.feature")
 @ConfigurationParameter(
     key = FEATURES_PROPERTY_NAME,
-    value = "src/test/features/capsule_ai.feature,src/test/features/capsule_fish_audio.feature," +
-        "src/test/features/capsule_llm_resilience.feature,src/test/features/capsule_strict_mode.feature," +
-        "src/test/features/capsule_viral.feature,src/test/features/capsule_storyboard_context.feature," +
-        "src/test/features/capsule_viral_gate.feature,src/test/features/capsule_viral_thumbnail.feature," +
-        "src/test/features/capsule_viral_karaoke.feature,src/test/features/capsule_viral_normalize.feature," +
-        "src/test/features/capsule_viral_render.feature"
+    value =
+        "src/test/features/capsule_ai.feature,src/test/features/capsule_fish_audio.feature," +
+            "src/test/features/capsule_llm_resilience.feature,src/test/features/capsule_strict_mode.feature," +
+            "src/test/features/capsule_viral.feature,src/test/features/capsule_storyboard_context.feature," +
+            "src/test/features/capsule_viral_gate.feature,src/test/features/capsule_viral_thumbnail.feature," +
+            "src/test/features/capsule_viral_karaoke.feature,src/test/features/capsule_viral_normalize.feature," +
+            "src/test/features/capsule_viral_render.feature",
 )
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-shard-aiviral.html, json:build/reports/cucumber-shard-aiviral.json"
+    value = "pretty, html:build/reports/cucumber-shard-aiviral.html, json:build/reports/cucumber-shard-aiviral.json",
 )
 @ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @wip and not @integration and not @viral-render")
 class CucumberShardAiViralRunner

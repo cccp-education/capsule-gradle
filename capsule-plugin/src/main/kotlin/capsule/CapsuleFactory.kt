@@ -21,14 +21,16 @@ import java.io.File
  * (`resolveFormatConverter`, `resolveAudioPostProcessor`, …).
  */
 object CapsuleFactory {
-
     /**
      * Resolves the appropriate ManimVideoMixer based on ffmpeg availability.
      * - If ffmpeg is not available, returns NoOpManimVideoMixer
      * - Otherwise, returns ManimVideoMixerImpl
      */
     @JvmStatic
-    fun resolveManimVideoMixer(ffmpegPath: String = "ffmpeg", strict: Boolean = false): ManimVideoMixer {
+    fun resolveManimVideoMixer(
+        ffmpegPath: String = "ffmpeg",
+        strict: Boolean = false,
+    ): ManimVideoMixer {
         if (ffmpegPath == "noop") return NoOpManimVideoMixer()
         val mixer = ManimVideoMixerImpl(ffmpegPath)
         return if (mixer.isAvailable()) {
@@ -44,9 +46,7 @@ object CapsuleFactory {
      * Always returns ManimSlideReplacerImpl (always available, pure HTML manipulation).
      */
     @JvmStatic
-    fun resolveManimSlideReplacer(): ManimSlideReplacer {
-        return ManimSlideReplacerImpl()
-    }
+    fun resolveManimSlideReplacer(): ManimSlideReplacer = ManimSlideReplacerImpl()
 
     /**
      * Resolves the appropriate ManimEngine based on configuration.
@@ -54,7 +54,10 @@ object CapsuleFactory {
      * - Otherwise, creates ManimEngineImpl(config) and falls back to NoOpManimEngine if unavailable
      */
     @JvmStatic
-    fun resolveManimEngine(config: ManimConfig, strict: Boolean = false): ManimEngine {
+    fun resolveManimEngine(
+        config: ManimConfig,
+        strict: Boolean = false,
+    ): ManimEngine {
         if (config.executablePath == "noop") {
             return NoOpManimEngine()
         }
@@ -73,13 +76,12 @@ object CapsuleFactory {
      * - parallelism > 1: ManimParallelRendererImpl with thread pool
      */
     @JvmStatic
-    fun resolveManimParallelRenderer(parallelism: Int = 4): ManimParallelRenderer {
-        return if (parallelism <= 1) {
+    fun resolveManimParallelRenderer(parallelism: Int = 4): ManimParallelRenderer =
+        if (parallelism <= 1) {
             NoOpManimParallelRenderer()
         } else {
             ManimParallelRendererImpl(parallelism)
         }
-    }
 
     /**
      * Resolves the appropriate SubtitleBurnInService based on ffmpeg availability.
@@ -87,7 +89,11 @@ object CapsuleFactory {
      * - Otherwise, returns SubtitleBurnInServiceImpl if ffmpeg is available
      */
     @JvmStatic
-    fun resolveSubtitleBurnInService(ffmpegPath: String = "ffmpeg", style: SubtitleBurnInStyle = SubtitleBurnInStyle(), strict: Boolean = false): SubtitleBurnInService {
+    fun resolveSubtitleBurnInService(
+        ffmpegPath: String = "ffmpeg",
+        style: SubtitleBurnInStyle = SubtitleBurnInStyle(),
+        strict: Boolean = false,
+    ): SubtitleBurnInService {
         if (ffmpegPath == "noop") return NoOpSubtitleBurnInService()
         val service = SubtitleBurnInServiceImpl(ffmpegPath, style)
         return if (service.isAvailable()) {
@@ -109,7 +115,11 @@ object CapsuleFactory {
      *   (degraded mode — WebM kept, backward compat)
      */
     @JvmStatic
-    fun resolveFormatConverter(ffmpegPath: String = "ffmpeg", strict: Boolean = false, bt709: Boolean = false): VideoFormatConverter {
+    fun resolveFormatConverter(
+        ffmpegPath: String = "ffmpeg",
+        strict: Boolean = false,
+        bt709: Boolean = false,
+    ): VideoFormatConverter {
         if (ffmpegPath == "noop") return NoOpVideoFormatConverter()
         val converter = VideoFormatConverterImpl(ffmpegPath, bt709)
         return if (converter.isAvailable()) {
@@ -131,7 +141,10 @@ object CapsuleFactory {
      *   (degraded mode — original video kept, backward compat)
      */
     @JvmStatic
-    fun resolveAudioPostProcessor(ffmpegPath: String = "ffmpeg", strict: Boolean = false): capsule.audio.AudioPostProcessor {
+    fun resolveAudioPostProcessor(
+        ffmpegPath: String = "ffmpeg",
+        strict: Boolean = false,
+    ): capsule.audio.AudioPostProcessor {
         if (ffmpegPath == "noop") return capsule.audio.NoOpAudioPostProcessor()
         val processor = capsule.audio.AudioPostProcessorImpl(ffmpegPath)
         return if (processor.isAvailable()) {
@@ -153,7 +166,10 @@ object CapsuleFactory {
      *   (degraded mode — no podcast produced, backward compat)
      */
     @JvmStatic
-    fun resolvePodcastConcatenator(ffmpegPath: String = "ffmpeg", strict: Boolean = false): capsule.podcast.PodcastConcatenator {
+    fun resolvePodcastConcatenator(
+        ffmpegPath: String = "ffmpeg",
+        strict: Boolean = false,
+    ): capsule.podcast.PodcastConcatenator {
         if (ffmpegPath == "noop") return capsule.podcast.NoOpPodcastConcatenator()
         val concat = capsule.podcast.PodcastConcatenatorImpl(ffmpegPath)
         return if (concat.isAvailable()) {
@@ -172,7 +188,10 @@ object CapsuleFactory {
      * - strict has no effect here (disk write always succeeds)
      */
     @JvmStatic
-    fun resolveChapterMarker(ffmpegPath: String = "ffmpeg", strict: Boolean = false): ChapterMarker {
+    fun resolveChapterMarker(
+        ffmpegPath: String = "ffmpeg",
+        strict: Boolean = false,
+    ): ChapterMarker {
         if (ffmpegPath == "noop") return NoOpChapterMarker()
         return ChapterMarkerImpl(ffmpegPath)
     }
@@ -184,24 +203,35 @@ object CapsuleFactory {
      * - otherwise → [CardRendererImpl] (always available — disk write + HTML generation, no external deps)
      */
     @JvmStatic
-    fun resolveCardRenderer(ffmpegPath: String = "ffmpeg", strict: Boolean = false): CardRenderer {
+    fun resolveCardRenderer(
+        ffmpegPath: String = "ffmpeg",
+        strict: Boolean = false,
+    ): CardRenderer {
         if (ffmpegPath == "noop") return NoOpCardRenderer()
         return CardRendererImpl()
     }
 
-    fun readScriptFiles(dir: File): List<File> {
-        return dir.listFiles { f ->
-            f.name.endsWith("-script.txt") &&
-            !f.name.startsWith("example-") &&
-            !f.name.contains("-context-")
-        }
-            ?.toList() ?: emptyList()
-    }
+    fun readScriptFiles(dir: File): List<File> =
+        dir
+            .listFiles { f ->
+                f.name.endsWith("-script.txt") &&
+                    !f.name.startsWith("example-") &&
+                    !f.name.contains("-context-")
+            }?.toList() ?: emptyList()
 
-    fun resolveScriptDir(project: Project, capsuleExt: CapsuleExtension): File {
+    fun resolveScriptDir(
+        project: Project,
+        capsuleExt: CapsuleExtension,
+    ): File {
         val configured = capsuleExt.sliderScriptDir.get()
-        val candidate = project.layout.buildDirectory.dir(configured).get().asFile
-        if (candidate.exists() && candidate.listFiles()
+        val candidate =
+            project.layout.buildDirectory
+                .dir(configured)
+                .get()
+                .asFile
+        if (candidate.exists() &&
+            candidate
+                .listFiles()
                 ?.any { it.name.endsWith("-script.txt") } == true
         ) {
             return candidate
@@ -209,22 +239,38 @@ object CapsuleFactory {
         // CAP-CR3-4 — configurable fallback to slider's build output.
         val sliderBuildDir = capsuleExt.sliderBuildDir.orNull
         if (!sliderBuildDir.isNullOrBlank()) {
-            val sliderOutput = project.file(sliderBuildDir)
-                .resolve("slider").resolve("build").resolve("capsule")
+            val sliderOutput =
+                project
+                    .file(sliderBuildDir)
+                    .resolve("slider")
+                    .resolve("build")
+                    .resolve("capsule")
             if (sliderOutput.exists()) return sliderOutput
         }
         return candidate
     }
 
-    fun resolveDeckDir(project: Project, capsuleExt: CapsuleExtension): File {
+    fun resolveDeckDir(
+        project: Project,
+        capsuleExt: CapsuleExtension,
+    ): File {
         val configured = capsuleExt.deckSourceDir.get()
-        val candidate = project.layout.buildDirectory.dir(configured).get().asFile
+        val candidate =
+            project.layout.buildDirectory
+                .dir(configured)
+                .get()
+                .asFile
         if (candidate.exists()) return candidate
         // CAP-CR3-4 — configurable fallback to slider's build output.
         val sliderBuildDir = capsuleExt.sliderBuildDir.orNull
         if (!sliderBuildDir.isNullOrBlank()) {
-            val sliderOutput = project.file(sliderBuildDir)
-                .resolve("slider").resolve("build").resolve("docs").resolve("asciidocRevealJs")
+            val sliderOutput =
+                project
+                    .file(sliderBuildDir)
+                    .resolve("slider")
+                    .resolve("build")
+                    .resolve("docs")
+                    .resolve("asciidocRevealJs")
             if (sliderOutput.exists()) return sliderOutput
         }
         return candidate

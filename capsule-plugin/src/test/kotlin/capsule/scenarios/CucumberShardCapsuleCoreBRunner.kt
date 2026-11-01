@@ -22,10 +22,10 @@ import org.junit.platform.suite.api.Suite
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-shard-capsule-coreb.html, json:build/reports/cucumber-shard-capsule-coreb.json"
+    value = "pretty, html:build/reports/cucumber-shard-capsule-coreb.html, json:build/reports/cucumber-shard-capsule-coreb.json",
 )
 @ConfigurationParameter(
     key = FILTER_TAGS_PROPERTY_NAME,
-    value = "@capsule-core-b and not @wip and not @integration and not @viral-render"
+    value = "@capsule-core-b and not @wip and not @integration and not @viral-render",
 )
 class CucumberShardCapsuleCoreBRunner

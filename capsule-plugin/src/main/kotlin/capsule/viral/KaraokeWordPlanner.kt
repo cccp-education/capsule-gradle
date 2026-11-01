@@ -36,7 +36,6 @@ data class KaraokeLine(
  * Pure — no I/O, no LLM. The spoken text is the beat intent (never invented).
  */
 object KaraokeWordPlanner {
-
     /**
      * Plans the karaoke timeline for [beats], timing words proportionally to
      * their length within each beat window (the default, ASR-free behaviour).
@@ -75,14 +74,15 @@ object KaraokeWordPlanner {
             val words = splitWords(display)
 
             val measured = if (timings.isEmpty()) null else matchTimings(words, timings, timingCursor)
-            val wordsOrNull: List<KaraokeWord>? = measured?.let { (ranges, nextCursor) ->
-                timingCursor = nextCursor
-                ranges.mapIndexed { index, range ->
-                    val from = range.start.coerceIn(start, end)
-                    val to = range.endInclusive.coerceIn(from, end)
-                    KaraokeWord(words[index], from, to)
+            val wordsOrNull: List<KaraokeWord>? =
+                measured?.let { (ranges, nextCursor) ->
+                    timingCursor = nextCursor
+                    ranges.mapIndexed { index, range ->
+                        val from = range.start.coerceIn(start, end)
+                        val to = range.endInclusive.coerceIn(from, end)
+                        KaraokeWord(words[index], from, to)
+                    }
                 }
-            }
             KaraokeLine(
                 words = wordsOrNull ?: distribute(words, start, end),
                 startTime = start,
@@ -107,20 +107,24 @@ object KaraokeWordPlanner {
         var cursor = from
         for (word in words) {
             val target = WordTimingsJson.normalize(word)
-            val index = (cursor until timings.size).firstOrNull {
-                WordTimingsJson.normalize(timings[it].text) == target
-            } ?: return null
+            val index =
+                (cursor until timings.size).firstOrNull {
+                    WordTimingsJson.normalize(timings[it].text) == target
+                } ?: return null
             ranges.add(timings[index].start..timings[index].end)
             cursor = index + 1
         }
         return ranges to cursor
     }
 
-    private fun splitWords(text: String): List<String> =
-        text.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+    private fun splitWords(text: String): List<String> = text.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
 
     /** Distributes [words] over [start]–[end], each word proportional to its length. */
-    private fun distribute(words: List<String>, start: Double, end: Double): List<KaraokeWord> {
+    private fun distribute(
+        words: List<String>,
+        start: Double,
+        end: Double,
+    ): List<KaraokeWord> {
         if (words.isEmpty()) return emptyList()
         val total = words.sumOf { it.length }.toDouble()
         val span = end - start

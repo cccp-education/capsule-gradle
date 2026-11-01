@@ -34,7 +34,6 @@ import java.io.File
  */
 @DisableCachingByDefault(because = "Delivery gate — reads the campaign manifest and probes the produced assets")
 abstract class ValidateViralCampaignTask : DefaultTask() {
-
     /** Master switch — when false (default), the task is a no-op skip. */
     @get:Input
     abstract val viralEnabled: Property<Boolean>
@@ -62,19 +61,22 @@ abstract class ValidateViralCampaignTask : DefaultTask() {
             return
         }
 
-        val bundles = runCatching { CampaignBundleSerializer.parseManifest(manifest.readText()) }
-            .getOrElse { e ->
-                failOrWarn("CAPSULE VIRAL GATE → malformed manifest '${manifest.absolutePath}': ${e.message}")
-                return
-            }
+        val bundles =
+            runCatching { CampaignBundleSerializer.parseManifest(manifest.readText()) }
+                .getOrElse { e ->
+                    failOrWarn("CAPSULE VIRAL GATE → malformed manifest '${manifest.absolutePath}': ${e.message}")
+                    return
+                }
 
         when (val result = ViralCampaignGate.verdict(bundles) { exists(it) }) {
-            is ViralCampaignGateResult.Valid -> logger.lifecycle(
-                "CAPSULE VIRAL GATE → OK (${bundles.size} bundle(s), all assets present)",
-            )
-            is ViralCampaignGateResult.Invalid -> failOrWarn(
-                "CAPSULE VIRAL GATE → ${result.missing.size} missing asset(s): ${result.missing.joinToString("; ")}",
-            )
+            is ViralCampaignGateResult.Valid ->
+                logger.lifecycle(
+                    "CAPSULE VIRAL GATE → OK (${bundles.size} bundle(s), all assets present)",
+                )
+            is ViralCampaignGateResult.Invalid ->
+                failOrWarn(
+                    "CAPSULE VIRAL GATE → ${result.missing.size} missing asset(s): ${result.missing.joinToString("; ")}",
+                )
         }
     }
 

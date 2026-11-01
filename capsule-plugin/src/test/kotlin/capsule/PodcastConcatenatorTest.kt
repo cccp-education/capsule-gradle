@@ -2,13 +2,12 @@ package capsule
 
 import capsule.podcast.NoOpPodcastConcatenator
 import capsule.podcast.PodcastConcatCommand
-import capsule.podcast.PodcastConcatenator
 import capsule.podcast.PodcastConcatenatorImpl
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -30,7 +29,6 @@ import kotlin.test.assertTrue
  * caller keeps no podcast, degraded mode backward compat).
  */
 class PodcastConcatenatorTest {
-
     // ─── PodcastConcatCommand.buildConcatListContent (pure, no I/O) ─
 
     @Test
@@ -158,21 +156,23 @@ class PodcastConcatenatorTest {
 
     @Test
     fun `resolvePodcastConcatenator unavailable and non-strict falls back to NoOp`() {
-        val resolved = CapsuleFactory.resolvePodcastConcatenator(
-            ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
-            strict = false
-        )
+        val resolved =
+            CapsuleFactory.resolvePodcastConcatenator(
+                ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
+                strict = false,
+            )
         assertTrue(resolved is NoOpPodcastConcatenator, "unavailable + non-strict → NoOp fallback")
     }
 
     @Test
     fun `resolvePodcastConcatenator unavailable and strict throws IllegalStateException`() {
-        val ex = assertFailsWith<IllegalStateException> {
-            CapsuleFactory.resolvePodcastConcatenator(
-                ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
-                strict = true
-            )
-        }
+        val ex =
+            assertFailsWith<IllegalStateException> {
+                CapsuleFactory.resolvePodcastConcatenator(
+                    ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
+                    strict = true,
+                )
+            }
         assertTrue(ex.message!!.contains("ffmpeg"), "error should name ffmpeg")
         assertTrue(ex.message!!.contains("/nonexistent/ffmpeg/path_xyz"), "error should mention the path")
         assertTrue(ex.message!!.contains("strictMode"), "error should suggest disabling strictMode")

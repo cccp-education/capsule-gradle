@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
  * (Jackson, sealed/tolerant result).
  */
 object ViralHookParser {
-
     private val jsonMapper: ObjectMapper = ObjectMapper()
 
     /**
@@ -32,16 +31,32 @@ object ViralHookParser {
     fun parse(raw: String): ViralHook? {
         if (raw.isBlank()) return null
         val json = extractJsonObject(raw) ?: return null
-        val root: JsonNode = try {
-            jsonMapper.readTree(json)
-        } catch (_: Exception) {
-            return null
-        }
+        val root: JsonNode =
+            try {
+                jsonMapper.readTree(json)
+            } catch (_: Exception) {
+                return null
+            }
         if (root.isMissingNode || !root.isObject) return null
 
-        val hook = root.get("hook")?.asText()?.trim().orEmpty()
-        val message = root.get("message")?.asText()?.trim().orEmpty()
-        val cta = root.get("cta")?.asText()?.trim().orEmpty()
+        val hook =
+            root
+                .get("hook")
+                ?.asText()
+                ?.trim()
+                .orEmpty()
+        val message =
+            root
+                .get("message")
+                ?.asText()
+                ?.trim()
+                .orEmpty()
+        val cta =
+            root
+                .get("cta")
+                ?.asText()
+                ?.trim()
+                .orEmpty()
 
         if (hook.isBlank() && message.isBlank() && cta.isBlank()) return null
         return ViralHook(hook = hook, message = message, cta = cta)

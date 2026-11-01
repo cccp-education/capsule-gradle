@@ -9,7 +9,6 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
-import java.io.File
 
 /**
  * Gradle task: `normalizeViralStoryboard` (CAP-VIRAL-E2E follow-up).
@@ -36,7 +35,6 @@ import java.io.File
  */
 @DisableCachingByDefault(because = "Storyboard normalization — pure text transform of an input document")
 abstract class NormalizeViralStoryboardTask : DefaultTask() {
-
     /** Hand-authored storyboard AsciiDoc to normalize. */
     @get:InputFile
     @get:Optional
@@ -58,11 +56,12 @@ abstract class NormalizeViralStoryboardTask : DefaultTask() {
             return
         }
 
-        val storyboard = ViralStoryboardParser.parse(input.readText())
-            ?: error(
-                "CAPSULE VIRAL STORYBOARD → '${input.path}' is not a validable storyboard " +
-                    "(expected the '= Storyboard — <message>' header, beats and the short-form duration).",
-            )
+        val storyboard =
+            ViralStoryboardParser.parse(input.readText())
+                ?: error(
+                    "CAPSULE VIRAL STORYBOARD → '${input.path}' is not a validable storyboard " +
+                        "(expected the '= Storyboard — <message>' header, beats and the short-form duration).",
+                )
 
         val normalized = ViralStoryboardNormalizer.normalize(storyboard)
         val out = normalizedOutput.get().asFile

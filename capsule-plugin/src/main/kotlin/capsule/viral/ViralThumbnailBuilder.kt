@@ -17,7 +17,6 @@ import capsule.HtmlEscape
  * Pure — no I/O, no browser, no FFmpeg. Deterministic.
  */
 object ViralThumbnailBuilder {
-
     /** Suffix of the per-variant cover file (`<variant.id>-thumb`). */
     const val THUMBNAIL_SUFFIX: String = "-thumb"
 
@@ -51,8 +50,11 @@ object ViralThumbnailBuilder {
             append("<html lang=\"").append(HtmlEscape.escape(plan.language)).appendLine("\">")
             appendLine("<head>")
             appendLine("<meta charset=\"utf-8\">")
-            append("<meta name=\"viewport\" content=\"width=").append(width)
-                .append(", height=").append(height).appendLine("\">")
+            append("<meta name=\"viewport\" content=\"width=")
+                .append(width)
+                .append(", height=")
+                .append(height)
+                .appendLine("\">")
             append("<title>").append(HtmlEscape.escape(plan.overlayText)).appendLine("</title>")
             appendLine("<style>")
             appendLine("  html, body { margin: 0; padding: 0; }")

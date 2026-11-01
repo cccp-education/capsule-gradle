@@ -1,8 +1,6 @@
 package capsule
 
 import java.io.File
-import java.time.format.DateTimeFormatter
-import java.time.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -17,14 +15,14 @@ import kotlin.test.assertTrue
  * the user can compare capsule versions side-by-side.
  */
 class VideoDestinationResolverTest {
-
     @Test
     fun `resolves timestamp versioned destination dir`() {
-        val config = OutputConfig(
-            videoDestinationDir = "/workspace/office/videos",
-            versioning = VersioningStrategy.TIMESTAMP,
-            versionPrefix = "v",
-        )
+        val config =
+            OutputConfig(
+                videoDestinationDir = "/workspace/office/videos",
+                versioning = VersioningStrategy.TIMESTAMP,
+                versionPrefix = "v",
+            )
 
         val destination = VideoDestinationResolver.resolveDestinationDir(config)
 
@@ -75,11 +73,12 @@ class VideoDestinationResolverTest {
 
     @Test
     fun `resolveDestinationDir with incremental strategy and existing versions`() {
-        val config = OutputConfig(
-            videoDestinationDir = "/videos",
-            versioning = VersioningStrategy.INCREMENTAL,
-            versionPrefix = "v",
-        )
+        val config =
+            OutputConfig(
+                videoDestinationDir = "/videos",
+                versioning = VersioningStrategy.INCREMENTAL,
+                versionPrefix = "v",
+            )
 
         val destination = VideoDestinationResolver.resolveDestinationDir(config, existingVersions = listOf("v1", "v2"))
 
@@ -88,11 +87,12 @@ class VideoDestinationResolverTest {
 
     @Test
     fun `resolveDestinationFile returns the video file inside the versioned dir`() {
-        val config = OutputConfig(
-            videoDestinationDir = "/videos",
-            versioning = VersioningStrategy.INCREMENTAL,
-            versionPrefix = "v",
-        )
+        val config =
+            OutputConfig(
+                videoDestinationDir = "/videos",
+                versioning = VersioningStrategy.INCREMENTAL,
+                versionPrefix = "v",
+            )
 
         val destFile = VideoDestinationResolver.resolveDestinationFile(config, "my-deck.webm", existingVersions = listOf("v1"))
 
@@ -103,11 +103,12 @@ class VideoDestinationResolverTest {
     fun `resolveDestinationDir creates parent when missing`() {
         val tempRoot = File(System.getProperty("java.io.tmpdir"), "vdr-test-${System.currentTimeMillis()}")
         try {
-            val config = OutputConfig(
-                videoDestinationDir = tempRoot.absolutePath,
-                versioning = VersioningStrategy.INCREMENTAL,
-                versionPrefix = "v",
-            )
+            val config =
+                OutputConfig(
+                    videoDestinationDir = tempRoot.absolutePath,
+                    versioning = VersioningStrategy.INCREMENTAL,
+                    versionPrefix = "v",
+                )
 
             val destination = VideoDestinationResolver.resolveDestinationDir(config, existingVersions = emptyList())
 

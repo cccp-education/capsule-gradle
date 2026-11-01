@@ -2,14 +2,14 @@ package capsule.scenarios
 
 import capsule.adapter.revealjs.RevealJsScriptContract
 import capsule.adapter.revealjs.RevealJsSpeakerNoteSource
-import video.kernel.segment.VideoScript
-import video.kernel.segment.VideoSegment
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
+import org.junit.jupiter.api.Assertions.assertEquals
+import video.kernel.segment.VideoScript
+import video.kernel.segment.VideoSegment
 import java.io.File
 import java.nio.file.Files
-import org.junit.jupiter.api.Assertions.assertEquals
 
 /**
  * Pure-domain BDD steps for `capsule_segment_source.feature`
@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
  * (S-088 — the glue is classpath-wide).
  */
 class CapsuleSegmentSourceSteps {
-
     private val workDir: File = Files.createTempDirectory("capsule-segment-source").toFile()
     private var deckBody: String = ""
     private var deckName: String = "demo"
@@ -29,9 +28,14 @@ class CapsuleSegmentSourceSteps {
     private var readScript: VideoScript? = null
 
     @Given("a reveal AsciiDoc deck named {string} with narrated slides {string} and {string}")
-    fun aRevealAsciiDocDeckNamedWithNarratedSlides(name: String, first: String, second: String) {
+    fun aRevealAsciiDocDeckNamedWithNarratedSlides(
+        name: String,
+        first: String,
+        second: String,
+    ) {
         deckName = name
-        deckBody = """
+        deckBody =
+            """
             = $name
 
             == $first
@@ -45,15 +49,19 @@ class CapsuleSegmentSourceSteps {
             --
             $second narration.
             --
-        """.trimIndent()
+            """.trimIndent()
     }
 
     @Given("the reveal deck {string} also contains a silent slide {string}")
-    fun theRevealDeckAlsoContainsASilentSlide(name: String, silent: String) {
-        deckBody = deckBody.replaceFirst(
-            "== ",
-            "== $silent\nThis slide carries no speaker note.\n\n== ",
-        )
+    fun theRevealDeckAlsoContainsASilentSlide(
+        name: String,
+        silent: String,
+    ) {
+        deckBody =
+            deckBody.replaceFirst(
+                "== ",
+                "== $silent\nThis slide carries no speaker note.\n\n== ",
+            )
     }
 
     @When("the reveal speaker-note source reads the deck file")
@@ -73,11 +81,15 @@ class CapsuleSegmentSourceSteps {
     }
 
     @Given("a video script named {string} with {int} segments")
-    fun aVideoScriptNamedWithSegments(name: String, count: Int) {
-        script = VideoScript(
-            name = name,
-            segments = (1..count).map { VideoSegment(index = it, title = "S$it", narration = "n$it.") },
-        )
+    fun aVideoScriptNamedWithSegments(
+        name: String,
+        count: Int,
+    ) {
+        script =
+            VideoScript(
+                name = name,
+                segments = (1..count).map { VideoSegment(index = it, title = "S$it", narration = "n$it.") },
+            )
     }
 
     @When("the script is written and read back by the reveal contract")

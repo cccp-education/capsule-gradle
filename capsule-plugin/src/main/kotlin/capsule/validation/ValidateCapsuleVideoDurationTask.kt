@@ -13,7 +13,6 @@ import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
-import java.io.File
 
 /**
  * Gradle task: `validateCapsuleVideoDuration` (CAP-CR3-1 US-2).
@@ -42,7 +41,6 @@ import java.io.File
  */
 @DisableCachingByDefault(because = "Probes external ffprobe, not a pure function of inputs")
 abstract class ValidateCapsuleVideoDurationTask : DefaultTask() {
-
     /** The final capsule video file (WebM or MP4) to probe. Internal — existence is checked at execution time. */
     @get:Internal
     abstract val videoFile: RegularFileProperty
@@ -114,20 +112,22 @@ abstract class ValidateCapsuleVideoDurationTask : DefaultTask() {
         val videoDuration = MediaProbeUtil.probeDuration(video)
         val audioDurations = audio.map { MediaProbeUtil.probeDuration(it) }
 
-        val result = VideoDurationValidator.validate(
-            videoDurationSecs = videoDuration,
-            audioDurationsSecs = audioDurations,
-            toleranceSecs = toleranceSecs.get()
-        )
+        val result =
+            VideoDurationValidator.validate(
+                videoDurationSecs = videoDuration,
+                audioDurationsSecs = audioDurations,
+                toleranceSecs = toleranceSecs.get(),
+            )
 
         when (result) {
-            is ValidationResult.Valid -> logger.lifecycle(
-                "CAPSULE VALIDATION → OK (video={}s, audio={}s, delta={}s, tolerance={}s)",
-                String.format("%.2f", videoDuration),
-                String.format("%.2f", audioDurations.sum()),
-                String.format("%.2f", result.delta),
-                String.format("%.2f", toleranceSecs.get())
-            )
+            is ValidationResult.Valid ->
+                logger.lifecycle(
+                    "CAPSULE VALIDATION → OK (video={}s, audio={}s, delta={}s, tolerance={}s)",
+                    String.format("%.2f", videoDuration),
+                    String.format("%.2f", audioDurations.sum()),
+                    String.format("%.2f", result.delta),
+                    String.format("%.2f", toleranceSecs.get()),
+                )
             is ValidationResult.Invalid -> {
                 logger.error("CAPSULE VALIDATION → FAIL ({})", result.message())
                 throw org.gradle.api.GradleException(result.message())

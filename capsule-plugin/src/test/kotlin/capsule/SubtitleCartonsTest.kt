@@ -14,7 +14,6 @@ import kotlin.test.assertTrue
  * All pure — no I/O, no ffmpeg, no Gradle.
  */
 class SubtitleCartonsTest {
-
     // ─── SubtitleTextNormalizer ────────────────────────────────────
 
     @Test
@@ -127,16 +126,20 @@ class SubtitleCartonsTest {
 
     // ─── SubtitleTimingCalculator.calculateFromCartons ─────────────
 
-    private fun slide(index: Int, note: String) = SlideSegment(index = index, title = "s$index", narration = note)
+    private fun slide(
+        index: Int,
+        note: String,
+    ) = SlideSegment(index = index, title = "s$index", narration = note)
 
     @Test
     fun `one cue per carton with sequential indices`() {
         val note = "Un deux trois quatre cinq six sept huit neuf dix onze douze"
-        val entries = SubtitleTimingCalculator.calculateFromCartons(
-            listOf(slide(0, note)),
-            listOf(10.0),
-            maxChars = 12,
-        )
+        val entries =
+            SubtitleTimingCalculator.calculateFromCartons(
+                listOf(slide(0, note)),
+                listOf(10.0),
+                maxChars = 12,
+            )
         assertTrue(entries.size > 1, "expected several cues, got ${entries.size}")
         assertEquals((1..entries.size).toList(), entries.map { it.index })
         assertEquals(10.0, entries.last().endTime, 1e-9)
@@ -145,11 +148,12 @@ class SubtitleCartonsTest {
 
     @Test
     fun `cues are renumbered across slides`() {
-        val entries = SubtitleTimingCalculator.calculateFromCartons(
-            listOf(slide(0, "court"), slide(1, "Un deux trois quatre cinq six sept huit")),
-            listOf(0.5, 0.5),
-            maxChars = 12,
-        )
+        val entries =
+            SubtitleTimingCalculator.calculateFromCartons(
+                listOf(slide(0, "court"), slide(1, "Un deux trois quatre cinq six sept huit")),
+                listOf(0.5, 0.5),
+                maxChars = 12,
+            )
         assertEquals((1..entries.size).toList(), entries.map { it.index })
         assertEquals(1.0, entries.last().endTime, 1e-9)
         assertTrue(entries.all { it.startTime >= 0.0 && it.endTime <= 1.0 })
@@ -157,11 +161,12 @@ class SubtitleCartonsTest {
 
     @Test
     fun `cue text is normalised for display`() {
-        val entries = SubtitleTimingCalculator.calculateFromCartons(
-            listOf(slide(0, "des **classes** et l' A P I")),
-            listOf(4.0),
-            maxChars = 100,
-        )
+        val entries =
+            SubtitleTimingCalculator.calculateFromCartons(
+                listOf(slide(0, "des **classes** et l' A P I")),
+                listOf(4.0),
+                maxChars = 100,
+            )
         assertEquals(1, entries.size)
         assertEquals("des classes et l' API", entries.single().text)
     }
@@ -176,11 +181,12 @@ class SubtitleCartonsTest {
         // SlideSegment forbids a blank speakerNote, so the reachable "no cue"
         // case is a note that normalises to nothing (markdown emphasis only):
         // it still consumes its duration, the next slide must not start earlier.
-        val entries = SubtitleTimingCalculator.calculateFromCartons(
-            listOf(slide(0, "**"), slide(1, "bonjour")),
-            listOf(2.0, 3.0),
-            maxChars = 42,
-        )
+        val entries =
+            SubtitleTimingCalculator.calculateFromCartons(
+                listOf(slide(0, "**"), slide(1, "bonjour")),
+                listOf(2.0, 3.0),
+                maxChars = 42,
+            )
         assertEquals(1, entries.size)
         assertEquals(2.0, entries.single().startTime, 1e-9)
         assertEquals(5.0, entries.single().endTime, 1e-9)

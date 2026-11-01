@@ -3,9 +3,8 @@ package capsule
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
-import kotlin.test.assertTrue
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 /**
  * TDD unit tests for [RemotionTemplate] — CAP-ANIM US-1.
@@ -20,7 +19,6 @@ import kotlin.test.assertFailsWith
  * and [ScreenshotPlannerTest] (pure plan + argv builders).
  */
 class RemotionTemplateTest {
-
     @TempDir
     lateinit var tempDir: File
 
@@ -70,7 +68,10 @@ class RemotionTemplateTest {
         RemotionTemplate.materialiseInto(tempDir)
         RemotionTemplate.FILES.forEach { relative ->
             val second = File(tempDir, relative).readBytes()
-            assertTrue(firstPass[relative]!!.contentEquals(second), "Re-materialise changed $relative (first=${firstPass[relative]!!.size}B second=${second.size}B)")
+            assertTrue(
+                firstPass[relative]!!.contentEquals(second),
+                "Re-materialise changed $relative (first=${firstPass[relative]!!.size}B second=${second.size}B)",
+            )
         }
     }
 

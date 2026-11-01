@@ -11,12 +11,13 @@ import kotlin.test.assertEquals
  * (ENV < gradle.properties < YAML < CLI).
  */
 class FishAudioTtsConfigTest {
-
     @field:TempDir
     lateinit var dir: File
 
-    private fun merge(yaml: CapsuleConfig, cli: Map<String, Any?> = emptyMap()): CapsuleConfig =
-        CapsuleConfigMerger.merge(dir, yaml, cli, yamlLoaded = true)
+    private fun merge(
+        yaml: CapsuleConfig,
+        cli: Map<String, Any?> = emptyMap(),
+    ): CapsuleConfig = CapsuleConfigMerger.merge(dir, yaml, cli, yamlLoaded = true)
 
     @Test
     fun `defaults mirror the prepa reference`() {
@@ -40,10 +41,11 @@ class FishAudioTtsConfigTest {
     @Test
     fun `cli overrides the yaml for the fish parameters`() {
         val yaml = CapsuleConfig(tts = TtsConfig(fishVoice = "from-yaml"))
-        val merged = merge(
-            yaml,
-            cli = mapOf("tts.fishVoice" to "from-cli", "tts.fishModel" to "speech-1.6-turbo"),
-        )
+        val merged =
+            merge(
+                yaml,
+                cli = mapOf("tts.fishVoice" to "from-cli", "tts.fishModel" to "speech-1.6-turbo"),
+            )
         assertEquals("from-cli", merged.tts.fishVoice)
         assertEquals("speech-1.6-turbo", merged.tts.fishModel)
     }

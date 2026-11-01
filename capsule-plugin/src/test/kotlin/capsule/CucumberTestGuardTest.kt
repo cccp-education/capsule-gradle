@@ -6,40 +6,43 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class CucumberTestGuardTest {
-
     @Test
     fun `shouldRun returns true when runCucumber property is present`() {
-        val guard = CucumberTestGuard(
-            hasRunCucumberProperty = true,
-            isCi = false
-        )
+        val guard =
+            CucumberTestGuard(
+                hasRunCucumberProperty = true,
+                isCi = false,
+            )
         assertTrue(guard.shouldRun())
     }
 
     @Test
     fun `shouldRun returns true when CI env var is true`() {
-        val guard = CucumberTestGuard(
-            hasRunCucumberProperty = false,
-            isCi = true
-        )
+        val guard =
+            CucumberTestGuard(
+                hasRunCucumberProperty = false,
+                isCi = true,
+            )
         assertTrue(guard.shouldRun())
     }
 
     @Test
     fun `shouldRun returns true when both runCucumber and CI are active`() {
-        val guard = CucumberTestGuard(
-            hasRunCucumberProperty = true,
-            isCi = true
-        )
+        val guard =
+            CucumberTestGuard(
+                hasRunCucumberProperty = true,
+                isCi = true,
+            )
         assertTrue(guard.shouldRun())
     }
 
     @Test
     fun `shouldRun returns false when neither runCucumber nor CI is active`() {
-        val guard = CucumberTestGuard(
-            hasRunCucumberProperty = false,
-            isCi = false
-        )
+        val guard =
+            CucumberTestGuard(
+                hasRunCucumberProperty = false,
+                isCi = false,
+            )
         assertFalse(guard.shouldRun())
     }
 

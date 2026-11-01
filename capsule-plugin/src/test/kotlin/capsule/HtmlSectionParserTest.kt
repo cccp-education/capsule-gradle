@@ -1,9 +1,9 @@
 package capsule
 
 import kotlin.test.Test
-import kotlin.test.assertNull
-import kotlin.test.assertNotNull
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -13,16 +13,16 @@ import kotlin.test.assertTrue
  * handling nested sections (vertical stacks) by tracking depth.
  */
 class HtmlSectionParserTest {
-
     // ── findTopLevelSectionOpenTags (CR-9: robust HTML parsing) ──
 
     @Test
     fun `extractTopLevelSections extracts simple flat sections`() {
-        val html = """
+        val html =
+            """
             <section><h2>Slide 1</h2></section>
             <section><h2>Slide 2</h2></section>
             <section><h2>Slide 3</h2></section>
-        """.trimIndent()
+            """.trimIndent()
 
         val sections = HtmlSectionParser.extractTopLevelSections(html)
         assertEquals(3, sections.size)
@@ -33,13 +33,14 @@ class HtmlSectionParserTest {
 
     @Test
     fun `extractTopLevelSections handles nested sections`() {
-        val html = """
+        val html =
+            """
             <section>
                 <section><h2>Sub A</h2></section>
                 <section><h2>Sub B</h2></section>
             </section>
             <section><h2>Slide 2</h2></section>
-        """.trimIndent()
+            """.trimIndent()
 
         val sections = HtmlSectionParser.extractTopLevelSections(html)
         assertEquals(2, sections.size)
@@ -65,10 +66,11 @@ class HtmlSectionParserTest {
 
     @Test
     fun `extractTopLevelSections skips self-closing tags`() {
-        val html = """
+        val html =
+            """
             <section />
             <section><h2>Real</h2></section>
-        """.trimIndent()
+            """.trimIndent()
 
         val sections = HtmlSectionParser.extractTopLevelSections(html)
         assertEquals(1, sections.size)
@@ -77,10 +79,11 @@ class HtmlSectionParserTest {
 
     @Test
     fun `extractTopLevelSections handles sections with attributes`() {
-        val html = """
+        val html =
+            """
             <section data-capsule-slide="1" class="intro"><h2>One</h2></section>
             <section id="two" data-background="red"><h2>Two</h2></section>
-        """.trimIndent()
+            """.trimIndent()
 
         val sections = HtmlSectionParser.extractTopLevelSections(html)
         assertEquals(2, sections.size)
@@ -92,10 +95,11 @@ class HtmlSectionParserTest {
 
     @Test
     fun `findTopLevelSectionOpenTags returns flat section open tags`() {
-        val html = """
+        val html =
+            """
             <section><h2>Slide 1</h2></section>
             <section><h2>Slide 2</h2></section>
-        """.trimIndent()
+            """.trimIndent()
 
         val tags = HtmlSectionParser.findTopLevelSectionOpenTags(html)
         assertEquals(2, tags.size)
@@ -105,13 +109,14 @@ class HtmlSectionParserTest {
 
     @Test
     fun `findTopLevelSectionOpenTags skips nested section open tags`() {
-        val html = """
+        val html =
+            """
             <section>
                 <section><h2>Sub A</h2></section>
                 <section><h2>Sub B</h2></section>
             </section>
             <section><h2>Slide 2</h2></section>
-        """.trimIndent()
+            """.trimIndent()
 
         val tags = HtmlSectionParser.findTopLevelSectionOpenTags(html)
         assertEquals(2, tags.size)
@@ -121,10 +126,11 @@ class HtmlSectionParserTest {
 
     @Test
     fun `findTopLevelSectionOpenTags skips self-closing tags`() {
-        val html = """
+        val html =
+            """
             <section />
             <section><h2>Real</h2></section>
-        """.trimIndent()
+            """.trimIndent()
 
         val tags = HtmlSectionParser.findTopLevelSectionOpenTags(html)
         assertEquals(1, tags.size)
@@ -133,10 +139,11 @@ class HtmlSectionParserTest {
 
     @Test
     fun `findTopLevelSectionOpenTags preserves attributes in open tag`() {
-        val html = """
+        val html =
+            """
             <section data-capsule-slide="1" class="intro"><h2>One</h2></section>
             <section id="two" data-background="red"><h2>Two</h2></section>
-        """.trimIndent()
+            """.trimIndent()
 
         val tags = HtmlSectionParser.findTopLevelSectionOpenTags(html)
         assertEquals(2, tags.size)
@@ -154,10 +161,11 @@ class HtmlSectionParserTest {
 
     @Test
     fun `findTopLevelSectionOpenTags handles malformed HTML with unclosed section`() {
-        val html = """
+        val html =
+            """
             <section><h2>Slide 1</h2></section>
             <section><h2>Slide 2</h2>
-        """.trimIndent()
+            """.trimIndent()
 
         val tags = HtmlSectionParser.findTopLevelSectionOpenTags(html)
         assertEquals(2, tags.size)
@@ -179,14 +187,15 @@ class HtmlSectionParserTest {
 
     @Test
     fun `findTopLevelSectionOpenTags handles multiline section open tags`() {
-        val html = """
+        val html =
+            """
             <section
               data-capsule-slide="1"
               class="intro">
               <h2>One</h2>
             </section>
             <section><h2>Two</h2></section>
-        """.trimIndent()
+            """.trimIndent()
 
         val tags = HtmlSectionParser.findTopLevelSectionOpenTags(html)
         assertEquals(2, tags.size)
@@ -205,7 +214,8 @@ class HtmlSectionParserTest {
      */
     @Test
     fun `slidesMarkup keeps every slide when slides contain nested divs`() {
-        val deck = """
+        val deck =
+            """
             <html><head><title>T</title></head><body>
             <div class="reveal">
             <div class="slides">
@@ -215,7 +225,7 @@ class HtmlSectionParserTest {
             </div>
             </div>
             </body></html>
-        """.trimIndent()
+            """.trimIndent()
 
         val markup = HtmlSectionParser.slidesMarkup(deck)
 

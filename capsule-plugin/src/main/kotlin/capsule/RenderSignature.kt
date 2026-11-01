@@ -14,7 +14,6 @@ import java.security.MessageDigest
  * Pure — no I/O. The caller supplies the three fingerprints as strings.
  */
 object RenderSignature {
-
     /** Length of the returned hexadecimal signature. */
     const val LENGTH: Int = 16
 
@@ -24,11 +23,18 @@ object RenderSignature {
      * @param timelineFingerprint the timing that shapes the clip.
      * @return a stable, truncated SHA-256 hex signature (lowercase hex).
      */
-    fun of(engineFingerprint: String, contentFingerprint: String, timelineFingerprint: String): String {
-        val payload = listOf(engineFingerprint, contentFingerprint, timelineFingerprint)
-            .joinToString("\u0000")
-        val digest = MessageDigest.getInstance("SHA-256")
-            .digest(payload.toByteArray(Charsets.UTF_8))
+    fun of(
+        engineFingerprint: String,
+        contentFingerprint: String,
+        timelineFingerprint: String,
+    ): String {
+        val payload =
+            listOf(engineFingerprint, contentFingerprint, timelineFingerprint)
+                .joinToString("\u0000")
+        val digest =
+            MessageDigest
+                .getInstance("SHA-256")
+                .digest(payload.toByteArray(Charsets.UTF_8))
         return digest.joinToString("") { "%02x".format(it) }.take(LENGTH)
     }
 }

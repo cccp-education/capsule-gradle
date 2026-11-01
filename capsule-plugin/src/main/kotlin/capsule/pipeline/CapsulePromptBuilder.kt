@@ -9,7 +9,6 @@ package capsule.pipeline
  * without depending on Gradle or the production prompt engineering.
  */
 interface CapsulePromptBuilder {
-
     /**
      * Prompt for the `propose-context` node — asks the LLM to propose a
      * content plan JSON blob from the deck name, language, source adoc and

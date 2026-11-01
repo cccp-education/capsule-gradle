@@ -18,20 +18,20 @@ import kotlin.test.assertTrue
  * (`-Pollama.baseUrl`) — with zero network and zero LLM pool.
  */
 class CapsuleAiSmokeTestFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
     private fun startMockLlm(responseBody: String): Int {
         val server = HttpServer.create(InetSocketAddress(0), 0)
         val port = server.address.port
-        val ollamaResponse = """
+        val ollamaResponse =
+            """
             {
               "model": "smollm:135m",
               "message": { "role": "assistant", "content": "${responseBody.replace("\"", "\\\"")}" },
               "done": true
             }
-        """.trimIndent().toByteArray()
+            """.trimIndent().toByteArray()
         server.createContext("/api/chat") { exchange ->
             exchange.sendResponseHeaders(200, ollamaResponse.size.toLong())
             exchange.responseBody.use { it.write(ollamaResponse) }
@@ -43,22 +43,26 @@ class CapsuleAiSmokeTestFunctionalTest {
 
     private fun writeBuildFile() {
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Test
     fun `capsuleAiSmokeTest task is registered`() {
         writeBuildFile()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("tasks", "--all", "--quiet")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("tasks", "--all", "--quiet")
+                .withProjectDir(projectDir)
+                .build()
         assertTrue(result.output.contains("capsuleAiSmokeTest"), "Expected task in tasks list")
     }
 
@@ -66,15 +70,16 @@ class CapsuleAiSmokeTestFunctionalTest {
     fun `capsuleAiSmokeTest calls the mock LLM and logs the response`() {
         val port = startMockLlm("ok")
         writeBuildFile()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(
-                "capsuleAiSmokeTest",
-                "-Pollama.baseUrl=http://localhost:$port",
-            )
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(
+                    "capsuleAiSmokeTest",
+                    "-Pollama.baseUrl=http://localhost:$port",
+                ).withProjectDir(projectDir)
+                .build()
         assertTrue(result.output.contains("CAPSULE AI"), "Expected smoke test summary log line")
         assertTrue(result.output.contains("ok"), "Expected mock LLM response in the log")
     }
@@ -82,16 +87,17 @@ class CapsuleAiSmokeTestFunctionalTest {
     @Test
     fun `capsuleAiSmokeTest fails with a clear message when the LLM is unreachable`() {
         writeBuildFile()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(
-                "capsuleAiSmokeTest",
-                "-Pollama.baseUrl=http://localhost:1",
-                "-Pollama.timeout=1",
-            )
-            .withProjectDir(projectDir)
-            .buildAndFail()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(
+                    "capsuleAiSmokeTest",
+                    "-Pollama.baseUrl=http://localhost:1",
+                    "-Pollama.timeout=1",
+                ).withProjectDir(projectDir)
+                .buildAndFail()
         assertTrue(result.output.contains("capsuleAiSmokeTest"), "Expected task name in failure output")
     }
 }

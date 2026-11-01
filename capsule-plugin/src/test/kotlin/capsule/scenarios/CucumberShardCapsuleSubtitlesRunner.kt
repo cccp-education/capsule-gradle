@@ -29,10 +29,10 @@ import org.junit.platform.suite.api.Suite
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-shard-capsule-subtitles.html, json:build/reports/cucumber-shard-capsule-subtitles.json"
+    value = "pretty, html:build/reports/cucumber-shard-capsule-subtitles.html, json:build/reports/cucumber-shard-capsule-subtitles.json",
 )
 @ConfigurationParameter(
     key = FILTER_TAGS_PROPERTY_NAME,
-    value = "@subtitles and not @burnin and not @wip and not @integration and not @viral-render"
+    value = "@subtitles and not @burnin and not @wip and not @integration and not @viral-render",
 )
 class CucumberShardCapsuleSubtitlesRunner

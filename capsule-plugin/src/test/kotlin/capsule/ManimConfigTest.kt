@@ -3,7 +3,6 @@ package capsule
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.test.assertFalse
 
 /**
  * TDD unit tests for ManimConfig enrichment.
@@ -12,7 +11,6 @@ import kotlin.test.assertFalse
  * Tests written BEFORE production code changes (baby-step TDD).
  */
 class ManimConfigTest {
-
     // ─── Default values ─────────────────────────────────────────────
 
     @Test
@@ -109,12 +107,13 @@ class ManimConfigTest {
 
     @Test
     fun `ManimConfig can be created with custom values via data class copy`() {
-        val config = ManimConfig().copy(
-            executablePath = "/usr/local/bin/manim",
-            quality = "h",
-            scriptsDir = "custom/manim",
-            outputDir = "custom/output"
-        )
+        val config =
+            ManimConfig().copy(
+                executablePath = "/usr/local/bin/manim",
+                quality = "h",
+                scriptsDir = "custom/manim",
+                outputDir = "custom/output",
+            )
         assertEquals("/usr/local/bin/manim", config.executablePath)
         assertEquals("h", config.quality)
         assertEquals("custom/manim", config.scriptsDir)

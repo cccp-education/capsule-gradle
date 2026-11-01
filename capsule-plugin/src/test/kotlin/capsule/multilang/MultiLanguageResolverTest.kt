@@ -1,15 +1,13 @@
 package capsule.multilang
 
-import contracts.i18n.SupportedLanguage
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Test
 
 class MultiLanguageResolverTest {
-
     @Test
     fun `resolve returns non-null for all supported language codes`() {
         val codes = contracts.i18n.LanguageCatalog.supportedCodes()
@@ -127,30 +125,31 @@ class MultiLanguageResolverTest {
 
     @Test
     fun `piperModel returns model string for all supported codes`() {
-        val expected = mapOf(
-            "fr" to "fr_FR-siwis-medium",
-            "en" to "en_US-lessac-medium",
-            "es" to "es_ES-carlfm-x_low",
-            "de" to "de_DE-thorsten-medium",
-            "zh" to "zh_CN-huayan-medium",
-            "hi" to "hi_IN-cmu-medium",
-            "ar" to "ar_JO-kareem-medium",
-            "bn" to "bn_IN-mms-medium",
-            "pt" to "pt_BR-francisca-medium",
-            "ru" to "ru_RU-irina-medium",
-            "ur" to "ur_PK-gul-medium",
-            "it" to "it_IT-paola-medium",
-            "nl" to "nl_NL-pim-medium",
-            "el" to "el_GR-rapunzelina-medium",
-            "tr" to "tr_TR-dfki-medium",
-            "vi" to "vi_VN-vais1000-medium",
-            "th" to "th_TH-tsync2-medium",
-            "id" to "id_ID-news_tts-medium",
-            "ko" to "ko_KR-kss-medium",
-            "ja" to "ja_JA-hi_fi_captain-medium",
-            "sr" to "sr_RS-serbski_institut-medium",
-            "fa" to "fa_IR-amir-medium",
-        )
+        val expected =
+            mapOf(
+                "fr" to "fr_FR-siwis-medium",
+                "en" to "en_US-lessac-medium",
+                "es" to "es_ES-carlfm-x_low",
+                "de" to "de_DE-thorsten-medium",
+                "zh" to "zh_CN-huayan-medium",
+                "hi" to "hi_IN-cmu-medium",
+                "ar" to "ar_JO-kareem-medium",
+                "bn" to "bn_IN-mms-medium",
+                "pt" to "pt_BR-francisca-medium",
+                "ru" to "ru_RU-irina-medium",
+                "ur" to "ur_PK-gul-medium",
+                "it" to "it_IT-paola-medium",
+                "nl" to "nl_NL-pim-medium",
+                "el" to "el_GR-rapunzelina-medium",
+                "tr" to "tr_TR-dfki-medium",
+                "vi" to "vi_VN-vais1000-medium",
+                "th" to "th_TH-tsync2-medium",
+                "id" to "id_ID-news_tts-medium",
+                "ko" to "ko_KR-kss-medium",
+                "ja" to "ja_JA-hi_fi_captain-medium",
+                "sr" to "sr_RS-serbski_institut-medium",
+                "fa" to "fa_IR-amir-medium",
+            )
         expected.forEach { (code, model) ->
             assertEquals(model, MultiLanguageResolver.piperModel(code), "Wrong Piper model for code: $code")
         }

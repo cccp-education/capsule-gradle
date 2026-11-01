@@ -35,5 +35,5 @@ data class ChaptersConfig(
     val enabled: Boolean = false,
     val introText: String = "",
     val outroText: String = "",
-    val outputDir: String = ""
+    val outputDir: String = "",
 )

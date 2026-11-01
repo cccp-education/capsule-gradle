@@ -14,7 +14,6 @@ import kotlin.test.assertTrue
  * dogfooding (fill every missing per-beat entering transition).
  */
 class NormalizeViralStoryboardFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -68,11 +67,13 @@ class NormalizeViralStoryboardFunctionalTest {
         )
     }
 
-    private fun runner(vararg args: String) = GradleRunner.create()
-        .forwardOutput()
-        .withPluginClasspath()
-        .withArguments(*args)
-        .withProjectDir(projectDir)
+    private fun runner(vararg args: String) =
+        GradleRunner
+            .create()
+            .forwardOutput()
+            .withPluginClasspath()
+            .withArguments(*args)
+            .withProjectDir(projectDir)
 
     @Test
     fun `normalizeViralStoryboard task is registered in the generate group`() {
@@ -100,10 +101,11 @@ class NormalizeViralStoryboardFunctionalTest {
         setupBuild()
         writeRawStoryboard()
 
-        val result = runner(
-            "normalizeViralStoryboard",
-            "-Pcapsule.viral.storyboardFile=raw-storyboard.adoc",
-        ).build()
+        val result =
+            runner(
+                "normalizeViralStoryboard",
+                "-Pcapsule.viral.storyboardFile=raw-storyboard.adoc",
+            ).build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":normalizeViralStoryboard")?.outcome)
         val out = projectDir.resolve("build/capsule/viral/storyboard.normalized.adoc")

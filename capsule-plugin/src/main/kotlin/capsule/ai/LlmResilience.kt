@@ -23,7 +23,6 @@ import org.gradle.api.logging.Logging
  * intentionally stays fail-fast: a generated content plan has no safe fallback.
  */
 object LlmResilience {
-
     private val logger = Logging.getLogger(LlmResilience::class.java)
 
     /**
@@ -33,7 +32,11 @@ object LlmResilience {
      * @param fallback  value returned when the block fails.
      * @param block     the model call (and its parsing) to guard.
      */
-    fun <T> guarded(operation: String, fallback: T, block: () -> T): T =
+    fun <T> guarded(
+        operation: String,
+        fallback: T,
+        block: () -> T,
+    ): T =
         try {
             block()
         } catch (e: Exception) {

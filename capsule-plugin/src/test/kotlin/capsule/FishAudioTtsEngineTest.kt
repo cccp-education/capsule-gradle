@@ -19,7 +19,6 @@ import kotlin.test.assertTrue
  * absent, so the output existence is still assertable).
  */
 class FishAudioTtsEngineTest {
-
     @field:TempDir
     lateinit var dir: File
 
@@ -30,7 +29,11 @@ class FishAudioTtsEngineTest {
         val headers = mutableListOf<Map<String, String>>()
         val bodies = mutableListOf<ByteArray>()
 
-        override fun post(endpoint: String, headers: Map<String, String>, body: ByteArray): FishAudioResponse {
+        override fun post(
+            endpoint: String,
+            headers: Map<String, String>,
+            body: ByteArray,
+        ): FishAudioResponse {
             this.endpoints += endpoint
             this.headers += headers
             this.bodies += body
@@ -82,9 +85,10 @@ class FishAudioTtsEngineTest {
 
     @Test
     fun `synthesize retries on a non-2xx status then succeeds`() {
-        val transport = RecordingTransport(
-            listOf(FishAudioResponse(503, ByteArray(0)), FishAudioResponse(200, wav())),
-        )
+        val transport =
+            RecordingTransport(
+                listOf(FishAudioResponse(503, ByteArray(0)), FishAudioResponse(200, wav())),
+            )
         val engine = FishAudioTtsEngine(params(), listOf(FishAudioKey("k")), transport = transport)
         val output = File(dir, "slide-02.mp3")
 
@@ -99,9 +103,10 @@ class FishAudioTtsEngineTest {
         val transport = RecordingTransport(listOf(FishAudioResponse(500, ByteArray(0))))
         val engine = FishAudioTtsEngine(params(), listOf(FishAudioKey("k")), transport = transport, maxAttempts = 2)
 
-        val error = assertFailsWith<TtsException> {
-            engine.synthesize("Bonjour", File(dir, "slide-03.mp3"))
-        }
+        val error =
+            assertFailsWith<TtsException> {
+                engine.synthesize("Bonjour", File(dir, "slide-03.mp3"))
+            }
         assertContains(error.message!!, "failed after 2 attempt")
         assertEquals(2, transport.bodies.size)
     }
@@ -115,11 +120,12 @@ class FishAudioTtsEngineTest {
 
     @Test
     fun `synthesize with a blank voice is a clear failure`() {
-        val engine = FishAudioTtsEngine(
-            FishAudioParams(voice = ""),
-            listOf(FishAudioKey("k")),
-            transport = RecordingTransport(listOf(FishAudioResponse(200, wav()))),
-        )
+        val engine =
+            FishAudioTtsEngine(
+                FishAudioParams(voice = ""),
+                listOf(FishAudioKey("k")),
+                transport = RecordingTransport(listOf(FishAudioResponse(200, wav()))),
+            )
         val error = assertFailsWith<TtsException> { engine.synthesize("Bonjour", File(dir, "slide-05.mp3")) }
         assertContains(error.message!!, "fishVoice")
     }

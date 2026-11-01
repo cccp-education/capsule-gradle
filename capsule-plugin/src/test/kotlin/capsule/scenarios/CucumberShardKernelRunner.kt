@@ -32,16 +32,17 @@ import org.junit.platform.suite.api.Suite
 @SelectClasspathResource("features/parallel_capture_timeout.feature")
 @ConfigurationParameter(
     key = FEATURES_PROPERTY_NAME,
-    value = "src/test/features/capsule_kernel_model.feature,src/test/features/capsule_engine_adapter.feature," +
-        "src/test/features/capsule_segment_source.feature,src/test/features/capsule_arch_boundary.feature," +
-        "src/test/features/consolidated_capsule_model.feature,src/test/features/capsule_pr2_coverage.feature," +
-        "src/test/features/capsule_speaker_notes.feature,src/test/features/cucumber_skip.feature," +
-        "src/test/features/parallel_capture_timeout.feature"
+    value =
+        "src/test/features/capsule_kernel_model.feature,src/test/features/capsule_engine_adapter.feature," +
+            "src/test/features/capsule_segment_source.feature,src/test/features/capsule_arch_boundary.feature," +
+            "src/test/features/consolidated_capsule_model.feature,src/test/features/capsule_pr2_coverage.feature," +
+            "src/test/features/capsule_speaker_notes.feature,src/test/features/cucumber_skip.feature," +
+            "src/test/features/parallel_capture_timeout.feature",
 )
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-shard-kernel.html, json:build/reports/cucumber-shard-kernel.json"
+    value = "pretty, html:build/reports/cucumber-shard-kernel.html, json:build/reports/cucumber-shard-kernel.json",
 )
 @ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @wip and not @integration and not @viral-render")
 class CucumberShardKernelRunner

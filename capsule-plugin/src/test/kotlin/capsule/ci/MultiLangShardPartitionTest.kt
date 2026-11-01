@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test
  * would silently re-create the CI pole it exists to remove.
  */
 class MultiLangShardPartitionTest {
-
     private val all: List<SupportedLanguage> = LanguageCatalog.ALL
 
     @Test

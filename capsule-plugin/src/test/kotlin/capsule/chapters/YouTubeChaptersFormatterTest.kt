@@ -1,14 +1,13 @@
 package capsule.chapters
 
+import video.kernel.publish.VideoDescriptionComposer
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import video.kernel.publish.VideoDescriptionComposer
 
 /**
  * TDD unit tests for [YouTubeChaptersFormatter] (PRT-10). Pure — no I/O.
  */
 class YouTubeChaptersFormatterTest {
-
     @Test
     fun `empty entries format to an empty string`() {
         assertEquals("", YouTubeChaptersFormatter.format(emptyList()))
@@ -40,12 +39,13 @@ class YouTubeChaptersFormatterTest {
 
     @Test
     fun `format renders one line per entry`() {
-        val text = YouTubeChaptersFormatter.format(
-            listOf(
-                ChapterEntry("Introduction", 0, 5_000),
-                ChapterEntry("First part", 65_000, 130_000),
+        val text =
+            YouTubeChaptersFormatter.format(
+                listOf(
+                    ChapterEntry("Introduction", 0, 5_000),
+                    ChapterEntry("First part", 65_000, 130_000),
+                ),
             )
-        )
         assertEquals("0:00 Introduction\n1:05 First part\n", text)
     }
 }

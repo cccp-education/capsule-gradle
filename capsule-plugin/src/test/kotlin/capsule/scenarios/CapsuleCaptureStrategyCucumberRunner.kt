@@ -21,10 +21,10 @@ import org.junit.platform.suite.api.Suite
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-capture-strategy.html, json:build/reports/cucumber-capture-strategy.json"
+    value = "pretty, html:build/reports/cucumber-capture-strategy.html, json:build/reports/cucumber-capture-strategy.json",
 )
 @ConfigurationParameter(
     key = FILTER_TAGS_PROPERTY_NAME,
-    value = "@capture and @strategy and not @wip and not @integration"
+    value = "@capture and @strategy and not @wip and not @integration",
 )
 class CapsuleCaptureStrategyCucumberRunner

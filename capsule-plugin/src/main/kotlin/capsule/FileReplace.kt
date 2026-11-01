@@ -21,7 +21,6 @@ import java.nio.file.StandardCopyOption
  * `finally` : le travail était perdu **et** signalé comme fait.
  */
 object FileReplace {
-
     /**
      * Test seam: when non-null, [moveOver] delegates to it instead of touching
      * the filesystem. Lets caller tests assert delegation (a caller must call
@@ -39,14 +38,19 @@ object FileReplace {
      *
      * @return vrai si [target] porte bien le contenu de [source] à la sortie.
      */
-    fun moveOver(source: File, target: File): Boolean {
+    fun moveOver(
+        source: File,
+        target: File,
+    ): Boolean {
         moveOverInterceptor?.let { intercept -> return intercept(source, target) }
         if (!source.isFile) return false
         return try {
             try {
                 Files.move(
-                    source.toPath(), target.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE,
+                    source.toPath(),
+                    target.toPath(),
+                    StandardCopyOption.REPLACE_EXISTING,
+                    StandardCopyOption.ATOMIC_MOVE,
                 )
             } catch (_: AtomicMoveNotSupportedException) {
                 Files.move(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING)

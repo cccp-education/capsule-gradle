@@ -12,7 +12,6 @@ import kotlin.test.assertTrue
  * Default is disabled (retrocompatible with existing behavior).
  */
 class StrictModeConfigTest {
-
     @Test
     fun `default StrictModeConfig has strict disabled`() {
         val config = StrictModeConfig()

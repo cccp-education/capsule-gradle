@@ -1,11 +1,11 @@
 package capsule
 
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.GradleRunner
-import org.junit.jupiter.api.io.TempDir
 
 /**
  * Functional tests for the PRT-06 render-signature wiring in `CapsuleVideoTask`.
@@ -16,7 +16,6 @@ import org.junit.jupiter.api.io.TempDir
  * written next to the produced video and stays stable for unchanged inputs.
  */
 class RenderSignatureFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -34,7 +33,7 @@ class RenderSignatureFunctionalTest {
                 ttsEngine = "noop"
                 outputDir = "capsules"
             }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -45,7 +44,7 @@ class RenderSignatureFunctionalTest {
             === CAPSULE SCRIPT : sig-test ===
             --- SLIDE 1 : Title ---
             Note content for the render signature test.
-            """.trimIndent()
+            """.trimIndent(),
         )
         val decksDir = projectDir.resolve("build/docs/asciidocRevealJs").also { it.mkdirs() }
         decksDir.resolve("sig-test-deck.html").writeText(
@@ -57,12 +56,13 @@ class RenderSignatureFunctionalTest {
               </div>
             </div>
             </body></html>
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
     private fun run(vararg extra: String) =
-        GradleRunner.create()
+        GradleRunner
+            .create()
             .forwardOutput()
             .withPluginClasspath()
             .withArguments(listOf("generateCapsuleVideo") + extra)

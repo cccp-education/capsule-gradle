@@ -10,7 +10,6 @@ import kotlin.test.assertTrue
  * Pure — no I/O.
  */
 class TakeSelectorTest {
-
     private val thresholds = VoiceThresholds()
 
     private fun candidate(
@@ -34,17 +33,21 @@ class TakeSelectorTest {
         )
     }
 
-    private fun degraded(slideIndex: Int, audio: String): TakeVerification = TakeVerification(
-        deckName = "demo",
-        slideIndex = slideIndex,
-        audioFile = audio,
-        expectedText = "bonjour",
-        transcript = "",
-        wordErrorRate = null,
-        surplus = null,
-        snrDb = null,
-        verdict = VoiceVerdict.Degraded(VoiceVerifier.REASON_ASR_ERROR),
-    )
+    private fun degraded(
+        slideIndex: Int,
+        audio: String,
+    ): TakeVerification =
+        TakeVerification(
+            deckName = "demo",
+            slideIndex = slideIndex,
+            audioFile = audio,
+            expectedText = "bonjour",
+            transcript = "",
+            wordErrorRate = null,
+            surplus = null,
+            snrDb = null,
+            verdict = VoiceVerdict.Degraded(VoiceVerifier.REASON_ASR_ERROR),
+        )
 
     @Test
     fun `the lowest word error rate wins`() {
@@ -90,13 +93,14 @@ class TakeSelectorTest {
 
     @Test
     fun `selectBySlide groups per deck and slide in order`() {
-        val selections = TakeSelector.selectBySlide(
-            listOf(
-                candidate(2, "b-slide-02-1.mp3", "trois", "trois"),
-                candidate(1, "a-slide-01-1.mp3", "un", "un"),
-                candidate(1, "a-slide-01-2.mp3", "un", "deux"),
-            ).map { it.copy(deckName = if (it.audioFile.startsWith("a")) "a" else "b") }
-        )
+        val selections =
+            TakeSelector.selectBySlide(
+                listOf(
+                    candidate(2, "b-slide-02-1.mp3", "trois", "trois"),
+                    candidate(1, "a-slide-01-1.mp3", "un", "un"),
+                    candidate(1, "a-slide-01-2.mp3", "un", "deux"),
+                ).map { it.copy(deckName = if (it.audioFile.startsWith("a")) "a" else "b") },
+            )
 
         assertEquals(listOf("a" to 1, "b" to 2), selections.map { it.deckName to it.slideIndex })
         val a = selections.first()
@@ -107,17 +111,22 @@ class TakeSelectorTest {
 
     @Test
     fun `selection json renders the chosen take`() {
-        val selection = VoiceSelection(
-            deckName = "demo",
-            slideIndex = 1,
-            chosenAudioFile = "slide-01-2.mp3",
-            candidateCount = 2,
-            wordErrorRate = 0.0,
-            surplus = 0,
-            verdict = "PASS",
-        )
+        val selection =
+            VoiceSelection(
+                deckName = "demo",
+                slideIndex = 1,
+                chosenAudioFile = "slide-01-2.mp3",
+                candidateCount = 2,
+                wordErrorRate = 0.0,
+                surplus = 0,
+                verdict = "PASS",
+            )
         val json = VoiceSelectionJson.toJson(listOf(selection))
-        val node = com.fasterxml.jackson.databind.ObjectMapper().readTree(json).get(0)
+        val node =
+            com.fasterxml.jackson.databind
+                .ObjectMapper()
+                .readTree(json)
+                .get(0)
 
         assertEquals("demo", node.get("deckName").asText())
         assertEquals("slide-01-2.mp3", node.get("chosenAudioFile").asText())
@@ -129,7 +138,10 @@ class TakeSelectorTest {
     fun `an empty selection renders an empty json array`() {
         // Jackson's pretty printer emits "[ ]" for an empty array — assert on the
         // parsed shape, whitespace-insensitive.
-        val node = com.fasterxml.jackson.databind.ObjectMapper().readTree(VoiceSelectionJson.toJson(emptyList()))
+        val node =
+            com.fasterxml.jackson.databind
+                .ObjectMapper()
+                .readTree(VoiceSelectionJson.toJson(emptyList()))
         assertTrue(node.isArray, "expected a JSON array")
         assertEquals(0, node.size())
     }

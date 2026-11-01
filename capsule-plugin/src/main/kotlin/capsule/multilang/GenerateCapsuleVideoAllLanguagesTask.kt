@@ -31,12 +31,15 @@ import java.io.File
  */
 @DisableCachingByDefault(because = "Filesystem-bound: captures one WebM per language via TTS + Playwright")
 open class GenerateCapsuleVideoAllLanguagesTask : CapsuleVideoTask() {
-
     @TaskAction
     override fun execute() {
         val deckDir = CapsuleFactory.resolveDeckDir(project, capsuleExtension)
         val scriptDir = CapsuleFactory.resolveScriptDir(project, capsuleExtension)
-        val outDir = project.layout.buildDirectory.dir(capsuleExtension.outputDir.get()).get().asFile
+        val outDir =
+            project.layout.buildDirectory
+                .dir(capsuleExtension.outputDir.get())
+                .get()
+                .asFile
         outDir.mkdirs()
 
         val targetLanguages = resolveTargetLanguages()
@@ -47,11 +50,12 @@ open class GenerateCapsuleVideoAllLanguagesTask : CapsuleVideoTask() {
 
         val plan = CapsuleVideoPlanner.plan(deckDir, scriptDir, outDir, targetLanguages)
 
-        val rendered = CapsuleVideoAllLanguagesRunner.run(
-            plan = plan,
-            probeDuration = MediaProbeUtil::probeDuration,
-            render = { entry -> renderEntry(entry) },
-        )
+        val rendered =
+            CapsuleVideoAllLanguagesRunner.run(
+                plan = plan,
+                probeDuration = MediaProbeUtil::probeDuration,
+                render = { entry -> renderEntry(entry) },
+            )
 
         logger.lifecycle(
             "CAPSULE MULTILANG → {}/{} languages rendered ({} skipped: existing valid WebM)",
@@ -62,7 +66,8 @@ open class GenerateCapsuleVideoAllLanguagesTask : CapsuleVideoTask() {
     }
 
     private fun resolveTargetLanguages(): List<SupportedLanguage> =
-        LanguageCatalog.supportedCodes()
+        LanguageCatalog
+            .supportedCodes()
             .mapNotNull { code -> LanguageCatalog.findByCode(code) }
 
     private fun renderEntry(entry: CapsuleVideoEntry) {
@@ -96,9 +101,12 @@ open class GenerateCapsuleVideoAllLanguagesTask : CapsuleVideoTask() {
 
         val slideDurations = computeSlideDurations(parsed, audioDir)
 
-        val subtitleFile: File? = if (capsuleExtension.subtitleEnabled.get()) {
-            generateSubtitles(parsed, slideDurations, outDir)
-        } else null
+        val subtitleFile: File? =
+            if (capsuleExtension.subtitleEnabled.get()) {
+                generateSubtitles(parsed, slideDurations, outDir)
+            } else {
+                null
+            }
 
         if (capsuleExtension.parallelCaptureEnabled.get()) {
             captureDeckParallel(parsed, modifiedDeck, videoOutputDir, audioDir, outDir, subtitleFile)

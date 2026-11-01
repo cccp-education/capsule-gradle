@@ -15,13 +15,15 @@ import capsule.feed.CapsuleScriptWriter
  * yields a blank script (the parser drops slides that cannot be narrated).
  */
 object TtsScriptDeriver {
-
     /**
      * Derives the TTS script text for [deckName] from the enriched
      * [speakerNotesAdoc]. Returns a blank string when no `[NOTE.speaker]`
      * block is present in the generated content.
      */
-    fun derive(speakerNotesAdoc: String, deckName: String): String {
+    fun derive(
+        speakerNotesAdoc: String,
+        deckName: String,
+    ): String {
         require(deckName.isNotBlank()) { "deckName must not be blank" }
         val script = AsciidocSpeakerNoteParser.parse(speakerNotesAdoc, deckName)
         if (script.isEmpty) return ""

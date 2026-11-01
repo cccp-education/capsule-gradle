@@ -9,7 +9,6 @@ import kotlin.test.assertTrue
  * TDD unit tests for [RenderSignature] (PRT-06). Pure — no I/O.
  */
 class RenderSignatureTest {
-
     @Test
     fun `signature is stable for identical inputs`() {
         val a = RenderSignature.of("screenshot", "deck", "5.0")

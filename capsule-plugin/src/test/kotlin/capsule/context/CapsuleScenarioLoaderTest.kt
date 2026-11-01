@@ -25,7 +25,6 @@ import kotlin.test.assertTrue
  * AsciiDoc yields an empty string (backward compatible, no error).
  */
 class CapsuleScenarioLoaderTest {
-
     @TempDir
     lateinit var tempDir: File
 
@@ -40,25 +39,26 @@ class CapsuleScenarioLoaderTest {
     @Test
     fun `load with valid metadata and adoc extracts objectives`() {
         val metadata = writeMetadata(type = "content", source = "producer", version = "1.0")
-        val adoc = File(tempDir, "001_bienvenue.adoc").also {
-            it.writeText(
-                """
-                = Bienvenue dans le Content
-                :module: accueil
-                :title: Bienvenue dans le Content
+        val adoc =
+            File(tempDir, "001_bienvenue.adoc").also {
+                it.writeText(
+                    """
+                    = Bienvenue dans le Content
+                    :module: accueil
+                    :title: Bienvenue dans le Content
 
-                == Objectifs
-                - Comprendre le cadre du contenu
-                - Connaître les modalités d'évaluation
+                    == Objectifs
+                    - Comprendre le cadre du contenu
+                    - Connaître les modalités d'évaluation
 
-                == Prérequis
-                - Connaissances de base en programmation
+                    == Prérequis
+                    - Connaissances de base en programmation
 
-                == Modalités d'évaluation
-                QCM final + mise en situation
-                """.trimIndent()
-            )
-        }
+                    == Modalités d'évaluation
+                    QCM final + mise en situation
+                    """.trimIndent(),
+                )
+            }
         val result = CapsuleScenarioLoader.load(metadata, adoc, 400)
         assertTrue(result.contains("Pedagogical Scenario"), "Expected scenario section header")
         assertTrue(result.contains("Objectives:"), "Expected objectives label")
@@ -67,18 +67,19 @@ class CapsuleScenarioLoaderTest {
 
     @Test
     fun `load with missing metadata file gracefully skipped and still parses adoc`() {
-        val adoc = File(tempDir, "002_objectifs.adoc").also {
-            it.writeText(
-                """
-                = Objectives
-                :module: accueil
+        val adoc =
+            File(tempDir, "002_objectifs.adoc").also {
+                it.writeText(
+                    """
+                    = Objectives
+                    :module: accueil
 
-                == Objectifs
-                - Analyser un problème algorithmique
-                - Implémenter une solution optimisée
-                """.trimIndent()
-            )
-        }
+                    == Objectifs
+                    - Analyser un problème algorithmique
+                    - Implémenter une solution optimisée
+                    """.trimIndent(),
+                )
+            }
         val result = CapsuleScenarioLoader.load(File(tempDir, "missing-metadata.json"), adoc, 400)
         assertTrue(result.isNotBlank(), "Adoc should still be parsed when metadata is missing")
         assertTrue(result.contains("Analyser un problème algorithmique"), "Expected objective from adoc")
@@ -95,9 +96,10 @@ class CapsuleScenarioLoaderTest {
     @Test
     fun `load with empty objectives section renders empty objectives label`() {
         val metadata = writeMetadata(type = "content", source = "producer", version = "1.0")
-        val adoc = File(tempDir, "minimal.adoc").also {
-            it.writeText("= Minimal Session\n:module: core\n\n== Déroulement\nStep by step.")
-        }
+        val adoc =
+            File(tempDir, "minimal.adoc").also {
+                it.writeText("= Minimal Session\n:module: core\n\n== Déroulement\nStep by step.")
+            }
         val result = CapsuleScenarioLoader.load(metadata, adoc, 400)
         assertTrue(result.contains("Session:"), "Expected session title label even without objectives")
         assertTrue(result.contains("Module: core"), "Expected module from adoc attribute")
@@ -107,9 +109,10 @@ class CapsuleScenarioLoaderTest {
     fun `load truncates content exceeding the token budget`() {
         val metadata = writeMetadata(type = "content", source = "producer", version = "1.0")
         val longObjectives = (1..80).joinToString("\n") { "- Objectif $it avec suffisamment de mots pour consommer le budget" }
-        val adoc = File(tempDir, "long.adoc").also {
-            it.writeText("= Long Session\n:module: core\n\n== Objectifs\n$longObjectives")
-        }
+        val adoc =
+            File(tempDir, "long.adoc").also {
+                it.writeText("= Long Session\n:module: core\n\n== Objectifs\n$longObjectives")
+            }
         val maxTokens = 50
         val result = CapsuleScenarioLoader.load(metadata, adoc, maxTokens)
         val estimated = ContextChannel.estimateTokens(result)
@@ -129,19 +132,20 @@ class CapsuleScenarioLoaderTest {
     @Test
     fun `load extracts multi-line objectives as a list`() {
         val metadata = writeMetadata(type = "content", source = "producer", version = "1.0")
-        val adoc = File(tempDir, "multi.adoc").also {
-            it.writeText(
-                """
-                = Multi Objectives Session
-                :module: module-02
+        val adoc =
+            File(tempDir, "multi.adoc").also {
+                it.writeText(
+                    """
+                    = Multi Objectives Session
+                    :module: module-02
 
-                == Objectifs
-                - Premier objectif
-                - Deuxième objectif
-                - Troisième objectif
-                """.trimIndent()
-            )
-        }
+                    == Objectifs
+                    - Premier objectif
+                    - Deuxième objectif
+                    - Troisième objectif
+                    """.trimIndent(),
+                )
+            }
         val result = CapsuleScenarioLoader.load(metadata, adoc, 400)
         assertTrue(result.contains("Premier objectif"), "Expected first objective")
         assertTrue(result.contains("Deuxième objectif"), "Expected second objective")
@@ -164,19 +168,24 @@ class CapsuleScenarioLoaderTest {
         assertTrue(result.isBlank(), "Empty adoc should yield a blank string")
     }
 
-    private fun writeMetadata(type: String, source: String, version: String): File {
-        val node = mapper.createObjectNode().apply {
-            put("source", source)
-            put("type", type)
-            put("sessions", 1)
-            put("generatedAt", "2026-08-11T10:00:00Z")
-            put("model", "convention-over-configuration")
-            put("version", version)
-            putArray("dependencies").apply {
-                add("manhattan")
-                add("queens")
+    private fun writeMetadata(
+        type: String,
+        source: String,
+        version: String,
+    ): File {
+        val node =
+            mapper.createObjectNode().apply {
+                put("source", source)
+                put("type", type)
+                put("sessions", 1)
+                put("generatedAt", "2026-08-11T10:00:00Z")
+                put("model", "convention-over-configuration")
+                put("version", version)
+                putArray("dependencies").apply {
+                    add("manhattan")
+                    add("queens")
+                }
             }
-        }
         return File(tempDir, "metadata.json").also { mapper.writeValue(it, node) }
     }
 }

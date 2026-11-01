@@ -6,20 +6,20 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 class CapsuleScriptReaderTest {
-
     @TempDir
     lateinit var tempDir: File
 
     @Test
     fun `read should parse deck name from header`() {
-        val scriptFile = writeScript(
-            """
-            === CAPSULE SCRIPT : cours ===
+        val scriptFile =
+            writeScript(
+                """
+                === CAPSULE SCRIPT : cours ===
 
-            --- SLIDE 1 : Intro ---
-            Bienvenue dans le contenu.
-            """.trimIndent()
-        )
+                --- SLIDE 1 : Intro ---
+                Bienvenue dans le contenu.
+                """.trimIndent(),
+            )
 
         val parsed = CapsuleScriptReader.read(scriptFile)
 
@@ -28,17 +28,18 @@ class CapsuleScriptReaderTest {
 
     @Test
     fun `read should parse all slide segments`() {
-        val scriptFile = writeScript(
-            """
-            === CAPSULE SCRIPT : deck ===
+        val scriptFile =
+            writeScript(
+                """
+                === CAPSULE SCRIPT : deck ===
 
-            --- SLIDE 1 : Intro ---
-            Welcome.
+                --- SLIDE 1 : Intro ---
+                Welcome.
 
-            --- SLIDE 2 : Topic ---
-            Details here.
-            """.trimIndent()
-        )
+                --- SLIDE 2 : Topic ---
+                Details here.
+                """.trimIndent(),
+            )
 
         val parsed = CapsuleScriptReader.read(scriptFile)
 
@@ -53,14 +54,15 @@ class CapsuleScriptReaderTest {
 
     @Test
     fun `read should default type to HTML without markers`() {
-        val scriptFile = writeScript(
-            """
-            === CAPSULE SCRIPT : simple ===
+        val scriptFile =
+            writeScript(
+                """
+                === CAPSULE SCRIPT : simple ===
 
-            --- SLIDE 1 : Slide simple ---
-            Juste du texte.
-            """.trimIndent()
-        )
+                --- SLIDE 1 : Slide simple ---
+                Juste du texte.
+                """.trimIndent(),
+            )
 
         val parsed = CapsuleScriptReader.read(scriptFile)
 
@@ -70,20 +72,21 @@ class CapsuleScriptReaderTest {
 
     @Test
     fun `read should extract MANIM type and manimScene from title marker`() {
-        val scriptFile = writeScript(
-            """
-            === CAPSULE SCRIPT : cours ===
+        val scriptFile =
+            writeScript(
+                """
+                === CAPSULE SCRIPT : cours ===
 
-            --- SLIDE 1 : Intro ---
-            Bienvenue.
+                --- SLIDE 1 : Intro ---
+                Bienvenue.
 
-            --- SLIDE 2 : Anim [manim:MoveSquare] ---
-            Voici l'animation.
+                --- SLIDE 2 : Anim [manim:MoveSquare] ---
+                Voici l'animation.
 
-            --- SLIDE 3 : Fin [html] ---
-            Conclusion.
-            """.trimIndent()
-        )
+                --- SLIDE 3 : Fin [html] ---
+                Conclusion.
+                """.trimIndent(),
+            )
 
         val parsed = CapsuleScriptReader.read(scriptFile)
 
@@ -99,15 +102,16 @@ class CapsuleScriptReaderTest {
 
     @Test
     fun `read should preserve multi-line speaker notes`() {
-        val scriptFile = writeScript(
-            """
-            === CAPSULE SCRIPT : deck ===
+        val scriptFile =
+            writeScript(
+                """
+                === CAPSULE SCRIPT : deck ===
 
-            --- SLIDE 1 : Intro ---
-            Line one.
-            Line two.
-            """.trimIndent()
-        )
+                --- SLIDE 1 : Intro ---
+                Line one.
+                Line two.
+                """.trimIndent(),
+            )
 
         val parsed = CapsuleScriptReader.read(scriptFile)
 
@@ -121,7 +125,7 @@ class CapsuleScriptReaderTest {
             """
             --- SLIDE 1 : Intro ---
             Note.
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         val parsed = CapsuleScriptReader.read(scriptFile)
@@ -131,11 +135,12 @@ class CapsuleScriptReaderTest {
 
     @Test
     fun `read should return empty segments when no slide markers`() {
-        val scriptFile = writeScript(
-            """
-            === CAPSULE SCRIPT : empty ===
-            """.trimIndent()
-        )
+        val scriptFile =
+            writeScript(
+                """
+                === CAPSULE SCRIPT : empty ===
+                """.trimIndent(),
+            )
 
         val parsed = CapsuleScriptReader.read(scriptFile)
 
@@ -145,17 +150,18 @@ class CapsuleScriptReaderTest {
 
     @Test
     fun `read should skip blank lines between segments without adding to notes`() {
-        val scriptFile = writeScript(
-            """
-            === CAPSULE SCRIPT : deck ===
+        val scriptFile =
+            writeScript(
+                """
+                === CAPSULE SCRIPT : deck ===
 
-            --- SLIDE 1 : Intro ---
-            Welcome.
+                --- SLIDE 1 : Intro ---
+                Welcome.
 
-            --- SLIDE 2 : Topic ---
-            Details.
-            """.trimIndent()
-        )
+                --- SLIDE 2 : Topic ---
+                Details.
+                """.trimIndent(),
+            )
 
         val parsed = CapsuleScriptReader.read(scriptFile)
 

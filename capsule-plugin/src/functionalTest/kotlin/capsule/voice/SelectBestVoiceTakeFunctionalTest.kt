@@ -1,11 +1,11 @@
 package capsule.voice
 
-import java.io.File
-import kotlin.test.Test
-import kotlin.test.assertTrue
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Assumptions.assumeFalse
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 /**
  * Functional tests for `selectBestVoiceTake` (CAP-QC-VOICE US-3).
@@ -15,7 +15,6 @@ import org.junit.jupiter.api.io.TempDir
  * the ASR binary is absent (`assumeFalse`).
  */
 class SelectBestVoiceTakeFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -30,7 +29,7 @@ class SelectBestVoiceTakeFunctionalTest {
                 id('education.cccp.capsule')
             }
             $extraConfig
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -42,7 +41,7 @@ class SelectBestVoiceTakeFunctionalTest {
 
             --- SLIDE 1 : Intro ---
             bonjour le monde
-            """.trimIndent()
+            """.trimIndent(),
         )
         val deckDir = capsuleDir.resolve("demo").also { it.mkdirs() }
         deckDir.resolve("slide-01-1.mp3").writeText("candidate one")
@@ -57,32 +56,36 @@ class SelectBestVoiceTakeFunctionalTest {
     @Test
     fun `task is registered with verification group`() {
         setupBuild()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("tasks", "--group", "verification")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("tasks", "--group", "verification")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(
             result.output.contains("selectBestVoiceTake"),
-            "Expected selectBestVoiceTake in verification group, got: ${result.output}"
+            "Expected selectBestVoiceTake in verification group, got: ${result.output}",
         )
     }
 
     @Test
     fun `disabled by default is a no-op skip`() {
         setupBuild()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("selectBestVoiceTake")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("selectBestVoiceTake")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(
             result.output.contains("voice.selectBestTake=false"),
-            "Expected a skip log when disabled by default, got: ${result.output}"
+            "Expected a skip log when disabled by default, got: ${result.output}",
         )
     }
 
@@ -93,18 +96,20 @@ class SelectBestVoiceTakeFunctionalTest {
             capsule {
                 voiceSelectBestTake = true
             }
-            """.trimIndent()
+            """.trimIndent(),
         )
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("selectBestVoiceTake")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("selectBestVoiceTake")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(
             result.output.contains("no candidate take found"),
-            "Expected a graceful skip when no candidate exists, got: ${result.output}"
+            "Expected a graceful skip when no candidate exists, got: ${result.output}",
         )
     }
 
@@ -119,24 +124,26 @@ class SelectBestVoiceTakeFunctionalTest {
                 voiceSelectBestTake = true
                 voiceAsrExecutablePath = "whisper"
             }
-            """.trimIndent()
+            """.trimIndent(),
         )
         writeScriptAndCandidates()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("selectBestVoiceTake")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("selectBestVoiceTake")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(
             result.output.contains("degraded") || result.output.contains("CAPSULE VOICE SELECT"),
-            "Expected a degraded warning when the ASR is absent, got: ${result.output}"
+            "Expected a degraded warning when the ASR is absent, got: ${result.output}",
         )
         assertTrue(
             projectDir.resolve("build/capsule/voice-selection.json").isFile,
-            "Expected the voice selection report to be written"
+            "Expected the voice selection report to be written",
         )
     }
 }

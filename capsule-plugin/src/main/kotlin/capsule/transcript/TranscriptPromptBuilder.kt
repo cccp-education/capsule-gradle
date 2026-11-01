@@ -14,26 +14,26 @@ package capsule.transcript
  * no I/O, no LLM call).
  */
 object TranscriptPromptBuilder {
-
     /**
      * Build the enrichment prompt for [plan].
      *
      * @param plan the transcript plan (deck name, segments, language).
      * @return the prompt string sent to the LLM for enrichment.
      */
-    fun buildEnhancePrompt(plan: TranscriptPlan): String = buildString {
-        appendLine("You are a pedagogical editor for a training capsule transcript.")
-        appendLine()
-        appendLine("Enrich the AsciiDoc article for deck '${plan.deckName}' in language '${plan.language}'.")
-        appendLine()
-        appendLine("Template article (keep the structure, enrich the content):")
-        appendLine(TranscriptBuilder.build(plan))
-        appendLine()
-        appendLine("Rules:")
-        appendLine("- Keep the '== ' level-2 headings (one per slide).")
-        appendLine("- Preserve the speaker note content under each heading.")
-        appendLine("- Add pedagogical transitions between sections.")
-        appendLine("- Add an engaging introductory paragraph and a concluding paragraph.")
-        appendLine("- Respond with the AsciiDoc article only.")
-    }
+    fun buildEnhancePrompt(plan: TranscriptPlan): String =
+        buildString {
+            appendLine("You are a pedagogical editor for a training capsule transcript.")
+            appendLine()
+            appendLine("Enrich the AsciiDoc article for deck '${plan.deckName}' in language '${plan.language}'.")
+            appendLine()
+            appendLine("Template article (keep the structure, enrich the content):")
+            appendLine(TranscriptBuilder.build(plan))
+            appendLine()
+            appendLine("Rules:")
+            appendLine("- Keep the '== ' level-2 headings (one per slide).")
+            appendLine("- Preserve the speaker note content under each heading.")
+            appendLine("- Add pedagogical transitions between sections.")
+            appendLine("- Add an engaging introductory paragraph and a concluding paragraph.")
+            appendLine("- Respond with the AsciiDoc article only.")
+        }
 }

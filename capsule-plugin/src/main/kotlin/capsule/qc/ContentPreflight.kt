@@ -27,7 +27,10 @@ data class PreflightFinding(
  * Ported from `prepa_electricite_complet/qc_script.py` (`INTERDIT`), where a
  * curated list of phrasings is rejected before any metered TTS call.
  */
-data class ForbiddenForm(val pattern: Regex, val reason: String)
+data class ForbiddenForm(
+    val pattern: Regex,
+    val reason: String,
+)
 
 /**
  * Rules for [ContentPreflight].
@@ -43,9 +46,10 @@ data class PreflightRules(
         const val DEFAULT_MAX_NOTE_CHARS: Int = 500
 
         /** Generic default: markdown emphasis left in the text that is spoken. */
-        val DEFAULT_FORBIDDEN: List<ForbiddenForm> = listOf(
-            ForbiddenForm(Regex("""\*\*"""), "markdown emphasis in the narrated text"),
-        )
+        val DEFAULT_FORBIDDEN: List<ForbiddenForm> =
+            listOf(
+                ForbiddenForm(Regex("""\*\*"""), "markdown emphasis in the narrated text"),
+            )
     }
 }
 
@@ -62,12 +66,14 @@ data class PreflightRules(
  * Pure — no I/O, no Gradle.
  */
 object ContentPreflight {
-
     /**
      * Checks [slides] against [rules] and returns every finding, in slide order.
      * An empty list means the scripts are clean.
      */
-    fun check(slides: List<SlideSegment>, rules: PreflightRules = PreflightRules()): List<PreflightFinding> {
+    fun check(
+        slides: List<SlideSegment>,
+        rules: PreflightRules = PreflightRules(),
+    ): List<PreflightFinding> {
         val findings = mutableListOf<PreflightFinding>()
         val firstSeen = LinkedHashMap<String, Int>()
 
@@ -81,7 +87,7 @@ object ContentPreflight {
                         slide.index,
                         "long-note",
                         "speaker note is ${note.length} chars (> ${rules.maxNoteChars})",
-                    )
+                    ),
                 )
             }
 
@@ -96,7 +102,7 @@ object ContentPreflight {
                         slide.index,
                         "duplicate-note",
                         "speaker note duplicates slide $first",
-                    )
+                    ),
                 )
             }
 
@@ -109,7 +115,7 @@ object ContentPreflight {
                             slide.index,
                             "forbidden-form",
                             "${form.reason} (matched '${match.value.take(40)}')",
-                        )
+                        ),
                     )
                 }
             }

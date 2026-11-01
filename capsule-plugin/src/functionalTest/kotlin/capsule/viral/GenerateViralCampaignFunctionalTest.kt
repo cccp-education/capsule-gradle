@@ -22,22 +22,24 @@ import kotlin.test.assertTrue
  * LLM pool, zero ffmpeg/node.
  */
 class GenerateViralCampaignFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
     private fun setupBuild(extraConfig: String = "") {
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             $extraConfig
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     private fun writeStoryboard() {
-        projectDir.resolve("storyboard.adoc").writeText("""
+        projectDir.resolve("storyboard.adoc").writeText(
+            """
             = Storyboard — Devenir développeur professionnel
             :platform: TIKTOK
             :language: fr
@@ -76,11 +78,13 @@ class GenerateViralCampaignFunctionalTest {
 
             Duration: 7.0s
             Render: HTML
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     private fun writeContextualStoryboard() {
-        projectDir.resolve("storyboard.adoc").writeText("""
+        projectDir.resolve("storyboard.adoc").writeText(
+            """
             = Storyboard — Créer son site perso avec bakery + opencode
             :platform: TIKTOK
             :language: fr
@@ -137,36 +141,41 @@ class GenerateViralCampaignFunctionalTest {
             Duration: 7.0s
             Render: HTML
             Transition: fade
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Test
     fun `generateViralCampaign task is registered in the generate group`() {
         setupBuild()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("tasks", "--group", "generate")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("tasks", "--group", "generate")
+                .withProjectDir(projectDir)
+                .build()
         assertTrue(
             result.output.contains("generateViralCampaign"),
-            "Expected generateViralCampaign in generate group, got: ${result.output}"
+            "Expected generateViralCampaign in generate group, got: ${result.output}",
         )
     }
 
     @Test
     fun `disabled by default is a no-op skip`() {
         setupBuild()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("generateViralCampaign")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("generateViralCampaign")
+                .withProjectDir(projectDir)
+                .build()
         assertTrue(
             result.output.contains("skipped") || result.output.contains("viralEnabled=false"),
-            "Expected skip log when viralEnabled defaults to false, got: ${result.output}"
+            "Expected skip log when viralEnabled defaults to false, got: ${result.output}",
         )
     }
 
@@ -174,20 +183,21 @@ class GenerateViralCampaignFunctionalTest {
     fun `enabled with a validated storyboard writes the campaign manifest`() {
         setupBuild()
         writeStoryboard()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(
-                "generateViralCampaign",
-                "-Pcapsule.viral.enabled=true",
-                "-Pcapsule.viral.storyboardFile=storyboard.adoc",
-                "-Pcapsule.viral.hook=Et si 30 secondes suffisaient ?",
-                "-Pcapsule.viral.cta=Découvrez Content",
-                "-Pcapsule.viral.languages=fr,en",
-                "-Pcapsule.viral.platforms=TIKTOK,YOUTUBE_SHORT",
-            )
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(
+                    "generateViralCampaign",
+                    "-Pcapsule.viral.enabled=true",
+                    "-Pcapsule.viral.storyboardFile=storyboard.adoc",
+                    "-Pcapsule.viral.hook=Et si 30 secondes suffisaient ?",
+                    "-Pcapsule.viral.cta=Découvrez Content",
+                    "-Pcapsule.viral.languages=fr,en",
+                    "-Pcapsule.viral.platforms=TIKTOK,YOUTUBE_SHORT",
+                ).withProjectDir(projectDir)
+                .build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":generateViralCampaign")?.outcome)
 
@@ -209,18 +219,19 @@ class GenerateViralCampaignFunctionalTest {
     fun `enabled with a contextualised storyboard keeps the context in the output document`() {
         setupBuild()
         writeContextualStoryboard()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(
-                "generateViralCampaign",
-                "-Pcapsule.viral.enabled=true",
-                "-Pcapsule.viral.storyboardFile=storyboard.adoc",
-                "-Pcapsule.viral.hook=Un site perso, sans écrire de HTML",
-                "-Pcapsule.viral.cta=bakery-gradle + opencode, OSS",
-            )
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(
+                    "generateViralCampaign",
+                    "-Pcapsule.viral.enabled=true",
+                    "-Pcapsule.viral.storyboardFile=storyboard.adoc",
+                    "-Pcapsule.viral.hook=Un site perso, sans écrire de HTML",
+                    "-Pcapsule.viral.cta=bakery-gradle + opencode, OSS",
+                ).withProjectDir(projectDir)
+                .build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":generateViralCampaign")?.outcome)
 
@@ -237,17 +248,18 @@ class GenerateViralCampaignFunctionalTest {
     fun `enabled writes a capturable portrait deck`() {
         setupBuild()
         writeContextualStoryboard()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(
-                "generateViralCampaign",
-                "-Pcapsule.viral.enabled=true",
-                "-Pcapsule.viral.storyboardFile=storyboard.adoc",
-                "-Pcapsule.viral.hook=Un site perso, sans écrire de HTML",
-            )
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(
+                    "generateViralCampaign",
+                    "-Pcapsule.viral.enabled=true",
+                    "-Pcapsule.viral.storyboardFile=storyboard.adoc",
+                    "-Pcapsule.viral.hook=Un site perso, sans écrire de HTML",
+                ).withProjectDir(projectDir)
+                .build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":generateViralCampaign")?.outcome)
 
@@ -266,38 +278,40 @@ class GenerateViralCampaignFunctionalTest {
     @Test
     fun `enabled without a storyboard fails the editorial gate`() {
         setupBuild()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(
-                "generateViralCampaign",
-                "-Pcapsule.viral.enabled=true",
-                "-Pcapsule.viral.hook=Et si 30 secondes suffisaient ?",
-            )
-            .withProjectDir(projectDir)
-            .buildAndFail()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(
+                    "generateViralCampaign",
+                    "-Pcapsule.viral.enabled=true",
+                    "-Pcapsule.viral.hook=Et si 30 secondes suffisaient ?",
+                ).withProjectDir(projectDir)
+                .buildAndFail()
 
         assertTrue(
             result.output.contains("no validated storyboard") || result.output.contains("storyboardRequired"),
-            "Expected the editorial gate error, got: ${result.output}"
+            "Expected the editorial gate error, got: ${result.output}",
         )
     }
 
     @Test
     fun `enabled without storyboard but gate disabled synthesizes a storyboard from the hook`() {
         setupBuild()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(
-                "generateViralCampaign",
-                "-Pcapsule.viral.enabled=true",
-                "-Pcapsule.viral.storyboardRequired=false",
-                "-Pcapsule.viral.hook=Et si 30 secondes suffisaient ?",
-                "-Pcapsule.viral.cta=Découvrez Content",
-            )
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(
+                    "generateViralCampaign",
+                    "-Pcapsule.viral.enabled=true",
+                    "-Pcapsule.viral.storyboardRequired=false",
+                    "-Pcapsule.viral.hook=Et si 30 secondes suffisaient ?",
+                    "-Pcapsule.viral.cta=Découvrez Content",
+                ).withProjectDir(projectDir)
+                .build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":generateViralCampaign")?.outcome)
         val manifest = projectDir.resolve("build/capsule/viral/viral-campaign.json")

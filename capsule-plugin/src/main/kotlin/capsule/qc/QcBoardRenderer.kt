@@ -18,7 +18,6 @@ import javax.imageio.ImageIO
  * on a missing image.
  */
 object QcBoardRenderer {
-
     private const val PADDING = 16
     private const val HEADER = 56
     private const val CAPTION_LINES = 2
@@ -99,10 +98,15 @@ object QcBoardRenderer {
         return outputFile
     }
 
-    private fun clip(text: String, max: Int): String =
-        if (text.length <= max) text else text.take(max - 1) + "…"
+    private fun clip(
+        text: String,
+        max: Int,
+    ): String = if (text.length <= max) text else text.take(max - 1) + "…"
 
-    private fun wrap(text: String, max: Int): List<String> {
+    private fun wrap(
+        text: String,
+        max: Int,
+    ): List<String> {
         if (text.isEmpty()) return emptyList()
         val words = text.split(' ')
         val lines = mutableListOf<String>()

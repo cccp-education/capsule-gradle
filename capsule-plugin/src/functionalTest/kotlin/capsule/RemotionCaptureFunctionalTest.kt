@@ -1,12 +1,12 @@
 package capsule
 
-import java.io.File
-import kotlin.test.Test
-import kotlin.test.assertTrue
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 /**
  * Functional tests for the Remotion capture strategy (CAP-ANIM US-2).
@@ -26,7 +26,6 @@ import org.junit.jupiter.api.io.TempDir
  * a test runner cannot assume.
  */
 class RemotionCaptureFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -35,24 +34,29 @@ class RemotionCaptureFunctionalTest {
 
     private fun setupBuild(extraConfig: String = "") {
         settingsFile.writeText("")
-        buildFile.writeText("""
+        buildFile.writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             $extraConfig
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     private fun writeScriptAndDeck() {
         val scriptDir = projectDir.resolve("build/capsule").also { it.mkdirs() }
-        scriptDir.resolve("test-script.txt").writeText("""
+        scriptDir.resolve("test-script.txt").writeText(
+            """
             === CAPSULE SCRIPT : test ===
             --- SLIDE 1 : Title ---
             Note content for the remotion functional test.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val decksDir = projectDir.resolve("build/docs/asciidocRevealJs").also { it.mkdirs() }
-        decksDir.resolve("test-deck.html").writeText("""
+        decksDir.resolve("test-deck.html").writeText(
+            """
             <html><body>
             <div class="reveal">
               <div class="slides">
@@ -60,27 +64,32 @@ class RemotionCaptureFunctionalTest {
               </div>
             </div>
             </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Test
     fun `strategy REMOTION with NoOp fallback produces WebM when node is unavailable`() {
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
                 captureStrategy("remotion")
                 remotionNodeExecutablePath = "this-node-binary-does-not-exist-functional-remotion"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         writeScriptAndDeck()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("generateCapsuleVideo")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("generateCapsuleVideo")
+                .withProjectDir(projectDir)
+                .build()
 
         val capFile = projectDir.resolve("build/capsules/test.webm")
         assertTrue(capFile.exists(), "Video must be produced via NoOp fallback when remotion/node is unavailable")
@@ -89,7 +98,8 @@ class RemotionCaptureFunctionalTest {
 
     @Test
     fun `strategy REMOTION with strictMode fails when node is unavailable`() {
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
@@ -99,21 +109,24 @@ class RemotionCaptureFunctionalTest {
                 manimExecutablePath = "noop"
                 ffmpegExecutablePath = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         writeScriptAndDeck()
 
-        val exception = assertThrows<UnexpectedBuildFailure> {
-            GradleRunner.create()
-                .forwardOutput()
-                .withPluginClasspath()
-                .withArguments("generateCapsuleVideo")
-                .withProjectDir(projectDir)
-                .build()
-        }
+        val exception =
+            assertThrows<UnexpectedBuildFailure> {
+                GradleRunner
+                    .create()
+                    .forwardOutput()
+                    .withPluginClasspath()
+                    .withArguments("generateCapsuleVideo")
+                    .withProjectDir(projectDir)
+                    .build()
+            }
 
         assertTrue(
             exception.message!!.contains("remotion is not available"),
-            "Expected strict mode to reject remotion when node is unavailable, got: ${exception.message}"
+            "Expected strict mode to reject remotion when node is unavailable, got: ${exception.message}",
         )
     }
 }

@@ -2,12 +2,12 @@ package capsule.adapter.revealjs
 
 import capsule.CaptureStrategy
 import capsule.PlaywrightCapture
-import video.kernel.FileVisualSource
-import video.kernel.VideoRenderRequest
-import video.kernel.segment.VideoSegment
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import video.kernel.FileVisualSource
+import video.kernel.VideoRenderRequest
+import video.kernel.segment.VideoSegment
 import java.io.File
 import java.nio.file.Path
 
@@ -19,40 +19,42 @@ import java.nio.file.Path
  * non-existent path so the concat step degrades without touching the system.
  */
 class RevealJsEngineAdapterTest {
-
     @TempDir
     lateinit var tempDir: Path
 
-    private val segments = listOf(
-        VideoSegment(index = 1, title = "One", narration = "one."),
-        VideoSegment(index = 2, title = "Two", narration = "two."),
-    )
+    private val segments =
+        listOf(
+            VideoSegment(index = 1, title = "One", narration = "one."),
+            VideoSegment(index = 2, title = "Two", narration = "two."),
+        )
 
-    private fun settings() = RevealJsCaptureSettings(
-        playwrightTimeout = 1_000.0,
-        defaultSlideDuration = 1.0,
-        configuredStrategy = CaptureStrategy.SCREENSHOT,
-        viralEnabled = false,
-        strict = false,
-        ffmpegPath = "/nonexistent/ffmpeg",
-        parallelThreads = 1,
-        previewOnly = false,
-        chromiumPath = "",
-        remotionProjectDir = tempDir.resolve("remotion").toFile(),
-        remotionNodePath = "node",
-        remotionConcurrency = 1,
-        remotionFps = 30,
-        manimSources = emptyList(),
-    )
+    private fun settings() =
+        RevealJsCaptureSettings(
+            playwrightTimeout = 1_000.0,
+            defaultSlideDuration = 1.0,
+            configuredStrategy = CaptureStrategy.SCREENSHOT,
+            viralEnabled = false,
+            strict = false,
+            ffmpegPath = "/nonexistent/ffmpeg",
+            parallelThreads = 1,
+            previewOnly = false,
+            chromiumPath = "",
+            remotionProjectDir = tempDir.resolve("remotion").toFile(),
+            remotionNodePath = "node",
+            remotionConcurrency = 1,
+            remotionFps = 30,
+            manimSources = emptyList(),
+        )
 
-    private fun plan(parallel: Boolean) = RevealJsRenderPlan(
-        segments = segments,
-        segmentDurations = listOf(1.0, 1.0),
-        viewportWidth = 1920,
-        viewportHeight = 1080,
-        parallel = parallel,
-        captureTimeoutMillis = 5_000,
-    )
+    private fun plan(parallel: Boolean) =
+        RevealJsRenderPlan(
+            segments = segments,
+            segmentDurations = listOf(1.0, 1.0),
+            viewportWidth = 1920,
+            viewportHeight = 1080,
+            parallel = parallel,
+            captureTimeoutMillis = 5_000,
+        )
 
     private fun deckFile(): File =
         tempDir.resolve("deck.html").toFile().apply {
@@ -62,25 +64,30 @@ class RevealJsEngineAdapterTest {
                 <section data-capsule-slide="1"><h1>One</h1></section>
                 <section data-capsule-slide="2"><h1>Two</h1></section>
                 </div></div></body></html>
-                """.trimIndent()
+                """.trimIndent(),
             )
         }
 
-    private fun request(parallelOutputDir: String) = VideoRenderRequest(
-        name = "demo",
-        visual = FileVisualSource(deckFile()),
-        outputDir = tempDir.resolve(parallelOutputDir).toFile(),
-        timeoutMillis = 5_000,
-    )
+    private fun request(parallelOutputDir: String) =
+        VideoRenderRequest(
+            name = "demo",
+            visual = FileVisualSource(deckFile()),
+            outputDir = tempDir.resolve(parallelOutputDir).toFile(),
+            timeoutMillis = 5_000,
+        )
 
     private open class FakeCapture(
         private val outputName: String = "capsule.webm",
         private val failWhenPathContains: String? = null,
     ) : PlaywrightCapture {
         override fun isAvailable(): Boolean = true
+
         override fun name(): String = "fake-capture"
+
         override fun outputExtension(): String = "webm"
+
         override fun close() {}
+
         override fun capture(
             deckHtmlPath: String,
             outputDir: File,
@@ -116,11 +123,12 @@ class RevealJsEngineAdapterTest {
 
     @Test
     fun `render parallel reports a failing unit without aborting the render`() {
-        val adapter = RevealJsEngineAdapter(
-            settings(),
-            plan(true),
-            captureProvider = { FakeCapture(failWhenPathContains = "slide-02") },
-        )
+        val adapter =
+            RevealJsEngineAdapter(
+                settings(),
+                plan(true),
+                captureProvider = { FakeCapture(failWhenPathContains = "slide-02") },
+            )
 
         val result = adapter.render(request("out-parallel"))
 
@@ -130,7 +138,7 @@ class RevealJsEngineAdapterTest {
     @Test
     fun `concat with no input returns false`() {
         assertThat(
-            RevealJsEngineAdapter.concat(emptyList(), tempDir.resolve("out.webm").toFile())
+            RevealJsEngineAdapter.concat(emptyList(), tempDir.resolve("out.webm").toFile()),
         ).isFalse()
     }
 

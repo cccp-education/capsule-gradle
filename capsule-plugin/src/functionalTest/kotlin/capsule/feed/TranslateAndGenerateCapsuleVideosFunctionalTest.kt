@@ -1,13 +1,12 @@
 package capsule.feed
 
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.GradleRunner
-import org.junit.jupiter.api.io.TempDir
 
 class TranslateAndGenerateCapsuleVideosFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -16,7 +15,8 @@ class TranslateAndGenerateCapsuleVideosFunctionalTest {
 
     private fun setupBuild() {
         settingsFile.writeText("")
-        buildFile.writeText("""
+        buildFile.writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -26,19 +26,22 @@ class TranslateAndGenerateCapsuleVideosFunctionalTest {
             tasks.register('translateDeck') {
                 doLast { logger.lifecycle('FAKE translateDeck') }
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Test
     fun `translateAndGenerateCapsuleVideos task is registered with the capsule group`() {
         setupBuild()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("tasks", "--all")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("tasks", "--all")
+                .withProjectDir(projectDir)
+                .build()
 
         val output = result.output
         assertTrue(output.contains("translateAndGenerateCapsuleVideos"))
@@ -49,12 +52,14 @@ class TranslateAndGenerateCapsuleVideosFunctionalTest {
     fun `translateAndGenerateCapsuleVideos description mentions both sub-tasks`() {
         setupBuild()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("tasks", "--all")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("tasks", "--all")
+                .withProjectDir(projectDir)
+                .build()
 
         val output = result.output
         // The composite task description must mention both sub-tasks.
@@ -66,12 +71,14 @@ class TranslateAndGenerateCapsuleVideosFunctionalTest {
     fun `translateAndGenerateCapsuleVideos depends on translateAndExtractSpeakerNotes and generateCapsuleVideoAllLanguages`() {
         setupBuild()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("translateAndGenerateCapsuleVideos", "--dry-run")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("translateAndGenerateCapsuleVideos", "--dry-run")
+                .withProjectDir(projectDir)
+                .build()
 
         val output = result.output
         assertTrue(output.contains("translateAndExtractSpeakerNotes"))

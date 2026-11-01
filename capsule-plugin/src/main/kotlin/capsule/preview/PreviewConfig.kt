@@ -22,5 +22,5 @@ package capsule.preview
  *        (default `false` — backward compat, opt-in).
  */
 data class PreviewConfig(
-    val enabled: Boolean = false
+    val enabled: Boolean = false,
 )

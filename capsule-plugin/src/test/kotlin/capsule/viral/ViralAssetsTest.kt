@@ -10,20 +10,21 @@ import kotlin.test.assertTrue
  * subtitles (CAP-VIRAL US-12).
  */
 class ViralAssetsTest {
-
-    private fun storyboard() = ViralStoryboard(
-        message = "Devenir développeur",
-        angle = "Le métier en 30 s",
-        beats = listOf(
-            StoryboardBeat("hook", "Et si 30 secondes suffisaient ?", 3.0),
-            StoryboardBeat("development", "Les 4 activités types", 10.0),
-            StoryboardBeat("development", "Le rôle du développeur", 10.0),
-            StoryboardBeat("cta", "Découvrez Content", 7.0),
-        ),
-        platform = ViralPlatform.YOUTUBE_SHORT,
-        language = "fr",
-        targetDurationSeconds = 30,
-    )
+    private fun storyboard() =
+        ViralStoryboard(
+            message = "Devenir développeur",
+            angle = "Le métier en 30 s",
+            beats =
+                listOf(
+                    StoryboardBeat("hook", "Et si 30 secondes suffisaient ?", 3.0),
+                    StoryboardBeat("development", "Les 4 activités types", 10.0),
+                    StoryboardBeat("development", "Le rôle du développeur", 10.0),
+                    StoryboardBeat("cta", "Découvrez Content", 7.0),
+                ),
+            platform = ViralPlatform.YOUTUBE_SHORT,
+            language = "fr",
+            targetDurationSeconds = 30,
+        )
 
     // ─── US-11 thumbnail ──────────────────────────────────────────────
 
@@ -38,12 +39,14 @@ class ViralAssetsTest {
 
     @Test
     fun `thumbnail plan falls back to the message when no hook beat`() {
-        val sb = storyboard().copy(
-            beats = listOf(
-                StoryboardBeat("development", "Dev", 25.0),
-                StoryboardBeat("cta", "CTA", 5.0),
-            ),
-        )
+        val sb =
+            storyboard().copy(
+                beats =
+                    listOf(
+                        StoryboardBeat("development", "Dev", 25.0),
+                        StoryboardBeat("cta", "CTA", 5.0),
+                    ),
+            )
         assertEquals("Devenir développeur", ViralThumbnailPlanner.plan(sb).overlayText)
     }
 
@@ -58,11 +61,12 @@ class ViralAssetsTest {
 
     @Test
     fun `karaoke text emits one k override per word`() {
-        val words = listOf(
-            KaraokeWord("Et", 0.0, 0.2),
-            KaraokeWord("si", 0.2, 0.4),
-            KaraokeWord("30", 0.4, 0.8),
-        )
+        val words =
+            listOf(
+                KaraokeWord("Et", 0.0, 0.2),
+                KaraokeWord("si", 0.2, 0.4),
+                KaraokeWord("30", 0.4, 0.8),
+            )
         val text = KaraokeSubtitleBuilder.buildKaraokeText(words)
         assertEquals("{\\k20}Et {\\k20}si {\\k40}30", text)
     }

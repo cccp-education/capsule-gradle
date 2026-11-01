@@ -10,12 +10,19 @@ enum class OpKind { MATCH, SUBSTITUTE, DELETE, INSERT }
  * @param reference  the reference word (null for an [OpKind.INSERT]).
  * @param hypothesis the hypothesis word (null for an [OpKind.DELETE]).
  */
-data class AlignmentOp(val kind: OpKind, val reference: String?, val hypothesis: String?)
+data class AlignmentOp(
+    val kind: OpKind,
+    val reference: String?,
+    val hypothesis: String?,
+)
 
 /**
  * A word-level edit alignment: the [distance] plus the ordered [operations].
  */
-data class Alignment(val distance: Int, val operations: List<AlignmentOp>)
+data class Alignment(
+    val distance: Int,
+    val operations: List<AlignmentOp>,
+)
 
 /**
  * Word-level edit-distance aligner (CAP-QC-VOICE US-1).
@@ -27,14 +34,16 @@ data class Alignment(val distance: Int, val operations: List<AlignmentOp>)
  * Pure — no I/O.
  */
 object WordAligner {
-
     /**
      * Aligns [reference] with [hypothesis].
      *
      * @return the [Alignment] (distance + ordered operations); an empty pair
      *         yields distance 0 and no operation.
      */
-    fun align(reference: List<String>, hypothesis: List<String>): Alignment {
+    fun align(
+        reference: List<String>,
+        hypothesis: List<String>,
+    ): Alignment {
         val n = reference.size
         val m = hypothesis.size
         val d = Array(n + 1) { IntArray(m + 1) }
@@ -51,9 +60,12 @@ object WordAligner {
         var i = n
         var j = m
         while (i > 0 || j > 0) {
-            val substitution = if (i > 0 && j > 0) {
-                d[i - 1][j - 1] + if (reference[i - 1] == hypothesis[j - 1]) 0 else 1
-            } else Int.MAX_VALUE
+            val substitution =
+                if (i > 0 && j > 0) {
+                    d[i - 1][j - 1] + if (reference[i - 1] == hypothesis[j - 1]) 0 else 1
+                } else {
+                    Int.MAX_VALUE
+                }
 
             when {
                 i > 0 && j > 0 && d[i][j] == substitution -> {

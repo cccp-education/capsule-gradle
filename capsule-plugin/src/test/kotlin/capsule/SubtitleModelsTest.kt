@@ -1,10 +1,10 @@
 package capsule
 
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
 
 class SubtitleModelsTest {
-
     @Test
     fun `SubtitleFormat enum has SRT and VTT values`() {
         assertEquals(2, SubtitleFormat.entries.size)
@@ -40,12 +40,13 @@ class SubtitleModelsTest {
 
     @Test
     fun `SubtitleEntry holds index startTime endTime and text`() {
-        val entry = SubtitleEntry(
-            index = 1,
-            startTime = 0.0,
-            endTime = 5.0,
-            text = "Bonjour le monde"
-        )
+        val entry =
+            SubtitleEntry(
+                index = 1,
+                startTime = 0.0,
+                endTime = 5.0,
+                text = "Bonjour le monde",
+            )
         assertEquals(1, entry.index)
         assertEquals(0.0, entry.startTime)
         assertEquals(5.0, entry.endTime)
@@ -74,10 +75,12 @@ class SubtitleModelsTest {
 
     @Test
     fun `SubtitleGenerator interface defines generate and format`() {
-        val generator = object : SubtitleGenerator {
-            override fun generate(entries: List<SubtitleEntry>): String = "mock"
-            override fun format(): SubtitleFormat = SubtitleFormat.SRT
-        }
+        val generator =
+            object : SubtitleGenerator {
+                override fun generate(entries: List<SubtitleEntry>): String = "mock"
+
+                override fun format(): SubtitleFormat = SubtitleFormat.SRT
+            }
         assertEquals("mock", generator.generate(emptyList()))
         assertEquals(SubtitleFormat.SRT, generator.format())
     }

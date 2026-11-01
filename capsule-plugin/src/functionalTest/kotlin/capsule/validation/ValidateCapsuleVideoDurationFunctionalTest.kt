@@ -1,11 +1,10 @@
 package capsule.validation
 
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.GradleRunner
-import org.gradle.testkit.runner.TaskOutcome
-import org.junit.jupiter.api.io.TempDir
 
 /**
  * Functional tests for `validateCapsuleVideoDuration` (CAP-CR3-1 US-2).
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.io.TempDir
  * the functional test environment).
  */
 class ValidateCapsuleVideoDurationFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -26,110 +24,128 @@ class ValidateCapsuleVideoDurationFunctionalTest {
 
     private fun setupBuild(extraConfig: String = "") {
         settingsFile.writeText("")
-        buildFile.writeText("""
+        buildFile.writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             $extraConfig
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Test
     fun `task is registered with verification group and description`() {
         setupBuild()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("tasks", "--group", "verification")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("tasks", "--group", "verification")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(
             result.output.contains("validateCapsuleVideoDuration"),
-            "Expected validateCapsuleVideoDuration in verification group, got: ${result.output}"
+            "Expected validateCapsuleVideoDuration in verification group, got: ${result.output}",
         )
     }
 
     @Test
     fun `disabled by default is a no-op skip`() {
         setupBuild()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("validateCapsuleVideoDuration")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("validateCapsuleVideoDuration")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(
             result.output.contains("skipped") || result.output.contains("durationEnabled=false"),
-            "Expected skip log when durationEnabled defaults to false, got: ${result.output}"
+            "Expected skip log when durationEnabled defaults to false, got: ${result.output}",
         )
     }
 
     @Test
     fun `enabled with no video file skips gracefully`() {
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 durationValidationEnabled = true
             }
-        """.trimIndent())
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("validateCapsuleVideoDuration")
-            .withProjectDir(projectDir)
-            .build()
+            """.trimIndent(),
+        )
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("validateCapsuleVideoDuration")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(
             result.output.contains("not found") || result.output.contains("skipped") || result.output.contains("SKIP"),
-            "Expected graceful skip when video file is missing, got: ${result.output}"
+            "Expected graceful skip when video file is missing, got: ${result.output}",
         )
     }
 
     @Test
     fun `integrity enabled with a corrupt video fails the build`() {
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 integrityValidationEnabled = true
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val capDir = projectDir.resolve("build/capsules").also { it.mkdirs() }
         capDir.resolve("demo.webm").writeText("not-a-real-media-container")
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("validateCapsuleVideoDuration")
-            .withProjectDir(projectDir)
-            .buildAndFail()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("validateCapsuleVideoDuration")
+                .withProjectDir(projectDir)
+                .buildAndFail()
 
         assertTrue(
             result.output.contains("Video integrity check failed") || result.output.contains("CAPSULE INTEGRITY"),
-            "Expected an integrity failure, got: ${result.output}"
+            "Expected an integrity failure, got: ${result.output}",
         )
     }
 
     @Test
     fun `integrity disabled by default is a no-op skip`() {
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val capDir = projectDir.resolve("build/capsules").also { it.mkdirs() }
         capDir.resolve("demo.webm").writeText("not-a-real-media-container")
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("validateCapsuleVideoDuration")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("validateCapsuleVideoDuration")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(
             result.output.contains("skipped") || result.output.contains("integrityEnabled=false"),
-            "Expected skip log when integrity is disabled by default, got: ${result.output}"
+            "Expected skip log when integrity is disabled by default, got: ${result.output}",
         )
     }
 }

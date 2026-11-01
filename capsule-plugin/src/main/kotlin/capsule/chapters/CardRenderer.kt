@@ -13,9 +13,18 @@ import java.io.File
  * - available → [CardRendererImpl]
  */
 interface CardRenderer {
-    fun renderIntroCard(introText: String, outputFile: File): Boolean
-    fun renderOutroCard(outroText: String, outputFile: File): Boolean
+    fun renderIntroCard(
+        introText: String,
+        outputFile: File,
+    ): Boolean
+
+    fun renderOutroCard(
+        outroText: String,
+        outputFile: File,
+    ): Boolean
+
     fun isAvailable(): Boolean
+
     fun name(): String
 }
 
@@ -24,8 +33,10 @@ interface CardRenderer {
  * No I/O, no Gradle dependencies, fully unit-testable.
  */
 object CardRendererCommand {
-
-    fun buildCardHtml(text: String, type: String): String {
+    fun buildCardHtml(
+        text: String,
+        type: String,
+    ): String {
         val escapedText = escapeHtml(text)
         return buildString {
             appendLine("<!DOCTYPE html>")
@@ -48,13 +59,13 @@ object CardRendererCommand {
         }.trimIndent()
     }
 
-    private fun escapeHtml(s: String): String {
-        return s.replace("&", "&amp;")
+    private fun escapeHtml(s: String): String =
+        s
+            .replace("&", "&amp;")
             .replace("<", "&lt;")
             .replace(">", "&gt;")
             .replace("\"", "&quot;")
             .replace("'", "&#39;")
-    }
 
     private const val CARD_CSS = """
       * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -86,7 +97,10 @@ object CardRendererCommand {
  * Real implementation — writes intro/outro card HTML to disk.
  */
 class CardRendererImpl : CardRenderer {
-    override fun renderIntroCard(introText: String, outputFile: File): Boolean {
+    override fun renderIntroCard(
+        introText: String,
+        outputFile: File,
+    ): Boolean {
         if (introText.isBlank()) return false
         val html = CardRendererCommand.buildCardHtml(introText, "intro")
         outputFile.parentFile?.mkdirs()
@@ -94,7 +108,10 @@ class CardRendererImpl : CardRenderer {
         return true
     }
 
-    override fun renderOutroCard(outroText: String, outputFile: File): Boolean {
+    override fun renderOutroCard(
+        outroText: String,
+        outputFile: File,
+    ): Boolean {
         if (outroText.isBlank()) return false
         val html = CardRendererCommand.buildCardHtml(outroText, "outro")
         outputFile.parentFile?.mkdirs()
@@ -112,13 +129,19 @@ class CardRendererImpl : CardRenderer {
  * Used when chapters are disabled or intro/outro text is blank.
  */
 class NoOpCardRenderer : CardRenderer {
-    override fun renderIntroCard(introText: String, outputFile: File): Boolean {
+    override fun renderIntroCard(
+        introText: String,
+        outputFile: File,
+    ): Boolean {
         outputFile.parentFile?.mkdirs()
         outputFile.writeText("<!-- no-op -->")
         return false
     }
 
-    override fun renderOutroCard(outroText: String, outputFile: File): Boolean {
+    override fun renderOutroCard(
+        outroText: String,
+        outputFile: File,
+    ): Boolean {
         outputFile.parentFile?.mkdirs()
         outputFile.writeText("<!-- no-op -->")
         return false

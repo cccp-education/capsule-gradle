@@ -30,7 +30,6 @@ data class VoiceScore(
  * Pure — no I/O, no ASR: the transcription is given as a string.
  */
 object FidelityScorer {
-
     /**
      * Scores the raw [expected] text against the raw [transcribed] text.
      *
@@ -38,14 +37,21 @@ object FidelityScorer {
      * normalisation, so "il y a 42 pommes" and "il y a quarante deux pommes"
      * compare equal instead of producing a false difference.
      */
-    fun score(expected: String, transcribed: String, language: String = "fr"): VoiceScore =
+    fun score(
+        expected: String,
+        transcribed: String,
+        language: String = "fr",
+    ): VoiceScore =
         score(
             TextNormalizer.normalize(NumberSpeller.spell(expected, language)),
             TextNormalizer.normalize(NumberSpeller.spell(transcribed, language)),
         )
 
     /** Scores already-normalised word lists. */
-    fun score(referenceWords: List<String>, hypothesisWords: List<String>): VoiceScore {
+    fun score(
+        referenceWords: List<String>,
+        hypothesisWords: List<String>,
+    ): VoiceScore {
         val alignment = WordAligner.align(referenceWords, hypothesisWords)
         val referenceCount = referenceWords.size
         val wordErrorRate = alignment.distance.toDouble() / maxOf(1, referenceCount)

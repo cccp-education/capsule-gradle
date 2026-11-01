@@ -19,17 +19,18 @@ import kotlin.test.assertTrue
  * - No scenarioFile configured = no scenario section (backward compatible).
  */
 class ScenarioContextFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
     private fun writeBuildFile() {
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     private fun writeEagerFiles() {
@@ -64,7 +65,8 @@ class ScenarioContextFunctionalTest {
     }
 
     private fun runner(vararg args: String): GradleRunner =
-        GradleRunner.create()
+        GradleRunner
+            .create()
             .forwardOutput()
             .withPluginClasspath()
             .withArguments(*args)
@@ -75,10 +77,11 @@ class ScenarioContextFunctionalTest {
         writeBuildFile()
         writeEagerFiles()
         val scenarioDir = writeScenarioDir()
-        val result = runner(
-            "collectCapsuleAugmentedContext",
-            "-Pcapsule.context.scenarioFile=${scenarioDir.absolutePath}",
-        ).build()
+        val result =
+            runner(
+                "collectCapsuleAugmentedContext",
+                "-Pcapsule.context.scenarioFile=${scenarioDir.absolutePath}",
+            ).build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":collectCapsuleAugmentedContext")?.outcome)
         val artefact = projectDir.resolve("build/capsule/augmented-context.txt")
         assertTrue(artefact.exists(), "Expected augmented context artefact")

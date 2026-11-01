@@ -17,7 +17,6 @@ package capsule.viral
  * [ChatModelViralHookGenerator].
  */
 interface ViralHookGenerator {
-
     /**
      * Generate the hook/message/CTA for [plan].
      *

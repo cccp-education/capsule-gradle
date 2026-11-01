@@ -23,7 +23,6 @@ import java.io.File
  * no error, only an empty channel.
  */
 object DocContextLoader {
-
     /**
      * Loads the documentary content from [files], truncated to the Docs budget.
      *
@@ -32,19 +31,24 @@ object DocContextLoader {
      * @return the concatenated `--- filename ---\n<content>` block, truncated
      *         to `budget.docsTokens`. Blank when no files or zero budget.
      */
-    fun load(files: List<File>, budget: ChannelBudget): String {
+    fun load(
+        files: List<File>,
+        budget: ChannelBudget,
+    ): String {
         val maxTokens = budget.docsTokens
         if (maxTokens <= 0 || files.isEmpty()) return ""
 
-        val sorted = files
-            .filter { it.exists() && it.readText().isNotBlank() }
-            .sortedBy { it.name }
+        val sorted =
+            files
+                .filter { it.exists() && it.readText().isNotBlank() }
+                .sortedBy { it.name }
 
         if (sorted.isEmpty()) return ""
 
-        val raw = sorted.joinToString("\n\n") { file ->
-            "--- ${file.name} ---\n${file.readText().trim()}"
-        }
+        val raw =
+            sorted.joinToString("\n\n") { file ->
+                "--- ${file.name} ---\n${file.readText().trim()}"
+            }
 
         val truncated = ContextChannel.Docs(raw).truncateToTokens(maxTokens)
         return truncated.content

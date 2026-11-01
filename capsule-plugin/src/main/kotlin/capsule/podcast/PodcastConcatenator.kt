@@ -27,7 +27,6 @@ import java.io.File
  * to apply the result.
  */
 interface PodcastConcatenator {
-
     /**
      * Concatenates [mp3Files] (in order) into [outputFile].
      *
@@ -38,7 +37,10 @@ interface PodcastConcatenator {
      * @throws RuntimeException on unrecoverable ffmpeg errors
      *         (pattern [capsule.audio.AudioPostException]).
      */
-    fun concatenate(mp3Files: List<File>, outputFile: File): Boolean
+    fun concatenate(
+        mp3Files: List<File>,
+        outputFile: File,
+    ): Boolean
 
     /** Returns true if the service is available (e.g. ffmpeg found). */
     fun isAvailable(): Boolean
@@ -63,7 +65,6 @@ interface PodcastConcatenator {
  * `ffmpeg -y -f concat -safe 0 -i <listfile> -c copy <output>`.
  */
 object PodcastConcatCommand {
-
     /**
      * Builds the FFmpeg concat demuxer list file content for [mp3Files].
      *
@@ -75,8 +76,11 @@ object PodcastConcatCommand {
      * @return the concat list content (one `file '...'` directive per line)
      */
     fun buildConcatListContent(mp3Files: List<File>): String =
-        if (mp3Files.isEmpty()) ""
-        else mp3Files.joinToString(separator = "\n", postfix = "\n") { "file '${it.absoluteFile}'" }
+        if (mp3Files.isEmpty()) {
+            ""
+        } else {
+            mp3Files.joinToString(separator = "\n", postfix = "\n") { "file '${it.absoluteFile}'" }
+        }
 
     /**
      * Builds the full FFmpeg argv for concat demuxer concatenation.
@@ -88,13 +92,22 @@ object PodcastConcatCommand {
      * @return the argv list (first element is the ffmpeg path, last is
      *         the output file)
      */
-    fun buildConcatArgv(listFile: File, outputFile: File, ffmpegPath: String): List<String> =
+    fun buildConcatArgv(
+        listFile: File,
+        outputFile: File,
+        ffmpegPath: String,
+    ): List<String> =
         listOf(
-            ffmpegPath, "-y",
-            "-f", "concat",
-            "-safe", "0",
-            "-i", listFile.absolutePath,
-            "-c", "copy",
-            outputFile.absolutePath
+            ffmpegPath,
+            "-y",
+            "-f",
+            "concat",
+            "-safe",
+            "0",
+            "-i",
+            listFile.absolutePath,
+            "-c",
+            "copy",
+            outputFile.absolutePath,
         )
 }

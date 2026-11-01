@@ -1,14 +1,14 @@
 package capsule
 
-import java.io.File
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Test
+import capsule.SubtitleBurnInServiceImpl
+import capsule.SubtitleBurnInStyle
 import capsule.audio.AudioPostConfig
 import capsule.audio.AudioPostProcessorImpl
 import capsule.podcast.PodcastConcatenatorImpl
-import capsule.SubtitleBurnInServiceImpl
-import capsule.SubtitleBurnInStyle
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Test
+import java.io.File
 
 /**
  * CAP-PR2-COV US-2 — argv + stdout redirection of the ffmpeg/npm/node callers
@@ -23,7 +23,6 @@ import capsule.SubtitleBurnInStyle
  * the migration end-to-end.
  */
 class ProcessRunnerCallerArgvTest {
-
     private val captured = mutableListOf<List<String>>()
 
     @AfterEach
@@ -39,14 +38,19 @@ class ProcessRunnerCallerArgvTest {
         }
     }
 
-    private fun temp(prefix: String): File =
-        File(System.getProperty("java.io.tmpdir"), "${prefix}-${System.nanoTime()}").also { it.mkdirs() }
+    private fun temp(prefix: String): File = File(System.getProperty("java.io.tmpdir"), "$prefix-${System.nanoTime()}").also { it.mkdirs() }
 
-    private fun file(dir: File, name: String, content: String = "x"): File =
-        File(dir, name).also { it.writeText(content) }
+    private fun file(
+        dir: File,
+        name: String,
+        content: String = "x",
+    ): File = File(dir, name).also { it.writeText(content) }
 
     /** Asserts every [token] appears as a substring of some argv element. */
-    private fun argvContains(cmd: List<String>, vararg tokens: String) {
+    private fun argvContains(
+        cmd: List<String>,
+        vararg tokens: String,
+    ) {
         tokens.forEach { token ->
             assertThat(cmd.any { it.contains(token) })
                 .describedAs("argv $cmd must contain token '$token'")
@@ -159,13 +163,14 @@ class ProcessRunnerCallerArgvTest {
     fun `RemotionCapture delegates to ProcessRunner with the node render argv`() {
         interceptSuccess()
         val dir = temp("remotion")
-        val deck = file(
-            dir,
-            "deck.html",
-            """<html><head></head><body><div class="reveal"><div class="slides">""" +
-                """<section>one</section><section>two</section>""" +
-                """</div></div></body></html>""",
-        )
+        val deck =
+            file(
+                dir,
+                "deck.html",
+                """<html><head></head><body><div class="reveal"><div class="slides">""" +
+                    """<section>one</section><section>two</section>""" +
+                    """</div></div></body></html>""",
+            )
         val outputDir = File(dir, "out").also { it.mkdirs() }
         // capture() asserts the rendered file exists once the (intercepted) render succeeds.
         file(outputDir, "capsule.mp4")

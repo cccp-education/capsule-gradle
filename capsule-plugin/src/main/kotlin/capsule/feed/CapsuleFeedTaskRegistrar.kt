@@ -25,13 +25,17 @@ import org.gradle.work.DisableCachingByDefault
  *     [CapsuleScriptWriter.write] and log the slide count
  */
 object CapsuleFeedTaskRegistrar {
-
     /**
      * Registers the `extractSpeakerNotes` task on [project].
      */
     fun register(project: Project) {
         val adocDir = CapsuleAdocDir(project.projectDir)
-        val scriptDir = CapsuleScriptDir(project.layout.buildDirectory.get().asFile)
+        val scriptDir =
+            CapsuleScriptDir(
+                project.layout.buildDirectory
+                    .get()
+                    .asFile,
+            )
         val lang = CapsuleMessages.resolveLanguage(project)
 
         project.tasks.register(
@@ -118,7 +122,6 @@ object CapsuleFeedTaskRegistrar {
  */
 @DisableCachingByDefault(because = "Filesystem-bound: reads AsciiDoc decks and produces *-script.txt artifacts")
 open class ExtractSpeakerNotesTask : DefaultTask() {
-
     @get:org.gradle.api.tasks.Internal
     var adocDir: CapsuleAdocDir? = null
         internal set
@@ -132,10 +135,11 @@ open class ExtractSpeakerNotesTask : DefaultTask() {
         val adoc = adocDir ?: error("adocDir must be wired by CapsuleFeedTaskRegistrar")
         val scriptOut = scriptDir ?: error("scriptDir must be wired by CapsuleFeedTaskRegistrar")
         adoc.adocFiles().forEach { adocFile ->
-            val scriptModel = AsciidocSpeakerNoteParser.parse(
-                adocContent = adocFile.readText(),
-                deckName = adocFile.nameWithoutExtension,
-            )
+            val scriptModel =
+                AsciidocSpeakerNoteParser.parse(
+                    adocContent = adocFile.readText(),
+                    deckName = adocFile.nameWithoutExtension,
+                )
             if (scriptModel.isEmpty) {
                 logger.warn("No speaker notes found in {}, skipping.", adocFile.name)
                 return@forEach

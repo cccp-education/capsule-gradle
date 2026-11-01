@@ -9,14 +9,14 @@ import kotlin.test.assertTrue
  * [ViralVariant] + [ViralBatchPlanner].
  */
 class ViralBatchPlannerTest {
-
     @Test
     fun `plan builds the cartesian product language-major`() {
-        val variants = ViralBatchPlanner.plan(
-            languages = listOf("fr", "en"),
-            platforms = listOf(ViralPlatform.YOUTUBE_SHORT, ViralPlatform.TIKTOK),
-            duration = 30,
-        )
+        val variants =
+            ViralBatchPlanner.plan(
+                languages = listOf("fr", "en"),
+                platforms = listOf(ViralPlatform.YOUTUBE_SHORT, ViralPlatform.TIKTOK),
+                duration = 30,
+            )
         assertEquals(4, variants.size)
         assertEquals(listOf("fr", "fr", "en", "en"), variants.map { it.language })
         assertEquals(
@@ -33,11 +33,12 @@ class ViralBatchPlannerTest {
 
     @Test
     fun `plan de-duplicates languages and platforms`() {
-        val variants = ViralBatchPlanner.plan(
-            languages = listOf("fr", "fr", " en "),
-            platforms = listOf(ViralPlatform.TIKTOK, ViralPlatform.TIKTOK),
-            duration = 30,
-        )
+        val variants =
+            ViralBatchPlanner.plan(
+                languages = listOf("fr", "fr", " en "),
+                platforms = listOf(ViralPlatform.TIKTOK, ViralPlatform.TIKTOK),
+                duration = 30,
+            )
         assertEquals(2, variants.size)
         assertEquals(listOf("fr", "en"), variants.map { it.language }.distinct())
     }

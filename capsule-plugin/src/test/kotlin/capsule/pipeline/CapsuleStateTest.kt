@@ -14,19 +14,19 @@ import kotlin.test.assertTrue
  * pattern `slider.pipeline.DeckStateTest` (SLD-8.3). No Gradle, no LLM, no I/O.
  */
 class CapsuleStateTest {
-
     private val sourceAdoc = "== Slide 1\n\n[NOTE.speaker]\n--\nNarration.\n--"
 
     private fun initialState(
         deckName: String = "kotlin-coroutines",
         language: String = "fr",
-    ): CapsuleState = CapsuleState(
-        deckName = deckName,
-        language = language,
-        sourceAdoc = sourceAdoc,
-        augmentedContext = "RAG nugget about grading.",
-        contentPlanJson = "",
-    )
+    ): CapsuleState =
+        CapsuleState(
+            deckName = deckName,
+            language = language,
+            sourceAdoc = sourceAdoc,
+            augmentedContext = "RAG nugget about grading.",
+            contentPlanJson = "",
+        )
 
     // ─── construction ────────────────────────────────────────────────
 
@@ -48,19 +48,20 @@ class CapsuleStateTest {
 
     @Test
     fun `creates a fully populated CapsuleState`() {
-        val state = CapsuleState(
-            deckName = "kotlin-coroutines",
-            language = "fr",
-            sourceAdoc = sourceAdoc,
-            augmentedContext = "ctx",
-            contentPlanJson = """{"deckName":"kotlin-coroutines","languageCode":"fr"}""",
-            contextValid = true,
-            validationError = null,
-            speakerNotesAdoc = "== Slide 1",
-            ttsScript = "=== CAPSULE SCRIPT : kotlin-coroutines ===",
-            error = null,
-            stage = CapsuleStage.CONTENT_GENERATED,
-        )
+        val state =
+            CapsuleState(
+                deckName = "kotlin-coroutines",
+                language = "fr",
+                sourceAdoc = sourceAdoc,
+                augmentedContext = "ctx",
+                contentPlanJson = """{"deckName":"kotlin-coroutines","languageCode":"fr"}""",
+                contextValid = true,
+                validationError = null,
+                speakerNotesAdoc = "== Slide 1",
+                ttsScript = "=== CAPSULE SCRIPT : kotlin-coroutines ===",
+                error = null,
+                stage = CapsuleStage.CONTENT_GENERATED,
+            )
         assertEquals(CapsuleStage.CONTENT_GENERATED, state.stage)
         assertTrue(state.contextValid)
     }
@@ -152,10 +153,11 @@ class CapsuleStateTest {
     @Test
     fun `copy returns a new instance with the modified fields`() {
         val initial = initialState()
-        val proposed = initial.copy(
-            contentPlanJson = """{"deckName":"kotlin-coroutines"}""",
-            stage = CapsuleStage.CONTEXT_PROPOSED,
-        )
+        val proposed =
+            initial.copy(
+                contentPlanJson = """{"deckName":"kotlin-coroutines"}""",
+                stage = CapsuleStage.CONTEXT_PROPOSED,
+            )
         assertFalse(proposed === initial)
         assertEquals(initial.deckName, proposed.deckName)
         assertEquals(CapsuleStage.CONTEXT_PROPOSED, proposed.stage)

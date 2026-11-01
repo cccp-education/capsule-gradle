@@ -15,19 +15,20 @@ import kotlin.test.assertTrue
  * Pattern: [capsule.pipeline.DefaultCapsulePromptBuilder].
  */
 class TranscriptPromptBuilderTest {
-
     private fun plan(
         deckName: String = "kotlin-basics",
         language: String = "fr",
-    ): TranscriptPlan = TranscriptPlan(
-        deckName = deckName,
-        segments = listOf(
-            SlideSegment(1, "Introduction", "Welcome to the capsule."),
-            SlideSegment(2, "Core", "The core concept."),
-        ),
-        language = language,
-        outputPath = "build/capsule/$deckName-transcript.adoc",
-    )
+    ): TranscriptPlan =
+        TranscriptPlan(
+            deckName = deckName,
+            segments =
+                listOf(
+                    SlideSegment(1, "Introduction", "Welcome to the capsule."),
+                    SlideSegment(2, "Core", "The core concept."),
+                ),
+            language = language,
+            outputPath = "build/capsule/$deckName-transcript.adoc",
+        )
 
     @Test
     fun `buildEnhancePrompt mentions the deck name`() {
@@ -51,8 +52,10 @@ class TranscriptPromptBuilderTest {
     @Test
     fun `buildEnhancePrompt instructs to keep headings and respond AsciiDoc only`() {
         val prompt = TranscriptPromptBuilder.buildEnhancePrompt(plan())
-        assertTrue(prompt.contains("== ", ignoreCase = false) || prompt.contains("headings", ignoreCase = true),
-            "prompt should instruct to keep '==' headings")
+        assertTrue(
+            prompt.contains("== ", ignoreCase = false) || prompt.contains("headings", ignoreCase = true),
+            "prompt should instruct to keep '==' headings",
+        )
         assertTrue(prompt.contains("transitions", ignoreCase = true), "prompt should ask for pedagogical transitions")
         assertTrue(prompt.contains("AsciiDoc", ignoreCase = true), "prompt should mention AsciiDoc")
         assertTrue(prompt.contains("only", ignoreCase = true), "prompt should ask for AsciiDoc only")
@@ -61,7 +64,9 @@ class TranscriptPromptBuilderTest {
     @Test
     fun `buildEnhancePrompt instructs to preserve speaker note content`() {
         val prompt = TranscriptPromptBuilder.buildEnhancePrompt(plan())
-        assertTrue(prompt.contains("speaker", ignoreCase = true) || prompt.contains("content", ignoreCase = true),
-            "prompt should instruct to preserve speaker note content")
+        assertTrue(
+            prompt.contains("speaker", ignoreCase = true) || prompt.contains("content", ignoreCase = true),
+            "prompt should instruct to preserve speaker note content",
+        )
     }
 }

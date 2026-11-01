@@ -11,7 +11,6 @@ import kotlin.test.assertTrue
  * Pattern mirror [CucumberTestGuardTest] (CR-10).
  */
 class PlaywrightTestGuardTest {
-
     @Test
     fun `shouldRun returns true when runPlaywrightTests property is set`() {
         val guard = PlaywrightTestGuard(hasRunPlaywrightTestsProperty = true, isCi = false)

@@ -27,8 +27,10 @@ import video.kernel.segment.VideoSegment
  * Pure — no I/O, no Gradle, no Playwright.
  */
 object RevealJsSpeakerNoteParser {
-
-    fun parse(adocContent: String, deckName: String): VideoScript {
+    fun parse(
+        adocContent: String,
+        deckName: String,
+    ): VideoScript {
         require(deckName.isNotBlank()) { "deckName must not be blank" }
 
         val lines = adocContent.lines()
@@ -68,9 +70,10 @@ object RevealJsSpeakerNoteParser {
         }
         flush(rawSegments, currentTitle, noteLines)
 
-        val reindexed = rawSegments.mapIndexed { i, seg ->
-            VideoSegment(index = i + 1, title = seg.title, narration = seg.narration)
-        }
+        val reindexed =
+            rawSegments.mapIndexed { i, seg ->
+                VideoSegment(index = i + 1, title = seg.title, narration = seg.narration)
+            }
         return VideoScript(name = deckName, segments = reindexed)
     }
 
@@ -85,8 +88,7 @@ object RevealJsSpeakerNoteParser {
         sink.add(VideoSegment(index = -1, title = title, narration = note))
     }
 
-    private fun isSlideHeading(line: String): Boolean =
-        line.startsWith("== ") && !line.startsWith("=== ")
+    private fun isSlideHeading(line: String): Boolean = line.startsWith("== ") && !line.startsWith("=== ")
 
     private fun isSpeakerNoteStart(line: String): Boolean {
         val t = line.trimStart()

@@ -1,8 +1,8 @@
 package capsule.ai
 
-import codebase.koog.llm.service.LlmBuildService
 import capsule.ai.CapsuleLlmService.aiProvider
 import capsule.ai.CapsuleLlmService.resolveModel
+import codebase.koog.llm.service.LlmBuildService
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.services.ServiceReference
@@ -25,7 +25,6 @@ import org.gradle.work.DisableCachingByDefault
  */
 @DisableCachingByDefault(because = "LLM smoke test")
 abstract class CapsuleAiSmokeTestTask : DefaultTask() {
-
     @get:ServiceReference
     abstract val llmService: Property<LlmBuildService>
 
@@ -37,7 +36,7 @@ abstract class CapsuleAiSmokeTestTask : DefaultTask() {
         logger.lifecycle("CAPSULE AI → smoke test response: ${response.trim()}")
         if (response.isBlank()) {
             throw IllegalStateException(
-                "capsuleAiSmokeTest received a blank response from provider '$provider'"
+                "capsuleAiSmokeTest received a blank response from provider '$provider'",
             )
         }
     }

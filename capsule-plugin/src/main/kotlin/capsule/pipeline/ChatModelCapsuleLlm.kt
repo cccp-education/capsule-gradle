@@ -14,12 +14,12 @@ import dev.langchain4j.model.chat.ChatModel
  * identically to a split system+user pair, and keeping a single string
  * contract keeps [CapsulePipelineGraph] free from langchain4j message types.
  */
-class ChatModelCapsuleLlm(private val model: ChatModel) : CapsuleLlm {
-
+class ChatModelCapsuleLlm(
+    private val model: ChatModel,
+) : CapsuleLlm {
     override fun propose(prompt: String): String = chat(prompt)
 
     override fun generate(prompt: String): String = chat(prompt)
 
-    private fun chat(prompt: String): String =
-        model.chat(listOf(UserMessage.from(prompt))).aiMessage().text()
+    private fun chat(prompt: String): String = model.chat(listOf(UserMessage.from(prompt))).aiMessage().text()
 }

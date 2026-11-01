@@ -19,13 +19,18 @@ import org.junit.jupiter.api.Assertions.assertTrue
  * (S-088 — the glue is classpath-wide).
  */
 class CapsuleAudioLoudnessSteps {
-
     private var measured: LoudnormMeasurement? = null
     private var chain: String = ""
     private var output: String = ""
 
     @Given("a measured loudness input of {double} {double} {double} {double} {double}")
-    fun aMeasuredLoudnessInput(inputI: Double, inputTp: Double, inputLra: Double, inputThresh: Double, targetOffset: Double) {
+    fun aMeasuredLoudnessInput(
+        inputI: Double,
+        inputTp: Double,
+        inputLra: Double,
+        inputThresh: Double,
+        targetOffset: Double,
+    ) {
         measured = LoudnormMeasurement(inputI, inputTp, inputLra, inputThresh, targetOffset)
     }
 

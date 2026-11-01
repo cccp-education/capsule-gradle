@@ -13,7 +13,6 @@ package capsule.audio
  * quotes are optional in the match.
  */
 object LoudnormAnalysisParser {
-
     /**
      * Extracts the loudness measurement from [output], or `null` when the block
      * is absent or any field is missing/unparseable (degraded — the caller must
@@ -29,7 +28,10 @@ object LoudnormAnalysisParser {
         return LoudnormMeasurement(inputI, inputTp, inputLra, inputThresh, targetOffset)
     }
 
-    private fun number(output: String, key: String): Double? {
+    private fun number(
+        output: String,
+        key: String,
+    ): Double? {
         val match = Regex(""""$key"\s*:\s*"?(-?[0-9]+(?:\.[0-9]+)?)"?""").find(output) ?: return null
         return match.groupValues[1].toDoubleOrNull()
     }

@@ -3,7 +3,6 @@ package capsule.pipeline
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -21,8 +20,8 @@ import kotlin.test.assertTrue
  * `slider.pipeline.DeckPipelineGraphTest` SLD-8.3).
  */
 class CapsulePipelineGraphTest {
-
-    private val validContentPlanJson = """
+    private val validContentPlanJson =
+        """
         {
           "deckName": "kotlin-coroutines",
           "languageCode": "fr",
@@ -30,9 +29,10 @@ class CapsulePipelineGraphTest {
           "speakerNotesFile": "kotlin-coroutines-speaker-notes.adoc",
           "ttsScriptFile": "kotlin-coroutines-script.txt"
         }
-    """.trimIndent()
+        """.trimIndent()
 
-    private val enrichedSpeakerNotes = """
+    private val enrichedSpeakerNotes =
+        """
         == Introduction
 
         [NOTE.speaker]
@@ -46,28 +46,31 @@ class CapsulePipelineGraphTest {
         --
         Enriched details narration.
         --
-    """.trimIndent()
+        """.trimIndent()
 
     private fun initialState(
         deckName: String = "kotlin-coroutines",
         language: String = "fr",
-    ): CapsuleState = CapsuleState(
-        deckName = deckName,
-        language = language,
-        sourceAdoc = "== Slide 1\n\n[NOTE.speaker]\n--\nBase narration.\n--",
-        augmentedContext = "RAG nugget about grading.",
-        contentPlanJson = "",
-    )
+    ): CapsuleState =
+        CapsuleState(
+            deckName = deckName,
+            language = language,
+            sourceAdoc = "== Slide 1\n\n[NOTE.speaker]\n--\nBase narration.\n--",
+            augmentedContext = "RAG nugget about grading.",
+            contentPlanJson = "",
+        )
 
     @Test
     fun `execute returns CONTENT_GENERATED on the happy path`() {
-        val graph = CapsulePipelineGraph(
-            promptBuilder = FakeCapsulePromptBuilder(),
-            llm = FakeCapsuleLlm(
-                proposeResponse = validContentPlanJson,
-                generateResponse = enrichedSpeakerNotes,
-            ),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = FakeCapsulePromptBuilder(),
+                llm =
+                    FakeCapsuleLlm(
+                        proposeResponse = validContentPlanJson,
+                        generateResponse = enrichedSpeakerNotes,
+                    ),
+            )
 
         val result = graph.execute(initialState())
 
@@ -80,10 +83,11 @@ class CapsulePipelineGraphTest {
 
     @Test
     fun `execute populates contentPlanJson from the propose-context node`() {
-        val graph = CapsulePipelineGraph(
-            promptBuilder = FakeCapsulePromptBuilder(),
-            llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = enrichedSpeakerNotes),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = FakeCapsulePromptBuilder(),
+                llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = enrichedSpeakerNotes),
+            )
 
         val result = graph.execute(initialState())
 
@@ -92,10 +96,11 @@ class CapsulePipelineGraphTest {
 
     @Test
     fun `execute derives the TTS script from the generated speaker notes`() {
-        val graph = CapsulePipelineGraph(
-            promptBuilder = FakeCapsulePromptBuilder(),
-            llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = enrichedSpeakerNotes),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = FakeCapsulePromptBuilder(),
+                llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = enrichedSpeakerNotes),
+            )
 
         val result = graph.execute(initialState())
 
@@ -106,13 +111,15 @@ class CapsulePipelineGraphTest {
 
     @Test
     fun `execute stops at FAILED when the LLM proposes an invalid content plan`() {
-        val graph = CapsulePipelineGraph(
-            promptBuilder = FakeCapsulePromptBuilder(),
-            llm = FakeCapsuleLlm(
-                proposeResponse = """{"deckName": "missing fields"}""",
-                generateResponse = "== Should not be reached",
-            ),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = FakeCapsulePromptBuilder(),
+                llm =
+                    FakeCapsuleLlm(
+                        proposeResponse = """{"deckName": "missing fields"}""",
+                        generateResponse = "== Should not be reached",
+                    ),
+            )
 
         val result = graph.execute(initialState())
 
@@ -125,10 +132,11 @@ class CapsulePipelineGraphTest {
 
     @Test
     fun `execute reports the validator error when the content plan is invalid`() {
-        val graph = CapsulePipelineGraph(
-            promptBuilder = FakeCapsulePromptBuilder(),
-            llm = FakeCapsuleLlm(proposeResponse = "", generateResponse = ""),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = FakeCapsulePromptBuilder(),
+                llm = FakeCapsuleLlm(proposeResponse = "", generateResponse = ""),
+            )
 
         val result = graph.execute(initialState())
 
@@ -138,10 +146,11 @@ class CapsulePipelineGraphTest {
 
     @Test
     fun `execute fails the pipeline when the propose-context LLM throws`() {
-        val graph = CapsulePipelineGraph(
-            promptBuilder = FakeCapsulePromptBuilder(),
-            llm = FakeCapsuleLlm(proposeException = RuntimeException("LLM unavailable")),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = FakeCapsulePromptBuilder(),
+                llm = FakeCapsuleLlm(proposeException = RuntimeException("LLM unavailable")),
+            )
 
         val result = graph.execute(initialState())
 
@@ -152,13 +161,15 @@ class CapsulePipelineGraphTest {
 
     @Test
     fun `execute fails the pipeline when the generate-speaker-notes LLM throws`() {
-        val graph = CapsulePipelineGraph(
-            promptBuilder = FakeCapsulePromptBuilder(),
-            llm = FakeCapsuleLlm(
-                proposeResponse = validContentPlanJson,
-                generateException = RuntimeException("Generation failed"),
-            ),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = FakeCapsulePromptBuilder(),
+                llm =
+                    FakeCapsuleLlm(
+                        proposeResponse = validContentPlanJson,
+                        generateException = RuntimeException("Generation failed"),
+                    ),
+            )
 
         val result = graph.execute(initialState())
 
@@ -171,10 +182,11 @@ class CapsulePipelineGraphTest {
     @Test
     fun `execute calls the prompt builder with the running state for propose`() {
         val promptBuilder = FakeCapsulePromptBuilder()
-        val graph = CapsulePipelineGraph(
-            promptBuilder = promptBuilder,
-            llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = enrichedSpeakerNotes),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = promptBuilder,
+                llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = enrichedSpeakerNotes),
+            )
 
         graph.execute(initialState())
 
@@ -185,10 +197,11 @@ class CapsulePipelineGraphTest {
     @Test
     fun `execute calls the prompt builder with the validated state for generate`() {
         val promptBuilder = FakeCapsulePromptBuilder()
-        val graph = CapsulePipelineGraph(
-            promptBuilder = promptBuilder,
-            llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = enrichedSpeakerNotes),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = promptBuilder,
+                llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = enrichedSpeakerNotes),
+            )
 
         graph.execute(initialState())
 
@@ -201,10 +214,11 @@ class CapsulePipelineGraphTest {
     @Test
     fun `execute does not call the generate prompt when the content plan is invalid`() {
         val promptBuilder = FakeCapsulePromptBuilder()
-        val graph = CapsulePipelineGraph(
-            promptBuilder = promptBuilder,
-            llm = FakeCapsuleLlm(proposeResponse = "{}", generateResponse = "== Should not be reached"),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = promptBuilder,
+                llm = FakeCapsuleLlm(proposeResponse = "{}", generateResponse = "== Should not be reached"),
+            )
 
         graph.execute(initialState())
 
@@ -244,10 +258,11 @@ class CapsulePipelineGraphTest {
 
     @Test
     fun `asMermaidDiagram returns a non-blank mermaid graph description`() {
-        val graph = CapsulePipelineGraph(
-            promptBuilder = FakeCapsulePromptBuilder(),
-            llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = enrichedSpeakerNotes),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = FakeCapsulePromptBuilder(),
+                llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = enrichedSpeakerNotes),
+            )
 
         val mermaid = graph.asMermaidDiagram()
 
@@ -256,10 +271,11 @@ class CapsulePipelineGraphTest {
 
     @Test
     fun `execute preserves the initial deck name and language through the pipeline`() {
-        val graph = CapsulePipelineGraph(
-            promptBuilder = FakeCapsulePromptBuilder(),
-            llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = enrichedSpeakerNotes),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = FakeCapsulePromptBuilder(),
+                llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = enrichedSpeakerNotes),
+            )
 
         val result = graph.execute(initialState(deckName = "reactive-streams", language = "en"))
 
@@ -269,10 +285,11 @@ class CapsulePipelineGraphTest {
 
     @Test
     fun `execute preserves the augmented context through the pipeline`() {
-        val graph = CapsulePipelineGraph(
-            promptBuilder = FakeCapsulePromptBuilder(),
-            llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = enrichedSpeakerNotes),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = FakeCapsulePromptBuilder(),
+                llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = enrichedSpeakerNotes),
+            )
 
         val result = graph.execute(initialState().copy(augmentedContext = "custom RAG context"))
 
@@ -282,10 +299,11 @@ class CapsulePipelineGraphTest {
     @Test
     fun `execute transitions through CONTEXT_PROPOSED before CONTEXT_VALIDATED`() {
         val promptBuilder = TrackingPromptBuilder()
-        val graph = CapsulePipelineGraph(
-            promptBuilder = promptBuilder,
-            llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = enrichedSpeakerNotes),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = promptBuilder,
+                llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = enrichedSpeakerNotes),
+            )
 
         graph.execute(initialState())
 
@@ -295,13 +313,15 @@ class CapsulePipelineGraphTest {
 
     @Test
     fun `execute sets stage FAILED when generate throws despite a valid context`() {
-        val graph = CapsulePipelineGraph(
-            promptBuilder = FakeCapsulePromptBuilder(),
-            llm = FakeCapsuleLlm(
-                proposeResponse = validContentPlanJson,
-                generateException = IllegalStateException("timeout"),
-            ),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = FakeCapsulePromptBuilder(),
+                llm =
+                    FakeCapsuleLlm(
+                        proposeResponse = validContentPlanJson,
+                        generateException = IllegalStateException("timeout"),
+                    ),
+            )
 
         val result = graph.execute(initialState())
 
@@ -312,10 +332,11 @@ class CapsulePipelineGraphTest {
 
     @Test
     fun `propose LLM returning a blank content plan fails fast`() {
-        val graph = CapsulePipelineGraph(
-            promptBuilder = FakeCapsulePromptBuilder(),
-            llm = FakeCapsuleLlm(proposeResponse = "", generateResponse = enrichedSpeakerNotes),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = FakeCapsulePromptBuilder(),
+                llm = FakeCapsuleLlm(proposeResponse = "", generateResponse = enrichedSpeakerNotes),
+            )
 
         val result = graph.execute(initialState())
 
@@ -325,10 +346,11 @@ class CapsulePipelineGraphTest {
 
     @Test
     fun `generate LLM returning a blank adoc fails fast`() {
-        val graph = CapsulePipelineGraph(
-            promptBuilder = FakeCapsulePromptBuilder(),
-            llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = ""),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = FakeCapsulePromptBuilder(),
+                llm = FakeCapsuleLlm(proposeResponse = validContentPlanJson, generateResponse = ""),
+            )
 
         val result = graph.execute(initialState())
 

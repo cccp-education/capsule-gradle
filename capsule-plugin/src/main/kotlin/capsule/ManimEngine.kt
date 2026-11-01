@@ -3,28 +3,39 @@ package capsule
 import java.io.File
 
 interface ManimEngine {
-    fun render(sceneName: String, scriptPath: File, outputDir: File): File
+    fun render(
+        sceneName: String,
+        scriptPath: File,
+        outputDir: File,
+    ): File
+
     fun isAvailable(): Boolean
+
     fun name(): String
+
     fun probeDuration(videoFile: File): Double
 }
 
 class ManimEngineImpl(
-    private val config: ManimConfig = ManimConfig()
+    private val config: ManimConfig = ManimConfig(),
 ) : ManimEngine {
-
     // Sondé une fois : `render()` vérifie la disponibilité et le renderer
     // parallèle appelle `render()` une fois par diapo — sinon c'est un
     // `manim --version` de plus par diapo, lancés en parallèle.
     private var availabilityProbe: Boolean? = null
 
     override fun isAvailable(): Boolean =
-        availabilityProbe ?: ProcessRunner.probe(config.executablePath, "--version")
+        availabilityProbe ?: ProcessRunner
+            .probe(config.executablePath, "--version")
             .also { availabilityProbe = it }
 
     override fun name(): String = "manim"
 
-    override fun render(sceneName: String, scriptPath: File, outputDir: File): File {
+    override fun render(
+        sceneName: String,
+        scriptPath: File,
+        outputDir: File,
+    ): File {
         if (!isAvailable()) {
             throw ManimException("Manim executable not found at: ${config.executablePath}")
         }
@@ -35,13 +46,15 @@ class ManimEngineImpl(
         // son arborescence `media/` relativement à son *répertoire courant* —
         // celui du démon Gradle, pas celui du script — et le fichier rendu
         // atterrit là où personne ne le cherche.
-        val args = listOf(
-            config.executablePath,
-            "-q${config.quality}",
-            "--media_dir", outputDir.absolutePath,
-            scriptPath.absolutePath,
-            sceneName,
-        )
+        val args =
+            listOf(
+                config.executablePath,
+                "-q${config.quality}",
+                "--media_dir",
+                outputDir.absolutePath,
+                scriptPath.absolutePath,
+                sceneName,
+            )
 
         // Manim est très bavard : barre de progression, une ligne par animation.
         // La sortie fusionnée part dans un journal, jamais dans un tube que
@@ -56,7 +69,7 @@ class ManimEngineImpl(
 
         return findRendered(sceneName, scriptPath, outputDir)
             ?: throw ManimException(
-                "Manim reported success but no '$sceneName.mp4' was found under ${outputDir.absolutePath}"
+                "Manim reported success but no '$sceneName.mp4' was found under ${outputDir.absolutePath}",
             )
     }
 
@@ -70,7 +83,11 @@ class ManimEngineImpl(
      * the file sat one folder away. The tree is walked instead of guessed, the
      * most recent match winning when several qualities have been rendered.
      */
-    private fun findRendered(sceneName: String, scriptPath: File, outputDir: File): File? {
+    private fun findRendered(
+        sceneName: String,
+        scriptPath: File,
+        outputDir: File,
+    ): File? {
         val roots = listOf(outputDir, scriptPath.parentFile.resolve("media"))
         return roots
             .filter { it.isDirectory }
@@ -89,16 +106,22 @@ class ManimEngineImpl(
 
 class NoOpManimEngine : ManimEngine {
     override fun isAvailable(): Boolean = true
+
     override fun name(): String = "noop"
 
-    override fun render(sceneName: String, scriptPath: File, outputDir: File): File {
+    override fun render(
+        sceneName: String,
+        scriptPath: File,
+        outputDir: File,
+    ): File {
         outputDir.mkdirs()
-        val placeholderFile = outputDir.resolve("${sceneName}.mp4")
-        val placeholder = listOf(
-            "# MANIM PLACEHOLDER (noop engine)",
-            "# Scene: $sceneName",
-            "# Script: ${scriptPath.name}"
-        ).joinToString("\n")
+        val placeholderFile = outputDir.resolve("$sceneName.mp4")
+        val placeholder =
+            listOf(
+                "# MANIM PLACEHOLDER (noop engine)",
+                "# Scene: $sceneName",
+                "# Script: ${scriptPath.name}",
+            ).joinToString("\n")
         placeholderFile.writeText(placeholder)
         return placeholderFile
     }
@@ -106,4 +129,6 @@ class NoOpManimEngine : ManimEngine {
     override fun probeDuration(videoFile: File): Double = 0.0
 }
 
-class ManimException(message: String) : RuntimeException(message)
+class ManimException(
+    message: String,
+) : RuntimeException(message)

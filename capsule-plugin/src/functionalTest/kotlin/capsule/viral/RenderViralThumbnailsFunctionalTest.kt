@@ -20,7 +20,6 @@ import kotlin.test.assertTrue
  *  - the real capture produces `<variant.id>-thumb.png` (gated on Chromium)
  */
 class RenderViralThumbnailsFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -43,11 +42,13 @@ class RenderViralThumbnailsFunctionalTest {
         )
     }
 
-    private fun runner(vararg args: String) = GradleRunner.create()
-        .forwardOutput()
-        .withPluginClasspath()
-        .withArguments(*args, "-x", "generateViralCampaign")
-        .withProjectDir(projectDir)
+    private fun runner(vararg args: String) =
+        GradleRunner
+            .create()
+            .forwardOutput()
+            .withPluginClasspath()
+            .withArguments(*args, "-x", "generateViralCampaign")
+            .withProjectDir(projectDir)
 
     @Test
     fun `renderViralThumbnails task is registered in the generate group`() {
@@ -76,12 +77,13 @@ class RenderViralThumbnailsFunctionalTest {
         val dir = projectDir.resolve("build/capsule/viral/videos").also { it.mkdirs() }
         dir.resolve("fr-tiktok-30-thumb.png").writeText("png")
 
-        val result = runner(
-            "renderViralThumbnails",
-            "-Pcapsule.viral.enabled=true",
-            "-Pcapsule.viral.languages=fr",
-            "-Pcapsule.viral.platforms=TIKTOK",
-        ).build()
+        val result =
+            runner(
+                "renderViralThumbnails",
+                "-Pcapsule.viral.enabled=true",
+                "-Pcapsule.viral.languages=fr",
+                "-Pcapsule.viral.platforms=TIKTOK",
+            ).build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":renderViralThumbnails")?.outcome)
         assertTrue(
@@ -93,12 +95,13 @@ class RenderViralThumbnailsFunctionalTest {
     @Test
     fun `a missing cover warns when not strict`() {
         setupBuild()
-        val result = runner(
-            "renderViralThumbnails",
-            "-Pcapsule.viral.enabled=true",
-            "-Pcapsule.viral.languages=fr",
-            "-Pcapsule.viral.platforms=TIKTOK",
-        ).build()
+        val result =
+            runner(
+                "renderViralThumbnails",
+                "-Pcapsule.viral.enabled=true",
+                "-Pcapsule.viral.languages=fr",
+                "-Pcapsule.viral.platforms=TIKTOK",
+            ).build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":renderViralThumbnails")?.outcome)
         assertTrue(
@@ -113,12 +116,13 @@ class RenderViralThumbnailsFunctionalTest {
         setupBuild()
         writeCover()
 
-        val result = runner(
-            "renderViralThumbnails",
-            "-Pcapsule.viral.enabled=true",
-            "-Pcapsule.viral.languages=fr,en",
-            "-Pcapsule.viral.platforms=TIKTOK",
-        ).build()
+        val result =
+            runner(
+                "renderViralThumbnails",
+                "-Pcapsule.viral.enabled=true",
+                "-Pcapsule.viral.languages=fr,en",
+                "-Pcapsule.viral.platforms=TIKTOK",
+            ).build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":renderViralThumbnails")?.outcome)
         val dir = projectDir.resolve("build/capsule/viral/videos")

@@ -9,13 +9,14 @@ package capsule.pipeline
  * `slider.pipeline.ValidationResult` (sealed for exhaustive `when` matching).
  */
 sealed interface ContentPlanValidationResult {
-
     /**
      * The JSON is a well-formed content plan with all required fields.
      *
      * @param json the raw JSON string that was validated.
      */
-    data class Valid(val json: String) : ContentPlanValidationResult {
+    data class Valid(
+        val json: String,
+    ) : ContentPlanValidationResult {
         init {
             require(json.isNotBlank()) { "ContentPlanValidationResult.Valid.json must not be blank" }
         }
@@ -26,7 +27,9 @@ sealed interface ContentPlanValidationResult {
      *
      * @param error human-readable explanation of what failed.
      */
-    data class Invalid(val error: String) : ContentPlanValidationResult {
+    data class Invalid(
+        val error: String,
+    ) : ContentPlanValidationResult {
         init {
             require(error.isNotBlank()) { "ContentPlanValidationResult.Invalid.error must not be blank" }
         }

@@ -4,7 +4,10 @@
 // contournent l'exclusion. Solution : forcer annotations:26.0.2-1 (pattern slider).
 import build.CucumberTaskSpec
 buildscript {
-    repositories { mavenLocal(); mavenCentral() }
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
     configurations.all { resolutionStrategy { force("org.jetbrains:annotations:26.0.2-1") } }
 }
 
@@ -13,13 +16,17 @@ plugins {
     id("education.cccp.build.publishing") version "0.0.7"
     id("education.cccp.build.functional-test") version "0.0.7"
     id("education.cccp.build.cucumber") version "0.0.7"
+    id("education.cccp.build.lint") version "0.0.7"
     alias(libs.plugins.kover)
     alias(libs.plugins.codebase)
     alias(libs.plugins.youtube.auth)
 }
 
 group = "education.cccp"
-version = libs.plugins.capsule.get().version
+version =
+    libs.plugins.capsule
+        .get()
+        .version
 
 repositories {
     mavenLocal()
@@ -28,553 +35,554 @@ repositories {
 
 cucumberConventions {
     featuresDir = "src/test/features"
-    additionalTasks = listOf(
-        // ── CI shards (parallel `full-tests.yml`) ───────────────────────────────
-        // Exhaustive, disjoint feature shards of the aggregate `CucumberTestRunner`,
-        // so the BDD suite runs across several CI machines in parallel instead of one
-        // ~14 min job (each shard keeps the one-JVM/aggregate efficiency). Exhaustiveness
-        // and disjointness are guarded by capsule.ci.CapsuleCucumberShardCoverageTest.
-        CucumberTaskSpec(
-            name = "cucumberTestShardKernel",
-            runnerClass = "capsule.scenarios.CucumberShardKernelRunner",
-            timeoutMinutes = 30,
-        ),
-        CucumberTaskSpec(
-            name = "cucumberTestShardContext",
-            runnerClass = "capsule.scenarios.CucumberShardContextRunner",
-            timeoutMinutes = 30,
-        ),
-        CucumberTaskSpec(
-            name = "cucumberTestShardQc",
-            runnerClass = "capsule.scenarios.CucumberShardQcRunner",
-            timeoutMinutes = 30,
-        ),
-        CucumberTaskSpec(
-            name = "cucumberTestShardMedia",
-            runnerClass = "capsule.scenarios.CucumberShardMediaRunner",
-            timeoutMinutes = 30,
-        ),
-        CucumberTaskSpec(
-            name = "cucumberTestShardAiViral",
-            runnerClass = "capsule.scenarios.CucumberShardAiViralRunner",
-            timeoutMinutes = 30,
-        ),
-        // `capsule.feature` (~400 s) is split by a tag-priority partition into 3 shards.
-        CucumberTaskSpec(
-            name = "cucumberTestShardCapsuleSubtitles",
-            runnerClass = "capsule.scenarios.CucumberShardCapsuleSubtitlesRunner",
-            timeoutMinutes = 30,
-        ),
-        CucumberTaskSpec(
-            name = "cucumberTestShardCapsuleManim",
-            runnerClass = "capsule.scenarios.CucumberShardCapsuleManimRunner",
-            timeoutMinutes = 30,
-        ),
-        CucumberTaskSpec(
-            name = "cucumberTestShardCapsuleBase",
-            runnerClass = "capsule.scenarios.CucumberShardCapsuleBaseRunner",
-            timeoutMinutes = 30,
-        ),
-        CucumberTaskSpec(
-            name = "cucumberTestShardCapsuleCoreA",
-            runnerClass = "capsule.scenarios.CucumberShardCapsuleCoreARunner",
-            timeoutMinutes = 30,
-        ),
-        CucumberTaskSpec(
-            name = "cucumberTestShardCapsuleCoreB",
-            runnerClass = "capsule.scenarios.CucumberShardCapsuleCoreBRunner",
-            timeoutMinutes = 30,
-        ),
-        CucumberTaskSpec(
-            name = "cucumberTestShardCapsuleSubtitlesBurnIn",
-            runnerClass = "capsule.scenarios.CucumberShardCapsuleSubtitlesBurnInRunner",
-            timeoutMinutes = 30,
-        ),
-        // Heavy single features isolated from the `media` shard.
-        CucumberTaskSpec(
-            name = "cucumberTestShardMultiLang",
-            runnerClass = "capsule.scenarios.CucumberShardMultiLangRunner",
-            timeoutMinutes = 30,
-        ),
-        CucumberTaskSpec(
-            name = "cucumberTestShardAudioPost",
-            runnerClass = "capsule.scenarios.CucumberShardAudioPostRunner",
-            timeoutMinutes = 30,
-        ),
-        // The heavy multi-language generation scenario is split into 4 language groups.
-        CucumberTaskSpec(
-            name = "cucumberTestShardMultiLangGenA",
-            runnerClass = "capsule.scenarios.CucumberShardMultiLangGenARunner",
-            timeoutMinutes = 30,
-        ),
-        CucumberTaskSpec(
-            name = "cucumberTestShardMultiLangGenB",
-            runnerClass = "capsule.scenarios.CucumberShardMultiLangGenBRunner",
-            timeoutMinutes = 30,
-        ),
-        CucumberTaskSpec(
-            name = "cucumberTestShardMultiLangGenC",
-            runnerClass = "capsule.scenarios.CucumberShardMultiLangGenCRunner",
-            timeoutMinutes = 30,
-        ),
-        CucumberTaskSpec(
-            name = "cucumberTestShardMultiLangGenD",
-            runnerClass = "capsule.scenarios.CucumberShardMultiLangGenDRunner",
-            timeoutMinutes = 30,
-        ),
-        // Integration (@integration / @manim) is split by tag into 2 shards.
-        CucumberTaskSpec(
-            name = "cucumberTestShardIntegration",
-            runnerClass = "capsule.scenarios.CucumberShardIntegrationRunner",
-            timeoutMinutes = 45,
-        ),
-        CucumberTaskSpec(
-            name = "cucumberTestShardManim",
-            runnerClass = "capsule.scenarios.CucumberShardManimRunner",
-            timeoutMinutes = 45,
-        ),
-        CucumberTaskSpec(
-            name = "cucumberTestShardManimParallel",
-            runnerClass = "capsule.scenarios.CucumberShardManimParallelRunner",
-            timeoutMinutes = 45,
-        ),
-        // Focused cucumber run for the CAP-ARCH-2 augmented context feature
-        // (fast iteration without the full Playwright suite, ~15 min).
-        CucumberTaskSpec(
-            name = "cucumberTestContext",
-            features = listOf("src/test/features/capsule_context.feature"),
-            tags = listOf("@context"),
-            runnerClass = "capsule.scenarios.CapsuleContextCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // Focused cucumber run for the CAP-ARCH-4 content+videos wiring feature
-        // (fast iteration without the full Playwright suite, ~15 min).
-        CucumberTaskSpec(
-            name = "cucumberTestContentAndVideos",
-            features = listOf("src/test/features/capsule_content_and_videos.feature"),
-            tags = listOf("@architecture"),
-            runnerClass = "capsule.scenarios.CapsuleContentAndVideosCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // Focused cucumber run for the CAP-ARCH-6 content + video boundary feature
-        // (fast iteration — single-language French, NoOp engines, mock LLM HTTP).
-        CucumberTaskSpec(
-            name = "cucumberTestArchBoundary",
-            features = listOf("src/test/features/capsule_arch_boundary.feature"),
-            tags = listOf("@cross-borough"),
-            runnerClass = "capsule.scenarios.CapsuleArchBoundaryCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // Focused cucumber run for the CAP-ARCH-7 US-4 video destination versioning feature
-        // (fast iteration without the full Playwright suite, ~15 min).
-        CucumberTaskSpec(
-            name = "cucumberTestDistrib",
-            features = listOf("src/test/features/capsule_distrib.feature"),
-            tags = listOf("@distrib"),
-            runnerClass = "capsule.scenarios.CapsuleDistribCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // Focused cucumber run for the CAP-CR3-2 strict mode anti-NoOp feature
-        // (fast iteration — pure config, no Playwright/FFmpeg needed).
-        CucumberTaskSpec(
-            name = "cucumberTestStrictMode",
-            features = listOf("src/test/features/capsule_strict_mode.feature"),
-            tags = listOf("@strict"),
-            runnerClass = "capsule.scenarios.CapsuleStrictModeCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // Focused cucumber run for the CAP-DOCCONTEXT-4 documentary corpus injection feature
-        // (fast iteration — pure config + file globs, no Playwright/FFmpeg needed).
-        CucumberTaskSpec(
-            name = "cucumberTestDocContext",
-            features = listOf("src/test/features/capsule_doc_context.feature"),
-            tags = listOf("@context", "@docs"),
-            runnerClass = "capsule.scenarios.CapsuleDocContextCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // Focused cucumber run for the CAP-SPD-4 pedagogical scenario injection feature
-        // (fast iteration — pure config + scenario file, no Playwright/FFmpeg needed).
-        CucumberTaskSpec(
-            name = "cucumberTestScenarioContext",
-            features = listOf("src/test/features/capsule_scenario_context.feature"),
-            tags = listOf("@context", "@scenario"),
-            runnerClass = "capsule.scenarios.CapsuleScenarioContextCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // CAP-CR3-3-5 — capture strategy selection (PLAYWRIGHT default, SCREENSHOT alt).
-        // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
-        CucumberTaskSpec(
-            name = "cucumberTestCaptureStrategy",
-            features = listOf("src/test/features/capsule_capture_strategy.feature"),
-            tags = listOf("@capture", "@strategy"),
-            runnerClass = "capsule.scenarios.CapsuleCaptureStrategyCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // CAP-MP4 US-3 — output format distribution (WEBM default, MP4, BOTH).
-        // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
-        // Uses a NoOp converter (no real FFmpeg); validates DistributeCapsuleVideoTask filter.
-        CucumberTaskSpec(
-            name = "cucumberTestFormat",
-            features = listOf("src/test/features/capsule_format.feature"),
-            tags = listOf("@distrib", "@format"),
-            runnerClass = "capsule.scenarios.CapsuleFormatCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // CAP-CR3-1 US-3 — duration validation (disabled default, enabled skip,
-        // enabled valid). Dedicated runner so it never runs the full Playwright
-        // suite (pattern S-082). Uses NoOp probe (no real ffprobe).
-        CucumberTaskSpec(
-            name = "cucumberTestDurationValidation",
-            features = listOf("src/test/features/capsule_duration_validation.feature"),
-            tags = listOf("@validation", "@duration"),
-            runnerClass = "capsule.scenarios.CapsuleDurationValidationCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // PRT-04 — video integrity by decode (a broken container keeps a valid
-        // duration). Dedicated runner so it never runs the full Playwright suite
-        // (pattern S-082). Uses the real ffmpeg decode probe on a fake (corrupt)
-        // file — the failure path is robust whether ffmpeg is present or absent.
-        CucumberTaskSpec(
-            name = "cucumberTestVideoIntegrity",
-            features = listOf("src/test/features/capsule_video_integrity.feature"),
-            tags = listOf("@validation", "@integrity"),
-            runnerClass = "capsule.scenarios.CapsuleVideoIntegrityCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // PRT-03 — subtitle cartons (one readable cue per carton + proportional
-        // timing). Pure-domain runner — no Playwright/FFmpeg (pattern S-082).
-        CucumberTaskSpec(
-            name = "cucumberTestSubtitlesCartons",
-            features = listOf("src/test/features/capsule_subtitles_cartons.feature"),
-            tags = listOf("@subtitle", "@cartons"),
-            runnerClass = "capsule.scenarios.CapsuleSubtitlesCartonsCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // PRT-06 — render signature (economy-of-ink reuse fingerprint).
-        // Pure-domain runner — no Playwright/FFmpeg (pattern S-082).
-        CucumberTaskSpec(
-            name = "cucumberTestRenderSignature",
-            features = listOf("src/test/features/capsule_render_signature.feature"),
-            tags = listOf("@capture", "@signature"),
-            runnerClass = "capsule.scenarios.CapsuleRenderSignatureCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // PRT-05 — content pre-flight before metered TTS (structural checks).
-        // Pure-domain runner — no Playwright/FFmpeg (pattern S-082).
-        CucumberTaskSpec(
-            name = "cucumberTestContentPreflight",
-            features = listOf("src/test/features/capsule_content_preflight.feature"),
-            tags = listOf("@qc", "@preflight"),
-            runnerClass = "capsule.scenarios.CapsuleContentPreflightCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // PRT-07 — deterministic timeline (integer-frame snapping).
-        // Pure-domain runner — no Playwright/FFmpeg (pattern S-082).
-        CucumberTaskSpec(
-            name = "cucumberTestTimeline",
-            features = listOf("src/test/features/capsule_timeline.feature"),
-            tags = listOf("@timeline"),
-            runnerClass = "capsule.scenarios.CapsuleTimelineCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // CAP-QC-VOICE US-1 — voice quality pure domain (normalizer + aligner +
-        // fidelity + snr). Pure-domain runner — no ASR/Playwright/FFmpeg (S-082).
-        CucumberTaskSpec(
-            name = "cucumberTestVoiceQuality",
-            features = listOf("src/test/features/capsule_voice_quality.feature"),
-            tags = listOf("@voice"),
-            runnerClass = "capsule.scenarios.CapsuleVoiceQualityCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // CAP-QC-VOICE US-2 — voice verification orchestration with a fake ASR
-        // (verdict + degraded paths + JSON report). Pure-domain runner — no ASR
-        // binary, no ffmpeg (pattern S-082).
-        CucumberTaskSpec(
-            name = "cucumberTestVoiceVerification",
-            features = listOf("src/test/features/capsule_voice_verification.feature"),
-            tags = listOf("@voice-verify"),
-            runnerClass = "capsule.scenarios.CapsuleVoiceVerificationCucumberRunner",
-            timeoutMinutes = 10,
-        ),
-        // PRT-08 — visual QC boards (beats + dit-vs-montre). Pure-domain runner —
-        // planners + Java2D renderer, no ffmpeg/Chromium (pattern S-082).
-        CucumberTaskSpec(
-            name = "cucumberTestQcBoards",
-            features = listOf("src/test/features/capsule_qc_boards.feature"),
-            tags = listOf("@qc-boards"),
-            runnerClass = "capsule.scenarios.CapsuleQcBoardsCucumberRunner",
-            timeoutMinutes = 10,
-        ),
-        // CAP-AUDIO US-4 — audio post-production (BGM + loudness EBU R128 + ducking).
-        // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
-        // Uses a NoOp processor (no real FFmpeg); validates applyAudioPostIfEnabled
-        // wiring + economy-of-ink guard + factory dispatch in CapsuleVideoTask.
-        CucumberTaskSpec(
-            name = "cucumberTestAudioPost",
-            features = listOf("src/test/features/capsule_audio_post.feature"),
-            tags = listOf("@audio", "@post"),
-            runnerClass = "capsule.scenarios.CapsuleAudioPostCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // CAP-PROVENANCE US-2 — context provenance audit artefact.
-        // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
-        // Validates the context-provenance.json channels/sources/totals + log line.
-        CucumberTaskSpec(
-            name = "cucumberTestProvenance",
-            features = listOf("src/test/features/capsule_provenance.feature"),
-            tags = listOf("@context", "@provenance"),
-            runnerClass = "capsule.scenarios.CapsuleProvenanceCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // CAP-GLOSSARY US-3 — glossary terminology injection (context augmenté).
-        // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
-        // Validates the ==== Official Glossary (glossary) section + no-op fallback
-        // + malformed glossary gracefully skipped via collectCapsuleAugmentedContext.
-        CucumberTaskSpec(
-            name = "cucumberTestGlossaryContext",
-            features = listOf("src/test/features/capsule_glossary_context.feature"),
-            tags = listOf("@context", "@glossary"),
-            runnerClass = "capsule.scenarios.CapsuleGlossaryContextCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // CAP-TRANSCRIPT US-5 — transcript generation (TEMPLATE and LLM strategies).
-        // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
-        CucumberTaskSpec(
-            name = "cucumberTestTranscript",
-            features = listOf("src/test/features/capsule_transcript.feature"),
-            tags = listOf("@transcript"),
-            runnerClass = "capsule.scenarios.CapsuleTranscriptCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // CAP-29.5 — multi-language capsule pipeline (one WebM per LanguageCatalog).
-        // Dedicated runner pattern S-082 so it never runs the full Playwright suite.
-        // Uses NoOp engines: validates plan building + naming + RTL coverage.
-        CucumberTaskSpec(
-            name = "cucumberTestMultiLang",
-            features = listOf("src/test/features/multi_language_capsule.feature"),
-            tags = listOf("@multilang"),
-            runnerClass = "capsule.scenarios.CapsuleMultiLangCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // CAP-ANIM US-2 — Remotion capture strategy BDD (NoOp fallback, strictMode,
-        // config DSL). Dedicated runner pattern S-082; steps prefixed "remotion"
-        // (bug S-088 glue capsule.scenarios shared). No @integration — real
-        // Remotion render is gated CI/dogfooding.
-        CucumberTaskSpec(
-            name = "cucumberTestRemotion",
-            features = listOf("src/test/features/capsule_remotion.feature"),
-            tags = listOf("@anim", "@remotion"),
-            runnerClass = "capsule.scenarios.CapsuleRemotionCucumberRunner",
-            timeoutMinutes = 15,
-        ),
-        // CAP-PODCAST US-2 — podcast MP3 extraction (audio-only mobile consumption).
-        // Dedicated runner pattern S-082; steps prefixed "podcast" (bug S-088 glue
-        // capsule.scenarios shared). Uses NoOp concatenator (no real FFmpeg); validates
-        // wiring + economy-of-ink guard + factory dispatch, not the concat itself
-        // (covered by US-1 unit tests for PodcastConcatenatorImpl/PodcastConcatCommand).
-        CucumberTaskSpec(
-            name = "cucumberTestPodcast",
-            features = listOf("src/test/features/capsule_podcast.feature"),
-            tags = listOf("@podcast"),
-            runnerClass = "capsule.scenarios.CapsulePodcastCucumberRunner",
-            timeoutMinutes = 30,
-        ),
-        // CAP-PREVIEW US-2 — dry-run mode (previewOnly → PNG only, skip mux/audio/format).
-        // Dedicated runner pattern S-082; steps prefixed "preview" (bug S-088 glue
-        // capsule.scenarios shared). Validates DSL wiring via GradleRunner help task;
-        // no Playwright or FFmpeg needed.
-        CucumberTaskSpec(
-            name = "cucumberTestPreview",
-            features = listOf("src/test/features/capsule_preview.feature"),
-            tags = listOf("@preview"),
-            runnerClass = "capsule.scenarios.CapsulePreviewCucumberRunner",
-            timeoutMinutes = 15,
-        ),
-        // CAP-CHAPITRE — chapter markers + intro/outro cards.
-        // Dedicated runner pattern S-082; steps prefixed "chapters" (bug S-088).
-        // Validates DSL wiring via GradleRunner; no Playwright or FFmpeg needed.
-        CucumberTaskSpec(
-            name = "cucumberTestChapters",
-            features = listOf("src/test/features/capsule_chapters.feature"),
-            tags = listOf("@chapters"),
-            runnerClass = "capsule.scenarios.CapsuleChaptersCucumberRunner",
-            timeoutMinutes = 15,
-        ),
-        // HF-YOUTUBE-PUBLISH US-3b — YouTube publication through the shared N1
-        // VideoPublisher port (OAuth 2.0 adapter + resolver). Dedicated runner
-        // pattern S-082; steps prefixed "capsule publish" (bug S-088). Network-free:
-        // a fake HttpTransport stands in for the YouTube Data API.
-        CucumberTaskSpec(
-            name = "cucumberTestPublish",
-            features = listOf("src/test/features/capsule_publish.feature"),
-            tags = listOf("@publish"),
-            runnerClass = "capsule.scenarios.CapsulePublishCucumberRunner",
-            timeoutMinutes = 15,
-        ),
-        // CAP-ANIM-TEST US-5 — Remotion timing model (beats, playback rate, overlap).
-        // Dedicated runner pattern S-082; steps prefixed "remotion anim" (bug S-088).
-        // Exercises the pure RemotionTiming model; no Node/FFmpeg/GradleRunner.
-        CucumberTaskSpec(
-            name = "cucumberTestRemotionAnim",
-            features = listOf("src/test/features/capsule_remotion_anim.feature"),
-            tags = listOf("@remotion-anim"),
-            runnerClass = "capsule.scenarios.CapsuleRemotionAnimCucumberRunner",
-            timeoutMinutes = 15,
-        ),
-        // CAP-ENGINE-DECOUPLING US-1 — engine-neutral video model (VideoSegment /
-        // VideoScript / VideoProductionEntry) and the legacy↔neutral bridge.
-        // Dedicated runner pattern S-082; steps prefixed "kernel"/"legacy" (S-088).
-        // Pure domain — no Gradle/FFmpeg/Playwright.
-        CucumberTaskSpec(
-            name = "cucumberTestKernelModel",
-            features = listOf("src/test/features/capsule_kernel_model.feature"),
-            tags = listOf("@kernel-model"),
-            runnerClass = "capsule.scenarios.CapsuleKernelModelCucumberRunner",
-            timeoutMinutes = 10,
-        ),
-        // CAP-ENGINE-DECOUPLING US-2 — reveal.js engine adapter (deck HTML +
-        // capture orchestration behind the neutral VideoEngine port).
-        // Dedicated runner pattern S-082; steps prefixed "engine adapter"/"reveal deck".
-        // Pure domain — fake capture, no Gradle/FFmpeg/Playwright.
-        CucumberTaskSpec(
-            name = "cucumberTestEngineAdapter",
-            features = listOf("src/test/features/capsule_engine_adapter.feature"),
-            tags = listOf("@engine-adapter"),
-            runnerClass = "capsule.scenarios.CapsuleEngineAdapterCucumberRunner",
-            timeoutMinutes = 10,
-        ),
-        // CAP-ENGINE-DECOUPLING US-3 — SegmentSource port + reveal.js speaker-note
-        // adapter (AsciiDoc parsing + -script.txt contract).
-        // Dedicated runner pattern S-082; steps prefixed "source"/"deck"/"reveal contract".
-        // Pure domain — no Gradle/FFmpeg/Playwright.
-        CucumberTaskSpec(
-            name = "cucumberTestSegmentSource",
-            features = listOf("src/test/features/capsule_segment_source.feature"),
-            tags = listOf("@segment-source"),
-            runnerClass = "capsule.scenarios.CapsuleSegmentSourceCucumberRunner",
-            timeoutMinutes = 10,
-        ),
-        // US-4 kernel boundary guard moved to the video-kernel borough (it scans the
-        // video.kernel sources, now owned there).
-        // Integration cucumber run — scenarios tagged @integration or @manim
-        // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
-        // default cucumberTest runner by `not @integration`; this dedicated task
-        // exercises them via CucumberIntegrationTestRunner. Run explicitly:
-        //   ./gradlew cucumberTestIntegration -PrunCucumber
-        CucumberTaskSpec(
-            name = "cucumberTestIntegration",
-            features = listOf("src/test/features"),
-            tags = listOf("@integration"),
-            runnerClass = "capsule.scenarios.CucumberIntegrationTestRunner",
-            timeoutMinutes = 30,
-        ),
-        // CAP-PR2-COV US-4 — regression that the PR #2 migration sinks
-        // (ProcessRunner / FileReplace.moveOver) are the only process and file
-        // relocation entry points. Pure BDD, no real ffmpeg/node required.
-        CucumberTaskSpec(
-            name = "cucumberTestPr2Coverage",
-            features = listOf("src/test/features/capsule_pr2_coverage.feature"),
-            tags = listOf("@pr2-cov"),
-            runnerClass = "capsule.scenarios.CapsulePr2CoverageCucumberRunner",
-            timeoutMinutes = 10,
-        ),
-        // CAP-VIRAL US-8 — viral campaign engine BDD (storyboard gate, batch,
-        // context-anchored hook prompt, campaign bundle with market copy read).
-        // Dedicated runner pattern S-082; steps prefixed "viral"/"batch"/"campaign"
-        // (bug S-088 glue capsule.scenarios shared). Pure domain, no ffmpeg/node.
-        CucumberTaskSpec(
-            name = "cucumberTestViral",
-            features = listOf("src/test/features/capsule_viral.feature"),
-            tags = listOf("@viral"),
-            runnerClass = "capsule.scenarios.CapsuleViralCucumberRunner",
-            timeoutMinutes = 10,
-        ),
-        // CAP-CONTEXT US-2/US-3 — storyboard context (QQOQCP, visual identity,
-        // narrative thread) rendering + round-trip + coherence gate. Dedicated
-        // runner pattern S-082; steps prefixed "contextual storyboard"/"contextual
-        // verdict" (bug S-088 glue capsule.scenarios shared). Pure domain, no
-        // ffmpeg/node/Playwright (the FFmpeg socle is untouched by the context).
-        CucumberTaskSpec(
-            name = "cucumberTestStoryboardContext",
-            features = listOf("src/test/features/capsule_storyboard_context.feature"),
-            tags = listOf("@storyboard-context"),
-            runnerClass = "capsule.scenarios.CapsuleStoryboardContextCucumberRunner",
-            timeoutMinutes = 10,
-        ),
-        // CAP-SHORT US-5 — real short-form render: produces a real MP4 through the
-        // FFmpeg socle (ScreenshotPlanner + VideoFormatConverter), durations fitted
-        // to the target. Needs real ffmpeg/ffprobe (scenarios pending when absent).
-        CucumberTaskSpec(
-            name = "cucumberTestViralRender",
-            features = listOf("src/test/features/capsule_viral_render.feature"),
-            tags = listOf("@viral-render"),
-            runnerClass = "capsule.scenarios.CapsuleViralRenderCucumberRunner",
-            timeoutMinutes = 5,
-        ),
-        // CAP-VIRAL-E2E US-1 — delivery gate: the campaign manifest references assets
-        // by path; the gate verifies they exist before hand-off to the distribution
-        // layer. Dedicated runner pattern S-082; steps prefixed "campaign gate"/"campaign
-        // manifest" (bug S-088 glue capsule.scenarios shared). Pure domain, no ffmpeg/node.
-        CucumberTaskSpec(
-            name = "cucumberTestViralGate",
-            features = listOf("src/test/features/capsule_viral_gate.feature"),
-            tags = listOf("@viral-gate"),
-            runnerClass = "capsule.scenarios.CapsuleViralGateCucumberRunner",
-            timeoutMinutes = 10,
-        ),
-        // CAP-VIRAL-E2E US-2 — campaign cover: planned from the storyboard (hook beat,
-        // else message) and rendered as a capturable portrait document. Dedicated runner
-        // pattern S-082; steps prefixed "viral cover"/"viral thumbnail" (bug S-088).
-        // Pure domain (planner + builder), no ffmpeg/Chromium.
-        CucumberTaskSpec(
-            name = "cucumberTestViralThumbnail",
-            features = listOf("src/test/features/capsule_viral_thumbnail.feature"),
-            tags = listOf("@thumbnail"),
-            runnerClass = "capsule.scenarios.CapsuleViralThumbnailCucumberRunner",
-            timeoutMinutes = 10,
-        ),
-        // CAP-VIRAL-E2E US-3 — karaoke captions: the beat words are timed across the
-        // beat windows and rendered into a full ASS document. Dedicated runner pattern
-        // S-082; steps prefixed "karaoke" (bug S-088). Pure domain (planner + document).
-        CucumberTaskSpec(
-            name = "cucumberTestViralKaraoke",
-            features = listOf("src/test/features/capsule_viral_karaoke.feature"),
-            tags = listOf("@karaoke"),
-            runnerClass = "capsule.scenarios.CapsuleViralKaraokeCucumberRunner",
-            timeoutMinutes = 10,
-        ),
-        // Storyboard authoring helper — normalize a hand-authored storyboard so every
-        // beat carries an entering transition (editorial gate). Dedicated runner pattern
-        // S-082; steps prefixed "storyboard to normalize"/"normalized" (bug S-088). Pure domain.
-        CucumberTaskSpec(
-            name = "cucumberTestViralNormalize",
-            features = listOf("src/test/features/capsule_viral_normalize.feature"),
-            tags = listOf("@normalize"),
-            runnerClass = "capsule.scenarios.CapsuleStoryboardNormalizeCucumberRunner",
-            timeoutMinutes = 10,
-        ),
-        // LLM resilience — a metered cloud LLM fails transiently (429/503, timeout);
-        // adapters with a safe fallback degrade instead of failing the build. Dedicated
-        // runner pattern S-082; steps prefixed "guarded"/"viral hook generator" (S-088).
-        CucumberTaskSpec(
-            name = "cucumberTestLlmResilience",
-            features = listOf("src/test/features/capsule_llm_resilience.feature"),
-            tags = listOf("@resilience"),
-            runnerClass = "capsule.scenarios.CapsuleLlmResilienceCucumberRunner",
-            timeoutMinutes = 10,
-        ),
-        // CAP-FISH-AUDIO US-4 — Fish Audio engine BDD. Fish Audio is NEVER called:
-        // the HTTP transport is a fake returning canned bytes. Dedicated runner
-        // pattern S-082; steps prefixed "Fish Audio"/"the transport"/"the request"
-        // (bug S-088 glue capsule.scenarios shared). Pure domain, no network/ffmpeg.
-        CucumberTaskSpec(
-            name = "cucumberTestFishAudio",
-            features = listOf("src/test/features/capsule_fish_audio.feature"),
-            tags = listOf("@fish"),
-            runnerClass = "capsule.scenarios.CapsuleFishAudioCucumberRunner",
-            timeoutMinutes = 10,
-        ),
-    )
+    additionalTasks =
+        listOf(
+            // ── CI shards (parallel `full-tests.yml`) ───────────────────────────────
+            // Exhaustive, disjoint feature shards of the aggregate `CucumberTestRunner`,
+            // so the BDD suite runs across several CI machines in parallel instead of one
+            // ~14 min job (each shard keeps the one-JVM/aggregate efficiency). Exhaustiveness
+            // and disjointness are guarded by capsule.ci.CapsuleCucumberShardCoverageTest.
+            CucumberTaskSpec(
+                name = "cucumberTestShardKernel",
+                runnerClass = "capsule.scenarios.CucumberShardKernelRunner",
+                timeoutMinutes = 30,
+            ),
+            CucumberTaskSpec(
+                name = "cucumberTestShardContext",
+                runnerClass = "capsule.scenarios.CucumberShardContextRunner",
+                timeoutMinutes = 30,
+            ),
+            CucumberTaskSpec(
+                name = "cucumberTestShardQc",
+                runnerClass = "capsule.scenarios.CucumberShardQcRunner",
+                timeoutMinutes = 30,
+            ),
+            CucumberTaskSpec(
+                name = "cucumberTestShardMedia",
+                runnerClass = "capsule.scenarios.CucumberShardMediaRunner",
+                timeoutMinutes = 30,
+            ),
+            CucumberTaskSpec(
+                name = "cucumberTestShardAiViral",
+                runnerClass = "capsule.scenarios.CucumberShardAiViralRunner",
+                timeoutMinutes = 30,
+            ),
+            // `capsule.feature` (~400 s) is split by a tag-priority partition into 3 shards.
+            CucumberTaskSpec(
+                name = "cucumberTestShardCapsuleSubtitles",
+                runnerClass = "capsule.scenarios.CucumberShardCapsuleSubtitlesRunner",
+                timeoutMinutes = 30,
+            ),
+            CucumberTaskSpec(
+                name = "cucumberTestShardCapsuleManim",
+                runnerClass = "capsule.scenarios.CucumberShardCapsuleManimRunner",
+                timeoutMinutes = 30,
+            ),
+            CucumberTaskSpec(
+                name = "cucumberTestShardCapsuleBase",
+                runnerClass = "capsule.scenarios.CucumberShardCapsuleBaseRunner",
+                timeoutMinutes = 30,
+            ),
+            CucumberTaskSpec(
+                name = "cucumberTestShardCapsuleCoreA",
+                runnerClass = "capsule.scenarios.CucumberShardCapsuleCoreARunner",
+                timeoutMinutes = 30,
+            ),
+            CucumberTaskSpec(
+                name = "cucumberTestShardCapsuleCoreB",
+                runnerClass = "capsule.scenarios.CucumberShardCapsuleCoreBRunner",
+                timeoutMinutes = 30,
+            ),
+            CucumberTaskSpec(
+                name = "cucumberTestShardCapsuleSubtitlesBurnIn",
+                runnerClass = "capsule.scenarios.CucumberShardCapsuleSubtitlesBurnInRunner",
+                timeoutMinutes = 30,
+            ),
+            // Heavy single features isolated from the `media` shard.
+            CucumberTaskSpec(
+                name = "cucumberTestShardMultiLang",
+                runnerClass = "capsule.scenarios.CucumberShardMultiLangRunner",
+                timeoutMinutes = 30,
+            ),
+            CucumberTaskSpec(
+                name = "cucumberTestShardAudioPost",
+                runnerClass = "capsule.scenarios.CucumberShardAudioPostRunner",
+                timeoutMinutes = 30,
+            ),
+            // The heavy multi-language generation scenario is split into 4 language groups.
+            CucumberTaskSpec(
+                name = "cucumberTestShardMultiLangGenA",
+                runnerClass = "capsule.scenarios.CucumberShardMultiLangGenARunner",
+                timeoutMinutes = 30,
+            ),
+            CucumberTaskSpec(
+                name = "cucumberTestShardMultiLangGenB",
+                runnerClass = "capsule.scenarios.CucumberShardMultiLangGenBRunner",
+                timeoutMinutes = 30,
+            ),
+            CucumberTaskSpec(
+                name = "cucumberTestShardMultiLangGenC",
+                runnerClass = "capsule.scenarios.CucumberShardMultiLangGenCRunner",
+                timeoutMinutes = 30,
+            ),
+            CucumberTaskSpec(
+                name = "cucumberTestShardMultiLangGenD",
+                runnerClass = "capsule.scenarios.CucumberShardMultiLangGenDRunner",
+                timeoutMinutes = 30,
+            ),
+            // Integration (@integration / @manim) is split by tag into 2 shards.
+            CucumberTaskSpec(
+                name = "cucumberTestShardIntegration",
+                runnerClass = "capsule.scenarios.CucumberShardIntegrationRunner",
+                timeoutMinutes = 45,
+            ),
+            CucumberTaskSpec(
+                name = "cucumberTestShardManim",
+                runnerClass = "capsule.scenarios.CucumberShardManimRunner",
+                timeoutMinutes = 45,
+            ),
+            CucumberTaskSpec(
+                name = "cucumberTestShardManimParallel",
+                runnerClass = "capsule.scenarios.CucumberShardManimParallelRunner",
+                timeoutMinutes = 45,
+            ),
+            // Focused cucumber run for the CAP-ARCH-2 augmented context feature
+            // (fast iteration without the full Playwright suite, ~15 min).
+            CucumberTaskSpec(
+                name = "cucumberTestContext",
+                features = listOf("src/test/features/capsule_context.feature"),
+                tags = listOf("@context"),
+                runnerClass = "capsule.scenarios.CapsuleContextCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // Focused cucumber run for the CAP-ARCH-4 content+videos wiring feature
+            // (fast iteration without the full Playwright suite, ~15 min).
+            CucumberTaskSpec(
+                name = "cucumberTestContentAndVideos",
+                features = listOf("src/test/features/capsule_content_and_videos.feature"),
+                tags = listOf("@architecture"),
+                runnerClass = "capsule.scenarios.CapsuleContentAndVideosCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // Focused cucumber run for the CAP-ARCH-6 content + video boundary feature
+            // (fast iteration — single-language French, NoOp engines, mock LLM HTTP).
+            CucumberTaskSpec(
+                name = "cucumberTestArchBoundary",
+                features = listOf("src/test/features/capsule_arch_boundary.feature"),
+                tags = listOf("@cross-borough"),
+                runnerClass = "capsule.scenarios.CapsuleArchBoundaryCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // Focused cucumber run for the CAP-ARCH-7 US-4 video destination versioning feature
+            // (fast iteration without the full Playwright suite, ~15 min).
+            CucumberTaskSpec(
+                name = "cucumberTestDistrib",
+                features = listOf("src/test/features/capsule_distrib.feature"),
+                tags = listOf("@distrib"),
+                runnerClass = "capsule.scenarios.CapsuleDistribCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // Focused cucumber run for the CAP-CR3-2 strict mode anti-NoOp feature
+            // (fast iteration — pure config, no Playwright/FFmpeg needed).
+            CucumberTaskSpec(
+                name = "cucumberTestStrictMode",
+                features = listOf("src/test/features/capsule_strict_mode.feature"),
+                tags = listOf("@strict"),
+                runnerClass = "capsule.scenarios.CapsuleStrictModeCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // Focused cucumber run for the CAP-DOCCONTEXT-4 documentary corpus injection feature
+            // (fast iteration — pure config + file globs, no Playwright/FFmpeg needed).
+            CucumberTaskSpec(
+                name = "cucumberTestDocContext",
+                features = listOf("src/test/features/capsule_doc_context.feature"),
+                tags = listOf("@context", "@docs"),
+                runnerClass = "capsule.scenarios.CapsuleDocContextCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // Focused cucumber run for the CAP-SPD-4 pedagogical scenario injection feature
+            // (fast iteration — pure config + scenario file, no Playwright/FFmpeg needed).
+            CucumberTaskSpec(
+                name = "cucumberTestScenarioContext",
+                features = listOf("src/test/features/capsule_scenario_context.feature"),
+                tags = listOf("@context", "@scenario"),
+                runnerClass = "capsule.scenarios.CapsuleScenarioContextCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // CAP-CR3-3-5 — capture strategy selection (PLAYWRIGHT default, SCREENSHOT alt).
+            // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
+            CucumberTaskSpec(
+                name = "cucumberTestCaptureStrategy",
+                features = listOf("src/test/features/capsule_capture_strategy.feature"),
+                tags = listOf("@capture", "@strategy"),
+                runnerClass = "capsule.scenarios.CapsuleCaptureStrategyCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // CAP-MP4 US-3 — output format distribution (WEBM default, MP4, BOTH).
+            // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
+            // Uses a NoOp converter (no real FFmpeg); validates DistributeCapsuleVideoTask filter.
+            CucumberTaskSpec(
+                name = "cucumberTestFormat",
+                features = listOf("src/test/features/capsule_format.feature"),
+                tags = listOf("@distrib", "@format"),
+                runnerClass = "capsule.scenarios.CapsuleFormatCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // CAP-CR3-1 US-3 — duration validation (disabled default, enabled skip,
+            // enabled valid). Dedicated runner so it never runs the full Playwright
+            // suite (pattern S-082). Uses NoOp probe (no real ffprobe).
+            CucumberTaskSpec(
+                name = "cucumberTestDurationValidation",
+                features = listOf("src/test/features/capsule_duration_validation.feature"),
+                tags = listOf("@validation", "@duration"),
+                runnerClass = "capsule.scenarios.CapsuleDurationValidationCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // PRT-04 — video integrity by decode (a broken container keeps a valid
+            // duration). Dedicated runner so it never runs the full Playwright suite
+            // (pattern S-082). Uses the real ffmpeg decode probe on a fake (corrupt)
+            // file — the failure path is robust whether ffmpeg is present or absent.
+            CucumberTaskSpec(
+                name = "cucumberTestVideoIntegrity",
+                features = listOf("src/test/features/capsule_video_integrity.feature"),
+                tags = listOf("@validation", "@integrity"),
+                runnerClass = "capsule.scenarios.CapsuleVideoIntegrityCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // PRT-03 — subtitle cartons (one readable cue per carton + proportional
+            // timing). Pure-domain runner — no Playwright/FFmpeg (pattern S-082).
+            CucumberTaskSpec(
+                name = "cucumberTestSubtitlesCartons",
+                features = listOf("src/test/features/capsule_subtitles_cartons.feature"),
+                tags = listOf("@subtitle", "@cartons"),
+                runnerClass = "capsule.scenarios.CapsuleSubtitlesCartonsCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // PRT-06 — render signature (economy-of-ink reuse fingerprint).
+            // Pure-domain runner — no Playwright/FFmpeg (pattern S-082).
+            CucumberTaskSpec(
+                name = "cucumberTestRenderSignature",
+                features = listOf("src/test/features/capsule_render_signature.feature"),
+                tags = listOf("@capture", "@signature"),
+                runnerClass = "capsule.scenarios.CapsuleRenderSignatureCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // PRT-05 — content pre-flight before metered TTS (structural checks).
+            // Pure-domain runner — no Playwright/FFmpeg (pattern S-082).
+            CucumberTaskSpec(
+                name = "cucumberTestContentPreflight",
+                features = listOf("src/test/features/capsule_content_preflight.feature"),
+                tags = listOf("@qc", "@preflight"),
+                runnerClass = "capsule.scenarios.CapsuleContentPreflightCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // PRT-07 — deterministic timeline (integer-frame snapping).
+            // Pure-domain runner — no Playwright/FFmpeg (pattern S-082).
+            CucumberTaskSpec(
+                name = "cucumberTestTimeline",
+                features = listOf("src/test/features/capsule_timeline.feature"),
+                tags = listOf("@timeline"),
+                runnerClass = "capsule.scenarios.CapsuleTimelineCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // CAP-QC-VOICE US-1 — voice quality pure domain (normalizer + aligner +
+            // fidelity + snr). Pure-domain runner — no ASR/Playwright/FFmpeg (S-082).
+            CucumberTaskSpec(
+                name = "cucumberTestVoiceQuality",
+                features = listOf("src/test/features/capsule_voice_quality.feature"),
+                tags = listOf("@voice"),
+                runnerClass = "capsule.scenarios.CapsuleVoiceQualityCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // CAP-QC-VOICE US-2 — voice verification orchestration with a fake ASR
+            // (verdict + degraded paths + JSON report). Pure-domain runner — no ASR
+            // binary, no ffmpeg (pattern S-082).
+            CucumberTaskSpec(
+                name = "cucumberTestVoiceVerification",
+                features = listOf("src/test/features/capsule_voice_verification.feature"),
+                tags = listOf("@voice-verify"),
+                runnerClass = "capsule.scenarios.CapsuleVoiceVerificationCucumberRunner",
+                timeoutMinutes = 10,
+            ),
+            // PRT-08 — visual QC boards (beats + dit-vs-montre). Pure-domain runner —
+            // planners + Java2D renderer, no ffmpeg/Chromium (pattern S-082).
+            CucumberTaskSpec(
+                name = "cucumberTestQcBoards",
+                features = listOf("src/test/features/capsule_qc_boards.feature"),
+                tags = listOf("@qc-boards"),
+                runnerClass = "capsule.scenarios.CapsuleQcBoardsCucumberRunner",
+                timeoutMinutes = 10,
+            ),
+            // CAP-AUDIO US-4 — audio post-production (BGM + loudness EBU R128 + ducking).
+            // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
+            // Uses a NoOp processor (no real FFmpeg); validates applyAudioPostIfEnabled
+            // wiring + economy-of-ink guard + factory dispatch in CapsuleVideoTask.
+            CucumberTaskSpec(
+                name = "cucumberTestAudioPost",
+                features = listOf("src/test/features/capsule_audio_post.feature"),
+                tags = listOf("@audio", "@post"),
+                runnerClass = "capsule.scenarios.CapsuleAudioPostCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // CAP-PROVENANCE US-2 — context provenance audit artefact.
+            // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
+            // Validates the context-provenance.json channels/sources/totals + log line.
+            CucumberTaskSpec(
+                name = "cucumberTestProvenance",
+                features = listOf("src/test/features/capsule_provenance.feature"),
+                tags = listOf("@context", "@provenance"),
+                runnerClass = "capsule.scenarios.CapsuleProvenanceCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // CAP-GLOSSARY US-3 — glossary terminology injection (context augmenté).
+            // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
+            // Validates the ==== Official Glossary (glossary) section + no-op fallback
+            // + malformed glossary gracefully skipped via collectCapsuleAugmentedContext.
+            CucumberTaskSpec(
+                name = "cucumberTestGlossaryContext",
+                features = listOf("src/test/features/capsule_glossary_context.feature"),
+                tags = listOf("@context", "@glossary"),
+                runnerClass = "capsule.scenarios.CapsuleGlossaryContextCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // CAP-TRANSCRIPT US-5 — transcript generation (TEMPLATE and LLM strategies).
+            // Dedicated runner so it never runs the full Playwright suite (pattern S-082).
+            CucumberTaskSpec(
+                name = "cucumberTestTranscript",
+                features = listOf("src/test/features/capsule_transcript.feature"),
+                tags = listOf("@transcript"),
+                runnerClass = "capsule.scenarios.CapsuleTranscriptCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // CAP-29.5 — multi-language capsule pipeline (one WebM per LanguageCatalog).
+            // Dedicated runner pattern S-082 so it never runs the full Playwright suite.
+            // Uses NoOp engines: validates plan building + naming + RTL coverage.
+            CucumberTaskSpec(
+                name = "cucumberTestMultiLang",
+                features = listOf("src/test/features/multi_language_capsule.feature"),
+                tags = listOf("@multilang"),
+                runnerClass = "capsule.scenarios.CapsuleMultiLangCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // CAP-ANIM US-2 — Remotion capture strategy BDD (NoOp fallback, strictMode,
+            // config DSL). Dedicated runner pattern S-082; steps prefixed "remotion"
+            // (bug S-088 glue capsule.scenarios shared). No @integration — real
+            // Remotion render is gated CI/dogfooding.
+            CucumberTaskSpec(
+                name = "cucumberTestRemotion",
+                features = listOf("src/test/features/capsule_remotion.feature"),
+                tags = listOf("@anim", "@remotion"),
+                runnerClass = "capsule.scenarios.CapsuleRemotionCucumberRunner",
+                timeoutMinutes = 15,
+            ),
+            // CAP-PODCAST US-2 — podcast MP3 extraction (audio-only mobile consumption).
+            // Dedicated runner pattern S-082; steps prefixed "podcast" (bug S-088 glue
+            // capsule.scenarios shared). Uses NoOp concatenator (no real FFmpeg); validates
+            // wiring + economy-of-ink guard + factory dispatch, not the concat itself
+            // (covered by US-1 unit tests for PodcastConcatenatorImpl/PodcastConcatCommand).
+            CucumberTaskSpec(
+                name = "cucumberTestPodcast",
+                features = listOf("src/test/features/capsule_podcast.feature"),
+                tags = listOf("@podcast"),
+                runnerClass = "capsule.scenarios.CapsulePodcastCucumberRunner",
+                timeoutMinutes = 30,
+            ),
+            // CAP-PREVIEW US-2 — dry-run mode (previewOnly → PNG only, skip mux/audio/format).
+            // Dedicated runner pattern S-082; steps prefixed "preview" (bug S-088 glue
+            // capsule.scenarios shared). Validates DSL wiring via GradleRunner help task;
+            // no Playwright or FFmpeg needed.
+            CucumberTaskSpec(
+                name = "cucumberTestPreview",
+                features = listOf("src/test/features/capsule_preview.feature"),
+                tags = listOf("@preview"),
+                runnerClass = "capsule.scenarios.CapsulePreviewCucumberRunner",
+                timeoutMinutes = 15,
+            ),
+            // CAP-CHAPITRE — chapter markers + intro/outro cards.
+            // Dedicated runner pattern S-082; steps prefixed "chapters" (bug S-088).
+            // Validates DSL wiring via GradleRunner; no Playwright or FFmpeg needed.
+            CucumberTaskSpec(
+                name = "cucumberTestChapters",
+                features = listOf("src/test/features/capsule_chapters.feature"),
+                tags = listOf("@chapters"),
+                runnerClass = "capsule.scenarios.CapsuleChaptersCucumberRunner",
+                timeoutMinutes = 15,
+            ),
+            // HF-YOUTUBE-PUBLISH US-3b — YouTube publication through the shared N1
+            // VideoPublisher port (OAuth 2.0 adapter + resolver). Dedicated runner
+            // pattern S-082; steps prefixed "capsule publish" (bug S-088). Network-free:
+            // a fake HttpTransport stands in for the YouTube Data API.
+            CucumberTaskSpec(
+                name = "cucumberTestPublish",
+                features = listOf("src/test/features/capsule_publish.feature"),
+                tags = listOf("@publish"),
+                runnerClass = "capsule.scenarios.CapsulePublishCucumberRunner",
+                timeoutMinutes = 15,
+            ),
+            // CAP-ANIM-TEST US-5 — Remotion timing model (beats, playback rate, overlap).
+            // Dedicated runner pattern S-082; steps prefixed "remotion anim" (bug S-088).
+            // Exercises the pure RemotionTiming model; no Node/FFmpeg/GradleRunner.
+            CucumberTaskSpec(
+                name = "cucumberTestRemotionAnim",
+                features = listOf("src/test/features/capsule_remotion_anim.feature"),
+                tags = listOf("@remotion-anim"),
+                runnerClass = "capsule.scenarios.CapsuleRemotionAnimCucumberRunner",
+                timeoutMinutes = 15,
+            ),
+            // CAP-ENGINE-DECOUPLING US-1 — engine-neutral video model (VideoSegment /
+            // VideoScript / VideoProductionEntry) and the legacy↔neutral bridge.
+            // Dedicated runner pattern S-082; steps prefixed "kernel"/"legacy" (S-088).
+            // Pure domain — no Gradle/FFmpeg/Playwright.
+            CucumberTaskSpec(
+                name = "cucumberTestKernelModel",
+                features = listOf("src/test/features/capsule_kernel_model.feature"),
+                tags = listOf("@kernel-model"),
+                runnerClass = "capsule.scenarios.CapsuleKernelModelCucumberRunner",
+                timeoutMinutes = 10,
+            ),
+            // CAP-ENGINE-DECOUPLING US-2 — reveal.js engine adapter (deck HTML +
+            // capture orchestration behind the neutral VideoEngine port).
+            // Dedicated runner pattern S-082; steps prefixed "engine adapter"/"reveal deck".
+            // Pure domain — fake capture, no Gradle/FFmpeg/Playwright.
+            CucumberTaskSpec(
+                name = "cucumberTestEngineAdapter",
+                features = listOf("src/test/features/capsule_engine_adapter.feature"),
+                tags = listOf("@engine-adapter"),
+                runnerClass = "capsule.scenarios.CapsuleEngineAdapterCucumberRunner",
+                timeoutMinutes = 10,
+            ),
+            // CAP-ENGINE-DECOUPLING US-3 — SegmentSource port + reveal.js speaker-note
+            // adapter (AsciiDoc parsing + -script.txt contract).
+            // Dedicated runner pattern S-082; steps prefixed "source"/"deck"/"reveal contract".
+            // Pure domain — no Gradle/FFmpeg/Playwright.
+            CucumberTaskSpec(
+                name = "cucumberTestSegmentSource",
+                features = listOf("src/test/features/capsule_segment_source.feature"),
+                tags = listOf("@segment-source"),
+                runnerClass = "capsule.scenarios.CapsuleSegmentSourceCucumberRunner",
+                timeoutMinutes = 10,
+            ),
+            // US-4 kernel boundary guard moved to the video-kernel borough (it scans the
+            // video.kernel sources, now owned there).
+            // Integration cucumber run — scenarios tagged @integration or @manim
+            // (burn-in E2E with real ffmpeg, Manim pipeline NoOp). Excluded from the
+            // default cucumberTest runner by `not @integration`; this dedicated task
+            // exercises them via CucumberIntegrationTestRunner. Run explicitly:
+            //   ./gradlew cucumberTestIntegration -PrunCucumber
+            CucumberTaskSpec(
+                name = "cucumberTestIntegration",
+                features = listOf("src/test/features"),
+                tags = listOf("@integration"),
+                runnerClass = "capsule.scenarios.CucumberIntegrationTestRunner",
+                timeoutMinutes = 30,
+            ),
+            // CAP-PR2-COV US-4 — regression that the PR #2 migration sinks
+            // (ProcessRunner / FileReplace.moveOver) are the only process and file
+            // relocation entry points. Pure BDD, no real ffmpeg/node required.
+            CucumberTaskSpec(
+                name = "cucumberTestPr2Coverage",
+                features = listOf("src/test/features/capsule_pr2_coverage.feature"),
+                tags = listOf("@pr2-cov"),
+                runnerClass = "capsule.scenarios.CapsulePr2CoverageCucumberRunner",
+                timeoutMinutes = 10,
+            ),
+            // CAP-VIRAL US-8 — viral campaign engine BDD (storyboard gate, batch,
+            // context-anchored hook prompt, campaign bundle with market copy read).
+            // Dedicated runner pattern S-082; steps prefixed "viral"/"batch"/"campaign"
+            // (bug S-088 glue capsule.scenarios shared). Pure domain, no ffmpeg/node.
+            CucumberTaskSpec(
+                name = "cucumberTestViral",
+                features = listOf("src/test/features/capsule_viral.feature"),
+                tags = listOf("@viral"),
+                runnerClass = "capsule.scenarios.CapsuleViralCucumberRunner",
+                timeoutMinutes = 10,
+            ),
+            // CAP-CONTEXT US-2/US-3 — storyboard context (QQOQCP, visual identity,
+            // narrative thread) rendering + round-trip + coherence gate. Dedicated
+            // runner pattern S-082; steps prefixed "contextual storyboard"/"contextual
+            // verdict" (bug S-088 glue capsule.scenarios shared). Pure domain, no
+            // ffmpeg/node/Playwright (the FFmpeg socle is untouched by the context).
+            CucumberTaskSpec(
+                name = "cucumberTestStoryboardContext",
+                features = listOf("src/test/features/capsule_storyboard_context.feature"),
+                tags = listOf("@storyboard-context"),
+                runnerClass = "capsule.scenarios.CapsuleStoryboardContextCucumberRunner",
+                timeoutMinutes = 10,
+            ),
+            // CAP-SHORT US-5 — real short-form render: produces a real MP4 through the
+            // FFmpeg socle (ScreenshotPlanner + VideoFormatConverter), durations fitted
+            // to the target. Needs real ffmpeg/ffprobe (scenarios pending when absent).
+            CucumberTaskSpec(
+                name = "cucumberTestViralRender",
+                features = listOf("src/test/features/capsule_viral_render.feature"),
+                tags = listOf("@viral-render"),
+                runnerClass = "capsule.scenarios.CapsuleViralRenderCucumberRunner",
+                timeoutMinutes = 5,
+            ),
+            // CAP-VIRAL-E2E US-1 — delivery gate: the campaign manifest references assets
+            // by path; the gate verifies they exist before hand-off to the distribution
+            // layer. Dedicated runner pattern S-082; steps prefixed "campaign gate"/"campaign
+            // manifest" (bug S-088 glue capsule.scenarios shared). Pure domain, no ffmpeg/node.
+            CucumberTaskSpec(
+                name = "cucumberTestViralGate",
+                features = listOf("src/test/features/capsule_viral_gate.feature"),
+                tags = listOf("@viral-gate"),
+                runnerClass = "capsule.scenarios.CapsuleViralGateCucumberRunner",
+                timeoutMinutes = 10,
+            ),
+            // CAP-VIRAL-E2E US-2 — campaign cover: planned from the storyboard (hook beat,
+            // else message) and rendered as a capturable portrait document. Dedicated runner
+            // pattern S-082; steps prefixed "viral cover"/"viral thumbnail" (bug S-088).
+            // Pure domain (planner + builder), no ffmpeg/Chromium.
+            CucumberTaskSpec(
+                name = "cucumberTestViralThumbnail",
+                features = listOf("src/test/features/capsule_viral_thumbnail.feature"),
+                tags = listOf("@thumbnail"),
+                runnerClass = "capsule.scenarios.CapsuleViralThumbnailCucumberRunner",
+                timeoutMinutes = 10,
+            ),
+            // CAP-VIRAL-E2E US-3 — karaoke captions: the beat words are timed across the
+            // beat windows and rendered into a full ASS document. Dedicated runner pattern
+            // S-082; steps prefixed "karaoke" (bug S-088). Pure domain (planner + document).
+            CucumberTaskSpec(
+                name = "cucumberTestViralKaraoke",
+                features = listOf("src/test/features/capsule_viral_karaoke.feature"),
+                tags = listOf("@karaoke"),
+                runnerClass = "capsule.scenarios.CapsuleViralKaraokeCucumberRunner",
+                timeoutMinutes = 10,
+            ),
+            // Storyboard authoring helper — normalize a hand-authored storyboard so every
+            // beat carries an entering transition (editorial gate). Dedicated runner pattern
+            // S-082; steps prefixed "storyboard to normalize"/"normalized" (bug S-088). Pure domain.
+            CucumberTaskSpec(
+                name = "cucumberTestViralNormalize",
+                features = listOf("src/test/features/capsule_viral_normalize.feature"),
+                tags = listOf("@normalize"),
+                runnerClass = "capsule.scenarios.CapsuleStoryboardNormalizeCucumberRunner",
+                timeoutMinutes = 10,
+            ),
+            // LLM resilience — a metered cloud LLM fails transiently (429/503, timeout);
+            // adapters with a safe fallback degrade instead of failing the build. Dedicated
+            // runner pattern S-082; steps prefixed "guarded"/"viral hook generator" (S-088).
+            CucumberTaskSpec(
+                name = "cucumberTestLlmResilience",
+                features = listOf("src/test/features/capsule_llm_resilience.feature"),
+                tags = listOf("@resilience"),
+                runnerClass = "capsule.scenarios.CapsuleLlmResilienceCucumberRunner",
+                timeoutMinutes = 10,
+            ),
+            // CAP-FISH-AUDIO US-4 — Fish Audio engine BDD. Fish Audio is NEVER called:
+            // the HTTP transport is a fake returning canned bytes. Dedicated runner
+            // pattern S-082; steps prefixed "Fish Audio"/"the transport"/"the request"
+            // (bug S-088 glue capsule.scenarios shared). Pure domain, no network/ffmpeg.
+            CucumberTaskSpec(
+                name = "cucumberTestFishAudio",
+                features = listOf("src/test/features/capsule_fish_audio.feature"),
+                tags = listOf("@fish"),
+                runnerClass = "capsule.scenarios.CapsuleFishAudioCucumberRunner",
+                timeoutMinutes = 10,
+            ),
+        )
 }
 
 // CR-10 — cucumberTest is expensive (Playwright + FFmpeg, ~15 min).
@@ -661,7 +669,7 @@ dependencies {
 
 afterEvaluate {
     configurations.getByName("functionalTestImplementation").extendsFrom(
-        configurations.getByName("testImplementation")
+        configurations.getByName("testImplementation"),
     )
 }
 

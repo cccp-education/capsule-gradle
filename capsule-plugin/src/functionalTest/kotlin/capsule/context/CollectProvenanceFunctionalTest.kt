@@ -19,7 +19,6 @@ import kotlin.test.assertTrue
  * token budget, and that an empty context yields an empty provenance.
  */
 class CollectProvenanceFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -27,19 +26,23 @@ class CollectProvenanceFunctionalTest {
 
     private fun writeBuildFile() {
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     private fun writeEagerFiles() {
         val agents = projectDir.resolve(".agents").apply { mkdirs() }
-        agents.resolve("INDEX.adoc").writeText("""
+        agents.resolve("INDEX.adoc").writeText(
+            """
             = INDEX — Demo consumer
             EPIC DEMO-1 : in progress
-        """.trimIndent())
+            """.trimIndent(),
+        )
         projectDir.resolve("PROMPT_REPRISE.adoc").writeText(
             "Mission : generate a demo capsule.",
         )
@@ -49,7 +52,8 @@ class CollectProvenanceFunctionalTest {
     }
 
     private fun runner(vararg args: String): GradleRunner =
-        GradleRunner.create()
+        GradleRunner
+            .create()
             .forwardOutput()
             .withPluginClasspath()
             .withArguments(*args)
@@ -65,11 +69,12 @@ class CollectProvenanceFunctionalTest {
     fun `collectCapsuleAugmentedContext writes a provenance JSON with the surviving channels`() {
         writeBuildFile()
         writeEagerFiles()
-        val result = runner(
-            "collectCapsuleAugmentedContext",
-            "-Pcontext.ragContent=similarity: 0.98 — RAG nugget about grading",
-            "-Pcontext.graphifyContent=node: capsule -> edge: feeds -> node: video",
-        ).build()
+        val result =
+            runner(
+                "collectCapsuleAugmentedContext",
+                "-Pcontext.ragContent=similarity: 0.98 — RAG nugget about grading",
+                "-Pcontext.graphifyContent=node: capsule -> edge: feeds -> node: video",
+            ).build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":collectCapsuleAugmentedContext")?.outcome)
         assertTrue(result.output.contains("CAPSULE PROVENANCE"), "Expected provenance log line")
 

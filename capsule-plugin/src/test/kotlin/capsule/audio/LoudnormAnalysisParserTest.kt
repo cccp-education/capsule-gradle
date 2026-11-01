@@ -11,8 +11,8 @@ import kotlin.test.assertNull
  * merged output, so it is testable without spawning ffmpeg.
  */
 class LoudnormAnalysisParserTest {
-
-    private val sample = """
+    private val sample =
+        """
         [Parsed_loudnorm_0 @ 0x55] 
         {
             "input_i" : "-23.03",
@@ -22,7 +22,7 @@ class LoudnormAnalysisParserTest {
             "output_i" : "-16.00",
             "target_offset" : "0.21"
         }
-    """.trimIndent()
+        """.trimIndent()
 
     @Test
     fun `parses the five measured fields`() {

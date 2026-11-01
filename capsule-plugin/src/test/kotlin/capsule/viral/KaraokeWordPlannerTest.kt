@@ -9,15 +9,18 @@ import kotlin.test.assertTrue
  * timeline that turns storyboard beats into word-by-word karaoke lines.
  */
 class KaraokeWordPlannerTest {
-
-    private fun beat(intent: String, duration: Double, role: String = "development") =
-        StoryboardBeat(role = role, intent = intent, durationSeconds = duration)
+    private fun beat(
+        intent: String,
+        duration: Double,
+        role: String = "development",
+    ) = StoryboardBeat(role = role, intent = intent, durationSeconds = duration)
 
     @Test
     fun `produces one line per beat spanning its window`() {
-        val lines = KaraokeWordPlanner.plan(
-            listOf(beat("Bonjour le monde", 3.0), beat("Au revoir", 2.0, role = "cta")),
-        )
+        val lines =
+            KaraokeWordPlanner.plan(
+                listOf(beat("Bonjour le monde", 3.0), beat("Au revoir", 2.0, role = "cta")),
+            )
         assertEquals(2, lines.size)
         assertEquals(0.0, lines[0].startTime)
         assertEquals(3.0, lines[0].endTime, absoluteTolerance = 1e-9)

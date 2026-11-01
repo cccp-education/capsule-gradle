@@ -1,7 +1,6 @@
 package capsule
 
 object HtmlSectionParser {
-
     private val sectionOpenRegex = Regex("""<section\b(?![^>]*/>)[^>]*>""")
     private val sectionCloseRegex = Regex("""</section>""")
 
@@ -23,8 +22,7 @@ object HtmlSectionParser {
      * @return le balisage entre les balises, ou `null` si le deck n'a pas de
      *         conteneur `slides`.
      */
-    fun slidesMarkup(deckHtml: String): String? =
-        slidesDivRegex.find(deckHtml)?.groupValues?.get(1)
+    fun slidesMarkup(deckHtml: String): String? = slidesDivRegex.find(deckHtml)?.groupValues?.get(1)
 
     private val headRegex = Regex("""(?s)<head>.*?</head>""")
 

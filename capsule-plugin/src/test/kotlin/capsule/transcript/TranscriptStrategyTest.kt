@@ -14,7 +14,6 @@ import kotlin.test.assertEquals
  * unknown/blank values.
  */
 class TranscriptStrategyTest {
-
     @Test
     fun `fromString returns TEMPLATE for null`() {
         assertEquals(TranscriptStrategy.TEMPLATE, TranscriptStrategy.fromString(null))

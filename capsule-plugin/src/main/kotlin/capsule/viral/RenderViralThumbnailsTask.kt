@@ -43,7 +43,6 @@ import java.io.File
  */
 @DisableCachingByDefault(because = "Viral thumbnail render — Playwright screenshot of the cover")
 abstract class RenderViralThumbnailsTask : DefaultTask() {
-
     /** Master switch — when false (default), the task is a no-op skip. */
     @get:Input
     abstract val viralEnabled: Property<Boolean>
@@ -102,8 +101,10 @@ abstract class RenderViralThumbnailsTask : DefaultTask() {
             return
         }
 
-        val resolvedPlatforms = platforms.get()
-            .mapNotNull { name -> name.takeIf { it.isNotBlank() }?.let { ViralPlatform.fromString(it) } }
+        val resolvedPlatforms =
+            platforms
+                .get()
+                .mapNotNull { name -> name.takeIf { it.isNotBlank() }?.let { ViralPlatform.fromString(it) } }
         val variants = ViralBatchPlanner.plan(languages.get(), resolvedPlatforms, targetDurationSeconds.get())
         if (variants.isEmpty()) {
             logger.lifecycle("CAPSULE VIRAL THUMBNAILS → skipped (empty variant matrix)")
@@ -145,7 +146,11 @@ abstract class RenderViralThumbnailsTask : DefaultTask() {
     }
 
     /** Captures the cover HTML once into [work]; returns the produced PNG, or null on failure. */
-    private fun captureCover(cover: File, work: File, engine: PlaywrightCapture): File? =
+    private fun captureCover(
+        cover: File,
+        work: File,
+        engine: PlaywrightCapture,
+    ): File? =
         runCatching {
             engine.capture(
                 deckHtmlPath = cover.absolutePath,
@@ -161,7 +166,10 @@ abstract class RenderViralThumbnailsTask : DefaultTask() {
         }
 
     /** Copies a produced cover to a variant's file (batch replication). */
-    private fun replicate(source: File, target: File): Boolean =
+    private fun replicate(
+        source: File,
+        target: File,
+    ): Boolean =
         runCatching {
             target.parentFile?.mkdirs()
             source.copyTo(target, overwrite = true)

@@ -10,10 +10,10 @@ import kotlin.test.assertTrue
  * round-trip).
  */
 class TtsScriptDeriverTest {
-
     @Test
     fun `derives a canonical script from speaker notes with NOTE blocks`() {
-        val adoc = """
+        val adoc =
+            """
             == Slide 1
 
             [NOTE.speaker]
@@ -27,7 +27,7 @@ class TtsScriptDeriverTest {
             --
             Second enriched narration.
             --
-        """.trimIndent()
+            """.trimIndent()
 
         val script = TtsScriptDeriver.derive(adoc, "kotlin-coroutines")
 
@@ -40,7 +40,8 @@ class TtsScriptDeriverTest {
 
     @Test
     fun `returns a blank script when no NOTE speaker block is present`() {
-        val adoc = """
+        val adoc =
+            """
             == Slide 1
 
             Some text without a speaker note block.
@@ -48,7 +49,7 @@ class TtsScriptDeriverTest {
             == Slide 2
 
             Also no block here.
-        """.trimIndent()
+            """.trimIndent()
 
         val script = TtsScriptDeriver.derive(adoc, "kotlin-coroutines")
 

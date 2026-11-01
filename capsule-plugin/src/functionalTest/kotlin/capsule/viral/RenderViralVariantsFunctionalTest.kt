@@ -20,7 +20,6 @@ import kotlin.test.assertTrue
  * the orchestration itself is covered by [ViralVariantRendererTest].
  */
 class RenderViralVariantsFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -83,12 +82,14 @@ class RenderViralVariantsFunctionalTest {
     @Test
     fun `renderViralVariants task is registered in the generate group`() {
         setupBuild()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("tasks", "--group", "generate")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("tasks", "--group", "generate")
+                .withProjectDir(projectDir)
+                .build()
         assertTrue(
             result.output.contains("renderViralVariants"),
             "Expected renderViralVariants in generate group, got: ${result.output}",
@@ -98,12 +99,14 @@ class RenderViralVariantsFunctionalTest {
     @Test
     fun `disabled by default is a no-op skip`() {
         setupBuild()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("renderViralVariants")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("renderViralVariants")
+                .withProjectDir(projectDir)
+                .build()
         assertTrue(
             result.output.contains("viralEnabled=false") || result.output.contains("skipped"),
             "Expected skip log when viralEnabled defaults to false, got: ${result.output}",
@@ -118,20 +121,21 @@ class RenderViralVariantsFunctionalTest {
         videosDir.resolve("fr-tiktok-30.mp4").writeText("mp4")
         videosDir.resolve("en-tiktok-30.mp4").writeText("mp4")
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(
-                "renderViralVariants",
-                "-Pcapsule.viral.enabled=true",
-                "-Pcapsule.viral.storyboardFile=storyboard.adoc",
-                "-Pcapsule.viral.hook=Et si 30 secondes suffisaient ?",
-                "-Pcapsule.viral.cta=Découvrez Content",
-                "-Pcapsule.viral.languages=fr,en",
-                "-Pcapsule.viral.platforms=TIKTOK",
-            )
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(
+                    "renderViralVariants",
+                    "-Pcapsule.viral.enabled=true",
+                    "-Pcapsule.viral.storyboardFile=storyboard.adoc",
+                    "-Pcapsule.viral.hook=Et si 30 secondes suffisaient ?",
+                    "-Pcapsule.viral.cta=Découvrez Content",
+                    "-Pcapsule.viral.languages=fr,en",
+                    "-Pcapsule.viral.platforms=TIKTOK",
+                ).withProjectDir(projectDir)
+                .build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":renderViralVariants")?.outcome)
         assertTrue(

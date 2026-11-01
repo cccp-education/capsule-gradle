@@ -12,11 +12,11 @@ import kotlin.test.assertTrue
  * Pure — no ffmpeg invoked.
  */
 class Mp4ConversionCommandTest {
-
     @TempDir
     lateinit var dir: File
 
     private fun input() = File(dir, "deck.webm").apply { writeText("x") }
+
     private fun output() = File(dir, "deck.mp4")
 
     @Test

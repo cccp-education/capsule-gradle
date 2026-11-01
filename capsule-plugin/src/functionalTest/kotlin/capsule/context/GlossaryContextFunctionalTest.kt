@@ -20,17 +20,18 @@ import kotlin.test.assertTrue
  * - No glossaryFile configured = no glossary section (backward compatible).
  */
 class GlossaryContextFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
     private fun writeBuildFile() {
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     private fun writeEagerFiles() {
@@ -61,7 +62,8 @@ class GlossaryContextFunctionalTest {
     }
 
     private fun runner(vararg args: String): GradleRunner =
-        GradleRunner.create()
+        GradleRunner
+            .create()
             .forwardOutput()
             .withPluginClasspath()
             .withArguments(*args)
@@ -72,10 +74,11 @@ class GlossaryContextFunctionalTest {
         writeBuildFile()
         writeEagerFiles()
         val glossaryFile = writeGlossaryFile()
-        val result = runner(
-            "collectCapsuleAugmentedContext",
-            "-Pcapsule.context.glossaryFile=${glossaryFile.absolutePath}",
-        ).build()
+        val result =
+            runner(
+                "collectCapsuleAugmentedContext",
+                "-Pcapsule.context.glossaryFile=${glossaryFile.absolutePath}",
+            ).build()
         assertEquals(TaskOutcome.SUCCESS, result.task(":collectCapsuleAugmentedContext")?.outcome)
         val artefact = projectDir.resolve("build/capsule/augmented-context.txt")
         assertTrue(artefact.exists(), "Expected augmented context artefact")

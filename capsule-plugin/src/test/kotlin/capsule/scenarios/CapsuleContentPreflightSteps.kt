@@ -17,12 +17,14 @@ import org.junit.jupiter.api.Assertions.assertTrue
  * prefixed with "preflight" (S-088 — the glue is classpath-wide).
  */
 class CapsuleContentPreflightSteps {
-
     private val slides = mutableListOf<SlideSegment>()
     private var findings: List<PreflightFinding> = emptyList()
 
     @Given("a preflight slide {int} with note {string}")
-    fun aPreflightSlide(index: Int, note: String) {
+    fun aPreflightSlide(
+        index: Int,
+        note: String,
+    ) {
         slides.add(SlideSegment(index = index, title = "s$index", narration = note))
     }
 
@@ -37,7 +39,11 @@ class CapsuleContentPreflightSteps {
     }
 
     @Then("the preflight has {int} finding with code {string} and severity {string}")
-    fun thePreflightHasFinding(count: Int, code: String, severity: String) {
+    fun thePreflightHasFinding(
+        count: Int,
+        code: String,
+        severity: String,
+    ) {
         assertEquals(count, findings.size, "unexpected findings: $findings")
         assertEquals(code, findings.single().code)
         assertEquals(Severity.valueOf(severity), findings.single().severity)

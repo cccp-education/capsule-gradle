@@ -16,7 +16,6 @@ import capsule.feed.type
  * (pure object `write(script): String`).
  */
 object TranscriptBuilder {
-
     /** Intro boilerplate appended after the title + language attribute. */
     const val INTRO: String =
         "This article is the transcript of the training capsule."
@@ -31,22 +30,23 @@ object TranscriptBuilder {
      * @param plan the transcript plan (deck name, segments, language).
      * @return a deterministic AsciiDoc article string.
      */
-    fun build(plan: TranscriptPlan): String = buildString {
-        append("= ")
-        appendLine(plan.deckName)
-        append(":language: ")
-        appendLine(plan.language)
-        appendLine()
-        appendLine(INTRO)
-        appendLine()
-        for (segment in plan.segments) {
-            if (segment.type == SlideType.MANIM) continue
-            append("== ")
-            appendLine(segment.title)
+    fun build(plan: TranscriptPlan): String =
+        buildString {
+            append("= ")
+            appendLine(plan.deckName)
+            append(":language: ")
+            appendLine(plan.language)
             appendLine()
-            appendLine(segment.speakerNote.trim())
+            appendLine(INTRO)
             appendLine()
-        }
-        appendLine(OUTRO)
-    }.trimEnd() + "\n"
+            for (segment in plan.segments) {
+                if (segment.type == SlideType.MANIM) continue
+                append("== ")
+                appendLine(segment.title)
+                appendLine()
+                appendLine(segment.speakerNote.trim())
+                appendLine()
+            }
+            appendLine(OUTRO)
+        }.trimEnd() + "\n"
 }

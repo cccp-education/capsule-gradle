@@ -27,7 +27,6 @@ data class ResolvedLanguage(
  * `SliderMessages` and `PlantumlMessages`).
  */
 object MultiLanguageResolver {
-
     fun resolve(code: String): ResolvedLanguage? {
         val language = LanguageCatalog.findByCode(code) ?: return null
         val piperModel = VoiceMapping.piperModel(code) ?: return null
@@ -35,11 +34,9 @@ object MultiLanguageResolver {
         return ResolvedLanguage(language, piperModel, espeakVoice)
     }
 
-    fun resolveByPiperModel(model: String): SupportedLanguage? =
-        VoiceMapping.codeByPiperModel(model)?.let { LanguageCatalog.findByCode(it) }
+    fun resolveByPiperModel(model: String): SupportedLanguage? = VoiceMapping.codeByPiperModel(model)?.let { LanguageCatalog.findByCode(it) }
 
-    fun resolveByEspeakVoice(voice: String): SupportedLanguage? =
-        VoiceMapping.codeByEspeakVoice(voice)?.let { LanguageCatalog.findByCode(it) }
+    fun resolveByEspeakVoice(voice: String): SupportedLanguage? = VoiceMapping.codeByEspeakVoice(voice)?.let { LanguageCatalog.findByCode(it) }
 
     fun piperModel(code: String): String? = VoiceMapping.piperModel(code)
 

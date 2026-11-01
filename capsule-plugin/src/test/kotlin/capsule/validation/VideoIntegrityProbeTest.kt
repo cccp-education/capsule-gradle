@@ -1,11 +1,11 @@
 package capsule.validation
 
 import capsule.ProcessRunner
-import java.io.File
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
 
 /**
  * Unit tests for [VideoIntegrityProbe] (PRT-04) driven by
@@ -14,7 +14,6 @@ import org.junit.jupiter.api.io.TempDir
  * [VideoIntegrityChecker].
  */
 class VideoIntegrityProbeTest {
-
     @TempDir
     lateinit var tempDir: File
 
@@ -25,7 +24,10 @@ class VideoIntegrityProbeTest {
         ProcessRunner.commandInterceptor = null
     }
 
-    private fun intercept(exitCode: Int, output: String) {
+    private fun intercept(
+        exitCode: Int,
+        output: String,
+    ) {
         captured.clear()
         ProcessRunner.commandInterceptor = { command, _, _, _, _ ->
             captured.add(command)
@@ -33,8 +35,7 @@ class VideoIntegrityProbeTest {
         }
     }
 
-    private fun clip(name: String = "clip.webm"): File =
-        File(tempDir, name).also { it.writeText("x") }
+    private fun clip(name: String = "clip.webm"): File = File(tempDir, name).also { it.writeText("x") }
 
     @Test
     fun `delegates a null-muxer decode and maps success to clean`() {

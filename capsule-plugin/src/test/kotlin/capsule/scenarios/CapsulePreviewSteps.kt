@@ -5,7 +5,6 @@ import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
 import java.io.File
 
 /**
@@ -21,21 +20,23 @@ import java.io.File
  * shared `capsule.scenarios` glue (bug S-088).
  */
 class CapsulePreviewSteps {
-
     private var projectDir: File? = null
     private var buildOutput: String = ""
 
     @Given("a Capsule preview Gradle project with the capsule plugin applied")
     fun aCapsulePreviewGradleProjectWithTheCapsulePluginApplied() {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-preview-${System.currentTimeMillis()}-${System.nanoTime()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-preview-${System.currentTimeMillis()}-${System.nanoTime()}")
+                .also { it.mkdirs() }
         projectDir!!.resolve("settings.gradle").writeText("")
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @When("I run the capsule build with the default preview config")
@@ -45,14 +46,16 @@ class CapsulePreviewSteps {
 
     @When("I run the capsule build with previewOnly enabled via DSL")
     fun iRunTheCapsuleBuildWithPreviewOnlyEnabledViaDsl() {
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             capsule {
                 previewOnly = true
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         runPreviewBuild("help")
     }
 
@@ -63,12 +66,14 @@ class CapsulePreviewSteps {
     }
 
     private fun runPreviewBuild(task: String) {
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(task, "-q")
-            .withProjectDir(projectDir!!)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(task, "-q")
+                .withProjectDir(projectDir!!)
+                .build()
         buildOutput = result.output
     }
 

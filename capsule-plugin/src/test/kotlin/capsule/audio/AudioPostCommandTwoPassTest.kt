@@ -10,14 +10,14 @@ import kotlin.test.assertTrue
  * [AudioPostCommand] (pure object — no I/O).
  */
 class AudioPostCommandTwoPassTest {
-
-    private val measured = LoudnormMeasurement(
-        inputI = -23.03,
-        inputTp = -2.19,
-        inputLra = 4.30,
-        inputThresh = -33.31,
-        targetOffset = 0.21,
-    )
+    private val measured =
+        LoudnormMeasurement(
+            inputI = -23.03,
+            inputTp = -2.19,
+            inputLra = 4.30,
+            inputThresh = -33.31,
+            targetOffset = 0.21,
+        )
     private val config = AudioPostConfig(loudnessTarget = -14.0)
 
     @Test
@@ -52,9 +52,14 @@ class AudioPostCommandTwoPassTest {
 
     @Test
     fun `two-pass argv copies video and applies the measured chain`() {
-        val args = AudioPostCommand.buildTwoPassArgv(
-            File("/tmp/in.webm"), File("/tmp/out.webm"), config, measured, "ffmpeg",
-        )
+        val args =
+            AudioPostCommand.buildTwoPassArgv(
+                File("/tmp/in.webm"),
+                File("/tmp/out.webm"),
+                config,
+                measured,
+                "ffmpeg",
+            )
         assertTrue(args.containsAll(listOf("-c:v", "copy")), args.toString())
         assertTrue(args.any { it.contains("measured_I=-23.03") }, args.toString())
         assertEquals("/tmp/out.webm", args.last())

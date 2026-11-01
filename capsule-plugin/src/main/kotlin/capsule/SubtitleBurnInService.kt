@@ -22,7 +22,11 @@ interface SubtitleBurnInService {
      * @return the output [File] with hard-burned subtitles
      * @throws BurnInException if burn-in fails
      */
-    fun burnIn(videoFile: File, subtitleFile: File, outputFile: File): File
+    fun burnIn(
+        videoFile: File,
+        subtitleFile: File,
+        outputFile: File,
+    ): File
 
     /** Returns true if the service is available (e.g. ffmpeg found) */
     fun isAvailable(): Boolean
@@ -33,22 +37,24 @@ interface SubtitleBurnInService {
 
 class SubtitleBurnInServiceImpl(
     private val ffmpegPath: String = "ffmpeg",
-    private val style: SubtitleBurnInStyle = SubtitleBurnInStyle()
+    private val style: SubtitleBurnInStyle = SubtitleBurnInStyle(),
 ) : SubtitleBurnInService {
-
     private val logger = Logging.getLogger(SubtitleBurnInServiceImpl::class.java)
 
-    override fun isAvailable(): Boolean {
-        return try {
+    override fun isAvailable(): Boolean =
+        try {
             ProcessRunner.probe(ffmpegPath, "-version")
         } catch (e: Exception) {
             false
         }
-    }
 
     override fun name(): String = "ffmpeg-burnin"
 
-    override fun burnIn(videoFile: File, subtitleFile: File, outputFile: File): File {
+    override fun burnIn(
+        videoFile: File,
+        subtitleFile: File,
+        outputFile: File,
+    ): File {
         if (!isAvailable()) {
             throw BurnInException("ffmpeg not found at: $ffmpegPath — cannot burn-in subtitles")
         }
@@ -70,8 +76,13 @@ class SubtitleBurnInServiceImpl(
             throw BurnInException("ffmpeg burn-in produced no output file: ${outputFile.absolutePath}")
         }
 
-        logger.lifecycle("SubtitleBurnIn: {} + {} → {} ({} bytes)",
-            videoFile.name, subtitleFile.name, outputFile.name, outputFile.length())
+        logger.lifecycle(
+            "SubtitleBurnIn: {} + {} → {} ({} bytes)",
+            videoFile.name,
+            subtitleFile.name,
+            outputFile.name,
+            outputFile.length(),
+        )
 
         return outputFile
     }
@@ -79,18 +90,26 @@ class SubtitleBurnInServiceImpl(
 
 class NoOpSubtitleBurnInService : SubtitleBurnInService {
     override fun isAvailable(): Boolean = true
+
     override fun name(): String = "noop-burnin"
 
-    override fun burnIn(videoFile: File, subtitleFile: File, outputFile: File): File {
+    override fun burnIn(
+        videoFile: File,
+        subtitleFile: File,
+        outputFile: File,
+    ): File {
         outputFile.parentFile.mkdirs()
-        val placeholder = listOf(
-            "# SUBTITLE BURN-IN PLACEHOLDER (noop-burnin engine)",
-            "# Video: ${videoFile.name}",
-            "# Subtitle: ${subtitleFile.name}"
-        ).joinToString("\n")
+        val placeholder =
+            listOf(
+                "# SUBTITLE BURN-IN PLACEHOLDER (noop-burnin engine)",
+                "# Video: ${videoFile.name}",
+                "# Subtitle: ${subtitleFile.name}",
+            ).joinToString("\n")
         outputFile.writeText(placeholder)
         return outputFile
     }
 }
 
-class BurnInException(message: String) : RuntimeException(message)
+class BurnInException(
+    message: String,
+) : RuntimeException(message)

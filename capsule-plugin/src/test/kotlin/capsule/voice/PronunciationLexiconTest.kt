@@ -10,7 +10,6 @@ import kotlin.test.assertTrue
  * TDD unit tests for [PronunciationLexicon] (PRT-01). Pure — no I/O.
  */
 class PronunciationLexiconTest {
-
     @Test
     fun `acronyms are spelled for the voice`() {
         assertEquals("the A P I is ready", PronunciationLexicon.spoken("the API is ready"))

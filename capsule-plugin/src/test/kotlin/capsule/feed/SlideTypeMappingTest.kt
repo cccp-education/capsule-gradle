@@ -1,15 +1,14 @@
 package capsule.feed
 
-import video.kernel.segment.VideoKind
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import video.kernel.segment.VideoKind
 
 /**
  * TDD — legacy [SlideType] ↔ neutral [VideoKind] mapping
  * (CAP-ENGINE-DECOUPLING US-1).
  */
 class SlideTypeMappingTest {
-
     @Test
     fun `maps legacy HTML to neutral VISUAL`() {
         assertThat(SlideType.HTML.toVideoKind()).isEqualTo(VideoKind.VISUAL)
@@ -32,13 +31,14 @@ class SlideTypeMappingTest {
 
     @Test
     fun `the legacy typealias bridge exposes neutral kind through the old accessor`() {
-        val segment: SlideSegment = SlideSegment(
-            index = 1,
-            title = "Diagram",
-            narration = "Body.",
-            kind = VideoKind.ANIMATION,
-            scene = "Scene1",
-        )
+        val segment: SlideSegment =
+            SlideSegment(
+                index = 1,
+                title = "Diagram",
+                narration = "Body.",
+                kind = VideoKind.ANIMATION,
+                scene = "Scene1",
+            )
 
         @Suppress("DEPRECATION")
         assertThat(segment.type).isEqualTo(SlideType.MANIM)

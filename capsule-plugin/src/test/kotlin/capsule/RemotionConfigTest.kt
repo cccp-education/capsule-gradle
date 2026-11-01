@@ -12,7 +12,6 @@ import kotlin.test.assertTrue
  * problem at once.
  */
 class RemotionConfigTest {
-
     @Test
     fun `defaults pass validation`() {
         assertTrue(RemotionConfig().validate().isEmpty())
@@ -53,12 +52,13 @@ class RemotionConfigTest {
 
     @Test
     fun `all errors are returned at once, not short-circuited`() {
-        val errors = RemotionConfig(
-            projectDir = "",
-            nodeExecutablePath = "",
-            concurrency = 0,
-            fps = 200,
-        ).validate()
+        val errors =
+            RemotionConfig(
+                projectDir = "",
+                nodeExecutablePath = "",
+                concurrency = 0,
+                fps = 200,
+            ).validate()
         assertEquals(4, errors.size)
     }
 

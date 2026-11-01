@@ -18,20 +18,19 @@ package capsule.viral
  * (read): this object *transforms* a parsed storyboard, purely.
  */
 object ViralStoryboardNormalizer {
-
     /** Role-based default entering transition (`hook`/`development`/`cta`). */
-    val DEFAULT_TRANSITIONS: Map<String, String> = mapOf(
-        "hook" to "— (ouverture)",
-        "development" to "cut",
-        "cta" to "fade",
-    )
+    val DEFAULT_TRANSITIONS: Map<String, String> =
+        mapOf(
+            "hook" to "— (ouverture)",
+            "development" to "cut",
+            "cta" to "fade",
+        )
 
     /** Fallback transition for a role outside the default policy. */
     const val FALLBACK_TRANSITION: String = "cut"
 
     /** Resolves the default entering transition for [role] (case-insensitive). */
-    fun defaultFor(role: String): String =
-        DEFAULT_TRANSITIONS[role.lowercase().trim()] ?: FALLBACK_TRANSITION
+    fun defaultFor(role: String): String = DEFAULT_TRANSITIONS[role.lowercase().trim()] ?: FALLBACK_TRANSITION
 
     /**
      * Returns a copy of [storyboard] where every beat carries a non-blank
@@ -42,10 +41,14 @@ object ViralStoryboardNormalizer {
      * @return the normalized storyboard.
      */
     fun normalize(storyboard: ViralStoryboard): ViralStoryboard {
-        val beats = storyboard.beats.map { beat ->
-            if (beat.enteringTransition.isNotBlank()) beat
-            else beat.copy(enteringTransition = defaultFor(beat.role))
-        }
+        val beats =
+            storyboard.beats.map { beat ->
+                if (beat.enteringTransition.isNotBlank()) {
+                    beat
+                } else {
+                    beat.copy(enteringTransition = defaultFor(beat.role))
+                }
+            }
         return if (beats == storyboard.beats) storyboard else storyboard.copy(beats = beats)
     }
 }

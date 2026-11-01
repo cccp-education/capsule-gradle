@@ -2,9 +2,9 @@ package capsule
 
 import capsule.audio.AudioPostConfig
 import capsule.chapters.ChaptersConfig
-import capsule.publish.PublishConfig
 import capsule.podcast.PodcastConfig
 import capsule.preview.PreviewConfig
+import capsule.publish.PublishConfig
 import capsule.transcript.TranscriptConfig
 import capsule.transcript.TranscriptStrategy
 import capsule.viral.ViralConfig
@@ -19,7 +19,6 @@ import java.io.File
  * Each higher-priority source overrides the same key from lower-priority sources.
  */
 object CapsuleConfigMerger {
-
     /**
      * Merges configuration from all four sources.
      *
@@ -30,7 +29,12 @@ object CapsuleConfigMerger {
      *                   When false, YAML values are ignored and props/ENV take precedence.
      * @return The merged CapsuleConfig with all sources resolved
      */
-    fun merge(projectDir: File, yamlConfig: CapsuleConfig, cliParams: Map<String, Any?>, yamlLoaded: Boolean = true): CapsuleConfig {
+    fun merge(
+        projectDir: File,
+        yamlConfig: CapsuleConfig,
+        cliParams: Map<String, Any?>,
+        yamlLoaded: Boolean = true,
+    ): CapsuleConfig {
         val propertiesConfig = loadFromGradleProperties(projectDir)
         val envConfig = loadFromEnvironment()
 
@@ -59,7 +63,7 @@ object CapsuleConfigMerger {
             // CAP-FISH-AUDIO — the key pool is a secret: it is NOT a 4-source value.
             // It rides the YAML only (the dedicated git-ignored `fish.yaml`, loaded
             // by the plugin). Never ENV/props/CLI — a key must not leak into logs.
-            fishAudio = yaml?.fishAudio ?: emptyList()
+            fishAudio = yaml?.fishAudio ?: emptyList(),
         )
     }
 
@@ -97,311 +101,348 @@ object CapsuleConfigMerger {
         val env = System.getenv()
 
         return CapsuleConfig(
-            input = InputConfig(
-                outputDir = env["CAPSULE_INPUT_OUTPUT_DIR"] ?: "capsule",
-                sliderScriptDir = env["CAPSULE_INPUT_SLIDER_SCRIPT_DIR"] ?: "capsule",
-                deckSourceDir = env["CAPSULE_INPUT_DECK_SOURCE_DIR"] ?: "docs/asciidocRevealJs",
-                sliderBuildDir = env["CAPSULE_INPUT_SLIDER_BUILD_DIR"] ?: "",
-                chromiumExecutablePath = env["CAPSULE_INPUT_CHROMIUM_EXECUTABLE_PATH"] ?: ""
-            ),
-            tts = TtsConfig(
-                engine = env["CAPSULE_TTS_ENGINE"] ?: "piper",
-                voice = env["CAPSULE_TTS_VOICE"] ?: "fr_FR-siwis-medium",
-                piperExecutablePath = env["CAPSULE_TTS_PIPER_EXECUTABLE_PATH"] ?: "piper",
-                fallbackEnabled = env["CAPSULE_TTS_FALLBACK_ENABLED"]?.toBoolean() ?: true,
-                espeakVoice = env["CAPSULE_TTS_ESPEAK_VOICE"] ?: "fr",
-                espeakSpeed = env["CAPSULE_TTS_ESPEAK_SPEED"]?.toIntOrNull() ?: 150,
-                language = env["CAPSULE_TTS_LANGUAGE"] ?: "fr",
-                pronunciationEnabled = env["CAPSULE_TTS_PRONUNCIATION_ENABLED"]?.toBoolean() ?: false,
-                fishVoice = env["CAPSULE_TTS_FISH_VOICE"] ?: "",
-                fishModel = env["CAPSULE_TTS_FISH_MODEL"] ?: "speech-1.6",
-                fishFormat = env["CAPSULE_TTS_FISH_FORMAT"] ?: "wav",
-                fishTemperature = env["CAPSULE_TTS_FISH_TEMPERATURE"]?.toDoubleOrNull() ?: 0.85,
-                fishTopP = env["CAPSULE_TTS_FISH_TOP_P"]?.toDoubleOrNull() ?: 0.88,
-                fishEndpoint = env["CAPSULE_TTS_FISH_ENDPOINT"] ?: "https://api.fish.audio/v1/tts"
-            ),
-            capture = CaptureConfig(
-                viewportWidth = env["CAPSULE_CAPTURE_VIEWPORT_WIDTH"]?.toIntOrNull() ?: 1408,
-                viewportHeight = env["CAPSULE_CAPTURE_VIEWPORT_HEIGHT"]?.toIntOrNull() ?: 792,
-                playwrightTimeout = env["CAPSULE_CAPTURE_PLAYWRIGHT_TIMEOUT"]?.toDoubleOrNull() ?: 120_000.0,
-                slideDurationSeconds = env["CAPSULE_CAPTURE_SLIDE_DURATION_SECONDS"]?.toDoubleOrNull() ?: 5.0,
-                parallelCaptureEnabled = env["CAPSULE_CAPTURE_PARALLEL_CAPTURE_ENABLED"]?.toBoolean() ?: false,
-                parallelCaptureThreads = env["CAPSULE_CAPTURE_PARALLEL_CAPTURE_THREADS"]?.toIntOrNull() ?: 4,
-                captureTimeoutMinutes = env["CAPSULE_CAPTURE_TIMEOUT_MINUTES"]?.toIntOrNull() ?: 5,
-                subtitleEnabled = env["CAPSULE_CAPTURE_SUBTITLE_ENABLED"]?.toBoolean() ?: false,
-                subtitleFormat = env["CAPSULE_CAPTURE_SUBTITLE_FORMAT"] ?: "srt",
-                subtitleBurnIn = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN"]?.toBoolean() ?: false,
-                subtitleBurnInFontSize = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_FONT_SIZE"]?.toIntOrNull() ?: 24,
-                subtitleBurnInFontColor = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_FONT_COLOR"] ?: "&H00FFFFFF",
-                subtitleBurnInOutlineColor = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_OUTLINE_COLOR"] ?: "&H00000000",
-                subtitleBurnInPosition = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_POSITION"] ?: "bottom",
-                subtitleCartonsEnabled = env["CAPSULE_CAPTURE_SUBTITLE_CARTONS_ENABLED"]?.toBoolean() ?: false,
-                subtitleMaxChars = env["CAPSULE_CAPTURE_SUBTITLE_MAX_CHARS"]?.toIntOrNull() ?: 42,
-                reuseCapturedVideoEnabled = env["CAPSULE_CAPTURE_REUSE_CAPTURED_VIDEO_ENABLED"]?.toBoolean() ?: false,
-                strategy = CaptureStrategy.fromString(env["CAPSULE_CAPTURE_STRATEGY"])
-            ),
-            distrib = DistribConfig(
-                ffmpegExecutablePath = env["CAPSULE_DISTRIB_FFMPEG_EXECUTABLE_PATH"] ?: "ffmpeg",
-                outputWidth = env["CAPSULE_DISTRIB_OUTPUT_WIDTH"]?.toIntOrNull() ?: 1080,
-                outputHeight = env["CAPSULE_DISTRIB_OUTPUT_HEIGHT"]?.toIntOrNull() ?: 1920
-            ),
-            manim = ManimConfig(
-                executablePath = env["CAPSULE_MANIM_EXECUTABLE_PATH"] ?: "manim",
-                quality = env["CAPSULE_MANIM_QUALITY"] ?: "l",
-                scriptsDir = env["CAPSULE_MANIM_SCRIPTS_DIR"] ?: "src/manim",
-                outputDir = env["CAPSULE_MANIM_OUTPUT_DIR"] ?: "build/capsule/manim",
-                parallelRender = env["CAPSULE_MANIM_PARALLEL_RENDER"]?.toBoolean() ?: false,
-                parallelRenderThreads = env["CAPSULE_MANIM_PARALLEL_RENDER_THREADS"]?.toIntOrNull() ?: 4
-            ),
-            output = OutputConfig(
-                videoDestinationDir = env["CAPSULE_OUTPUT_VIDEO_DESTINATION_DIR"] ?: "office/videos",
-                versioning = VersioningStrategy.fromString(env["CAPSULE_OUTPUT_VERSIONING"]),
-                versionPrefix = env["CAPSULE_OUTPUT_VERSION_PREFIX"] ?: "v",
-                format = OutputFormat.fromString(env["CAPSULE_OUTPUT_FORMAT"]),
-                bt709 = env["CAPSULE_OUTPUT_BT709"]?.toBoolean() ?: false
-            ),
-            strictMode = StrictModeConfig(
-                enabled = env["CAPSULE_STRICT_MODE_ENABLED"]?.toBoolean() ?: false
-            ),
-            context = ContextConfig(
-                docsGlobs = env["CAPSULE_CONTEXT_DOCS_GLOBS"]?.let { splitCommaList(it) } ?: emptyList(),
-                scenarioFile = env["CAPSULE_CONTEXT_SCENARIO_FILE"]?.takeIf { it.isNotBlank() },
-                glossaryFile = env["CAPSULE_CONTEXT_GLOSSARY_FILE"]?.takeIf { it.isNotBlank() }
-            ),
-            validation = ValidationConfig(
-                durationEnabled = env["CAPSULE_VALIDATION_DURATION_ENABLED"]?.toBoolean() ?: false,
-                toleranceSecs = env["CAPSULE_VALIDATION_TOLERANCE_SECS"]?.toDoubleOrNull() ?: 2.0,
-                integrityEnabled = env["CAPSULE_VALIDATION_INTEGRITY_ENABLED"]?.toBoolean() ?: false
-            ),
-            qc = QcConfig(
-                preflightEnabled = env["CAPSULE_QC_PREFLIGHT_ENABLED"]?.toBoolean() ?: false,
-                maxNoteChars = env["CAPSULE_QC_MAX_NOTE_CHARS"]?.toIntOrNull() ?: 500,
-                boardsEnabled = env["CAPSULE_QC_BOARDS_ENABLED"]?.toBoolean() ?: false
-            ),
-            audioPost = AudioPostConfig(
-                bgmEnabled = env["CAPSULE_AUDIO_POST_BGM_ENABLED"]?.toBoolean() ?: false,
-                bgmFile = env["CAPSULE_AUDIO_POST_BGM_FILE"] ?: "",
-                bgmLevel = env["CAPSULE_AUDIO_POST_BGM_LEVEL"]?.toDoubleOrNull() ?: -18.0,
-                loudnessTarget = env["CAPSULE_AUDIO_POST_LOUDNESS_TARGET"]?.toDoubleOrNull() ?: -16.0,
-                duckingEnabled = env["CAPSULE_AUDIO_POST_DUCKING_ENABLED"]?.toBoolean() ?: false,
-                twoPassLoudnessEnabled = env["CAPSULE_AUDIO_POST_TWO_PASS_LOUDNESS_ENABLED"]?.toBoolean() ?: false
-            ),
-            transcript = TranscriptConfig(
-                enabled = env["CAPSULE_TRANSCRIPT_ENABLED"]?.toBoolean() ?: false,
-                strategy = TranscriptStrategy.fromString(env["CAPSULE_TRANSCRIPT_STRATEGY"])
-            ),
-            remotion = RemotionConfig(
-                projectDir = env["CAPSULE_REMOTION_PROJECT_DIR"] ?: "capsule/remotion",
-                nodeExecutablePath = env["CAPSULE_REMOTION_NODE_EXECUTABLE_PATH"] ?: "node",
-                concurrency = env["CAPSULE_REMOTION_CONCURRENCY"]?.toIntOrNull() ?: 4,
-                fps = env["CAPSULE_REMOTION_FPS"]?.toIntOrNull() ?: 30
-            ),
-            podcast = PodcastConfig(
-                enabled = env["CAPSULE_PODCAST_ENABLED"]?.toBoolean() ?: false,
-                outputFile = env["CAPSULE_PODCAST_OUTPUT_FILE"] ?: ""
-            ),
-            preview = PreviewConfig(
-                enabled = env["CAPSULE_PREVIEW_ENABLED"]?.toBoolean() ?: false
-            ),
-            chapters = ChaptersConfig(
-                enabled = env["CAPSULE_CHAPTERS_ENABLED"]?.toBoolean() ?: false,
-                introText = env["CAPSULE_CHAPTERS_INTRO_TEXT"] ?: "",
-                outroText = env["CAPSULE_CHAPTERS_OUTRO_TEXT"] ?: "",
-                outputDir = env["CAPSULE_CHAPTERS_OUTPUT_DIR"] ?: ""
-            ),
-            publish = PublishConfig(
-                enabled = env["CAPSULE_PUBLISH_ENABLED"]?.toBoolean() ?: false,
-                platform = env["CAPSULE_PUBLISH_PLATFORM"] ?: "youtube",
-                credentialsFile = env["CAPSULE_PUBLISH_CREDENTIALS_FILE"] ?: "youtube.yaml",
-                title = env["CAPSULE_PUBLISH_TITLE"] ?: "",
-                description = env["CAPSULE_PUBLISH_DESCRIPTION"] ?: "",
-                tags = env["CAPSULE_PUBLISH_TAGS"]?.let { splitCommaList(it) } ?: emptyList(),
-                hashtags = env["CAPSULE_PUBLISH_HASHTAGS"]?.let { splitCommaList(it) } ?: emptyList(),
-                links = env["CAPSULE_PUBLISH_LINKS"]?.let { splitCommaList(it) } ?: emptyList(),
-                nextVideo = env["CAPSULE_PUBLISH_NEXT_VIDEO"] ?: "",
-                previousVideo = env["CAPSULE_PUBLISH_PREVIOUS_VIDEO"] ?: "",
-                thumbnailFile = env["CAPSULE_PUBLISH_THUMBNAIL_FILE"] ?: "",
-                visibility = env["CAPSULE_PUBLISH_VISIBILITY"] ?: "private",
-                categoryId = env["CAPSULE_PUBLISH_CATEGORY_ID"] ?: "",
-                languageCode = env["CAPSULE_PUBLISH_LANGUAGE_CODE"] ?: "",
-                publishAt = env["CAPSULE_PUBLISH_AT"] ?: "",
-                strict = env["CAPSULE_PUBLISH_STRICT"]?.toBoolean() ?: false
-            ),
-            viral = ViralConfig(
-                enabled = env["CAPSULE_VIRAL_ENABLED"]?.toBoolean() ?: false,
-                platform = ViralPlatform.fromString(env["CAPSULE_VIRAL_PLATFORM"]),
-                targetDurationSeconds = env["CAPSULE_VIRAL_TARGET_DURATION_SECONDS"]?.toIntOrNull() ?: 30,
-                hook = env["CAPSULE_VIRAL_HOOK"] ?: "",
-                cta = env["CAPSULE_VIRAL_CTA"] ?: "",
-                storyboardRequired = env["CAPSULE_VIRAL_STORYBOARD_REQUIRED"]?.toBoolean() ?: true,
-                storyboardFile = env["CAPSULE_VIRAL_STORYBOARD_FILE"] ?: ""
-            ),
-            voice = VoiceConfig(
-                verifyEnabled = env["CAPSULE_VOICE_VERIFY_ENABLED"]?.toBoolean() ?: false,
-                maxWordErrorRate = env["CAPSULE_VOICE_MAX_WORD_ERROR_RATE"]?.toDoubleOrNull() ?: 0.15,
-                minSnrDb = env["CAPSULE_VOICE_MIN_SNR_DB"]?.toDoubleOrNull() ?: 66.0,
-                surplusThreshold = env["CAPSULE_VOICE_SURPLUS_THRESHOLD"]?.toIntOrNull() ?: 3,
-                asrExecutablePath = env["CAPSULE_VOICE_ASR_EXECUTABLE_PATH"] ?: "whisper",
-                asrModel = env["CAPSULE_VOICE_ASR_MODEL"] ?: "",
-                language = env["CAPSULE_VOICE_LANGUAGE"] ?: "fr",
-                selectBestTake = env["CAPSULE_VOICE_SELECT_BEST_TAKE"]?.toBoolean() ?: false
-            )
+            input =
+                InputConfig(
+                    outputDir = env["CAPSULE_INPUT_OUTPUT_DIR"] ?: "capsule",
+                    sliderScriptDir = env["CAPSULE_INPUT_SLIDER_SCRIPT_DIR"] ?: "capsule",
+                    deckSourceDir = env["CAPSULE_INPUT_DECK_SOURCE_DIR"] ?: "docs/asciidocRevealJs",
+                    sliderBuildDir = env["CAPSULE_INPUT_SLIDER_BUILD_DIR"] ?: "",
+                    chromiumExecutablePath = env["CAPSULE_INPUT_CHROMIUM_EXECUTABLE_PATH"] ?: "",
+                ),
+            tts =
+                TtsConfig(
+                    engine = env["CAPSULE_TTS_ENGINE"] ?: "piper",
+                    voice = env["CAPSULE_TTS_VOICE"] ?: "fr_FR-siwis-medium",
+                    piperExecutablePath = env["CAPSULE_TTS_PIPER_EXECUTABLE_PATH"] ?: "piper",
+                    fallbackEnabled = env["CAPSULE_TTS_FALLBACK_ENABLED"]?.toBoolean() ?: true,
+                    espeakVoice = env["CAPSULE_TTS_ESPEAK_VOICE"] ?: "fr",
+                    espeakSpeed = env["CAPSULE_TTS_ESPEAK_SPEED"]?.toIntOrNull() ?: 150,
+                    language = env["CAPSULE_TTS_LANGUAGE"] ?: "fr",
+                    pronunciationEnabled = env["CAPSULE_TTS_PRONUNCIATION_ENABLED"]?.toBoolean() ?: false,
+                    fishVoice = env["CAPSULE_TTS_FISH_VOICE"] ?: "",
+                    fishModel = env["CAPSULE_TTS_FISH_MODEL"] ?: "speech-1.6",
+                    fishFormat = env["CAPSULE_TTS_FISH_FORMAT"] ?: "wav",
+                    fishTemperature = env["CAPSULE_TTS_FISH_TEMPERATURE"]?.toDoubleOrNull() ?: 0.85,
+                    fishTopP = env["CAPSULE_TTS_FISH_TOP_P"]?.toDoubleOrNull() ?: 0.88,
+                    fishEndpoint = env["CAPSULE_TTS_FISH_ENDPOINT"] ?: "https://api.fish.audio/v1/tts",
+                ),
+            capture =
+                CaptureConfig(
+                    viewportWidth = env["CAPSULE_CAPTURE_VIEWPORT_WIDTH"]?.toIntOrNull() ?: 1408,
+                    viewportHeight = env["CAPSULE_CAPTURE_VIEWPORT_HEIGHT"]?.toIntOrNull() ?: 792,
+                    playwrightTimeout = env["CAPSULE_CAPTURE_PLAYWRIGHT_TIMEOUT"]?.toDoubleOrNull() ?: 120_000.0,
+                    slideDurationSeconds = env["CAPSULE_CAPTURE_SLIDE_DURATION_SECONDS"]?.toDoubleOrNull() ?: 5.0,
+                    parallelCaptureEnabled = env["CAPSULE_CAPTURE_PARALLEL_CAPTURE_ENABLED"]?.toBoolean() ?: false,
+                    parallelCaptureThreads = env["CAPSULE_CAPTURE_PARALLEL_CAPTURE_THREADS"]?.toIntOrNull() ?: 4,
+                    captureTimeoutMinutes = env["CAPSULE_CAPTURE_TIMEOUT_MINUTES"]?.toIntOrNull() ?: 5,
+                    subtitleEnabled = env["CAPSULE_CAPTURE_SUBTITLE_ENABLED"]?.toBoolean() ?: false,
+                    subtitleFormat = env["CAPSULE_CAPTURE_SUBTITLE_FORMAT"] ?: "srt",
+                    subtitleBurnIn = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN"]?.toBoolean() ?: false,
+                    subtitleBurnInFontSize = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_FONT_SIZE"]?.toIntOrNull() ?: 24,
+                    subtitleBurnInFontColor = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_FONT_COLOR"] ?: "&H00FFFFFF",
+                    subtitleBurnInOutlineColor = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_OUTLINE_COLOR"] ?: "&H00000000",
+                    subtitleBurnInPosition = env["CAPSULE_CAPTURE_SUBTITLE_BURN_IN_POSITION"] ?: "bottom",
+                    subtitleCartonsEnabled = env["CAPSULE_CAPTURE_SUBTITLE_CARTONS_ENABLED"]?.toBoolean() ?: false,
+                    subtitleMaxChars = env["CAPSULE_CAPTURE_SUBTITLE_MAX_CHARS"]?.toIntOrNull() ?: 42,
+                    reuseCapturedVideoEnabled = env["CAPSULE_CAPTURE_REUSE_CAPTURED_VIDEO_ENABLED"]?.toBoolean() ?: false,
+                    strategy = CaptureStrategy.fromString(env["CAPSULE_CAPTURE_STRATEGY"]),
+                ),
+            distrib =
+                DistribConfig(
+                    ffmpegExecutablePath = env["CAPSULE_DISTRIB_FFMPEG_EXECUTABLE_PATH"] ?: "ffmpeg",
+                    outputWidth = env["CAPSULE_DISTRIB_OUTPUT_WIDTH"]?.toIntOrNull() ?: 1080,
+                    outputHeight = env["CAPSULE_DISTRIB_OUTPUT_HEIGHT"]?.toIntOrNull() ?: 1920,
+                ),
+            manim =
+                ManimConfig(
+                    executablePath = env["CAPSULE_MANIM_EXECUTABLE_PATH"] ?: "manim",
+                    quality = env["CAPSULE_MANIM_QUALITY"] ?: "l",
+                    scriptsDir = env["CAPSULE_MANIM_SCRIPTS_DIR"] ?: "src/manim",
+                    outputDir = env["CAPSULE_MANIM_OUTPUT_DIR"] ?: "build/capsule/manim",
+                    parallelRender = env["CAPSULE_MANIM_PARALLEL_RENDER"]?.toBoolean() ?: false,
+                    parallelRenderThreads = env["CAPSULE_MANIM_PARALLEL_RENDER_THREADS"]?.toIntOrNull() ?: 4,
+                ),
+            output =
+                OutputConfig(
+                    videoDestinationDir = env["CAPSULE_OUTPUT_VIDEO_DESTINATION_DIR"] ?: "office/videos",
+                    versioning = VersioningStrategy.fromString(env["CAPSULE_OUTPUT_VERSIONING"]),
+                    versionPrefix = env["CAPSULE_OUTPUT_VERSION_PREFIX"] ?: "v",
+                    format = OutputFormat.fromString(env["CAPSULE_OUTPUT_FORMAT"]),
+                    bt709 = env["CAPSULE_OUTPUT_BT709"]?.toBoolean() ?: false,
+                ),
+            strictMode =
+                StrictModeConfig(
+                    enabled = env["CAPSULE_STRICT_MODE_ENABLED"]?.toBoolean() ?: false,
+                ),
+            context =
+                ContextConfig(
+                    docsGlobs = env["CAPSULE_CONTEXT_DOCS_GLOBS"]?.let { splitCommaList(it) } ?: emptyList(),
+                    scenarioFile = env["CAPSULE_CONTEXT_SCENARIO_FILE"]?.takeIf { it.isNotBlank() },
+                    glossaryFile = env["CAPSULE_CONTEXT_GLOSSARY_FILE"]?.takeIf { it.isNotBlank() },
+                ),
+            validation =
+                ValidationConfig(
+                    durationEnabled = env["CAPSULE_VALIDATION_DURATION_ENABLED"]?.toBoolean() ?: false,
+                    toleranceSecs = env["CAPSULE_VALIDATION_TOLERANCE_SECS"]?.toDoubleOrNull() ?: 2.0,
+                    integrityEnabled = env["CAPSULE_VALIDATION_INTEGRITY_ENABLED"]?.toBoolean() ?: false,
+                ),
+            qc =
+                QcConfig(
+                    preflightEnabled = env["CAPSULE_QC_PREFLIGHT_ENABLED"]?.toBoolean() ?: false,
+                    maxNoteChars = env["CAPSULE_QC_MAX_NOTE_CHARS"]?.toIntOrNull() ?: 500,
+                    boardsEnabled = env["CAPSULE_QC_BOARDS_ENABLED"]?.toBoolean() ?: false,
+                ),
+            audioPost =
+                AudioPostConfig(
+                    bgmEnabled = env["CAPSULE_AUDIO_POST_BGM_ENABLED"]?.toBoolean() ?: false,
+                    bgmFile = env["CAPSULE_AUDIO_POST_BGM_FILE"] ?: "",
+                    bgmLevel = env["CAPSULE_AUDIO_POST_BGM_LEVEL"]?.toDoubleOrNull() ?: -18.0,
+                    loudnessTarget = env["CAPSULE_AUDIO_POST_LOUDNESS_TARGET"]?.toDoubleOrNull() ?: -16.0,
+                    duckingEnabled = env["CAPSULE_AUDIO_POST_DUCKING_ENABLED"]?.toBoolean() ?: false,
+                    twoPassLoudnessEnabled = env["CAPSULE_AUDIO_POST_TWO_PASS_LOUDNESS_ENABLED"]?.toBoolean() ?: false,
+                ),
+            transcript =
+                TranscriptConfig(
+                    enabled = env["CAPSULE_TRANSCRIPT_ENABLED"]?.toBoolean() ?: false,
+                    strategy = TranscriptStrategy.fromString(env["CAPSULE_TRANSCRIPT_STRATEGY"]),
+                ),
+            remotion =
+                RemotionConfig(
+                    projectDir = env["CAPSULE_REMOTION_PROJECT_DIR"] ?: "capsule/remotion",
+                    nodeExecutablePath = env["CAPSULE_REMOTION_NODE_EXECUTABLE_PATH"] ?: "node",
+                    concurrency = env["CAPSULE_REMOTION_CONCURRENCY"]?.toIntOrNull() ?: 4,
+                    fps = env["CAPSULE_REMOTION_FPS"]?.toIntOrNull() ?: 30,
+                ),
+            podcast =
+                PodcastConfig(
+                    enabled = env["CAPSULE_PODCAST_ENABLED"]?.toBoolean() ?: false,
+                    outputFile = env["CAPSULE_PODCAST_OUTPUT_FILE"] ?: "",
+                ),
+            preview =
+                PreviewConfig(
+                    enabled = env["CAPSULE_PREVIEW_ENABLED"]?.toBoolean() ?: false,
+                ),
+            chapters =
+                ChaptersConfig(
+                    enabled = env["CAPSULE_CHAPTERS_ENABLED"]?.toBoolean() ?: false,
+                    introText = env["CAPSULE_CHAPTERS_INTRO_TEXT"] ?: "",
+                    outroText = env["CAPSULE_CHAPTERS_OUTRO_TEXT"] ?: "",
+                    outputDir = env["CAPSULE_CHAPTERS_OUTPUT_DIR"] ?: "",
+                ),
+            publish =
+                PublishConfig(
+                    enabled = env["CAPSULE_PUBLISH_ENABLED"]?.toBoolean() ?: false,
+                    platform = env["CAPSULE_PUBLISH_PLATFORM"] ?: "youtube",
+                    credentialsFile = env["CAPSULE_PUBLISH_CREDENTIALS_FILE"] ?: "youtube.yaml",
+                    title = env["CAPSULE_PUBLISH_TITLE"] ?: "",
+                    description = env["CAPSULE_PUBLISH_DESCRIPTION"] ?: "",
+                    tags = env["CAPSULE_PUBLISH_TAGS"]?.let { splitCommaList(it) } ?: emptyList(),
+                    hashtags = env["CAPSULE_PUBLISH_HASHTAGS"]?.let { splitCommaList(it) } ?: emptyList(),
+                    links = env["CAPSULE_PUBLISH_LINKS"]?.let { splitCommaList(it) } ?: emptyList(),
+                    nextVideo = env["CAPSULE_PUBLISH_NEXT_VIDEO"] ?: "",
+                    previousVideo = env["CAPSULE_PUBLISH_PREVIOUS_VIDEO"] ?: "",
+                    thumbnailFile = env["CAPSULE_PUBLISH_THUMBNAIL_FILE"] ?: "",
+                    visibility = env["CAPSULE_PUBLISH_VISIBILITY"] ?: "private",
+                    categoryId = env["CAPSULE_PUBLISH_CATEGORY_ID"] ?: "",
+                    languageCode = env["CAPSULE_PUBLISH_LANGUAGE_CODE"] ?: "",
+                    publishAt = env["CAPSULE_PUBLISH_AT"] ?: "",
+                    strict = env["CAPSULE_PUBLISH_STRICT"]?.toBoolean() ?: false,
+                ),
+            viral =
+                ViralConfig(
+                    enabled = env["CAPSULE_VIRAL_ENABLED"]?.toBoolean() ?: false,
+                    platform = ViralPlatform.fromString(env["CAPSULE_VIRAL_PLATFORM"]),
+                    targetDurationSeconds = env["CAPSULE_VIRAL_TARGET_DURATION_SECONDS"]?.toIntOrNull() ?: 30,
+                    hook = env["CAPSULE_VIRAL_HOOK"] ?: "",
+                    cta = env["CAPSULE_VIRAL_CTA"] ?: "",
+                    storyboardRequired = env["CAPSULE_VIRAL_STORYBOARD_REQUIRED"]?.toBoolean() ?: true,
+                    storyboardFile = env["CAPSULE_VIRAL_STORYBOARD_FILE"] ?: "",
+                ),
+            voice =
+                VoiceConfig(
+                    verifyEnabled = env["CAPSULE_VOICE_VERIFY_ENABLED"]?.toBoolean() ?: false,
+                    maxWordErrorRate = env["CAPSULE_VOICE_MAX_WORD_ERROR_RATE"]?.toDoubleOrNull() ?: 0.15,
+                    minSnrDb = env["CAPSULE_VOICE_MIN_SNR_DB"]?.toDoubleOrNull() ?: 66.0,
+                    surplusThreshold = env["CAPSULE_VOICE_SURPLUS_THRESHOLD"]?.toIntOrNull() ?: 3,
+                    asrExecutablePath = env["CAPSULE_VOICE_ASR_EXECUTABLE_PATH"] ?: "whisper",
+                    asrModel = env["CAPSULE_VOICE_ASR_MODEL"] ?: "",
+                    language = env["CAPSULE_VOICE_LANGUAGE"] ?: "fr",
+                    selectBestTake = env["CAPSULE_VOICE_SELECT_BEST_TAKE"]?.toBoolean() ?: false,
+                ),
         )
     }
 
-    private fun buildConfigFromProperties(props: Map<String, String>): CapsuleConfig {
-        return CapsuleConfig(
-            input = InputConfig(
-                outputDir = props["capsule.input.outputDir"] ?: "capsule",
-                sliderScriptDir = props["capsule.input.sliderScriptDir"] ?: "capsule",
-                deckSourceDir = props["capsule.input.deckSourceDir"] ?: "docs/asciidocRevealJs",
-                sliderBuildDir = props["capsule.input.sliderBuildDir"] ?: "",
-                chromiumExecutablePath = props["capsule.input.chromiumExecutablePath"] ?: ""
-            ),
-            tts = TtsConfig(
-                engine = props["capsule.tts.engine"] ?: "piper",
-                voice = props["capsule.tts.voice"] ?: "fr_FR-siwis-medium",
-                piperExecutablePath = props["capsule.tts.piperExecutablePath"] ?: "piper",
-                fallbackEnabled = props["capsule.tts.fallbackEnabled"]?.toBoolean() ?: true,
-                espeakVoice = props["capsule.tts.espeakVoice"] ?: "fr",
-                espeakSpeed = props["capsule.tts.espeakSpeed"]?.toIntOrNull() ?: 150,
-                language = props["capsule.tts.language"] ?: "fr",
-                pronunciationEnabled = props["capsule.tts.pronunciationEnabled"]?.toBoolean() ?: false,
-                fishVoice = props["capsule.tts.fishVoice"] ?: "",
-                fishModel = props["capsule.tts.fishModel"] ?: "speech-1.6",
-                fishFormat = props["capsule.tts.fishFormat"] ?: "wav",
-                fishTemperature = props["capsule.tts.fishTemperature"]?.toDoubleOrNull() ?: 0.85,
-                fishTopP = props["capsule.tts.fishTopP"]?.toDoubleOrNull() ?: 0.88,
-                fishEndpoint = props["capsule.tts.fishEndpoint"] ?: "https://api.fish.audio/v1/tts"
-            ),
-            capture = CaptureConfig(
-                viewportWidth = props["capsule.capture.viewportWidth"]?.toIntOrNull() ?: 1408,
-                viewportHeight = props["capsule.capture.viewportHeight"]?.toIntOrNull() ?: 792,
-                playwrightTimeout = props["capsule.capture.playwrightTimeout"]?.toDoubleOrNull() ?: 120_000.0,
-                slideDurationSeconds = props["capsule.capture.slideDurationSeconds"]?.toDoubleOrNull() ?: 5.0,
-                parallelCaptureEnabled = props["capsule.capture.parallelCaptureEnabled"]?.toBoolean() ?: false,
-                parallelCaptureThreads = props["capsule.capture.parallelCaptureThreads"]?.toIntOrNull() ?: 4,
-                captureTimeoutMinutes = props["capsule.capture.captureTimeoutMinutes"]?.toIntOrNull() ?: 5,
-                subtitleEnabled = props["capsule.capture.subtitleEnabled"]?.toBoolean() ?: false,
-                subtitleFormat = props["capsule.capture.subtitleFormat"] ?: "srt",
-                subtitleBurnIn = props["capsule.capture.subtitleBurnIn"]?.toBoolean() ?: false,
-                subtitleBurnInFontSize = props["capsule.capture.subtitleBurnInFontSize"]?.toIntOrNull() ?: 24,
-                subtitleBurnInFontColor = props["capsule.capture.subtitleBurnInFontColor"] ?: "&H00FFFFFF",
-                subtitleBurnInOutlineColor = props["capsule.capture.subtitleBurnInOutlineColor"] ?: "&H00000000",
-                subtitleBurnInPosition = props["capsule.capture.subtitleBurnInPosition"] ?: "bottom",
-                subtitleCartonsEnabled = props["capsule.capture.subtitleCartonsEnabled"]?.toBoolean() ?: false,
-                subtitleMaxChars = props["capsule.capture.subtitleMaxChars"]?.toIntOrNull() ?: 42,
-                reuseCapturedVideoEnabled = props["capsule.capture.reuseCapturedVideoEnabled"]?.toBoolean() ?: false,
-                strategy = CaptureStrategy.fromString(props["capsule.capture.strategy"])
-            ),
-            distrib = DistribConfig(
-                ffmpegExecutablePath = props["capsule.distrib.ffmpegExecutablePath"] ?: "ffmpeg",
-                outputWidth = props["capsule.distrib.outputWidth"]?.toIntOrNull() ?: 1080,
-                outputHeight = props["capsule.distrib.outputHeight"]?.toIntOrNull() ?: 1920
-            ),
-            manim = ManimConfig(
-                executablePath = props["capsule.manim.executablePath"] ?: "manim",
-                quality = props["capsule.manim.quality"] ?: "l",
-                scriptsDir = props["capsule.manim.scriptsDir"] ?: "src/manim",
-                outputDir = props["capsule.manim.outputDir"] ?: "build/capsule/manim",
-                parallelRender = props["capsule.manim.parallelRender"]?.toBoolean() ?: false,
-                parallelRenderThreads = props["capsule.manim.parallelRenderThreads"]?.toIntOrNull() ?: 4
-            ),
-            output = OutputConfig(
-                videoDestinationDir = props["capsule.output.videoDestinationDir"] ?: "office/videos",
-                versioning = VersioningStrategy.fromString(props["capsule.output.versioning"]),
-                versionPrefix = props["capsule.output.versionPrefix"] ?: "v",
-                format = OutputFormat.fromString(props["capsule.output.format"]),
-                bt709 = props["capsule.output.bt709"]?.toBoolean() ?: false
-            ),
-            strictMode = StrictModeConfig(
-                enabled = props["capsule.strictMode.enabled"]?.toBoolean() ?: false
-            ),
-            context = ContextConfig(
-                docsGlobs = props["capsule.context.docsGlobs"]?.let { splitCommaList(it) } ?: emptyList(),
-                scenarioFile = props["capsule.context.scenarioFile"]?.takeIf { it.isNotBlank() },
-                glossaryFile = props["capsule.context.glossaryFile"]?.takeIf { it.isNotBlank() }
-            ),
-            validation = ValidationConfig(
-                durationEnabled = props["capsule.validation.durationEnabled"]?.toBoolean() ?: false,
-                toleranceSecs = props["capsule.validation.toleranceSecs"]?.toDoubleOrNull() ?: 2.0,
-                integrityEnabled = props["capsule.validation.integrityEnabled"]?.toBoolean() ?: false
-            ),
-            qc = QcConfig(
-                preflightEnabled = props["capsule.qc.preflightEnabled"]?.toBoolean() ?: false,
-                maxNoteChars = props["capsule.qc.maxNoteChars"]?.toIntOrNull() ?: 500,
-                boardsEnabled = props["capsule.qc.boardsEnabled"]?.toBoolean() ?: false
-            ),
-            audioPost = AudioPostConfig(
-                bgmEnabled = props["capsule.audioPost.bgmEnabled"]?.toBoolean() ?: false,
-                bgmFile = props["capsule.audioPost.bgmFile"] ?: "",
-                bgmLevel = props["capsule.audioPost.bgmLevel"]?.toDoubleOrNull() ?: -18.0,
-                loudnessTarget = props["capsule.audioPost.loudnessTarget"]?.toDoubleOrNull() ?: -16.0,
-                duckingEnabled = props["capsule.audioPost.duckingEnabled"]?.toBoolean() ?: false,
-                twoPassLoudnessEnabled = props["capsule.audioPost.twoPassLoudnessEnabled"]?.toBoolean() ?: false
-            ),
-            transcript = TranscriptConfig(
-                enabled = props["capsule.transcript.enabled"]?.toBoolean() ?: false,
-                strategy = TranscriptStrategy.fromString(props["capsule.transcript.strategy"])
-            ),
-            remotion = RemotionConfig(
-                projectDir = props["capsule.remotion.projectDir"] ?: "capsule/remotion",
-                nodeExecutablePath = props["capsule.remotion.nodeExecutablePath"] ?: "node",
-                concurrency = props["capsule.remotion.concurrency"]?.toIntOrNull() ?: 4,
-                fps = props["capsule.remotion.fps"]?.toIntOrNull() ?: 30
-            ),
-            podcast = PodcastConfig(
-                enabled = props["capsule.podcast.enabled"]?.toBoolean() ?: false,
-                outputFile = props["capsule.podcast.outputFile"] ?: ""
-            ),
-            preview = PreviewConfig(
-                enabled = props["capsule.preview.enabled"]?.toBoolean() ?: false
-            ),
-            chapters = ChaptersConfig(
-                enabled = props["capsule.chapters.enabled"]?.toBoolean() ?: false,
-                introText = props["capsule.chapters.introText"] ?: "",
-                outroText = props["capsule.chapters.outroText"] ?: "",
-                outputDir = props["capsule.chapters.outputDir"] ?: ""
-            ),
-            publish = PublishConfig(
-                enabled = props["capsule.publish.enabled"]?.toBoolean() ?: false,
-                platform = props["capsule.publish.platform"] ?: "youtube",
-                credentialsFile = props["capsule.publish.credentialsFile"] ?: "youtube.yaml",
-                title = props["capsule.publish.title"] ?: "",
-                description = props["capsule.publish.description"] ?: "",
-                tags = props["capsule.publish.tags"]?.let { splitCommaList(it) } ?: emptyList(),
-                hashtags = props["capsule.publish.hashtags"]?.let { splitCommaList(it) } ?: emptyList(),
-                links = props["capsule.publish.links"]?.let { splitCommaList(it) } ?: emptyList(),
-                nextVideo = props["capsule.publish.nextVideo"] ?: "",
-                previousVideo = props["capsule.publish.previousVideo"] ?: "",
-                thumbnailFile = props["capsule.publish.thumbnailFile"] ?: "",
-                visibility = props["capsule.publish.visibility"] ?: "private",
-                categoryId = props["capsule.publish.categoryId"] ?: "",
-                languageCode = props["capsule.publish.languageCode"] ?: "",
-                publishAt = props["capsule.publish.publishAt"] ?: "",
-                strict = props["capsule.publish.strict"]?.toBoolean() ?: false
-            ),
-            viral = ViralConfig(
-                enabled = props["capsule.viral.enabled"]?.toBoolean() ?: false,
-                platform = ViralPlatform.fromString(props["capsule.viral.platform"]),
-                targetDurationSeconds = props["capsule.viral.targetDurationSeconds"]?.toIntOrNull() ?: 30,
-                hook = props["capsule.viral.hook"] ?: "",
-                cta = props["capsule.viral.cta"] ?: "",
-                storyboardRequired = props["capsule.viral.storyboardRequired"]?.toBoolean() ?: true,
-                storyboardFile = props["capsule.viral.storyboardFile"] ?: ""
-            ),
-            voice = VoiceConfig(
-                verifyEnabled = props["capsule.voice.verifyEnabled"]?.toBoolean() ?: false,
-                maxWordErrorRate = props["capsule.voice.maxWordErrorRate"]?.toDoubleOrNull() ?: 0.15,
-                minSnrDb = props["capsule.voice.minSnrDb"]?.toDoubleOrNull() ?: 66.0,
-                surplusThreshold = props["capsule.voice.surplusThreshold"]?.toIntOrNull() ?: 3,
-                asrExecutablePath = props["capsule.voice.asrExecutablePath"] ?: "whisper",
-                asrModel = props["capsule.voice.asrModel"] ?: "",
-                language = props["capsule.voice.language"] ?: "fr",
-                selectBestTake = props["capsule.voice.selectBestTake"]?.toBoolean() ?: false
-            )
+    private fun buildConfigFromProperties(props: Map<String, String>): CapsuleConfig =
+        CapsuleConfig(
+            input =
+                InputConfig(
+                    outputDir = props["capsule.input.outputDir"] ?: "capsule",
+                    sliderScriptDir = props["capsule.input.sliderScriptDir"] ?: "capsule",
+                    deckSourceDir = props["capsule.input.deckSourceDir"] ?: "docs/asciidocRevealJs",
+                    sliderBuildDir = props["capsule.input.sliderBuildDir"] ?: "",
+                    chromiumExecutablePath = props["capsule.input.chromiumExecutablePath"] ?: "",
+                ),
+            tts =
+                TtsConfig(
+                    engine = props["capsule.tts.engine"] ?: "piper",
+                    voice = props["capsule.tts.voice"] ?: "fr_FR-siwis-medium",
+                    piperExecutablePath = props["capsule.tts.piperExecutablePath"] ?: "piper",
+                    fallbackEnabled = props["capsule.tts.fallbackEnabled"]?.toBoolean() ?: true,
+                    espeakVoice = props["capsule.tts.espeakVoice"] ?: "fr",
+                    espeakSpeed = props["capsule.tts.espeakSpeed"]?.toIntOrNull() ?: 150,
+                    language = props["capsule.tts.language"] ?: "fr",
+                    pronunciationEnabled = props["capsule.tts.pronunciationEnabled"]?.toBoolean() ?: false,
+                    fishVoice = props["capsule.tts.fishVoice"] ?: "",
+                    fishModel = props["capsule.tts.fishModel"] ?: "speech-1.6",
+                    fishFormat = props["capsule.tts.fishFormat"] ?: "wav",
+                    fishTemperature = props["capsule.tts.fishTemperature"]?.toDoubleOrNull() ?: 0.85,
+                    fishTopP = props["capsule.tts.fishTopP"]?.toDoubleOrNull() ?: 0.88,
+                    fishEndpoint = props["capsule.tts.fishEndpoint"] ?: "https://api.fish.audio/v1/tts",
+                ),
+            capture =
+                CaptureConfig(
+                    viewportWidth = props["capsule.capture.viewportWidth"]?.toIntOrNull() ?: 1408,
+                    viewportHeight = props["capsule.capture.viewportHeight"]?.toIntOrNull() ?: 792,
+                    playwrightTimeout = props["capsule.capture.playwrightTimeout"]?.toDoubleOrNull() ?: 120_000.0,
+                    slideDurationSeconds = props["capsule.capture.slideDurationSeconds"]?.toDoubleOrNull() ?: 5.0,
+                    parallelCaptureEnabled = props["capsule.capture.parallelCaptureEnabled"]?.toBoolean() ?: false,
+                    parallelCaptureThreads = props["capsule.capture.parallelCaptureThreads"]?.toIntOrNull() ?: 4,
+                    captureTimeoutMinutes = props["capsule.capture.captureTimeoutMinutes"]?.toIntOrNull() ?: 5,
+                    subtitleEnabled = props["capsule.capture.subtitleEnabled"]?.toBoolean() ?: false,
+                    subtitleFormat = props["capsule.capture.subtitleFormat"] ?: "srt",
+                    subtitleBurnIn = props["capsule.capture.subtitleBurnIn"]?.toBoolean() ?: false,
+                    subtitleBurnInFontSize = props["capsule.capture.subtitleBurnInFontSize"]?.toIntOrNull() ?: 24,
+                    subtitleBurnInFontColor = props["capsule.capture.subtitleBurnInFontColor"] ?: "&H00FFFFFF",
+                    subtitleBurnInOutlineColor = props["capsule.capture.subtitleBurnInOutlineColor"] ?: "&H00000000",
+                    subtitleBurnInPosition = props["capsule.capture.subtitleBurnInPosition"] ?: "bottom",
+                    subtitleCartonsEnabled = props["capsule.capture.subtitleCartonsEnabled"]?.toBoolean() ?: false,
+                    subtitleMaxChars = props["capsule.capture.subtitleMaxChars"]?.toIntOrNull() ?: 42,
+                    reuseCapturedVideoEnabled = props["capsule.capture.reuseCapturedVideoEnabled"]?.toBoolean() ?: false,
+                    strategy = CaptureStrategy.fromString(props["capsule.capture.strategy"]),
+                ),
+            distrib =
+                DistribConfig(
+                    ffmpegExecutablePath = props["capsule.distrib.ffmpegExecutablePath"] ?: "ffmpeg",
+                    outputWidth = props["capsule.distrib.outputWidth"]?.toIntOrNull() ?: 1080,
+                    outputHeight = props["capsule.distrib.outputHeight"]?.toIntOrNull() ?: 1920,
+                ),
+            manim =
+                ManimConfig(
+                    executablePath = props["capsule.manim.executablePath"] ?: "manim",
+                    quality = props["capsule.manim.quality"] ?: "l",
+                    scriptsDir = props["capsule.manim.scriptsDir"] ?: "src/manim",
+                    outputDir = props["capsule.manim.outputDir"] ?: "build/capsule/manim",
+                    parallelRender = props["capsule.manim.parallelRender"]?.toBoolean() ?: false,
+                    parallelRenderThreads = props["capsule.manim.parallelRenderThreads"]?.toIntOrNull() ?: 4,
+                ),
+            output =
+                OutputConfig(
+                    videoDestinationDir = props["capsule.output.videoDestinationDir"] ?: "office/videos",
+                    versioning = VersioningStrategy.fromString(props["capsule.output.versioning"]),
+                    versionPrefix = props["capsule.output.versionPrefix"] ?: "v",
+                    format = OutputFormat.fromString(props["capsule.output.format"]),
+                    bt709 = props["capsule.output.bt709"]?.toBoolean() ?: false,
+                ),
+            strictMode =
+                StrictModeConfig(
+                    enabled = props["capsule.strictMode.enabled"]?.toBoolean() ?: false,
+                ),
+            context =
+                ContextConfig(
+                    docsGlobs = props["capsule.context.docsGlobs"]?.let { splitCommaList(it) } ?: emptyList(),
+                    scenarioFile = props["capsule.context.scenarioFile"]?.takeIf { it.isNotBlank() },
+                    glossaryFile = props["capsule.context.glossaryFile"]?.takeIf { it.isNotBlank() },
+                ),
+            validation =
+                ValidationConfig(
+                    durationEnabled = props["capsule.validation.durationEnabled"]?.toBoolean() ?: false,
+                    toleranceSecs = props["capsule.validation.toleranceSecs"]?.toDoubleOrNull() ?: 2.0,
+                    integrityEnabled = props["capsule.validation.integrityEnabled"]?.toBoolean() ?: false,
+                ),
+            qc =
+                QcConfig(
+                    preflightEnabled = props["capsule.qc.preflightEnabled"]?.toBoolean() ?: false,
+                    maxNoteChars = props["capsule.qc.maxNoteChars"]?.toIntOrNull() ?: 500,
+                    boardsEnabled = props["capsule.qc.boardsEnabled"]?.toBoolean() ?: false,
+                ),
+            audioPost =
+                AudioPostConfig(
+                    bgmEnabled = props["capsule.audioPost.bgmEnabled"]?.toBoolean() ?: false,
+                    bgmFile = props["capsule.audioPost.bgmFile"] ?: "",
+                    bgmLevel = props["capsule.audioPost.bgmLevel"]?.toDoubleOrNull() ?: -18.0,
+                    loudnessTarget = props["capsule.audioPost.loudnessTarget"]?.toDoubleOrNull() ?: -16.0,
+                    duckingEnabled = props["capsule.audioPost.duckingEnabled"]?.toBoolean() ?: false,
+                    twoPassLoudnessEnabled = props["capsule.audioPost.twoPassLoudnessEnabled"]?.toBoolean() ?: false,
+                ),
+            transcript =
+                TranscriptConfig(
+                    enabled = props["capsule.transcript.enabled"]?.toBoolean() ?: false,
+                    strategy = TranscriptStrategy.fromString(props["capsule.transcript.strategy"]),
+                ),
+            remotion =
+                RemotionConfig(
+                    projectDir = props["capsule.remotion.projectDir"] ?: "capsule/remotion",
+                    nodeExecutablePath = props["capsule.remotion.nodeExecutablePath"] ?: "node",
+                    concurrency = props["capsule.remotion.concurrency"]?.toIntOrNull() ?: 4,
+                    fps = props["capsule.remotion.fps"]?.toIntOrNull() ?: 30,
+                ),
+            podcast =
+                PodcastConfig(
+                    enabled = props["capsule.podcast.enabled"]?.toBoolean() ?: false,
+                    outputFile = props["capsule.podcast.outputFile"] ?: "",
+                ),
+            preview =
+                PreviewConfig(
+                    enabled = props["capsule.preview.enabled"]?.toBoolean() ?: false,
+                ),
+            chapters =
+                ChaptersConfig(
+                    enabled = props["capsule.chapters.enabled"]?.toBoolean() ?: false,
+                    introText = props["capsule.chapters.introText"] ?: "",
+                    outroText = props["capsule.chapters.outroText"] ?: "",
+                    outputDir = props["capsule.chapters.outputDir"] ?: "",
+                ),
+            publish =
+                PublishConfig(
+                    enabled = props["capsule.publish.enabled"]?.toBoolean() ?: false,
+                    platform = props["capsule.publish.platform"] ?: "youtube",
+                    credentialsFile = props["capsule.publish.credentialsFile"] ?: "youtube.yaml",
+                    title = props["capsule.publish.title"] ?: "",
+                    description = props["capsule.publish.description"] ?: "",
+                    tags = props["capsule.publish.tags"]?.let { splitCommaList(it) } ?: emptyList(),
+                    hashtags = props["capsule.publish.hashtags"]?.let { splitCommaList(it) } ?: emptyList(),
+                    links = props["capsule.publish.links"]?.let { splitCommaList(it) } ?: emptyList(),
+                    nextVideo = props["capsule.publish.nextVideo"] ?: "",
+                    previousVideo = props["capsule.publish.previousVideo"] ?: "",
+                    thumbnailFile = props["capsule.publish.thumbnailFile"] ?: "",
+                    visibility = props["capsule.publish.visibility"] ?: "private",
+                    categoryId = props["capsule.publish.categoryId"] ?: "",
+                    languageCode = props["capsule.publish.languageCode"] ?: "",
+                    publishAt = props["capsule.publish.publishAt"] ?: "",
+                    strict = props["capsule.publish.strict"]?.toBoolean() ?: false,
+                ),
+            viral =
+                ViralConfig(
+                    enabled = props["capsule.viral.enabled"]?.toBoolean() ?: false,
+                    platform = ViralPlatform.fromString(props["capsule.viral.platform"]),
+                    targetDurationSeconds = props["capsule.viral.targetDurationSeconds"]?.toIntOrNull() ?: 30,
+                    hook = props["capsule.viral.hook"] ?: "",
+                    cta = props["capsule.viral.cta"] ?: "",
+                    storyboardRequired = props["capsule.viral.storyboardRequired"]?.toBoolean() ?: true,
+                    storyboardFile = props["capsule.viral.storyboardFile"] ?: "",
+                ),
+            voice =
+                VoiceConfig(
+                    verifyEnabled = props["capsule.voice.verifyEnabled"]?.toBoolean() ?: false,
+                    maxWordErrorRate = props["capsule.voice.maxWordErrorRate"]?.toDoubleOrNull() ?: 0.15,
+                    minSnrDb = props["capsule.voice.minSnrDb"]?.toDoubleOrNull() ?: 66.0,
+                    surplusThreshold = props["capsule.voice.surplusThreshold"]?.toIntOrNull() ?: 3,
+                    asrExecutablePath = props["capsule.voice.asrExecutablePath"] ?: "whisper",
+                    asrModel = props["capsule.voice.asrModel"] ?: "",
+                    language = props["capsule.voice.language"] ?: "fr",
+                    selectBestTake = props["capsule.voice.selectBestTake"]?.toBoolean() ?: false,
+                ),
         )
-    }
 
     // ─── Section merge methods ──────────────────────────────────
     //
@@ -412,18 +453,34 @@ object CapsuleConfigMerger {
     // When yaml == null (no YAML file found), props > ENV fallback applies.
     //
 
-    private fun mergeInputConfig(env: InputConfig, props: InputConfig, yaml: InputConfig?, cli: Map<String, Any?>): InputConfig {
-        return InputConfig(
+    private fun mergeInputConfig(
+        env: InputConfig,
+        props: InputConfig,
+        yaml: InputConfig?,
+        cli: Map<String, Any?>,
+    ): InputConfig =
+        InputConfig(
             outputDir = mergeStr(cli, "input.outputDir", yaml?.outputDir, props.outputDir, env.outputDir),
             sliderScriptDir = mergeStr(cli, "input.sliderScriptDir", yaml?.sliderScriptDir, props.sliderScriptDir, env.sliderScriptDir),
             deckSourceDir = mergeStr(cli, "input.deckSourceDir", yaml?.deckSourceDir, props.deckSourceDir, env.deckSourceDir),
             sliderBuildDir = mergeStr(cli, "input.sliderBuildDir", yaml?.sliderBuildDir, props.sliderBuildDir, env.sliderBuildDir),
-            chromiumExecutablePath = mergeStr(cli, "input.chromiumExecutablePath", yaml?.chromiumExecutablePath, props.chromiumExecutablePath, env.chromiumExecutablePath)
+            chromiumExecutablePath =
+                mergeStr(
+                    cli,
+                    "input.chromiumExecutablePath",
+                    yaml?.chromiumExecutablePath,
+                    props.chromiumExecutablePath,
+                    env.chromiumExecutablePath,
+                ),
         )
-    }
 
-    private fun mergeTtsConfig(env: TtsConfig, props: TtsConfig, yaml: TtsConfig?, cli: Map<String, Any?>): TtsConfig {
-        return TtsConfig(
+    private fun mergeTtsConfig(
+        env: TtsConfig,
+        props: TtsConfig,
+        yaml: TtsConfig?,
+        cli: Map<String, Any?>,
+    ): TtsConfig =
+        TtsConfig(
             engine = mergeStr(cli, "tts.engine", yaml?.engine, props.engine, env.engine),
             voice = mergeStr(cli, "tts.voice", yaml?.voice, props.voice, env.voice),
             piperExecutablePath = mergeStr(cli, "tts.piperExecutablePath", yaml?.piperExecutablePath, props.piperExecutablePath, env.piperExecutablePath),
@@ -437,12 +494,16 @@ object CapsuleConfigMerger {
             fishFormat = mergeStr(cli, "tts.fishFormat", yaml?.fishFormat, props.fishFormat, env.fishFormat),
             fishTemperature = mergeDouble(cli, "tts.fishTemperature", yaml?.fishTemperature, props.fishTemperature),
             fishTopP = mergeDouble(cli, "tts.fishTopP", yaml?.fishTopP, props.fishTopP),
-            fishEndpoint = mergeStr(cli, "tts.fishEndpoint", yaml?.fishEndpoint, props.fishEndpoint, env.fishEndpoint)
+            fishEndpoint = mergeStr(cli, "tts.fishEndpoint", yaml?.fishEndpoint, props.fishEndpoint, env.fishEndpoint),
         )
-    }
 
-    private fun mergeCaptureConfig(env: CaptureConfig, props: CaptureConfig, yaml: CaptureConfig?, cli: Map<String, Any?>): CaptureConfig {
-        return CaptureConfig(
+    private fun mergeCaptureConfig(
+        env: CaptureConfig,
+        props: CaptureConfig,
+        yaml: CaptureConfig?,
+        cli: Map<String, Any?>,
+    ): CaptureConfig =
+        CaptureConfig(
             viewportWidth = mergeInt(cli, "capture.viewportWidth", yaml?.viewportWidth, props.viewportWidth),
             viewportHeight = mergeInt(cli, "capture.viewportHeight", yaml?.viewportHeight, props.viewportHeight),
             playwrightTimeout = mergeDouble(cli, "capture.playwrightTimeout", yaml?.playwrightTimeout, props.playwrightTimeout),
@@ -454,99 +515,179 @@ object CapsuleConfigMerger {
             subtitleFormat = mergeStr(cli, "capture.subtitleFormat", yaml?.subtitleFormat, props.subtitleFormat, env.subtitleFormat),
             subtitleBurnIn = mergeBoolean(cli, "capture.subtitleBurnIn", yaml?.subtitleBurnIn, props.subtitleBurnIn),
             subtitleBurnInFontSize = mergeInt(cli, "capture.subtitleBurnInFontSize", yaml?.subtitleBurnInFontSize, props.subtitleBurnInFontSize),
-            subtitleBurnInFontColor = mergeStr(cli, "capture.subtitleBurnInFontColor", yaml?.subtitleBurnInFontColor, props.subtitleBurnInFontColor, env.subtitleBurnInFontColor),
-            subtitleBurnInOutlineColor = mergeStr(cli, "capture.subtitleBurnInOutlineColor", yaml?.subtitleBurnInOutlineColor, props.subtitleBurnInOutlineColor, env.subtitleBurnInOutlineColor),
-            subtitleBurnInPosition = mergeStr(cli, "capture.subtitleBurnInPosition", yaml?.subtitleBurnInPosition, props.subtitleBurnInPosition, env.subtitleBurnInPosition),
-            subtitleCartonsEnabled = mergeBoolean(cli, "capture.subtitleCartonsEnabled", yaml?.subtitleCartonsEnabled, props.subtitleCartonsEnabled),
+            subtitleBurnInFontColor =
+                mergeStr(
+                    cli,
+                    "capture.subtitleBurnInFontColor",
+                    yaml?.subtitleBurnInFontColor,
+                    props.subtitleBurnInFontColor,
+                    env.subtitleBurnInFontColor,
+                ),
+            subtitleBurnInOutlineColor =
+                mergeStr(
+                    cli,
+                    "capture.subtitleBurnInOutlineColor",
+                    yaml?.subtitleBurnInOutlineColor,
+                    props.subtitleBurnInOutlineColor,
+                    env.subtitleBurnInOutlineColor,
+                ),
+            subtitleBurnInPosition =
+                mergeStr(
+                    cli,
+                    "capture.subtitleBurnInPosition",
+                    yaml?.subtitleBurnInPosition,
+                    props.subtitleBurnInPosition,
+                    env.subtitleBurnInPosition,
+                ),
+            subtitleCartonsEnabled =
+                mergeBoolean(
+                    cli,
+                    "capture.subtitleCartonsEnabled",
+                    yaml?.subtitleCartonsEnabled,
+                    props.subtitleCartonsEnabled,
+                ),
             subtitleMaxChars = mergeInt(cli, "capture.subtitleMaxChars", yaml?.subtitleMaxChars, props.subtitleMaxChars),
-            reuseCapturedVideoEnabled = mergeBoolean(cli, "capture.reuseCapturedVideoEnabled", yaml?.reuseCapturedVideoEnabled, props.reuseCapturedVideoEnabled),
-            strategy = mergeCaptureStrategy(cli, "capture.strategy", yaml?.strategy, props.strategy)
+            reuseCapturedVideoEnabled =
+                mergeBoolean(
+                    cli,
+                    "capture.reuseCapturedVideoEnabled",
+                    yaml?.reuseCapturedVideoEnabled,
+                    props.reuseCapturedVideoEnabled,
+                ),
+            strategy = mergeCaptureStrategy(cli, "capture.strategy", yaml?.strategy, props.strategy),
         )
-    }
 
-    private fun mergeDistribConfig(env: DistribConfig, props: DistribConfig, yaml: DistribConfig?, cli: Map<String, Any?>): DistribConfig {
-        return DistribConfig(
-            ffmpegExecutablePath = mergeStr(cli, "distrib.ffmpegExecutablePath", yaml?.ffmpegExecutablePath, props.ffmpegExecutablePath, env.ffmpegExecutablePath),
+    private fun mergeDistribConfig(
+        env: DistribConfig,
+        props: DistribConfig,
+        yaml: DistribConfig?,
+        cli: Map<String, Any?>,
+    ): DistribConfig =
+        DistribConfig(
+            ffmpegExecutablePath =
+                mergeStr(
+                    cli,
+                    "distrib.ffmpegExecutablePath",
+                    yaml?.ffmpegExecutablePath,
+                    props.ffmpegExecutablePath,
+                    env.ffmpegExecutablePath,
+                ),
             outputWidth = mergeInt(cli, "distrib.outputWidth", yaml?.outputWidth, props.outputWidth),
-            outputHeight = mergeInt(cli, "distrib.outputHeight", yaml?.outputHeight, props.outputHeight)
+            outputHeight = mergeInt(cli, "distrib.outputHeight", yaml?.outputHeight, props.outputHeight),
         )
-    }
 
-    private fun mergeManimConfig(env: ManimConfig, props: ManimConfig, yaml: ManimConfig?, cli: Map<String, Any?>): ManimConfig {
-        return ManimConfig(
+    private fun mergeManimConfig(
+        env: ManimConfig,
+        props: ManimConfig,
+        yaml: ManimConfig?,
+        cli: Map<String, Any?>,
+    ): ManimConfig =
+        ManimConfig(
             executablePath = mergeStr(cli, "manim.executablePath", yaml?.executablePath, props.executablePath, env.executablePath),
             quality = mergeStr(cli, "manim.quality", yaml?.quality, props.quality, env.quality),
             scriptsDir = mergeStr(cli, "manim.scriptsDir", yaml?.scriptsDir, props.scriptsDir, env.scriptsDir),
             outputDir = mergeStr(cli, "manim.outputDir", yaml?.outputDir, props.outputDir, env.outputDir),
             parallelRender = mergeBoolean(cli, "manim.parallelRender", yaml?.parallelRender, props.parallelRender),
-            parallelRenderThreads = mergeInt(cli, "manim.parallelRenderThreads", yaml?.parallelRenderThreads, props.parallelRenderThreads)
+            parallelRenderThreads = mergeInt(cli, "manim.parallelRenderThreads", yaml?.parallelRenderThreads, props.parallelRenderThreads),
         )
-    }
 
-    private fun mergeOutputConfig(env: OutputConfig, props: OutputConfig, yaml: OutputConfig?, cli: Map<String, Any?>): OutputConfig {
-        return OutputConfig(
+    private fun mergeOutputConfig(
+        env: OutputConfig,
+        props: OutputConfig,
+        yaml: OutputConfig?,
+        cli: Map<String, Any?>,
+    ): OutputConfig =
+        OutputConfig(
             videoDestinationDir = mergeStr(cli, "output.videoDestinationDir", yaml?.videoDestinationDir, props.videoDestinationDir, env.videoDestinationDir),
             versioning = mergeVersioning(cli, "output.versioning", yaml?.versioning, props.versioning),
             versionPrefix = mergeStr(cli, "output.versionPrefix", yaml?.versionPrefix, props.versionPrefix, env.versionPrefix),
             format = mergeOutputFormat(cli, "output.format", yaml?.format, props.format),
-            bt709 = mergeBoolean(cli, "output.bt709", yaml?.bt709, props.bt709)
+            bt709 = mergeBoolean(cli, "output.bt709", yaml?.bt709, props.bt709),
         )
-    }
 
-    private fun mergeStrictModeConfig(env: StrictModeConfig, props: StrictModeConfig, yaml: StrictModeConfig?, cli: Map<String, Any?>): StrictModeConfig {
-        return StrictModeConfig(
-            enabled = mergeBoolean(cli, "strictMode.enabled", yaml?.enabled, props.enabled)
+    private fun mergeStrictModeConfig(
+        env: StrictModeConfig,
+        props: StrictModeConfig,
+        yaml: StrictModeConfig?,
+        cli: Map<String, Any?>,
+    ): StrictModeConfig =
+        StrictModeConfig(
+            enabled = mergeBoolean(cli, "strictMode.enabled", yaml?.enabled, props.enabled),
         )
-    }
 
-    private fun mergeValidationConfig(env: ValidationConfig, props: ValidationConfig, yaml: ValidationConfig?, cli: Map<String, Any?>): ValidationConfig {
-        return ValidationConfig(
+    private fun mergeValidationConfig(
+        env: ValidationConfig,
+        props: ValidationConfig,
+        yaml: ValidationConfig?,
+        cli: Map<String, Any?>,
+    ): ValidationConfig =
+        ValidationConfig(
             durationEnabled = mergeBoolean(cli, "validation.durationEnabled", yaml?.durationEnabled, props.durationEnabled),
             toleranceSecs = mergeDouble(cli, "validation.toleranceSecs", yaml?.toleranceSecs, props.toleranceSecs),
-            integrityEnabled = mergeBoolean(cli, "validation.integrityEnabled", yaml?.integrityEnabled, props.integrityEnabled)
+            integrityEnabled = mergeBoolean(cli, "validation.integrityEnabled", yaml?.integrityEnabled, props.integrityEnabled),
         )
-    }
 
-    private fun mergeQcConfig(env: QcConfig, props: QcConfig, yaml: QcConfig?, cli: Map<String, Any?>): QcConfig {
-        return QcConfig(
+    private fun mergeQcConfig(
+        env: QcConfig,
+        props: QcConfig,
+        yaml: QcConfig?,
+        cli: Map<String, Any?>,
+    ): QcConfig =
+        QcConfig(
             preflightEnabled = mergeBoolean(cli, "qc.preflightEnabled", yaml?.preflightEnabled, props.preflightEnabled),
             maxNoteChars = mergeInt(cli, "qc.maxNoteChars", yaml?.maxNoteChars, props.maxNoteChars),
-            boardsEnabled = mergeBoolean(cli, "qc.boardsEnabled", yaml?.boardsEnabled, props.boardsEnabled)
+            boardsEnabled = mergeBoolean(cli, "qc.boardsEnabled", yaml?.boardsEnabled, props.boardsEnabled),
         )
-    }
 
-    private fun mergeAudioPostConfig(env: AudioPostConfig, props: AudioPostConfig, yaml: AudioPostConfig?, cli: Map<String, Any?>): AudioPostConfig {
-        return AudioPostConfig(
+    private fun mergeAudioPostConfig(
+        env: AudioPostConfig,
+        props: AudioPostConfig,
+        yaml: AudioPostConfig?,
+        cli: Map<String, Any?>,
+    ): AudioPostConfig =
+        AudioPostConfig(
             bgmEnabled = mergeBoolean(cli, "audioPost.bgmEnabled", yaml?.bgmEnabled, props.bgmEnabled),
             bgmFile = mergeStr(cli, "audioPost.bgmFile", yaml?.bgmFile, props.bgmFile, env.bgmFile),
             bgmLevel = mergeDouble(cli, "audioPost.bgmLevel", yaml?.bgmLevel, props.bgmLevel),
             loudnessTarget = mergeDouble(cli, "audioPost.loudnessTarget", yaml?.loudnessTarget, props.loudnessTarget),
             duckingEnabled = mergeBoolean(cli, "audioPost.duckingEnabled", yaml?.duckingEnabled, props.duckingEnabled),
-            twoPassLoudnessEnabled = mergeBoolean(cli, "audioPost.twoPassLoudnessEnabled", yaml?.twoPassLoudnessEnabled, props.twoPassLoudnessEnabled)
+            twoPassLoudnessEnabled = mergeBoolean(cli, "audioPost.twoPassLoudnessEnabled", yaml?.twoPassLoudnessEnabled, props.twoPassLoudnessEnabled),
         )
-    }
 
-    private fun mergeTranscriptConfig(env: TranscriptConfig, props: TranscriptConfig, yaml: TranscriptConfig?, cli: Map<String, Any?>): TranscriptConfig {
-        return TranscriptConfig(
+    private fun mergeTranscriptConfig(
+        env: TranscriptConfig,
+        props: TranscriptConfig,
+        yaml: TranscriptConfig?,
+        cli: Map<String, Any?>,
+    ): TranscriptConfig =
+        TranscriptConfig(
             enabled = mergeBoolean(cli, "transcript.enabled", yaml?.enabled, props.enabled),
-            strategy = mergeTranscriptStrategy(cli, "transcript.strategy", yaml?.strategy, props.strategy)
+            strategy = mergeTranscriptStrategy(cli, "transcript.strategy", yaml?.strategy, props.strategy),
         )
-    }
 
-    private fun mergeViralConfig(env: ViralConfig, props: ViralConfig, yaml: ViralConfig?, cli: Map<String, Any?>): ViralConfig {
-        return ViralConfig(
+    private fun mergeViralConfig(
+        env: ViralConfig,
+        props: ViralConfig,
+        yaml: ViralConfig?,
+        cli: Map<String, Any?>,
+    ): ViralConfig =
+        ViralConfig(
             enabled = mergeBoolean(cli, "viral.enabled", yaml?.enabled, props.enabled),
             platform = mergeViralPlatform(cli, "viral.platform", yaml?.platform, props.platform),
             targetDurationSeconds = mergeInt(cli, "viral.targetDurationSeconds", yaml?.targetDurationSeconds, props.targetDurationSeconds),
             hook = mergeStr(cli, "viral.hook", yaml?.hook, props.hook, env.hook),
             cta = mergeStr(cli, "viral.cta", yaml?.cta, props.cta, env.cta),
             storyboardRequired = mergeBoolean(cli, "viral.storyboardRequired", yaml?.storyboardRequired, props.storyboardRequired),
-            storyboardFile = mergeStr(cli, "viral.storyboardFile", yaml?.storyboardFile, props.storyboardFile, env.storyboardFile)
+            storyboardFile = mergeStr(cli, "viral.storyboardFile", yaml?.storyboardFile, props.storyboardFile, env.storyboardFile),
         )
-    }
 
-    private fun mergeVoiceConfig(env: VoiceConfig, props: VoiceConfig, yaml: VoiceConfig?, cli: Map<String, Any?>): VoiceConfig {
-        return VoiceConfig(
+    private fun mergeVoiceConfig(
+        env: VoiceConfig,
+        props: VoiceConfig,
+        yaml: VoiceConfig?,
+        cli: Map<String, Any?>,
+    ): VoiceConfig =
+        VoiceConfig(
             verifyEnabled = mergeBoolean(cli, "voice.verifyEnabled", yaml?.verifyEnabled, props.verifyEnabled),
             maxWordErrorRate = mergeDouble(cli, "voice.maxWordErrorRate", yaml?.maxWordErrorRate, props.maxWordErrorRate),
             minSnrDb = mergeDouble(cli, "voice.minSnrDb", yaml?.minSnrDb, props.minSnrDb),
@@ -554,51 +695,89 @@ object CapsuleConfigMerger {
             asrExecutablePath = mergeStr(cli, "voice.asrExecutablePath", yaml?.asrExecutablePath, props.asrExecutablePath, env.asrExecutablePath),
             asrModel = mergeStr(cli, "voice.asrModel", yaml?.asrModel, props.asrModel, env.asrModel),
             language = mergeStr(cli, "voice.language", yaml?.language, props.language, env.language),
-            selectBestTake = mergeBoolean(cli, "voice.selectBestTake", yaml?.selectBestTake, props.selectBestTake)
+            selectBestTake = mergeBoolean(cli, "voice.selectBestTake", yaml?.selectBestTake, props.selectBestTake),
         )
-    }
 
-    private fun mergeRemotionConfig(env: RemotionConfig, props: RemotionConfig, yaml: RemotionConfig?, cli: Map<String, Any?>): RemotionConfig {
-        return RemotionConfig(
+    private fun mergeRemotionConfig(
+        env: RemotionConfig,
+        props: RemotionConfig,
+        yaml: RemotionConfig?,
+        cli: Map<String, Any?>,
+    ): RemotionConfig =
+        RemotionConfig(
             projectDir = mergeStr(cli, "remotion.projectDir", yaml?.projectDir, props.projectDir, env.projectDir),
             nodeExecutablePath = mergeStr(cli, "remotion.nodeExecutablePath", yaml?.nodeExecutablePath, props.nodeExecutablePath, env.nodeExecutablePath),
             concurrency = mergeInt(cli, "remotion.concurrency", yaml?.concurrency, props.concurrency),
-            fps = mergeInt(cli, "remotion.fps", yaml?.fps, props.fps)
+            fps = mergeInt(cli, "remotion.fps", yaml?.fps, props.fps),
         )
-    }
 
-    private fun mergeContextConfig(env: ContextConfig, props: ContextConfig, yaml: ContextConfig?, cli: Map<String, Any?>): ContextConfig {
-        return ContextConfig(
+    private fun mergeContextConfig(
+        env: ContextConfig,
+        props: ContextConfig,
+        yaml: ContextConfig?,
+        cli: Map<String, Any?>,
+    ): ContextConfig =
+        ContextConfig(
             docsGlobs = mergeStrList(cli, "context.docsGlobs", yaml?.docsGlobs, props.docsGlobs, env.docsGlobs),
-            scenarioFile = mergeStr(cli, "context.scenarioFile", yaml?.scenarioFile, props.scenarioFile ?: "", env.scenarioFile ?: "").takeIf { it.isNotBlank() },
-            glossaryFile = mergeStr(cli, "context.glossaryFile", yaml?.glossaryFile, props.glossaryFile ?: "", env.glossaryFile ?: "").takeIf { it.isNotBlank() }
+            scenarioFile =
+                mergeStr(
+                    cli,
+                    "context.scenarioFile",
+                    yaml?.scenarioFile,
+                    props.scenarioFile ?: "",
+                    env.scenarioFile ?: "",
+                ).takeIf { it.isNotBlank() },
+            glossaryFile =
+                mergeStr(
+                    cli,
+                    "context.glossaryFile",
+                    yaml?.glossaryFile,
+                    props.glossaryFile ?: "",
+                    env.glossaryFile ?: "",
+                ).takeIf { it.isNotBlank() },
         )
-    }
 
-    private fun mergePodcastConfig(env: PodcastConfig, props: PodcastConfig, yaml: PodcastConfig?, cli: Map<String, Any?>): PodcastConfig {
-        return PodcastConfig(
+    private fun mergePodcastConfig(
+        env: PodcastConfig,
+        props: PodcastConfig,
+        yaml: PodcastConfig?,
+        cli: Map<String, Any?>,
+    ): PodcastConfig =
+        PodcastConfig(
             enabled = mergeBoolean(cli, "podcast.enabled", yaml?.enabled, props.enabled),
-            outputFile = mergeStr(cli, "podcast.outputFile", yaml?.outputFile, props.outputFile, env.outputFile)
+            outputFile = mergeStr(cli, "podcast.outputFile", yaml?.outputFile, props.outputFile, env.outputFile),
         )
-    }
 
-    private fun mergePreviewConfig(env: PreviewConfig, props: PreviewConfig, yaml: PreviewConfig?, cli: Map<String, Any?>): PreviewConfig {
-        return PreviewConfig(
-            enabled = mergeBoolean(cli, "preview.enabled", yaml?.enabled, props.enabled)
+    private fun mergePreviewConfig(
+        env: PreviewConfig,
+        props: PreviewConfig,
+        yaml: PreviewConfig?,
+        cli: Map<String, Any?>,
+    ): PreviewConfig =
+        PreviewConfig(
+            enabled = mergeBoolean(cli, "preview.enabled", yaml?.enabled, props.enabled),
         )
-    }
 
-    private fun mergeChaptersConfig(env: ChaptersConfig, props: ChaptersConfig, yaml: ChaptersConfig?, cli: Map<String, Any?>): ChaptersConfig {
-        return ChaptersConfig(
+    private fun mergeChaptersConfig(
+        env: ChaptersConfig,
+        props: ChaptersConfig,
+        yaml: ChaptersConfig?,
+        cli: Map<String, Any?>,
+    ): ChaptersConfig =
+        ChaptersConfig(
             enabled = mergeBoolean(cli, "chapters.enabled", yaml?.enabled, props.enabled),
             introText = mergeStr(cli, "chapters.introText", yaml?.introText, props.introText, env.introText),
             outroText = mergeStr(cli, "chapters.outroText", yaml?.outroText, props.outroText, env.outroText),
-            outputDir = mergeStr(cli, "chapters.outputDir", yaml?.outputDir, props.outputDir, env.outputDir)
+            outputDir = mergeStr(cli, "chapters.outputDir", yaml?.outputDir, props.outputDir, env.outputDir),
         )
-    }
 
-    private fun mergePublishConfig(env: PublishConfig, props: PublishConfig, yaml: PublishConfig?, cli: Map<String, Any?>): PublishConfig {
-        return PublishConfig(
+    private fun mergePublishConfig(
+        env: PublishConfig,
+        props: PublishConfig,
+        yaml: PublishConfig?,
+        cli: Map<String, Any?>,
+    ): PublishConfig =
+        PublishConfig(
             enabled = mergeBoolean(cli, "publish.enabled", yaml?.enabled, props.enabled),
             platform = mergeStr(cli, "publish.platform", yaml?.platform, props.platform, env.platform),
             credentialsFile = mergeStr(cli, "publish.credentialsFile", yaml?.credentialsFile, props.credentialsFile, env.credentialsFile),
@@ -614,15 +793,14 @@ object CapsuleConfigMerger {
             categoryId = mergeStr(cli, "publish.categoryId", yaml?.categoryId, props.categoryId, env.categoryId),
             languageCode = mergeStr(cli, "publish.languageCode", yaml?.languageCode, props.languageCode, env.languageCode),
             publishAt = mergeStr(cli, "publish.publishAt", yaml?.publishAt, props.publishAt, env.publishAt),
-            strict = mergeBoolean(cli, "publish.strict", yaml?.strict, props.strict)
+            strict = mergeBoolean(cli, "publish.strict", yaml?.strict, props.strict),
         )
-    }
 
     private fun mergeVersioning(
         cli: Map<String, Any?>,
         key: String,
         yaml: VersioningStrategy?,
-        props: VersioningStrategy
+        props: VersioningStrategy,
     ): VersioningStrategy {
         val cliValue = cli[key]?.toString()
         if (!cliValue.isNullOrBlank()) return VersioningStrategy.fromString(cliValue)
@@ -634,7 +812,7 @@ object CapsuleConfigMerger {
         cli: Map<String, Any?>,
         key: String,
         yaml: CaptureStrategy?,
-        props: CaptureStrategy
+        props: CaptureStrategy,
     ): CaptureStrategy {
         val cliValue = cli[key]?.toString()
         if (!cliValue.isNullOrBlank()) return CaptureStrategy.fromString(cliValue)
@@ -646,7 +824,7 @@ object CapsuleConfigMerger {
         cli: Map<String, Any?>,
         key: String,
         yaml: OutputFormat?,
-        props: OutputFormat
+        props: OutputFormat,
     ): OutputFormat {
         val cliValue = cli[key]?.toString()
         if (!cliValue.isNullOrBlank()) return OutputFormat.fromString(cliValue)
@@ -658,7 +836,7 @@ object CapsuleConfigMerger {
         cli: Map<String, Any?>,
         key: String,
         yaml: TranscriptStrategy?,
-        props: TranscriptStrategy
+        props: TranscriptStrategy,
     ): TranscriptStrategy {
         val cliValue = cli[key]?.toString()
         if (!cliValue.isNullOrBlank()) return TranscriptStrategy.fromString(cliValue)
@@ -670,7 +848,7 @@ object CapsuleConfigMerger {
         cli: Map<String, Any?>,
         key: String,
         yaml: ViralPlatform?,
-        props: ViralPlatform
+        props: ViralPlatform,
     ): ViralPlatform {
         val cliValue = cli[key]?.toString()
         if (!cliValue.isNullOrBlank()) return ViralPlatform.fromString(cliValue)
@@ -690,7 +868,7 @@ object CapsuleConfigMerger {
         key: String,
         yaml: String?,
         props: String,
-        env: String
+        env: String,
     ): String {
         val cliValue = cli[key]?.toString()
         if (!cliValue.isNullOrBlank()) return cliValue
@@ -703,7 +881,7 @@ object CapsuleConfigMerger {
         cli: Map<String, Any?>,
         key: String,
         yaml: Int?,
-        props: Int
+        props: Int,
     ): Int {
         cli.cliInt(key)?.let { return it }
         yaml?.let { return it }
@@ -714,7 +892,7 @@ object CapsuleConfigMerger {
         cli: Map<String, Any?>,
         key: String,
         yaml: Double?,
-        props: Double
+        props: Double,
     ): Double {
         cli.cliDouble(key)?.let { return it }
         yaml?.let { return it }
@@ -725,7 +903,7 @@ object CapsuleConfigMerger {
         cli: Map<String, Any?>,
         key: String,
         yaml: Boolean?,
-        props: Boolean
+        props: Boolean,
     ): Boolean {
         cli.cliBoolean(key)?.let { return it }
         yaml?.let { return it }
@@ -745,7 +923,7 @@ object CapsuleConfigMerger {
         key: String,
         yaml: List<String>?,
         props: List<String>,
-        env: List<String>
+        env: List<String>,
     ): List<String> {
         val cliValue = cli[key]?.toString()
         if (!cliValue.isNullOrBlank()) return splitCommaList(cliValue)
@@ -754,16 +932,12 @@ object CapsuleConfigMerger {
         return env
     }
 
-    private fun Map<String, Any?>.cliInt(key: String): Int? =
-        this[key]?.let { (it as? Int) ?: it.toString().toIntOrNull() }
+    private fun Map<String, Any?>.cliInt(key: String): Int? = this[key]?.let { (it as? Int) ?: it.toString().toIntOrNull() }
 
-    private fun Map<String, Any?>.cliDouble(key: String): Double? =
-        this[key]?.let { (it as? Double) ?: it.toString().toDoubleOrNull() }
+    private fun Map<String, Any?>.cliDouble(key: String): Double? = this[key]?.let { (it as? Double) ?: it.toString().toDoubleOrNull() }
 
-    private fun Map<String, Any?>.cliBoolean(key: String): Boolean? =
-        this[key]?.let { (it as? Boolean) ?: it.toString().toBoolean() }
+    private fun Map<String, Any?>.cliBoolean(key: String): Boolean? = this[key]?.let { (it as? Boolean) ?: it.toString().toBoolean() }
 
     /** Splits a comma-separated string into a trimmed list of non-blank entries. */
-    internal fun splitCommaList(value: String): List<String> =
-        value.split(",").map { it.trim() }.filter { it.isNotBlank() }
+    internal fun splitCommaList(value: String): List<String> = value.split(",").map { it.trim() }.filter { it.isNotBlank() }
 }

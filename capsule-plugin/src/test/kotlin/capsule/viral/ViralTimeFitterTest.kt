@@ -16,7 +16,6 @@ import kotlin.test.assertTrue
  * Pure — no Gradle, no I/O, no FFmpeg.
  */
 class ViralTimeFitterTest {
-
     @Test
     fun `fit is the identity when the beats already sum to the target`() {
         val fitted = ViralTimeFitter.fit(listOf(3.0, 10.0, 10.0, 7.0), 30)

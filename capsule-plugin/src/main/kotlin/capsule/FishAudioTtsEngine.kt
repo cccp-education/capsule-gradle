@@ -70,35 +70,40 @@ class FishAudioTtsEngine(
     private val transport: FishAudioTransport = HttpClientFishAudioTransport(),
     private val maxAttempts: Int = 3,
 ) : TtsEngine {
-
     private val mapper = ObjectMapper().registerKotlinModule()
 
     override fun isAvailable(): Boolean = keys.any { it.key.isNotBlank() }
 
     override fun name(): String = "fish"
 
-    override fun synthesize(text: String, outputFile: File) {
-        val key = keys.firstOrNull { it.key.isNotBlank() }?.key
-            ?: throw TtsException("Fish Audio: no API key (the fish-audio pool is empty)")
+    override fun synthesize(
+        text: String,
+        outputFile: File,
+    ) {
+        val key =
+            keys.firstOrNull { it.key.isNotBlank() }?.key
+                ?: throw TtsException("Fish Audio: no API key (the fish-audio pool is empty)")
 
         if (params.voice.isBlank()) {
             throw TtsException("Fish Audio: tts.fishVoice (the reference_id) must not be blank")
         }
 
-        val body = mapper.writeValueAsBytes(
-            FishAudioRequestBody(
-                text = text,
-                referenceId = params.voice,
-                format = params.format,
-                temperature = params.temperature,
-                topP = params.topP,
+        val body =
+            mapper.writeValueAsBytes(
+                FishAudioRequestBody(
+                    text = text,
+                    referenceId = params.voice,
+                    format = params.format,
+                    temperature = params.temperature,
+                    topP = params.topP,
+                ),
             )
-        )
-        val headers = mapOf(
-            "authorization" to "Bearer $key",
-            "content-type" to "application/json",
-            "model" to params.model,
-        )
+        val headers =
+            mapOf(
+                "authorization" to "Bearer $key",
+                "content-type" to "application/json",
+                "model" to params.model,
+            )
 
         val wavFile = File(outputFile.parentFile, outputFile.nameWithoutExtension + ".wav")
         wavFile.parentFile.mkdirs()

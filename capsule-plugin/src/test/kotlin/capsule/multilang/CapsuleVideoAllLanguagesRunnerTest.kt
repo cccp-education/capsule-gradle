@@ -1,19 +1,21 @@
 package capsule.multilang
 
-import video.kernel.FileVisualSource
 import contracts.i18n.LanguageCatalog
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import video.kernel.FileVisualSource
 import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class CapsuleVideoAllLanguagesRunnerTest {
-
     @TempDir
     lateinit var tmp: File
 
-    private fun entry(lang: String, outputExists: Boolean = false): CapsuleVideoEntry {
+    private fun entry(
+        lang: String,
+        outputExists: Boolean = false,
+    ): CapsuleVideoEntry {
         val language = LanguageCatalog.findByCode(lang)!!
         val deck = tmp.resolve("demo_$lang-deck.html")
         val script = tmp.resolve("demo_$lang-script.txt")
@@ -26,8 +28,7 @@ class CapsuleVideoAllLanguagesRunnerTest {
         return CapsuleVideoEntry(visual = FileVisualSource(deck), scriptFile = script, language = language, outputVideo = output)
     }
 
-    private fun planOf(vararg languages: Pair<String, Boolean>): CapsuleVideoPlan =
-        CapsuleVideoPlan(languages.map { (lang, exists) -> entry(lang, exists) })
+    private fun planOf(vararg languages: Pair<String, Boolean>): CapsuleVideoPlan = CapsuleVideoPlan(languages.map { (lang, exists) -> entry(lang, exists) })
 
     private val zeroProbe: (File) -> Double = { 0.0 }
 

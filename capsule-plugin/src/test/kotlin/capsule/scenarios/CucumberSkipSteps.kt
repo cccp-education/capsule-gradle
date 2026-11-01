@@ -4,7 +4,6 @@ import capsule.ci.CucumberTestGuard
 import io.cucumber.java.en.And
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
-import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -16,17 +15,20 @@ import kotlin.test.assertTrue
  * opts in via -PrunCucumber or the build runs on a CI server (CI=true).
  */
 class CucumberSkipSteps {
-
     private var guard: CucumberTestGuard? = null
 
     @Given("a cucumber test guard with runCucumber {string} and CI {string}")
-    fun aCucumberTestGuardWith(runCucumber: String, ci: String) {
+    fun aCucumberTestGuardWith(
+        runCucumber: String,
+        ci: String,
+    ) {
         val hasRunCucumber = runCucumber == "active"
         val isCi = ci == "active"
-        guard = CucumberTestGuard(
-            hasRunCucumberProperty = hasRunCucumber,
-            isCi = isCi
-        )
+        guard =
+            CucumberTestGuard(
+                hasRunCucumberProperty = hasRunCucumber,
+                isCi = isCi,
+            )
     }
 
     @Then("the guard should skip the cucumber test")
@@ -49,7 +51,7 @@ class CucumberSkipSteps {
         val reason = g.skipReason()
         assertTrue(
             reason.contains(token),
-            "Skip reason '$reason' should mention '$token'"
+            "Skip reason '$reason' should mention '$token'",
         )
     }
 

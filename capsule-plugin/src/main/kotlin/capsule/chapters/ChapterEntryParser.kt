@@ -5,8 +5,11 @@ package capsule.chapters
  * No I/O, no Gradle dependencies, fully unit-testable.
  */
 object ChapterEntryParser {
-
-    data class SlideSegmentData(val title: String, val startMs: Long, val endMs: Long)
+    data class SlideSegmentData(
+        val title: String,
+        val startMs: Long,
+        val endMs: Long,
+    )
 
     fun parseSlideSegments(json: String): List<SlideSegmentData> {
         if (json.isBlank() || json.trim() == "[]") return emptyList()
@@ -29,7 +32,7 @@ object ChapterEntryParser {
     fun buildChapterEntries(
         segments: List<SlideSegmentData>,
         introText: String,
-        outroText: String
+        outroText: String,
     ): List<ChapterEntry> {
         val chapters = mutableListOf<ChapterEntry>()
         val introLabel = introText.ifBlank { "Introduction" }
@@ -43,13 +46,23 @@ object ChapterEntryParser {
         return chapters
     }
 
-    private fun extractJsonString(json: String, key: String): String {
+    private fun extractJsonString(
+        json: String,
+        key: String,
+    ): String {
         val pattern = "\"$key\"\\s*:\\s*\"([^\"]*)\"".toRegex()
         return pattern.find(json)?.groupValues?.get(1) ?: ""
     }
 
-    private fun extractJsonLong(json: String, key: String): Long {
+    private fun extractJsonLong(
+        json: String,
+        key: String,
+    ): Long {
         val pattern = "\"$key\"\\s*:\\s*(\\d+)".toRegex()
-        return pattern.find(json)?.groupValues?.get(1)?.toLongOrNull() ?: 0L
+        return pattern
+            .find(json)
+            ?.groupValues
+            ?.get(1)
+            ?.toLongOrNull() ?: 0L
     }
 }

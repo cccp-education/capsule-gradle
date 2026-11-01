@@ -14,7 +14,6 @@ import kotlin.test.assertTrue
  * section keep the no-audio-post behavior).
  */
 class AudioPostConfigTest {
-
     @Test
     fun `AudioPostConfig defaults are backward-compat disabled`() {
         val config = AudioPostConfig()
@@ -28,13 +27,14 @@ class AudioPostConfigTest {
 
     @Test
     fun `AudioPostConfig can enable BGM with explicit values`() {
-        val config = AudioPostConfig(
-            bgmEnabled = true,
-            bgmFile = "/music/loop.mp3",
-            bgmLevel = -20.0,
-            loudnessTarget = -14.0,
-            duckingEnabled = true
-        )
+        val config =
+            AudioPostConfig(
+                bgmEnabled = true,
+                bgmFile = "/music/loop.mp3",
+                bgmLevel = -20.0,
+                loudnessTarget = -14.0,
+                duckingEnabled = true,
+            )
         assertTrue(config.bgmEnabled)
         assertEquals("/music/loop.mp3", config.bgmFile)
         assertEquals(-20.0, config.bgmLevel, 0.001)

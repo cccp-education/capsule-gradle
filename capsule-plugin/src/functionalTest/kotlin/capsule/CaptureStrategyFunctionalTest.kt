@@ -1,13 +1,13 @@
 package capsule
 
-import java.io.File
-import kotlin.test.Test
-import kotlin.test.assertTrue
+import capsule.test.PlaywrightTestAssumption.assumePlaywrightAvailable
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
-import capsule.test.PlaywrightTestAssumption.assumePlaywrightAvailable
+import java.io.File
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 /**
  * Functional tests for capture strategy (CAP-CR3-3 US-4).
@@ -29,7 +29,6 @@ import capsule.test.PlaywrightTestAssumption.assumePlaywrightAvailable
  * correctly rejects the NoOp fallback when ffmpeg is unavailable.
  */
 class CaptureStrategyFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -38,24 +37,29 @@ class CaptureStrategyFunctionalTest {
 
     private fun setupBuild(extraConfig: String = "") {
         settingsFile.writeText("")
-        buildFile.writeText("""
+        buildFile.writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             $extraConfig
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     private fun writeScriptAndDeck() {
         val scriptDir = projectDir.resolve("build/capsule").also { it.mkdirs() }
-        scriptDir.resolve("test-script.txt").writeText("""
+        scriptDir.resolve("test-script.txt").writeText(
+            """
             === CAPSULE SCRIPT : test ===
             --- SLIDE 1 : Title ---
             Note content.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val decksDir = projectDir.resolve("build/docs/asciidocRevealJs").also { it.mkdirs() }
-        decksDir.resolve("test-deck.html").writeText("""
+        decksDir.resolve("test-deck.html").writeText(
+            """
             <html><body>
             <div class="reveal">
               <div class="slides">
@@ -63,26 +67,31 @@ class CaptureStrategyFunctionalTest {
               </div>
             </div>
             </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Test
     fun `strategy PLAYWRIGHT default preserves backward compat`() {
         assumePlaywrightAvailable()
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         writeScriptAndDeck()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("generateCapsuleVideo")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("generateCapsuleVideo")
+                .withProjectDir(projectDir)
+                .build()
 
         val capFile = projectDir.resolve("build/capsules/test.webm")
         assertTrue(capFile.exists(), "Video must be produced with default PLAYWRIGHT strategy")
@@ -90,21 +99,25 @@ class CaptureStrategyFunctionalTest {
 
     @Test
     fun `strategy SCREENSHOT with NoOp fallback produces WebM`() {
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
                 captureStrategy("screenshot")
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         writeScriptAndDeck()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("generateCapsuleVideo")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("generateCapsuleVideo")
+                .withProjectDir(projectDir)
+                .build()
 
         val capFile = projectDir.resolve("build/capsules/test.webm")
         assertTrue(capFile.exists(), "Video must be produced via NoOp fallback when screenshot unavailable")
@@ -112,7 +125,8 @@ class CaptureStrategyFunctionalTest {
 
     @Test
     fun `strategy SCREENSHOT with strictMode fails when ffmpeg is unavailable`() {
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
@@ -121,21 +135,24 @@ class CaptureStrategyFunctionalTest {
                 manimExecutablePath = "noop"
                 ffmpegExecutablePath = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         writeScriptAndDeck()
 
-        val exception = assertThrows<UnexpectedBuildFailure> {
-            GradleRunner.create()
-                .forwardOutput()
-                .withPluginClasspath()
-                .withArguments("generateCapsuleVideo")
-                .withProjectDir(projectDir)
-                .build()
-        }
+        val exception =
+            assertThrows<UnexpectedBuildFailure> {
+                GradleRunner
+                    .create()
+                    .forwardOutput()
+                    .withPluginClasspath()
+                    .withArguments("generateCapsuleVideo")
+                    .withProjectDir(projectDir)
+                    .build()
+            }
 
         assertTrue(
             exception.message!!.contains("screenshot is not available"),
-            "Expected strict mode to reject screenshot when ffmpeg is unavailable, got: ${exception.message}"
+            "Expected strict mode to reject screenshot when ffmpeg is unavailable, got: ${exception.message}",
         )
     }
 }

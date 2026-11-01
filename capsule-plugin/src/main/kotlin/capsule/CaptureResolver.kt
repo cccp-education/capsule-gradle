@@ -17,7 +17,6 @@ package capsule
  * inject fakes without touching Playwright/FFmpeg.
  */
 object CaptureResolver {
-
     /** Factory for [PlaywrightCaptureImpl] (real Playwright recording). */
     fun interface PlaywrightFactory {
         fun create(): PlaywrightCapture
@@ -57,16 +56,18 @@ object CaptureResolver {
         enginePath: String = "",
         remotionFactory: RemotionFactory = RemotionFactory { noOpCapture },
     ): PlaywrightCapture {
-        val engineName = when (strategy) {
-            CaptureStrategy.PLAYWRIGHT -> "playwright"
-            CaptureStrategy.SCREENSHOT -> "screenshot"
-            CaptureStrategy.REMOTION -> "remotion"
-        }
-        val impl = when (strategy) {
-            CaptureStrategy.PLAYWRIGHT -> playwrightFactory.create()
-            CaptureStrategy.SCREENSHOT -> screenshotFactory.create()
-            CaptureStrategy.REMOTION -> remotionFactory.create()
-        }
+        val engineName =
+            when (strategy) {
+                CaptureStrategy.PLAYWRIGHT -> "playwright"
+                CaptureStrategy.SCREENSHOT -> "screenshot"
+                CaptureStrategy.REMOTION -> "remotion"
+            }
+        val impl =
+            when (strategy) {
+                CaptureStrategy.PLAYWRIGHT -> playwrightFactory.create()
+                CaptureStrategy.SCREENSHOT -> screenshotFactory.create()
+                CaptureStrategy.REMOTION -> remotionFactory.create()
+            }
         return if (impl.isAvailable()) {
             impl
         } else {
@@ -74,7 +75,7 @@ object CaptureResolver {
                 strict = strict,
                 engineName = engineName,
                 isAvailable = false,
-                path = enginePath
+                path = enginePath,
             )
             noOpCapture
         }

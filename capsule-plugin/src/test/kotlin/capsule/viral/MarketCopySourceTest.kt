@@ -16,14 +16,22 @@ import kotlin.test.assertTrue
  * regenerates it (boundary: bakery écrit, capsule consomme).
  */
 class MarketCopySourceTest {
-
-    private fun write(root: File, name: String, content: String) =
-        File(root, name).also { it.parentFile.mkdirs(); it.writeText(content) }
+    private fun write(
+        root: File,
+        name: String,
+        content: String,
+    ) = File(root, name).also {
+        it.parentFile.mkdirs()
+        it.writeText(content)
+    }
 
     @Test
-    fun `read resolves the language-platform file`(@TempDir root: File) {
+    fun `read resolves the language-platform file`(
+        @TempDir root: File,
+    ) {
         write(
-            root, "fr-tiktok.json",
+            root,
+            "fr-tiktok.json",
             """{"language":"fr","platform":"TIKTOK","hook":"H","title":"T","caption":"C","hashtags":["#content"]}""",
         )
         val source = FileMarketCopySource(root)
@@ -35,7 +43,9 @@ class MarketCopySourceTest {
     }
 
     @Test
-    fun `read falls back to the language-only file`(@TempDir root: File) {
+    fun `read falls back to the language-only file`(
+        @TempDir root: File,
+    ) {
         write(root, "en.json", """{"language":"en","platform":"REELS","title":"Hello"}""")
         val source = FileMarketCopySource(root)
         val copy = source.read("en", ViralPlatform.YOUTUBE_SHORT)
@@ -43,14 +53,18 @@ class MarketCopySourceTest {
     }
 
     @Test
-    fun `read returns null when no file matches`(@TempDir root: File) {
+    fun `read returns null when no file matches`(
+        @TempDir root: File,
+    ) {
         val source = FileMarketCopySource(root)
         assertNull(source.read("fr", ViralPlatform.TIKTOK))
         assertNull(source.read("", ViralPlatform.TIKTOK))
     }
 
     @Test
-    fun `read returns null on malformed or contentless file`(@TempDir root: File) {
+    fun `read returns null on malformed or contentless file`(
+        @TempDir root: File,
+    ) {
         write(root, "fr-tiktok.json", "not json")
         write(root, "de.json", """{"language":"de","hook":"","title":"","caption":""}""")
         val source = FileMarketCopySource(root)
@@ -59,7 +73,9 @@ class MarketCopySourceTest {
     }
 
     @Test
-    fun `isAvailable reflects the presence of copy files`(@TempDir root: File) {
+    fun `isAvailable reflects the presence of copy files`(
+        @TempDir root: File,
+    ) {
         assertFalse(FileMarketCopySource(root).isAvailable())
         write(root, "fr.json", """{"language":"fr","title":"T"}""")
         assertTrue(FileMarketCopySource(root).isAvailable())
@@ -71,7 +87,9 @@ class MarketCopySourceTest {
     }
 
     @Test
-    fun `MarketCopy ignores unknown json keys`(@TempDir root: File) {
+    fun `MarketCopy ignores unknown json keys`(
+        @TempDir root: File,
+    ) {
         write(root, "fr.json", """{"language":"fr","title":"T","unknown":"x","extra":42}""")
         val copy = FileMarketCopySource(root).read("fr", ViralPlatform.TIKTOK)
         assertEquals("T", copy?.title)

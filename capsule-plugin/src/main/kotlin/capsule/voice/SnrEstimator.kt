@@ -14,7 +14,6 @@ package capsule.voice
  * arithmetic.
  */
 object SnrEstimator {
-
     /** Floor applied under the ratio to avoid a logarithm of zero. */
     private const val FLOOR = 1e-9
 

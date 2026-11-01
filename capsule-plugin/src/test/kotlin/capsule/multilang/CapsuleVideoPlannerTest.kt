@@ -2,32 +2,38 @@ package capsule.multilang
 
 import contracts.i18n.LanguageCatalog
 import contracts.i18n.SupportedLanguage
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 
 class CapsuleVideoPlannerTest {
-
     @TempDir
     lateinit var tempDir: Path
 
     private fun deckDir() = tempDir.resolve("decks").toFile().apply { mkdirs() }
+
     private fun scriptDir() = tempDir.resolve("scripts").toFile().apply { mkdirs() }
+
     private fun outputDir() = tempDir.resolve("out").toFile().apply { mkdirs() }
 
-    private fun writeDeck(deckName: String, code: String) {
+    private fun writeDeck(
+        deckName: String,
+        code: String,
+    ) {
         deckDir().resolve("${deckName}_$code-deck.html").writeText("<html></html>")
     }
 
-    private fun writeScript(deckName: String, code: String) {
+    private fun writeScript(
+        deckName: String,
+        code: String,
+    ) {
         scriptDir().resolve("${deckName}_$code-script.txt").writeText("script")
     }
 
-    private fun languages(vararg codes: String): List<SupportedLanguage> =
-        codes.map { LanguageCatalog.findByCode(it)!! }
+    private fun languages(vararg codes: String): List<SupportedLanguage> = codes.map { LanguageCatalog.findByCode(it)!! }
 
     @Test
     fun `plan discovers decks and scripts for three languages`() {
@@ -38,12 +44,13 @@ class CapsuleVideoPlannerTest {
         writeDeck("kotlin-basics", "ar")
         writeScript("kotlin-basics", "ar")
 
-        val plan = CapsuleVideoPlanner.plan(
-            deckDir = deckDir(),
-            scriptDir = scriptDir(),
-            outputDir = outputDir(),
-            targetLanguages = languages("fr", "en", "ar"),
-        )
+        val plan =
+            CapsuleVideoPlanner.plan(
+                deckDir = deckDir(),
+                scriptDir = scriptDir(),
+                outputDir = outputDir(),
+                targetLanguages = languages("fr", "en", "ar"),
+            )
 
         assertEquals(3, plan.size())
         val codes = plan.languages().map { it.code }.toSet()
@@ -56,12 +63,13 @@ class CapsuleVideoPlannerTest {
         writeDeck("kotlin-basics", "en")
         writeScript("kotlin-basics", "en")
 
-        val plan = CapsuleVideoPlanner.plan(
-            deckDir = deckDir(),
-            scriptDir = scriptDir(),
-            outputDir = outputDir(),
-            targetLanguages = languages("fr", "en"),
-        )
+        val plan =
+            CapsuleVideoPlanner.plan(
+                deckDir = deckDir(),
+                scriptDir = scriptDir(),
+                outputDir = outputDir(),
+                targetLanguages = languages("fr", "en"),
+            )
 
         assertEquals(1, plan.size())
         assertEquals("en", plan.languages().first().code)
@@ -73,12 +81,13 @@ class CapsuleVideoPlannerTest {
         writeDeck("kotlin-basics", "en")
         writeScript("kotlin-basics", "en")
 
-        val plan = CapsuleVideoPlanner.plan(
-            deckDir = deckDir(),
-            scriptDir = scriptDir(),
-            outputDir = outputDir(),
-            targetLanguages = languages("fr", "en"),
-        )
+        val plan =
+            CapsuleVideoPlanner.plan(
+                deckDir = deckDir(),
+                scriptDir = scriptDir(),
+                outputDir = outputDir(),
+                targetLanguages = languages("fr", "en"),
+            )
 
         assertEquals(1, plan.size())
         assertEquals("en", plan.languages().first().code)
@@ -93,12 +102,13 @@ class CapsuleVideoPlannerTest {
         deckDir().resolve("capsule-feed-demo-fr_en-deck.html").writeText("<html></html>")
         scriptDir().resolve("capsule-feed-demo-fr_en-deck-script.txt").writeText("script")
 
-        val plan = CapsuleVideoPlanner.plan(
-            deckDir = deckDir(),
-            scriptDir = scriptDir(),
-            outputDir = outputDir(),
-            targetLanguages = languages("en"),
-        )
+        val plan =
+            CapsuleVideoPlanner.plan(
+                deckDir = deckDir(),
+                scriptDir = scriptDir(),
+                outputDir = outputDir(),
+                targetLanguages = languages("en"),
+            )
 
         assertEquals(1, plan.size())
         val entry = plan.entries.first()
@@ -113,12 +123,13 @@ class CapsuleVideoPlannerTest {
         writeScript("kotlin-basics", "fr")
         scriptDir().resolve("kotlin-basics_fr-deck-script.txt").writeText("deck variant")
 
-        val plan = CapsuleVideoPlanner.plan(
-            deckDir = deckDir(),
-            scriptDir = scriptDir(),
-            outputDir = outputDir(),
-            targetLanguages = languages("fr"),
-        )
+        val plan =
+            CapsuleVideoPlanner.plan(
+                deckDir = deckDir(),
+                scriptDir = scriptDir(),
+                outputDir = outputDir(),
+                targetLanguages = languages("fr"),
+            )
 
         val entry = plan.entries.first()
         assertEquals("kotlin-basics_fr-script.txt", entry.scriptFile.name)
@@ -144,12 +155,13 @@ class CapsuleVideoPlannerTest {
         writeDeck("kotlin-basics", "fr")
         writeScript("kotlin-basics", "fr")
 
-        val plan = CapsuleVideoPlanner.plan(
-            deckDir = deckDir(),
-            scriptDir = scriptDir(),
-            outputDir = outputDir(),
-            targetLanguages = languages("fr"),
-        )
+        val plan =
+            CapsuleVideoPlanner.plan(
+                deckDir = deckDir(),
+                scriptDir = scriptDir(),
+                outputDir = outputDir(),
+                targetLanguages = languages("fr"),
+            )
 
         val entry = plan.entries.first()
         assertEquals("kotlin-basics_fr.webm", entry.outputVideo.name)
@@ -160,12 +172,13 @@ class CapsuleVideoPlannerTest {
         writeDeck("kotlin-basics", "fr")
         writeScript("kotlin-basics", "fr")
 
-        val plan = CapsuleVideoPlanner.plan(
-            deckDir = deckDir(),
-            scriptDir = scriptDir(),
-            outputDir = outputDir(),
-            targetLanguages = languages("fr"),
-        )
+        val plan =
+            CapsuleVideoPlanner.plan(
+                deckDir = deckDir(),
+                scriptDir = scriptDir(),
+                outputDir = outputDir(),
+                targetLanguages = languages("fr"),
+            )
 
         val entry = plan.entries.first()
         assertTrue(entry.deckFile.exists())
@@ -177,12 +190,13 @@ class CapsuleVideoPlannerTest {
         writeDeck("kotlin-basics", "fr")
         writeScript("kotlin-basics", "fr")
 
-        val plan = CapsuleVideoPlanner.plan(
-            deckDir = deckDir(),
-            scriptDir = scriptDir(),
-            outputDir = outputDir(),
-            targetLanguages = languages("fr"),
-        )
+        val plan =
+            CapsuleVideoPlanner.plan(
+                deckDir = deckDir(),
+                scriptDir = scriptDir(),
+                outputDir = outputDir(),
+                targetLanguages = languages("fr"),
+            )
 
         val entry = plan.entries.first()
         assertTrue(entry.scriptFile.exists())
@@ -194,12 +208,13 @@ class CapsuleVideoPlannerTest {
         writeDeck("kotlin-basics", "ar")
         writeScript("kotlin-basics", "ar")
 
-        val plan = CapsuleVideoPlanner.plan(
-            deckDir = deckDir(),
-            scriptDir = scriptDir(),
-            outputDir = outputDir(),
-            targetLanguages = languages("ar"),
-        )
+        val plan =
+            CapsuleVideoPlanner.plan(
+                deckDir = deckDir(),
+                scriptDir = scriptDir(),
+                outputDir = outputDir(),
+                targetLanguages = languages("ar"),
+            )
 
         val entry = plan.entries.first()
         assertTrue(entry.language.rtl, "Arabic should be RTL")

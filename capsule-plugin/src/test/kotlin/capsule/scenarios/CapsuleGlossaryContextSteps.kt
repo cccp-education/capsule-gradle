@@ -17,21 +17,23 @@ import java.io.File
  * must be unique).
  */
 class CapsuleGlossaryContextSteps {
-
     private var projectDir: File? = null
     private var buildOutput: String = ""
 
     @Given("a Capsule glossary context Gradle project with the capsule plugin applied")
     fun aCapsuleGlossaryContextGradleProjectWithTheCapsulePluginApplied() {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-glossary-context-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-glossary-context-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
         projectDir!!.resolve("settings.gradle").writeText("")
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Given("EAGER governance files are present for glossary context")
@@ -80,10 +82,11 @@ class CapsuleGlossaryContextSteps {
     @When("I collect the augmented context with glossary file pointing to the glossary adoc")
     fun iCollectTheAugmentedContextWithGlossaryFilePointingToTheGlossaryAdoc() {
         val glossaryPath = projectDir!!.resolve("glossary.adoc").absolutePath
-        buildOutput = gradleRunner(
-            "collectCapsuleAugmentedContext",
-            "-Pcapsule.context.glossaryFile=$glossaryPath",
-        ).build().output
+        buildOutput =
+            gradleRunner(
+                "collectCapsuleAugmentedContext",
+                "-Pcapsule.context.glossaryFile=$glossaryPath",
+            ).build().output
     }
 
     @When("I collect the augmented context with no glossary configuration")
@@ -117,7 +120,8 @@ class CapsuleGlossaryContextSteps {
     private fun artefact(): File = projectDir!!.resolve("build/capsule/augmented-context.txt")
 
     private fun gradleRunner(vararg args: String): GradleRunner =
-        GradleRunner.create()
+        GradleRunner
+            .create()
             .forwardOutput()
             .withPluginClasspath()
             .withArguments(*args)

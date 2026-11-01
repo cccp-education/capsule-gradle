@@ -7,46 +7,56 @@ import capsule.feed.SlideSegment
 import capsule.feed.SlideType
 import capsule.feed.deckName
 import capsule.feed.type
-import video.kernel.segment.VideoKind
 import io.cucumber.datatable.DataTable
 import io.cucumber.java.en.And
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import org.junit.jupiter.api.Assertions
+import video.kernel.segment.VideoKind
 import java.io.File
 
 class ConsolidatedCapsuleModelSteps {
-
     private var script: CapsuleScript? = null
     private var writtenFile: File? = null
     private var readScript: CapsuleScript? = null
     private var rawFile: File? = null
 
     @Given("a capsule script with deck name {string} and segments")
-    fun aCapsuleScriptWithDeckNameAndSegments(deckName: String, table: DataTable) {
+    fun aCapsuleScriptWithDeckNameAndSegments(
+        deckName: String,
+        table: DataTable,
+    ) {
         val rows = table.asMaps()
-        val segments = rows.mapIndexed { i, row ->
-            val index = (row["index"]?.toIntOrNull() ?: (i + 1))
-            val title = row["title"] ?: error("Missing title at row $i")
-            val speakerNote = row["speakerNote"] ?: error("Missing speakerNote at row $i")
-            val typeRaw = row["type"]?.trim()?.uppercase()
-            val kind = if (typeRaw == "MANIM") VideoKind.ANIMATION else VideoKind.VISUAL
-            val scene = row["manimScene"]?.takeIf { it.isNotBlank() }
-            SlideSegment(
-                index = index,
-                title = title,
-                narration = speakerNote,
-                kind = kind,
-                scene = scene,
-            )
-        }
+        val segments =
+            rows.mapIndexed { i, row ->
+                val index = (row["index"]?.toIntOrNull() ?: (i + 1))
+                val title = row["title"] ?: error("Missing title at row $i")
+                val speakerNote = row["speakerNote"] ?: error("Missing speakerNote at row $i")
+                val typeRaw = row["type"]?.trim()?.uppercase()
+                val kind = if (typeRaw == "MANIM") VideoKind.ANIMATION else VideoKind.VISUAL
+                val scene = row["manimScene"]?.takeIf { it.isNotBlank() }
+                SlideSegment(
+                    index = index,
+                    title = title,
+                    narration = speakerNote,
+                    kind = kind,
+                    scene = scene,
+                )
+            }
         script = CapsuleScript(name = deckName, segments = segments)
     }
 
     @Given("a raw script file {string} with content")
-    fun aRawScriptFileWithContent(fileName: String, content: String) {
-        val dir = File.createTempFile("raw", ".dir").apply { delete(); mkdirs() }
+    fun aRawScriptFileWithContent(
+        fileName: String,
+        content: String,
+    ) {
+        val dir =
+            File.createTempFile("raw", ".dir").apply {
+                delete()
+                mkdirs()
+            }
         val temp = File(dir, fileName)
         temp.writeText(content.trimIndent())
         rawFile = temp
@@ -78,26 +88,38 @@ class ConsolidatedCapsuleModelSteps {
     }
 
     @And("the read segment {int} should have title {string}")
-    fun theReadSegmentShouldHaveTitle(index: Int, title: String) {
+    fun theReadSegmentShouldHaveTitle(
+        index: Int,
+        title: String,
+    ) {
         val seg = findSegment(index)
         Assertions.assertEquals(title, seg.title)
     }
 
     @And("the read segment {int} should have speakerNote {string}")
-    fun theReadSegmentShouldHaveSpeakerNote(index: Int, note: String) {
+    fun theReadSegmentShouldHaveSpeakerNote(
+        index: Int,
+        note: String,
+    ) {
         val seg = findSegment(index)
         Assertions.assertEquals(note, seg.speakerNote)
     }
 
     @And("the segment {int} should have type {string}")
-    fun theSegmentShouldHaveType(index: Int, typeRaw: String) {
+    fun theSegmentShouldHaveType(
+        index: Int,
+        typeRaw: String,
+    ) {
         val seg = findSegment(index)
         val expected = if (typeRaw.uppercase() == "MANIM") SlideType.MANIM else SlideType.HTML
         Assertions.assertEquals(expected, seg.type)
     }
 
     @And("the segment {int} should have manimScene {string}")
-    fun theSegmentShouldHaveManimScene(index: Int, sceneRaw: String) {
+    fun theSegmentShouldHaveManimScene(
+        index: Int,
+        sceneRaw: String,
+    ) {
         val seg = findSegment(index)
         val expected: String? = sceneRaw.takeIf { it != "null" && it.isNotBlank() }
         Assertions.assertEquals(expected, seg.manimScene)

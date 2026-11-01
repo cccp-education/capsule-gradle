@@ -20,7 +20,6 @@ import java.io.File
  * collisions on the shared `capsule.scenarios` glue (bug S-088).
  */
 class CapsuleFishAudioSteps {
-
     private val params = FishAudioParams(voice = "voice-123")
 
     private lateinit var transport: FakeTransport
@@ -35,7 +34,11 @@ class CapsuleFishAudioSteps {
         val headers = mutableListOf<Map<String, String>>()
         val bodies = mutableListOf<ByteArray>()
 
-        override fun post(endpoint: String, headers: Map<String, String>, body: ByteArray): FishAudioResponse {
+        override fun post(
+            endpoint: String,
+            headers: Map<String, String>,
+            body: ByteArray,
+        ): FishAudioResponse {
             this.endpoints += endpoint
             this.headers += headers
             this.bodies += body
@@ -49,7 +52,7 @@ class CapsuleFishAudioSteps {
     }
 
     @Given("a Fish Audio engine with a key")
-    fun `a Fish Audio engine with a key`() {
+    fun aFishAudioEngineWithAKey() {
         transport = FakeTransport()
         outputFile = freshOutput()
         failure = null
@@ -57,7 +60,7 @@ class CapsuleFishAudioSteps {
     }
 
     @Given("a Fish Audio engine without a key")
-    fun `a Fish Audio engine without a key`() {
+    fun aFishAudioEngineWithoutAKey() {
         transport = FakeTransport()
         outputFile = freshOutput()
         failure = null
@@ -65,17 +68,17 @@ class CapsuleFishAudioSteps {
     }
 
     @Given("the transport returns {int} then a success")
-    fun `the transport returns then a success`(status: Int) {
+    fun theTransportReturnsThenASuccess(status: Int) {
         transport.responses = listOf(FishAudioResponse(status, ByteArray(0)), FishAudioResponse(200, ByteArray(64) { 7 }))
     }
 
     @Given("the transport always returns {int}")
-    fun `the transport always returns`(status: Int) {
+    fun theTransportAlwaysReturns(status: Int) {
         transport.responses = listOf(FishAudioResponse(status, ByteArray(0)))
     }
 
     @When("the engine synthesises {string}")
-    fun `the engine synthesises`(text: String) {
+    fun theEngineSynthesises(text: String) {
         failure = null
         try {
             engine.synthesize(text, outputFile)
@@ -85,54 +88,54 @@ class CapsuleFishAudioSteps {
     }
 
     @Then("the request endpoint is {string}")
-    fun `the request endpoint is`(value: String) {
+    fun theRequestEndpointIs(value: String) {
         assertThat(transport.endpoints.last()).isEqualTo(value)
     }
 
     @Then("the request authorization header is {string}")
-    fun `the request authorization header is`(value: String) {
+    fun theRequestAuthorizationHeaderIs(value: String) {
         assertThat(transport.headers.last()["authorization"]).isEqualTo(value)
     }
 
     @Then("the request model header is {string}")
-    fun `the request model header is`(value: String) {
+    fun theRequestModelHeaderIs(value: String) {
         assertThat(transport.headers.last()["model"]).isEqualTo(value)
     }
 
     @Then("the request body text is {string}")
-    fun `the request body text is`(value: String) {
+    fun theRequestBodyTextIs(value: String) {
         assertThat(bodyJson()["text"].asText()).isEqualTo(value)
     }
 
     @Then("the request body reference_id is {string}")
-    fun `the request body reference_id is`(value: String) {
+    fun theRequestBodyReferenceIdIs(value: String) {
         assertThat(bodyJson()["reference_id"].asText()).isEqualTo(value)
     }
 
     @Then("the take is written")
-    fun `the take is written`() {
+    fun theTakeIsWritten() {
         assertThat(outputFile).exists()
         assertThat(outputFile.length()).isGreaterThan(0)
     }
 
     @Then("synthesising fails with {string}")
-    fun `synthesising fails with`(fragment: String) {
+    fun synthesisingFailsWith(fragment: String) {
         assertThat(failure).isNotNull()
         assertThat(failure).contains(fragment)
     }
 
     @Then("the transport received {int} requests")
-    fun `the transport received requests`(count: Int) {
+    fun theTransportReceivedRequests(count: Int) {
         assertThat(transport.bodies).hasSize(count)
     }
 
     @Then("the Fish Audio engine is unavailable")
-    fun `the Fish Audio engine is unavailable`() {
+    fun theFishAudioEngineIsUnavailable() {
         assertThat(engine.isAvailable()).isFalse()
     }
 
     @Then("the engine rendering does not contain the key")
-    fun `the engine rendering does not contain the key`() {
+    fun theEngineRenderingDoesNotContainTheKey() {
         assertThat(engine.toString()).doesNotContain("sk-fish-test")
     }
 

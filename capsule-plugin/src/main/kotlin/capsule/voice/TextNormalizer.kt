@@ -14,16 +14,17 @@ import java.text.Normalizer
  * Pure — no I/O.
  */
 object TextNormalizer {
-
     private val DIACRITICS = Regex("\\p{Mn}+")
     private val NON_ALPHANUMERIC = Regex("[^a-z0-9 ]")
     private val WHITESPACE = Regex("\\s+")
 
     /** Returns the comparison words of [text] (empty when nothing survives). */
     fun normalize(text: String): List<String> {
-        var s = text.lowercase()
-            .replace("œ", "oe")
-            .replace("æ", "ae")
+        var s =
+            text
+                .lowercase()
+                .replace("œ", "oe")
+                .replace("æ", "ae")
         s = Normalizer.normalize(s, Normalizer.Form.NFD)
         s = DIACRITICS.replace(s, "")
         s = s.replace("'", " ").replace("-", " ")

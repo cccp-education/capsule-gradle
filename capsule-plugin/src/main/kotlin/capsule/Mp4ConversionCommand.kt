@@ -16,7 +16,6 @@ import java.io.File
  * byte-identical to the historical one (backward compatibility).
  */
 object Mp4ConversionCommand {
-
     /** Builds the ffmpeg argument list transcoding [input] (WebM) to [output] (MP4/H.264). */
     fun buildArgv(
         ffmpegPath: String,
@@ -24,19 +23,29 @@ object Mp4ConversionCommand {
         output: File,
         bt709: Boolean,
     ): List<String> {
-        val cmd = mutableListOf(
-            ffmpegPath, "-y",
-            "-i", input.absolutePath,
-            "-c:v", "libx264",
-            "-c:a", "aac",
-            "-movflags", "+faststart",
-        )
-        if (bt709) {
-            cmd += listOf(
-                "-color_primaries", "bt709",
-                "-color_trc", "bt709",
-                "-colorspace", "bt709",
+        val cmd =
+            mutableListOf(
+                ffmpegPath,
+                "-y",
+                "-i",
+                input.absolutePath,
+                "-c:v",
+                "libx264",
+                "-c:a",
+                "aac",
+                "-movflags",
+                "+faststart",
             )
+        if (bt709) {
+            cmd +=
+                listOf(
+                    "-color_primaries",
+                    "bt709",
+                    "-color_trc",
+                    "bt709",
+                    "-colorspace",
+                    "bt709",
+                )
         }
         cmd += output.absolutePath
         return cmd

@@ -8,7 +8,6 @@ import kotlin.test.assertTrue
  * TDD unit tests for [TextNormalizer] (CAP-QC-VOICE US-1). Pure — no I/O.
  */
 class TextNormalizerTest {
-
     @Test
     fun `folds case accents and punctuation`() {
         assertEquals(listOf("ete", "coeur"), TextNormalizer.normalize("Été — Cœur!"))

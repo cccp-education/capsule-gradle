@@ -28,7 +28,6 @@ class RemotionCaptureImpl(
     /** Directories searched for the Manim animation named by `data-manim`. */
     private val manimSources: List<File> = emptyList(),
 ) : PlaywrightCapture {
-
     private val logger = Logging.getLogger(RemotionCaptureImpl::class.java)
 
     private var availabilityProbe: Boolean? = null
@@ -48,16 +47,18 @@ class RemotionCaptureImpl(
      * materialised — a missing `node_modules` is reported by the render itself
      * with a far more actionable message than a silent NoOp fallback.
      */
-    override fun isAvailable(): Boolean = availabilityProbe
-        ?: ProcessRunner.probe(nodeExecutablePath, "--version")
-            .also { availabilityProbe = it }
+    override fun isAvailable(): Boolean =
+        availabilityProbe
+            ?: ProcessRunner
+                .probe(nodeExecutablePath, "--version")
+                .also { availabilityProbe = it }
 
     override fun capture(
         deckHtmlPath: String,
         outputDir: File,
         viewportWidth: Int,
         viewportHeight: Int,
-        slideDurations: List<Double>
+        slideDurations: List<Double>,
     ) {
         require(slideDurations.isNotEmpty()) { "slideDurations must not be empty" }
         outputDir.mkdirs()
@@ -68,16 +69,17 @@ class RemotionCaptureImpl(
             throw CapturingException("No <section> found in deck '$deckHtmlPath': nothing to animate")
         }
 
-        val plan = RemotionPlanner.plan(
-            sections = sections,
-            headHtml = headMarkup(deckHtml),
-            slideDurations = slideDurations,
-            outputDir = outputDir,
-            viewportWidth = viewportWidth,
-            viewportHeight = viewportHeight,
-            fps = fps,
-            containerExtension = outputExtension(),
-        )
+        val plan =
+            RemotionPlanner.plan(
+                sections = sections,
+                headHtml = headMarkup(deckHtml),
+                slideDurations = slideDurations,
+                outputDir = outputDir,
+                viewportWidth = viewportWidth,
+                viewportHeight = viewportHeight,
+                fps = fps,
+                containerExtension = outputExtension(),
+            )
 
         RemotionTemplate.materialiseInto(projectDir)
 
@@ -95,12 +97,16 @@ class RemotionCaptureImpl(
         if (effectiveConcurrency != concurrency) {
             logger.lifecycle(
                 "  Remotion: concurrency ramenée de {} à {} (les diapos portent des vidéos)",
-                concurrency, effectiveConcurrency
+                concurrency,
+                effectiveConcurrency,
             )
         }
         logger.lifecycle(
             "  Remotion: {} slides, {} frames at {} fps, concurrency {}",
-            plan.size, plan.totalFrames, plan.fps, effectiveConcurrency
+            plan.size,
+            plan.totalFrames,
+            plan.fps,
+            effectiveConcurrency,
         )
 
         val argv = RemotionPlanner.renderArgs(plan, projectDir, nodeExecutablePath, effectiveConcurrency, CODEC)
@@ -127,7 +133,10 @@ class RemotionCaptureImpl(
      *
      * Slides without a `data-manim` attribute simply get no animation.
      */
-    private fun stageManimAssets(plan: RemotionPlan, projectDir: File): Map<Int, ManimAsset> {
+    private fun stageManimAssets(
+        plan: RemotionPlan,
+        projectDir: File,
+    ): Map<Int, ManimAsset> {
         val publicDir = File(projectDir, "public").apply { mkdirs() }
         val staged = mutableMapOf<Int, ManimAsset>()
         plan.slides.forEach { slide ->
@@ -184,11 +193,9 @@ class RemotionCaptureImpl(
          * [capsule.adapter.revealjs.RevealJsDeckHtml.singleSlideHtml] needs exactly
          * the same rule, and kept its own — non-greedy, hence truncating — copy of it.
          */
-        internal fun slidesMarkup(deckHtml: String): String =
-            HtmlSectionParser.slidesMarkup(deckHtml) ?: deckHtml
+        internal fun slidesMarkup(deckHtml: String): String = HtmlSectionParser.slidesMarkup(deckHtml) ?: deckHtml
 
         /** Extracts the deck `<head>` so slides keep their own stylesheet. */
-        internal fun headMarkup(deckHtml: String): String =
-            HtmlSectionParser.headMarkup(deckHtml)
+        internal fun headMarkup(deckHtml: String): String = HtmlSectionParser.headMarkup(deckHtml)
     }
 }

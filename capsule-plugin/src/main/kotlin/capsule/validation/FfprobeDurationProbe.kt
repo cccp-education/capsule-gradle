@@ -28,15 +28,19 @@ class FfprobeDurationProbe(
         ProcessRunner.run(argv, timeoutMinutes = ProcessRunner.PROBE_TIMEOUT_MINUTES).output
     },
 ) : VideoDurationProbe {
-
     override fun probeSeconds(video: File): Double {
         if (!video.exists() || video.length() == 0L) return 0.0
-        val argv = listOf(
-            ffprobePath, "-v", "quiet",
-            "-show_entries", "format=duration",
-            "-of", "csv=p=0",
-            video.absolutePath,
-        )
+        val argv =
+            listOf(
+                ffprobePath,
+                "-v",
+                "quiet",
+                "-show_entries",
+                "format=duration",
+                "-of",
+                "csv=p=0",
+                video.absolutePath,
+            )
         return try {
             FfprobeDurationParser.parse(runner(argv)) ?: 0.0
         } catch (_: Exception) {

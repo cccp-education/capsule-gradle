@@ -12,7 +12,6 @@ package capsule
  * Pure — no I/O.
  */
 object SubtitleTextNormalizer {
-
     /** Paired emphasis marker (`**bold**`) that must never reach the screen. */
     private const val EMPHASIS = "**"
 
@@ -35,7 +34,10 @@ object SubtitleTextNormalizer {
      *        Populated once the pronunciation lexicon (PRT-01) exists, so a
      *        phonetic spelling written for the voice is not shown verbatim.
      */
-    fun spokenToDisplay(text: String, reversals: Map<String, String> = emptyMap()): String {
+    fun spokenToDisplay(
+        text: String,
+        reversals: Map<String, String> = emptyMap(),
+    ): String {
         var out = text
         for ((from, to) in reversals) {
             if (from.isNotEmpty()) out = out.replace(from, to)

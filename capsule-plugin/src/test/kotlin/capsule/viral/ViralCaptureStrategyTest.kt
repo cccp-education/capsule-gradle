@@ -18,7 +18,6 @@ import kotlin.test.assertEquals
  * to Playwright when the viral section is enabled.
  */
 class ViralCaptureStrategyTest {
-
     @Test
     fun `viral enabled replaces playwright recording with the ffmpeg screenshot socle`() {
         assertEquals(

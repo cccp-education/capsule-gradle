@@ -23,40 +23,45 @@ import java.io.File
  * and the strict-mode failure.
  */
 class CapsuleRemotionSteps {
-
     private var projectDir: File? = null
     private var buildOutput: String = ""
     private var buildFailure: Throwable? = null
 
     @Given("a Capsule remotion Gradle project with the capsule plugin applied")
     fun aCapsuleRemotionGradleProjectWithTheCapsulePluginApplied() {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-remotion-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-remotion-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
         projectDir!!.resolve("settings.gradle").writeText("")
         writeBuildGradle("")
     }
 
     private fun writeBuildGradle(capsuleBlock: String) {
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             $capsuleBlock
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @And("a demo deck and script are present for remotion capture")
     fun aDemoDeckAndScriptArePresentForRemotionCapture() {
         val scriptDir = projectDir!!.resolve("build/capsule").also { it.mkdirs() }
-        scriptDir.resolve("demo-script.txt").writeText("""
+        scriptDir.resolve("demo-script.txt").writeText(
+            """
             === CAPSULE SCRIPT : demo ===
             --- SLIDE 1 : Title ---
             Note content for the remotion capture test.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val decksDir = projectDir!!.resolve("build/docs/asciidocRevealJs").also { it.mkdirs() }
-        decksDir.resolve("demo-deck.html").writeText("""
+        decksDir.resolve("demo-deck.html").writeText(
+            """
             <html><body>
             <div class="reveal">
               <div class="slides">
@@ -64,25 +69,29 @@ class CapsuleRemotionSteps {
               </div>
             </div>
             </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @When("I generate the capsule video with remotion capture strategy and a missing node binary")
     fun iGenerateTheCapsuleVideoWithRemotionCaptureStrategyAndMissingNode() {
-        writeBuildGradle("""
+        writeBuildGradle(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
                 captureStrategy("remotion")
                 remotionNodeExecutablePath = "this-node-binary-does-not-exist-remotion-cucumber"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         runRemotionBuild()
     }
 
     @When("I generate the capsule video with remotion capture strategy, a missing node binary and strictMode enabled")
     fun iGenerateTheCapsuleVideoWithRemotionCaptureStrategyMissingNodeAndStrictMode() {
-        writeBuildGradle("""
+        writeBuildGradle(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
@@ -92,13 +101,18 @@ class CapsuleRemotionSteps {
                 manimExecutablePath = "noop"
                 ffmpegExecutablePath = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         runRemotionBuild()
     }
 
     @When("I generate the capsule video with remotion capture strategy, a missing node binary, fps {int} and concurrency {int}")
-    fun iGenerateTheCapsuleVideoWithRemotionCaptureStrategyMissingNodeFpsAndConcurrency(fps: Int, concurrency: Int) {
-        writeBuildGradle("""
+    fun iGenerateTheCapsuleVideoWithRemotionCaptureStrategyMissingNodeFpsAndConcurrency(
+        fps: Int,
+        concurrency: Int,
+    ) {
+        writeBuildGradle(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
@@ -107,18 +121,21 @@ class CapsuleRemotionSteps {
                 remotionFps = $fps
                 remotionConcurrency = $concurrency
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         runRemotionBuild()
     }
 
     private fun runRemotionBuild() {
         try {
-            val result = GradleRunner.create()
-                .forwardOutput()
-                .withPluginClasspath()
-                .withArguments("generateCapsuleVideo")
-                .withProjectDir(projectDir!!)
-                .build()
+            val result =
+                GradleRunner
+                    .create()
+                    .forwardOutput()
+                    .withPluginClasspath()
+                    .withArguments("generateCapsuleVideo")
+                    .withProjectDir(projectDir!!)
+                    .build()
             buildOutput = result.output
         } catch (e: UnexpectedBuildFailure) {
             buildOutput = e.message ?: ""
@@ -141,7 +158,7 @@ class CapsuleRemotionSteps {
         Assertions.assertNotNull(buildFailure, "Remotion build was expected to fail but succeeded")
         Assertions.assertTrue(
             buildOutput.contains(text),
-            "Expected remotion failure to contain '$text', got: $buildOutput"
+            "Expected remotion failure to contain '$text', got: $buildOutput",
         )
     }
 
@@ -149,7 +166,7 @@ class CapsuleRemotionSteps {
     fun theRemotionOutputMentions(text: String) {
         Assertions.assertTrue(
             buildOutput.contains(text),
-            "Expected remotion output to mention '$text', got: $buildOutput"
+            "Expected remotion output to mention '$text', got: $buildOutput",
         )
     }
 
@@ -158,7 +175,7 @@ class CapsuleRemotionSteps {
         val capFile = projectDir!!.resolve("build/capsules/demo.webm")
         Assertions.assertTrue(
             capFile.exists(),
-            "Expected WebM file at ${capFile.absolutePath}, but it was not produced"
+            "Expected WebM file at ${capFile.absolutePath}, but it was not produced",
         )
     }
 }

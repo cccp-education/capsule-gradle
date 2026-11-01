@@ -28,29 +28,31 @@ import kotlin.test.assertTrue
  * AsciiDoc article rather than an empty one.
  */
 class TranscriptLlmEnhancerTest {
-
     private fun plan(
         deckName: String = "kotlin-basics",
         language: String = "fr",
-    ): TranscriptPlan = TranscriptPlan(
-        deckName = deckName,
-        segments = listOf(
-            SlideSegment(1, "Introduction", "Welcome to the capsule."),
-            SlideSegment(2, "Core", "The core concept."),
-        ),
-        language = language,
-        outputPath = "build/capsule/$deckName-transcript.adoc",
-    )
+    ): TranscriptPlan =
+        TranscriptPlan(
+            deckName = deckName,
+            segments =
+                listOf(
+                    SlideSegment(1, "Introduction", "Welcome to the capsule."),
+                    SlideSegment(2, "Core", "The core concept."),
+                ),
+            language = language,
+            outputPath = "build/capsule/$deckName-transcript.adoc",
+        )
 
-    private fun template(plan: TranscriptPlan = plan()): String =
-        TranscriptBuilder.build(plan)
+    private fun template(plan: TranscriptPlan = plan()): String = TranscriptBuilder.build(plan)
 
     /**
      * Minimal fake [ChatModel] returning a canned response — no network,
      * no key. Only [doChat] is overridden (the single abstract entry point
      * used by [ChatModelTranscriptEnhancer] via [ChatModel.chat]).
      */
-    private class FakeChatModel(private val response: String) : ChatModel {
+    private class FakeChatModel(
+        private val response: String,
+    ) : ChatModel {
         var callCount = 0
             private set
         var lastPrompt: String? = null
@@ -58,9 +60,13 @@ class TranscriptLlmEnhancerTest {
 
         override fun doChat(request: ChatRequest): ChatResponse {
             callCount++
-            lastPrompt = request.messages().lastOrNull { it is UserMessage }
-                ?.let { (it as UserMessage).singleText() }
-            return ChatResponse.builder()
+            lastPrompt =
+                request
+                    .messages()
+                    .lastOrNull { it is UserMessage }
+                    ?.let { (it as UserMessage).singleText() }
+            return ChatResponse
+                .builder()
                 .aiMessage(AiMessage.from(response))
                 .build()
         }
@@ -107,11 +113,11 @@ class TranscriptLlmEnhancerTest {
         assertEquals(1, fake.callCount)
         assertTrue(
             fake.lastPrompt!!.contains("kotlin-basics"),
-            "the forwarded prompt should embed the deck name"
+            "the forwarded prompt should embed the deck name",
         )
         assertTrue(
             fake.lastPrompt!!.contains("AsciiDoc", ignoreCase = true),
-            "the forwarded prompt should be the enrichment prompt"
+            "the forwarded prompt should be the enrichment prompt",
         )
     }
 
@@ -141,8 +147,7 @@ class TranscriptLlmEnhancerTest {
 
     /** Fake [ChatModel] whose call always fails (transient cloud error). */
     private class ThrowingChatModel : ChatModel {
-        override fun doChat(request: ChatRequest): ChatResponse =
-            throw RuntimeException("too many concurrent requests")
+        override fun doChat(request: ChatRequest): ChatResponse = throw RuntimeException("too many concurrent requests")
     }
 
     @Test

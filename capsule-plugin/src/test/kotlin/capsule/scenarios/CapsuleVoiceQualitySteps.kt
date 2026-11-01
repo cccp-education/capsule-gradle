@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
  * Step texts are prefixed with "voice" (S-088 — the glue is classpath-wide).
  */
 class CapsuleVoiceQualitySteps {
-
     private var narration: String = ""
     private var transcribed: String = ""
     private var normalized: List<String> = emptyList()

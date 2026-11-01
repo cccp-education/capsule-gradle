@@ -11,7 +11,6 @@ import kotlin.test.assertFalse
  * of the type, so it is pinned here.
  */
 class FishAudioKeyTest {
-
     @Test
     fun `toString redacts the key`() {
         val rendered = FishAudioKey("sk-fish-secret").toString()

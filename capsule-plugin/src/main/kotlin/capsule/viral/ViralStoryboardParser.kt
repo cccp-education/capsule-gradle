@@ -23,7 +23,6 @@ import capsule.feed.SlideType
  * Pure — no Gradle, no I/O. Pattern: [ViralHookParser] (tolerant, returns null).
  */
 object ViralStoryboardParser {
-
     private const val HEADER_PREFIX = "= Storyboard — "
     private const val ANGLE_MARKER = "== Angle"
     private const val BEATS_MARKER = "== Beats"
@@ -52,16 +51,27 @@ object ViralStoryboardParser {
         val message = header.removePrefix(HEADER_PREFIX).trim()
         if (message.isBlank()) return null
 
-        val platform = lines.firstOrNull { it.startsWith(":platform:") }
-            ?.removePrefix(":platform:")?.trim()
-            ?.let { ViralPlatform.fromString(it) } ?: return null
+        val platform =
+            lines
+                .firstOrNull { it.startsWith(":platform:") }
+                ?.removePrefix(":platform:")
+                ?.trim()
+                ?.let { ViralPlatform.fromString(it) } ?: return null
 
-        val language = lines.firstOrNull { it.startsWith(":language:") }
-            ?.removePrefix(":language:")?.trim().orEmpty()
+        val language =
+            lines
+                .firstOrNull { it.startsWith(":language:") }
+                ?.removePrefix(":language:")
+                ?.trim()
+                .orEmpty()
         if (language.isBlank()) return null
 
-        val duration = lines.firstOrNull { it.startsWith(":target-duration:") }
-            ?.removePrefix(":target-duration:")?.trim()?.toIntOrNull() ?: return null
+        val duration =
+            lines
+                .firstOrNull { it.startsWith(":target-duration:") }
+                ?.removePrefix(":target-duration:")
+                ?.trim()
+                ?.toIntOrNull() ?: return null
 
         val angle = extractAngle(lines) ?: return null
         val beats = extractBeats(lines)
@@ -88,25 +98,33 @@ object ViralStoryboardParser {
      * (`=== Beat …`) do **not** terminate a body (their third char is `=`, not a
      * space, so `startsWith("== ")` is false).
      */
-    private fun extractSection(lines: List<String>, marker: String): List<String> {
+    private fun extractSection(
+        lines: List<String>,
+        marker: String,
+    ): List<String> {
         val start = lines.indexOfFirst { it.trim() == marker }
         if (start < 0) return emptyList()
-        val end = (start + 1 until lines.size)
-            .firstOrNull { lines[it].trim().startsWith("== ") }
-            ?: lines.size
+        val end =
+            (start + 1 until lines.size)
+                .firstOrNull { lines[it].trim().startsWith("== ") }
+                ?: lines.size
         return lines.subList(start + 1, end)
     }
 
     /** Extracts the `== Angle` body (the paragraph that follows the marker). */
-    private fun extractAngle(lines: List<String>): String? =
-        extractSection(lines, ANGLE_MARKER).joinToString("\n").trim().ifBlank { null }
+    private fun extractAngle(lines: List<String>): String? = extractSection(lines, ANGLE_MARKER).joinToString("\n").trim().ifBlank { null }
 
     /** Parses the `== QQOQCP` section, or `null` when absent/incomplete. */
     private fun extractQqoqcp(lines: List<String>): Qqoqcp? {
         val body = extractSection(lines, QQOQCP_MARKER)
         if (body.isEmpty()) return null
+
         fun answer(label: String): String? =
-            body.firstOrNull { it.startsWith(label) }?.removePrefix(label)?.trim()?.ifBlank { null }
+            body
+                .firstOrNull { it.startsWith(label) }
+                ?.removePrefix(label)
+                ?.trim()
+                ?.ifBlank { null }
 
         val audience = answer("Qui (public): ") ?: return null
         val subject = answer("Quoi (sujet): ") ?: return null
@@ -122,18 +140,24 @@ object ViralStoryboardParser {
     private fun extractVisualIdentity(lines: List<String>): VisualIdentity? {
         val body = extractSection(lines, VISUAL_MARKER)
         if (body.isEmpty()) return null
+
         fun value(label: String): String =
-            body.firstOrNull { it.startsWith(label) }?.removePrefix(label)?.trim().orEmpty()
+            body
+                .firstOrNull { it.startsWith(label) }
+                ?.removePrefix(label)
+                ?.trim()
+                .orEmpty()
 
         val brand = value("Brand: ")
         val format = value("Format: ")
-        val tokens = body.filter { it.startsWith(TOKEN_PREFIX) }
-            .mapNotNull { row ->
-                val content = row.removePrefix(TOKEN_PREFIX).trim()
-                val separator = content.indexOf(" = ")
-                if (separator < 0) null else content.substring(0, separator).trim() to content.substring(separator + 3).trim()
-            }
-            .toMap()
+        val tokens =
+            body
+                .filter { it.startsWith(TOKEN_PREFIX) }
+                .mapNotNull { row ->
+                    val content = row.removePrefix(TOKEN_PREFIX).trim()
+                    val separator = content.indexOf(" = ")
+                    if (separator < 0) null else content.substring(0, separator).trim() to content.substring(separator + 3).trim()
+                }.toMap()
         if (brand.isBlank() || format.isBlank() || tokens.isEmpty()) return null
 
         return runCatching {
@@ -152,8 +176,13 @@ object ViralStoryboardParser {
     private fun extractNarrativeThread(lines: List<String>): NarrativeThread? {
         val body = extractSection(lines, NARRATIVE_MARKER)
         if (body.isEmpty()) return null
+
         fun value(label: String): String =
-            body.firstOrNull { it.startsWith(label) }?.removePrefix(label)?.trim().orEmpty()
+            body
+                .firstOrNull { it.startsWith(label) }
+                ?.removePrefix(label)
+                ?.trim()
+                .orEmpty()
 
         val thesis = value("Thesis: ")
         val recurringMotif = value("Recurring motif: ")
@@ -192,31 +221,59 @@ object ViralStoryboardParser {
 
     private fun parseBeat(block: List<String>): StoryboardBeat? {
         val header = block.first()
-        val role = header.removePrefix(BEAT_PREFIX)
-            .substringAfter("— ", "")
-            .trim()
+        val role =
+            header
+                .removePrefix(BEAT_PREFIX)
+                .substringAfter("— ", "")
+                .trim()
         if (role.isBlank()) return null
 
-        val intent = block.firstOrNull { it.startsWith(INTENT_PREFIX) }
-            ?.removePrefix(INTENT_PREFIX)?.trim().orEmpty()
+        val intent =
+            block
+                .firstOrNull { it.startsWith(INTENT_PREFIX) }
+                ?.removePrefix(INTENT_PREFIX)
+                ?.trim()
+                .orEmpty()
         if (intent.isBlank()) return null
 
-        val duration = block.firstOrNull { it.startsWith(DURATION_PREFIX) }
-            ?.removePrefix(DURATION_PREFIX)?.trim()?.removeSuffix("s")?.toDoubleOrNull() ?: return null
+        val duration =
+            block
+                .firstOrNull { it.startsWith(DURATION_PREFIX) }
+                ?.removePrefix(DURATION_PREFIX)
+                ?.trim()
+                ?.removeSuffix("s")
+                ?.toDoubleOrNull() ?: return null
 
-        val typeName = block.firstOrNull { it.startsWith(RENDER_PREFIX) }
-            ?.removePrefix(RENDER_PREFIX)?.trim().orEmpty()
-        val type = SlideType.entries.firstOrNull { it.name.equals(typeName, ignoreCase = true) }
-            ?: SlideType.HTML
+        val typeName =
+            block
+                .firstOrNull { it.startsWith(RENDER_PREFIX) }
+                ?.removePrefix(RENDER_PREFIX)
+                ?.trim()
+                .orEmpty()
+        val type =
+            SlideType.entries.firstOrNull { it.name.equals(typeName, ignoreCase = true) }
+                ?: SlideType.HTML
 
-        val manimScene = block.firstOrNull { it.startsWith(MANIM_PREFIX) }
-            ?.removePrefix(MANIM_PREFIX)?.trim()?.ifBlank { null }
+        val manimScene =
+            block
+                .firstOrNull { it.startsWith(MANIM_PREFIX) }
+                ?.removePrefix(MANIM_PREFIX)
+                ?.trim()
+                ?.ifBlank { null }
 
-        val asset = block.firstOrNull { it.startsWith(ASSET_PREFIX) }
-            ?.removePrefix(ASSET_PREFIX)?.trim().orEmpty()
+        val asset =
+            block
+                .firstOrNull { it.startsWith(ASSET_PREFIX) }
+                ?.removePrefix(ASSET_PREFIX)
+                ?.trim()
+                .orEmpty()
 
-        val enteringTransition = block.firstOrNull { it.startsWith(TRANSITION_PREFIX) }
-            ?.removePrefix(TRANSITION_PREFIX)?.trim().orEmpty()
+        val enteringTransition =
+            block
+                .firstOrNull { it.startsWith(TRANSITION_PREFIX) }
+                ?.removePrefix(TRANSITION_PREFIX)
+                ?.trim()
+                .orEmpty()
 
         return runCatching {
             StoryboardBeat(

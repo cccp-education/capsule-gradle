@@ -22,7 +22,6 @@ import kotlin.test.assertTrue
  * network.
  */
 class CapsuleContextBuilderTest {
-
     private fun composite(
         eager: String = "",
         rag: String = "",
@@ -64,17 +63,18 @@ class CapsuleContextBuilderTest {
     @Test
     fun `channelsWithBudget truncates a channel exceeding its token budget`() {
         val bigRag = (1..100).joinToString("\n") { "line number $it with some words to consume tokens" }
-        val channels = CapsuleContextBuilder.channelsWithBudget(
-            composite(rag = bigRag),
-            ChannelBudget(
-                totalTokenBudget = 100,
-                budgetEager = 0.0,
-                budgetRag = 1.0,
-                budgetGraphify = 0.0,
-                budgetDocs = 0.0,
-                budgetResource = 0.0,
-            ),
-        )
+        val channels =
+            CapsuleContextBuilder.channelsWithBudget(
+                composite(rag = bigRag),
+                ChannelBudget(
+                    totalTokenBudget = 100,
+                    budgetEager = 0.0,
+                    budgetRag = 1.0,
+                    budgetGraphify = 0.0,
+                    budgetDocs = 0.0,
+                    budgetResource = 0.0,
+                ),
+            )
         val rag = channels.single { it.type == ChannelType.RAG }
         assertTrue(rag.content.length < bigRag.length, "RAG content should have been truncated")
         assertTrue(ContextChannel.estimateTokens(rag.content) <= 100, "RAG content must fit the budget")
@@ -83,17 +83,18 @@ class CapsuleContextBuilderTest {
     @Test
     fun `channelsWithBudget preserves content already under budget`() {
         val shortRag = "a short rag snippet"
-        val channels = CapsuleContextBuilder.channelsWithBudget(
-            composite(rag = shortRag),
-            ChannelBudget(
-                totalTokenBudget = 8000,
-                budgetEager = 0.0,
-                budgetRag = 1.0,
-                budgetGraphify = 0.0,
-                budgetDocs = 0.0,
-                budgetResource = 0.0,
-            ),
-        )
+        val channels =
+            CapsuleContextBuilder.channelsWithBudget(
+                composite(rag = shortRag),
+                ChannelBudget(
+                    totalTokenBudget = 8000,
+                    budgetEager = 0.0,
+                    budgetRag = 1.0,
+                    budgetGraphify = 0.0,
+                    budgetDocs = 0.0,
+                    budgetResource = 0.0,
+                ),
+            )
         val rag = channels.single { it.type == ChannelType.RAG }
         assertTrue(rag.content.startsWith(shortRag), "content should be preserved, got: '${rag.content}'")
         assertEquals(shortRag, rag.content.trim())
@@ -103,9 +104,10 @@ class CapsuleContextBuilderTest {
 
     @Test
     fun `merge produces a sectioned block with header and channel name`() {
-        val rendered = CapsuleContextBuilder.merge(
-            listOf(ContextChannel.Eager("rules about grading"))
-        )
+        val rendered =
+            CapsuleContextBuilder.merge(
+                listOf(ContextChannel.Eager("rules about grading")),
+            )
         assertTrue(rendered.contains("RÈGLES_EAGER"), "expected section header")
         assertTrue(rendered.contains("EAGER/LAZY"), "expected channel name")
         assertTrue(rendered.contains("rules about grading"), "expected content")
@@ -113,9 +115,10 @@ class CapsuleContextBuilderTest {
 
     @Test
     fun `merge drops blank channels`() {
-        val rendered = CapsuleContextBuilder.merge(
-            listOf(ContextChannel.Eager(""), ContextChannel.Rag("real rag"), ContextChannel.Graphify(""))
-        )
+        val rendered =
+            CapsuleContextBuilder.merge(
+                listOf(ContextChannel.Eager(""), ContextChannel.Rag("real rag"), ContextChannel.Graphify("")),
+            )
         assertTrue(!rendered.contains("RÈGLES_EAGER"), "blank EAGER channel must be dropped")
         assertTrue(rendered.contains("CONTEXTE_RAG"), "non-blank RAG channel must be kept")
         assertTrue(rendered.contains("real rag"))
@@ -147,17 +150,18 @@ class CapsuleContextBuilderTest {
     @Test
     fun `build applies the token budget to the channels`() {
         val bigRag = (1..100).joinToString("\n") { "sentence number $it" }
-        val ctx = CapsuleContextBuilder.build(
-            composite(eager = "eager", rag = bigRag),
-            ChannelBudget(
-                totalTokenBudget = 60,
-                budgetEager = 0.0,
-                budgetRag = 1.0,
-                budgetGraphify = 0.0,
-                budgetDocs = 0.0,
-                budgetResource = 0.0,
-            ),
-        )
+        val ctx =
+            CapsuleContextBuilder.build(
+                composite(eager = "eager", rag = bigRag),
+                ChannelBudget(
+                    totalTokenBudget = 60,
+                    budgetEager = 0.0,
+                    budgetRag = 1.0,
+                    budgetGraphify = 0.0,
+                    budgetDocs = 0.0,
+                    budgetResource = 0.0,
+                ),
+            )
         val rag = ctx.channels.single { it.type == ChannelType.RAG }
         assertTrue(rag.content.length < bigRag.length, "build must truncate RAG to the budget")
     }
@@ -198,10 +202,11 @@ class CapsuleContextBuilderTest {
 
     @Test
     fun `build with non-blank scenarioSection renders the scenario section after channels`() {
-        val ctx = CapsuleContextBuilder.build(
-            composite(eager = "EAGER governance"),
-            scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Bienvenue\nObjectives: Goal A; Goal B",
-        )
+        val ctx =
+            CapsuleContextBuilder.build(
+                composite(eager = "EAGER governance"),
+                scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Bienvenue\nObjectives: Goal A; Goal B",
+            )
         assertTrue(ctx.rendered.contains("EAGER governance"), "channels must still be rendered")
         assertTrue(ctx.rendered.contains("Pedagogical Scenario"), "scenario section must be rendered")
         assertTrue(ctx.rendered.contains("Bienvenue"), "scenario content must be present")
@@ -216,10 +221,11 @@ class CapsuleContextBuilderTest {
 
     @Test
     fun `build with empty channels and non-blank scenarioSection renders only the scenario section`() {
-        val ctx = CapsuleContextBuilder.build(
-            composite(),
-            scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Solo scenario",
-        )
+        val ctx =
+            CapsuleContextBuilder.build(
+                composite(),
+                scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Solo scenario",
+            )
         assertTrue(ctx.isEmpty, "channels list must be empty")
         assertTrue(ctx.rendered.isNotBlank(), "rendered must carry the scenario section")
         assertTrue(ctx.rendered.contains("Solo scenario"))
@@ -227,11 +233,12 @@ class CapsuleContextBuilderTest {
 
     @Test
     fun `CapsuleContext with no channels but non-blank scenarioSection accepts non-blank rendered`() {
-        val ctx = CapsuleContext(
-            channels = emptyList(),
-            rendered = "==== Pedagogical Scenario (scenario)\nSession: only scenario",
-            scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: only scenario",
-        )
+        val ctx =
+            CapsuleContext(
+                channels = emptyList(),
+                rendered = "==== Pedagogical Scenario (scenario)\nSession: only scenario",
+                scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: only scenario",
+            )
         assertTrue(ctx.isEmpty)
         assertTrue(ctx.rendered.isNotBlank())
     }
@@ -245,10 +252,11 @@ class CapsuleContextBuilderTest {
 
     @Test
     fun `build with both channels and scenarioSection coexist in rendered`() {
-        val ctx = CapsuleContextBuilder.build(
-            composite(eager = "EAGER content", rag = "RAG snippet"),
-            scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Combined",
-        )
+        val ctx =
+            CapsuleContextBuilder.build(
+                composite(eager = "EAGER content", rag = "RAG snippet"),
+                scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Combined",
+            )
         assertEquals(2, ctx.nonEmptyCount)
         assertTrue(ctx.rendered.contains("EAGER content"))
         assertTrue(ctx.rendered.contains("RAG snippet"))
@@ -284,11 +292,12 @@ class CapsuleContextBuilderTest {
             "SCENARIO",
             listOf(ProvenanceSource(fileName = "session.adoc", chars = 200, tokens = 40)),
         )
-        val ctx = CapsuleContextBuilder.build(
-            composite(),
-            scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Solo scenario",
-            tracker = tracker,
-        )
+        val ctx =
+            CapsuleContextBuilder.build(
+                composite(),
+                scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Solo scenario",
+                tracker = tracker,
+            )
         assertTrue(ctx.isEmpty)
         val provenance = tracker.build()
         assertEquals(listOf("SCENARIO"), provenance.channels.map { it.channel })
@@ -298,11 +307,12 @@ class CapsuleContextBuilderTest {
 
     @Test
     fun `build with non-blank glossarySection renders the glossary section after scenario section`() {
-        val ctx = CapsuleContextBuilder.build(
-            composite(eager = "EAGER governance"),
-            scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Bienvenue",
-            glossarySection = "==== Official Glossary (glossary)\ncompétence: savoir-faire",
-        )
+        val ctx =
+            CapsuleContextBuilder.build(
+                composite(eager = "EAGER governance"),
+                scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Bienvenue",
+                glossarySection = "==== Official Glossary (glossary)\ncompétence: savoir-faire",
+            )
         assertTrue(ctx.rendered.contains("EAGER governance"), "channels must still be rendered")
         assertTrue(ctx.rendered.contains("Pedagogical Scenario"), "scenario section must be rendered")
         assertTrue(ctx.rendered.contains("Official Glossary"), "glossary section must be rendered")
@@ -314,20 +324,22 @@ class CapsuleContextBuilderTest {
 
     @Test
     fun `build with blank glossarySection drops the glossary section`() {
-        val ctx = CapsuleContextBuilder.build(
-            composite(eager = "EAGER only"),
-            glossarySection = "",
-        )
+        val ctx =
+            CapsuleContextBuilder.build(
+                composite(eager = "EAGER only"),
+                glossarySection = "",
+            )
         assertTrue(ctx.rendered.contains("EAGER only"))
         assertFalse(ctx.rendered.contains("Official Glossary"), "blank glossarySection must not add a glossary header")
     }
 
     @Test
     fun `build with empty channels and non-blank glossarySection renders only the glossary section`() {
-        val ctx = CapsuleContextBuilder.build(
-            composite(),
-            glossarySection = "==== Official Glossary (glossary)\ncompétence: savoir-faire",
-        )
+        val ctx =
+            CapsuleContextBuilder.build(
+                composite(),
+                glossarySection = "==== Official Glossary (glossary)\ncompétence: savoir-faire",
+            )
         assertTrue(ctx.isEmpty, "channels list must be empty")
         assertTrue(ctx.rendered.isNotBlank(), "rendered must carry the glossary section")
         assertTrue(ctx.rendered.contains("Official Glossary"))
@@ -335,12 +347,13 @@ class CapsuleContextBuilderTest {
 
     @Test
     fun `CapsuleContext with no channels but non-blank glossarySection accepts non-blank rendered`() {
-        val ctx = CapsuleContext(
-            channels = emptyList(),
-            rendered = "==== Official Glossary (glossary)\ncompétence: savoir-faire",
-            scenarioSection = "",
-            glossarySection = "==== Official Glossary (glossary)\ncompétence: savoir-faire",
-        )
+        val ctx =
+            CapsuleContext(
+                channels = emptyList(),
+                rendered = "==== Official Glossary (glossary)\ncompétence: savoir-faire",
+                scenarioSection = "",
+                glossarySection = "==== Official Glossary (glossary)\ncompétence: savoir-faire",
+            )
         assertTrue(ctx.isEmpty)
         assertTrue(ctx.rendered.isNotBlank())
     }
@@ -354,11 +367,12 @@ class CapsuleContextBuilderTest {
 
     @Test
     fun `build with channels, scenario and glossary all coexisting in rendered`() {
-        val ctx = CapsuleContextBuilder.build(
-            composite(eager = "EAGER content", rag = "RAG snippet"),
-            scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Combined",
-            glossarySection = "==== Official Glossary (glossary)\nterm: definition",
-        )
+        val ctx =
+            CapsuleContextBuilder.build(
+                composite(eager = "EAGER content", rag = "RAG snippet"),
+                scenarioSection = "==== Pedagogical Scenario (scenario)\nSession: Combined",
+                glossarySection = "==== Official Glossary (glossary)\nterm: definition",
+            )
         assertEquals(2, ctx.nonEmptyCount)
         assertTrue(ctx.rendered.contains("EAGER content"))
         assertTrue(ctx.rendered.contains("RAG snippet"))
@@ -373,11 +387,12 @@ class CapsuleContextBuilderTest {
             "GLOSSARY",
             listOf(ProvenanceSource(fileName = "glossary.adoc", chars = 300, tokens = 60)),
         )
-        val ctx = CapsuleContextBuilder.build(
-            composite(),
-            glossarySection = "==== Official Glossary (glossary)\nterm: definition",
-            tracker = tracker,
-        )
+        val ctx =
+            CapsuleContextBuilder.build(
+                composite(),
+                glossarySection = "==== Official Glossary (glossary)\nterm: definition",
+                tracker = tracker,
+            )
         assertTrue(ctx.isEmpty)
         val provenance = tracker.build()
         assertEquals(listOf("GLOSSARY"), provenance.channels.map { it.channel })

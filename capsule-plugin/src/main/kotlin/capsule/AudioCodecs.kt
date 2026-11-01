@@ -8,7 +8,6 @@ package capsule
  * into a WebM) produces a file most players refuse.
  */
 object AudioCodecs {
-
     const val WEBM: String = "libvorbis"
     const val MP4: String = "aac"
 

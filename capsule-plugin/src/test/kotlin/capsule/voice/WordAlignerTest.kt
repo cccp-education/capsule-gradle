@@ -8,7 +8,6 @@ import kotlin.test.assertTrue
  * TDD unit tests for [WordAligner] (CAP-QC-VOICE US-1). Pure — no I/O.
  */
 class WordAlignerTest {
-
     @Test
     fun `identical lists align with zero distance`() {
         val alignment = WordAligner.align(listOf("le", "chat"), listOf("le", "chat"))

@@ -4,7 +4,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class RemotionTimingTest {
-
     @Test
     fun `beatSeconds resolves known selectors`() {
         assertThat(RemotionTiming.beatSeconds("rule")).isEqualTo(0.5)
@@ -102,7 +101,8 @@ class RemotionTimingTest {
     fun `backgroundAppear fades in over crossfade`() {
         assertThat(RemotionTiming.backgroundAppear(0, first = false)).isEqualTo(0.0)
         assertThat(RemotionTiming.backgroundAppear(10, first = false))
-            .isGreaterThan(0.0).isLessThan(1.0)
+            .isGreaterThan(0.0)
+            .isLessThan(1.0)
         assertThat(RemotionTiming.backgroundAppear(20, first = false)).isEqualTo(1.0)
     }
 

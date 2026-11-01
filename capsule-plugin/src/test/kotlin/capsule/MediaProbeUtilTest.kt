@@ -4,7 +4,6 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 /**
  * TDD Baby Step — MediaProbeUtil unit tests.
@@ -14,7 +13,6 @@ import kotlin.test.assertTrue
  * ManimEngineImpl, and ManimVideoMixerImpl.
  */
 class MediaProbeUtilTest {
-
     @Test
     fun `probeDuration returns 0 for nonexistent file`() {
         val fakeFile = File("/nonexistent/path/video.mp4")

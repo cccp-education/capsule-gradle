@@ -1,11 +1,11 @@
 package capsule
 
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import java.io.File
 
 /**
  * TDD unit tests for [VideoFormatConverter] and [CapsuleFactory.resolveFormatConverter]
@@ -17,7 +17,6 @@ import java.io.File
  * (ffmpegPath="noop" → NoOp, unavailable + non-strict → NoOp, unavailable + strict → throw).
  */
 class VideoFormatConverterTest {
-
     @Test
     fun `NoOpVideoFormatConverter returns false from convertToMp4`() {
         val converter = NoOpVideoFormatConverter()
@@ -28,7 +27,8 @@ class VideoFormatConverterTest {
             assertFalse(result, "NoOp converter should return false (no real transcode)")
             assertFalse(mp4.exists() && mp4.length() > 0, "NoOp should not produce a real mp4")
         } finally {
-            webm.delete(); mp4.delete()
+            webm.delete()
+            mp4.delete()
         }
     }
 
@@ -55,21 +55,23 @@ class VideoFormatConverterTest {
 
     @Test
     fun `resolveFormatConverter unavailable and non-strict falls back to NoOp`() {
-        val resolved = CapsuleFactory.resolveFormatConverter(
-            ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
-            strict = false
-        )
+        val resolved =
+            CapsuleFactory.resolveFormatConverter(
+                ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
+                strict = false,
+            )
         assertTrue(resolved is NoOpVideoFormatConverter, "unavailable + non-strict → NoOp fallback")
     }
 
     @Test
     fun `resolveFormatConverter unavailable and strict throws IllegalStateException`() {
-        val ex = assertFailsWith<IllegalStateException> {
-            CapsuleFactory.resolveFormatConverter(
-                ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
-                strict = true
-            )
-        }
+        val ex =
+            assertFailsWith<IllegalStateException> {
+                CapsuleFactory.resolveFormatConverter(
+                    ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
+                    strict = true,
+                )
+            }
         assertTrue(ex.message!!.contains("ffmpeg"), "error should name ffmpeg")
         assertTrue(ex.message!!.contains("/nonexistent/ffmpeg/path_xyz"), "error should mention the path")
         assertTrue(ex.message!!.contains("strictMode"), "error should suggest disabling strictMode")

@@ -17,52 +17,56 @@ import org.assertj.core.api.Assertions.assertThat
  * the shared `capsule.scenarios` glue (bug S-088). Pure domain.
  */
 class CapsuleStoryboardNormalizeSteps {
-
     private var storyboard: ViralStoryboard = defaultStoryboard()
     private var normalized: ViralStoryboard = defaultStoryboard()
     private var secondPass: ViralStoryboard = defaultStoryboard()
 
-    private fun defaultStoryboard() = ViralStoryboard(
-        message = "Maîtriser opencode",
-        angle = "L'agent écrit, Gradle assemble",
-        beats = listOf(StoryboardBeat("hook", "Et si ?", 3.0)),
-        platform = ViralPlatform.TIKTOK,
-        language = "fr",
-        targetDurationSeconds = 30,
-    )
+    private fun defaultStoryboard() =
+        ViralStoryboard(
+            message = "Maîtriser opencode",
+            angle = "L'agent écrit, Gradle assemble",
+            beats = listOf(StoryboardBeat("hook", "Et si ?", 3.0)),
+            platform = ViralPlatform.TIKTOK,
+            language = "fr",
+            targetDurationSeconds = 30,
+        )
 
     @Given("a storyboard to normalize with beats")
-    fun `a storyboard to normalize with beats`(table: DataTable) {
-        val beats = table.asMaps().map { row ->
-            StoryboardBeat(
-                role = row["role"]!!,
-                intent = "Intent ${row["role"]}",
-                durationSeconds = 5.0,
-                enteringTransition = row["transition"].orEmpty(),
-            )
-        }
+    fun aStoryboardToNormalizeWithBeats(table: DataTable) {
+        val beats =
+            table.asMaps().map { row ->
+                StoryboardBeat(
+                    role = row["role"]!!,
+                    intent = "Intent ${row["role"]}",
+                    durationSeconds = 5.0,
+                    enteringTransition = row["transition"].orEmpty(),
+                )
+            }
         storyboard = defaultStoryboard().copy(beats = beats)
     }
 
     @When("the storyboard is normalized")
-    fun `the storyboard is normalized`() {
+    fun theStoryboardIsNormalized() {
         normalized = ViralStoryboardNormalizer.normalize(storyboard)
         secondPass = ViralStoryboardNormalizer.normalize(normalized)
     }
 
     @When("the storyboard is normalized twice")
-    fun `the storyboard is normalized twice`() {
+    fun theStoryboardIsNormalizedTwice() {
         normalized = ViralStoryboardNormalizer.normalize(storyboard)
         secondPass = ViralStoryboardNormalizer.normalize(normalized)
     }
 
     @Then("the normalized beat {int} transition is {string}")
-    fun `the normalized beat transition is`(index: Int, transition: String) {
+    fun theNormalizedBeatTransitionIs(
+        index: Int,
+        transition: String,
+    ) {
         assertThat(normalized.beats[index].enteringTransition).isEqualTo(transition)
     }
 
     @Then("the two normalizations are equal")
-    fun `the two normalizations are equal`() {
+    fun theTwoNormalizationsAreEqual() {
         assertThat(secondPass).isEqualTo(normalized)
     }
 }

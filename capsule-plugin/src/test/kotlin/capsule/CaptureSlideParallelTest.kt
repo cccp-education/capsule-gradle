@@ -25,7 +25,6 @@ import kotlin.test.fail
  * Scope: unit-level, no real Playwright/FFmpeg. The capture factory is mocked.
  */
 class CaptureSlideParallelTest {
-
     @TempDir
     lateinit var tempDir: File
 
@@ -54,7 +53,7 @@ class CaptureSlideParallelTest {
             <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
             <script>Reveal.initialize();</script>
             </body></html>
-            """.trimIndent()
+            """.trimIndent(),
         )
         return deckFile
     }
@@ -64,26 +63,34 @@ class CaptureSlideParallelTest {
     @Test
     fun `captureSlideParallel times out when a slide capture blocks beyond timeout`() {
         val task = newTask()
-        val script = CapsuleScript(
-            name = "timeout-deck",
-            segments = (1..2).map { SlideSegment(it, "Slide $it", "Note $it") }
-        )
+        val script =
+            CapsuleScript(
+                name = "timeout-deck",
+                segments = (1..2).map { SlideSegment(it, "Slide $it", "Note $it") },
+            )
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val outputDir = File(tempDir, "video").also { it.mkdirs() }
         fakeDeckHtml(2)
 
-        val blockingCapture = object : PlaywrightCapture {
-            override fun capture(
-                deckHtmlPath: String, outputDir: File, viewportWidth: Int,
-                viewportHeight: Int, slideDurations: List<Double>
-            ) {
-                // Block indefinitely — must trigger a timeout, not hang the build.
-                Thread.sleep(Long.MAX_VALUE)
+        val blockingCapture =
+            object : PlaywrightCapture {
+                override fun capture(
+                    deckHtmlPath: String,
+                    outputDir: File,
+                    viewportWidth: Int,
+                    viewportHeight: Int,
+                    slideDurations: List<Double>,
+                ) {
+                    // Block indefinitely — must trigger a timeout, not hang the build.
+                    Thread.sleep(Long.MAX_VALUE)
+                }
+
+                override fun isAvailable() = true
+
+                override fun name() = "blocking"
+
+                override fun close() {}
             }
-            override fun isAvailable() = true
-            override fun name() = "blocking"
-            override fun close() {}
-        }
 
         val start = System.currentTimeMillis()
         try {
@@ -95,14 +102,14 @@ class CaptureSlideParallelTest {
                 parsed = script,
                 audioDir = audioDir,
                 captureFactory = { blockingCapture },
-                captureTimeoutMillis = 1_000
+                captureTimeoutMillis = 1_000,
             )
             fail("Expected a timeout to surface from captureSlideParallel")
         } catch (e: Exception) {
             val elapsed = System.currentTimeMillis() - start
             assertTrue(
                 elapsed < 60_000,
-                "Must abort within the configured timeout (was ${elapsed}ms), not hang indefinitely"
+                "Must abort within the configured timeout (was ${elapsed}ms), not hang indefinitely",
             )
         }
     }
@@ -112,26 +119,34 @@ class CaptureSlideParallelTest {
     @Test
     fun `captureSlideParallel shuts down the executor when a capture throws`() {
         val task = newTask()
-        val script = CapsuleScript(
-            name = "throwing-deck",
-            segments = (1..3).map { SlideSegment(it, "Slide $it", "Note $it") }
-        )
+        val script =
+            CapsuleScript(
+                name = "throwing-deck",
+                segments = (1..3).map { SlideSegment(it, "Slide $it", "Note $it") },
+            )
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val outputDir = File(tempDir, "video").also { it.mkdirs() }
         fakeDeckHtml(3)
 
         val closed = AtomicBoolean(false)
-        val throwingCapture = object : PlaywrightCapture {
-            override fun capture(
-                deckHtmlPath: String, outputDir: File, viewportWidth: Int,
-                viewportHeight: Int, slideDurations: List<Double>
-            ) {
-                throw RuntimeException("capture boom")
+        val throwingCapture =
+            object : PlaywrightCapture {
+                override fun capture(
+                    deckHtmlPath: String,
+                    outputDir: File,
+                    viewportWidth: Int,
+                    viewportHeight: Int,
+                    slideDurations: List<Double>,
+                ): Unit = throw RuntimeException("capture boom")
+
+                override fun isAvailable() = true
+
+                override fun name() = "throwing"
+
+                override fun close() {
+                    closed.set(true)
+                }
             }
-            override fun isAvailable() = true
-            override fun name() = "throwing"
-            override fun close() { closed.set(true) }
-        }
 
         try {
             task.captureSlideParallel(
@@ -142,7 +157,7 @@ class CaptureSlideParallelTest {
                 parsed = script,
                 audioDir = audioDir,
                 captureFactory = { throwingCapture },
-                captureTimeoutMillis = 1_000
+                captureTimeoutMillis = 1_000,
             )
         } catch (e: Exception) {
             // Expected: the exception surfaces (or failedSlides handles it in later steps).
@@ -156,37 +171,45 @@ class CaptureSlideParallelTest {
     @Test
     fun `captureSlideParallel interrupts in-flight captures via shutdownNow`() {
         val task = newTask()
-        val script = CapsuleScript(
-            name = "interrupt-deck",
-            segments = (1..2).map { SlideSegment(it, "Slide $it", "Note $it") }
-        )
+        val script =
+            CapsuleScript(
+                name = "interrupt-deck",
+                segments = (1..2).map { SlideSegment(it, "Slide $it", "Note $it") },
+            )
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val outputDir = File(tempDir, "video").also { it.mkdirs() }
         fakeDeckHtml(2)
 
         val interrupted = AtomicBoolean(false)
         val interruptedLatch = CountDownLatch(2)
-        val loopingCapture = object : PlaywrightCapture {
-            override fun capture(
-                deckHtmlPath: String, outputDir: File, viewportWidth: Int,
-                viewportHeight: Int, slideDurations: List<Double>
-            ) {
-                // Loop until interrupted by shutdownNow (would otherwise run forever).
-                while (!Thread.currentThread().isInterrupted) {
-                    try {
-                        Thread.sleep(10)
-                    } catch (e: InterruptedException) {
-                        interrupted.set(true)
-                        interruptedLatch.countDown()
-                        Thread.currentThread().interrupt()
-                        return
+        val loopingCapture =
+            object : PlaywrightCapture {
+                override fun capture(
+                    deckHtmlPath: String,
+                    outputDir: File,
+                    viewportWidth: Int,
+                    viewportHeight: Int,
+                    slideDurations: List<Double>,
+                ) {
+                    // Loop until interrupted by shutdownNow (would otherwise run forever).
+                    while (!Thread.currentThread().isInterrupted) {
+                        try {
+                            Thread.sleep(10)
+                        } catch (e: InterruptedException) {
+                            interrupted.set(true)
+                            interruptedLatch.countDown()
+                            Thread.currentThread().interrupt()
+                            return
+                        }
                     }
                 }
+
+                override fun isAvailable() = true
+
+                override fun name() = "looping"
+
+                override fun close() {}
             }
-            override fun isAvailable() = true
-            override fun name() = "looping"
-            override fun close() {}
-        }
 
         try {
             task.captureSlideParallel(
@@ -197,7 +220,7 @@ class CaptureSlideParallelTest {
                 parsed = script,
                 audioDir = audioDir,
                 captureFactory = { loopingCapture },
-                captureTimeoutMillis = 500
+                captureTimeoutMillis = 500,
             )
         } catch (e: Exception) {
             // Expected: timeout surfaces once the in-flight tasks never complete.
@@ -207,7 +230,7 @@ class CaptureSlideParallelTest {
         interruptedLatch.await(5, TimeUnit.SECONDS)
         assertTrue(
             interrupted.get(),
-            "In-flight captures must be interrupted by shutdownNow once the timeout aborts the capture"
+            "In-flight captures must be interrupted by shutdownNow once the timeout aborts the capture",
         )
     }
 
@@ -216,10 +239,11 @@ class CaptureSlideParallelTest {
     @Test
     fun `captureSlideParallel accumulates failed slides and continues with the rest`() {
         val task = newTask()
-        val script = CapsuleScript(
-            name = "mixed-deck",
-            segments = (1..4).map { SlideSegment(it, "Slide $it", "Note $it") }
-        )
+        val script =
+            CapsuleScript(
+                name = "mixed-deck",
+                segments = (1..4).map { SlideSegment(it, "Slide $it", "Note $it") },
+            )
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val outputDir = File(tempDir, "video").also { it.mkdirs() }
         fakeDeckHtml(4)
@@ -228,8 +252,11 @@ class CaptureSlideParallelTest {
         val factory: () -> PlaywrightCapture = {
             object : PlaywrightCapture {
                 override fun capture(
-                    deckHtmlPath: String, outputDir: File, viewportWidth: Int,
-                    viewportHeight: Int, slideDurations: List<Double>
+                    deckHtmlPath: String,
+                    outputDir: File,
+                    viewportWidth: Int,
+                    viewportHeight: Int,
+                    slideDurations: List<Double>,
                 ) {
                     if (outputDir.name == "slide-01" || outputDir.name == "slide-03") {
                         throw RuntimeException("boom on ${outputDir.name}")
@@ -237,22 +264,26 @@ class CaptureSlideParallelTest {
                     outputDir.mkdirs()
                     outputDir.resolve("slide.webm").writeText("fake")
                 }
+
                 override fun isAvailable() = true
+
                 override fun name() = "mixed"
+
                 override fun close() {}
             }
         }
 
-        val failed = task.captureSlideParallel(
-            deckHtmlPath = File(tempDir, "deck.html").absolutePath,
-            outputDir = outputDir,
-            viewportWidth = 1408,
-            viewportHeight = 792,
-            parsed = script,
-            audioDir = audioDir,
-            captureFactory = factory,
-            captureTimeoutMillis = 10_000
-        )
+        val failed =
+            task.captureSlideParallel(
+                deckHtmlPath = File(tempDir, "deck.html").absolutePath,
+                outputDir = outputDir,
+                viewportWidth = 1408,
+                viewportHeight = 792,
+                parsed = script,
+                audioDir = audioDir,
+                captureFactory = factory,
+                captureTimeoutMillis = 10_000,
+            )
 
         assertEquals(2, failed, "Two slides (1 and 3) should be reported as failed")
         assertTrue(outputDir.resolve("slide-02.webm").exists(), "Slide 2 capture should still be produced")

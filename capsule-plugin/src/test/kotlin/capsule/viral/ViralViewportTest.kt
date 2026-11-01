@@ -13,7 +13,6 @@ import kotlin.test.assertTrue
  * and the crop `deployCapsule` remains the fallback for landscape decks.
  */
 class ViralViewportTest {
-
     @Test
     fun `resolve returns the portrait viewport when viral is enabled`() {
         val (w, h) = ViralViewport.resolve(viralEnabled = true, defaultWidth = 1408, defaultHeight = 792)

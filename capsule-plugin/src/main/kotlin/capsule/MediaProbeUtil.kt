@@ -15,7 +15,6 @@ import java.io.File
  * hyperframes parse ffprobe output identically instead of each carrying its own.
  */
 object MediaProbeUtil {
-
     /**
      * Probes the duration of a media file with ffprobe (default binary).
      */
@@ -27,8 +26,10 @@ object MediaProbeUtil {
      * @return duration in seconds, or 0.0 when ffprobe is missing, fails, or
      *         prints something that is not a number.
      */
-    fun probeDuration(file: File, ffprobePath: String): Double =
-        FfprobeDurationProbe(ffprobePath).probeSeconds(file)
+    fun probeDuration(
+        file: File,
+        ffprobePath: String,
+    ): Double = FfprobeDurationProbe(ffprobePath).probeSeconds(file)
 
     /**
      * Returns true if ffprobe is available in the system PATH.
@@ -40,4 +41,3 @@ object MediaProbeUtil {
      */
     fun isFfprobeAvailable(ffprobePath: String): Boolean = ProcessRunner.probe(ffprobePath, "-version")
 }
-

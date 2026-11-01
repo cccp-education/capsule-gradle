@@ -12,7 +12,6 @@ import java.io.File
  * Decks live in `<repo-root>/slides/misc/capsule-feed-demo-{fr,en,ar}-deck.adoc`.
  */
 class CapsuleFeedDemoDeckTest {
-
     @Test
     fun `fr demo deck should parse and render 4 segments`() {
         val deck = deck("capsule-feed-demo-fr-deck")
@@ -20,7 +19,10 @@ class CapsuleFeedDemoDeckTest {
 
         assertThat(script.segments).hasSize(4)
         assertThat(script.segments.map { it.title }).containsExactly(
-            "Introduction", "Le contrat capsule-gradle", "Validation round-trip", "Conclusion",
+            "Introduction",
+            "Le contrat capsule-gradle",
+            "Validation round-trip",
+            "Conclusion",
         )
         assertThat(script.segments.map { it.index }).containsExactly(1, 2, 3, 4)
 
@@ -37,7 +39,10 @@ class CapsuleFeedDemoDeckTest {
 
         assertThat(script.segments).hasSize(4)
         assertThat(script.segments.map { it.title }).containsExactly(
-            "Introduction", "The capsule-gradle contract", "Round-trip validation", "Conclusion",
+            "Introduction",
+            "The capsule-gradle contract",
+            "Round-trip validation",
+            "Conclusion",
         )
         assertThat(script.segments.map { it.index }).containsExactly(1, 2, 3, 4)
 

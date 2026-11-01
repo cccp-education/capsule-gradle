@@ -1,13 +1,13 @@
 package capsule.voice
 
-import java.io.File
-import java.util.concurrent.TimeUnit
-import kotlin.test.Test
-import kotlin.test.assertTrue
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Assumptions.assumeFalse
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.util.concurrent.TimeUnit
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 /**
  * Functional tests for `verifyCapsuleVoice` (CAP-QC-VOICE US-2).
@@ -18,7 +18,6 @@ import org.junit.jupiter.api.io.TempDir
  * build, and a host with a real ASR would exercise the full path elsewhere.
  */
 class VerifyCapsuleVoiceFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -33,7 +32,7 @@ class VerifyCapsuleVoiceFunctionalTest {
                 id('education.cccp.capsule')
             }
             $extraConfig
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -46,7 +45,7 @@ class VerifyCapsuleVoiceFunctionalTest {
 
             --- SLIDE 1 : Intro ---
             bonjour le monde
-            """.trimIndent()
+            """.trimIndent(),
         )
         val deckDir = capsuleDir.resolve("demo").also { it.mkdirs() }
         deckDir.resolve("slide-01.mp3").writeText("fake audio")
@@ -55,32 +54,36 @@ class VerifyCapsuleVoiceFunctionalTest {
     @Test
     fun `task is registered with verification group`() {
         setupBuild()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("tasks", "--group", "verification")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("tasks", "--group", "verification")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(
             result.output.contains("verifyCapsuleVoice"),
-            "Expected verifyCapsuleVoice in verification group, got: ${result.output}"
+            "Expected verifyCapsuleVoice in verification group, got: ${result.output}",
         )
     }
 
     @Test
     fun `disabled by default is a no-op skip`() {
         setupBuild()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("verifyCapsuleVoice")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("verifyCapsuleVoice")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(
             result.output.contains("voice.verifyEnabled=false"),
-            "Expected a skip log when disabled by default, got: ${result.output}"
+            "Expected a skip log when disabled by default, got: ${result.output}",
         )
     }
 
@@ -91,18 +94,20 @@ class VerifyCapsuleVoiceFunctionalTest {
             capsule {
                 voiceVerifyEnabled = true
             }
-            """.trimIndent()
+            """.trimIndent(),
         )
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("verifyCapsuleVoice")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("verifyCapsuleVoice")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(
             result.output.contains("no audio take found"),
-            "Expected a graceful skip when no take exists, got: ${result.output}"
+            "Expected a graceful skip when no take exists, got: ${result.output}",
         )
     }
 
@@ -120,11 +125,22 @@ class VerifyCapsuleVoiceFunctionalTest {
     private fun writeScriptAndSilentAudio() {
         writeScriptAndAudio()
         val audio = projectDir.resolve("build/capsule/demo/slide-01.mp3")
-        val process = ProcessBuilder(
-            "ffmpeg", "-v", "error", "-y",
-            "-f", "lavfi", "-i", "anullsrc=r=16000:cl=mono",
-            "-t", "1", "-q:a", "9", audio.absolutePath,
-        ).redirectErrorStream(true).start()
+        val process =
+            ProcessBuilder(
+                "ffmpeg",
+                "-v",
+                "error",
+                "-y",
+                "-f",
+                "lavfi",
+                "-i",
+                "anullsrc=r=16000:cl=mono",
+                "-t",
+                "1",
+                "-q:a",
+                "9",
+                audio.absolutePath,
+            ).redirectErrorStream(true).start()
         val finished = process.waitFor(60, TimeUnit.SECONDS)
         assumeTrue(finished && process.exitValue() == 0) {
             "ffmpeg could not produce a silent mp3 (encoder unavailable) — silence detection not exercised here"
@@ -142,20 +158,22 @@ class VerifyCapsuleVoiceFunctionalTest {
                 voiceVerifyEnabled = true
                 voiceAsrExecutablePath = "definitely-not-a-real-asr"
             }
-            """.trimIndent()
+            """.trimIndent(),
         )
         writeScriptAndSilentAudio()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("verifyCapsuleVoice")
-            .withProjectDir(projectDir)
-            .buildAndFail()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("verifyCapsuleVoice")
+                .withProjectDir(projectDir)
+                .buildAndFail()
 
         assertTrue(
             result.output.contains("silent-audio") || result.output.contains("Voice verification failed"),
-            "Expected a silent-audio failure, got: ${result.output}"
+            "Expected a silent-audio failure, got: ${result.output}",
         )
         val report = projectDir.resolve("build/capsule/voice-report.json")
         assertTrue(report.isFile, "Expected the voice report to be written")
@@ -173,24 +191,26 @@ class VerifyCapsuleVoiceFunctionalTest {
                 voiceVerifyEnabled = true
                 voiceAsrExecutablePath = "whisper"
             }
-            """.trimIndent()
+            """.trimIndent(),
         )
         writeScriptAndAudio()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("verifyCapsuleVoice")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("verifyCapsuleVoice")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(
             result.output.contains("degraded") || result.output.contains("CAPSULE VOICE"),
-            "Expected a degraded warning when the ASR is absent, got: ${result.output}"
+            "Expected a degraded warning when the ASR is absent, got: ${result.output}",
         )
         assertTrue(
             projectDir.resolve("build/capsule/voice-report.json").isFile,
-            "Expected the voice report to be written"
+            "Expected the voice report to be written",
         )
     }
 }

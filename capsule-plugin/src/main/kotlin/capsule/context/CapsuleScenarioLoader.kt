@@ -32,7 +32,6 @@ import java.io.File
  * metadata.json whose `type` is not `"content"` is also skipped (graceful no-op).
  */
 object CapsuleScenarioLoader {
-
     private val mapper: ObjectMapper = ObjectMapper()
 
     /**
@@ -50,7 +49,11 @@ object CapsuleScenarioLoader {
      * @return the `==== Pedagogical Scenario (scenario)\n...` section,
      *         truncated to [maxTokens]. Blank when no usable payload or zero budget.
      */
-    fun load(metadataFile: File?, adocFile: File, maxTokens: Int): String {
+    fun load(
+        metadataFile: File?,
+        adocFile: File,
+        maxTokens: Int,
+    ): String {
         if (maxTokens <= 0) return ""
         if (!adocFile.exists()) return ""
 
@@ -72,8 +75,8 @@ object CapsuleScenarioLoader {
      * Parses the K-2 `metadata.json` envelope. Returns `null` when the file
      * is malformed (graceful skip) — never throws.
      */
-    private fun parseMetadata(file: File): ScenarioMetadata? {
-        return try {
+    private fun parseMetadata(file: File): ScenarioMetadata? =
+        try {
             val node: JsonNode = mapper.readTree(file)
             ScenarioMetadata(
                 type = node.path("type").asText(""),
@@ -82,7 +85,6 @@ object CapsuleScenarioLoader {
         } catch (e: Exception) {
             null
         }
-    }
 
     /**
      * Extracts the pedagogical payload from the companion AsciiDoc:
@@ -93,18 +95,23 @@ object CapsuleScenarioLoader {
      * - `modalities` = text block under `== Modalités d'évaluation`
      * - `duration` = first line under `== Durée estimée` (when present)
      */
-    private fun parseAdoc(filename: String, text: String): CapsuleScenario {
+    private fun parseAdoc(
+        filename: String,
+        text: String,
+    ): CapsuleScenario {
         val lines = text.lines()
         val title = extractTitle(lines) ?: filenameWithoutExtension(filename)
         val module = extractAttribute(lines, "module")
         val objectives = extractBulletSection(lines, "Objectifs")
         val prerequisites = extractBulletSection(lines, "Prérequis")
-        val modalities = extractTextSection(lines, "Modalités d'évaluation").ifBlank {
-            extractTextSection(lines, "Modalités")
-        }
-        val duration = extractTextSection(lines, "Durée estimée").ifBlank {
-            extractTextSection(lines, "Durée")
-        }
+        val modalities =
+            extractTextSection(lines, "Modalités d'évaluation").ifBlank {
+                extractTextSection(lines, "Modalités")
+            }
+        val duration =
+            extractTextSection(lines, "Durée estimée").ifBlank {
+                extractTextSection(lines, "Durée")
+            }
         return CapsuleScenario(
             objectives = objectives,
             duration = duration,
@@ -127,7 +134,10 @@ object CapsuleScenarioLoader {
     }
 
     /** Extracts a `:key: value` document attribute, or empty string. */
-    private fun extractAttribute(lines: List<String>, key: String): String {
+    private fun extractAttribute(
+        lines: List<String>,
+        key: String,
+    ): String {
         val prefix = ":$key:"
         for (line in lines) {
             val trimmed = line.trim()
@@ -142,7 +152,10 @@ object CapsuleScenarioLoader {
      * Extracts a bullet list (`- item`) under a `== <heading>` section,
      * stopping at the next `==` heading or end of file.
      */
-    private fun extractBulletSection(lines: List<String>, heading: String): List<String> {
+    private fun extractBulletSection(
+        lines: List<String>,
+        heading: String,
+    ): List<String> {
         val items = mutableListOf<String>()
         var inSection = false
         for (line in lines) {
@@ -163,7 +176,10 @@ object CapsuleScenarioLoader {
      * next `==` heading or end of file. Blank lines within the block are
      * collapsed; the result is the trimmed concatenation of non-blank lines.
      */
-    private fun extractTextSection(lines: List<String>, heading: String): String {
+    private fun extractTextSection(
+        lines: List<String>,
+        heading: String,
+    ): String {
         val builder = StringBuilder()
         var inSection = false
         for (line in lines) {
@@ -199,8 +215,7 @@ object CapsuleScenarioLoader {
         return builder.toString().trimEnd()
     }
 
-    private fun filenameWithoutExtension(filename: String): String =
-        filename.substringBeforeLast('.')
+    private fun filenameWithoutExtension(filename: String): String = filename.substringBeforeLast('.')
 
     /** Internal validated metadata envelope (K-2 subset — type only). */
     private data class ScenarioMetadata(

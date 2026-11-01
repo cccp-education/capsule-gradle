@@ -13,17 +13,17 @@ import java.security.MessageDigest
  * Pure — no I/O, no Gradle.
  */
 object PronunciationLexicon {
-
     /** Symbol → spoken word, applied to the voice track. */
-    private val SYMBOLS: Map<String, String> = linkedMapOf(
-        "%" to "pour cent",
-        "&" to "et",
-        "€" to "euros",
-        "\$" to "dollars",
-        "°" to "degres",
-        "≈" to "environ",
-        "→" to "vers",
-    )
+    private val SYMBOLS: Map<String, String> =
+        linkedMapOf(
+            "%" to "pour cent",
+            "&" to "et",
+            "€" to "euros",
+            "\$" to "dollars",
+            "°" to "degres",
+            "≈" to "environ",
+            "→" to "vers",
+        )
 
     /** A run of 2 to 5 uppercase letters, spelled for the voice (`API` → `A P I`). */
     private val ACRONYM = Regex("\\b[A-Z]{2,5}\\b")
@@ -49,8 +49,7 @@ object PronunciationLexicon {
      * `SubtitleTextNormalizer.spokenToDisplay`, so a pronunciation spelling is
      * never shown verbatim. Spelled acronyms are re-collected there already.
      */
-    fun reversals(): Map<String, String> =
-        SYMBOLS.entries.associate { (symbol, word) -> word to symbol }
+    fun reversals(): Map<String, String> = SYMBOLS.entries.associate { (symbol, word) -> word to symbol }
 
     /**
      * A short, stable content key of [spoken] (first 8 hex chars of its SHA-256).

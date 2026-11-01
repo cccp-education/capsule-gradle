@@ -38,7 +38,6 @@ import java.util.concurrent.TimeUnit
  * est tuée au lieu d'immobiliser le démon Gradle.
  */
 object ProcessRunner {
-
     /** Délai de garde par défaut. Un rendu Manim 4K peut durer longtemps. */
     const val DEFAULT_TIMEOUT_MINUTES: Long = 60L
 
@@ -56,13 +55,19 @@ object ProcessRunner {
      * @param output fin de la sortie fusionnée (stdout + stderr), au plus
      *        [MAX_CAPTURED_BYTES] octets.
      */
-    data class Result(val exitCode: Int, val output: String) {
+    data class Result(
+        val exitCode: Int,
+        val output: String,
+    ) {
         val isSuccess: Boolean get() = exitCode == 0
         val timedOut: Boolean get() = exitCode == TIMED_OUT
 
         /** Les [lines] dernières lignes, pour un message d'exception lisible. */
         fun tail(lines: Int = 20): String =
-            output.lineSequence().filter { it.isNotBlank() }.toList()
+            output
+                .lineSequence()
+                .filter { it.isNotBlank() }
+                .toList()
                 .takeLast(lines)
                 .joinToString(System.lineSeparator())
     }
@@ -117,9 +122,10 @@ object ProcessRunner {
         val log = logFile ?: File.createTempFile("capsule-proc", ".log")
         log.parentFile?.mkdirs()
 
-        val builder = ProcessBuilder(command)
-            .redirectErrorStream(true)
-            .redirectOutput(log)
+        val builder =
+            ProcessBuilder(command)
+                .redirectErrorStream(true)
+                .redirectOutput(log)
         if (workingDir != null) builder.directory(workingDir)
 
         val process = builder.start()
@@ -161,8 +167,10 @@ object ProcessRunner {
         }
 
     /** Sonde `<executable> <args…>`, cf. [probe]. */
-    fun probe(executable: String, vararg args: String): Boolean =
-        probe(listOf(executable) + args)
+    fun probe(
+        executable: String,
+        vararg args: String,
+    ): Boolean = probe(listOf(executable) + args)
 
     /** Relit au plus [MAX_CAPTURED_BYTES] octets à la fin de [log]. */
     private fun readTail(log: File): String {

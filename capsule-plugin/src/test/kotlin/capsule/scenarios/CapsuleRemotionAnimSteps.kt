@@ -1,10 +1,10 @@
 package capsule.scenarios
 
+import capsule.anim.RemotionTiming
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import org.assertj.core.api.Assertions.assertThat
-import capsule.anim.RemotionTiming
 
 /**
  * BDD steps for `capsule_remotion_anim.feature` (CAP-ANIM-TEST).
@@ -14,7 +14,6 @@ import capsule.anim.RemotionTiming
  * to avoid DuplicateStepDefinitionException with the shared glue (bug S-088).
  */
 class CapsuleRemotionAnimSteps {
-
     private var lastBeat: Double = 0.0
     private var lastRate: Double = 0.0
 
@@ -29,29 +28,43 @@ class CapsuleRemotionAnimSteps {
     }
 
     @When("applying cue data-at {string} on {string} yields style {string}")
-    fun applyingCueYieldsStyle(rawAt: String, html: String, expected: String) {
+    fun applyingCueYieldsStyle(
+        rawAt: String,
+        html: String,
+        expected: String,
+    ) {
         val out = RemotionTiming.applyCues(html)
         assertThat(out).contains(expected)
         assertThat(out).doesNotContain("data-at")
     }
 
     @When("a {int}-frame clip is fitted to a {int}-frame slide")
-    fun aClipIsFittedToASlide(clip: Int, slide: Int) {
+    fun aClipIsFittedToASlide(
+        clip: Int,
+        slide: Int,
+    ) {
         lastRate = RemotionTiming.clipPlaybackRate(clip, slide)
     }
 
     @When("a missing clip fitted to a {int}-frame slide plays at {double}")
-    fun aMissingClipFitted(clip: Int, expected: Double) {
+    fun aMissingClipFitted(
+        clip: Int,
+        expected: Double,
+    ) {
         lastRate = RemotionTiming.clipPlaybackRate(clip, 40)
         assertThat(lastRate).isEqualTo(expected)
     }
 
     @When("a two-slide composition of {int} and {int} frames is swept")
-    fun aTwoSlideCompositionIsSwept(d0: Int, d1: Int) {
-        val slides = listOf(
-            RemotionTimingTestSlide(d0, first = true),
-            RemotionTimingTestSlide(d1, first = false),
-        )
+    fun aTwoSlideCompositionIsSwept(
+        d0: Int,
+        d1: Int,
+    ) {
+        val slides =
+            listOf(
+                RemotionTimingTestSlide(d0, first = true),
+                RemotionTimingTestSlide(d1, first = false),
+            )
         val crossfade = RemotionTiming.CROSSFADE_FRAMES
         val total = d0 + d1
         for (frame in 0 until total) {
@@ -81,17 +94,26 @@ class CapsuleRemotionAnimSteps {
     }
 
     @Then("the beat of block {string} is {double}")
-    fun theBeatOfBlockIs(block: String, expected: Double) {
+    fun theBeatOfBlockIs(
+        block: String,
+        expected: Double,
+    ) {
         assertThat(RemotionTiming.beatSeconds(block)).isEqualTo(expected)
     }
 
     @Then("the beat of carried block {string} is {double}")
-    fun theBeatOfCarriedBlockIs(block: String, expected: Double) {
+    fun theBeatOfCarriedBlockIs(
+        block: String,
+        expected: Double,
+    ) {
         assertThat(RemotionTiming.beatSeconds(block)).isEqualTo(expected)
     }
 
     @Then("the beat of unknown block {string} is {double}")
-    fun theBeatOfUnknownBlockIs(block: String, expected: Double) {
+    fun theBeatOfUnknownBlockIs(
+        block: String,
+        expected: Double,
+    ) {
         assertThat(RemotionTiming.beatSeconds(block)).isEqualTo(expected)
     }
 
@@ -101,7 +123,11 @@ class CapsuleRemotionAnimSteps {
     }
 
     @Then("a {int}-frame clip fitted to a {int}-frame slide is clamped to {double}")
-    fun aClipFittedIsClampedTo(clip: Int, slide: Int, expected: Double) {
+    fun aClipFittedIsClampedTo(
+        clip: Int,
+        slide: Int,
+        expected: Double,
+    ) {
         assertThat(RemotionTiming.clipPlaybackRate(clip, slide)).isEqualTo(expected)
     }
 
@@ -115,5 +141,8 @@ class CapsuleRemotionAnimSteps {
         // assertion performed inside the sweep step
     }
 
-    private data class RemotionTimingTestSlide(val durationInFrames: Int, val first: Boolean)
+    private data class RemotionTimingTestSlide(
+        val durationInFrames: Int,
+        val first: Boolean,
+    )
 }

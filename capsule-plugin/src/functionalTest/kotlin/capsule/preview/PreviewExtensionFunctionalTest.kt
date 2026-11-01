@@ -14,24 +14,26 @@ import java.io.File
  *  - enabled via DSL block
  */
 class PreviewExtensionFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
     private fun setupBuild(extraConfig: String = "") {
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             $extraConfig
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Test
     fun `previewOnly defaults to false in extension`() {
         setupBuild()
-        GradleRunner.create()
+        GradleRunner
+            .create()
             .forwardOutput()
             .withPluginClasspath()
             .withArguments("help")
@@ -41,12 +43,15 @@ class PreviewExtensionFunctionalTest {
 
     @Test
     fun `previewOnly can be set via DSL block`() {
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 previewOnly = true
             }
-        """.trimIndent())
-        GradleRunner.create()
+            """.trimIndent(),
+        )
+        GradleRunner
+            .create()
             .forwardOutput()
             .withPluginClasspath()
             .withArguments("help")
@@ -57,13 +62,16 @@ class PreviewExtensionFunctionalTest {
     @Test
     fun `previewOnly can be set via gradle property`() {
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         projectDir.resolve("gradle.properties").writeText("capsule.preview.enabled=true")
-        GradleRunner.create()
+        GradleRunner
+            .create()
             .forwardOutput()
             .withPluginClasspath()
             .withArguments("help")

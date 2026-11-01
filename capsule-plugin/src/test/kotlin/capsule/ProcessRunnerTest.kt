@@ -17,7 +17,6 @@ import kotlin.test.assertTrue
  * échouent par le délai de garde de la suite si la régression revient.
  */
 class ProcessRunnerTest {
-
     @TempDir
     lateinit var tempDir: File
 
@@ -90,10 +89,11 @@ class ProcessRunnerTest {
      */
     @Test
     fun `does not deadlock on an output larger than the pipe buffer`() {
-        val result = ProcessRunner.run(
-            listOf("sh", "-c", "i=0; while [ \$i -lt 20000 ]; do echo ligne-de-remplissage-numero-\$i; i=\$((i+1)); done"),
-            timeoutMinutes = 2,
-        )
+        val result =
+            ProcessRunner.run(
+                listOf("sh", "-c", "i=0; while [ \$i -lt 20000 ]; do echo ligne-de-remplissage-numero-\$i; i=\$((i+1)); done"),
+                timeoutMinutes = 2,
+            )
         assertTrue(result.isSuccess, "la commande doit se terminer, pas se figer sur un tube plein")
         assertTrue(result.output.contains("ligne-de-remplissage-numero-19999"), "la fin de la sortie doit être conservée")
     }
@@ -105,27 +105,29 @@ class ProcessRunnerTest {
      */
     @Test
     fun `keeps the output of a command that never emits a newline`() {
-        val result = ProcessRunner.run(
-            listOf("sh", "-c", "i=0; while [ \$i -lt 20000 ]; do printf \"avancement-\$i\\r\"; i=\$((i+1)); done"),
-            timeoutMinutes = 2,
-        )
+        val result =
+            ProcessRunner.run(
+                listOf("sh", "-c", "i=0; while [ \$i -lt 20000 ]; do printf \"avancement-\$i\\r\"; i=\$((i+1)); done"),
+                timeoutMinutes = 2,
+            )
         assertTrue(result.isSuccess)
         assertTrue(result.output.isNotBlank(), "sans saut de ligne, la sortie ne doit pas être vidée")
         assertTrue(
             result.output.contains("avancement-19999"),
-            "la fin doit survivre : ${result.output.takeLast(80)}"
+            "la fin doit survivre : ${result.output.takeLast(80)}",
         )
     }
 
     @Test
     fun `caps the captured output and keeps its tail`() {
-        val result = ProcessRunner.run(
-            listOf("sh", "-c", "i=0; while [ \$i -lt 20000 ]; do echo ligne-de-remplissage-numero-\$i; i=\$((i+1)); done"),
-            timeoutMinutes = 2,
-        )
+        val result =
+            ProcessRunner.run(
+                listOf("sh", "-c", "i=0; while [ \$i -lt 20000 ]; do echo ligne-de-remplissage-numero-\$i; i=\$((i+1)); done"),
+                timeoutMinutes = 2,
+            )
         assertTrue(
             result.output.toByteArray().size <= ProcessRunner.MAX_CAPTURED_BYTES,
-            "la sortie relue doit rester bornée, obtenu ${result.output.toByteArray().size} octets"
+            "la sortie relue doit rester bornée, obtenu ${result.output.toByteArray().size} octets",
         )
         assertEquals(3, result.tail(3).lines().size)
     }

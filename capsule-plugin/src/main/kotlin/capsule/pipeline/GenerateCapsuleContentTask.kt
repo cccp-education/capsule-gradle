@@ -7,8 +7,8 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.services.ServiceReference
-import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
@@ -43,7 +43,6 @@ import org.gradle.work.DisableCachingByDefault
  */
 @DisableCachingByDefault(because = "LLM content generation")
 abstract class GenerateCapsuleContentTask : DefaultTask() {
-
     /** Source AsciiDoc deck to enrich. */
     @get:InputFile
     @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -76,29 +75,33 @@ abstract class GenerateCapsuleContentTask : DefaultTask() {
         check(deck.exists()) { "Deck file does not exist: ${deck.path} (set -Pdeck.file=<path> or add a .adoc in slides/misc)" }
         val deckName = deck.nameWithoutExtension
         val sourceAdoc = deck.readText()
-        val augmentedContext = when {
-            !augmentedContextFile.isPresent -> ""
-            augmentedContextFile.get().asFile.exists() -> augmentedContextFile.get().asFile.readText()
-            else -> error(
-                "Augmented context file does not exist: ${augmentedContextFile.get().asFile.path}. " +
-                    "Run collectCapsuleAugmentedContext first or unset the property.",
-            )
-        }
+        val augmentedContext =
+            when {
+                !augmentedContextFile.isPresent -> ""
+                augmentedContextFile.get().asFile.exists() -> augmentedContextFile.get().asFile.readText()
+                else ->
+                    error(
+                        "Augmented context file does not exist: ${augmentedContextFile.get().asFile.path}. " +
+                            "Run collectCapsuleAugmentedContext first or unset the property.",
+                    )
+            }
 
         val provider = project.aiProvider
         val model = project.resolveModel(provider, llmService)
-        val graph = CapsulePipelineGraph(
-            promptBuilder = DefaultCapsulePromptBuilder(),
-            llm = ChatModelCapsuleLlm(model),
-        )
+        val graph =
+            CapsulePipelineGraph(
+                promptBuilder = DefaultCapsulePromptBuilder(),
+                llm = ChatModelCapsuleLlm(model),
+            )
 
-        val initial = CapsuleState(
-            deckName = deckName,
-            language = language.get(),
-            sourceAdoc = sourceAdoc,
-            augmentedContext = augmentedContext,
-            contentPlanJson = "",
-        )
+        val initial =
+            CapsuleState(
+                deckName = deckName,
+                language = language.get(),
+                sourceAdoc = sourceAdoc,
+                augmentedContext = augmentedContext,
+                contentPlanJson = "",
+            )
 
         val result = graph.execute(initial)
         if (result.stage == CapsuleStage.FAILED) {

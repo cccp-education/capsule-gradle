@@ -8,7 +8,6 @@ import kotlin.test.assertEquals
  * ASR fidelity comparison). Pure — no I/O.
  */
 class NumberSpellerTest {
-
     @Test
     fun `spells small and compound numbers`() {
         assertEquals("zéro", NumberSpeller.french(0))

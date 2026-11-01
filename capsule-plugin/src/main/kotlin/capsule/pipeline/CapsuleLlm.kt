@@ -15,7 +15,6 @@ package capsule.pipeline
  *  - [generate] → the `generate-speaker-notes` node (returns enriched AsciiDoc).
  */
 interface CapsuleLlm {
-
     /** Calls the LLM with the propose-context prompt; returns a content plan JSON blob. */
     fun propose(prompt: String): String
 

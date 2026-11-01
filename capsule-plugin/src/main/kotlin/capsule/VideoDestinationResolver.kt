@@ -19,7 +19,6 @@ import java.time.format.DateTimeFormatter
  *   Reads existing versioned siblings to determine the next number.
  */
 object VideoDestinationResolver {
-
     private val TIMESTAMP_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm")
 
     /**
@@ -30,19 +29,22 @@ object VideoDestinationResolver {
      * - [VersioningStrategy.INCREMENTAL] — highest existing `<prefix><n>` + 1,
      *   starting at 1 when no existing versions.
      */
-    fun resolveVersionLabel(config: OutputConfig, existingVersions: List<String>): String =
+    fun resolveVersionLabel(
+        config: OutputConfig,
+        existingVersions: List<String>,
+    ): String =
         when (config.versioning) {
             VersioningStrategy.TIMESTAMP -> {
                 val now = LocalDateTime.now().format(TIMESTAMP_FORMATTER)
                 "${config.versionPrefix}$now"
             }
             VersioningStrategy.INCREMENTAL -> {
-                val highest = existingVersions
-                    .mapNotNull { label ->
-                        val stripped = label.removePrefix(config.versionPrefix)
-                        stripped.toIntOrNull()
-                    }
-                    .maxOrNull() ?: 0
+                val highest =
+                    existingVersions
+                        .mapNotNull { label ->
+                            val stripped = label.removePrefix(config.versionPrefix)
+                            stripped.toIntOrNull()
+                        }.maxOrNull() ?: 0
                 "${config.versionPrefix}${highest + 1}"
             }
         }
@@ -51,7 +53,10 @@ object VideoDestinationResolver {
      * Resolves the versioned destination directory for the next copy, creating
      * the parent [OutputConfig.videoDestinationDir] if missing.
      */
-    fun resolveDestinationDir(config: OutputConfig, existingVersions: List<String> = emptyList()): File {
+    fun resolveDestinationDir(
+        config: OutputConfig,
+        existingVersions: List<String> = emptyList(),
+    ): File {
         val root = File(config.videoDestinationDir)
         if (!root.exists()) root.mkdirs()
         val label = resolveVersionLabel(config, existingVersions)
@@ -61,7 +66,11 @@ object VideoDestinationResolver {
     /**
      * Resolves the final destination file (video inside the versioned dir).
      */
-    fun resolveDestinationFile(config: OutputConfig, videoFileName: String, existingVersions: List<String> = emptyList()): File {
+    fun resolveDestinationFile(
+        config: OutputConfig,
+        videoFileName: String,
+        existingVersions: List<String> = emptyList(),
+    ): File {
         val dir = resolveDestinationDir(config, existingVersions)
         return File(dir, videoFileName)
     }
@@ -72,9 +81,13 @@ object VideoDestinationResolver {
      * whose suffix is not numeric for incremental) are ignored. Returns an
      * empty list when [destinationRoot] does not exist.
      */
-    fun collectExistingVersions(destinationRoot: File, prefix: String): List<String> {
+    fun collectExistingVersions(
+        destinationRoot: File,
+        prefix: String,
+    ): List<String> {
         if (!destinationRoot.exists() || !destinationRoot.isDirectory) return emptyList()
-        return destinationRoot.listFiles { f -> f.isDirectory && f.name.startsWith(prefix) }
+        return destinationRoot
+            .listFiles { f -> f.isDirectory && f.name.startsWith(prefix) }
             ?.map { it.name }
             ?: emptyList()
     }

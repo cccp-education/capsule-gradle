@@ -8,7 +8,6 @@ package capsule.viral
  * referenced asset actually exists on disk.
  */
 sealed class ViralCampaignGateResult {
-
     /** Every referenced asset exists. */
     object Valid : ViralCampaignGateResult()
 
@@ -18,7 +17,9 @@ sealed class ViralCampaignGateResult {
      * @property missing human-readable descriptors of the missing assets
      *                   (`<language>/<platform> videoFile: <path>`), in bundle order.
      */
-    data class Invalid(val missing: List<String>) : ViralCampaignGateResult() {
+    data class Invalid(
+        val missing: List<String>,
+    ) : ViralCampaignGateResult() {
         init {
             require(missing.isNotEmpty()) { "ViralCampaignGateResult.Invalid must carry at least one missing asset" }
         }
@@ -42,7 +43,6 @@ sealed class ViralCampaignGateResult {
  * Pure — no I/O of its own (the existence predicate is injected), no Gradle.
  */
 object ViralCampaignGate {
-
     /**
      * Computes the verdict for [bundles].
      *
@@ -55,19 +55,20 @@ object ViralCampaignGate {
         bundles: List<CampaignBundle>,
         exists: (String) -> Boolean,
     ): ViralCampaignGateResult {
-        val missing = bundles.flatMap { bundle ->
-            buildList {
-                if (!exists(bundle.videoFile)) {
-                    add("${bundle.language}/${bundle.platform.name} videoFile: ${bundle.videoFile}")
-                }
-                if (bundle.thumbnailFile.isNotBlank() && !exists(bundle.thumbnailFile)) {
-                    add("${bundle.language}/${bundle.platform.name} thumbnailFile: ${bundle.thumbnailFile}")
-                }
-                if (bundle.subtitleFile.isNotBlank() && !exists(bundle.subtitleFile)) {
-                    add("${bundle.language}/${bundle.platform.name} subtitleFile: ${bundle.subtitleFile}")
+        val missing =
+            bundles.flatMap { bundle ->
+                buildList {
+                    if (!exists(bundle.videoFile)) {
+                        add("${bundle.language}/${bundle.platform.name} videoFile: ${bundle.videoFile}")
+                    }
+                    if (bundle.thumbnailFile.isNotBlank() && !exists(bundle.thumbnailFile)) {
+                        add("${bundle.language}/${bundle.platform.name} thumbnailFile: ${bundle.thumbnailFile}")
+                    }
+                    if (bundle.subtitleFile.isNotBlank() && !exists(bundle.subtitleFile)) {
+                        add("${bundle.language}/${bundle.platform.name} subtitleFile: ${bundle.subtitleFile}")
+                    }
                 }
             }
-        }
         return if (missing.isEmpty()) ViralCampaignGateResult.Valid else ViralCampaignGateResult.Invalid(missing)
     }
 }

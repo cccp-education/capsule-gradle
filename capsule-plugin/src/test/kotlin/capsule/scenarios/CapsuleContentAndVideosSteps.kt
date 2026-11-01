@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Assertions
  * definitions with [TranslateAndExtractSpeakerNotesSteps].
  */
 class CapsuleContentAndVideosSteps {
-
     private var taskName: String = ""
     private var taskDescription: String = ""
     private var taskGroup: String = ""

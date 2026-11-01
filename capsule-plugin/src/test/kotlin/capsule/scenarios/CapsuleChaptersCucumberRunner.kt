@@ -9,6 +9,6 @@ import org.junit.runner.RunWith
     features = ["src/test/features/capsule_chapters.feature"],
     glue = ["capsule.scenarios"],
     plugin = ["pretty", "html:build/reports/tests/cucumberTestChapters.html"],
-    monochrome = true
+    monochrome = true,
 )
 class CapsuleChaptersCucumberRunner

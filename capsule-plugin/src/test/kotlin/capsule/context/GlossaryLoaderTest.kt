@@ -25,7 +25,6 @@ import kotlin.test.assertTrue
  * `- term: definition`) are skipped. Non-`Glossary` sections are ignored.
  */
 class GlossaryLoaderTest {
-
     @TempDir
     lateinit var tempDir: File
 
@@ -55,13 +54,15 @@ class GlossaryLoaderTest {
 
     @Test
     fun `GlossaryContext preserves the order of terms`() {
-        val ctx = GlossaryContext(
-            terms = listOf(
-                GlossaryEntry("alpha", "first term"),
-                GlossaryEntry("beta", "second term"),
-                GlossaryEntry("gamma", "third term"),
-            ),
-        )
+        val ctx =
+            GlossaryContext(
+                terms =
+                    listOf(
+                        GlossaryEntry("alpha", "first term"),
+                        GlossaryEntry("beta", "second term"),
+                        GlossaryEntry("gamma", "third term"),
+                    ),
+            )
         assertEquals(listOf("alpha", "beta", "gamma"), ctx.terms.map { it.term })
     }
 
@@ -75,18 +76,19 @@ class GlossaryLoaderTest {
 
     @Test
     fun `load parses bullets and renders the Official Glossary section`() {
-        val glossary = File(tempDir, "glossary.adoc").also {
-            it.writeText(
-                """
-                = Glossaire Content
+        val glossary =
+            File(tempDir, "glossary.adoc").also {
+                it.writeText(
+                    """
+                    = Glossaire Content
 
-                == Glossary
-                - compétence transversale: savoir-faire mobilisable across contexts
-                - évaluation formative: évaluation en cours d'apprentissage
-                - modality: mode d'organisation d'une session
-                """.trimIndent()
-            )
-        }
+                    == Glossary
+                    - compétence transversale: savoir-faire mobilisable across contexts
+                    - évaluation formative: évaluation en cours d'apprentissage
+                    - modality: mode d'organisation d'une session
+                    """.trimIndent(),
+                )
+            }
         val result = GlossaryLoader.load(glossary, 400)
         assertTrue(result.contains("Official Glossary (glossary)"), "Expected section header")
         assertTrue(result.contains("compétence transversale"), "Expected first term")
@@ -96,26 +98,28 @@ class GlossaryLoaderTest {
 
     @Test
     fun `load with no Glossary section returns blank string`() {
-        val glossary = File(tempDir, "no-glossary.adoc").also {
-            it.writeText(
-                """
-                = Document without glossary
+        val glossary =
+            File(tempDir, "no-glossary.adoc").also {
+                it.writeText(
+                    """
+                    = Document without glossary
 
-                == Objectifs
-                - Goal A
-                - Goal B
-                """.trimIndent()
-            )
-        }
+                    == Objectifs
+                    - Goal A
+                    - Goal B
+                    """.trimIndent(),
+                )
+            }
         val result = GlossaryLoader.load(glossary, 400)
         assertTrue(result.isBlank(), "Adoc without a `== Glossary` section should yield a blank string")
     }
 
     @Test
     fun `load with zero token budget returns blank string`() {
-        val glossary = File(tempDir, "glossary.adoc").also {
-            it.writeText("== Glossary\n- term: definition")
-        }
+        val glossary =
+            File(tempDir, "glossary.adoc").also {
+                it.writeText("== Glossary\n- term: definition")
+            }
         val result = GlossaryLoader.load(glossary, 0)
         assertTrue(result.isBlank(), "Zero token budget should yield a blank string")
     }
@@ -123,9 +127,10 @@ class GlossaryLoaderTest {
     @Test
     fun `load truncates content exceeding the token budget`() {
         val bullets = (1..80).joinToString("\n") { "- term$it: definition with enough words to consume the token budget" }
-        val glossary = File(tempDir, "long.adoc").also {
-            it.writeText("== Glossary\n$bullets")
-        }
+        val glossary =
+            File(tempDir, "long.adoc").also {
+                it.writeText("== Glossary\n$bullets")
+            }
         val maxTokens = 50
         val result = GlossaryLoader.load(glossary, maxTokens)
         val estimated = ContextChannel.estimateTokens(result)
@@ -135,16 +140,17 @@ class GlossaryLoaderTest {
 
     @Test
     fun `load with multiple terms preserves order in the rendered section`() {
-        val glossary = File(tempDir, "ordered.adoc").also {
-            it.writeText(
-                """
-                == Glossary
-                - first: premier terme
-                - second: deuxième terme
-                - third: troisième terme
-                """.trimIndent()
-            )
-        }
+        val glossary =
+            File(tempDir, "ordered.adoc").also {
+                it.writeText(
+                    """
+                    == Glossary
+                    - first: premier terme
+                    - second: deuxième terme
+                    - third: troisième terme
+                    """.trimIndent(),
+                )
+            }
         val result = GlossaryLoader.load(glossary, 400)
         val firstIdx = result.indexOf("first")
         val secondIdx = result.indexOf("second")
@@ -154,16 +160,17 @@ class GlossaryLoaderTest {
 
     @Test
     fun `load skips malformed bullets that are not term-definition pairs`() {
-        val glossary = File(tempDir, "mixed.adoc").also {
-            it.writeText(
-                """
-                == Glossary
-                - valid term: a real definition
-                - a line without colon
-                - another valid: second definition
-                """.trimIndent()
-            )
-        }
+        val glossary =
+            File(tempDir, "mixed.adoc").also {
+                it.writeText(
+                    """
+                    == Glossary
+                    - valid term: a real definition
+                    - a line without colon
+                    - another valid: second definition
+                    """.trimIndent(),
+                )
+            }
         val result = GlossaryLoader.load(glossary, 400)
         assertTrue(result.contains("valid term"), "Valid bullets must be kept")
         assertTrue(result.contains("another valid"), "Second valid bullet must be kept")
@@ -172,22 +179,23 @@ class GlossaryLoaderTest {
 
     @Test
     fun `load ignores non-Glossary sections`() {
-        val glossary = File(tempDir, "mixed-sections.adoc").also {
-            it.writeText(
-                """
-                = Document with multiple sections
+        val glossary =
+            File(tempDir, "mixed-sections.adoc").also {
+                it.writeText(
+                    """
+                    = Document with multiple sections
 
-                == Objectifs
-                - Goal A
+                    == Objectifs
+                    - Goal A
 
-                == Glossary
-                - glossary term: glossary definition
+                    == Glossary
+                    - glossary term: glossary definition
 
-                == Prérequis
-                - Prerequisite A
-                """.trimIndent()
-            )
-        }
+                    == Prérequis
+                    - Prerequisite A
+                    """.trimIndent(),
+                )
+            }
         val result = GlossaryLoader.load(glossary, 400)
         assertTrue(result.contains("glossary term"), "Glossary section must be parsed")
         assertFalse(result.contains("Goal A"), "Objectifs section must be ignored")
@@ -196,18 +204,19 @@ class GlossaryLoaderTest {
 
     @Test
     fun `load with empty Glossary section returns blank string`() {
-        val glossary = File(tempDir, "empty-glossary.adoc").also {
-            it.writeText(
-                """
-                = Document
+        val glossary =
+            File(tempDir, "empty-glossary.adoc").also {
+                it.writeText(
+                    """
+                    = Document
 
-                == Glossary
+                    == Glossary
 
-                == Objectifs
-                - Goal A
-                """.trimIndent()
-            )
-        }
+                    == Objectifs
+                    - Goal A
+                    """.trimIndent(),
+                )
+            }
         val result = GlossaryLoader.load(glossary, 400)
         assertTrue(result.isBlank(), "Empty Glossary section (no bullets) should yield a blank string")
     }

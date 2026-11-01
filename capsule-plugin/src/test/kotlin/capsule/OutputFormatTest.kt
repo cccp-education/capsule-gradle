@@ -12,7 +12,6 @@ import kotlin.test.assertEquals
  * case-insensitive and falls back to `WEBM` for unknown/blank values.
  */
 class OutputFormatTest {
-
     @Test
     fun `fromString returns WEBM for null`() {
         assertEquals(OutputFormat.WEBM, OutputFormat.fromString(null))

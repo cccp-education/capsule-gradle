@@ -9,7 +9,6 @@ import kotlin.test.assertFailsWith
  * fallback on any exception (transient cloud error), but never swallows an [Error].
  */
 class LlmResilienceTest {
-
     @Test
     fun `returns the block result on success`() {
         assertEquals(42, LlmResilience.guarded("op", -1) { 42 })

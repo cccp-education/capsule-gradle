@@ -23,7 +23,6 @@ import javax.imageio.ImageIO
  * `-loop 1` image demuxer hang, so we write a real 1080×1920 solid frame.
  */
 object ViralRealRenderSupport {
-
     /** Per-ffmpeg-step guard, far below the task timeout (a hang fails fast). */
     private const val STEP_TIMEOUT_MINUTES: Long = 2L
 
@@ -44,18 +43,20 @@ object ViralRealRenderSupport {
 
         plan.slides.forEach { entry ->
             writeSolidPng(entry.pngFile, viewportWidth, viewportHeight)
-            val encoded = ProcessRunner.run(
-                ScreenshotPlanner.ffmpegPngToWebmArgs(entry, viewportWidth, viewportHeight, ffmpegPath),
-                timeoutMinutes = STEP_TIMEOUT_MINUTES,
-            )
+            val encoded =
+                ProcessRunner.run(
+                    ScreenshotPlanner.ffmpegPngToWebmArgs(entry, viewportWidth, viewportHeight, ffmpegPath),
+                    timeoutMinutes = STEP_TIMEOUT_MINUTES,
+                )
             check(encoded.isSuccess) { "ffmpeg png->webm failed (slide ${entry.index}): ${encoded.tail()}" }
         }
 
         plan.concatListFile.writeText(ScreenshotPlanner.renderConcatList(plan))
-        val concat = ProcessRunner.run(
-            ScreenshotPlanner.ffmpegConcatArgs(plan, ffmpegPath),
-            timeoutMinutes = STEP_TIMEOUT_MINUTES,
-        )
+        val concat =
+            ProcessRunner.run(
+                ScreenshotPlanner.ffmpegConcatArgs(plan, ffmpegPath),
+                timeoutMinutes = STEP_TIMEOUT_MINUTES,
+            )
         check(concat.isSuccess) { "ffmpeg concat failed: ${concat.tail()}" }
 
         val mp4 = File(outputDir, "capsule.mp4")
@@ -65,7 +66,11 @@ object ViralRealRenderSupport {
     }
 
     /** Writes a solid portrait PNG at the viewport size (a 1×1 PNG hangs ffmpeg). */
-    private fun writeSolidPng(file: File, width: Int, height: Int) {
+    private fun writeSolidPng(
+        file: File,
+        width: Int,
+        height: Int,
+    ) {
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
         val graphics = image.createGraphics()
         try {

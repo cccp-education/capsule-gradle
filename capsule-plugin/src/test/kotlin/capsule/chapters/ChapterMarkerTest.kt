@@ -3,22 +3,22 @@ package capsule.chapters
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
-import org.junit.jupiter.api.Test
 
 class ChapterMarkerTest {
-
     @TempDir
     lateinit var tempDir: File
 
     @Test
     fun `ChapterMetadataCommand buildJson produces valid JSON array`() {
-        val entries = listOf(
-            ChapterEntry("Intro", 0, 5000),
-            ChapterEntry("Segment 1", 5000, 30000),
-            ChapterEntry("Outro", 30000, 35000)
-        )
+        val entries =
+            listOf(
+                ChapterEntry("Intro", 0, 5000),
+                ChapterEntry("Segment 1", 5000, 30000),
+                ChapterEntry("Outro", 30000, 35000),
+            )
         val json = ChapterMetadataCommand.buildJson(entries)
         assertTrue(json.startsWith("["), "JSON should start with [")
         assertTrue(json.trimEnd().endsWith("]"), "JSON should end with ]")
@@ -60,11 +60,12 @@ class ChapterMarkerTest {
 
     @Test
     fun `ChapterMetadataCommand buildJson multiple entries have commas between`() {
-        val entries = listOf(
-            ChapterEntry("A", 0, 1000),
-            ChapterEntry("B", 1000, 2000),
-            ChapterEntry("C", 2000, 3000)
-        )
+        val entries =
+            listOf(
+                ChapterEntry("A", 0, 1000),
+                ChapterEntry("B", 1000, 2000),
+                ChapterEntry("C", 2000, 3000),
+            )
         val json = ChapterMetadataCommand.buildJson(entries)
         val lines = json.trim().lines()
         // line 0 = [, line 1 = entry A (with comma), line 2 = entry B (with comma), line 3 = entry C (no comma), line 4 = ]
@@ -149,11 +150,12 @@ class ChapterMarkerTest {
 
     @Test
     fun `ChapterMetadataCommand buildJson preserves ordering`() {
-        val entries = listOf(
-            ChapterEntry("First", 0, 1000),
-            ChapterEntry("Second", 1000, 2000),
-            ChapterEntry("Third", 2000, 3000)
-        )
+        val entries =
+            listOf(
+                ChapterEntry("First", 0, 1000),
+                ChapterEntry("Second", 1000, 2000),
+                ChapterEntry("Third", 2000, 3000),
+            )
         val json = ChapterMetadataCommand.buildJson(entries)
         val firstIdx = json.indexOf("First")
         val secondIdx = json.indexOf("Second")

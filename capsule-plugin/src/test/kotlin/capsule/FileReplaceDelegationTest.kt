@@ -1,10 +1,10 @@
 package capsule
 
 import capsule.multilang.CapsuleVideoOutputRenamer
-import java.io.File
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import java.io.File
 
 /**
  * CAP-PR2-COV US-3 — [capsule.FileReplace.moveOver] is the single chokepoint for
@@ -17,17 +17,18 @@ import org.junit.jupiter.api.Test
  * and [CapsuleVideoOutputRenamer] forwards to it without bypassing the seam.
  */
 class FileReplaceDelegationTest {
-
     @AfterEach
     fun tearDown() {
         FileReplace.moveOverInterceptor = null
     }
 
-    private fun temp(prefix: String): File =
-        File(System.getProperty("java.io.tmpdir"), "${prefix}-${System.nanoTime()}").also { it.mkdirs() }
+    private fun temp(prefix: String): File = File(System.getProperty("java.io.tmpdir"), "$prefix-${System.nanoTime()}").also { it.mkdirs() }
 
-    private fun file(dir: File, name: String, content: String = "x"): File =
-        File(dir, name).also { it.writeText(content) }
+    private fun file(
+        dir: File,
+        name: String,
+        content: String = "x",
+    ): File = File(dir, name).also { it.writeText(content) }
 
     @Test
     fun `moveOver delegates to interceptor and skips real move`() {
@@ -76,7 +77,10 @@ class FileReplaceDelegationTest {
     @Test
     fun `CapsuleVideoOutputRenamer skips the seam when source already matches target`() {
         var calls = 0
-        FileReplace.moveOverInterceptor = { _, _ -> calls++; true }
+        FileReplace.moveOverInterceptor = { _, _ ->
+            calls++
+            true
+        }
         val dir = temp("renamer-skip")
         val same = file(dir, "capsule-feed-demo_fr.webm")
         val result = CapsuleVideoOutputRenamer.rename(same, same)

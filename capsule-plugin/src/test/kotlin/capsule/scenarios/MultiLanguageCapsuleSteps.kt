@@ -24,7 +24,6 @@ import java.io.File
  *   artifacts (one per target language, `<deckName>_<lang>.webm` convention).
  */
 class MultiLanguageCapsuleSteps {
-
     private var deckDir: File? = null
     private var scriptDir: File? = null
     private var outputDir: File? = null
@@ -35,7 +34,11 @@ class MultiLanguageCapsuleSteps {
 
     private fun ensureDirs() {
         if (deckDir == null) {
-            val base = File.createTempFile("multilang", ".dir").apply { delete(); mkdirs() }
+            val base =
+                File.createTempFile("multilang", ".dir").apply {
+                    delete()
+                    mkdirs()
+                }
             deckDir = File(base, "decks").apply { mkdirs() }
             scriptDir = File(base, "scripts").apply { mkdirs() }
             outputDir = File(base, "out").apply { mkdirs() }
@@ -47,7 +50,8 @@ class MultiLanguageCapsuleSteps {
         scriptDir!!.resolve("demo_$lang-script.txt").writeText(scriptText(lang))
     }
 
-    private fun deckHtml(lang: String): String = """
+    private fun deckHtml(lang: String): String =
+        """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -55,16 +59,18 @@ class MultiLanguageCapsuleSteps {
   </div>
 </div>
 </body></html>
-    """.trimIndent()
+        """.trimIndent()
 
-    private fun scriptText(lang: String): String = """
+    private fun scriptText(lang: String): String =
+        """
 === CAPSULE SCRIPT : demo_$lang ===
 --- SLIDE 1 : Title ---
 Note content in $lang.
-    """.trimIndent()
+        """.trimIndent()
 
     private fun allCatalogLanguages(): List<SupportedLanguage> =
-        LanguageCatalog.supportedCodes()
+        LanguageCatalog
+            .supportedCodes()
             .mapNotNull { code -> LanguageCatalog.findByCode(code) }
 
     private fun languagesFor(vararg codes: String): List<SupportedLanguage> =
@@ -74,17 +80,17 @@ Note content in $lang.
      * Deterministic N-way partition of the catalog, for the CI language-group
      * shards (see `capsule.ci.MultiLangShardPartition`).
      */
-    private fun languageGroup(group: String): List<SupportedLanguage> =
-        MultiLangShardPartition.partition(group, allCatalogLanguages())
+    private fun languageGroup(group: String): List<SupportedLanguage> = MultiLangShardPartition.partition(group, allCatalogLanguages())
 
     private fun buildPlan(targets: List<SupportedLanguage>) {
         try {
-            plan = CapsuleVideoPlanner.plan(
-                deckDir = deckDir!!,
-                scriptDir = scriptDir!!,
-                outputDir = outputDir!!,
-                targetLanguages = targets,
-            )
+            plan =
+                CapsuleVideoPlanner.plan(
+                    deckDir = deckDir!!,
+                    scriptDir = scriptDir!!,
+                    outputDir = outputDir!!,
+                    targetLanguages = targets,
+                )
             planFailure = null
         } catch (t: Throwable) {
             plan = null
@@ -101,7 +107,10 @@ Note content in $lang.
     }
 
     @Given("translated decks and scripts for languages {string} and {string}")
-    fun translatedDecksAndScriptsForLanguages(first: String, second: String) {
+    fun translatedDecksAndScriptsForLanguages(
+        first: String,
+        second: String,
+    ) {
         ensureDirs()
         writePair(first)
         writePair(second)
@@ -115,7 +124,10 @@ Note content in $lang.
     }
 
     @Given("translated decks and scripts for RTL languages {string} and {string}")
-    fun translatedDecksAndScriptsForRtlLanguages(first: String, second: String) {
+    fun translatedDecksAndScriptsForRtlLanguages(
+        first: String,
+        second: String,
+    ) {
         ensureDirs()
         writePair(first)
         writePair(second)
@@ -134,12 +146,14 @@ Note content in $lang.
 
     @Given("a Gradle project with the capsule plugin applied and NoOp engines")
     fun aGradleProjectWithTheCapsulePluginAppliedAndNoOpEngines() {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-multilang-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-multilang-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir!!.resolve("settings.gradle").writeText("")
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -147,7 +161,8 @@ Note content in $lang.
                 ttsEngine = "noop"
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         deckDir = projectDir!!.resolve("build/docs/asciidocRevealJs").also { it.mkdirs() }
         scriptDir = projectDir!!.resolve("build/capsule").also { it.mkdirs() }
@@ -162,24 +177,33 @@ Note content in $lang.
     }
 
     @When("the multi-language video plan is built for {string} and {string}")
-    fun theMultiLanguageVideoPlanIsBuiltForTwo(first: String, second: String) {
+    fun theMultiLanguageVideoPlanIsBuiltForTwo(
+        first: String,
+        second: String,
+    ) {
         buildPlan(languagesFor(first, second))
     }
 
     @When("the multi-language video plan is built for {string}, {string} and {string}")
-    fun theMultiLanguageVideoPlanIsBuiltForThree(first: String, second: String, third: String) {
+    fun theMultiLanguageVideoPlanIsBuiltForThree(
+        first: String,
+        second: String,
+        third: String,
+    ) {
         buildPlan(languagesFor(first, second, third))
     }
 
     @When("I run the multi-language video generation task")
     fun iRunTheMultiLanguageVideoGenerationTask() {
         val project = projectDir ?: error("No Gradle project set up")
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("generateCapsuleVideoAllLanguages")
-            .withProjectDir(project)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("generateCapsuleVideoAllLanguages")
+                .withProjectDir(project)
+                .build()
         lastBuildOutput = result.output
     }
 
@@ -200,23 +224,34 @@ Note content in $lang.
     }
 
     @And("the plan languages include {string} and {string}")
-    fun thePlanLanguagesInclude(first: String, second: String) {
+    fun thePlanLanguagesInclude(
+        first: String,
+        second: String,
+    ) {
         val codes = plan?.languages()?.map { it.code } ?: emptyList()
         Assertions.assertTrue(codes.contains(first), "Plan languages $codes should include '$first'")
         Assertions.assertTrue(codes.contains(second), "Plan languages $codes should include '$second'")
     }
 
     @And("the plan entry for {string} outputs {string}")
-    fun thePlanEntryForOutputs(lang: String, fileName: String) {
-        val entry = plan?.entries?.firstOrNull { it.language.code == lang }
-            ?: error("No plan entry for language '$lang'")
+    fun thePlanEntryForOutputs(
+        lang: String,
+        fileName: String,
+    ) {
+        val entry =
+            plan?.entries?.firstOrNull { it.language.code == lang }
+                ?: error("No plan entry for language '$lang'")
         Assertions.assertEquals(fileName, entry.outputVideo.name)
     }
 
     @And("the plan entry for {string} resolves the script file {string}")
-    fun thePlanEntryForResolvesTheScriptFile(lang: String, fileName: String) {
-        val entry = plan?.entries?.firstOrNull { it.language.code == lang }
-            ?: error("No plan entry for language '$lang'")
+    fun thePlanEntryForResolvesTheScriptFile(
+        lang: String,
+        fileName: String,
+    ) {
+        val entry =
+            plan?.entries?.firstOrNull { it.language.code == lang }
+                ?: error("No plan entry for language '$lang'")
         Assertions.assertEquals(fileName, entry.scriptFile.name)
     }
 

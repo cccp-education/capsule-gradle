@@ -1,8 +1,8 @@
 package capsule.voice
 
 import capsule.ProcessRunner
-import java.io.File
 import video.kernel.audio.RmsEnvelope
+import java.io.File
 
 /**
  * I/O half of the SNR estimate (CAP-QC-VOICE US-2).
@@ -16,7 +16,6 @@ import video.kernel.audio.RmsEnvelope
  * output): the SNR check is then skipped, never read as clean.
  */
 object AudioEnvelopeExtractor {
-
     /** 16 kHz mono is the usual ASR/envelope working rate and keeps frames tiny. */
     const val SAMPLE_RATE: Int = 16_000
 
@@ -60,17 +59,23 @@ object AudioEnvelopeExtractor {
         pcmFile: File,
         sampleRate: Int,
         ffmpegPath: String,
-    ): List<String> = listOf(
-        ffmpegPath,
-        "-v", "error",
-        // The PCM target is a file created by `createTempFile`; without `-y`
-        // ffmpeg refuses to overwrite it, exits 0 with an empty file, and the
-        // caller silently degrades to "no envelope" (real bug caught by S-209).
-        "-y",
-        "-i", audioFile.absolutePath,
-        "-ac", "1",
-        "-ar", sampleRate.toString(),
-        "-f", "s16le",
-        pcmFile.absolutePath,
-    )
+    ): List<String> =
+        listOf(
+            ffmpegPath,
+            "-v",
+            "error",
+            // The PCM target is a file created by `createTempFile`; without `-y`
+            // ffmpeg refuses to overwrite it, exits 0 with an empty file, and the
+            // caller silently degrades to "no envelope" (real bug caught by S-209).
+            "-y",
+            "-i",
+            audioFile.absolutePath,
+            "-ac",
+            "1",
+            "-ar",
+            sampleRate.toString(),
+            "-f",
+            "s16le",
+            pcmFile.absolutePath,
+        )
 }

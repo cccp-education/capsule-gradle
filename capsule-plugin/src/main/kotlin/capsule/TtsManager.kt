@@ -5,18 +5,23 @@ import contracts.i18n.SupportedLanguage
 import java.io.File
 
 interface TtsEngine {
-    fun synthesize(text: String, outputFile: File)
+    fun synthesize(
+        text: String,
+        outputFile: File,
+    )
+
     fun isAvailable(): Boolean
+
     fun name(): String
+
     fun language(): SupportedLanguage? = null
 }
 
 class PiperTtsEngine(
     private val executablePath: String = "piper",
     private val model: String = "fr_FR-siwis-medium",
-    private val language: SupportedLanguage? = null
+    private val language: SupportedLanguage? = null,
 ) : TtsEngine {
-
     private val resolvedModel: String =
         language?.let { MultiLanguageResolver.piperModel(it.code) } ?: model
 
@@ -25,26 +30,30 @@ class PiperTtsEngine(
     // c'est un `piper --help` de plus par diapo, en parallèle.
     private var availabilityProbe: Boolean? = null
 
-    override fun isAvailable(): Boolean =
-        availabilityProbe ?: ProcessRunner.probe(executablePath, "--help").also { availabilityProbe = it }
+    override fun isAvailable(): Boolean = availabilityProbe ?: ProcessRunner.probe(executablePath, "--help").also { availabilityProbe = it }
 
     override fun name(): String = "piper"
 
-    override fun language(): SupportedLanguage? =
-        language ?: MultiLanguageResolver.resolveByPiperModel(resolvedModel)
+    override fun language(): SupportedLanguage? = language ?: MultiLanguageResolver.resolveByPiperModel(resolvedModel)
 
-    override fun synthesize(text: String, outputFile: File) {
+    override fun synthesize(
+        text: String,
+        outputFile: File,
+    ) {
         if (!isAvailable()) {
             throw TtsException("Piper executable not found at: $executablePath")
         }
 
         val wavFile = File(outputFile.parentFile, outputFile.nameWithoutExtension + ".wav")
 
-        val args = listOf(
-            executablePath,
-            "--model", resolvedModel,
-            "--output_file", wavFile.absolutePath
-        )
+        val args =
+            listOf(
+                executablePath,
+                "--model",
+                resolvedModel,
+                "--output_file",
+                wavFile.absolutePath,
+            )
 
         // Le texte part sur l'entrée standard, la sortie est drainée vers un
         // journal : piper écrit une ligne par phrase, et le père qui pousse du
@@ -62,27 +71,33 @@ class PiperTtsEngine(
 
 class NoOpTtsEngine : TtsEngine {
     override fun isAvailable(): Boolean = true
+
     override fun name(): String = "noop"
 
-    override fun synthesize(text: String, outputFile: File) {
+    override fun synthesize(
+        text: String,
+        outputFile: File,
+    ) {
         outputFile.parentFile.mkdirs()
-        val placeholder = listOf(
-            "# TTS PLACEHOLDER (noop engine)",
-            "# Text: ${text.take(100)}..."
-        ).joinToString("\n")
+        val placeholder =
+            listOf(
+                "# TTS PLACEHOLDER (noop engine)",
+                "# Text: ${text.take(100)}...",
+            ).joinToString("\n")
         outputFile.writeText(placeholder)
     }
 }
 
-class TtsException(message: String) : RuntimeException(message)
+class TtsException(
+    message: String,
+) : RuntimeException(message)
 
 class EspeakTtsEngine(
     private val executablePath: String = "espeak",
     private val voice: String = "fr",
     private val speed: Int = 150,
-    private val language: SupportedLanguage? = null
+    private val language: SupportedLanguage? = null,
 ) : TtsEngine {
-
     private val resolvedVoice: String =
         language?.let { MultiLanguageResolver.espeakVoice(it.code) } ?: voice
 
@@ -112,10 +127,12 @@ class EspeakTtsEngine(
 
     override fun name(): String = "espeak"
 
-    override fun language(): SupportedLanguage? =
-        language ?: MultiLanguageResolver.resolveByEspeakVoice(resolvedVoice)
+    override fun language(): SupportedLanguage? = language ?: MultiLanguageResolver.resolveByEspeakVoice(resolvedVoice)
 
-    override fun synthesize(text: String, outputFile: File) {
+    override fun synthesize(
+        text: String,
+        outputFile: File,
+    ) {
         if (!isAvailable()) {
             throw TtsException("espeak executable not found at: $executablePath (ni '$NG_EXECUTABLE')")
         }
@@ -124,15 +141,19 @@ class EspeakTtsEngine(
 
         val wavFile = File(outputFile.parentFile, outputFile.nameWithoutExtension + ".wav")
 
-        val result = ProcessRunner.run(
-            listOf(
-                resolvedExecutable,
-                "-v", resolvedVoice,
-                "-s", speed.toString(),
-                "-w", wavFile.absolutePath,
-                text,
+        val result =
+            ProcessRunner.run(
+                listOf(
+                    resolvedExecutable,
+                    "-v",
+                    resolvedVoice,
+                    "-s",
+                    speed.toString(),
+                    "-w",
+                    wavFile.absolutePath,
+                    text,
+                ),
             )
-        )
         if (!result.isSuccess) {
             throw TtsException("espeak exited with code ${result.exitCode}: ${result.tail()}")
         }

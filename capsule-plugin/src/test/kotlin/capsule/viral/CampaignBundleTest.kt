@@ -15,23 +15,24 @@ import kotlin.test.assertTrue
  * layer never re-crops nor re-generates.
  */
 class CampaignBundleTest {
+    private fun copy() =
+        MarketCopy(
+            language = "fr",
+            platform = ViralPlatform.TIKTOK,
+            hook = "Et si 30 secondes suffisaient ?",
+            title = "Devenir développeur",
+            caption = "Le contenu Content en accéléré",
+            hashtags = listOf("#content"),
+        )
 
-    private fun copy() = MarketCopy(
-        language = "fr",
-        platform = ViralPlatform.TIKTOK,
-        hook = "Et si 30 secondes suffisaient ?",
-        title = "Devenir développeur",
-        caption = "Le contenu Content en accéléré",
-        hashtags = listOf("#content"),
-    )
-
-    private fun bundle(thumbnail: String = "thumb.png") = CampaignBundle(
-        language = "fr",
-        platform = ViralPlatform.TIKTOK,
-        videoFile = "build/capsule/fr-tiktok-30.mp4",
-        thumbnailFile = thumbnail,
-        metadata = copy(),
-    )
+    private fun bundle(thumbnail: String = "thumb.png") =
+        CampaignBundle(
+            language = "fr",
+            platform = ViralPlatform.TIKTOK,
+            videoFile = "build/capsule/fr-tiktok-30.mp4",
+            thumbnailFile = thumbnail,
+            metadata = copy(),
+        )
 
     @Test
     fun `bundle exposes thumbnail presence`() {

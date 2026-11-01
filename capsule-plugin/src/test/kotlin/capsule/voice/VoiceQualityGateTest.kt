@@ -1,7 +1,7 @@
 package capsule.voice
 
-import kotlin.test.Test
 import video.kernel.audio.AudioSilenceDetector
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -9,11 +9,12 @@ import kotlin.test.assertTrue
  * TDD unit tests for [VoiceQualityGate] (CAP-QC-VOICE US-2). Pure — no I/O, no ASR.
  */
 class VoiceQualityGateTest {
-
     private val thresholds = VoiceThresholds(maxWordErrorRate = 0.15, minSnrDb = 66.0, surplusThreshold = 3)
 
-    private fun score(expected: String, transcribed: String): VoiceScore =
-        FidelityScorer.score(expected, transcribed)
+    private fun score(
+        expected: String,
+        transcribed: String,
+    ): VoiceScore = FidelityScorer.score(expected, transcribed)
 
     @Test
     fun `a faithful take with a clean background passes`() {
@@ -57,12 +58,13 @@ class VoiceQualityGateTest {
 
     @Test
     fun `a silent envelope fails with a silent-audio reason`() {
-        val verdict = VoiceQualityGate.verdict(
-            score("bonjour", "bonjour"),
-            70.0,
-            thresholds,
-            silence = AudioSilenceDetector.analyze(DoubleArray(20) { 0.0 }),
-        )
+        val verdict =
+            VoiceQualityGate.verdict(
+                score("bonjour", "bonjour"),
+                70.0,
+                thresholds,
+                silence = AudioSilenceDetector.analyze(DoubleArray(20) { 0.0 }),
+            )
 
         assertTrue(verdict is VoiceVerdict.Fail)
         assertTrue(VoiceQualityGate.REASON_SILENT_AUDIO in verdict.reasons)

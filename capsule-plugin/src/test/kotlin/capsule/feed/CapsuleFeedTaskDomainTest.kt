@@ -4,18 +4,19 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class CapsuleFeedTaskDomainTest {
-
     // ---------------------------------------------------------------------------
     // CapsuleAdocDir — resolves <projectDir>/slides/misc
     // ---------------------------------------------------------------------------
 
     @Test
-    fun `a capsule adoc dir resolves project_slides_misc`(@TempDir projectDir: File) {
+    fun `a capsule adoc dir resolves project_slides_misc`(
+        @TempDir projectDir: File,
+    ) {
         val dir = CapsuleAdocDir(projectDir)
         assertEquals(File(projectDir, "slides/misc"), dir.asFile())
     }
@@ -26,7 +27,9 @@ class CapsuleFeedTaskDomainTest {
     }
 
     @Test
-    fun `a capsule adoc dir lists only adoc files sorted by name`(@TempDir projectDir: File) {
+    fun `a capsule adoc dir lists only adoc files sorted by name`(
+        @TempDir projectDir: File,
+    ) {
         val miscDir = File(projectDir, "slides/misc").apply { mkdirs() }
         File(miscDir, "deck-b.adoc").writeText("= B")
         File(miscDir, "deck-a.adoc").writeText("= A")
@@ -38,7 +41,9 @@ class CapsuleFeedTaskDomainTest {
     }
 
     @Test
-    fun `a capsule adoc dir returns empty list when misc is missing`(@TempDir projectDir: File) {
+    fun `a capsule adoc dir returns empty list when misc is missing`(
+        @TempDir projectDir: File,
+    ) {
         assertTrue(CapsuleAdocDir(projectDir).adocFiles().isEmpty())
     }
 
@@ -47,7 +52,9 @@ class CapsuleFeedTaskDomainTest {
     // ---------------------------------------------------------------------------
 
     @Test
-    fun `a capsule script dir resolves build_capsule`(@TempDir buildDir: File) {
+    fun `a capsule script dir resolves build_capsule`(
+        @TempDir buildDir: File,
+    ) {
         val dir = CapsuleScriptDir(buildDir)
         assertEquals(File(buildDir, "capsule"), dir.asFile())
     }
@@ -58,7 +65,9 @@ class CapsuleFeedTaskDomainTest {
     }
 
     @Test
-    fun `a capsule script dir ensureCreated creates the directory`(@TempDir buildDir: File) {
+    fun `a capsule script dir ensureCreated creates the directory`(
+        @TempDir buildDir: File,
+    ) {
         val dir = CapsuleScriptDir(buildDir)
         assertFalse(File(buildDir, "capsule").exists())
 
@@ -68,7 +77,9 @@ class CapsuleFeedTaskDomainTest {
     }
 
     @Test
-    fun `a capsule script dir ensureCreated is idempotent`(@TempDir buildDir: File) {
+    fun `a capsule script dir ensureCreated is idempotent`(
+        @TempDir buildDir: File,
+    ) {
         val dir = CapsuleScriptDir(buildDir)
         dir.ensureCreated()
         // Second call must not throw
@@ -77,7 +88,9 @@ class CapsuleFeedTaskDomainTest {
     }
 
     @Test
-    fun `a capsule script dir scriptFile resolves name_without_extension-script_txt`(@TempDir buildDir: File) {
+    fun `a capsule script dir scriptFile resolves name_without_extension-script_txt`(
+        @TempDir buildDir: File,
+    ) {
         val dir = CapsuleScriptDir(buildDir)
         val scriptFile = dir.scriptFileFor("kotlin-intro")
         assertEquals(File(buildDir, "capsule/kotlin-intro-script.txt"), scriptFile)

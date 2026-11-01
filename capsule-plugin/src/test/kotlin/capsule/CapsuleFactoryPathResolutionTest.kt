@@ -12,7 +12,6 @@ import kotlin.test.assertEquals
  * Tests the configurable fallback to slider's build output directory.
  */
 class CapsuleFactoryPathResolutionTest {
-
     @TempDir
     lateinit var tempDir: File
 
@@ -24,7 +23,13 @@ class CapsuleFactoryPathResolutionTest {
         project.plugins.apply("education.cccp.capsule")
         val ext = project.extensions.getByType(CapsuleExtension::class.java)
 
-        val buildDir = File(project.layout.buildDirectory.get().asFile, "capsule")
+        val buildDir =
+            File(
+                project.layout.buildDirectory
+                    .get()
+                    .asFile,
+                "capsule",
+            )
         buildDir.mkdirs()
         File(buildDir, "example-script.txt").writeText("slide 1")
 
@@ -56,7 +61,13 @@ class CapsuleFactoryPathResolutionTest {
         val ext = project.extensions.getByType(CapsuleExtension::class.java)
 
         // sliderBuildDir is empty by default
-        val buildDir = File(project.layout.buildDirectory.get().asFile, "capsule")
+        val buildDir =
+            File(
+                project.layout.buildDirectory
+                    .get()
+                    .asFile,
+                "capsule",
+            )
         buildDir.mkdirs()
 
         val result = CapsuleFactory.resolveScriptDir(project, ext)
@@ -70,7 +81,13 @@ class CapsuleFactoryPathResolutionTest {
         val ext = project.extensions.getByType(CapsuleExtension::class.java)
 
         ext.sliderBuildDir.set("/nonexistent/path")
-        val buildDir = File(project.layout.buildDirectory.get().asFile, "capsule")
+        val buildDir =
+            File(
+                project.layout.buildDirectory
+                    .get()
+                    .asFile,
+                "capsule",
+            )
         buildDir.mkdirs()
 
         val result = CapsuleFactory.resolveScriptDir(project, ext)
@@ -85,7 +102,13 @@ class CapsuleFactoryPathResolutionTest {
         project.plugins.apply("education.cccp.capsule")
         val ext = project.extensions.getByType(CapsuleExtension::class.java)
 
-        val buildDir = File(project.layout.buildDirectory.get().asFile, "docs/asciidocRevealJs")
+        val buildDir =
+            File(
+                project.layout.buildDirectory
+                    .get()
+                    .asFile,
+                "docs/asciidocRevealJs",
+            )
         buildDir.mkdirs()
 
         val result = CapsuleFactory.resolveDeckDir(project, ext)
@@ -113,7 +136,13 @@ class CapsuleFactoryPathResolutionTest {
         project.plugins.apply("education.cccp.capsule")
         val ext = project.extensions.getByType(CapsuleExtension::class.java)
 
-        val buildDir = File(project.layout.buildDirectory.get().asFile, "docs/asciidocRevealJs")
+        val buildDir =
+            File(
+                project.layout.buildDirectory
+                    .get()
+                    .asFile,
+                "docs/asciidocRevealJs",
+            )
         buildDir.mkdirs()
 
         val result = CapsuleFactory.resolveDeckDir(project, ext)
@@ -127,7 +156,13 @@ class CapsuleFactoryPathResolutionTest {
         val ext = project.extensions.getByType(CapsuleExtension::class.java)
 
         ext.sliderBuildDir.set("/nonexistent/path")
-        val buildDir = File(project.layout.buildDirectory.get().asFile, "docs/asciidocRevealJs")
+        val buildDir =
+            File(
+                project.layout.buildDirectory
+                    .get()
+                    .asFile,
+                "docs/asciidocRevealJs",
+            )
         buildDir.mkdirs()
 
         val result = CapsuleFactory.resolveDeckDir(project, ext)

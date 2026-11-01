@@ -18,40 +18,45 @@ import java.io.File
  * must be unique).
  */
 class CapsuleCaptureStrategySteps {
-
     private var projectDir: File? = null
     private var buildOutput: String = ""
     private var buildFailure: Throwable? = null
 
     @Given("a Capsule capture strategy Gradle project with the capsule plugin applied")
     fun aCapsuleCaptureStrategyGradleProjectWithTheCapsulePluginApplied() {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-capture-strategy-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-capture-strategy-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
         projectDir!!.resolve("settings.gradle").writeText("")
         writeBuildGradle("")
     }
 
     private fun writeBuildGradle(capsuleBlock: String) {
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             $capsuleBlock
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @And("a demo deck and script are present for capture strategy")
     fun aDemoDeckAndScriptArePresentForCaptureStrategy() {
         val scriptDir = projectDir!!.resolve("build/capsule").also { it.mkdirs() }
-        scriptDir.resolve("demo-script.txt").writeText("""
+        scriptDir.resolve("demo-script.txt").writeText(
+            """
             === CAPSULE SCRIPT : demo ===
             --- SLIDE 1 : Title ---
             Note content for capture strategy test.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val decksDir = projectDir!!.resolve("build/docs/asciidocRevealJs").also { it.mkdirs() }
-        decksDir.resolve("demo-deck.html").writeText("""
+        decksDir.resolve("demo-deck.html").writeText(
+            """
             <html><body>
             <div class="reveal">
               <div class="slides">
@@ -59,35 +64,41 @@ class CapsuleCaptureStrategySteps {
               </div>
             </div>
             </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @When("I generate the capsule video with the default capture strategy")
     fun iGenerateTheCapsuleVideoWithTheDefaultCaptureStrategy() {
-        writeBuildGradle("""
+        writeBuildGradle(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         runCaptureStrategyBuild()
     }
 
     @When("I generate the capsule video with capture strategy {string}")
     fun iGenerateTheCapsuleVideoWithCaptureStrategy(strategy: String) {
-        writeBuildGradle("""
+        writeBuildGradle(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
                 captureStrategy("$strategy")
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         runCaptureStrategyBuild()
     }
 
     @When("I generate the capsule video with capture strategy {string} and strictMode enabled")
     fun iGenerateTheCapsuleVideoWithCaptureStrategyAndStrictMode(strategy: String) {
-        writeBuildGradle("""
+        writeBuildGradle(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
@@ -96,18 +107,21 @@ class CapsuleCaptureStrategySteps {
                 manimExecutablePath = "noop"
                 ffmpegExecutablePath = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         runCaptureStrategyBuild()
     }
 
     private fun runCaptureStrategyBuild() {
         try {
-            val result = GradleRunner.create()
-                .forwardOutput()
-                .withPluginClasspath()
-                .withArguments("generateCapsuleVideo")
-                .withProjectDir(projectDir!!)
-                .build()
+            val result =
+                GradleRunner
+                    .create()
+                    .forwardOutput()
+                    .withPluginClasspath()
+                    .withArguments("generateCapsuleVideo")
+                    .withProjectDir(projectDir!!)
+                    .build()
             buildOutput = result.output
         } catch (e: UnexpectedBuildFailure) {
             buildOutput = e.message ?: ""
@@ -130,7 +144,7 @@ class CapsuleCaptureStrategySteps {
         Assertions.assertNotNull(buildFailure, "Build was expected to fail but succeeded")
         Assertions.assertTrue(
             buildOutput.contains(text),
-            "Expected failure message to contain '$text', got: $buildOutput"
+            "Expected failure message to contain '$text', got: $buildOutput",
         )
     }
 
@@ -138,7 +152,7 @@ class CapsuleCaptureStrategySteps {
     fun theCaptureStrategyOutputMentions(text: String) {
         Assertions.assertTrue(
             buildOutput.contains(text),
-            "Expected build output to mention '$text', got: $buildOutput"
+            "Expected build output to mention '$text', got: $buildOutput",
         )
     }
 
@@ -147,7 +161,7 @@ class CapsuleCaptureStrategySteps {
         val capFile = projectDir!!.resolve("build/capsules/demo.webm")
         Assertions.assertTrue(
             capFile.exists(),
-            "Expected WebM file at ${capFile.absolutePath}, but it was not produced"
+            "Expected WebM file at ${capFile.absolutePath}, but it was not produced",
         )
     }
 }

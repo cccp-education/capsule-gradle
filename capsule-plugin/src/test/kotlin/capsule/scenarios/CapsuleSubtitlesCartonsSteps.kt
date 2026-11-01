@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
  * classpath-wide, so step texts must be unique).
  */
 class CapsuleSubtitlesCartonsSteps {
-
     private var note: String = ""
     private var display: String = ""
     private var cartons: List<String> = emptyList()
@@ -67,17 +66,26 @@ class CapsuleSubtitlesCartonsSteps {
     }
 
     @Given("subtitle cartons {string} and {string}")
-    fun subtitleCartons(first: String, second: String) {
+    fun subtitleCartons(
+        first: String,
+        second: String,
+    ) {
         cartons = listOf(first, second)
     }
 
     @When("a {int} second take starting at {int} is distributed across the subtitle cartons")
-    fun distributeTake(seconds: Int, start: Int) {
+    fun distributeTake(
+        seconds: Int,
+        start: Int,
+    ) {
         ranges = SubtitleTimingDistributor.distribute(cartons, start.toDouble(), seconds.toDouble())
     }
 
     @Then("the subtitle timing ranges cover {double} to {double} contiguously")
-    fun rangesCoverContiguously(from: Double, to: Double) {
+    fun rangesCoverContiguously(
+        from: Double,
+        to: Double,
+    ) {
         assertEquals(from, ranges.first().start, 1e-9)
         assertEquals(to, ranges.last().endInclusive, 1e-9)
         for (i in 0 until ranges.size - 1) {
@@ -95,7 +103,10 @@ class CapsuleSubtitlesCartonsSteps {
     }
 
     @Given("two subtitle slides with notes {string} and {string}")
-    fun twoSubtitleSlides(first: String, second: String) {
+    fun twoSubtitleSlides(
+        first: String,
+        second: String,
+    ) {
         slides.clear()
         durations.clear()
         slides.add(SlideSegment(index = 0, title = "s0", narration = first))

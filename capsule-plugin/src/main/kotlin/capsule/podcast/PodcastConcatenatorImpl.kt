@@ -21,22 +21,23 @@ import java.io.File
  *   output and deletes it after the run.
  */
 class PodcastConcatenatorImpl(
-    private val ffmpegPath: String = "ffmpeg"
+    private val ffmpegPath: String = "ffmpeg",
 ) : PodcastConcatenator {
-
     private val logger = Logging.getLogger(PodcastConcatenatorImpl::class.java)
 
-    override fun isAvailable(): Boolean {
-        return try {
+    override fun isAvailable(): Boolean =
+        try {
             capsule.ProcessRunner.probe(ffmpegPath, "-version")
         } catch (_: Exception) {
             false
         }
-    }
 
     override fun name(): String = "ffmpeg-podcast-concat"
 
-    override fun concatenate(mp3Files: List<File>, outputFile: File): Boolean {
+    override fun concatenate(
+        mp3Files: List<File>,
+        outputFile: File,
+    ): Boolean {
         if (!isAvailable()) return false
         if (mp3Files.isEmpty()) return false
 
@@ -70,6 +71,11 @@ class PodcastConcatenatorImpl(
  */
 class NoOpPodcastConcatenator : PodcastConcatenator {
     override fun isAvailable(): Boolean = true
+
     override fun name(): String = "noop-podcast-concat"
-    override fun concatenate(mp3Files: List<File>, outputFile: File): Boolean = false
+
+    override fun concatenate(
+        mp3Files: List<File>,
+        outputFile: File,
+    ): Boolean = false
 }

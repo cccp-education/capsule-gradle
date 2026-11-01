@@ -1,14 +1,13 @@
 package capsule
 
 import capsule.test.ExternalBinaryAssumption
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.GradleRunner
-import org.junit.jupiter.api.io.TempDir
 
 class CapsulePluginFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -17,12 +16,14 @@ class CapsulePluginFunctionalTest {
 
     private fun setupBuild(extraConfig: String = "") {
         settingsFile.writeText("")
-        buildFile.writeText("""
+        buildFile.writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             $extraConfig
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Test
@@ -55,11 +56,13 @@ class CapsulePluginFunctionalTest {
 
     @Test
     fun `generateCapsule with noop engine falls back gracefully`() {
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 ttsEngine = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val runner = GradleRunner.create()
         runner.forwardOutput()
@@ -73,11 +76,13 @@ class CapsulePluginFunctionalTest {
 
     @Test
     fun `can run generateCapsuleVideo task`() {
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 ttsEngine = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val runner = GradleRunner.create()
         runner.forwardOutput()
@@ -91,11 +96,13 @@ class CapsulePluginFunctionalTest {
 
     @Test
     fun `can run deployCapsule task`() {
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 ttsEngine = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val runner = GradleRunner.create()
         runner.forwardOutput()
@@ -109,11 +116,13 @@ class CapsulePluginFunctionalTest {
 
     @Test
     fun `can run collectCapsuleContext task`() {
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 ttsEngine = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val runner = GradleRunner.create()
         runner.forwardOutput()
@@ -155,13 +164,13 @@ class CapsulePluginFunctionalTest {
 }
 
 class CapsuleAudioConstraintFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
     private fun setup() {
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -169,7 +178,8 @@ class CapsuleAudioConstraintFunctionalTest {
                 ttsEngine = "espeak"
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Test
@@ -178,14 +188,17 @@ class CapsuleAudioConstraintFunctionalTest {
         setup()
 
         val scriptDir = projectDir.resolve("build/capsule").also { it.mkdirs() }
-        scriptDir.resolve("audio-test-script.txt").writeText("""
+        scriptDir.resolve("audio-test-script.txt").writeText(
+            """
 === CAPSULE SCRIPT : audio-test ===
 --- SLIDE 1 : Test ---
 Ceci est un test de synthese vocale.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val decksDir = projectDir.resolve("build/docs/asciidocRevealJs").also { it.mkdirs() }
-        decksDir.resolve("audio-test-deck.html").writeText("""
+        decksDir.resolve("audio-test-deck.html").writeText(
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -193,7 +206,8 @@ Ceci est un test de synthese vocale.
   </div>
 </div>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val runner = GradleRunner.create()
         runner.forwardOutput()
@@ -214,7 +228,6 @@ Ceci est un test de synthese vocale.
 }
 
 class CapsuleVideoOutputConstraintFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -223,7 +236,8 @@ class CapsuleVideoOutputConstraintFunctionalTest {
     @Test
     fun `generateCapsuleVideo task must output to build capsules directory`() {
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -231,17 +245,21 @@ class CapsuleVideoOutputConstraintFunctionalTest {
                 ttsEngine = "noop"
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val scriptDir = projectDir.resolve("build/capsule").also { it.mkdirs() }
-        scriptDir.resolve("test-script.txt").writeText("""
+        scriptDir.resolve("test-script.txt").writeText(
+            """
 === CAPSULE SCRIPT : test ===
 --- SLIDE 1 : Title ---
 Note content.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val decksDir = projectDir.resolve("build/docs/asciidocRevealJs").also { it.mkdirs() }
-        decksDir.resolve("test-deck.html").writeText("""
+        decksDir.resolve("test-deck.html").writeText(
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -249,7 +267,8 @@ Note content.
   </div>
 </div>
 </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val runner = GradleRunner.create()
         runner.forwardOutput()

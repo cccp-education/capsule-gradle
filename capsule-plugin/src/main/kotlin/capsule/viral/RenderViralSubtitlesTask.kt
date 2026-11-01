@@ -40,7 +40,6 @@ import java.io.File
  */
 @DisableCachingByDefault(because = "Viral subtitles — pure text keyed on the storyboard + matrix")
 abstract class RenderViralSubtitlesTask : DefaultTask() {
-
     /** Master switch — when false (default), the task is a no-op skip. */
     @get:Input
     abstract val viralEnabled: Property<Boolean>
@@ -79,10 +78,12 @@ abstract class RenderViralSubtitlesTask : DefaultTask() {
 
     @get:Internal
     internal var capsuleExtension: CapsuleExtension
-        get() = _capsuleExtension ?: project.extensions.getByType(CapsuleExtension::class.java).also { _capsuleExtension = it }
-        set(value) { _capsuleExtension = value }
+        get() = capsuleExtensionCache ?: project.extensions.getByType(CapsuleExtension::class.java).also { capsuleExtensionCache = it }
+        set(value) {
+            capsuleExtensionCache = value
+        }
 
-    private var _capsuleExtension: CapsuleExtension? = null
+    private var capsuleExtensionCache: CapsuleExtension? = null
 
     @TaskAction
     fun run() {
@@ -105,25 +106,30 @@ abstract class RenderViralSubtitlesTask : DefaultTask() {
             return
         }
 
-        val resolvedPlatforms = platforms.get()
-            .mapNotNull { name -> name.takeIf { it.isNotBlank() }?.let { ViralPlatform.fromString(it) } }
+        val resolvedPlatforms =
+            platforms
+                .get()
+                .mapNotNull { name -> name.takeIf { it.isNotBlank() }?.let { ViralPlatform.fromString(it) } }
         val variants = ViralBatchPlanner.plan(languages.get(), resolvedPlatforms, targetDurationSeconds.get())
         if (variants.isEmpty()) {
             logger.lifecycle("CAPSULE VIRAL SUBTITLES → skipped (empty variant matrix)")
             return
         }
 
-        val timings = wordTimingsFile.orNull?.asFile
-            ?.takeIf { it.isFile && it.length() > 0L }
-            ?.let { WordTimingsJson.parse(it.readText()) }
-            .orEmpty()
+        val timings =
+            wordTimingsFile.orNull
+                ?.asFile
+                ?.takeIf { it.isFile && it.length() > 0L }
+                ?.let { WordTimingsJson.parse(it.readText()) }
+                .orEmpty()
         // PRT-01 — dit/lu: when the voice speaks the pronunciation form, the caption
         // shows the display form (reversals map spoken words back to their symbols).
-        val reversals = if (capsuleExtension.ttsPronunciationEnabled.getOrElse(false)) {
-            PronunciationLexicon.reversals()
-        } else {
-            emptyMap()
-        }
+        val reversals =
+            if (capsuleExtension.ttsPronunciationEnabled.getOrElse(false)) {
+                PronunciationLexicon.reversals()
+            } else {
+                emptyMap()
+            }
         val document = AssKaraokeDocument.build(KaraokeWordPlanner.plan(parsed.beats, timings, reversals))
         val dir = File(project.projectDir, renderedVideoDir.get())
         dir.mkdirs()

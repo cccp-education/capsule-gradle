@@ -15,7 +15,6 @@ package capsule.viral
  * Pure — no I/O. Deterministic.
  */
 object AssKaraokeDocument {
-
     /** Render width declared to the ASS renderer (portrait). */
     const val RESOLUTION_WIDTH: Int = ViralViewport.PORTRAIT_WIDTH
 
@@ -32,11 +31,12 @@ object AssKaraokeDocument {
      * @return a deterministic, self-contained ASS v4.00+ document string.
      */
     fun build(lines: List<KaraokeLine>): String {
-        val dialogues = lines.filter { it.words.isNotEmpty() }.map { line ->
-            val text = KaraokeSubtitleBuilder.buildKaraokeText(line.words)
-            "Dialogue: 0,${KaraokeSubtitleBuilder.formatAssTimestamp(line.startTime)}," +
-                "${KaraokeSubtitleBuilder.formatAssTimestamp(line.endTime)},$STYLE_NAME,,0,0,0,,$text"
-        }
+        val dialogues =
+            lines.filter { it.words.isNotEmpty() }.map { line ->
+                val text = KaraokeSubtitleBuilder.buildKaraokeText(line.words)
+                "Dialogue: 0,${KaraokeSubtitleBuilder.formatAssTimestamp(line.startTime)}," +
+                    "${KaraokeSubtitleBuilder.formatAssTimestamp(line.endTime)},$STYLE_NAME,,0,0,0,,$text"
+            }
         return buildString {
             appendLine("[Script Info]")
             appendLine("ScriptType: v4.00+")

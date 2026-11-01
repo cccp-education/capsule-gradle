@@ -21,7 +21,6 @@ package capsule.transcript
  * blank/whitespace-only, so the caller always gets a valid AsciiDoc article.
  */
 interface TranscriptLlmEnhancer {
-
     /**
      * Enrich [template] using [plan] as the enrichment context.
      *
@@ -30,5 +29,8 @@ interface TranscriptLlmEnhancer {
      * @return the enriched AsciiDoc article, or the original [template] when
      *         the LLM returns a blank response (degraded mode).
      */
-    fun enhance(template: String, plan: TranscriptPlan): String
+    fun enhance(
+        template: String,
+        plan: TranscriptPlan,
+    ): String
 }

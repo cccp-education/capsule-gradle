@@ -14,7 +14,6 @@ import java.io.File
  * [capsule.audio.AudioPostCommand] (pure argv builder).
  */
 object RemotionPlanner {
-
     /** Composition id declared by the bundled template. */
     const val COMPOSITION_ID: String = "Capsule"
 
@@ -55,13 +54,14 @@ object RemotionPlanner {
         // versa: pair them up and let the shorter list win, so the render never
         // desynchronises from the audio it will be muxed with.
         val paired = sections.size.coerceAtMost(slideDurations.size)
-        val slides = (0 until paired).map { i ->
-            RemotionSlide(
-                index = i,
-                html = sections[i],
-                durationInFrames = framesFor(slideDurations[i], fps),
-            )
-        }
+        val slides =
+            (0 until paired).map { i ->
+                RemotionSlide(
+                    index = i,
+                    html = sections[i],
+                    durationInFrames = framesFor(slideDurations[i], fps),
+                )
+            }
         return RemotionPlan(
             slides = slides,
             headHtml = headHtml,
@@ -77,8 +77,10 @@ object RemotionPlanner {
      * Converts a duration in seconds into whole frames, never returning zero:
      * a slide with no measurable audio still has to be on screen.
      */
-    fun framesFor(durationSecs: Double, fps: Int): Int =
-        Math.round(durationSecs * fps).toInt().coerceAtLeast(1)
+    fun framesFor(
+        durationSecs: Double,
+        fps: Int,
+    ): Int = Math.round(durationSecs * fps).toInt().coerceAtLeast(1)
 
     /**
      * Serialises the plan into the props document the composition reads.
@@ -86,8 +88,13 @@ object RemotionPlanner {
      * Kept here rather than in the adapter because it is a pure transformation:
      * a plan in, a string out, verifiable without Node or a browser.
      */
-    fun toPropsJson(plan: RemotionPlan, manimAssets: Map<Int, ManimAsset> = emptyMap()): String {
-        val mapper = com.fasterxml.jackson.databind.ObjectMapper()
+    fun toPropsJson(
+        plan: RemotionPlan,
+        manimAssets: Map<Int, ManimAsset> = emptyMap(),
+    ): String {
+        val mapper =
+            com.fasterxml.jackson.databind
+                .ObjectMapper()
         val root = mapper.createObjectNode()
         root.put("width", plan.width)
         root.put("height", plan.height)
@@ -125,14 +132,19 @@ object RemotionPlanner {
         nodeExecutablePath: String,
         concurrency: Int,
         codec: String = "vp8",
-    ): List<String> = listOf(
-        nodeExecutablePath,
-        File(projectDir, RENDER_SCRIPT).absolutePath,
-        "--props", plan.propsFile.absolutePath,
-        "--out", plan.finalWebm.absolutePath,
-        "--concurrency", concurrency.coerceAtLeast(1).toString(),
-        "--codec", codec,
-    )
+    ): List<String> =
+        listOf(
+            nodeExecutablePath,
+            File(projectDir, RENDER_SCRIPT).absolutePath,
+            "--props",
+            plan.propsFile.absolutePath,
+            "--out",
+            plan.finalWebm.absolutePath,
+            "--concurrency",
+            concurrency.coerceAtLeast(1).toString(),
+            "--codec",
+            codec,
+        )
 }
 
 /**
@@ -160,7 +172,10 @@ data class RemotionPlan(
  * @param durationSecs measured length of the clip; 0.0 when it could not be
  *        probed, in which case the composition plays it at natural speed.
  */
-data class ManimAsset(val fileName: String, val durationSecs: Double = 0.0)
+data class ManimAsset(
+    val fileName: String,
+    val durationSecs: Double = 0.0,
+)
 
 /** One slide handed to the composition. */
 data class RemotionSlide(

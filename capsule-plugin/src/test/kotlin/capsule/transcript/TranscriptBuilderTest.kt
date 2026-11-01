@@ -18,20 +18,21 @@ import kotlin.test.assertTrue
  * article). Zero I/O, zero LLM — fully testable.
  */
 class TranscriptBuilderTest {
-
     private fun plan(
         deckName: String = "kotlin-basics",
         language: String = "fr",
-        segments: List<SlideSegment> = listOf(
-            SlideSegment(1, "Introduction", "Welcome to the capsule."),
-            SlideSegment(2, "Core Concept", "The core concept is simple."),
-        ),
-    ): TranscriptPlan = TranscriptPlan(
-        deckName = deckName,
-        segments = segments,
-        language = language,
-        outputPath = "build/capsule/$deckName-transcript.adoc",
-    )
+        segments: List<SlideSegment> =
+            listOf(
+                SlideSegment(1, "Introduction", "Welcome to the capsule."),
+                SlideSegment(2, "Core Concept", "The core concept is simple."),
+            ),
+    ): TranscriptPlan =
+        TranscriptPlan(
+            deckName = deckName,
+            segments = segments,
+            language = language,
+            outputPath = "build/capsule/$deckName-transcript.adoc",
+        )
 
     @Test
     fun `build produces level-0 title with deck name`() {
@@ -80,11 +81,12 @@ class TranscriptBuilderTest {
 
     @Test
     fun `build skips MANIM segments`() {
-        val segments = listOf(
-            SlideSegment(1, "HTML Slide", "HTML narration.", VideoKind.VISUAL),
-            SlideSegment(2, "Manim Animation", "Animation narration.", VideoKind.ANIMATION, "SceneOne"),
-            SlideSegment(3, "Second HTML", "Second HTML narration.", VideoKind.VISUAL),
-        )
+        val segments =
+            listOf(
+                SlideSegment(1, "HTML Slide", "HTML narration.", VideoKind.VISUAL),
+                SlideSegment(2, "Manim Animation", "Animation narration.", VideoKind.ANIMATION, "SceneOne"),
+                SlideSegment(3, "Second HTML", "Second HTML narration.", VideoKind.VISUAL),
+            )
         val adoc = TranscriptBuilder.build(plan(segments = segments))
         assertTrue(adoc.contains("== HTML Slide"), "HTML slide should be present")
         assertTrue(adoc.contains("== Second HTML"), "second HTML slide should be present")
@@ -94,9 +96,10 @@ class TranscriptBuilderTest {
 
     @Test
     fun `build with only MANIM segments produces no sections`() {
-        val segments = listOf(
-            SlideSegment(1, "Pure Animation", "Animation only.", VideoKind.ANIMATION, "SceneOne"),
-        )
+        val segments =
+            listOf(
+                SlideSegment(1, "Pure Animation", "Animation only.", VideoKind.ANIMATION, "SceneOne"),
+            )
         val adoc = TranscriptBuilder.build(plan(segments = segments))
         assertFalse(adoc.contains("== Pure Animation"), "MANIM-only plan should produce no section")
         assertTrue(adoc.contains(TranscriptBuilder.INTRO), "intro should still be present")
@@ -105,11 +108,12 @@ class TranscriptBuilderTest {
 
     @Test
     fun `build preserves segment order`() {
-        val segments = listOf(
-            SlideSegment(1, "First", "First body."),
-            SlideSegment(2, "Second", "Second body."),
-            SlideSegment(3, "Third", "Third body."),
-        )
+        val segments =
+            listOf(
+                SlideSegment(1, "First", "First body."),
+                SlideSegment(2, "Second", "Second body."),
+                SlideSegment(3, "Third", "Third body."),
+            )
         val adoc = TranscriptBuilder.build(plan(segments = segments))
         val firstIdx = adoc.indexOf("== First")
         val secondIdx = adoc.indexOf("== Second")

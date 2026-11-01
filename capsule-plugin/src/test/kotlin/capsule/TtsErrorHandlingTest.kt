@@ -10,7 +10,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class TtsErrorHandlingTest {
-
     @org.junit.jupiter.api.io.TempDir
     lateinit var tempDir: File
 
@@ -24,25 +23,32 @@ class TtsErrorHandlingTest {
         return task
     }
 
-    private fun script(vararg titles: String): CapsuleScript = CapsuleScript(
-        name = "test",
-        segments = titles.mapIndexed { i, t -> SlideSegment(i + 1, t, "$t note.") }
-    )
+    private fun script(vararg titles: String): CapsuleScript =
+        CapsuleScript(
+            name = "test",
+            segments = titles.mapIndexed { i, t -> SlideSegment(i + 1, t, "$t note.") },
+        )
 
     @Test
     fun `synthesizeTtsForScript returns failed slide indices when TtsException thrown`() {
         val task = newTask()
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val parsed = script("OK", "Fail", "AlsoOK")
-        val failingEngine = object : TtsEngine {
-            override fun synthesize(text: String, outputFile: File) {
-                if (text.contains("Fail")) throw TtsException("Simulated failure")
-                outputFile.parentFile.mkdirs()
-                outputFile.writeText("# $text")
+        val failingEngine =
+            object : TtsEngine {
+                override fun synthesize(
+                    text: String,
+                    outputFile: File,
+                ) {
+                    if (text.contains("Fail")) throw TtsException("Simulated failure")
+                    outputFile.parentFile.mkdirs()
+                    outputFile.writeText("# $text")
+                }
+
+                override fun isAvailable() = true
+
+                override fun name() = "failing"
             }
-            override fun isAvailable() = true
-            override fun name() = "failing"
-        }
 
         val failed = task.synthesizeTtsForScript(parsed, audioDir, failingEngine)
 
@@ -55,14 +61,20 @@ class TtsErrorHandlingTest {
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val parsed = script("Fail")
         val attempts = AtomicInteger(0)
-        val failingEngine = object : TtsEngine {
-            override fun synthesize(text: String, outputFile: File) {
-                attempts.incrementAndGet()
-                throw TtsException("Always fails")
+        val failingEngine =
+            object : TtsEngine {
+                override fun synthesize(
+                    text: String,
+                    outputFile: File,
+                ) {
+                    attempts.incrementAndGet()
+                    throw TtsException("Always fails")
+                }
+
+                override fun isAvailable() = true
+
+                override fun name() = "failing"
             }
-            override fun isAvailable() = true
-            override fun name() = "failing"
-        }
 
         val failed = task.synthesizeTtsForScript(parsed, audioDir, failingEngine)
 
@@ -76,17 +88,23 @@ class TtsErrorHandlingTest {
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val parsed = script("Flaky")
         val attempts = AtomicInteger(0)
-        val flakyEngine = object : TtsEngine {
-            override fun synthesize(text: String, outputFile: File) {
-                if (attempts.incrementAndGet() == 1) {
-                    throw TtsException("Transient failure")
+        val flakyEngine =
+            object : TtsEngine {
+                override fun synthesize(
+                    text: String,
+                    outputFile: File,
+                ) {
+                    if (attempts.incrementAndGet() == 1) {
+                        throw TtsException("Transient failure")
+                    }
+                    outputFile.parentFile.mkdirs()
+                    outputFile.writeText("# $text")
                 }
-                outputFile.parentFile.mkdirs()
-                outputFile.writeText("# $text")
+
+                override fun isAvailable() = true
+
+                override fun name() = "flaky"
             }
-            override fun isAvailable() = true
-            override fun name() = "flaky"
-        }
 
         val failed = task.synthesizeTtsForScript(parsed, audioDir, flakyEngine)
 
@@ -99,14 +117,20 @@ class TtsErrorHandlingTest {
         val task = newTask()
         val audioDir = File(tempDir, "audio").also { it.mkdirs() }
         val parsed = script("A", "B")
-        val okEngine = object : TtsEngine {
-            override fun synthesize(text: String, outputFile: File) {
-                outputFile.parentFile.mkdirs()
-                outputFile.writeText("# $text")
+        val okEngine =
+            object : TtsEngine {
+                override fun synthesize(
+                    text: String,
+                    outputFile: File,
+                ) {
+                    outputFile.parentFile.mkdirs()
+                    outputFile.writeText("# $text")
+                }
+
+                override fun isAvailable() = true
+
+                override fun name() = "ok"
             }
-            override fun isAvailable() = true
-            override fun name() = "ok"
-        }
 
         val failed = task.synthesizeTtsForScript(parsed, audioDir, okEngine)
 

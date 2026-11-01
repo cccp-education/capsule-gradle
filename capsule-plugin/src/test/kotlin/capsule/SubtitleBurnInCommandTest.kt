@@ -1,7 +1,8 @@
 package capsule
 
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
 import java.io.File
 
 /**
@@ -23,7 +24,6 @@ import java.io.File
  * running real FFmpeg.
  */
 class SubtitleBurnInCommandTest {
-
     // ─── buildArgv SRT path ───────────────────────────────────────
 
     @Test
@@ -35,8 +35,10 @@ class SubtitleBurnInCommandTest {
         val vf = argv[argv.indexOf("-vf") + 1]
         assertTrue(vf.startsWith("subtitles="), "filter should start with subtitles=")
         assertTrue(vf.contains("deck.srt"), "filter should reference the srt file")
-        assertTrue(vf.endsWith("force_style='${SubtitleBurnInStyle().toForceStyle()}'"),
-            "filter should end with the force_style segment")
+        assertTrue(
+            vf.endsWith("force_style='${SubtitleBurnInStyle().toForceStyle()}'"),
+            "filter should end with the force_style segment",
+        )
     }
 
     @Test
@@ -58,8 +60,11 @@ class SubtitleBurnInCommandTest {
         val vttArgv = SubtitleBurnInCommand.buildArgv(video, File("/tmp/deck.vtt"), output, SubtitleBurnInStyle(), "ffmpeg")
         val srtVf = srtArgv[srtArgv.indexOf("-vf") + 1]
         val vttVf = vttArgv[vttArgv.indexOf("-vf") + 1]
-        assertEquals(srtVf.replace("deck.srt", "deck.vtt"), vttVf,
-            "only the subtitle extension should differ between SRT and VTT")
+        assertEquals(
+            srtVf.replace("deck.srt", "deck.vtt"),
+            vttVf,
+            "only the subtitle extension should differ between SRT and VTT",
+        )
     }
 
     // ─── buildArgv structure (flags + order) ─────────────────────
@@ -143,25 +148,40 @@ class SubtitleBurnInCommandTest {
 
     @Test
     fun `buildArgv top position maps to Alignment 8`() {
-        val argv = SubtitleBurnInCommand.buildArgv(
-            File("/tmp/v.webm"), File("/tmp/v.srt"), File("/tmp/o.webm"),
-            SubtitleBurnInStyle(position = "top"), "ffmpeg")
+        val argv =
+            SubtitleBurnInCommand.buildArgv(
+                File("/tmp/v.webm"),
+                File("/tmp/v.srt"),
+                File("/tmp/o.webm"),
+                SubtitleBurnInStyle(position = "top"),
+                "ffmpeg",
+            )
         assertTrue(argv[argv.indexOf("-vf") + 1].contains("Alignment=8"))
     }
 
     @Test
     fun `buildArgv middle position maps to Alignment 5`() {
-        val argv = SubtitleBurnInCommand.buildArgv(
-            File("/tmp/v.webm"), File("/tmp/v.vtt"), File("/tmp/o.webm"),
-            SubtitleBurnInStyle(position = "middle"), "ffmpeg")
+        val argv =
+            SubtitleBurnInCommand.buildArgv(
+                File("/tmp/v.webm"),
+                File("/tmp/v.vtt"),
+                File("/tmp/o.webm"),
+                SubtitleBurnInStyle(position = "middle"),
+                "ffmpeg",
+            )
         assertTrue(argv[argv.indexOf("-vf") + 1].contains("Alignment=5"))
     }
 
     @Test
     fun `buildArgv propagates custom ffmpegPath as first element`() {
-        val argv = SubtitleBurnInCommand.buildArgv(
-            File("/tmp/v.webm"), File("/tmp/v.srt"), File("/tmp/o.webm"),
-            SubtitleBurnInStyle(), "/custom/path/ffmpeg")
+        val argv =
+            SubtitleBurnInCommand.buildArgv(
+                File("/tmp/v.webm"),
+                File("/tmp/v.srt"),
+                File("/tmp/o.webm"),
+                SubtitleBurnInStyle(),
+                "/custom/path/ffmpeg",
+            )
         assertEquals("/custom/path/ffmpeg", argv[0])
     }
 }

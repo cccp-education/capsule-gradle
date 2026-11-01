@@ -38,9 +38,8 @@ data class ViralConfig(
     val hook: String = "",
     val cta: String = "",
     val storyboardRequired: Boolean = true,
-    val storyboardFile: String = ""
+    val storyboardFile: String = "",
 ) {
-
     /** [targetDurationSeconds] coerced into the short-form range [15, 60]. */
     val effectiveDurationSeconds: Int
         get() = targetDurationSeconds.coerceIn(MIN_DURATION_SECONDS, MAX_DURATION_SECONDS)
@@ -71,7 +70,8 @@ data class ViralConfig(
 enum class ViralPlatform {
     YOUTUBE_SHORT,
     TIKTOK,
-    REELS;
+    REELS,
+    ;
 
     companion object {
         /**
@@ -79,7 +79,6 @@ enum class ViralPlatform {
          * null/blank/unknown values (backward compat — existing configs
          * without `viral.platform` keep the TikTok default).
          */
-        fun fromString(value: String?): ViralPlatform =
-            entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: TIKTOK
+        fun fromString(value: String?): ViralPlatform = entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: TIKTOK
     }
 }

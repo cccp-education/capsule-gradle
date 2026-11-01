@@ -1,7 +1,6 @@
 package capsule
 
 class SrtGenerator : SubtitleGenerator {
-
     override fun format(): SubtitleFormat = SubtitleFormat.SRT
 
     override fun generate(entries: List<SubtitleEntry>): String {

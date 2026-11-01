@@ -18,7 +18,6 @@ import java.io.File
  * (bug S-088 — glue is classpath-wide, step texts must be unique).
  */
 class CapsuleProvenanceSteps {
-
     private var projectDir: File? = null
     private var buildOutput: String = ""
 
@@ -26,15 +25,18 @@ class CapsuleProvenanceSteps {
 
     @Given("a Capsule provenance Gradle project with the capsule plugin applied")
     fun aCapsuleProvenanceGradleProjectWithTheCapsulePluginApplied() {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-provenance-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-provenance-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
         projectDir!!.resolve("settings.gradle").writeText("")
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @And("EAGER governance files are present for provenance")
@@ -47,19 +49,21 @@ class CapsuleProvenanceSteps {
 
     @When("I collect the augmented context with RAG and Graphify content for provenance")
     fun iCollectTheAugmentedContextWithRagAndGraphifyContentForProvenance() {
-        buildOutput = gradleRunner(
-            "collectCapsuleAugmentedContext",
-            "-Pcontext.ragContent=similarity: 0.98 — RAG nugget about grading",
-            "-Pcontext.graphifyContent=node: capsule -> edge: feeds -> node: video",
-        ).build().output
+        buildOutput =
+            gradleRunner(
+                "collectCapsuleAugmentedContext",
+                "-Pcontext.ragContent=similarity: 0.98 — RAG nugget about grading",
+                "-Pcontext.graphifyContent=node: capsule -> edge: feeds -> node: video",
+            ).build().output
     }
 
     @When("I collect the augmented context with RAG content for provenance")
     fun iCollectTheAugmentedContextWithRagContentForProvenance() {
-        buildOutput = gradleRunner(
-            "collectCapsuleAugmentedContext",
-            "-Pcontext.ragContent=similarity: 0.98 — RAG nugget about grading",
-        ).build().output
+        buildOutput =
+            gradleRunner(
+                "collectCapsuleAugmentedContext",
+                "-Pcontext.ragContent=similarity: 0.98 — RAG nugget about grading",
+            ).build().output
     }
 
     @When("I collect the augmented context with no content for provenance")
@@ -157,7 +161,8 @@ class CapsuleProvenanceSteps {
     }
 
     private fun gradleRunner(vararg args: String): GradleRunner =
-        GradleRunner.create()
+        GradleRunner
+            .create()
             .forwardOutput()
             .withPluginClasspath()
             .withArguments(*args)

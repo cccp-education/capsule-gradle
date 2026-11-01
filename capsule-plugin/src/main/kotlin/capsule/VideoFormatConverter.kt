@@ -25,7 +25,10 @@ interface VideoFormatConverter {
      *         (NoOp fallback, ffmpeg failure, missing input). On `false`, the
      *         caller keeps the WebM intermediate (degraded mode).
      */
-    fun convertToMp4(webmFile: File, mp4File: File): Boolean
+    fun convertToMp4(
+        webmFile: File,
+        mp4File: File,
+    ): Boolean
 
     /** Returns true if ffmpeg is available at the configured path. */
     fun isAvailable(): Boolean
@@ -42,20 +45,21 @@ class VideoFormatConverterImpl(
     private val ffmpegPath: String = "ffmpeg",
     private val bt709: Boolean = false,
 ) : VideoFormatConverter {
-
     private val logger = Logging.getLogger(VideoFormatConverterImpl::class.java)
 
-    override fun isAvailable(): Boolean {
-        return try {
+    override fun isAvailable(): Boolean =
+        try {
             ProcessRunner.probe(ffmpegPath, "-version")
         } catch (_: Exception) {
             false
         }
-    }
 
     override fun name(): String = "ffmpeg-format"
 
-    override fun convertToMp4(webmFile: File, mp4File: File): Boolean {
+    override fun convertToMp4(
+        webmFile: File,
+        mp4File: File,
+    ): Boolean {
         if (!isAvailable()) return false
         if (!webmFile.exists()) return false
         mp4File.parentFile.mkdirs()
@@ -80,6 +84,11 @@ class VideoFormatConverterImpl(
  */
 class NoOpVideoFormatConverter : VideoFormatConverter {
     override fun isAvailable(): Boolean = true
+
     override fun name(): String = "noop-format"
-    override fun convertToMp4(webmFile: File, mp4File: File): Boolean = false
+
+    override fun convertToMp4(
+        webmFile: File,
+        mp4File: File,
+    ): Boolean = false
 }

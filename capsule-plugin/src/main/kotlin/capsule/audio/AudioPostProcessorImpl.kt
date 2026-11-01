@@ -18,30 +18,35 @@ import java.io.File
  *   (non-zero exit with an existing input — pattern [capsule.BurnInException]).
  */
 class AudioPostProcessorImpl(
-    private val ffmpegPath: String = "ffmpeg"
+    private val ffmpegPath: String = "ffmpeg",
 ) : AudioPostProcessor {
-
     private val logger = Logging.getLogger(AudioPostProcessorImpl::class.java)
 
-    override fun isAvailable(): Boolean {
-        return try {
+    override fun isAvailable(): Boolean =
+        try {
             capsule.ProcessRunner.probe(ffmpegPath, "-version")
         } catch (_: Exception) {
             false
         }
-    }
 
     override fun name(): String = "ffmpeg-audio-post"
 
-    override fun process(videoFile: File, outputFile: File, config: AudioPostConfig): Boolean {
+    override fun process(
+        videoFile: File,
+        outputFile: File,
+        config: AudioPostConfig,
+    ): Boolean {
         if (!isAvailable()) return false
         if (!videoFile.exists()) return false
 
         // BGM enabled but file blank/missing → degraded (keep original).
-        val bgmFile: File? = if (config.bgmEnabled && config.bgmFile.isNotBlank()) {
-            val f = File(config.bgmFile)
-            if (f.exists()) f else null
-        } else null
+        val bgmFile: File? =
+            if (config.bgmEnabled && config.bgmFile.isNotBlank()) {
+                val f = File(config.bgmFile)
+                if (f.exists()) f else null
+            } else {
+                null
+            }
 
         // BGM enabled but no usable file → degraded.
         if (config.bgmEnabled && bgmFile == null) {
@@ -76,19 +81,25 @@ class AudioPostProcessorImpl(
      * normalises with the measured values. Degrades to `false` (keep original)
      * when the measurement cannot be read or ffmpeg fails — never a hard error.
      */
-    private fun processTwoPass(videoFile: File, outputFile: File, config: AudioPostConfig): Boolean {
+    private fun processTwoPass(
+        videoFile: File,
+        outputFile: File,
+        config: AudioPostConfig,
+    ): Boolean {
         return try {
-            val measured = capsule.ProcessRunner.run(
-                AudioPostCommand.loudnormMeasureArgs(videoFile, config, ffmpegPath),
-            )
+            val measured =
+                capsule.ProcessRunner.run(
+                    AudioPostCommand.loudnormMeasureArgs(videoFile, config, ffmpegPath),
+                )
             val measurement = LoudnormAnalysisParser.parse(measured.output)
             if (measurement == null) {
                 logger.warn("Audio post: two-pass loudness measurement unavailable — keeping original")
                 return false
             }
-            val result = capsule.ProcessRunner.run(
-                AudioPostCommand.buildTwoPassArgv(videoFile, outputFile, config, measurement, ffmpegPath),
-            )
+            val result =
+                capsule.ProcessRunner.run(
+                    AudioPostCommand.buildTwoPassArgv(videoFile, outputFile, config, measurement, ffmpegPath),
+                )
             if (!result.isSuccess) {
                 logger.warn("ffmpeg two-pass audio post failed (exit {}): {}", result.exitCode, result.tail())
                 return false
@@ -110,6 +121,12 @@ class AudioPostProcessorImpl(
  */
 class NoOpAudioPostProcessor : AudioPostProcessor {
     override fun isAvailable(): Boolean = true
+
     override fun name(): String = "noop-audio-post"
-    override fun process(videoFile: File, outputFile: File, config: AudioPostConfig): Boolean = false
+
+    override fun process(
+        videoFile: File,
+        outputFile: File,
+        config: AudioPostConfig,
+    ): Boolean = false
 }

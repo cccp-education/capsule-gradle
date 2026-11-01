@@ -25,10 +25,10 @@ import org.junit.platform.suite.api.Suite
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-video-integrity.html, json:build/reports/cucumber-video-integrity.json"
+    value = "pretty, html:build/reports/cucumber-video-integrity.html, json:build/reports/cucumber-video-integrity.json",
 )
 @ConfigurationParameter(
     key = FILTER_TAGS_PROPERTY_NAME,
-    value = "@validation and @integrity and not @wip and not @integration"
+    value = "@validation and @integrity and not @wip and not @integration",
 )
 class CapsuleVideoIntegrityCucumberRunner

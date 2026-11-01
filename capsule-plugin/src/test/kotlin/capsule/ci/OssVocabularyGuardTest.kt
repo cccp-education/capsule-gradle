@@ -1,8 +1,8 @@
 package capsule.ci
 
-import java.io.File
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.io.File
 
 /**
  * OSS vocabulary guard (RENAME S-153).
@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test
  * only the FPA/formation metier terms are forbidden.
  */
 class OssVocabularyGuardTest {
-
     /** The guard's own documentation names the forbidden terms — it is exempt. */
     private val selfName = "OssVocabularyGuardTest.kt"
 
@@ -34,9 +33,12 @@ class OssVocabularyGuardTest {
     @Test
     fun `plugin POM description keeps the generic capsule wording`() {
         val build = File("build.gradle.kts").readText()
-        val description = Regex("""description\.set\("(.+?)"\)""")
-            .find(build)?.groupValues?.get(1)
-            ?: error("description.set(\"...\") not found in build.gradle.kts")
+        val description =
+            Regex("""description\.set\("(.+?)"\)""")
+                .find(build)
+                ?.groupValues
+                ?.get(1)
+                ?: error("description.set(\"...\") not found in build.gradle.kts")
         assertThat(description).containsIgnoringCase("capsule")
         assertThat(metierPattern.find(description)?.value)
             .describedAs("the POM description is the OSS self-description shipped in the jar")
@@ -47,12 +49,13 @@ class OssVocabularyGuardTest {
     fun `no source file carries FPA or formation metier vocabulary`() {
         val root = File("src")
         require(root.isDirectory) { "source root not found at ${root.absolutePath}" }
-        val violations = root.walkTopDown()
-            .filter { it.isFile && it.name != selfName }
-            .mapNotNull { file ->
-                metierPattern.find(file.readText())?.let { "${file.relativeTo(root)}: '${it.value}'" }
-            }
-            .toList()
+        val violations =
+            root
+                .walkTopDown()
+                .filter { it.isFile && it.name != selfName }
+                .mapNotNull { file ->
+                    metierPattern.find(file.readText())?.let { "${file.relativeTo(root)}: '${it.value}'" }
+                }.toList()
         assertThat(violations)
             .describedAs("the FPA/formation metier vocabulary belongs to the training borough, not to the OSS brique")
             .isEmpty()

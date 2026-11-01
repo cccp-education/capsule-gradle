@@ -19,8 +19,9 @@ import dev.langchain4j.model.chat.ChatModel
  * also degrades to `null` via [LlmResilience] — a metered cloud hiccup must not
  * fail the whole campaign build.
  */
-class ChatModelViralHookGenerator(private val model: ChatModel) : ViralHookGenerator {
-
+class ChatModelViralHookGenerator(
+    private val model: ChatModel,
+) : ViralHookGenerator {
     override fun generate(plan: ViralHookPlan): ViralHook? {
         val prompt = ViralHookPromptBuilder.buildHookPrompt(plan)
         return LlmResilience.guarded("viral hook", null) {

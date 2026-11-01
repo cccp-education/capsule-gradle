@@ -37,7 +37,6 @@ import org.gradle.work.DisableCachingByDefault
  */
 @DisableCachingByDefault(because = "Chapter generation is a simple file write, not worth caching")
 open class GenerateCapsuleChaptersTask : DefaultTask() {
-
     /** Whether chapter generation is enabled. */
     @get:Input
     val enabled: Property<Boolean> = project.objects.property(Boolean::class.java).convention(false)
@@ -81,11 +80,12 @@ open class GenerateCapsuleChaptersTask : DefaultTask() {
         val segments = ChapterEntryParser.parseSlideSegments(slideSegmentsJson.getOrElse("[]"))
 
         // Build chapter entries: intro (0-5000ms) + segments + outro (last segment end - last+5000ms).
-        val chapters = ChapterEntryParser.buildChapterEntries(
-            segments,
-            introText.getOrElse(""),
-            outroText.getOrElse("")
-        )
+        val chapters =
+            ChapterEntryParser.buildChapterEntries(
+                segments,
+                introText.getOrElse(""),
+                outroText.getOrElse(""),
+            )
 
         // Write chapters metadata JSON.
         val marker: ChapterMarker = resolveChapterMarker()
@@ -111,11 +111,17 @@ open class GenerateCapsuleChaptersTask : DefaultTask() {
         // free of the characters YouTube rejects.
         val chaptersTxt = java.io.File(outDir, "chapters.txt")
         chaptersTxt.writeText(YouTubeChaptersFormatter.format(chapters))
-        val youtubeLines = YouTubeChaptersFormatter.format(chapters).trim().lines().filter { it.isNotBlank() }
-        val description = capsule.publish.VideoDescriptionBuilder.build(
-            title = introText.getOrElse("").ifBlank { "Capsule" },
-            chapterLines = youtubeLines,
-        )
+        val youtubeLines =
+            YouTubeChaptersFormatter
+                .format(chapters)
+                .trim()
+                .lines()
+                .filter { it.isNotBlank() }
+        val description =
+            capsule.publish.VideoDescriptionBuilder.build(
+                title = introText.getOrElse("").ifBlank { "Capsule" },
+                chapterLines = youtubeLines,
+            )
         java.io.File(outDir, "description.txt").writeText(description.text)
         logger.lifecycle(
             "CAPSULE CHAPTERS → chapters.txt ({} line(s)) + description.txt ({} forbidden char(s) stripped)",

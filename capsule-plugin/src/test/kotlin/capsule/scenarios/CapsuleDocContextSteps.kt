@@ -1,6 +1,5 @@
 package capsule.scenarios
 
-import io.cucumber.java.en.And
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
@@ -16,21 +15,23 @@ import java.io.File
  * (bug S-088 — glue is classpath-wide, step texts must be unique).
  */
 class CapsuleDocContextSteps {
-
     private var projectDir: File? = null
     private var buildOutput: String = ""
 
     @Given("a Capsule doc context Gradle project with the capsule plugin applied")
     fun aCapsuleDocContextGradleProjectWithTheCapsulePluginApplied() {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-doc-context-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-doc-context-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
         projectDir!!.resolve("settings.gradle").writeText("")
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Given("EAGER governance files are present for doc context")
@@ -50,27 +51,33 @@ class CapsuleDocContextSteps {
 
     @When("I collect the augmented context with doc content {string}")
     fun iCollectTheAugmentedContextWithDocContent(docsContent: String) {
-        buildOutput = gradleRunner(
-            "collectCapsuleAugmentedContext",
-            "-Pcontext.docsContent=$docsContent",
-        ).build().output
+        buildOutput =
+            gradleRunner(
+                "collectCapsuleAugmentedContext",
+                "-Pcontext.docsContent=$docsContent",
+            ).build().output
     }
 
     @When("I collect the augmented context with doc globs {string}")
     fun iCollectTheAugmentedContextWithDocGlobs(globs: String) {
-        buildOutput = gradleRunner(
-            "collectCapsuleAugmentedContext",
-            "-Pcapsule.context.docsGlobs=$globs",
-        ).build().output
+        buildOutput =
+            gradleRunner(
+                "collectCapsuleAugmentedContext",
+                "-Pcapsule.context.docsGlobs=$globs",
+            ).build().output
     }
 
     @When("I collect the augmented context with doc content {string} and doc globs {string}")
-    fun iCollectTheAugmentedContextWithDocContentAndDocGlobs(docsContent: String, globs: String) {
-        buildOutput = gradleRunner(
-            "collectCapsuleAugmentedContext",
-            "-Pcontext.docsContent=$docsContent",
-            "-Pcapsule.context.docsGlobs=$globs",
-        ).build().output
+    fun iCollectTheAugmentedContextWithDocContentAndDocGlobs(
+        docsContent: String,
+        globs: String,
+    ) {
+        buildOutput =
+            gradleRunner(
+                "collectCapsuleAugmentedContext",
+                "-Pcontext.docsContent=$docsContent",
+                "-Pcapsule.context.docsGlobs=$globs",
+            ).build().output
     }
 
     @When("I collect the augmented context with no doc configuration")
@@ -104,7 +111,8 @@ class CapsuleDocContextSteps {
     private fun artefact(): File = projectDir!!.resolve("build/capsule/augmented-context.txt")
 
     private fun gradleRunner(vararg args: String): GradleRunner =
-        GradleRunner.create()
+        GradleRunner
+            .create()
             .forwardOutput()
             .withPluginClasspath()
             .withArguments(*args)

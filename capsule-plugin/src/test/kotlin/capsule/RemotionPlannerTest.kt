@@ -15,14 +15,14 @@ import kotlin.test.assertTrue
  * document and an argv, and that is all this verifies.
  */
 class RemotionPlannerTest {
-
     @TempDir
     lateinit var tempDir: File
 
-    private val sections = listOf(
-        """<section data-capsule-slide="1"><h1>Un</h1></section>""",
-        """<section data-capsule-slide="2"><h1>Deux</h1></section>""",
-    )
+    private val sections =
+        listOf(
+            """<section data-capsule-slide="1"><h1>Un</h1></section>""",
+            """<section data-capsule-slide="2"><h1>Deux</h1></section>""",
+        )
 
     private fun plan(
         durations: List<Double> = listOf(4.0, 6.0),
@@ -102,12 +102,13 @@ class RemotionPlannerTest {
      */
     @Test
     fun `props carry the measured length of each manim clip`() {
-        val json = ObjectMapper().readTree(
-            RemotionPlanner.toPropsJson(
-                plan(),
-                mapOf(0 to ManimAsset("S01.mp4", durationSecs = 3.5)),
+        val json =
+            ObjectMapper().readTree(
+                RemotionPlanner.toPropsJson(
+                    plan(),
+                    mapOf(0 to ManimAsset("S01.mp4", durationSecs = 3.5)),
+                ),
             )
-        )
 
         assertEquals("S01.mp4", json["slides"][0]["manim"].asText())
         assertEquals(105, json["slides"][0]["manimDurationInFrames"].asInt())
@@ -115,17 +116,18 @@ class RemotionPlannerTest {
 
     @Test
     fun `props name a clip whose length could not be measured, without a duration`() {
-        val json = ObjectMapper().readTree(
-            RemotionPlanner.toPropsJson(
-                plan(),
-                mapOf(0 to ManimAsset("S01.mp4")),
+        val json =
+            ObjectMapper().readTree(
+                RemotionPlanner.toPropsJson(
+                    plan(),
+                    mapOf(0 to ManimAsset("S01.mp4")),
+                ),
             )
-        )
 
         assertEquals("S01.mp4", json["slides"][0]["manim"].asText())
         assertTrue(
             json["slides"][0]["manimDurationInFrames"] == null,
-            "sans mesure, la composition doit jouer le clip à sa vitesse propre"
+            "sans mesure, la composition doit jouer le clip à sa vitesse propre",
         )
     }
 
@@ -159,12 +161,13 @@ class RemotionPlannerTest {
     fun `slides markup survives a deck whose slides contain divs`() {
         // The non-greedy form stops at the first nested </div> and silently
         // truncates the deck.
-        val deck = """
+        val deck =
+            """
             <html><head></head><body><div class="reveal"><div class="slides">
             <section><div class="fig">one</div></section>
             <section><div class="fig">two</div></section>
             </div></div></body></html>
-        """.trimIndent()
+            """.trimIndent()
         val markup = RemotionCaptureImpl.slidesMarkup(deck)
         assertTrue(markup.contains("one") && markup.contains("two"), "Deck truncated: $markup")
     }

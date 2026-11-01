@@ -1,7 +1,7 @@
 package capsule.voice
 
-import java.io.File
 import video.kernel.audio.AudioSilenceDetector
+import java.io.File
 
 /**
  * One take to verify: the expected narration, the audio that was synthesised
@@ -73,7 +73,6 @@ data class VoiceReport(
  * ([degraded]) or, under `strictMode`, a build failure.
  */
 object VoiceVerifier {
-
     /** Whole-report reason: the ASR binary is not available. */
     const val REASON_ASR_UNAVAILABLE: String = "asr-unavailable"
 
@@ -97,40 +96,41 @@ object VoiceVerifier {
         language: String,
         envelopeProvider: (File) -> DoubleArray? = { null },
     ): VoiceReport {
-        val results = takes.map { take ->
-            try {
-                val transcript = recognizer.transcribe(take.audioFile, language)
-                val score = FidelityScorer.score(take.expectedText, transcript)
-                val envelope = runCatching { envelopeProvider(take.audioFile) }.getOrNull()
-                val silence = envelope?.let { AudioSilenceDetector.analyze(it) }
-                // A silent take has no meaningful SNR (the ratio is a log of zero);
-                // report the silence signal instead of a non-finite number.
-                val snr = if (silence?.isSilent == true) null else envelope?.let { SnrEstimator.estimate(it) }
-                TakeVerification(
-                    deckName = take.deckName,
-                    slideIndex = take.slideIndex,
-                    audioFile = take.audioFile.name,
-                    expectedText = take.expectedText,
-                    transcript = transcript,
-                    wordErrorRate = score.wordErrorRate,
-                    surplus = score.surplus,
-                    snrDb = snr,
-                    verdict = VoiceQualityGate.verdict(score, snr, thresholds, silence),
-                )
-            } catch (e: Exception) {
-                TakeVerification(
-                    deckName = take.deckName,
-                    slideIndex = take.slideIndex,
-                    audioFile = take.audioFile.name,
-                    expectedText = take.expectedText,
-                    transcript = "",
-                    wordErrorRate = null,
-                    surplus = null,
-                    snrDb = null,
-                    verdict = VoiceVerdict.Degraded(REASON_ASR_ERROR),
-                )
+        val results =
+            takes.map { take ->
+                try {
+                    val transcript = recognizer.transcribe(take.audioFile, language)
+                    val score = FidelityScorer.score(take.expectedText, transcript)
+                    val envelope = runCatching { envelopeProvider(take.audioFile) }.getOrNull()
+                    val silence = envelope?.let { AudioSilenceDetector.analyze(it) }
+                    // A silent take has no meaningful SNR (the ratio is a log of zero);
+                    // report the silence signal instead of a non-finite number.
+                    val snr = if (silence?.isSilent == true) null else envelope?.let { SnrEstimator.estimate(it) }
+                    TakeVerification(
+                        deckName = take.deckName,
+                        slideIndex = take.slideIndex,
+                        audioFile = take.audioFile.name,
+                        expectedText = take.expectedText,
+                        transcript = transcript,
+                        wordErrorRate = score.wordErrorRate,
+                        surplus = score.surplus,
+                        snrDb = snr,
+                        verdict = VoiceQualityGate.verdict(score, snr, thresholds, silence),
+                    )
+                } catch (e: Exception) {
+                    TakeVerification(
+                        deckName = take.deckName,
+                        slideIndex = take.slideIndex,
+                        audioFile = take.audioFile.name,
+                        expectedText = take.expectedText,
+                        transcript = "",
+                        wordErrorRate = null,
+                        surplus = null,
+                        snrDb = null,
+                        verdict = VoiceVerdict.Degraded(REASON_ASR_ERROR),
+                    )
+                }
             }
-        }
         return VoiceReport(degraded = false, takes = results, thresholds = thresholds)
     }
 
@@ -154,26 +154,28 @@ object VoiceVerifier {
         reason: String = REASON_ASR_UNAVAILABLE,
         envelopeProvider: (File) -> DoubleArray? = { null },
     ): VoiceReport {
-        val results = takes.map { take ->
-            val envelope = runCatching { envelopeProvider(take.audioFile) }.getOrNull()
-            val silence = envelope?.let { AudioSilenceDetector.analyze(it) }
-            val verdict = if (silence?.isSilent == true) {
-                VoiceVerdict.Fail(listOf(VoiceQualityGate.REASON_SILENT_AUDIO))
-            } else {
-                VoiceVerdict.Degraded(reason)
+        val results =
+            takes.map { take ->
+                val envelope = runCatching { envelopeProvider(take.audioFile) }.getOrNull()
+                val silence = envelope?.let { AudioSilenceDetector.analyze(it) }
+                val verdict =
+                    if (silence?.isSilent == true) {
+                        VoiceVerdict.Fail(listOf(VoiceQualityGate.REASON_SILENT_AUDIO))
+                    } else {
+                        VoiceVerdict.Degraded(reason)
+                    }
+                TakeVerification(
+                    deckName = take.deckName,
+                    slideIndex = take.slideIndex,
+                    audioFile = take.audioFile.name,
+                    expectedText = take.expectedText,
+                    transcript = "",
+                    wordErrorRate = null,
+                    surplus = null,
+                    snrDb = null,
+                    verdict = verdict,
+                )
             }
-            TakeVerification(
-                deckName = take.deckName,
-                slideIndex = take.slideIndex,
-                audioFile = take.audioFile.name,
-                expectedText = take.expectedText,
-                transcript = "",
-                wordErrorRate = null,
-                surplus = null,
-                snrDb = null,
-                verdict = verdict,
-            )
-        }
         return VoiceReport(degraded = true, takes = results, thresholds = thresholds)
     }
 }

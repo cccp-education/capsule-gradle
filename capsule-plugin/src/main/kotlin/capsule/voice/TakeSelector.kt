@@ -39,22 +39,21 @@ data class VoiceSelection(
  * Pure — no I/O, no Gradle.
  */
 object TakeSelector {
-
     private val BEST_FIRST: Comparator<TakeVerification> =
         compareBy<TakeVerification> { if (it.verdict.isFail) 1 else 0 }
             .thenBy { it.wordErrorRate ?: Double.MAX_VALUE }
             .thenBy { it.surplus ?: Int.MAX_VALUE }
 
     /** The best candidate, or `null` when [candidates] is empty. */
-    fun selectBest(candidates: List<TakeVerification>): TakeVerification? =
-        candidates.minWithOrNull(BEST_FIRST)
+    fun selectBest(candidates: List<TakeVerification>): TakeVerification? = candidates.minWithOrNull(BEST_FIRST)
 
     /**
      * Selects the best take per slide, one [VoiceSelection] per (deck, slide),
      * ordered by deck then slide. Slides with no candidate are omitted.
      */
     fun selectBySlide(candidates: List<TakeVerification>): List<VoiceSelection> =
-        candidates.groupBy { it.deckName to it.slideIndex }
+        candidates
+            .groupBy { it.deckName to it.slideIndex }
             .entries
             .sortedWith(compareBy({ it.key.first }, { it.key.second }))
             .mapNotNull { (key, group) ->
@@ -72,11 +71,12 @@ object TakeSelector {
             }
 
     /** Stable verdict name for a report ([VoiceVerdict] → `PASS`/`FAIL`/`DEGRADED`). */
-    fun verdictName(verdict: VoiceVerdict): String = when (verdict) {
-        is VoiceVerdict.Pass -> "PASS"
-        is VoiceVerdict.Fail -> "FAIL"
-        is VoiceVerdict.Degraded -> "DEGRADED"
-    }
+    fun verdictName(verdict: VoiceVerdict): String =
+        when (verdict) {
+            is VoiceVerdict.Pass -> "PASS"
+            is VoiceVerdict.Fail -> "FAIL"
+            is VoiceVerdict.Degraded -> "DEGRADED"
+        }
 }
 
 /**
@@ -91,8 +91,9 @@ object TakeSelector {
  * Pattern: [VoiceReportJson] (Jackson). Pure — no Gradle, no I/O.
  */
 object VoiceSelectionJson {
-
-    private val mapper = com.fasterxml.jackson.databind.ObjectMapper()
+    private val mapper =
+        com.fasterxml.jackson.databind
+            .ObjectMapper()
 
     /** Serializes [selections] to a pretty JSON array (empty → `[]`). */
     fun toJson(selections: List<VoiceSelection>): String {

@@ -21,7 +21,6 @@ import kotlin.test.assertTrue
  * Pure text: no Chromium, no FFmpeg.
  */
 class RenderViralSubtitlesFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -68,11 +67,13 @@ class RenderViralSubtitlesFunctionalTest {
         )
     }
 
-    private fun runner(vararg args: String) = GradleRunner.create()
-        .forwardOutput()
-        .withPluginClasspath()
-        .withArguments(*args, "-x", "generateViralCampaign")
-        .withProjectDir(projectDir)
+    private fun runner(vararg args: String) =
+        GradleRunner
+            .create()
+            .forwardOutput()
+            .withPluginClasspath()
+            .withArguments(*args, "-x", "generateViralCampaign")
+            .withProjectDir(projectDir)
 
     @Test
     fun `renderViralSubtitles task is registered in the generate group`() {
@@ -99,12 +100,13 @@ class RenderViralSubtitlesFunctionalTest {
         setupBuild()
         writeStoryboard()
 
-        val result = runner(
-            "renderViralSubtitles",
-            "-Pcapsule.viral.enabled=true",
-            "-Pcapsule.viral.languages=fr,en",
-            "-Pcapsule.viral.platforms=TIKTOK",
-        ).build()
+        val result =
+            runner(
+                "renderViralSubtitles",
+                "-Pcapsule.viral.enabled=true",
+                "-Pcapsule.viral.languages=fr,en",
+                "-Pcapsule.viral.platforms=TIKTOK",
+            ).build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":renderViralSubtitles")?.outcome)
         val dir = projectDir.resolve("build/capsule/viral/videos")
@@ -125,12 +127,13 @@ class RenderViralSubtitlesFunctionalTest {
         val dir = projectDir.resolve("build/capsule/viral/videos").also { it.mkdirs() }
         dir.resolve("fr-tiktok-30.ass").writeText("existing")
 
-        val result = runner(
-            "renderViralSubtitles",
-            "-Pcapsule.viral.enabled=true",
-            "-Pcapsule.viral.languages=fr",
-            "-Pcapsule.viral.platforms=TIKTOK",
-        ).build()
+        val result =
+            runner(
+                "renderViralSubtitles",
+                "-Pcapsule.viral.enabled=true",
+                "-Pcapsule.viral.languages=fr",
+                "-Pcapsule.viral.platforms=TIKTOK",
+            ).build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":renderViralSubtitles")?.outcome)
         assertEquals("existing", dir.resolve("fr-tiktok-30.ass").readText())
@@ -140,12 +143,13 @@ class RenderViralSubtitlesFunctionalTest {
     @Test
     fun `a missing storyboard warns when enabled`() {
         setupBuild()
-        val result = runner(
-            "renderViralSubtitles",
-            "-Pcapsule.viral.enabled=true",
-            "-Pcapsule.viral.languages=fr",
-            "-Pcapsule.viral.platforms=TIKTOK",
-        ).build()
+        val result =
+            runner(
+                "renderViralSubtitles",
+                "-Pcapsule.viral.enabled=true",
+                "-Pcapsule.viral.languages=fr",
+                "-Pcapsule.viral.platforms=TIKTOK",
+            ).build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":renderViralSubtitles")?.outcome)
         assertTrue(

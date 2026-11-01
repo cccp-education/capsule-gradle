@@ -9,7 +9,6 @@ import kotlin.test.assertTrue
  * portrait HTML the screenshot socle captures into the campaign thumbnail.
  */
 class ViralThumbnailBuilderTest {
-
     private fun plan(
         overlay: String = "Et si 30 secondes suffisaient ?",
         language: String = "fr",
@@ -24,9 +23,10 @@ class ViralThumbnailBuilderTest {
 
     @Test
     fun `cover carries the overlay text on the portrait viewport`() {
-        val html = ViralThumbnailBuilder.build(
-            ThumbnailPlan("Le hook", "fr", ViralPlatform.TIKTOK, 1080, 1920),
-        )
+        val html =
+            ViralThumbnailBuilder.build(
+                ThumbnailPlan("Le hook", "fr", ViralPlatform.TIKTOK, 1080, 1920),
+            )
         assertTrue(html.startsWith("<!DOCTYPE html>"))
         assertTrue(html.contains("width=1080, height=1920"), "Expected the portrait viewport, got: $html")
         assertTrue(html.contains("<p class=\"hook\">Le hook</p>"), "Expected the hook overlay, got: $html")

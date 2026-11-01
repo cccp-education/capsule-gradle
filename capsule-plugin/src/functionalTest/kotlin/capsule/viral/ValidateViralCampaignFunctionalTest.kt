@@ -23,7 +23,6 @@ import kotlin.test.assertTrue
  * gate is exercised in isolation against a hand-written manifest.
  */
 class ValidateViralCampaignFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -40,7 +39,10 @@ class ValidateViralCampaignFunctionalTest {
     }
 
     /** Writes a hand-crafted `viral-campaign.json` referencing [videoFile]/[thumbnailFile]. */
-    private fun writeManifest(videoFile: String, thumbnailFile: String = "") {
+    private fun writeManifest(
+        videoFile: String,
+        thumbnailFile: String = "",
+    ) {
         val dir = projectDir.resolve("build/capsule/viral").also { it.mkdirs() }
         dir.resolve("viral-campaign.json").writeText(
             """
@@ -55,17 +57,22 @@ class ValidateViralCampaignFunctionalTest {
         )
     }
 
-    private fun runner(vararg args: String) = GradleRunner.create()
-        .forwardOutput()
-        .withPluginClasspath()
-        .withArguments(
-            *args,
-            "-x", "renderViralVariants",
-            "-x", "renderViralThumbnails",
-            "-x", "renderViralSubtitles",
-            "-x", "generateViralCampaign",
-        )
-        .withProjectDir(projectDir)
+    private fun runner(vararg args: String) =
+        GradleRunner
+            .create()
+            .forwardOutput()
+            .withPluginClasspath()
+            .withArguments(
+                *args,
+                "-x",
+                "renderViralVariants",
+                "-x",
+                "renderViralThumbnails",
+                "-x",
+                "renderViralSubtitles",
+                "-x",
+                "generateViralCampaign",
+            ).withProjectDir(projectDir)
 
     @Test
     fun `validateViralCampaign task is registered in the verification group`() {
@@ -90,16 +97,18 @@ class ValidateViralCampaignFunctionalTest {
     @Test
     fun `enabled with present assets passes the gate`() {
         setupBuild()
-        val video = projectDir.resolve("build/capsule/viral/fr-tiktok-30.mp4").also {
-            it.parentFile.mkdirs()
-            it.writeText("mp4")
-        }
+        val video =
+            projectDir.resolve("build/capsule/viral/fr-tiktok-30.mp4").also {
+                it.parentFile.mkdirs()
+                it.writeText("mp4")
+            }
         writeManifest(video.absolutePath)
 
-        val result = runner(
-            "validateViralCampaign",
-            "-Pcapsule.viral.enabled=true",
-        ).build()
+        val result =
+            runner(
+                "validateViralCampaign",
+                "-Pcapsule.viral.enabled=true",
+            ).build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":validateViralCampaign")?.outcome)
         assertTrue(
@@ -119,9 +128,10 @@ class ValidateViralCampaignFunctionalTest {
         )
         writeManifest("build/capsule/viral/missing.mp4")
 
-        val exception = assertThrows<UnexpectedBuildFailure> {
-            runner("validateViralCampaign", "-Pcapsule.viral.enabled=true").build()
-        }
+        val exception =
+            assertThrows<UnexpectedBuildFailure> {
+                runner("validateViralCampaign", "-Pcapsule.viral.enabled=true").build()
+            }
         assertTrue(
             exception.message!!.contains("missing asset"),
             "Expected the gate to report the missing asset, got: ${exception.message}",

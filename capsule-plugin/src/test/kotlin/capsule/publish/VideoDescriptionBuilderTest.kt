@@ -1,16 +1,15 @@
 package capsule.publish
 
+import video.kernel.publish.VideoPublicationLimits
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import video.kernel.publish.VideoPublicationLimits
 
 /**
  * TDD unit tests for [VideoDescriptionBuilder] (PRT-10). Pure — no I/O.
  */
 class VideoDescriptionBuilderTest {
-
     @Test
     fun `forbidden chars are the shared neutral kernel set (HF-YOUTUBE-PUBLISH US-3)`() {
         assertEquals(VideoPublicationLimits.FORBIDDEN_CHARS, VideoDescriptionBuilder.FORBIDDEN_CHARS)
@@ -18,11 +17,12 @@ class VideoDescriptionBuilderTest {
 
     @Test
     fun `builds title chapters and tags`() {
-        val result = VideoDescriptionBuilder.build(
-            title = "My capsule",
-            chapterLines = listOf("0:00 Intro", "1:05 Part"),
-            tags = listOf("capsule", "#video"),
-        )
+        val result =
+            VideoDescriptionBuilder.build(
+                title = "My capsule",
+                chapterLines = listOf("0:00 Intro", "1:05 Part"),
+                tags = listOf("capsule", "#video"),
+            )
         assertTrue(result.text.contains("My capsule"), result.text)
         assertTrue(result.text.contains("CHAPTERS"), result.text)
         assertTrue(result.text.contains("0:00 Intro"), result.text)

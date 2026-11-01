@@ -15,13 +15,14 @@ import java.io.File
  */
 @DisableCachingByDefault(because = "Filesystem-bound: creates a scaffold YAML file")
 open class CapsuleScaffoldTask : DefaultTask() {
-
     @get:Internal
     internal var capsuleExtension: CapsuleExtension
-        get() = _capsuleExtension ?: project.extensions.getByType(CapsuleExtension::class.java).also { _capsuleExtension = it }
-        set(value) { _capsuleExtension = value }
+        get() = capsuleExtensionCache ?: project.extensions.getByType(CapsuleExtension::class.java).also { capsuleExtensionCache = it }
+        set(value) {
+            capsuleExtensionCache = value
+        }
 
-    private var _capsuleExtension: CapsuleExtension? = null
+    private var capsuleExtensionCache: CapsuleExtension? = null
 
     @TaskAction
     fun execute() {
@@ -40,7 +41,8 @@ open class CapsuleScaffoldTask : DefaultTask() {
     }
 
     companion object {
-        internal val DEFAULT_CAPSULE_CONTEXT_YML = """
+        internal val DEFAULT_CAPSULE_CONTEXT_YML =
+            """
 # capsule-context.yml — Capsule Gradle configuration
 # Resolution order: ENV vars < gradle.properties < YAML file < CLI -P params
 # See: https://github.com/cheroliv/capsule-gradle
@@ -95,6 +97,6 @@ manim:
   # outputDir: build/capsule/manim
   # parallelRender: false
   # parallelRenderThreads: 4
-""".trimIndent()
+            """.trimIndent()
     }
 }

@@ -6,7 +6,6 @@ import io.cucumber.java.en.When
 import org.junit.jupiter.api.Assertions
 
 class TranslateAndExtractSpeakerNotesSteps {
-
     private var taskName: String = ""
     private var taskDescription: String = ""
     private var taskGroup: String = ""

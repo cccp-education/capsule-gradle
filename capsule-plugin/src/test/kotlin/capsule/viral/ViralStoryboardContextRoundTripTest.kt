@@ -17,53 +17,59 @@ import kotlin.test.assertTrue
  * holds. With context present, the round-trip carries the three axes.
  */
 class ViralStoryboardContextRoundTripTest {
+    private fun fullStoryboard() =
+        ViralStoryboard(
+            message = "Créer son site perso avec bakery + opencode",
+            angle = "L'agent écrit, Gradle bake",
+            beats =
+                listOf(
+                    StoryboardBeat("hook", "Un site perso, sans HTML", 3.0, enteringTransition = "— (ouverture)"),
+                    StoryboardBeat("development", "Scaffold bakery", 10.0, asset = "terminal.png", enteringTransition = "cut"),
+                    StoryboardBeat("cta", "bakery-gradle + opencode", 7.0, enteringTransition = "fade"),
+                ),
+            platform = ViralPlatform.TIKTOK,
+            language = "fr",
+            targetDurationSeconds = 20,
+            qqoqcp =
+                Qqoqcp(
+                    audience = "Développeur solo",
+                    subject = "Créer un site perso",
+                    context = "Dans un dépôt local via bakery + opencode",
+                    moment = "Au démarrage d'un projet",
+                    modality = "Scaffold → rédaction → bake → publish",
+                    purpose = "Mettre un site perso en ligne",
+                ),
+            visualIdentity =
+                VisualIdentity(
+                    brand = "cheroliv.com",
+                    format = "9:16 (1080x1920)",
+                    tokens = linkedMapOf("--accent-color" to "#0d6efd", "--footer-bg" to "#7952b3"),
+                    typography = "Inter",
+                    logo = "marque cheroliv",
+                    background = "charté (tokens)",
+                ),
+            narrativeThread =
+                NarrativeThread(
+                    thesis = "Un site perso, ça se génère",
+                    recurringMotif = "le terminal qui produit le site",
+                    arc = "accroche → démonstration → résolution → CTA",
+                    register = "instructional",
+                    voice = "direct, technique",
+                ),
+        )
 
-    private fun fullStoryboard() = ViralStoryboard(
-        message = "Créer son site perso avec bakery + opencode",
-        angle = "L'agent écrit, Gradle bake",
-        beats = listOf(
-            StoryboardBeat("hook", "Un site perso, sans HTML", 3.0, enteringTransition = "— (ouverture)"),
-            StoryboardBeat("development", "Scaffold bakery", 10.0, asset = "terminal.png", enteringTransition = "cut"),
-            StoryboardBeat("cta", "bakery-gradle + opencode", 7.0, enteringTransition = "fade"),
-        ),
-        platform = ViralPlatform.TIKTOK,
-        language = "fr",
-        targetDurationSeconds = 20,
-        qqoqcp = Qqoqcp(
-            audience = "Développeur solo",
-            subject = "Créer un site perso",
-            context = "Dans un dépôt local via bakery + opencode",
-            moment = "Au démarrage d'un projet",
-            modality = "Scaffold → rédaction → bake → publish",
-            purpose = "Mettre un site perso en ligne",
-        ),
-        visualIdentity = VisualIdentity(
-            brand = "cheroliv.com",
-            format = "9:16 (1080x1920)",
-            tokens = linkedMapOf("--accent-color" to "#0d6efd", "--footer-bg" to "#7952b3"),
-            typography = "Inter",
-            logo = "marque cheroliv",
-            background = "charté (tokens)",
-        ),
-        narrativeThread = NarrativeThread(
-            thesis = "Un site perso, ça se génère",
-            recurringMotif = "le terminal qui produit le site",
-            arc = "accroche → démonstration → résolution → CTA",
-            register = "instructional",
-            voice = "direct, technique",
-        ),
-    )
-
-    private fun plainStoryboard() = fullStoryboard().copy(
-        beats = listOf(
-            StoryboardBeat("hook", "h", 3.0),
-            StoryboardBeat("development", "d", 10.0),
-            StoryboardBeat("cta", "c", 7.0),
-        ),
-        qqoqcp = null,
-        visualIdentity = null,
-        narrativeThread = null,
-    )
+    private fun plainStoryboard() =
+        fullStoryboard().copy(
+            beats =
+                listOf(
+                    StoryboardBeat("hook", "h", 3.0),
+                    StoryboardBeat("development", "d", 10.0),
+                    StoryboardBeat("cta", "c", 7.0),
+                ),
+            qqoqcp = null,
+            visualIdentity = null,
+            narrativeThread = null,
+        )
 
     // ─── Builder — back-compat + context sections ─────────────────────
 

@@ -14,7 +14,6 @@ import kotlin.test.assertEquals
  * Pure object — no I/O, no Gradle, no Jackson.
  */
 class AudioCodecsTest {
-
     @Test
     fun `libvorbis is the codec for the WebM container`() {
         assertEquals(AudioCodecs.WEBM, AudioCodecs.forContainer("webm"))

@@ -1,11 +1,11 @@
 package capsule
 
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.GradleRunner
-import org.junit.jupiter.api.io.TempDir
 
 /**
  * Functional tests for CAP-AUDIO US-3 wiring — `applyAudioPostIfEnabled`
@@ -24,7 +24,6 @@ import org.junit.jupiter.api.io.TempDir
  * task, assert WebM + log output).
  */
 class AudioPostFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -33,24 +32,29 @@ class AudioPostFunctionalTest {
 
     private fun setupBuild(extraConfig: String = "") {
         settingsFile.writeText("")
-        buildFile.writeText("""
+        buildFile.writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             $extraConfig
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     private fun writeScriptAndDeck() {
         val scriptDir = projectDir.resolve("build/capsule").also { it.mkdirs() }
-        scriptDir.resolve("audiopost-test-script.txt").writeText("""
+        scriptDir.resolve("audiopost-test-script.txt").writeText(
+            """
             === CAPSULE SCRIPT : audiopost-test ===
             --- SLIDE 1 : Title ---
             Note content for audio post test.
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val decksDir = projectDir.resolve("build/docs/asciidocRevealJs").also { it.mkdirs() }
-        decksDir.resolve("audiopost-test-deck.html").writeText("""
+        decksDir.resolve("audiopost-test-deck.html").writeText(
+            """
             <html><body>
             <div class="reveal">
               <div class="slides">
@@ -58,37 +62,43 @@ class AudioPostFunctionalTest {
               </div>
             </div>
             </body></html>
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Test
     fun `audio post default config skips step and produces WebM`() {
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         writeScriptAndDeck()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("generateCapsuleVideo")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("generateCapsuleVideo")
+                .withProjectDir(projectDir)
+                .build()
 
         val capFile = projectDir.resolve("build/capsules/audiopost-test.webm")
         assertTrue(capFile.exists(), "Video must be produced with default audio post config")
         assertFalse(
             result.output.contains("Audio post:"),
-            "Audio post step must be skipped by default (economy of ink). Output: ${result.output.take(800)}"
+            "Audio post step must be skipped by default (economy of ink). Output: ${result.output.take(800)}",
         )
     }
 
     @Test
     fun `audio post BGM enabled with NoOp processor degrades and keeps original WebM`() {
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
@@ -96,84 +106,95 @@ class AudioPostFunctionalTest {
                 audioPostBgmFile = "/nonexistent/bgm.mp3"
                 ffmpegExecutablePath = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         writeScriptAndDeck()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("generateCapsuleVideo")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("generateCapsuleVideo")
+                .withProjectDir(projectDir)
+                .build()
 
         val capFile = projectDir.resolve("build/capsules/audiopost-test.webm")
         assertTrue(
             capFile.exists(),
-            "Video must be produced (degraded — original kept) when NoOp audio post processor returns false"
+            "Video must be produced (degraded — original kept) when NoOp audio post processor returns false",
         )
         assertTrue(
             result.output.contains("Audio post:"),
-            "Expected audio post step log when bgmEnabled=true. Output: ${result.output.take(800)}"
+            "Expected audio post step log when bgmEnabled=true. Output: ${result.output.take(800)}",
         )
     }
 
     @Test
     fun `audio post ducking enabled with NoOp processor degrades and keeps original WebM`() {
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
                 audioPostDuckingEnabled = true
                 ffmpegExecutablePath = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         writeScriptAndDeck()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("generateCapsuleVideo")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("generateCapsuleVideo")
+                .withProjectDir(projectDir)
+                .build()
 
         val capFile = projectDir.resolve("build/capsules/audiopost-test.webm")
         assertTrue(
             capFile.exists(),
-            "Video must be produced (degraded — original kept) when NoOp audio post processor returns false"
+            "Video must be produced (degraded — original kept) when NoOp audio post processor returns false",
         )
         assertTrue(
             result.output.contains("Audio post:"),
-            "Expected audio post step log when duckingEnabled=true. Output: ${result.output.take(800)}"
+            "Expected audio post step log when duckingEnabled=true. Output: ${result.output.take(800)}",
         )
     }
 
     @Test
     fun `audio post two-pass enabled with NoOp processor degrades and keeps original WebM`() {
-        setupBuild("""
+        setupBuild(
+            """
             capsule {
                 ttsEngine = "noop"
                 outputDir = "capsules"
                 audioPostTwoPassLoudnessEnabled = true
                 ffmpegExecutablePath = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         writeScriptAndDeck()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("generateCapsuleVideo")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("generateCapsuleVideo")
+                .withProjectDir(projectDir)
+                .build()
 
         val capFile = projectDir.resolve("build/capsules/audiopost-test.webm")
         assertTrue(
             capFile.exists(),
-            "Video must be produced (degraded — original kept) when two-pass audio post degrades"
+            "Video must be produced (degraded — original kept) when two-pass audio post degrades",
         )
         assertTrue(
             result.output.contains("Audio post:"),
-            "Expected audio post step log when twoPassLoudnessEnabled=true. Output: ${result.output.take(800)}"
+            "Expected audio post step log when twoPassLoudnessEnabled=true. Output: ${result.output.take(800)}",
         )
     }
 }

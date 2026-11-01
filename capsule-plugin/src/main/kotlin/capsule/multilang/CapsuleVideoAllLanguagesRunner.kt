@@ -15,7 +15,6 @@ import java.io.File
  * decision while the Gradle task supplies the filesystem-bound work.
  */
 object CapsuleVideoAllLanguagesRunner {
-
     /**
      * Runs [render] for every [plan] entry that has no valid existing output.
      *
@@ -45,7 +44,10 @@ object CapsuleVideoAllLanguagesRunner {
      * True when the entry output must be (re)generated: the output WebM is
      * missing or probes with a non-positive duration (invalid artifact).
      */
-    fun shouldRender(entry: CapsuleVideoEntry, probeDuration: (File) -> Double): Boolean {
+    fun shouldRender(
+        entry: CapsuleVideoEntry,
+        probeDuration: (File) -> Double,
+    ): Boolean {
         val output = entry.outputVideo
         if (!output.exists()) return true
         return probeDuration(output) <= 0.0

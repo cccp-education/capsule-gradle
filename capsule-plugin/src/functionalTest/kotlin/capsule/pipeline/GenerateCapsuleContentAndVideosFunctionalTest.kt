@@ -1,10 +1,10 @@
 package capsule.pipeline
 
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.GradleRunner
-import org.junit.jupiter.api.io.TempDir
 
 /**
  * Functional tests for the `generateCapsuleContentAndVideos` composite task
@@ -17,7 +17,6 @@ import org.junit.jupiter.api.io.TempDir
  * enriched speaker notes then localized capsule WebMs.
  */
 class GenerateCapsuleContentAndVideosFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -26,7 +25,8 @@ class GenerateCapsuleContentAndVideosFunctionalTest {
 
     private fun setupBuild() {
         settingsFile.writeText("")
-        buildFile.writeText("""
+        buildFile.writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -36,32 +36,37 @@ class GenerateCapsuleContentAndVideosFunctionalTest {
             tasks.register('translateDeck') {
                 doLast { logger.lifecycle('FAKE translateDeck') }
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         // generateCapsuleContent resolves its deckFile convention by scanning
         // slides/misc for the first .adoc file. A dummy deck is needed so the
         // --dry-run dependency graph resolves without error.
         val deckDir = projectDir.resolve("slides").resolve("misc")
         deckDir.mkdirs()
-        deckDir.resolve("dummy.adoc").writeText("""
+        deckDir.resolve("dummy.adoc").writeText(
+            """
             == Slide 1
 
             [NOTE.speaker]
             --
             Dummy narration.
             --
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @Test
     fun `generateCapsuleContentAndVideos task is registered with the capsule group`() {
         setupBuild()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("tasks", "--all")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("tasks", "--all")
+                .withProjectDir(projectDir)
+                .build()
 
         val output = result.output
         assertTrue(output.contains("generateCapsuleContentAndVideos"))
@@ -72,12 +77,14 @@ class GenerateCapsuleContentAndVideosFunctionalTest {
     fun `generateCapsuleContentAndVideos description mentions both sub-tasks`() {
         setupBuild()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("tasks", "--all")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("tasks", "--all")
+                .withProjectDir(projectDir)
+                .build()
 
         val output = result.output
         assertTrue(output.contains("generateCapsuleContent"))
@@ -88,12 +95,14 @@ class GenerateCapsuleContentAndVideosFunctionalTest {
     fun `generateCapsuleContentAndVideos depends on generateCapsuleContent and translateAndGenerateCapsuleVideos`() {
         setupBuild()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("generateCapsuleContentAndVideos", "--dry-run")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("generateCapsuleContentAndVideos", "--dry-run")
+                .withProjectDir(projectDir)
+                .build()
 
         val output = result.output
         assertTrue(output.contains("generateCapsuleContent"))

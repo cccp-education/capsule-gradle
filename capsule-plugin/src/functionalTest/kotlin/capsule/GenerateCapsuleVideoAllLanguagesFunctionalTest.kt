@@ -1,13 +1,12 @@
 package capsule
 
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.GradleRunner
-import org.junit.jupiter.api.io.TempDir
 
 class GenerateCapsuleVideoAllLanguagesFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -15,7 +14,8 @@ class GenerateCapsuleVideoAllLanguagesFunctionalTest {
 
     private fun setup() {
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -23,20 +23,24 @@ class GenerateCapsuleVideoAllLanguagesFunctionalTest {
                 ttsEngine = "noop"
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val scriptDir = projectDir.resolve("build/capsule").also { it.mkdirs() }
         targetLanguages.forEach { lang ->
-            scriptDir.resolve("demo_$lang-script.txt").writeText("""
+            scriptDir.resolve("demo_$lang-script.txt").writeText(
+                """
 === CAPSULE SCRIPT : demo_$lang ===
 --- SLIDE 1 : Title ---
 Note content in $lang.
-            """.trimIndent())
+                """.trimIndent(),
+            )
         }
 
         val decksDir = projectDir.resolve("build/docs/asciidocRevealJs").also { it.mkdirs() }
         targetLanguages.forEach { lang ->
-            decksDir.resolve("demo_$lang-deck.html").writeText("""
+            decksDir.resolve("demo_$lang-deck.html").writeText(
+                """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -44,7 +48,8 @@ Note content in $lang.
   </div>
 </div>
 </body></html>
-            """.trimIndent())
+                """.trimIndent(),
+            )
         }
     }
 

@@ -19,7 +19,6 @@ import kotlin.test.assertTrue
  * is proven behaviour-preserving without a real binary or browser.
  */
 class CapsuleVideoResolversTest {
-
     @TempDir
     lateinit var tempDir: File
 

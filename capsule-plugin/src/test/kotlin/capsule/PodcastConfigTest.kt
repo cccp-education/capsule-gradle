@@ -18,7 +18,6 @@ import kotlin.test.assertFalse
  * [AudioPostConfig] (CAP-AUDIO US-1).
  */
 class PodcastConfigTest {
-
     @Test
     fun `default config has podcast disabled and empty output file`() {
         val config = PodcastConfig()

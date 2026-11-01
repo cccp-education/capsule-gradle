@@ -19,21 +19,23 @@ import java.io.File
  * DuplicateStepDefinitionException with the shared glue (bug S-088).
  */
 class CapsuleChaptersSteps {
-
     private var projectDir: File? = null
     private var buildOutput: String = ""
 
     @Given("a Capsule chapters Gradle project with the capsule plugin applied")
     fun aCapsuleChaptersGradleProjectWithTheCapsulePluginApplied() {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-chapters-${System.currentTimeMillis()}-${System.nanoTime()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-chapters-${System.currentTimeMillis()}-${System.nanoTime()}")
+                .also { it.mkdirs() }
         projectDir!!.resolve("settings.gradle").writeText("")
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @When("I run the chapters build with default config")
@@ -43,7 +45,8 @@ class CapsuleChaptersSteps {
 
     @When("I run the chapters build with chapters enabled via DSL")
     fun iRunTheChaptersBuildWithChaptersEnabledViaDsl() {
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -52,27 +55,32 @@ class CapsuleChaptersSteps {
                 chaptersIntroText = 'Welcome to the Course'
                 chaptersOutroText = 'Thank you for watching'
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         runChaptersBuild("generateCapsuleChapters")
     }
 
     @When("I run the chapters build with chapters enabled via gradle property and custom text")
     fun iRunTheChaptersBuildWithChaptersEnabledViaGradlePropertyAndCustomText() {
-        projectDir!!.resolve("gradle.properties").writeText("""
+        projectDir!!.resolve("gradle.properties").writeText(
+            """
             capsule.chapters.enabled=true
             capsule.chapters.introText=Bienvenue
             capsule.chapters.outroText=Au revoir
-        """.trimIndent())
+            """.trimIndent(),
+        )
         runChaptersBuild("generateCapsuleChapters")
     }
 
     private fun runChaptersBuild(task: String) {
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(task, "-q")
-            .withProjectDir(projectDir!!)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(task, "-q")
+                .withProjectDir(projectDir!!)
+                .build()
         buildOutput = result.output
     }
 
@@ -134,7 +142,12 @@ class CapsuleChaptersSteps {
             chaptersTxt.exists(),
             "Expected chapters.txt to be generated at: ${chaptersTxt.absolutePath}",
         )
-        val firstLine = chaptersTxt.readText().trim().lines().first()
+        val firstLine =
+            chaptersTxt
+                .readText()
+                .trim()
+                .lines()
+                .first()
         assertTrue(
             Regex("""^\d+:\d{2} """).containsMatchIn(firstLine),
             "First line should be 'M:SS Title', got: $firstLine",

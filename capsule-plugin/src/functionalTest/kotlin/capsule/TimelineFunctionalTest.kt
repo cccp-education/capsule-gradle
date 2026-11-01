@@ -1,10 +1,10 @@
 package capsule
 
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.GradleRunner
-import org.junit.jupiter.api.io.TempDir
 
 /**
  * Functional test for the PRT-07 timeline wiring in `CapsuleVideoTask`.
@@ -14,7 +14,6 @@ import org.junit.jupiter.api.io.TempDir
  * observable here).
  */
 class TimelineFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -32,7 +31,7 @@ class TimelineFunctionalTest {
                 ttsEngine = "noop"
                 outputDir = "capsules"
             }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -43,7 +42,7 @@ class TimelineFunctionalTest {
             === CAPSULE SCRIPT : timeline-test ===
             --- SLIDE 1 : Title ---
             Note content for the timeline test.
-            """.trimIndent()
+            """.trimIndent(),
         )
         val decksDir = projectDir.resolve("build/docs/asciidocRevealJs").also { it.mkdirs() }
         decksDir.resolve("timeline-test-deck.html").writeText(
@@ -55,7 +54,7 @@ class TimelineFunctionalTest {
               </div>
             </div>
             </body></html>
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -64,16 +63,18 @@ class TimelineFunctionalTest {
         setupBuild()
         writeScriptAndDeck()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("generateCapsuleVideo")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("generateCapsuleVideo")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(
             result.output.contains("Timeline:"),
-            "Expected a timeline log line. Output: ${result.output.take(1200)}"
+            "Expected a timeline log line. Output: ${result.output.take(1200)}",
         )
     }
 }

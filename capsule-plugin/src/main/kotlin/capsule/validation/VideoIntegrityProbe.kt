@@ -16,13 +16,14 @@ import java.io.File
  * therefore cannot see a container whose stream is broken.
  */
 object VideoIntegrityProbe {
-
     /**
      * The ffmpeg argv that decodes [file] without producing an output file.
      * Exposed for tests — the decoder command is part of the contract.
      */
-    internal fun decodeArgs(file: File, ffmpegPath: String): List<String> =
-        listOf(ffmpegPath, "-v", "error", "-i", file.absolutePath, "-f", "null", "-")
+    internal fun decodeArgs(
+        file: File,
+        ffmpegPath: String,
+    ): List<String> = listOf(ffmpegPath, "-v", "error", "-i", file.absolutePath, "-f", "null", "-")
 
     /**
      * Decodes [file] and returns its integrity verdict via [VideoIntegrityChecker].

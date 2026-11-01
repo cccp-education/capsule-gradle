@@ -19,9 +19,9 @@ import kotlin.test.assertTrue
  * drive its metadata from the props. No Node, no browser.
  */
 class RemotionRootTemplateTest {
-
     private fun rootSource(): String =
-        javaClass.classLoader.getResourceAsStream("capsule/remotion/src/Root.jsx")
+        javaClass.classLoader
+            .getResourceAsStream("capsule/remotion/src/Root.jsx")
             ?.use { it.readBytes().toString(Charsets.UTF_8) }
             ?: error("capsule/remotion/src/Root.jsx missing from the test classpath")
 

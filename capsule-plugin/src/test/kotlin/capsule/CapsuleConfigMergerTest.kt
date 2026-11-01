@@ -8,12 +8,10 @@ import capsule.transcript.TranscriptConfig
 import capsule.transcript.TranscriptStrategy
 import capsule.viral.ViralConfig
 import capsule.viral.ViralPlatform
-import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 /**
  * TDD unit tests for CapsuleConfigMerger.
@@ -22,7 +20,6 @@ import kotlin.test.assertTrue
  * Each higher-priority source overrides the same key from lower-priority sources.
  */
 class CapsuleConfigMergerTest {
-
     @TempDir
     lateinit var tempDir: File
 
@@ -31,13 +28,15 @@ class CapsuleConfigMergerTest {
     @Test
     fun `loadFromGradleProperties reads capsule dot-prefixed properties`() {
         val projectDir = File(tempDir, "project").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.tts.engine=espeak
             capsule.tts.espeakVoice=de
             capsule.tts.espeakSpeed=180
             capsule.capture.viewportWidth=1920
             capsule.capture.parallelCaptureEnabled=true
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
 
@@ -61,11 +60,13 @@ class CapsuleConfigMergerTest {
     @Test
     fun `loadFromGradleProperties ignores non-capsule properties`() {
         val projectDir = File(tempDir, "mixed").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             org.gradle.jvmargs=-Xmx2g
             capsule.tts.engine=espeak
             someOtherProperty=value
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
 
@@ -76,10 +77,12 @@ class CapsuleConfigMergerTest {
     @Test
     fun `loadFromGradleProperties ignores commented lines`() {
         val projectDir = File(tempDir, "comments").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             # capsule.tts.engine=piper
             capsule.tts.engine=espeak
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals("espeak", config.tts.engine)
@@ -88,13 +91,15 @@ class CapsuleConfigMergerTest {
     @Test
     fun `loadFromGradleProperties reads distrib and manim sections`() {
         val projectDir = File(tempDir, "dist-man").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.distrib.ffmpegExecutablePath=/usr/local/bin/ffmpeg
             capsule.distrib.outputWidth=720
             capsule.manim.quality=h
             capsule.manim.scriptsDir=manim/scripts
             capsule.manim.outputDir=custom/manim-output
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
 
@@ -151,10 +156,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge returns yaml config when no props or cli`() {
         val projectDir = File(tempDir, "merge1").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            tts = TtsConfig(engine = "espeak", espeakVoice = "de"),
-            capture = CaptureConfig(viewportWidth = 1920, viewportHeight = 1080)
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                tts = TtsConfig(engine = "espeak", espeakVoice = "de"),
+                capture = CaptureConfig(viewportWidth = 1920, viewportHeight = 1080),
+            )
 
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
 
@@ -167,9 +173,10 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge CLI params override YAML config`() {
         val projectDir = File(tempDir, "merge2").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            tts = TtsConfig(engine = "espeak")
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                tts = TtsConfig(engine = "espeak"),
+            )
         val cliParams = mapOf("tts.engine" to "piper")
 
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, cliParams)
@@ -180,15 +187,18 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge YAML overrides gradle properties`() {
         val projectDir = File(tempDir, "merge3").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.tts.engine=espeak
             capsule.capture.viewportWidth=800
-        """.trimIndent())
-
-        val yamlConfig = CapsuleConfig(
-            tts = TtsConfig(engine = "piper"),
-            capture = CaptureConfig(viewportWidth = 1920)
+            """.trimIndent(),
         )
+
+        val yamlConfig =
+            CapsuleConfig(
+                tts = TtsConfig(engine = "piper"),
+                capture = CaptureConfig(viewportWidth = 1920),
+            )
 
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
 
@@ -199,13 +209,16 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge CLI overrides both YAML and gradle properties`() {
         val projectDir = File(tempDir, "merge4").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.tts.engine=espeak
-        """.trimIndent())
-
-        val yamlConfig = CapsuleConfig(
-            tts = TtsConfig(engine = "piper")
+            """.trimIndent(),
         )
+
+        val yamlConfig =
+            CapsuleConfig(
+                tts = TtsConfig(engine = "piper"),
+            )
         val cliParams = mapOf("tts.engine" to "noop")
 
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, cliParams)
@@ -229,10 +242,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge handles partial CLI override`() {
         val projectDir = File(tempDir, "merge6").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            tts = TtsConfig(engine = "espeak", espeakVoice = "de", espeakSpeed = 120),
-            capture = CaptureConfig(viewportWidth = 1920, parallelCaptureEnabled = true)
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                tts = TtsConfig(engine = "espeak", espeakVoice = "de", espeakSpeed = 120),
+                capture = CaptureConfig(viewportWidth = 1920, parallelCaptureEnabled = true),
+            )
         val cliParams = mapOf("tts.engine" to "piper")
 
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, cliParams)
@@ -247,9 +261,10 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge CLI integer param overrides YAML`() {
         val projectDir = File(tempDir, "merge7").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            capture = CaptureConfig(viewportWidth = 800)
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                capture = CaptureConfig(viewportWidth = 800),
+            )
         val cliParams = mapOf("capture.viewportWidth" to 1920)
 
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, cliParams)
@@ -260,9 +275,10 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge CLI boolean param overrides YAML`() {
         val projectDir = File(tempDir, "merge8").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            capture = CaptureConfig(parallelCaptureEnabled = false)
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                capture = CaptureConfig(parallelCaptureEnabled = false),
+            )
         val cliParams = mapOf("capture.parallelCaptureEnabled" to true)
 
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, cliParams)
@@ -275,10 +291,12 @@ class CapsuleConfigMergerTest {
         // When no YAML file exists, gradle.properties is the lowest explicit source.
         // Verify that gradle.properties values come through when yamlLoaded=false
         val projectDir = File(tempDir, "merge9").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.tts.voice=custom-voice
             capsule.tts.espeakSpeed=200
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
 
@@ -291,13 +309,16 @@ class CapsuleConfigMergerTest {
         // ENV < gradle.properties < YAML < CLI
         // We can only test props < YAML < CLI (ENV testing is hard in JVM)
         val projectDir = File(tempDir, "merge10").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.tts.engine=espeak
-        """.trimIndent())
-
-        val yamlConfig = CapsuleConfig(
-            tts = TtsConfig(engine = "piper")
+            """.trimIndent(),
         )
+
+        val yamlConfig =
+            CapsuleConfig(
+                tts = TtsConfig(engine = "piper"),
+            )
 
         // Level 1: YAML overrides props (no CLI)
         val merged1 = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
@@ -311,15 +332,18 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge preserves non-overridden sections from YAML`() {
         val projectDir = File(tempDir, "merge11").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.tts.engine=espeak
-        """.trimIndent())
-
-        val yamlConfig = CapsuleConfig(
-            tts = TtsConfig(engine = "piper", voice = "custom-voice"),
-            capture = CaptureConfig(viewportWidth = 1920, viewportHeight = 1080),
-            distrib = DistribConfig(outputWidth = 720)
+            """.trimIndent(),
         )
+
+        val yamlConfig =
+            CapsuleConfig(
+                tts = TtsConfig(engine = "piper", voice = "custom-voice"),
+                capture = CaptureConfig(viewportWidth = 1920, viewportHeight = 1080),
+                distrib = DistribConfig(outputWidth = 720),
+            )
 
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
 
@@ -333,9 +357,10 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge CLI double param overrides YAML`() {
         val projectDir = File(tempDir, "merge12").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            capture = CaptureConfig(playwrightTimeout = 60_000.0)
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                capture = CaptureConfig(playwrightTimeout = 60_000.0),
+            )
         val cliParams = mapOf("capture.playwrightTimeout" to 30_000.0)
 
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, cliParams)
@@ -350,9 +375,10 @@ class CapsuleConfigMergerTest {
         val projectDir = File(tempDir, "edge1").also { it.mkdirs() }
         File(projectDir, "gradle.properties").writeText("")
 
-        val yamlConfig = CapsuleConfig(
-            tts = TtsConfig(engine = "espeak")
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                tts = TtsConfig(engine = "espeak"),
+            )
 
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
 
@@ -363,11 +389,13 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge with malformed gradle properties line skips it`() {
         val projectDir = File(tempDir, "edge2").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.tts.engine=espeak
             capsule.tts.espeakSpeed
             capsule.tts.espeakVoice=de
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
 
@@ -444,9 +472,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `loadFromGradleProperties reads manim parallelRender`() {
         val projectDir = File(tempDir, "manim-parallel-props").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.manim.parallelRender=true
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
 
@@ -458,9 +488,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `loadFromGradleProperties reads captureTimeoutMinutes`() {
         val projectDir = File(tempDir, "timeout-props").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.capture.captureTimeoutMinutes=2
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
 
@@ -500,10 +532,12 @@ class CapsuleConfigMergerTest {
         val default = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
         assertEquals(false, default.capture.subtitleCartonsEnabled, "subtitleCartonsEnabled should default to false")
         assertEquals(42, default.capture.subtitleMaxChars, "subtitleMaxChars should default to 42")
-        val overridden = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(),
-            mapOf("capture.subtitleCartonsEnabled" to "true", "capture.subtitleMaxChars" to "30")
-        )
+        val overridden =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf("capture.subtitleCartonsEnabled" to "true", "capture.subtitleMaxChars" to "30"),
+            )
         assertEquals(true, overridden.capture.subtitleCartonsEnabled, "CLI subtitleCartonsEnabled should be honored")
         assertEquals(30, overridden.capture.subtitleMaxChars, "CLI subtitleMaxChars should be honored")
     }
@@ -513,9 +547,12 @@ class CapsuleConfigMergerTest {
         val projectDir = File(tempDir, "reuse-capture").also { it.mkdirs() }
         val default = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
         assertEquals(false, default.capture.reuseCapturedVideoEnabled, "reuseCapturedVideoEnabled should default to false")
-        val enabled = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf("capture.reuseCapturedVideoEnabled" to "true")
-        )
+        val enabled =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf("capture.reuseCapturedVideoEnabled" to "true"),
+            )
         assertEquals(true, enabled.capture.reuseCapturedVideoEnabled, "CLI reuseCapturedVideoEnabled should be honored")
     }
 
@@ -526,9 +563,12 @@ class CapsuleConfigMergerTest {
         assertEquals(false, default.qc.preflightEnabled, "qc.preflightEnabled should default to false")
         assertEquals(500, default.qc.maxNoteChars, "qc.maxNoteChars should default to 500")
         assertEquals(false, default.qc.boardsEnabled, "qc.boardsEnabled should default to false")
-        val enabled = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf("qc.preflightEnabled" to "true", "qc.maxNoteChars" to "200", "qc.boardsEnabled" to "true")
-        )
+        val enabled =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf("qc.preflightEnabled" to "true", "qc.maxNoteChars" to "200", "qc.boardsEnabled" to "true"),
+            )
         assertEquals(true, enabled.qc.preflightEnabled, "CLI qc.preflightEnabled should be honored")
         assertEquals(200, enabled.qc.maxNoteChars, "CLI qc.maxNoteChars should be honored")
         assertEquals(true, enabled.qc.boardsEnabled, "CLI qc.boardsEnabled should be honored")
@@ -539,9 +579,12 @@ class CapsuleConfigMergerTest {
         val projectDir = File(tempDir, "tts-pronunciation").also { it.mkdirs() }
         val default = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
         assertEquals(false, default.tts.pronunciationEnabled, "tts.pronunciationEnabled should default to false")
-        val enabled = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf("tts.pronunciationEnabled" to "true")
-        )
+        val enabled =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf("tts.pronunciationEnabled" to "true"),
+            )
         assertEquals(true, enabled.tts.pronunciationEnabled, "CLI tts.pronunciationEnabled should be honored")
     }
 
@@ -556,19 +599,21 @@ class CapsuleConfigMergerTest {
         assertEquals("whisper", default.voice.asrExecutablePath, "voice.asrExecutablePath should default to whisper")
         assertEquals(false, default.voice.selectBestTake, "voice.selectBestTake should default to false")
 
-        val enabled = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(),
-            mapOf(
-                "voice.verifyEnabled" to "true",
-                "voice.maxWordErrorRate" to "0.25",
-                "voice.minSnrDb" to "50.0",
-                "voice.surplusThreshold" to "5",
-                "voice.asrExecutablePath" to "faster-whisper",
-                "voice.asrModel" to "large-v3",
-                "voice.language" to "en",
-                "voice.selectBestTake" to "true",
+        val enabled =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf(
+                    "voice.verifyEnabled" to "true",
+                    "voice.maxWordErrorRate" to "0.25",
+                    "voice.minSnrDb" to "50.0",
+                    "voice.surplusThreshold" to "5",
+                    "voice.asrExecutablePath" to "faster-whisper",
+                    "voice.asrModel" to "large-v3",
+                    "voice.language" to "en",
+                    "voice.selectBestTake" to "true",
+                ),
             )
-        )
         assertEquals(true, enabled.voice.verifyEnabled, "CLI voice.verifyEnabled should be honored")
         assertEquals(true, enabled.voice.selectBestTake, "CLI voice.selectBestTake should be honored")
         assertEquals(0.25, enabled.voice.maxWordErrorRate, "CLI voice.maxWordErrorRate should be honored")
@@ -622,10 +667,12 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge NoYaml uses props input section when CLI absent`() {
         val projectDir = File(tempDir, "no-yaml-input").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.input.outputDir=props-output
             capsule.input.deckSourceDir=props-decks
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
 
@@ -637,9 +684,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge NoYaml CLI overrides props input section`() {
         val projectDir = File(tempDir, "no-yaml-input-cli").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.input.outputDir=props-output
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val cliParams = mapOf("input.outputDir" to "cli-output")
 
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), cliParams, yamlLoaded = false)
@@ -650,11 +699,13 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge NoYaml uses props tts section when CLI absent`() {
         val projectDir = File(tempDir, "no-yaml-tts").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.tts.engine=espeak
             capsule.tts.espeakVoice=de
             capsule.tts.espeakSpeed=180
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
 
@@ -666,9 +717,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge NoYaml CLI overrides props tts section`() {
         val projectDir = File(tempDir, "no-yaml-tts-cli").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.tts.engine=espeak
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val cliParams = mapOf("tts.engine" to "piper", "tts.espeakSpeed" to 200)
 
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), cliParams, yamlLoaded = false)
@@ -680,7 +733,8 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge NoYaml uses props capture section when CLI absent`() {
         val projectDir = File(tempDir, "no-yaml-capture").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.capture.viewportWidth=1920
             capsule.capture.viewportHeight=1080
             capsule.capture.parallelCaptureEnabled=true
@@ -688,7 +742,8 @@ class CapsuleConfigMergerTest {
             capsule.capture.subtitleFormat=vtt
             capsule.capture.subtitleBurnIn=true
             capsule.capture.subtitleBurnInFontSize=32
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
 
@@ -704,14 +759,17 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge NoYaml CLI overrides props capture section`() {
         val projectDir = File(tempDir, "no-yaml-capture-cli").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.capture.viewportWidth=1920
-        """.trimIndent())
-        val cliParams = mapOf(
-            "capture.viewportWidth" to 800,
-            "capture.parallelCaptureEnabled" to true,
-            "capture.subtitleFormat" to "vtt"
+            """.trimIndent(),
         )
+        val cliParams =
+            mapOf(
+                "capture.viewportWidth" to 800,
+                "capture.parallelCaptureEnabled" to true,
+                "capture.subtitleFormat" to "vtt",
+            )
 
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), cliParams, yamlLoaded = false)
 
@@ -723,11 +781,13 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge NoYaml uses props publish section when CLI absent`() {
         val projectDir = File(tempDir, "no-yaml-publish").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.publish.enabled=true
             capsule.publish.title=A title
             capsule.publish.visibility=unlisted
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
 
@@ -739,10 +799,12 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge NoYaml CLI overrides props publish section`() {
         val projectDir = File(tempDir, "no-yaml-publish-cli").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.publish.enabled=true
             capsule.publish.title=props title
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val cliParams = mapOf("publish.enabled" to "false", "publish.title" to "cli title")
 
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), cliParams, yamlLoaded = false)
@@ -754,11 +816,13 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge NoYaml uses props distrib section when CLI absent`() {
         val projectDir = File(tempDir, "no-yaml-distrib").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.distrib.ffmpegExecutablePath=/usr/bin/ffmpeg
             capsule.distrib.outputWidth=720
             capsule.distrib.outputHeight=1280
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
 
@@ -770,9 +834,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge NoYaml CLI overrides props distrib section`() {
         val projectDir = File(tempDir, "no-yaml-distrib-cli").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.distrib.outputWidth=720
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val cliParams = mapOf("distrib.outputWidth" to 1080, "distrib.outputHeight" to 1920)
 
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), cliParams, yamlLoaded = false)
@@ -784,13 +850,15 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge NoYaml uses props manim section when CLI absent`() {
         val projectDir = File(tempDir, "no-yaml-manim").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.manim.executablePath=/opt/manim
             capsule.manim.quality=h
             capsule.manim.scriptsDir=custom/manim
             capsule.manim.parallelRender=true
             capsule.manim.parallelRenderThreads=8
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
 
@@ -804,9 +872,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge NoYaml CLI overrides props manim section`() {
         val projectDir = File(tempDir, "no-yaml-manim-cli").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.manim.quality=h
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val cliParams = mapOf("manim.quality" to "k", "manim.parallelRender" to true)
 
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), cliParams, yamlLoaded = false)
@@ -833,9 +903,11 @@ class CapsuleConfigMergerTest {
         // YAML may explicitly set a blank string. The merger must NOT let a
         // blank YAML override a non-blank props/env value (isNotBlank heuristic).
         val projectDir = File(tempDir, "yaml-blank-fallback").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.tts.engine=espeak
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val yamlConfig = CapsuleConfig(tts = TtsConfig(engine = ""))
 
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
@@ -869,9 +941,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `OutputConfig videoDestinationDir is read from gradle properties`() {
         val projectDir = File(tempDir, "output-props").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.output.videoDestinationDir=/custom/videos
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
 
@@ -931,9 +1005,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `OutputConfig videoDestinationDir blank YAML falls back to props`() {
         val projectDir = File(tempDir, "output-blank-yaml").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.output.videoDestinationDir=/props/videos
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val yamlConfig = CapsuleConfig(output = OutputConfig(videoDestinationDir = ""))
 
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
@@ -962,9 +1038,12 @@ class CapsuleConfigMergerTest {
     fun `strictMode CLI overrides YAML`() {
         val projectDir = File(tempDir, "strict-cli-over-yaml").also { it.mkdirs() }
         val yamlConfig = CapsuleConfig(strictMode = StrictModeConfig(enabled = true))
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, yamlConfig, mapOf("strictMode.enabled" to "false")
-        )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                yamlConfig,
+                mapOf("strictMode.enabled" to "false"),
+            )
         assertEquals(false, merged.strictMode.enabled, "CLI false should override YAML true")
     }
 
@@ -972,18 +1051,23 @@ class CapsuleConfigMergerTest {
     fun `strictMode CLI true overrides YAML false`() {
         val projectDir = File(tempDir, "strict-cli-true").also { it.mkdirs() }
         val yamlConfig = CapsuleConfig(strictMode = StrictModeConfig(enabled = false))
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, yamlConfig, mapOf("strictMode.enabled" to "true")
-        )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                yamlConfig,
+                mapOf("strictMode.enabled" to "true"),
+            )
         assertEquals(true, merged.strictMode.enabled, "CLI true should override YAML false")
     }
 
     @Test
     fun `strictMode is read from gradle properties`() {
         val projectDir = File(tempDir, "strict-props").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.strictMode.enabled=true
-        """.trimIndent())
+            """.trimIndent(),
+        )
         // No YAML file → yamlLoaded=false so props can take effect
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
         assertEquals(true, merged.strictMode.enabled, "props strictMode should be honored when no YAML")
@@ -992,9 +1076,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `strictMode YAML overrides gradle properties`() {
         val projectDir = File(tempDir, "strict-yaml-over-props").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.strictMode.enabled=false
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val yamlConfig = CapsuleConfig(strictMode = StrictModeConfig(enabled = true))
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
         assertEquals(true, merged.strictMode.enabled, "YAML should override props")
@@ -1003,13 +1089,18 @@ class CapsuleConfigMergerTest {
     @Test
     fun `strictMode CLI overrides gradle properties when no YAML`() {
         val projectDir = File(tempDir, "strict-cli-over-props").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.strictMode.enabled=false
-        """.trimIndent())
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf("strictMode.enabled" to "true"),
-            yamlLoaded = false
+            """.trimIndent(),
         )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf("strictMode.enabled" to "true"),
+                yamlLoaded = false,
+            )
         assertEquals(true, merged.strictMode.enabled, "CLI should override props when no YAML")
     }
 
@@ -1023,9 +1114,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `loadFromGradleProperties reads capsule strictMode enabled`() {
         val projectDir = File(tempDir, "strict-props-load").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.strictMode.enabled=true
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(true, config.strictMode.enabled, "loadFromGradleProperties should read strictMode")
     }
@@ -1051,45 +1144,55 @@ class CapsuleConfigMergerTest {
     fun `docsGlobs CLI comma-split overrides YAML`() {
         val projectDir = File(tempDir, "ctx-cli-over-yaml").also { it.mkdirs() }
         val yamlConfig = CapsuleConfig(context = ContextConfig(docsGlobs = listOf("docs/old/**/*.adoc")))
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, yamlConfig, mapOf("context.docsGlobs" to "docs/referential/**/*.adoc,docs/curriculum/**/*.adoc")
-        )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                yamlConfig,
+                mapOf("context.docsGlobs" to "docs/referential/**/*.adoc,docs/curriculum/**/*.adoc"),
+            )
         assertEquals(
             listOf("docs/referential/**/*.adoc", "docs/curriculum/**/*.adoc"),
             merged.context.docsGlobs,
-            "CLI comma-split should override YAML"
+            "CLI comma-split should override YAML",
         )
     }
 
     @Test
     fun `docsGlobs single CLI value is read`() {
         val projectDir = File(tempDir, "ctx-cli-single").also { it.mkdirs() }
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf("context.docsGlobs" to "docs/referential/**/*.adoc")
-        )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf("context.docsGlobs" to "docs/referential/**/*.adoc"),
+            )
         assertEquals(listOf("docs/referential/**/*.adoc"), merged.context.docsGlobs, "CLI single glob")
     }
 
     @Test
     fun `docsGlobs is read from gradle properties`() {
         val projectDir = File(tempDir, "ctx-props").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.context.docsGlobs=docs/referential/**/*.adoc,docs/curriculum/**/*.adoc
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
         assertEquals(
             listOf("docs/referential/**/*.adoc", "docs/curriculum/**/*.adoc"),
             merged.context.docsGlobs,
-            "props docsGlobs comma-split should be honored when no YAML"
+            "props docsGlobs comma-split should be honored when no YAML",
         )
     }
 
     @Test
     fun `docsGlobs YAML overrides gradle properties`() {
         val projectDir = File(tempDir, "ctx-yaml-over-props").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.context.docsGlobs=docs/old/**/*.adoc
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val yamlConfig = CapsuleConfig(context = ContextConfig(docsGlobs = listOf("docs/referential/**/*.adoc")))
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
         assertEquals(listOf("docs/referential/**/*.adoc"), merged.context.docsGlobs, "YAML should override props")
@@ -1098,13 +1201,18 @@ class CapsuleConfigMergerTest {
     @Test
     fun `docsGlobs CLI overrides gradle properties when no YAML`() {
         val projectDir = File(tempDir, "ctx-cli-over-props").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.context.docsGlobs=docs/old/**/*.adoc
-        """.trimIndent())
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf("context.docsGlobs" to "docs/new/**/*.adoc"),
-            yamlLoaded = false
+            """.trimIndent(),
         )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf("context.docsGlobs" to "docs/new/**/*.adoc"),
+                yamlLoaded = false,
+            )
         assertEquals(listOf("docs/new/**/*.adoc"), merged.context.docsGlobs, "CLI should override props when no YAML")
     }
 
@@ -1112,22 +1220,30 @@ class CapsuleConfigMergerTest {
     fun `docsGlobs empty CLI string falls back to YAML`() {
         val projectDir = File(tempDir, "ctx-empty-cli").also { it.mkdirs() }
         val yamlConfig = CapsuleConfig(context = ContextConfig(docsGlobs = listOf("docs/referential/**/*.adoc")))
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, yamlConfig, mapOf("context.docsGlobs" to "")
-        )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                yamlConfig,
+                mapOf("context.docsGlobs" to ""),
+            )
         assertEquals(listOf("docs/referential/**/*.adoc"), merged.context.docsGlobs, "Empty CLI should fall back to YAML")
     }
 
     @Test
     fun `docsGlobs blank CLI string falls back to props`() {
         val projectDir = File(tempDir, "ctx-blank-cli").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.context.docsGlobs=docs/props/**/*.adoc
-        """.trimIndent())
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf("context.docsGlobs" to "  "),
-            yamlLoaded = false
+            """.trimIndent(),
         )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf("context.docsGlobs" to "  "),
+                yamlLoaded = false,
+            )
         assertEquals(listOf("docs/props/**/*.adoc"), merged.context.docsGlobs, "Blank CLI should fall back to props")
     }
 
@@ -1140,9 +1256,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `loadFromGradleProperties reads capsule context docsGlobs`() {
         val projectDir = File(tempDir, "ctx-props-load").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.context.docsGlobs=docs/referential/**/*.adoc
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(listOf("docs/referential/**/*.adoc"), config.context.docsGlobs, "loadFromGradleProperties should read docsGlobs")
     }
@@ -1159,9 +1277,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `loadFromGradleProperties reads capsule capture strategy playwright`() {
         val projectDir = File(tempDir, "strat-props-pw").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.capture.strategy=playwright
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(CaptureStrategy.PLAYWRIGHT, config.capture.strategy, "props should set strategy=PLAYWRIGHT")
     }
@@ -1169,9 +1289,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `loadFromGradleProperties reads capsule capture strategy screenshot`() {
         val projectDir = File(tempDir, "strat-props-ss").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.capture.strategy=screenshot
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(CaptureStrategy.SCREENSHOT, config.capture.strategy, "props should set strategy=SCREENSHOT")
     }
@@ -1179,9 +1301,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `loadFromGradleProperties invalid capture strategy falls back to PLAYWRIGHT`() {
         val projectDir = File(tempDir, "strat-props-invalid").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.capture.strategy=manim
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(CaptureStrategy.PLAYWRIGHT, config.capture.strategy, "invalid strategy should fall back to PLAYWRIGHT")
     }
@@ -1189,9 +1313,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge YAML capture strategy overrides gradle properties`() {
         val projectDir = File(tempDir, "strat-yaml-override").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.capture.strategy=playwright
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val yamlConfig = CapsuleConfig(capture = CaptureConfig(strategy = CaptureStrategy.SCREENSHOT))
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
         assertEquals(CaptureStrategy.SCREENSHOT, merged.capture.strategy, "YAML should override props")
@@ -1200,9 +1326,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge CLI capture strategy overrides YAML and gradle properties`() {
         val projectDir = File(tempDir, "strat-cli-override").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.capture.strategy=playwright
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val yamlConfig = CapsuleConfig(capture = CaptureConfig(strategy = CaptureStrategy.PLAYWRIGHT))
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, mapOf("capture.strategy" to "screenshot"))
         assertEquals(CaptureStrategy.SCREENSHOT, merged.capture.strategy, "CLI should override YAML and props")
@@ -1248,9 +1376,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `output bt709 is read from gradle properties`() {
         val projectDir = File(tempDir, "output-bt709-props").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.output.bt709=true
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(true, config.output.bt709, "props should set output.bt709=true")
     }
@@ -1266,9 +1396,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `loadFromGradleProperties reads capsule output format mp4`() {
         val projectDir = File(tempDir, "fmt-props-mp4").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.output.format=mp4
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(OutputFormat.MP4, config.output.format, "props should set format=MP4")
     }
@@ -1276,9 +1408,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `loadFromGradleProperties reads capsule output format both`() {
         val projectDir = File(tempDir, "fmt-props-both").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.output.format=both
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(OutputFormat.BOTH, config.output.format, "props should set format=BOTH")
     }
@@ -1286,9 +1420,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `loadFromGradleProperties invalid output format falls back to WEBM`() {
         val projectDir = File(tempDir, "fmt-props-invalid").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.output.format=avi
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(OutputFormat.WEBM, config.output.format, "invalid format should fall back to WEBM")
     }
@@ -1296,9 +1432,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge YAML output format overrides gradle properties`() {
         val projectDir = File(tempDir, "fmt-yaml-override").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.output.format=webm
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val yamlConfig = CapsuleConfig(output = OutputConfig(format = OutputFormat.MP4))
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
         assertEquals(OutputFormat.MP4, merged.output.format, "YAML should override props")
@@ -1307,9 +1445,11 @@ class CapsuleConfigMergerTest {
     @Test
     fun `merge CLI output format overrides YAML and gradle properties`() {
         val projectDir = File(tempDir, "fmt-cli-override").also { it.mkdirs() }
-        File(projectDir, "gradle.properties").writeText("""
+        File(projectDir, "gradle.properties").writeText(
+            """
             capsule.output.format=webm
-        """.trimIndent())
+            """.trimIndent(),
+        )
         val yamlConfig = CapsuleConfig(output = OutputConfig(format = OutputFormat.WEBM))
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, mapOf("output.format" to "mp4"))
         assertEquals(OutputFormat.MP4, merged.output.format, "CLI should override YAML and props")
@@ -1352,12 +1492,15 @@ class CapsuleConfigMergerTest {
     fun `validation CLI overrides YAML`() {
         val projectDir = File(tempDir, "validation-cli-over-yaml").also { it.mkdirs() }
         val yamlConfig = CapsuleConfig(validation = ValidationConfig(durationEnabled = true, toleranceSecs = 1.5))
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, yamlConfig, mapOf(
-                "validation.durationEnabled" to "false",
-                "validation.toleranceSecs" to "3.0"
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                yamlConfig,
+                mapOf(
+                    "validation.durationEnabled" to "false",
+                    "validation.toleranceSecs" to "3.0",
+                ),
             )
-        )
         assertEquals(false, merged.validation.durationEnabled, "CLI false should override YAML true")
         assertEquals(3.0, merged.validation.toleranceSecs, 0.001, "CLI toleranceSecs should override YAML")
     }
@@ -1369,7 +1512,7 @@ class CapsuleConfigMergerTest {
             """
             capsule.validation.durationEnabled=true
             capsule.validation.toleranceSecs=0.5
-            """.trimIndent()
+            """.trimIndent(),
         )
         // No YAML file → yamlLoaded=false so props can take effect
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
@@ -1390,9 +1533,12 @@ class CapsuleConfigMergerTest {
         val projectDir = File(tempDir, "validation-integrity").also { it.mkdirs() }
         val default = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap())
         assertEquals(false, default.validation.integrityEnabled, "integrityEnabled should default to false")
-        val overridden = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf("validation.integrityEnabled" to "true")
-        )
+        val overridden =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf("validation.integrityEnabled" to "true"),
+            )
         assertEquals(true, overridden.validation.integrityEnabled, "CLI integrityEnabled=true should be honored")
     }
 
@@ -1418,15 +1564,17 @@ class CapsuleConfigMergerTest {
     @Test
     fun `audioPost is read from YAML`() {
         val projectDir = File(tempDir, "audio-yaml").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            audioPost = AudioPostConfig(
-                bgmEnabled = true,
-                bgmFile = "/music/loop.mp3",
-                bgmLevel = -20.0,
-                loudnessTarget = -14.0,
-                duckingEnabled = true
+        val yamlConfig =
+            CapsuleConfig(
+                audioPost =
+                    AudioPostConfig(
+                        bgmEnabled = true,
+                        bgmFile = "/music/loop.mp3",
+                        bgmLevel = -20.0,
+                        loudnessTarget = -14.0,
+                        duckingEnabled = true,
+                    ),
             )
-        )
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
         assertEquals(true, merged.audioPost.bgmEnabled, "YAML audioPost.bgmEnabled should be honored")
         assertEquals("/music/loop.mp3", merged.audioPost.bgmFile, "YAML audioPost.bgmFile should be honored")
@@ -1438,24 +1586,29 @@ class CapsuleConfigMergerTest {
     @Test
     fun `audioPost CLI overrides YAML`() {
         val projectDir = File(tempDir, "audio-cli-over-yaml").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            audioPost = AudioPostConfig(
-                bgmEnabled = true,
-                bgmFile = "/yaml/music.mp3",
-                bgmLevel = -20.0,
-                loudnessTarget = -14.0,
-                duckingEnabled = true
+        val yamlConfig =
+            CapsuleConfig(
+                audioPost =
+                    AudioPostConfig(
+                        bgmEnabled = true,
+                        bgmFile = "/yaml/music.mp3",
+                        bgmLevel = -20.0,
+                        loudnessTarget = -14.0,
+                        duckingEnabled = true,
+                    ),
             )
-        )
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, yamlConfig, mapOf(
-                "audioPost.bgmEnabled" to "false",
-                "audioPost.bgmFile" to "/cli/music.mp3",
-                "audioPost.bgmLevel" to "-22.0",
-                "audioPost.loudnessTarget" to "-18.0",
-                "audioPost.duckingEnabled" to "false"
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                yamlConfig,
+                mapOf(
+                    "audioPost.bgmEnabled" to "false",
+                    "audioPost.bgmFile" to "/cli/music.mp3",
+                    "audioPost.bgmLevel" to "-22.0",
+                    "audioPost.loudnessTarget" to "-18.0",
+                    "audioPost.duckingEnabled" to "false",
+                ),
             )
-        )
         assertEquals(false, merged.audioPost.bgmEnabled, "CLI false should override YAML true")
         assertEquals("/cli/music.mp3", merged.audioPost.bgmFile, "CLI bgmFile should override YAML")
         assertEquals(-22.0, merged.audioPost.bgmLevel, 0.001, "CLI bgmLevel should override YAML")
@@ -1473,7 +1626,7 @@ class CapsuleConfigMergerTest {
             capsule.audioPost.bgmLevel=-19.0
             capsule.audioPost.loudnessTarget=-15.0
             capsule.audioPost.duckingEnabled=true
-            """.trimIndent()
+            """.trimIndent(),
         )
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
         assertEquals(true, merged.audioPost.bgmEnabled, "props audioPost.bgmEnabled should be honored")
@@ -1491,15 +1644,17 @@ class CapsuleConfigMergerTest {
             capsule.audioPost.bgmEnabled=false
             capsule.audioPost.bgmFile=/props/music.mp3
             capsule.audioPost.bgmLevel=-19.0
-            """.trimIndent()
+            """.trimIndent(),
         )
-        val yamlConfig = CapsuleConfig(
-            audioPost = AudioPostConfig(
-                bgmEnabled = true,
-                bgmFile = "/yaml/music.mp3",
-                bgmLevel = -20.0
+        val yamlConfig =
+            CapsuleConfig(
+                audioPost =
+                    AudioPostConfig(
+                        bgmEnabled = true,
+                        bgmFile = "/yaml/music.mp3",
+                        bgmLevel = -20.0,
+                    ),
             )
-        )
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
         assertEquals(true, merged.audioPost.bgmEnabled, "YAML should override props")
         assertEquals("/yaml/music.mp3", merged.audioPost.bgmFile, "YAML should override props")
@@ -1513,15 +1668,18 @@ class CapsuleConfigMergerTest {
             """
             capsule.audioPost.bgmEnabled=false
             capsule.audioPost.bgmLevel=-19.0
-            """.trimIndent()
+            """.trimIndent(),
         )
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf(
-                "audioPost.bgmEnabled" to "true",
-                "audioPost.bgmLevel" to "-22.0"
-            ),
-            yamlLoaded = false
-        )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf(
+                    "audioPost.bgmEnabled" to "true",
+                    "audioPost.bgmLevel" to "-22.0",
+                ),
+                yamlLoaded = false,
+            )
         assertEquals(true, merged.audioPost.bgmEnabled, "CLI should override props when no YAML")
         assertEquals(-22.0, merged.audioPost.bgmLevel, 0.001, "CLI should override props when no YAML")
     }
@@ -1532,7 +1690,7 @@ class CapsuleConfigMergerTest {
         File(projectDir, "gradle.properties").writeText(
             """
             capsule.audioPost.bgmFile=/props/music.mp3
-            """.trimIndent()
+            """.trimIndent(),
         )
         val yamlConfig = CapsuleConfig(audioPost = AudioPostConfig(bgmFile = ""))
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
@@ -1542,15 +1700,18 @@ class CapsuleConfigMergerTest {
     @Test
     fun `audioPost 5-field round-trip via CLI`() {
         val projectDir = File(tempDir, "audio-roundtrip").also { it.mkdirs() }
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf(
-                "audioPost.bgmEnabled" to "true",
-                "audioPost.bgmFile" to "/rt/music.mp3",
-                "audioPost.bgmLevel" to "-21.0",
-                "audioPost.loudnessTarget" to "-13.0",
-                "audioPost.duckingEnabled" to "true"
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf(
+                    "audioPost.bgmEnabled" to "true",
+                    "audioPost.bgmFile" to "/rt/music.mp3",
+                    "audioPost.bgmLevel" to "-21.0",
+                    "audioPost.loudnessTarget" to "-13.0",
+                    "audioPost.duckingEnabled" to "true",
+                ),
             )
-        )
         assertEquals(true, merged.audioPost.bgmEnabled)
         assertEquals("/rt/music.mp3", merged.audioPost.bgmFile)
         assertEquals(-21.0, merged.audioPost.bgmLevel, 0.001)
@@ -1578,7 +1739,7 @@ class CapsuleConfigMergerTest {
             capsule.audioPost.bgmLevel=-19.0
             capsule.audioPost.loudnessTarget=-15.0
             capsule.audioPost.duckingEnabled=true
-            """.trimIndent()
+            """.trimIndent(),
         )
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(true, config.audioPost.bgmEnabled, "loadFromGradleProperties should read audioPost.bgmEnabled")
@@ -1591,18 +1752,23 @@ class CapsuleConfigMergerTest {
     @Test
     fun `audioPost partial CLI override preserves non-overridden YAML fields`() {
         val projectDir = File(tempDir, "audio-partial-cli").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            audioPost = AudioPostConfig(
-                bgmEnabled = true,
-                bgmFile = "/yaml/music.mp3",
-                bgmLevel = -20.0,
-                loudnessTarget = -14.0,
-                duckingEnabled = true
+        val yamlConfig =
+            CapsuleConfig(
+                audioPost =
+                    AudioPostConfig(
+                        bgmEnabled = true,
+                        bgmFile = "/yaml/music.mp3",
+                        bgmLevel = -20.0,
+                        loudnessTarget = -14.0,
+                        duckingEnabled = true,
+                    ),
             )
-        )
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, yamlConfig, mapOf("audioPost.bgmEnabled" to "false")
-        )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                yamlConfig,
+                mapOf("audioPost.bgmEnabled" to "false"),
+            )
         assertEquals(false, merged.audioPost.bgmEnabled, "CLI overrides bgmEnabled only")
         assertEquals("/yaml/music.mp3", merged.audioPost.bgmFile, "YAML bgmFile preserved when CLI absent")
         assertEquals(-20.0, merged.audioPost.bgmLevel, 0.001, "YAML bgmLevel preserved")
@@ -1637,12 +1803,15 @@ class CapsuleConfigMergerTest {
     fun `transcript CLI overrides YAML`() {
         val projectDir = File(tempDir, "transcript-cli-over-yaml").also { it.mkdirs() }
         val yamlConfig = CapsuleConfig(transcript = TranscriptConfig(enabled = true, strategy = TranscriptStrategy.LLM))
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, yamlConfig, mapOf(
-                "transcript.enabled" to "false",
-                "transcript.strategy" to "template"
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                yamlConfig,
+                mapOf(
+                    "transcript.enabled" to "false",
+                    "transcript.strategy" to "template",
+                ),
             )
-        )
         assertEquals(false, merged.transcript.enabled, "CLI false should override YAML true")
         assertEquals(TranscriptStrategy.TEMPLATE, merged.transcript.strategy, "CLI strategy should override YAML")
     }
@@ -1654,7 +1823,7 @@ class CapsuleConfigMergerTest {
             """
             capsule.transcript.enabled=true
             capsule.transcript.strategy=llm
-            """.trimIndent()
+            """.trimIndent(),
         )
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
         assertEquals(true, merged.transcript.enabled, "props transcript.enabled should be honored")
@@ -1668,7 +1837,7 @@ class CapsuleConfigMergerTest {
             """
             capsule.transcript.enabled=false
             capsule.transcript.strategy=template
-            """.trimIndent()
+            """.trimIndent(),
         )
         val yamlConfig = CapsuleConfig(transcript = TranscriptConfig(enabled = true, strategy = TranscriptStrategy.LLM))
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
@@ -1683,15 +1852,18 @@ class CapsuleConfigMergerTest {
             """
             capsule.transcript.enabled=false
             capsule.transcript.strategy=template
-            """.trimIndent()
+            """.trimIndent(),
         )
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf(
-                "transcript.enabled" to "true",
-                "transcript.strategy" to "llm"
-            ),
-            yamlLoaded = false
-        )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf(
+                    "transcript.enabled" to "true",
+                    "transcript.strategy" to "llm",
+                ),
+                yamlLoaded = false,
+            )
         assertEquals(true, merged.transcript.enabled, "CLI should override props when no YAML")
         assertEquals(TranscriptStrategy.LLM, merged.transcript.strategy, "CLI strategy should override props when no YAML")
     }
@@ -1699,12 +1871,15 @@ class CapsuleConfigMergerTest {
     @Test
     fun `transcript unknown strategy string falls back to TEMPLATE`() {
         val projectDir = File(tempDir, "transcript-unknown-strategy").also { it.mkdirs() }
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf(
-                "transcript.enabled" to "true",
-                "transcript.strategy" to "foobar"
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf(
+                    "transcript.enabled" to "true",
+                    "transcript.strategy" to "foobar",
+                ),
             )
-        )
         assertEquals(true, merged.transcript.enabled, "enabled honored")
         assertEquals(TranscriptStrategy.TEMPLATE, merged.transcript.strategy, "Unknown strategy should fall back to TEMPLATE")
     }
@@ -1713,9 +1888,12 @@ class CapsuleConfigMergerTest {
     fun `transcript partial CLI override preserves non-overridden YAML fields`() {
         val projectDir = File(tempDir, "transcript-partial-cli").also { it.mkdirs() }
         val yamlConfig = CapsuleConfig(transcript = TranscriptConfig(enabled = true, strategy = TranscriptStrategy.LLM))
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, yamlConfig, mapOf("transcript.enabled" to "false")
-        )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                yamlConfig,
+                mapOf("transcript.enabled" to "false"),
+            )
         assertEquals(false, merged.transcript.enabled, "CLI overrides enabled only")
         assertEquals(TranscriptStrategy.LLM, merged.transcript.strategy, "YAML strategy preserved when CLI absent")
     }
@@ -1734,7 +1912,7 @@ class CapsuleConfigMergerTest {
             """
             capsule.transcript.enabled=true
             capsule.transcript.strategy=llm
-            """.trimIndent()
+            """.trimIndent(),
         )
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(true, config.transcript.enabled, "loadFromGradleProperties should read transcript.enabled")
@@ -1758,9 +1936,10 @@ class CapsuleConfigMergerTest {
     @Test
     fun `podcast is read from YAML`() {
         val projectDir = File(tempDir, "podcast-yaml").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            podcast = PodcastConfig(enabled = true, outputFile = "/out/capsule.mp3")
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                podcast = PodcastConfig(enabled = true, outputFile = "/out/capsule.mp3"),
+            )
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
         assertEquals(true, merged.podcast.enabled, "YAML podcast.enabled should be honored")
         assertEquals("/out/capsule.mp3", merged.podcast.outputFile, "YAML podcast.outputFile should be honored")
@@ -1769,15 +1948,19 @@ class CapsuleConfigMergerTest {
     @Test
     fun `podcast CLI overrides YAML`() {
         val projectDir = File(tempDir, "podcast-cli-over-yaml").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            podcast = PodcastConfig(enabled = true, outputFile = "/yaml/podcast.mp3")
-        )
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, yamlConfig, mapOf(
-                "podcast.enabled" to "false",
-                "podcast.outputFile" to "/cli/podcast.mp3"
+        val yamlConfig =
+            CapsuleConfig(
+                podcast = PodcastConfig(enabled = true, outputFile = "/yaml/podcast.mp3"),
             )
-        )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                yamlConfig,
+                mapOf(
+                    "podcast.enabled" to "false",
+                    "podcast.outputFile" to "/cli/podcast.mp3",
+                ),
+            )
         assertEquals(false, merged.podcast.enabled, "CLI false should override YAML true")
         assertEquals("/cli/podcast.mp3", merged.podcast.outputFile, "CLI outputFile should override YAML")
     }
@@ -1789,7 +1972,7 @@ class CapsuleConfigMergerTest {
             """
             capsule.podcast.enabled=true
             capsule.podcast.outputFile=/props/podcast.mp3
-            """.trimIndent()
+            """.trimIndent(),
         )
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
         assertEquals(true, merged.podcast.enabled, "props podcast.enabled should be honored")
@@ -1803,11 +1986,12 @@ class CapsuleConfigMergerTest {
             """
             capsule.podcast.enabled=false
             capsule.podcast.outputFile=/props/podcast.mp3
-            """.trimIndent()
+            """.trimIndent(),
         )
-        val yamlConfig = CapsuleConfig(
-            podcast = PodcastConfig(enabled = true, outputFile = "/yaml/podcast.mp3")
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                podcast = PodcastConfig(enabled = true, outputFile = "/yaml/podcast.mp3"),
+            )
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
         assertEquals(true, merged.podcast.enabled, "YAML should override props")
         assertEquals("/yaml/podcast.mp3", merged.podcast.outputFile, "YAML should override props")
@@ -1820,15 +2004,18 @@ class CapsuleConfigMergerTest {
             """
             capsule.podcast.enabled=false
             capsule.podcast.outputFile=/props/podcast.mp3
-            """.trimIndent()
+            """.trimIndent(),
         )
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf(
-                "podcast.enabled" to "true",
-                "podcast.outputFile" to "/cli/podcast.mp3"
-            ),
-            yamlLoaded = false
-        )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf(
+                    "podcast.enabled" to "true",
+                    "podcast.outputFile" to "/cli/podcast.mp3",
+                ),
+                yamlLoaded = false,
+            )
         assertEquals(true, merged.podcast.enabled, "CLI should override props when no YAML")
         assertEquals("/cli/podcast.mp3", merged.podcast.outputFile, "CLI should override props when no YAML")
     }
@@ -1836,12 +2023,16 @@ class CapsuleConfigMergerTest {
     @Test
     fun `podcast partial CLI override preserves non-overridden YAML fields`() {
         val projectDir = File(tempDir, "podcast-partial-cli").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            podcast = PodcastConfig(enabled = true, outputFile = "/yaml/podcast.mp3")
-        )
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, yamlConfig, mapOf("podcast.enabled" to "false")
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                podcast = PodcastConfig(enabled = true, outputFile = "/yaml/podcast.mp3"),
+            )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                yamlConfig,
+                mapOf("podcast.enabled" to "false"),
+            )
         assertEquals(false, merged.podcast.enabled, "CLI overrides enabled only")
         assertEquals("/yaml/podcast.mp3", merged.podcast.outputFile, "YAML outputFile preserved when CLI absent")
     }
@@ -1860,7 +2051,7 @@ class CapsuleConfigMergerTest {
             """
             capsule.podcast.enabled=true
             capsule.podcast.outputFile=/props/podcast.mp3
-            """.trimIndent()
+            """.trimIndent(),
         )
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(true, config.podcast.enabled, "loadFromGradleProperties should read podcast.enabled")
@@ -1879,9 +2070,10 @@ class CapsuleConfigMergerTest {
     @Test
     fun `preview is read from YAML`() {
         val projectDir = File(tempDir, "preview-yaml").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            preview = PreviewConfig(enabled = true)
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                preview = PreviewConfig(enabled = true),
+            )
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
         assertEquals(true, merged.preview.enabled, "YAML preview.enabled should be honored")
     }
@@ -1889,13 +2081,16 @@ class CapsuleConfigMergerTest {
     @Test
     fun `preview CLI overrides YAML`() {
         val projectDir = File(tempDir, "preview-cli-over-yaml").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            preview = PreviewConfig(enabled = false)
-        )
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, yamlConfig,
-            mapOf("preview.enabled" to "true")
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                preview = PreviewConfig(enabled = false),
+            )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                yamlConfig,
+                mapOf("preview.enabled" to "true"),
+            )
         assertEquals(true, merged.preview.enabled, "CLI true should override YAML false")
     }
 
@@ -1905,7 +2100,7 @@ class CapsuleConfigMergerTest {
         File(projectDir, "gradle.properties").writeText(
             """
             capsule.preview.enabled=true
-            """.trimIndent()
+            """.trimIndent(),
         )
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
         assertEquals(true, merged.preview.enabled, "props capsule.preview.enabled should be honored")
@@ -1917,11 +2112,12 @@ class CapsuleConfigMergerTest {
         File(projectDir, "gradle.properties").writeText(
             """
             capsule.preview.enabled=false
-            """.trimIndent()
+            """.trimIndent(),
         )
-        val yamlConfig = CapsuleConfig(
-            preview = PreviewConfig(enabled = true)
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                preview = PreviewConfig(enabled = true),
+            )
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
         assertEquals(true, merged.preview.enabled, "YAML should override props")
     }
@@ -1932,12 +2128,14 @@ class CapsuleConfigMergerTest {
         File(projectDir, "gradle.properties").writeText(
             """
             capsule.preview.enabled=false
-            """.trimIndent()
+            """.trimIndent(),
         )
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(),
-            mapOf("preview.enabled" to "true")
-        )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf("preview.enabled" to "true"),
+            )
         assertEquals(true, merged.preview.enabled, "CLI should override props when no YAML")
     }
 
@@ -1953,7 +2151,7 @@ class CapsuleConfigMergerTest {
         File(projectDir, "gradle.properties").writeText(
             """
             capsule.preview.enabled=true
-            """.trimIndent()
+            """.trimIndent(),
         )
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(true, config.preview.enabled, "loadFromGradleProperties should read preview.enabled")
@@ -1979,9 +2177,10 @@ class CapsuleConfigMergerTest {
     @Test
     fun `chapters is read from YAML`() {
         val projectDir = File(tempDir, "chapters-yaml").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            chapters = ChaptersConfig(enabled = true, introText = "Welcome", outroText = "Goodbye", outputDir = "chapters/")
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                chapters = ChaptersConfig(enabled = true, introText = "Welcome", outroText = "Goodbye", outputDir = "chapters/"),
+            )
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
         assertEquals(true, merged.chapters.enabled, "YAML chapters.enabled should be honored")
         assertEquals("Welcome", merged.chapters.introText, "YAML chapters.introText should be honored")
@@ -1992,16 +2191,20 @@ class CapsuleConfigMergerTest {
     @Test
     fun `chapters CLI overrides YAML`() {
         val projectDir = File(tempDir, "chapters-cli-over-yaml").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            chapters = ChaptersConfig(enabled = false, introText = "YAML Intro", outroText = "YAML Outro")
-        )
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, yamlConfig, mapOf(
-                "chapters.enabled" to "true",
-                "chapters.introText" to "CLI Intro",
-                "chapters.outroText" to "CLI Outro"
+        val yamlConfig =
+            CapsuleConfig(
+                chapters = ChaptersConfig(enabled = false, introText = "YAML Intro", outroText = "YAML Outro"),
             )
-        )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                yamlConfig,
+                mapOf(
+                    "chapters.enabled" to "true",
+                    "chapters.introText" to "CLI Intro",
+                    "chapters.outroText" to "CLI Outro",
+                ),
+            )
         assertEquals(true, merged.chapters.enabled, "CLI true should override YAML false")
         assertEquals("CLI Intro", merged.chapters.introText, "CLI introText should override YAML")
         assertEquals("CLI Outro", merged.chapters.outroText, "CLI outroText should override YAML")
@@ -2016,7 +2219,7 @@ class CapsuleConfigMergerTest {
             capsule.chapters.introText=Props Intro
             capsule.chapters.outroText=Props Outro
             capsule.chapters.outputDir=props/chapters/
-            """.trimIndent()
+            """.trimIndent(),
         )
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
         assertEquals(true, merged.chapters.enabled, "props chapters.enabled should be honored")
@@ -2032,11 +2235,12 @@ class CapsuleConfigMergerTest {
             """
             capsule.chapters.enabled=false
             capsule.chapters.introText=Props Intro
-            """.trimIndent()
+            """.trimIndent(),
         )
-        val yamlConfig = CapsuleConfig(
-            chapters = ChaptersConfig(enabled = true, introText = "YAML Intro")
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                chapters = ChaptersConfig(enabled = true, introText = "YAML Intro"),
+            )
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
         assertEquals(true, merged.chapters.enabled, "YAML should override props")
         assertEquals("YAML Intro", merged.chapters.introText, "YAML should override props")
@@ -2048,23 +2252,30 @@ class CapsuleConfigMergerTest {
         File(projectDir, "gradle.properties").writeText(
             """
             capsule.chapters.enabled=false
-            """.trimIndent()
+            """.trimIndent(),
         )
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf("chapters.enabled" to "true")
-        )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf("chapters.enabled" to "true"),
+            )
         assertEquals(true, merged.chapters.enabled, "CLI should override props when no YAML")
     }
 
     @Test
     fun `chapters partial CLI override preserves non-overridden YAML fields`() {
         val projectDir = File(tempDir, "chapters-partial-cli").also { it.mkdirs() }
-        val yamlConfig = CapsuleConfig(
-            chapters = ChaptersConfig(enabled = true, introText = "YAML Intro", outroText = "YAML Outro")
-        )
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, yamlConfig, mapOf("chapters.enabled" to "false")
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                chapters = ChaptersConfig(enabled = true, introText = "YAML Intro", outroText = "YAML Outro"),
+            )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                yamlConfig,
+                mapOf("chapters.enabled" to "false"),
+            )
         assertEquals(false, merged.chapters.enabled, "CLI overrides enabled only")
         assertEquals("YAML Intro", merged.chapters.introText, "YAML introText preserved when CLI absent")
         assertEquals("YAML Outro", merged.chapters.outroText, "YAML outroText preserved when CLI absent")
@@ -2088,7 +2299,7 @@ class CapsuleConfigMergerTest {
             capsule.chapters.introText=Hello
             capsule.chapters.outroText=Bye
             capsule.chapters.outputDir=out/chapters/
-            """.trimIndent()
+            """.trimIndent(),
         )
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(true, config.chapters.enabled, "loadFromGradleProperties should read chapters.enabled")
@@ -2103,7 +2314,7 @@ class CapsuleConfigMergerTest {
         File(projectDir, "gradle.properties").writeText(
             """
             capsule.chapters.introText=Props Intro
-            """.trimIndent()
+            """.trimIndent(),
         )
         val yamlConfig = CapsuleConfig(chapters = ChaptersConfig(introText = ""))
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
@@ -2135,7 +2346,7 @@ class CapsuleConfigMergerTest {
             capsule.viral.hook=Hook props
             capsule.viral.cta=CTA props
             capsule.viral.storyboardFile=story/board.adoc
-            """.trimIndent()
+            """.trimIndent(),
         )
         val config = CapsuleConfigMerger.loadFromGradleProperties(projectDir)
         assertEquals(true, config.viral.enabled, "props should read viral.enabled")
@@ -2153,16 +2364,18 @@ class CapsuleConfigMergerTest {
             """
             capsule.viral.platform=REELS
             capsule.viral.targetDurationSeconds=20
-            """.trimIndent()
+            """.trimIndent(),
         )
-        val yamlConfig = CapsuleConfig(
-            viral = ViralConfig(enabled = true, platform = ViralPlatform.YOUTUBE_SHORT, targetDurationSeconds = 40)
-        )
-        val merged = CapsuleConfigMerger.merge(
-            projectDir,
-            yamlConfig,
-            mapOf("viral.platform" to "tiktok", "viral.targetDurationSeconds" to "55")
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                viral = ViralConfig(enabled = true, platform = ViralPlatform.YOUTUBE_SHORT, targetDurationSeconds = 40),
+            )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                yamlConfig,
+                mapOf("viral.platform" to "tiktok", "viral.targetDurationSeconds" to "55"),
+            )
         assertEquals("TIKTOK", merged.viral.platform.name, "CLI viral.platform should win")
         assertEquals(55, merged.viral.targetDurationSeconds, "CLI viral.targetDurationSeconds should win")
     }
@@ -2174,11 +2387,12 @@ class CapsuleConfigMergerTest {
             """
             capsule.viral.platform=REELS
             capsule.viral.hook=Hook props
-            """.trimIndent()
+            """.trimIndent(),
         )
-        val yamlConfig = CapsuleConfig(
-            viral = ViralConfig(enabled = true, platform = ViralPlatform.YOUTUBE_SHORT, hook = "Hook yaml")
-        )
+        val yamlConfig =
+            CapsuleConfig(
+                viral = ViralConfig(enabled = true, platform = ViralPlatform.YOUTUBE_SHORT, hook = "Hook yaml"),
+            )
         val merged = CapsuleConfigMerger.merge(projectDir, yamlConfig, emptyMap())
         assertEquals("YOUTUBE_SHORT", merged.viral.platform.name, "YAML viral.platform should win over props")
         assertEquals("Hook yaml", merged.viral.hook, "YAML viral.hook should win over props")
@@ -2192,7 +2406,7 @@ class CapsuleConfigMergerTest {
             capsule.viral.enabled=true
             capsule.viral.platform=TIKTOK
             capsule.viral.targetDurationSeconds=42
-            """.trimIndent()
+            """.trimIndent(),
         )
         // yamlLoaded = false simulates an absent YAML file: props/ENV apply.
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
@@ -2209,7 +2423,7 @@ class CapsuleConfigMergerTest {
             capsule.publish.enabled=true
             capsule.publish.title=From properties
             capsule.publish.tags=video,cccp
-            """.trimIndent()
+            """.trimIndent(),
         )
         // yamlLoaded = false simulates an absent YAML file: props/ENV apply.
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
@@ -2225,9 +2439,13 @@ class CapsuleConfigMergerTest {
         val projectDir = File(tempDir, "publish-cli").also { it.mkdirs() }
         File(projectDir, "gradle.properties").writeText("capsule.publish.title=From properties")
 
-        val merged = CapsuleConfigMerger.merge(
-            projectDir, CapsuleConfig(), mapOf("publish.title" to "From CLI"), yamlLoaded = false,
-        )
+        val merged =
+            CapsuleConfigMerger.merge(
+                projectDir,
+                CapsuleConfig(),
+                mapOf("publish.title" to "From CLI"),
+                yamlLoaded = false,
+            )
 
         assertEquals("From CLI", merged.publish.title, "CLI should override properties")
     }

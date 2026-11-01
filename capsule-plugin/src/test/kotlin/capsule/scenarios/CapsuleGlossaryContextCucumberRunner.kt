@@ -21,10 +21,10 @@ import org.junit.platform.suite.api.Suite
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-glossary-context.html, json:build/reports/cucumber-glossary-context.json"
+    value = "pretty, html:build/reports/cucumber-glossary-context.html, json:build/reports/cucumber-glossary-context.json",
 )
 @ConfigurationParameter(
     key = FILTER_TAGS_PROPERTY_NAME,
-    value = "@context and @glossary and not @wip and not @integration"
+    value = "@context and @glossary and not @wip and not @integration",
 )
 class CapsuleGlossaryContextCucumberRunner

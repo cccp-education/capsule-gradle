@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
  * ```
  */
 object PlaywrightTestAssumption {
-
     fun assumePlaywrightAvailable() {
         val hasProperty = System.getProperty("runPlaywrightTests") != null
         val isCi = System.getenv("CI") == "true"

@@ -18,14 +18,14 @@ import kotlin.test.assertTrue
  * Pure — no I/O, no browser, no FFmpeg.
  */
 class ViralDeckBuilderTest {
-
     private fun storyboard(
         visualIdentity: VisualIdentity? = null,
-        beats: List<StoryboardBeat> = listOf(
-            StoryboardBeat("hook", "Un site perso, sans HTML", 3.0),
-            StoryboardBeat("development", "Scaffold bakery", 10.0),
-            StoryboardBeat("cta", "bakery-gradle + opencode", 7.0),
-        ),
+        beats: List<StoryboardBeat> =
+            listOf(
+                StoryboardBeat("hook", "Un site perso, sans HTML", 3.0),
+                StoryboardBeat("development", "Scaffold bakery", 10.0),
+                StoryboardBeat("cta", "bakery-gradle + opencode", 7.0),
+            ),
     ) = ViralStoryboard(
         message = "Créer son site perso avec bakery + opencode",
         angle = "L'agent écrit, Gradle bake",
@@ -70,45 +70,51 @@ class ViralDeckBuilderTest {
 
     @Test
     fun `deck marks a manim beat with its scene and asset`() {
-        val deck = ViralDeckBuilder.build(
-            storyboard(
-                beats = listOf(
-                    StoryboardBeat("hook", "h", 3.0),
-                    StoryboardBeat("development", "d", 10.0, type = SlideType.MANIM, manimScene = "MoveSquare"),
-                    StoryboardBeat("cta", "c", 7.0, asset = "logo.png"),
+        val deck =
+            ViralDeckBuilder.build(
+                storyboard(
+                    beats =
+                        listOf(
+                            StoryboardBeat("hook", "h", 3.0),
+                            StoryboardBeat("development", "d", 10.0, type = SlideType.MANIM, manimScene = "MoveSquare"),
+                            StoryboardBeat("cta", "c", 7.0, asset = "logo.png"),
+                        ),
                 ),
-            ),
-        )
+            )
         assertTrue(deck.contains("data-manim=\"MoveSquare\""))
         assertTrue(deck.contains("data-asset=\"logo.png\""))
     }
 
     @Test
     fun `deck escapes html in the beat intent`() {
-        val deck = ViralDeckBuilder.build(
-            storyboard(
-                beats = listOf(
-                    StoryboardBeat("hook", "a <b> & c", 3.0),
-                    StoryboardBeat("cta", "d", 17.0),
+        val deck =
+            ViralDeckBuilder.build(
+                storyboard(
+                    beats =
+                        listOf(
+                            StoryboardBeat("hook", "a <b> & c", 3.0),
+                            StoryboardBeat("cta", "d", 17.0),
+                        ),
                 ),
-            ),
-        )
+            )
         assertTrue(deck.contains("a &lt;b&gt; &amp; c"))
         assertFalse(deck.contains("a <b> & c"))
     }
 
     @Test
     fun `deck injects the brand tokens when a visual identity is carried`() {
-        val deck = ViralDeckBuilder.build(
-            storyboard(
-                visualIdentity = VisualIdentity(
-                    brand = "cheroliv.com",
-                    format = "9:16 (1080x1920)",
-                    tokens = linkedMapOf("--accent-color" to "#0d6efd", "--footer-bg" to "#7952b3"),
-                    typography = "Inter",
+        val deck =
+            ViralDeckBuilder.build(
+                storyboard(
+                    visualIdentity =
+                        VisualIdentity(
+                            brand = "cheroliv.com",
+                            format = "9:16 (1080x1920)",
+                            tokens = linkedMapOf("--accent-color" to "#0d6efd", "--footer-bg" to "#7952b3"),
+                            typography = "Inter",
+                        ),
                 ),
-            ),
-        )
+            )
         assertTrue(deck.contains("--accent-color: #0d6efd"))
         assertTrue(deck.contains("--footer-bg: #7952b3"))
         assertTrue(deck.contains("cheroliv.com"))

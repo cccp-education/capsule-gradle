@@ -31,7 +31,6 @@ class CapsulePipelineDefinition(
     private val promptBuilder: CapsulePromptBuilder,
     private val llm: CapsuleLlm,
 ) : PipelineDefinition<CapsuleState> {
-
     override val name: String = NAME
 
     override fun propose(state: CapsuleState): CapsuleState {
@@ -46,16 +45,18 @@ class CapsulePipelineDefinition(
 
     override fun validate(state: CapsuleState): CapsuleState =
         when (val result = ContentPlanValidator.validate(state.contentPlanJson)) {
-            is ContentPlanValidationResult.Valid -> state.copy(
-                contextValid = true,
-                stage = CapsuleStage.CONTEXT_VALIDATED,
-            )
-            is ContentPlanValidationResult.Invalid -> state.copy(
-                contextValid = false,
-                validationError = result.error,
-                error = result.error,
-                stage = CapsuleStage.FAILED,
-            )
+            is ContentPlanValidationResult.Valid ->
+                state.copy(
+                    contextValid = true,
+                    stage = CapsuleStage.CONTEXT_VALIDATED,
+                )
+            is ContentPlanValidationResult.Invalid ->
+                state.copy(
+                    contextValid = false,
+                    validationError = result.error,
+                    error = result.error,
+                    stage = CapsuleStage.FAILED,
+                )
         }
 
     override fun generate(state: CapsuleState): CapsuleState {
@@ -73,13 +74,19 @@ class CapsulePipelineDefinition(
 
     override fun isFailed(state: CapsuleState): Boolean = state.stage == CapsuleStage.FAILED
 
-    override fun onProposeFailure(state: CapsuleState, cause: Throwable): CapsuleState =
+    override fun onProposeFailure(
+        state: CapsuleState,
+        cause: Throwable,
+    ): CapsuleState =
         state.copy(
             stage = CapsuleStage.FAILED,
             error = "ProposeContextFailed: ${cause.message}",
         )
 
-    override fun onGenerateFailure(state: CapsuleState, cause: Throwable): CapsuleState =
+    override fun onGenerateFailure(
+        state: CapsuleState,
+        cause: Throwable,
+    ): CapsuleState =
         state.copy(
             stage = CapsuleStage.FAILED,
             error = "GenerateSpeakerNotesFailed: ${cause.message}",

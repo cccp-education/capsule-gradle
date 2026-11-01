@@ -16,7 +16,6 @@ package capsule.viral
  * Pure — no Gradle, no I/O.
  */
 object ViralBatchPlanner {
-
     /**
      * Builds the campaign variant matrix.
      *

@@ -47,7 +47,6 @@ import org.gradle.work.DisableCachingByDefault
  */
 @DisableCachingByDefault(because = "Transcript generation (LLM enrichment)")
 abstract class GenerateCapsuleTranscriptTask : DefaultTask() {
-
     /** Source speaker notes AsciiDoc produced by `generateCapsuleContent`. */
     @get:InputFile
     @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -87,30 +86,32 @@ abstract class GenerateCapsuleTranscriptTask : DefaultTask() {
         val notesContent = notesFile.readText()
 
         val script = AsciidocSpeakerNoteParser.parse(notesContent, deckName)
-        val plan = TranscriptPlan(
-            deckName = deckName,
-            segments = script.segments,
-            language = language.get(),
-            outputPath = output.absolutePath,
-        )
+        val plan =
+            TranscriptPlan(
+                deckName = deckName,
+                segments = script.segments,
+                language = language.get(),
+                outputPath = output.absolutePath,
+            )
 
         val template = TranscriptBuilder.build(plan)
 
-        val article = when (strategy.get()) {
-            TranscriptStrategy.TEMPLATE -> template
-            TranscriptStrategy.LLM -> {
-                val provider = project.aiProvider
-                val model = project.resolveModel(provider, llmService)
-                val enhancer = ChatModelTranscriptEnhancer(model)
-                enhancer.enhance(template, plan)
+        val article =
+            when (strategy.get()) {
+                TranscriptStrategy.TEMPLATE -> template
+                TranscriptStrategy.LLM -> {
+                    val provider = project.aiProvider
+                    val model = project.resolveModel(provider, llmService)
+                    val enhancer = ChatModelTranscriptEnhancer(model)
+                    enhancer.enhance(template, plan)
+                }
             }
-        }
 
         output.parentFile.mkdirs()
         output.writeText(article)
 
         logger.lifecycle(
-            "CAPSULE TRANSCRIPT → ${output.name} (${article.length} chars, strategy=${strategy.get()})"
+            "CAPSULE TRANSCRIPT → ${output.name} (${article.length} chars, strategy=${strategy.get()})",
         )
     }
 }

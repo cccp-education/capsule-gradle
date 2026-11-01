@@ -15,9 +15,9 @@ import capsule.voice.VoiceVerifier
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
-import java.io.File
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import java.io.File
 
 /**
  * Pure-domain BDD steps for `capsule_voice_verification.feature` (CAP-QC-VOICE US-2).
@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
  * is classpath-wide).
  */
 class CapsuleVoiceVerificationSteps {
-
     private val takes = mutableListOf<VoiceTake>()
     private var transcript: String = ""
     private var recognitionFails: Boolean = false
@@ -39,14 +38,17 @@ class CapsuleVoiceVerificationSteps {
     private var selections: List<VoiceSelection> = emptyList()
 
     @Given("a voice verification take {int} expecting {string}")
-    fun aVoiceVerificationTake(index: Int, expected: String) {
+    fun aVoiceVerificationTake(
+        index: Int,
+        expected: String,
+    ) {
         takes.add(
             VoiceTake(
                 deckName = "demo",
                 slideIndex = index,
                 expectedText = expected,
                 audioFile = File("slide-%02d.mp3".format(index)),
-            )
+            ),
         )
     }
 
@@ -79,14 +81,16 @@ class CapsuleVoiceVerificationSteps {
     fun theVoiceVerificationRuns() {
         val thresholds = VoiceThresholds()
         val envelopeProvider: (File) -> DoubleArray? = { envelope }
-        report = if (asrUnavailable) {
-            VoiceVerifier.degraded(takes.toList(), thresholds, envelopeProvider = envelopeProvider)
-        } else {
-            val fake = SpeechRecognizer { _, _ ->
-                if (recognitionFails) throw SpeechRecognizerException("fake ASR failure") else transcript
+        report =
+            if (asrUnavailable) {
+                VoiceVerifier.degraded(takes.toList(), thresholds, envelopeProvider = envelopeProvider)
+            } else {
+                val fake =
+                    SpeechRecognizer { _, _ ->
+                        if (recognitionFails) throw SpeechRecognizerException("fake ASR failure") else transcript
+                    }
+                VoiceVerifier.verify(takes.toList(), fake, thresholds, "fr", envelopeProvider)
             }
-            VoiceVerifier.verify(takes.toList(), fake, thresholds, "fr", envelopeProvider)
-        }
     }
 
     @Then("the voice verification has no failure")
@@ -105,36 +109,49 @@ class CapsuleVoiceVerificationSteps {
     }
 
     @Then("the voice verification take {int} is {word}")
-    fun theVoiceVerificationTakeIs(index: Int, verdictName: String) {
+    fun theVoiceVerificationTakeIs(
+        index: Int,
+        verdictName: String,
+    ) {
         val take = report!!.takes.first { it.slideIndex == index }
-        val matches = when (verdictName.uppercase()) {
-            "PASS" -> take.verdict == VoiceVerdict.Pass
-            "FAIL" -> take.verdict is VoiceVerdict.Fail
-            "DEGRADED" -> take.verdict is VoiceVerdict.Degraded
-            else -> false
-        }
+        val matches =
+            when (verdictName.uppercase()) {
+                "PASS" -> take.verdict == VoiceVerdict.Pass
+                "FAIL" -> take.verdict is VoiceVerdict.Fail
+                "DEGRADED" -> take.verdict is VoiceVerdict.Degraded
+                else -> false
+            }
         assertTrue(matches, "expected take $index to be $verdictName, got ${take.verdict}")
     }
 
     @Then("the voice verification report lists reason {string}")
     fun theVoiceVerificationReportListsReason(reason: String) {
-        val reasons = report!!.takes.flatMap { take ->
-            when (val verdict = take.verdict) {
-                is VoiceVerdict.Fail -> verdict.reasons
-                is VoiceVerdict.Degraded -> listOf(verdict.reason)
-                is VoiceVerdict.Pass -> emptyList()
+        val reasons =
+            report!!.takes.flatMap { take ->
+                when (val verdict = take.verdict) {
+                    is VoiceVerdict.Fail -> verdict.reasons
+                    is VoiceVerdict.Degraded -> listOf(verdict.reason)
+                    is VoiceVerdict.Pass -> emptyList()
+                }
             }
-        }
         assertTrue(reason in reasons, "expected reason '$reason' in $reasons")
     }
 
     @Given("a voice verification candidate {int} named {string} expecting {string} transcribed {string}")
-    fun aVoiceVerificationCandidate(index: Int, name: String, expected: String, spoken: String) {
+    fun aVoiceVerificationCandidate(
+        index: Int,
+        name: String,
+        expected: String,
+        spoken: String,
+    ) {
         candidates.add(candidateVerification(index, name, expected, spoken))
     }
 
     @Given("a degraded voice verification candidate {int} named {string}")
-    fun aDegradedVoiceVerificationCandidate(index: Int, name: String) {
+    fun aDegradedVoiceVerificationCandidate(
+        index: Int,
+        name: String,
+    ) {
         candidates.add(
             TakeVerification(
                 deckName = "demo",
@@ -146,7 +163,7 @@ class CapsuleVoiceVerificationSteps {
                 surplus = null,
                 snrDb = null,
                 verdict = VoiceVerdict.Degraded(VoiceVerifier.REASON_ASR_ERROR),
-            )
+            ),
         )
     }
 
@@ -156,16 +173,27 @@ class CapsuleVoiceVerificationSteps {
     }
 
     @Then("the chosen voice take for slide {int} is {string}")
-    fun theChosenVoiceTakeForSlideIs(index: Int, name: String) {
+    fun theChosenVoiceTakeForSlideIs(
+        index: Int,
+        name: String,
+    ) {
         assertEquals(name, selections.first { it.slideIndex == index }.chosenAudioFile)
     }
 
     @Then("the chosen voice take count for slide {int} is {int}")
-    fun theChosenVoiceTakeCountForSlideIs(index: Int, count: Int) {
+    fun theChosenVoiceTakeCountForSlideIs(
+        index: Int,
+        count: Int,
+    ) {
         assertEquals(count, selections.first { it.slideIndex == index }.candidateCount)
     }
 
-    private fun candidateVerification(index: Int, name: String, expected: String, spoken: String): TakeVerification {
+    private fun candidateVerification(
+        index: Int,
+        name: String,
+        expected: String,
+        spoken: String,
+    ): TakeVerification {
         val thresholds = VoiceThresholds()
         val score = FidelityScorer.score(expected, spoken)
         return TakeVerification(

@@ -10,16 +10,17 @@ import java.io.File
 
 @DisableCachingByDefault(because = "Filesystem-bound: invokes FFmpeg process for video cropping")
 open class CapsuleDistribTask : DefaultTask() {
-
     @get:OutputDirectory
     val outputDir: DirectoryProperty = project.objects.directoryProperty()
 
     @get:Internal
     internal var capsuleExtension: CapsuleExtension
-        get() = _capsuleExtension ?: project.extensions.getByType(CapsuleExtension::class.java).also { _capsuleExtension = it }
-        set(value) { _capsuleExtension = value }
+        get() = capsuleExtensionCache ?: project.extensions.getByType(CapsuleExtension::class.java).also { capsuleExtensionCache = it }
+        set(value) {
+            capsuleExtensionCache = value
+        }
 
-    private var _capsuleExtension: CapsuleExtension? = null
+    private var capsuleExtensionCache: CapsuleExtension? = null
 
     init {
         outputDir.convention(project.layout.buildDirectory.dir("capsule/distrib"))
@@ -27,12 +28,16 @@ open class CapsuleDistribTask : DefaultTask() {
 
     @TaskAction
     fun execute() {
-        val capDir = project.layout.buildDirectory.dir(
-            capsuleExtension.outputDir.get()
-        ).get().asFile
+        val capDir =
+            project.layout.buildDirectory
+                .dir(
+                    capsuleExtension.outputDir.get(),
+                ).get()
+                .asFile
 
-        val videos = capDir.listFiles { f -> f.name.endsWith(".webm") }?.toList()
-            ?: emptyList()
+        val videos =
+            capDir.listFiles { f -> f.name.endsWith(".webm") }?.toList()
+                ?: emptyList()
 
         if (videos.isEmpty()) {
             logger.warn("No capsule videos found in {}. Run 'generateCapsuleVideo' first.", capDir.absolutePath)
@@ -83,24 +88,28 @@ open class CapsuleDistribTask : DefaultTask() {
         output: File,
         ffmpeg: String,
         targetWidth: Int,
-        targetHeight: Int
+        targetHeight: Int,
     ) {
-        val result = ProcessRunner.run(
-            listOf(
-                ffmpeg, "-y",
-                "-i", input.absolutePath,
-                "-vf", "scale=$targetWidth:$targetHeight:force_original_aspect_ratio=increase,crop=$targetWidth:$targetHeight",
-                "-c:a", "copy",
-                output.absolutePath,
+        val result =
+            ProcessRunner.run(
+                listOf(
+                    ffmpeg,
+                    "-y",
+                    "-i",
+                    input.absolutePath,
+                    "-vf",
+                    "scale=$targetWidth:$targetHeight:force_original_aspect_ratio=increase,crop=$targetWidth:$targetHeight",
+                    "-c:a",
+                    "copy",
+                    output.absolutePath,
+                ),
             )
-        )
         if (!result.isSuccess) {
             throw RuntimeException("FFmpeg exited with code ${result.exitCode}: ${result.tail()}")
         }
     }
 
-    private fun isFfmpegAvailable(ffmpegPath: String): Boolean =
-        ProcessRunner.probe(ffmpegPath, "-version")
+    private fun isFfmpegAvailable(ffmpegPath: String): Boolean = ProcessRunner.probe(ffmpegPath, "-version")
 
     private val webmSignature = byteArrayOf(0x1a.toByte(), 0x45.toByte(), 0xdf.toByte(), 0xa3.toByte())
 

@@ -41,17 +41,21 @@ data class DitMontre(
  * capture PNGs); a missing picture renders as a placeholder.
  */
 object BeatsBoardPlanner {
-
-    fun plan(deckName: String, slides: List<SlideSegment>, imagesByIndex: Map<Int, File>): QcBoard =
+    fun plan(
+        deckName: String,
+        slides: List<SlideSegment>,
+        imagesByIndex: Map<Int, File>,
+    ): QcBoard =
         QcBoard(
             title = "Beats — $deckName",
-            cells = slides.map { slide ->
-                QcCell(
-                    label = "${slide.index}. ${slide.title}",
-                    image = imagesByIndex[slide.index],
-                    caption = slide.speakerNote.replace(Regex("\\s+"), " ").trim(),
-                )
-            },
+            cells =
+                slides.map { slide ->
+                    QcCell(
+                        label = "${slide.index}. ${slide.title}",
+                        image = imagesByIndex[slide.index],
+                        caption = slide.speakerNote.replace(Regex("\\s+"), " ").trim(),
+                    )
+                },
         )
 }
 
@@ -63,16 +67,19 @@ object BeatsBoardPlanner {
  * frame renders as a placeholder.
  */
 object DitMontreBoardPlanner {
-
-    fun plan(deckName: String, takes: List<DitMontre>): QcBoard =
+    fun plan(
+        deckName: String,
+        takes: List<DitMontre>,
+    ): QcBoard =
         QcBoard(
             title = "Dit vs montré — $deckName",
-            cells = takes.sortedBy { it.slideIndex }.map { take ->
-                QcCell(
-                    label = "${take.slideIndex}. ${take.title}",
-                    image = take.frame,
-                    caption = take.spoken.replace(Regex("\\s+"), " ").trim(),
-                )
-            },
+            cells =
+                takes.sortedBy { it.slideIndex }.map { take ->
+                    QcCell(
+                        label = "${take.slideIndex}. ${take.title}",
+                        image = take.frame,
+                        caption = take.spoken.replace(Regex("\\s+"), " ").trim(),
+                    )
+                },
         )
 }

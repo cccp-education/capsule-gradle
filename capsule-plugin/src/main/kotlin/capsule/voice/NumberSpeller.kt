@@ -12,23 +12,41 @@ package capsule.voice
  * French only; any other language returns the input unchanged. Pure — no I/O.
  */
 object NumberSpeller {
-
     private val NUMBER = Regex("\\d+")
 
     /** Upper bound above which a numeral is left untouched (safety, narration numbers are small). */
     private const val MAX = 1_000_000_000_000L
 
-    private val UNITS = arrayOf(
-        "zéro", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit",
-        "neuf", "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize",
-    )
+    private val UNITS =
+        arrayOf(
+            "zéro",
+            "un",
+            "deux",
+            "trois",
+            "quatre",
+            "cinq",
+            "six",
+            "sept",
+            "huit",
+            "neuf",
+            "dix",
+            "onze",
+            "douze",
+            "treize",
+            "quatorze",
+            "quinze",
+            "seize",
+        )
     private val TENS = arrayOf("", "", "vingt", "trente", "quarante", "cinquante", "soixante")
 
     /**
      * Replaces every integer token in [text] by its French spelling. Other
      * languages (or numerals ≥ [MAX]) are returned unchanged.
      */
-    fun spell(text: String, language: String = "fr"): String {
+    fun spell(
+        text: String,
+        language: String = "fr",
+    ): String {
         if (!language.equals("fr", ignoreCase = true)) return text
         return NUMBER.replace(text) { m ->
             val value = m.value.toLongOrNull()

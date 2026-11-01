@@ -11,7 +11,6 @@ package capsule
  * Pure — no I/O.
  */
 object SubtitleCartoner {
-
     /** Default maximum characters per cue (reference value). */
     const val DEFAULT_MAX_CHARS: Int = 42
 
@@ -28,7 +27,10 @@ object SubtitleCartoner {
      * @param maxChars the maximum length of a carton (must be > 0).
      * @return the cartons in order; empty when [text] has no words.
      */
-    fun split(text: String, maxChars: Int = DEFAULT_MAX_CHARS): List<String> {
+    fun split(
+        text: String,
+        maxChars: Int = DEFAULT_MAX_CHARS,
+    ): List<String> {
         require(maxChars > 0) { "maxChars must be > 0, got $maxChars" }
         val words = text.trim().split(WHITESPACE).filter { it.isNotEmpty() }
         if (words.isEmpty()) return emptyList()

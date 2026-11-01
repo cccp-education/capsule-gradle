@@ -21,12 +21,15 @@ import java.nio.file.Files
  * failed) so the fast `Test` job stays green — it runs in the Full Tests job.
  */
 class CapsuleViralRenderSteps {
-
     private var mp4: File? = null
     private var tolerance: Double = 0.0
 
     @Given("a real viral render of beats {string} to target {int} with tolerance {double}")
-    fun `a real viral render`(beats: String, target: Int, tolerance: Double) {
+    fun aRealViralRender(
+        beats: String,
+        target: Int,
+        tolerance: Double,
+    ) {
         if (!BinaryAvailability.isAvailable("ffmpeg") || !BinaryAvailability.isAvailable("ffprobe")) {
             throw PendingException("ffmpeg/ffprobe required — runs in the Full Tests job")
         }
@@ -37,13 +40,13 @@ class CapsuleViralRenderSteps {
     }
 
     @Then("a real MP4 is produced")
-    fun `a real MP4 is produced`() {
+    fun aRealMp4IsProduced() {
         assertThat(mp4).isNotNull()
         assertThat(mp4!!.exists() && mp4!!.length() > 0L).isTrue()
     }
 
     @Then("the real MP4 duration is close to {int}")
-    fun `the real MP4 duration is close to`(expected: Int) {
+    fun theRealMp4DurationIsCloseTo(expected: Int) {
         val seconds = MediaProbeUtil.probeDuration(mp4!!)
         assertThat(seconds).isCloseTo(expected.toDouble(), within(tolerance))
     }

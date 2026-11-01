@@ -7,12 +7,12 @@ import capsule.qc.QcBoardRenderer
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
-import java.io.File
-import java.nio.file.Files
-import javax.imageio.ImageIO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
+import java.io.File
+import java.nio.file.Files
+import javax.imageio.ImageIO
 
 /**
  * Pure-domain BDD steps for `capsule_qc_boards.feature` (PRT-08).
@@ -21,13 +21,16 @@ import org.junit.jupiter.api.Assertions.assertTrue
  * prefixed with "QC board"/"QC deck" (S-088 — the glue is classpath-wide).
  */
 class CapsuleQcBoardsSteps {
-
     private val slides = mutableListOf<SlideSegment>()
     private var board: QcBoard? = null
     private var rendered: File? = null
 
     @Given("a QC deck slide {int} titled {string} saying {string}")
-    fun aQcDeckSlide(index: Int, title: String, note: String) {
+    fun aQcDeckSlide(
+        index: Int,
+        title: String,
+        note: String,
+    ) {
         slides.add(SlideSegment(index = index, title = title, narration = note))
     }
 

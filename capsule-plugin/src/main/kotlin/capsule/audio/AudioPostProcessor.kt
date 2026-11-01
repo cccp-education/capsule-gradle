@@ -29,7 +29,6 @@ import java.io.File
  * throwing. The caller decides whether to apply the result.
  */
 interface AudioPostProcessor {
-
     /**
      * Applies audio post-production to [videoFile] and writes the result
      * to [outputFile].
@@ -41,7 +40,11 @@ interface AudioPostProcessor {
      * @throws AudioPostException on unrecoverable ffmpeg errors
      *         (pattern [capsule.BurnInException])
      */
-    fun process(videoFile: File, outputFile: File, config: AudioPostConfig): Boolean
+    fun process(
+        videoFile: File,
+        outputFile: File,
+        config: AudioPostConfig,
+    ): Boolean
 
     /** Returns true if the service is available (e.g. ffmpeg found). */
     fun isAvailable(): Boolean

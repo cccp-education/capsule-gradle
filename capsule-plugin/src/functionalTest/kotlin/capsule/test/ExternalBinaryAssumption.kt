@@ -23,7 +23,6 @@ import java.io.File
  * ```
  */
 object ExternalBinaryAssumption {
-
     /**
      * Skips the calling test (via `assumeTrue`) when [binary] cannot be
      * resolved on the host.

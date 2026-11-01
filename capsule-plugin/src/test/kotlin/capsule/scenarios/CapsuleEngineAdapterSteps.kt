@@ -6,17 +6,17 @@ import capsule.adapter.revealjs.RevealJsCaptureSettings
 import capsule.adapter.revealjs.RevealJsDeckHtml
 import capsule.adapter.revealjs.RevealJsEngineAdapter
 import capsule.adapter.revealjs.RevealJsRenderPlan
+import io.cucumber.java.en.Given
+import io.cucumber.java.en.Then
+import io.cucumber.java.en.When
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import video.kernel.FileVisualSource
 import video.kernel.VideoRenderRequest
 import video.kernel.VideoRenderResult
 import video.kernel.segment.VideoSegment
-import io.cucumber.java.en.Given
-import io.cucumber.java.en.Then
-import io.cucumber.java.en.When
 import java.io.File
 import java.nio.file.Files
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 
 /**
  * Pure-domain BDD steps for `capsule_engine_adapter.feature`
@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
  * "engine adapter"/"reveal deck" (S-088 — the glue is classpath-wide).
  */
 class CapsuleEngineAdapterSteps {
-
     private var deckHtml: String = ""
     private var transformed: String = ""
     private var request: VideoRenderRequest? = null
@@ -43,9 +42,13 @@ class CapsuleEngineAdapterSteps {
         private val failWhenPathContains: String?,
     ) : PlaywrightCapture {
         override fun isAvailable(): Boolean = true
+
         override fun name(): String = "fake-capture"
+
         override fun outputExtension(): String = "webm"
+
         override fun close() {}
+
         override fun capture(
             deckHtmlPath: String,
             outputDir: File,
@@ -61,26 +64,28 @@ class CapsuleEngineAdapterSteps {
         }
     }
 
-    private fun settings() = RevealJsCaptureSettings(
-        playwrightTimeout = 1_000.0,
-        defaultSlideDuration = 1.0,
-        configuredStrategy = CaptureStrategy.SCREENSHOT,
-        viralEnabled = false,
-        strict = false,
-        ffmpegPath = "/nonexistent/ffmpeg",
-        parallelThreads = 1,
-        previewOnly = false,
-        chromiumPath = "",
-        remotionProjectDir = File(workDir, "remotion"),
-        remotionNodePath = "node",
-        remotionConcurrency = 1,
-        remotionFps = 30,
-        manimSources = emptyList(),
-    )
+    private fun settings() =
+        RevealJsCaptureSettings(
+            playwrightTimeout = 1_000.0,
+            defaultSlideDuration = 1.0,
+            configuredStrategy = CaptureStrategy.SCREENSHOT,
+            viralEnabled = false,
+            strict = false,
+            ffmpegPath = "/nonexistent/ffmpeg",
+            parallelThreads = 1,
+            previewOnly = false,
+            chromiumPath = "",
+            remotionProjectDir = File(workDir, "remotion"),
+            remotionNodePath = "node",
+            remotionConcurrency = 1,
+            remotionFps = 30,
+            manimSources = emptyList(),
+        )
 
     @Given("a reveal deck with 3 slides")
     fun aRevealDeckWith3Slides() {
-        deckHtml = """
+        deckHtml =
+            """
             <html><head><style>.reveal{}</style></head><body><div class="reveal"><div class="slides">
             <section data-capsule-slide="1">
               <h1>One</h1>
@@ -92,7 +97,7 @@ class CapsuleEngineAdapterSteps {
               <h1>Three</h1>
             </section>
             </div></div></body></html>
-        """.trimIndent()
+            """.trimIndent()
     }
 
     @When("slide {int} of the deck is extracted as a standalone document")
@@ -111,12 +116,18 @@ class CapsuleEngineAdapterSteps {
     }
 
     @When("the audio file {string} is wired to section {int}")
-    fun theAudioFileIsWiredToSection(audioPath: String, section: Int) {
+    fun theAudioFileIsWiredToSection(
+        audioPath: String,
+        section: Int,
+    ) {
         transformed = RevealJsDeckHtml.injectDataSlideAudio(deckHtml, mapOf(section to audioPath))
     }
 
     @Then("the deck carries data-audio {string} on section {int}")
-    fun theDeckCarriesDataAudioOnSection(attribute: String, section: Int) {
+    fun theDeckCarriesDataAudioOnSection(
+        attribute: String,
+        section: Int,
+    ) {
         assertTrue(
             transformed.contains("""<section data-audio="$attribute" data-capsule-slide="$section">"""),
             "expected section $section to carry $attribute — got:\n$transformed",
@@ -141,50 +152,61 @@ class CapsuleEngineAdapterSteps {
     }
 
     @Given("a render request for {string} in parallel mode with {int} segments")
-    fun aRenderRequestForInParallelModeWithSegments(name: String, segmentCount: Int) {
+    fun aRenderRequestForInParallelModeWithSegments(
+        name: String,
+        segmentCount: Int,
+    ) {
         buildRequest(name, parallel = true, segmentCount = segmentCount)
     }
 
-    private fun buildRequest(name: String, parallel: Boolean, segmentCount: Int) {
+    private fun buildRequest(
+        name: String,
+        parallel: Boolean,
+        segmentCount: Int,
+    ) {
         this.parallel = parallel
         segments = (1..segmentCount).map { VideoSegment(index = it, title = "S$it", narration = "n$it.") }
-        val deck = File(workDir, "deck.html").apply {
-            writeText(
-                """
-                <html><head></head><body><div class="reveal"><div class="slides">
-                <section data-capsule-slide="1">
-                  <h1>One</h1>
-                </section>
-                <section data-capsule-slide="2">
-                  <h1>Two</h1>
-                </section>
-                </div></div></body></html>
-                """.trimIndent()
+        val deck =
+            File(workDir, "deck.html").apply {
+                writeText(
+                    """
+                    <html><head></head><body><div class="reveal"><div class="slides">
+                    <section data-capsule-slide="1">
+                      <h1>One</h1>
+                    </section>
+                    <section data-capsule-slide="2">
+                      <h1>Two</h1>
+                    </section>
+                    </div></div></body></html>
+                    """.trimIndent(),
+                )
+            }
+        request =
+            VideoRenderRequest(
+                name = name,
+                visual = FileVisualSource(deck),
+                outputDir = File(workDir, "out-$name-$parallel").apply { mkdirs() },
+                timeoutMillis = 5_000,
             )
-        }
-        request = VideoRenderRequest(
-            name = name,
-            visual = FileVisualSource(deck),
-            outputDir = File(workDir, "out-$name-$parallel").apply { mkdirs() },
-            timeoutMillis = 5_000,
-        )
     }
 
     @When("the engine adapter renders the request")
     fun theEngineAdapterRendersTheRequest() {
-        val plan = RevealJsRenderPlan(
-            segments = segments,
-            segmentDurations = segments.map { 1.0 },
-            viewportWidth = 1920,
-            viewportHeight = 1080,
-            parallel = parallel,
-            captureTimeoutMillis = 5_000,
-        )
-        val adapter = RevealJsEngineAdapter(
-            settings(),
-            plan,
-            captureProvider = { FakeCapture(fakeOutputName, fakeFailPath) },
-        )
+        val plan =
+            RevealJsRenderPlan(
+                segments = segments,
+                segmentDurations = segments.map { 1.0 },
+                viewportWidth = 1920,
+                viewportHeight = 1080,
+                parallel = parallel,
+                captureTimeoutMillis = 5_000,
+            )
+        val adapter =
+            RevealJsEngineAdapter(
+                settings(),
+                plan,
+                captureProvider = { FakeCapture(fakeOutputName, fakeFailPath) },
+            )
         result = adapter.render(request!!)
     }
 

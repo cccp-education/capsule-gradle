@@ -24,7 +24,6 @@ import java.io.File
  * `DuplicateStepDefinitionException` with the classpath-wide glue.
  */
 class CapsuleVideoIntegritySteps {
-
     private var projectDir: File? = null
     private var lastBuildOutput: String = ""
     private var buildFailed: Boolean = false
@@ -42,9 +41,10 @@ class CapsuleVideoIntegritySteps {
     }
 
     private fun setupIntegrityProject() {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-integrity-${System.currentTimeMillis()}-${System.nanoTime()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-integrity-${System.currentTimeMillis()}-${System.nanoTime()}")
+                .also { it.mkdirs() }
         projectDir!!.resolve("settings.gradle").writeText("")
         projectDir!!.resolve("build.gradle").writeText(
             """
@@ -55,7 +55,7 @@ class CapsuleVideoIntegritySteps {
                 ttsEngine = "noop"
                 outputDir = "capsules"
             }
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -74,15 +74,19 @@ class CapsuleVideoIntegritySteps {
         runIntegrityTask(enabled = true, expectFailure = true)
     }
 
-    private fun runIntegrityTask(enabled: Boolean, expectFailure: Boolean) {
-        val runner = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(
-                "validateCapsuleVideoDuration",
-                "-Pcapsule.validation.integrityEnabled=$enabled",
-            )
-            .withProjectDir(projectDir!!)
+    private fun runIntegrityTask(
+        enabled: Boolean,
+        expectFailure: Boolean,
+    ) {
+        val runner =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(
+                    "validateCapsuleVideoDuration",
+                    "-Pcapsule.validation.integrityEnabled=$enabled",
+                ).withProjectDir(projectDir!!)
         if (expectFailure) {
             lastBuildOutput = runner.buildAndFail().output
             buildFailed = true

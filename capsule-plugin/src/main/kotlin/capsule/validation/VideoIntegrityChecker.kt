@@ -14,7 +14,6 @@ package capsule.validation
  * `exitCode`/`stderr`, so it is testable without ffmpeg.
  */
 sealed interface IntegrityResult {
-
     /** The file decodes cleanly (exit code 0 and no diagnostic output). */
     data object Clean : IntegrityResult
 
@@ -23,7 +22,9 @@ sealed interface IntegrityResult {
      * diagnostic (trimmed) — or a probe-level message when the decoder could
      * not even be run. A missing file must never be treated as clean.
      */
-    data class Corrupt(val stderrTail: String) : IntegrityResult
+    data class Corrupt(
+        val stderrTail: String,
+    ) : IntegrityResult
 
     /** True when the media is decodable and therefore safe to reuse. */
     val isClean: Boolean get() = this is Clean
@@ -42,7 +43,6 @@ sealed interface IntegrityResult {
  * validation task) runs the decoder and passes the numbers.
  */
 object VideoIntegrityChecker {
-
     /**
      * Decides the integrity verdict from a decoder's raw outcome.
      *
@@ -52,7 +52,10 @@ object VideoIntegrityChecker {
      *         is blank; [IntegrityResult.Corrupt] otherwise, carrying the
      *         trimmed diagnostic.
      */
-    fun verdict(exitCode: Int, stderr: String): IntegrityResult {
+    fun verdict(
+        exitCode: Int,
+        stderr: String,
+    ): IntegrityResult {
         val diagnostic = stderr.trim()
         return if (exitCode == 0 && diagnostic.isEmpty()) {
             IntegrityResult.Clean

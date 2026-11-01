@@ -17,7 +17,6 @@ import kotlin.test.assertTrue
  * ou il rend faux.
  */
 class FileReplaceTest {
-
     @TempDir
     lateinit var tempDir: File
 

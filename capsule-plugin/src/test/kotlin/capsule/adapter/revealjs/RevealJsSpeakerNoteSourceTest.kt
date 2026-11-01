@@ -12,14 +12,16 @@ import java.nio.file.Path
  * (CAP-ENGINE-DECOUPLING US-3).
  */
 class RevealJsSpeakerNoteSourceTest {
-
     @TempDir
     lateinit var tempDir: Path
 
-    private fun adocFile(name: String, content: String): File =
-        tempDir.resolve(name).toFile().apply { writeText(content) }
+    private fun adocFile(
+        name: String,
+        content: String,
+    ): File = tempDir.resolve(name).toFile().apply { writeText(content) }
 
-    private val deck = """
+    private val deck =
+        """
         = Demo Deck
 
         == Intro
@@ -36,7 +38,7 @@ class RevealJsSpeakerNoteSourceTest {
         --
         Goodbye.
         --
-    """.trimIndent()
+        """.trimIndent()
 
     @Test
     fun `yields one segment per narrated slide, reindexed from 1`() {

@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test
  * TDD — reveal.js deck HTML adapter (CAP-ENGINE-DECOUPLING US-2).
  */
 class RevealJsDeckHtmlTest {
-
-    private val deck = """
+    private val deck =
+        """
         <!DOCTYPE html><html><head><style>.reveal{}</style></head><body>
         <div class="reveal"><div class="slides">
         <section data-capsule-slide="1">
@@ -22,7 +22,7 @@ class RevealJsDeckHtmlTest {
         </section>
         </div></div>
         </body></html>
-    """.trimIndent()
+        """.trimIndent()
 
     @Test
     fun `singleSlideHtml extracts the requested section as a standalone document`() {
@@ -48,10 +48,11 @@ class RevealJsDeckHtmlTest {
 
     @Test
     fun `injectDataSlideAudio attaches the audio path to the matching section`() {
-        val html = RevealJsDeckHtml.injectDataSlideAudio(
-            deck,
-            mapOf(1 to "/audio/slide-01.mp3", 2 to "/audio/slide-02.mp3"),
-        )
+        val html =
+            RevealJsDeckHtml.injectDataSlideAudio(
+                deck,
+                mapOf(1 to "/audio/slide-01.mp3", 2 to "/audio/slide-02.mp3"),
+            )
 
         assertThat(html).contains("""<section data-audio="file:///audio/slide-01.mp3" data-capsule-slide="1">""")
         assertThat(html).contains("""<section data-audio="file:///audio/slide-02.mp3" data-capsule-slide="2">""")
@@ -75,10 +76,11 @@ class RevealJsDeckHtmlTest {
 
     @Test
     fun `injectSequentialAudio attaches audio positionally to top-level sections`() {
-        val html = RevealJsDeckHtml.injectSequentialAudio(
-            deck,
-            listOf("/audio/slide-01.mp3", "/audio/slide-02.mp3"),
-        )
+        val html =
+            RevealJsDeckHtml.injectSequentialAudio(
+                deck,
+                listOf("/audio/slide-01.mp3", "/audio/slide-02.mp3"),
+            )
 
         assertThat(html).contains("""<section data-audio="file:///audio/slide-01.mp3" data-capsule-slide="1">""")
         assertThat(html).contains("""<section data-audio="file:///audio/slide-02.mp3" data-capsule-slide="2">""")

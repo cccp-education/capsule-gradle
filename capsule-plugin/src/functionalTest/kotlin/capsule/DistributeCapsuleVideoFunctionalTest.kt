@@ -1,10 +1,10 @@
 package capsule
 
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.GradleRunner
-import org.junit.jupiter.api.io.TempDir
 
 /**
  * Functional test for the `distributeCapsuleVideo` task (CAP-ARCH-7).
@@ -14,13 +14,13 @@ import org.junit.jupiter.api.io.TempDir
  * enabling the user to compare capsule versions side-by-side.
  */
 class DistributeCapsuleVideoFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
     private fun setupWithVideos(outputDir: String = "capsules") {
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -28,7 +28,8 @@ class DistributeCapsuleVideoFunctionalTest {
                 ttsEngine = "noop"
                 outputDir = "$outputDir"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val capDir = projectDir.resolve("build/$outputDir").also { it.mkdirs() }
         capDir.resolve("demo.webm").writeText("fake-webm-content-for-distrib-test")
@@ -38,12 +39,14 @@ class DistributeCapsuleVideoFunctionalTest {
     fun `distributeCapsuleVideo is registered and described`() {
         setupWithVideos()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("tasks", "--group", "distribute")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("tasks", "--group", "distribute")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(result.output.contains("distributeCapsuleVideo"), "Task should be listed. Output: ${result.output.take(500)}")
     }
@@ -53,16 +56,17 @@ class DistributeCapsuleVideoFunctionalTest {
         setupWithVideos(outputDir = "capsules")
         val destRoot = projectDir.resolve("office/videos").absolutePath
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(
-                "distributeCapsuleVideo",
-                "-Poutput.videoDestinationDir=$destRoot",
-                "-Poutput.versioning=incremental",
-            )
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(
+                    "distributeCapsuleVideo",
+                    "-Poutput.videoDestinationDir=$destRoot",
+                    "-Poutput.versioning=incremental",
+                ).withProjectDir(projectDir)
+                .build()
 
         assertTrue(result.output.contains("CAPSULE DISTRIB"), "Expected summary log. Output: ${result.output.take(500)}")
 
@@ -80,27 +84,32 @@ class DistributeCapsuleVideoFunctionalTest {
         setupWithVideos(outputDir = "capsules")
         val destRoot = projectDir.resolve("office/videos").absolutePath
 
-        val args = arrayOf(
-            "distributeCapsuleVideo",
-            "-Poutput.videoDestinationDir=$destRoot",
-            "-Poutput.versioning=incremental",
-        )
+        val args =
+            arrayOf(
+                "distributeCapsuleVideo",
+                "-Poutput.videoDestinationDir=$destRoot",
+                "-Poutput.versioning=incremental",
+            )
 
-        val firstRun = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(*args)
-            .withProjectDir(projectDir)
-            .build()
+        val firstRun =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(*args)
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(firstRun.output.contains("copied"), "First run should copy. Output: ${firstRun.output.take(500)}")
 
-        val secondRun = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(*args)
-            .withProjectDir(projectDir)
-            .build()
+        val secondRun =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(*args)
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(secondRun.output.contains("skipped"), "Second run should skip existing valid copy. Output: ${secondRun.output.take(500)}")
     }

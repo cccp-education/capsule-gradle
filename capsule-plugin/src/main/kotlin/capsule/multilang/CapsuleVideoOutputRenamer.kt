@@ -14,8 +14,10 @@ import java.io.File
  * Economy of Ink skip applies, so the produced artifact MUST match it.
  */
 object CapsuleVideoOutputRenamer {
-
-    fun rename(rendered: File, target: File): File {
+    fun rename(
+        rendered: File,
+        target: File,
+    ): File {
         if (!rendered.exists() || rendered.absolutePath == target.absolutePath) return rendered
         target.parentFile?.mkdirs()
         // Un seul déplacement dans le plugin : cf. capsule.FileReplace, qui gère

@@ -30,7 +30,6 @@ import java.io.File
  */
 @DisableCachingByDefault(because = "Filesystem copy to versioned destination")
 abstract class DistributeCapsuleVideoTask : DefaultTask() {
-
     @get:Input
     abstract val videoDestinationDir: Property<String>
 
@@ -46,28 +45,36 @@ abstract class DistributeCapsuleVideoTask : DefaultTask() {
 
     @get:Internal
     internal var capsuleExtension: CapsuleExtension
-        get() = _capsuleExtension ?: project.extensions.getByType(CapsuleExtension::class.java).also { _capsuleExtension = it }
-        set(value) { _capsuleExtension = value }
+        get() = capsuleExtensionCache ?: project.extensions.getByType(CapsuleExtension::class.java).also { capsuleExtensionCache = it }
+        set(value) {
+            capsuleExtensionCache = value
+        }
 
-    private var _capsuleExtension: CapsuleExtension? = null
+    private var capsuleExtensionCache: CapsuleExtension? = null
 
     @TaskAction
     fun run() {
-        val capDir = project.layout.buildDirectory.dir(
-            capsuleExtension.outputDir.get()
-        ).get().asFile
+        val capDir =
+            project.layout.buildDirectory
+                .dir(
+                    capsuleExtension.outputDir.get(),
+                ).get()
+                .asFile
 
-        val resolvedFormat = OutputFormat.fromString(
-            (project.findProperty("output.format") as? String) ?: format.get()
-        )
-        val extensions = when (resolvedFormat) {
-            OutputFormat.WEBM -> listOf(".webm")
-            OutputFormat.MP4 -> listOf(".mp4")
-            OutputFormat.BOTH -> listOf(".webm", ".mp4")
-        }
+        val resolvedFormat =
+            OutputFormat.fromString(
+                (project.findProperty("output.format") as? String) ?: format.get(),
+            )
+        val extensions =
+            when (resolvedFormat) {
+                OutputFormat.WEBM -> listOf(".webm")
+                OutputFormat.MP4 -> listOf(".mp4")
+                OutputFormat.BOTH -> listOf(".webm", ".mp4")
+            }
 
-        val videos = capDir.listFiles { f -> extensions.any { f.name.endsWith(it) } }?.toList()
-            ?: emptyList()
+        val videos =
+            capDir.listFiles { f -> extensions.any { f.name.endsWith(it) } }?.toList()
+                ?: emptyList()
 
         if (videos.isEmpty()) {
             logger.warn("No capsule videos found in {}. Run 'generateCapsuleVideo' first.", capDir.absolutePath)
@@ -79,11 +86,12 @@ abstract class DistributeCapsuleVideoTask : DefaultTask() {
         val cliVersioning = project.findProperty("output.versioning")?.toString()
         val cliPrefix = project.findProperty("output.versionPrefix")?.toString()
 
-        val config = OutputConfig(
-            videoDestinationDir = cliDestDir?.takeIf { it.isNotBlank() } ?: videoDestinationDir.get(),
-            versioning = VersioningStrategy.fromString(cliVersioning ?: versioning.get()),
-            versionPrefix = cliPrefix?.takeIf { it.isNotBlank() } ?: versionPrefix.get(),
-        )
+        val config =
+            OutputConfig(
+                videoDestinationDir = cliDestDir?.takeIf { it.isNotBlank() } ?: videoDestinationDir.get(),
+                versioning = VersioningStrategy.fromString(cliVersioning ?: versioning.get()),
+                versionPrefix = cliPrefix?.takeIf { it.isNotBlank() } ?: versionPrefix.get(),
+            )
         val destinationRoot = File(config.videoDestinationDir)
         val existing = VideoDestinationResolver.collectExistingVersions(destinationRoot, config.versionPrefix)
         val destinationDir = VideoDestinationResolver.resolveDestinationDir(config, existing)
@@ -106,7 +114,10 @@ abstract class DistributeCapsuleVideoTask : DefaultTask() {
 
         logger.lifecycle(
             "CAPSULE DISTRIB → {} ({} copied, {} skipped, version={})",
-            destinationDir.absolutePath, copied, skipped, destinationDir.name,
+            destinationDir.absolutePath,
+            copied,
+            skipped,
+            destinationDir.name,
         )
     }
 }

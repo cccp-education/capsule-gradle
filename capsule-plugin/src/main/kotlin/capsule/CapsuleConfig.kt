@@ -50,7 +50,7 @@ data class CapsuleConfig(
      * requires the explicit [JsonProperty].
      */
     @JsonProperty("fish-audio")
-    val fishAudio: List<FishAudioKey> = emptyList()
+    val fishAudio: List<FishAudioKey> = emptyList(),
 )
 
 /**
@@ -108,7 +108,7 @@ data class InputConfig(
     val sliderScriptDir: String = "capsule",
     val deckSourceDir: String = "docs/asciidocRevealJs",
     val sliderBuildDir: String = "",
-    val chromiumExecutablePath: String = ""
+    val chromiumExecutablePath: String = "",
 )
 
 data class TtsConfig(
@@ -140,7 +140,7 @@ data class TtsConfig(
     /** CAP-FISH-AUDIO — nucleus sampling (default `0.88`). */
     val fishTopP: Double = 0.88,
     /** CAP-FISH-AUDIO — the TTS endpoint (default `https://api.fish.audio/v1/tts`). */
-    val fishEndpoint: String = "https://api.fish.audio/v1/tts"
+    val fishEndpoint: String = "https://api.fish.audio/v1/tts",
 )
 
 data class CaptureConfig(
@@ -161,13 +161,13 @@ data class CaptureConfig(
     val subtitleCartonsEnabled: Boolean = false,
     val subtitleMaxChars: Int = 42,
     val reuseCapturedVideoEnabled: Boolean = false,
-    val strategy: CaptureStrategy = CaptureStrategy.PLAYWRIGHT
+    val strategy: CaptureStrategy = CaptureStrategy.PLAYWRIGHT,
 )
 
 data class DistribConfig(
     val ffmpegExecutablePath: String = "ffmpeg",
     val outputWidth: Int = 1080,
-    val outputHeight: Int = 1920
+    val outputHeight: Int = 1920,
 )
 
 /**
@@ -189,7 +189,8 @@ data class DistribConfig(
 enum class CaptureStrategy {
     PLAYWRIGHT,
     SCREENSHOT,
-    REMOTION;
+    REMOTION,
+    ;
 
     companion object {
         /**
@@ -197,8 +198,7 @@ enum class CaptureStrategy {
          * null/blank/unknown values (backward compat — existing configs
          * without `capture.strategy` keep the Playwright behavior).
          */
-        fun fromString(value: String?): CaptureStrategy =
-            entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: PLAYWRIGHT
+        fun fromString(value: String?): CaptureStrategy = entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: PLAYWRIGHT
     }
 }
 
@@ -213,11 +213,11 @@ enum class CaptureStrategy {
  */
 enum class VersioningStrategy {
     TIMESTAMP,
-    INCREMENTAL;
+    INCREMENTAL,
+    ;
 
     companion object {
-        fun fromString(value: String?): VersioningStrategy =
-            entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: TIMESTAMP
+        fun fromString(value: String?): VersioningStrategy = entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: TIMESTAMP
     }
 }
 
@@ -234,7 +234,8 @@ enum class VersioningStrategy {
 enum class OutputFormat {
     WEBM,
     MP4,
-    BOTH;
+    BOTH,
+    ;
 
     companion object {
         /**
@@ -242,8 +243,7 @@ enum class OutputFormat {
          * null/blank/unknown values (backward compat — existing configs
          * without `output.format` keep the WebM-only behavior).
          */
-        fun fromString(value: String?): OutputFormat =
-            entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: WEBM
+        fun fromString(value: String?): OutputFormat = entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: WEBM
     }
 }
 
@@ -271,7 +271,7 @@ data class OutputConfig(
     val versionPrefix: String = "v",
     val format: OutputFormat = OutputFormat.WEBM,
     /** PRT-09 residual — tag the MP4 as BT.709 (broadcast colorimetry). Opt-in, default false. */
-    val bt709: Boolean = false
+    val bt709: Boolean = false,
 )
 
 data class ManimConfig(
@@ -280,7 +280,7 @@ data class ManimConfig(
     val scriptsDir: String = "src/manim",
     val outputDir: String = "build/capsule/manim",
     val parallelRender: Boolean = false,
-    val parallelRenderThreads: Int = 4
+    val parallelRenderThreads: Int = 4,
 ) {
     companion object {
         /**
@@ -344,7 +344,7 @@ data class ManimConfig(
 data class ValidationConfig(
     val durationEnabled: Boolean = false,
     val toleranceSecs: Double = 2.0,
-    val integrityEnabled: Boolean = false
+    val integrityEnabled: Boolean = false,
 )
 
 /**

@@ -28,15 +28,15 @@ import java.io.File
  * `PodcastConcatenatorImpl` / `PodcastConcatCommand` from US-1).
  */
 class CapsulePodcastSteps {
-
     private var projectDir: File? = null
     private var buildOutput: String = ""
 
     @Given("a Capsule podcast Gradle project with the capsule plugin applied")
     fun aCapsulePodcastGradleProjectWithTheCapsulePluginApplied() {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-podcast-${System.currentTimeMillis()}-${System.nanoTime()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-podcast-${System.currentTimeMillis()}-${System.nanoTime()}")
+                .also { it.mkdirs() }
         projectDir!!.resolve("settings.gradle").writeText("")
         writeBuildGradle("")
     }
@@ -56,43 +56,51 @@ class CapsulePodcastSteps {
     }
 
     private fun writeBuildGradle(capsuleBlock: String) {
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             $capsuleBlock
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
     @When("I generate the capsule podcast with the default podcast config")
     fun iGenerateTheCapsulePodcastWithTheDefaultPodcastConfig() {
-        writeBuildGradle("""
+        writeBuildGradle(
+            """
             capsule {
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         runPodcastBuild()
     }
 
     @When("I generate the capsule podcast with podcast enabled and a NoOp ffmpeg path")
     fun iGenerateTheCapsulePodcastWithPodcastEnabledAndANoOpFfmpegPath() {
-        writeBuildGradle("""
+        writeBuildGradle(
+            """
             capsule {
                 outputDir = "capsules"
                 podcastEnabled = true
                 ffmpegExecutablePath = "noop"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
         runPodcastBuild()
     }
 
     private fun runPodcastBuild() {
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("generateCapsulePodcast", "-x", "generateCapsuleVideo")
-            .withProjectDir(projectDir!!)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("generateCapsulePodcast", "-x", "generateCapsuleVideo")
+                .withProjectDir(projectDir!!)
+                .build()
         buildOutput = result.output
     }
 

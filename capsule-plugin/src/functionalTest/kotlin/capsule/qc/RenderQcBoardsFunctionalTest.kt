@@ -1,10 +1,10 @@
 package capsule.qc
 
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.GradleRunner
-import org.junit.jupiter.api.io.TempDir
 
 /**
  * Functional tests for `renderQcBoards` (PRT-08).
@@ -13,7 +13,6 @@ import org.junit.jupiter.api.io.TempDir
  * writes the boards (Java2D, no external binary).
  */
 class RenderQcBoardsFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -28,7 +27,7 @@ class RenderQcBoardsFunctionalTest {
                 id('education.cccp.capsule')
             }
             $extraConfig
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -40,39 +39,43 @@ class RenderQcBoardsFunctionalTest {
 
             --- SLIDE 1 : Intro ---
             bonjour le monde
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
     @Test
     fun `task is registered with verification group`() {
         setupBuild()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("tasks", "--group", "verification")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("tasks", "--group", "verification")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(
             result.output.contains("renderQcBoards"),
-            "Expected renderQcBoards in verification group, got: ${result.output}"
+            "Expected renderQcBoards in verification group, got: ${result.output}",
         )
     }
 
     @Test
     fun `disabled by default is a no-op skip`() {
         setupBuild()
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("renderQcBoards")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("renderQcBoards")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(
             result.output.contains("qc.boardsEnabled=false"),
-            "Expected a skip log when disabled by default, got: ${result.output}"
+            "Expected a skip log when disabled by default, got: ${result.output}",
         )
     }
 
@@ -83,24 +86,26 @@ class RenderQcBoardsFunctionalTest {
             capsule {
                 qcBoardsEnabled = true
             }
-            """.trimIndent()
+            """.trimIndent(),
         )
         writeScript()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("renderQcBoards")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("renderQcBoards")
+                .withProjectDir(projectDir)
+                .build()
 
         assertTrue(
             result.output.contains("CAPSULE QC BOARDS"),
-            "Expected the boards to be rendered, got: ${result.output}"
+            "Expected the boards to be rendered, got: ${result.output}",
         )
         assertTrue(
             projectDir.resolve("build/capsule/qc/demo-beats.png").isFile,
-            "Expected the beats board to be written"
+            "Expected the beats board to be written",
         )
     }
 }

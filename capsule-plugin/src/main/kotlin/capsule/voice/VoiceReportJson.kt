@@ -24,12 +24,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode
  * Pure — no Gradle, no I/O.
  */
 object VoiceReportJson {
-
     private val mapper = ObjectMapper()
 
     /** Serializes [report] to a pretty JSON string (deterministic key order). */
-    fun toJson(report: VoiceReport): String =
-        mapper.writerWithDefaultPrettyPrinter().writeValueAsString(reportNode(report))
+    fun toJson(report: VoiceReport): String = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(reportNode(report))
 
     private fun reportNode(report: VoiceReport): ObjectNode {
         val root = mapper.createObjectNode()
@@ -61,19 +59,25 @@ object VoiceReportJson {
         return node
     }
 
-    private fun putNullableDouble(node: ObjectNode, key: String, value: Double?) {
+    private fun putNullableDouble(
+        node: ObjectNode,
+        key: String,
+        value: Double?,
+    ) {
         if (value == null) node.putNull(key) else node.put(key, value)
     }
 
-    private fun verdictName(verdict: VoiceVerdict): String = when (verdict) {
-        is VoiceVerdict.Pass -> "PASS"
-        is VoiceVerdict.Fail -> "FAIL"
-        is VoiceVerdict.Degraded -> "DEGRADED"
-    }
+    private fun verdictName(verdict: VoiceVerdict): String =
+        when (verdict) {
+            is VoiceVerdict.Pass -> "PASS"
+            is VoiceVerdict.Fail -> "FAIL"
+            is VoiceVerdict.Degraded -> "DEGRADED"
+        }
 
-    private fun verdictReasons(verdict: VoiceVerdict): List<String> = when (verdict) {
-        is VoiceVerdict.Pass -> emptyList()
-        is VoiceVerdict.Fail -> verdict.reasons
-        is VoiceVerdict.Degraded -> listOf(verdict.reason)
-    }
+    private fun verdictReasons(verdict: VoiceVerdict): List<String> =
+        when (verdict) {
+            is VoiceVerdict.Pass -> emptyList()
+            is VoiceVerdict.Fail -> verdict.reasons
+            is VoiceVerdict.Degraded -> listOf(verdict.reason)
+        }
 }

@@ -10,11 +10,15 @@ import kotlin.test.assertTrue
  * TDD unit tests for [VoiceReportJson] (CAP-QC-VOICE US-2). Pure — no I/O.
  */
 class VoiceReportJsonTest {
-
     private val mapper = ObjectMapper()
     private val thresholds = VoiceThresholds(maxWordErrorRate = 0.15, minSnrDb = 66.0, surplusThreshold = 3)
 
-    private fun take(index: Int, expected: String, transcript: String, snr: Double? = 70.0): TakeVerification {
+    private fun take(
+        index: Int,
+        expected: String,
+        transcript: String,
+        snr: Double? = 70.0,
+    ): TakeVerification {
         val score = FidelityScorer.score(expected, transcript)
         return TakeVerification(
             deckName = "demo",
@@ -31,11 +35,12 @@ class VoiceReportJsonTest {
 
     @Test
     fun `a passing report renders deterministic json`() {
-        val report = VoiceReport(
-            degraded = false,
-            takes = listOf(take(1, "bonjour le monde", "bonjour le monde")),
-            thresholds = thresholds,
-        )
+        val report =
+            VoiceReport(
+                degraded = false,
+                takes = listOf(take(1, "bonjour le monde", "bonjour le monde")),
+                thresholds = thresholds,
+            )
 
         val json = VoiceReportJson.toJson(report)
         val root = mapper.readTree(json)
@@ -51,11 +56,12 @@ class VoiceReportJsonTest {
 
     @Test
     fun `a failing take carries its reason codes`() {
-        val report = VoiceReport(
-            degraded = false,
-            takes = listOf(take(1, "a b c", "a b c d e f")),
-            thresholds = thresholds,
-        )
+        val report =
+            VoiceReport(
+                degraded = false,
+                takes = listOf(take(1, "a b c", "a b c d e f")),
+                thresholds = thresholds,
+            )
 
         val first = mapper.readTree(VoiceReportJson.toJson(report)).get("takes").get(0)
         assertEquals("FAIL", first.get("verdict").asText())
@@ -65,17 +71,18 @@ class VoiceReportJsonTest {
 
     @Test
     fun `a degraded take renders null metrics`() {
-        val degradedTake = TakeVerification(
-            deckName = "demo",
-            slideIndex = 1,
-            audioFile = "slide-01.mp3",
-            expectedText = "bonjour",
-            transcript = "",
-            wordErrorRate = null,
-            surplus = null,
-            snrDb = null,
-            verdict = VoiceVerdict.Degraded(VoiceVerifier.REASON_ASR_UNAVAILABLE),
-        )
+        val degradedTake =
+            TakeVerification(
+                deckName = "demo",
+                slideIndex = 1,
+                audioFile = "slide-01.mp3",
+                expectedText = "bonjour",
+                transcript = "",
+                wordErrorRate = null,
+                surplus = null,
+                snrDb = null,
+                verdict = VoiceVerdict.Degraded(VoiceVerifier.REASON_ASR_UNAVAILABLE),
+            )
         val report = VoiceReport(degraded = true, takes = listOf(degradedTake), thresholds = thresholds)
 
         val first = mapper.readTree(VoiceReportJson.toJson(report)).get("takes").get(0)

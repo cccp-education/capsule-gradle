@@ -16,32 +16,34 @@ import kotlin.test.assertTrue
  * backward-compatible: a storyboard without context stays valid.
  */
 class ViralStoryboardContextTest {
+    private fun qqoqcp() =
+        Qqoqcp(
+            audience = "Développeur solo",
+            subject = "Créer un site perso",
+            context = "Dans un dépôt local via bakery + opencode",
+            moment = "Au démarrage d'un projet",
+            modality = "Scaffold → rédaction → bake → publish",
+            purpose = "Mettre un site perso en ligne",
+        )
 
-    private fun qqoqcp() = Qqoqcp(
-        audience = "Développeur solo",
-        subject = "Créer un site perso",
-        context = "Dans un dépôt local via bakery + opencode",
-        moment = "Au démarrage d'un projet",
-        modality = "Scaffold → rédaction → bake → publish",
-        purpose = "Mettre un site perso en ligne",
-    )
+    private fun visualIdentity() =
+        VisualIdentity(
+            brand = "cheroliv.com",
+            format = "9:16 (1080x1920)",
+            tokens = mapOf("--accent-color" to "#0d6efd", "--footer-bg" to "#7952b3"),
+            typography = "Inter",
+            logo = "marque cheroliv",
+            background = "charté (tokens)",
+        )
 
-    private fun visualIdentity() = VisualIdentity(
-        brand = "cheroliv.com",
-        format = "9:16 (1080x1920)",
-        tokens = mapOf("--accent-color" to "#0d6efd", "--footer-bg" to "#7952b3"),
-        typography = "Inter",
-        logo = "marque cheroliv",
-        background = "charté (tokens)",
-    )
-
-    private fun narrativeThread() = NarrativeThread(
-        thesis = "Un site perso, ça se génère",
-        recurringMotif = "le terminal qui produit le site",
-        arc = "accroche → démonstration → résolution → CTA",
-        register = "instructional",
-        voice = "direct, technique",
-    )
+    private fun narrativeThread() =
+        NarrativeThread(
+            thesis = "Un site perso, ça se génère",
+            recurringMotif = "le terminal qui produit le site",
+            arc = "accroche → démonstration → résolution → CTA",
+            register = "instructional",
+            voice = "direct, technique",
+        )
 
     private fun storyboard(
         qqoqcp: Qqoqcp? = null,
@@ -50,12 +52,13 @@ class ViralStoryboardContextTest {
     ) = ViralStoryboard(
         message = "Créer son site perso avec bakery + opencode",
         angle = "L'agent écrit, Gradle bake",
-        beats = listOf(
-            StoryboardBeat("hook", "Un site perso, sans HTML", 3.0),
-            StoryboardBeat("development", "Scaffold bakery", 10.0, asset = "terminal.png"),
-            StoryboardBeat("development", "opencode rédige", 10.0),
-            StoryboardBeat("cta", "bakery-gradle + opencode", 7.0),
-        ),
+        beats =
+            listOf(
+                StoryboardBeat("hook", "Un site perso, sans HTML", 3.0),
+                StoryboardBeat("development", "Scaffold bakery", 10.0, asset = "terminal.png"),
+                StoryboardBeat("development", "opencode rédige", 10.0),
+                StoryboardBeat("cta", "bakery-gradle + opencode", 7.0),
+            ),
         platform = ViralPlatform.TIKTOK,
         language = "fr",
         targetDurationSeconds = 30,

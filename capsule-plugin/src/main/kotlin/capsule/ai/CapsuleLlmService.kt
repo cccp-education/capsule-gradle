@@ -36,7 +36,6 @@ import java.time.Duration
  * a [LlmProviderChatModelAdapter].
  */
 object CapsuleLlmService {
-
     // =========================================================================
     // Provider selection
     // =========================================================================
@@ -46,8 +45,11 @@ object CapsuleLlmService {
 
     /** Reads `-Pai.provider`, defaulting to `"ollama"` when absent or blank. */
     val Project.aiProvider: String
-        get() = (findProperty(PROP_AI_PROVIDER) as? String
-            ?: PROVIDER_OLLAMA).lowercase().trim()
+        get() =
+            (
+                findProperty(PROP_AI_PROVIDER) as? String
+                    ?: PROVIDER_OLLAMA
+            ).lowercase().trim()
 
     // =========================================================================
     // LlmBuildService registration + model resolution
@@ -63,7 +65,8 @@ object CapsuleLlmService {
      */
     fun Project.registerLlmBuildService(): Provider<LlmBuildService> =
         gradle.sharedServices.registerIfAbsent(
-            "capsuleLlmService", LlmBuildService::class.java
+            "capsuleLlmService",
+            LlmBuildService::class.java,
         ) { spec: BuildServiceSpec<LlmBuildService.Params> ->
             spec.parameters.model.convention(project.aiProvider)
             spec.maxParallelUsages.set(1)
@@ -103,12 +106,14 @@ object CapsuleLlmService {
      * the mock-LLM fallback in [resolveModel].
      */
     fun Project.createOllamaChatModel(baseUrl: String): ChatModel =
-        dev.langchain4j.model.ollama.OllamaChatModel.builder().apply {
-            this.baseUrl(baseUrl)
-            modelName(findProperty("ollama.modelName")?.toString() ?: "smollm:135m")
-            temperature(findProperty("ollama.temperature")?.toString()?.toDoubleOrNull() ?: 0.8)
-            timeout(Duration.ofSeconds(findProperty("ollama.timeout")?.toString()?.toLongOrNull() ?: 6L))
-            logRequests(true)
-            logResponses(true)
-        }.build()
+        dev.langchain4j.model.ollama.OllamaChatModel
+            .builder()
+            .apply {
+                this.baseUrl(baseUrl)
+                modelName(findProperty("ollama.modelName")?.toString() ?: "smollm:135m")
+                temperature(findProperty("ollama.temperature")?.toString()?.toDoubleOrNull() ?: 0.8)
+                timeout(Duration.ofSeconds(findProperty("ollama.timeout")?.toString()?.toLongOrNull() ?: 6L))
+                logRequests(true)
+                logResponses(true)
+            }.build()
 }

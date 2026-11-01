@@ -14,7 +14,6 @@ import java.util.regex.Pattern
  * Pattern aligné sur plantuml-gradle ConfigLoader.
  */
 object CapsuleConfigLoader {
-
     private val logger = Logging.getLogger(CapsuleConfigLoader::class.java)
 
     private val ENV_VAR_PATTERN = Pattern.compile("\\$\\{([^}]+)\\}")

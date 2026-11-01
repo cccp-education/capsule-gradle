@@ -24,7 +24,6 @@ import kotlin.test.assertTrue
  * nothing usable is returned.
  */
 class ViralHookTest {
-
     private fun plan(
         deckName: String = "content-decouverte",
         language: String = "fr",
@@ -33,10 +32,11 @@ class ViralHookTest {
         augmentedContext: String = "==== Docs (DOCS)\nLe référentiel Content définit 4 activités types.",
     ) = ViralHookPlan(
         deckName = deckName,
-        segments = listOf(
-            SlideSegment(1, "Introduction", "Pourquoi devenir développeur ?"),
-            SlideSegment(2, "Coeur", "Les 4 activités types du référentiel."),
-        ),
+        segments =
+            listOf(
+                SlideSegment(1, "Introduction", "Pourquoi devenir développeur ?"),
+                SlideSegment(2, "Coeur", "Les 4 activités types du référentiel."),
+            ),
         language = language,
         platform = platform,
         targetDurationSeconds = duration,
@@ -100,13 +100,14 @@ class ViralHookTest {
 
     @Test
     fun `parser extracts JSON wrapped in prose and fences`() {
-        val raw = """
+        val raw =
+            """
             Voici le résultat :
             ```json
             {"hook":"Accroche","message":"Message","cta":"CTA"}
             ```
             Bonne journée.
-        """.trimIndent()
+            """.trimIndent()
         val hook = ViralHookParser.parse(raw)
         assertNotNull(hook)
         assertEquals("Accroche", hook.hook)
@@ -145,7 +146,9 @@ class ViralHookTest {
 
     // ─── Adapter ──────────────────────────────────────────────────────
 
-    private class FakeChatModel(private val response: String) : ChatModel {
+    private class FakeChatModel(
+        private val response: String,
+    ) : ChatModel {
         var callCount = 0
             private set
         var lastPrompt: String? = null
@@ -153,8 +156,11 @@ class ViralHookTest {
 
         override fun doChat(request: ChatRequest): ChatResponse {
             callCount++
-            lastPrompt = request.messages().lastOrNull { it is UserMessage }
-                ?.let { (it as UserMessage).singleText() }
+            lastPrompt =
+                request
+                    .messages()
+                    .lastOrNull { it is UserMessage }
+                    ?.let { (it as UserMessage).singleText() }
             return ChatResponse.builder().aiMessage(AiMessage.from(response)).build()
         }
     }
@@ -181,8 +187,7 @@ class ViralHookTest {
 
     /** Fake [ChatModel] whose call always fails (transient cloud error). */
     private class ThrowingChatModel : ChatModel {
-        override fun doChat(request: ChatRequest): ChatResponse =
-            throw RuntimeException("too many concurrent requests")
+        override fun doChat(request: ChatRequest): ChatResponse = throw RuntimeException("too many concurrent requests")
     }
 
     @Test

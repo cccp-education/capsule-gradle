@@ -31,12 +31,10 @@ data class TimedWord(
  * Pure — no Gradle, no I/O.
  */
 object WordTimingsJson {
-
     private val mapper = ObjectMapper()
 
     /** Normalises a word for matching (`"Bonjour,"` → `"bonjour"`). */
-    fun normalize(text: String): String =
-        text.lowercase().replace(Regex("[^\\p{L}\\p{Nd}]+"), "")
+    fun normalize(text: String): String = text.lowercase().replace(Regex("[^\\p{L}\\p{Nd}]+"), "")
 
     /** Extracts the [TimedWord]s from [json], or an empty list on any problem. */
     fun parse(json: String): List<TimedWord> {

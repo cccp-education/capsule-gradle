@@ -28,16 +28,17 @@ import org.junit.platform.suite.api.Suite
 @SelectClasspathResource("features/capsule_publish.feature")
 @ConfigurationParameter(
     key = FEATURES_PROPERTY_NAME,
-    value = "src/test/features/capsule_capture_strategy.feature,src/test/features/capsule_format.feature," +
-        "src/test/features/capsule_podcast.feature,src/test/features/capsule_preview.feature," +
-        "src/test/features/capsule_chapters.feature,src/test/features/capsule_remotion.feature," +
-        "src/test/features/capsule_remotion_anim.feature,src/test/features/capsule_distrib.feature," +
-        "src/test/features/capsule_publish.feature"
+    value =
+        "src/test/features/capsule_capture_strategy.feature,src/test/features/capsule_format.feature," +
+            "src/test/features/capsule_podcast.feature,src/test/features/capsule_preview.feature," +
+            "src/test/features/capsule_chapters.feature,src/test/features/capsule_remotion.feature," +
+            "src/test/features/capsule_remotion_anim.feature,src/test/features/capsule_distrib.feature," +
+            "src/test/features/capsule_publish.feature",
 )
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-shard-media.html, json:build/reports/cucumber-shard-media.json"
+    value = "pretty, html:build/reports/cucumber-shard-media.html, json:build/reports/cucumber-shard-media.json",
 )
 @ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "not @wip and not @integration and not @viral-render")
 class CucumberShardMediaRunner

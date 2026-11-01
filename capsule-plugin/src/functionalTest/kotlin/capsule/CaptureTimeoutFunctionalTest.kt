@@ -1,10 +1,10 @@
 package capsule
 
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.GradleRunner
-import org.junit.jupiter.api.io.TempDir
 
 /**
  * TDD baby-step — CR-2.5 functional (GradleTestKit).
@@ -14,13 +14,13 @@ import org.junit.jupiter.api.io.TempDir
  * - CLI -P override beats the DSL value (4-source merge: ENV < props < YAML < CLI)
  */
 class CaptureTimeoutFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
     private fun writeBuild(extraConfig: String = "") {
         projectDir.resolve("settings.gradle").writeText("")
-        projectDir.resolve("build.gradle").writeText("""
+        projectDir.resolve("build.gradle").writeText(
+            """
             import capsule.CapsuleExtension
 
             plugins {
@@ -35,14 +35,17 @@ class CaptureTimeoutFunctionalTest {
                     println "CAPTURE_TIMEOUT_MINUTES=" + ext.captureTimeoutMinutes.get()
                 }
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
-    private fun runner(vararg args: String): GradleRunner = GradleRunner.create()
-        .forwardOutput()
-        .withPluginClasspath()
-        .withProjectDir(projectDir)
-        .withArguments(*args)
+    private fun runner(vararg args: String): GradleRunner =
+        GradleRunner
+            .create()
+            .forwardOutput()
+            .withPluginClasspath()
+            .withProjectDir(projectDir)
+            .withArguments(*args)
 
     @Test
     fun `captureTimeoutMinutes DSL value is resolved by the plugin`() {
@@ -52,7 +55,7 @@ class CaptureTimeoutFunctionalTest {
 
         assertTrue(
             result.output.contains("CAPTURE_TIMEOUT_MINUTES=2"),
-            "DSL captureTimeoutMinutes should be resolved to 2, got: ${result.output.lines().find { it.contains("CAPTURE_TIMEOUT_MINUTES") }}"
+            "DSL captureTimeoutMinutes should be resolved to 2, got: ${result.output.lines().find { it.contains("CAPTURE_TIMEOUT_MINUTES") }}",
         )
     }
 
@@ -65,7 +68,11 @@ class CaptureTimeoutFunctionalTest {
 
         assertTrue(
             result.output.contains("CAPTURE_TIMEOUT_MINUTES=3"),
-            "CLI -P should override the default captureTimeoutMinutes (expected 3), got: ${result.output.lines().find { it.contains("CAPTURE_TIMEOUT_MINUTES") }}"
+            "CLI -P should override the default captureTimeoutMinutes (expected 3), got: ${result.output.lines().find {
+                it.contains(
+                    "CAPTURE_TIMEOUT_MINUTES",
+                )
+            }}",
         )
     }
 
@@ -77,7 +84,7 @@ class CaptureTimeoutFunctionalTest {
 
         assertTrue(
             result.output.contains("CAPTURE_TIMEOUT_MINUTES=5"),
-            "Unconfigured captureTimeoutMinutes should default to 5, got: ${result.output.lines().find { it.contains("CAPTURE_TIMEOUT_MINUTES") }}"
+            "Unconfigured captureTimeoutMinutes should default to 5, got: ${result.output.lines().find { it.contains("CAPTURE_TIMEOUT_MINUTES") }}",
         )
     }
 }

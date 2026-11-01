@@ -10,18 +10,21 @@ import kotlin.test.assertTrue
  * proportional fallback. Pure — no I/O.
  */
 class WordTimingsTest {
-
-    private fun beat(intent: String, duration: Double, role: String = "development") =
-        StoryboardBeat(role = role, intent = intent, durationSeconds = duration)
+    private fun beat(
+        intent: String,
+        duration: Double,
+        role: String = "development",
+    ) = StoryboardBeat(role = role, intent = intent, durationSeconds = duration)
 
     @Test
     fun `parses the whisper segments words shape`() {
-        val json = """
+        val json =
+            """
             { "segments": [ { "words": [
               { "word": "Bonjour", "start": 0.1, "end": 0.6 },
               { "word": "le", "start": 0.7, "end": 0.9 }
             ] } ] }
-        """.trimIndent()
+            """.trimIndent()
 
         val words = WordTimingsJson.parse(json)
 
@@ -40,11 +43,12 @@ class WordTimingsTest {
     @Test
     fun `the planner uses measured timings when every word matches`() {
         val beats = listOf(beat("Bonjour le monde", 3.0))
-        val timings = listOf(
-            TimedWord("bonjour", 0.1, 0.6),
-            TimedWord("le", 0.7, 0.9),
-            TimedWord("monde", 1.0, 1.8),
-        )
+        val timings =
+            listOf(
+                TimedWord("bonjour", 0.1, 0.6),
+                TimedWord("le", 0.7, 0.9),
+                TimedWord("monde", 1.0, 1.8),
+            )
 
         val line = KaraokeWordPlanner.plan(beats, timings)[0]
 
@@ -56,11 +60,12 @@ class WordTimingsTest {
     @Test
     fun `measured timings are clamped to the beat window`() {
         val beats = listOf(beat("Bonjour le monde", 1.0))
-        val timings = listOf(
-            TimedWord("bonjour", 0.1, 0.6),
-            TimedWord("le", 0.7, 0.9),
-            TimedWord("monde", 1.0, 1.8),
-        )
+        val timings =
+            listOf(
+                TimedWord("bonjour", 0.1, 0.6),
+                TimedWord("le", 0.7, 0.9),
+                TimedWord("monde", 1.0, 1.8),
+            )
 
         val line = KaraokeWordPlanner.plan(beats, timings)[0]
 

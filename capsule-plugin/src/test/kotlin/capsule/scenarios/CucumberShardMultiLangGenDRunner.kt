@@ -21,10 +21,10 @@ import org.junit.platform.suite.api.Suite
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "capsule.scenarios")
 @ConfigurationParameter(
     key = PLUGIN_PROPERTY_NAME,
-    value = "pretty, html:build/reports/cucumber-shard-multilang-gend.html, json:build/reports/cucumber-shard-multilang-gend.json"
+    value = "pretty, html:build/reports/cucumber-shard-multilang-gend.html, json:build/reports/cucumber-shard-multilang-gend.json",
 )
 @ConfigurationParameter(
     key = FILTER_TAGS_PROPERTY_NAME,
-    value = "@multilang-gen-d and not @wip and not @integration and not @viral-render"
+    value = "@multilang-gen-d and not @wip and not @integration and not @viral-render",
 )
 class CucumberShardMultiLangGenDRunner

@@ -21,7 +21,6 @@ import capsule.HtmlEscape
  * Pure — no I/O, no browser, no FFmpeg. Deterministic.
  */
 object ViralDeckBuilder {
-
     /** Deck width (px) — 9:16 portrait (mirror of [ViralViewport.PORTRAIT_WIDTH]). */
     const val WIDTH: Int = ViralViewport.PORTRAIT_WIDTH
 

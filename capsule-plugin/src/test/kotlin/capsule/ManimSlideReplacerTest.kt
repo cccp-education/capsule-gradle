@@ -1,6 +1,5 @@
 package capsule
 
-import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -19,8 +18,8 @@ import kotlin.test.assertTrue
  * - NoOpManimSlideReplacer returns the deck HTML unchanged (for testing)
  */
 class ManimSlideReplacerTest {
-
-    private val sampleDeck = """
+    private val sampleDeck =
+        """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -31,7 +30,7 @@ class ManimSlideReplacerTest {
 </div>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
 </body></html>
-    """.trimIndent()
+        """.trimIndent()
 
     // ─── NoOpManimSlideReplacer ──────────────────────────────────
 
@@ -127,7 +126,8 @@ class ManimSlideReplacerTest {
 
     @Test
     fun `replacer handles deck with only one slide`() {
-        val singleSlideDeck = """
+        val singleSlideDeck =
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -135,7 +135,7 @@ class ManimSlideReplacerTest {
   </div>
 </div>
 </body></html>
-        """.trimIndent()
+            """.trimIndent()
 
         val replacer = ManimSlideReplacerImpl()
         val result = replacer.replaceSlideAt(singleSlideDeck, 0, "video/only.mp4")
@@ -146,7 +146,8 @@ class ManimSlideReplacerTest {
 
     @Test
     fun `replacer handles nested sections preserving vertical stack`() {
-        val nestedDeck = """
+        val nestedDeck =
+            """
 <html><body>
 <div class="reveal">
   <div class="slides">
@@ -158,7 +159,7 @@ class ManimSlideReplacerTest {
   </div>
 </div>
 </body></html>
-        """.trimIndent()
+            """.trimIndent()
 
         val replacer = ManimSlideReplacerImpl()
         val result = replacer.replaceSlideAt(nestedDeck, 0, "video/nested.mp4")

@@ -10,14 +10,14 @@ import capsule.ProcessRunner
 import capsule.RemotionCaptureImpl
 import capsule.RemotionPlanner
 import capsule.ScreenshotCaptureImpl
+import capsule.viral.ViralCaptureStrategy
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 import video.kernel.VideoEngine
 import video.kernel.VideoOutcome
 import video.kernel.VideoRenderRequest
 import video.kernel.VideoRenderResult
 import video.kernel.segment.VideoSegment
-import capsule.viral.ViralCaptureStrategy
-import org.gradle.api.logging.Logger
-import org.gradle.api.logging.Logging
 import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executors
@@ -92,7 +92,6 @@ class RevealJsEngineAdapter(
     private val logger: Logger = Logging.getLogger(RevealJsEngineAdapter::class.java),
     private val captureProvider: (() -> PlaywrightCapture)? = null,
 ) : VideoEngine {
-
     private var cachedCapture: PlaywrightCapture? = null
 
     override fun name(): String = "revealjs"
@@ -105,12 +104,10 @@ class RevealJsEngineAdapter(
     }
 
     /** A fresh capture engine — one per parallel worker thread. */
-    fun newCapture(): PlaywrightCapture =
-        captureProvider?.invoke() ?: resolveFromSettings()
+    fun newCapture(): PlaywrightCapture = captureProvider?.invoke() ?: resolveFromSettings()
 
     /** A single engine reused across a whole-source render. */
-    fun resolveCapture(): PlaywrightCapture =
-        captureProvider?.invoke() ?: (cachedCapture ?: resolveFromSettings().also { cachedCapture = it })
+    fun resolveCapture(): PlaywrightCapture = captureProvider?.invoke() ?: (cachedCapture ?: resolveFromSettings().also { cachedCapture = it })
 
     /**
      * Resolves the capture engine for the configured strategy, applying the
@@ -118,39 +115,41 @@ class RevealJsEngineAdapter(
      * unavailable and strict mode is off.
      */
     private fun resolveFromSettings(): PlaywrightCapture {
-        val strategy = ViralCaptureStrategy.resolve(
-            configured = settings.configuredStrategy,
-            viralEnabled = settings.viralEnabled,
-        )
-        val resolved = CaptureResolver.resolve(
-            strategy = strategy,
-            strict = settings.strict,
-            playwrightFactory = {
-                PlaywrightCaptureImpl(
-                    timeout = settings.playwrightTimeout,
-                    defaultSlideDuration = settings.defaultSlideDuration,
-                )
-            },
-            screenshotFactory = {
-                ScreenshotCaptureImpl(
-                    timeout = settings.playwrightTimeout,
-                    ffmpegPath = settings.ffmpegPath,
-                    encodeParallelism = settings.parallelThreads,
-                    previewOnly = settings.previewOnly,
-                )
-            },
-            noOpCapture = NoOpPlaywrightCapture(),
-            enginePath = settings.chromiumPath,
-            remotionFactory = {
-                RemotionCaptureImpl(
-                    projectDir = settings.remotionProjectDir,
-                    nodeExecutablePath = settings.remotionNodePath,
-                    concurrency = settings.remotionConcurrency,
-                    fps = settings.remotionFps,
-                    manimSources = settings.manimSources,
-                )
-            },
-        )
+        val strategy =
+            ViralCaptureStrategy.resolve(
+                configured = settings.configuredStrategy,
+                viralEnabled = settings.viralEnabled,
+            )
+        val resolved =
+            CaptureResolver.resolve(
+                strategy = strategy,
+                strict = settings.strict,
+                playwrightFactory = {
+                    PlaywrightCaptureImpl(
+                        timeout = settings.playwrightTimeout,
+                        defaultSlideDuration = settings.defaultSlideDuration,
+                    )
+                },
+                screenshotFactory = {
+                    ScreenshotCaptureImpl(
+                        timeout = settings.playwrightTimeout,
+                        ffmpegPath = settings.ffmpegPath,
+                        encodeParallelism = settings.parallelThreads,
+                        previewOnly = settings.previewOnly,
+                    )
+                },
+                noOpCapture = NoOpPlaywrightCapture(),
+                enginePath = settings.chromiumPath,
+                remotionFactory = {
+                    RemotionCaptureImpl(
+                        projectDir = settings.remotionProjectDir,
+                        nodeExecutablePath = settings.remotionNodePath,
+                        concurrency = settings.remotionConcurrency,
+                        fps = settings.remotionFps,
+                        manimSources = settings.manimSources,
+                    )
+                },
+            )
         if (resolved.isAvailable()) {
             val totalSecs = plan.segmentDurations.sum()
             logger.lifecycle(
@@ -192,10 +191,15 @@ class RevealJsEngineAdapter(
         }
 
         val ext = capture.outputExtension()
-        val produced = request.outputDir.listFiles { f -> f.name.endsWith(".$ext") }?.toList().orEmpty()
-        val chosen = produced.firstOrNull { it.name == "${RemotionPlanner.FINAL_VIDEO_BASENAME}.$ext" }
-            ?: produced.firstOrNull { !it.name.startsWith("slide-") }
-            ?: produced.firstOrNull()
+        val produced =
+            request.outputDir
+                .listFiles { f -> f.name.endsWith(".$ext") }
+                ?.toList()
+                .orEmpty()
+        val chosen =
+            produced.firstOrNull { it.name == "${RemotionPlanner.FINAL_VIDEO_BASENAME}.$ext" }
+                ?: produced.firstOrNull { !it.name.startsWith("slide-") }
+                ?: produced.firstOrNull()
         return VideoRenderResult(produced = chosen, outcome = outcomeFor(chosen))
     }
 
@@ -221,60 +225,66 @@ class RevealJsEngineAdapter(
 
         for ((idx, seg) in plan.segments.withIndex()) {
             val slideDir = request.outputDir.resolve("slide-${String.format("%02d", seg.index)}")
-            futures.add(executor.submit<File?> {
-                val capture = threadEngine.get()
-                try {
-                    val singleSlideHtml = RevealJsDeckHtml.singleSlideHtml(deckHtml, idx)
-                    val singleSlideFile = slideDir.resolve("slide.html")
-                    slideDir.mkdirs()
-                    singleSlideFile.writeText(singleSlideHtml)
+            futures.add(
+                executor.submit<File?> {
+                    val capture = threadEngine.get()
+                    try {
+                        val singleSlideHtml = RevealJsDeckHtml.singleSlideHtml(deckHtml, idx)
+                        val singleSlideFile = slideDir.resolve("slide.html")
+                        slideDir.mkdirs()
+                        singleSlideFile.writeText(singleSlideHtml)
 
-                    capture.capture(
-                        singleSlideFile.absolutePath,
-                        slideDir,
-                        plan.viewportWidth,
-                        plan.viewportHeight,
-                        listOf(plan.segmentDurations[idx]),
-                    )
-                    val slideExt = capture.outputExtension()
-                    val produced = slideDir.listFiles { f -> f.name.endsWith(".$slideExt") }?.toList().orEmpty()
-                    val source = produced.firstOrNull {
-                        it.name == "${RemotionPlanner.FINAL_VIDEO_BASENAME}.$slideExt"
+                        capture.capture(
+                            singleSlideFile.absolutePath,
+                            slideDir,
+                            plan.viewportWidth,
+                            plan.viewportHeight,
+                            listOf(plan.segmentDurations[idx]),
+                        )
+                        val slideExt = capture.outputExtension()
+                        val produced = slideDir.listFiles { f -> f.name.endsWith(".$slideExt") }?.toList().orEmpty()
+                        val source =
+                            produced.firstOrNull {
+                                it.name == "${RemotionPlanner.FINAL_VIDEO_BASENAME}.$slideExt"
+                            }
+                                ?: produced.firstOrNull { !it.name.startsWith("slide-") }
+                                ?: produced.firstOrNull()
+                        if (source != null && source.exists()) {
+                            val target = request.outputDir.resolve("slide-${String.format("%02d", seg.index)}.$slideExt")
+                            source.copyTo(target, overwrite = true)
+                            target
+                        } else {
+                            null
+                        }
+                    } catch (e: Exception) {
+                        logger.warn("  Slide {} capture failed: {}", seg.index, e.message)
+                        synchronized(failedUnits) { failedUnits.add(seg.index) }
+                        null
                     }
-                        ?: produced.firstOrNull { !it.name.startsWith("slide-") }
-                        ?: produced.firstOrNull()
-                    if (source != null && source.exists()) {
-                        val target = request.outputDir.resolve("slide-${String.format("%02d", seg.index)}.$slideExt")
-                        source.copyTo(target, overwrite = true)
-                        target
-                    } else null
-                } catch (e: Exception) {
-                    logger.warn("  Slide {} capture failed: {}", seg.index, e.message)
-                    synchronized(failedUnits) { failedUnits.add(seg.index) }
-                    null
-                }
-            })
+                },
+            )
         }
 
-        val slideVideos = try {
-            futures.mapNotNull { future ->
-                try {
-                    future.get(timeoutMillis, TimeUnit.MILLISECONDS)
-                } catch (e: TimeoutException) {
-                    logger.error(
-                        "Parallel capture timed out after {} ms — aborting. Shutting down executor.",
-                        timeoutMillis,
-                    )
-                    throw e
+        val slideVideos =
+            try {
+                futures.mapNotNull { future ->
+                    try {
+                        future.get(timeoutMillis, TimeUnit.MILLISECONDS)
+                    } catch (e: TimeoutException) {
+                        logger.error(
+                            "Parallel capture timed out after {} ms — aborting. Shutting down executor.",
+                            timeoutMillis,
+                        )
+                        throw e
+                    }
+                }
+            } finally {
+                executor.shutdownNow()
+                engines.forEach { engine ->
+                    runCatching { engine.close() }
+                        .onFailure { logger.info("Capture engine close failed: {}", it.message) }
                 }
             }
-        } finally {
-            executor.shutdownNow()
-            engines.forEach { engine ->
-                runCatching { engine.close() }
-                    .onFailure { logger.info("Capture engine close failed: {}", it.message) }
-            }
-        }
 
         if (failedUnits.isNotEmpty()) {
             logger.error(
@@ -284,11 +294,14 @@ class RevealJsEngineAdapter(
             )
         }
 
-        val produced = if (slideVideos.isNotEmpty()) {
-            val finalVideo = request.outputDir.resolve("${request.name}.${slideVideos.first().extension}")
-            concat(slideVideos, finalVideo, settings.ffmpegPath)
-            finalVideo.takeIf { it.exists() }
-        } else null
+        val produced =
+            if (slideVideos.isNotEmpty()) {
+                val finalVideo = request.outputDir.resolve("${request.name}.${slideVideos.first().extension}")
+                concat(slideVideos, finalVideo, settings.ffmpegPath)
+                finalVideo.takeIf { it.exists() }
+            } else {
+                null
+            }
 
         return VideoRenderResult(produced = produced, outcome = outcomeFor(produced), failedUnits = failedUnits.toList())
     }
@@ -308,37 +321,52 @@ class RevealJsEngineAdapter(
         )
     }
 
-    private fun codecFor(extension: String): String? = when (extension.lowercase()) {
-        "mp4" -> "h264"
-        "webm" -> "vp8"
-        else -> null
-    }
+    private fun codecFor(extension: String): String? =
+        when (extension.lowercase()) {
+            "mp4" -> "h264"
+            "webm" -> "vp8"
+            else -> null
+        }
 
     companion object {
-
         /**
          * Concatenates per-slide video files into [outputFile] via the FFmpeg
          * concat demuxer (`-c copy`, no re-encode), then deletes the inputs when
          * the concat succeeds (Economy of Ink).
          */
         @JvmStatic
-        fun concat(slideVideos: List<File>, outputFile: File, ffmpegPath: String = "ffmpeg"): Boolean {
+        fun concat(
+            slideVideos: List<File>,
+            outputFile: File,
+            ffmpegPath: String = "ffmpeg",
+        ): Boolean {
             if (slideVideos.isEmpty()) return false
             val concatList = File(outputFile.parentFile, "concat-${System.currentTimeMillis()}.txt")
             concatList.writeText(slideVideos.joinToString("\n") { "file '${it.absolutePath.replace("'", "'\\''")}'" })
-            val success = try {
-                val result = ProcessRunner.run(
-                    listOf(
-                        ffmpegPath, "-y", "-f", "concat", "-safe", "0",
-                        "-i", concatList.absolutePath, "-c", "copy", outputFile.absolutePath,
-                    )
-                )
-                result.isSuccess && outputFile.exists()
-            } catch (e: Exception) {
-                false
-            } finally {
-                concatList.delete()
-            }
+            val success =
+                try {
+                    val result =
+                        ProcessRunner.run(
+                            listOf(
+                                ffmpegPath,
+                                "-y",
+                                "-f",
+                                "concat",
+                                "-safe",
+                                "0",
+                                "-i",
+                                concatList.absolutePath,
+                                "-c",
+                                "copy",
+                                outputFile.absolutePath,
+                            ),
+                        )
+                    result.isSuccess && outputFile.exists()
+                } catch (e: Exception) {
+                    false
+                } finally {
+                    concatList.delete()
+                }
             if (success) {
                 slideVideos.forEach { it.delete() }
             }

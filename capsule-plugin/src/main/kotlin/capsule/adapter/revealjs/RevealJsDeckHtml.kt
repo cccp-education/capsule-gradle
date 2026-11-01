@@ -17,7 +17,6 @@ import video.kernel.segment.VideoSegment
  * Pure — no I/O, no Gradle, no Playwright. Deterministic string transforms.
  */
 object RevealJsDeckHtml {
-
     /**
      * Forces the one extracted slide to be visible whatever the deck's own
      * stylesheet does with `.slides section` (reveal.css hides every slide
@@ -80,7 +79,10 @@ object RevealJsDeckHtml {
      * @return standalone HTML with only the requested slide, preserving head,
      *         styles and scripts; [deckHtml] unchanged when no slide matches.
      */
-    fun singleSlideHtml(deckHtml: String, slideIndex: Int): String {
+    fun singleSlideHtml(
+        deckHtml: String,
+        slideIndex: Int,
+    ): String {
         val headSection = HtmlSectionParser.headMarkup(deckHtml)
 
         // Greedy on purpose: the lazy form stops at the first nested `</div>`,
@@ -88,8 +90,9 @@ object RevealJsDeckHtml {
         // container's `</div>` is the last. The section count then fell short and
         // the extraction returned the whole deck instead of the requested slide.
         // Same rule as RemotionCapture.slidesMarkup, of which it is the source.
-        val slidesContent = HtmlSectionParser.slidesMarkup(deckHtml)
-            ?: return deckHtml
+        val slidesContent =
+            HtmlSectionParser.slidesMarkup(deckHtml)
+                ?: return deckHtml
 
         val topLevelSections = HtmlSectionParser.extractTopLevelSections(slidesContent)
 
@@ -130,15 +133,19 @@ object RevealJsDeckHtml {
      * @param markerSuffix optional suffix appended to the script's HTML comment
      *        marker (used by the sequential fallback for diagnosability).
      */
-    fun injectAudioScript(deckHtml: String, markerSuffix: String = ""): String {
-        val script = if (markerSuffix.isEmpty()) {
-            AUDIO_INJECT_SCRIPT
-        } else {
-            AUDIO_INJECT_SCRIPT.replace(
-                "<!-- CAPSULE-GRADLE: Autoplay audio injection -->",
-                "<!-- CAPSULE-GRADLE: Autoplay audio injection ($markerSuffix) -->"
-            )
-        }
+    fun injectAudioScript(
+        deckHtml: String,
+        markerSuffix: String = "",
+    ): String {
+        val script =
+            if (markerSuffix.isEmpty()) {
+                AUDIO_INJECT_SCRIPT
+            } else {
+                AUDIO_INJECT_SCRIPT.replace(
+                    "<!-- CAPSULE-GRADLE: Autoplay audio injection -->",
+                    "<!-- CAPSULE-GRADLE: Autoplay audio injection ($markerSuffix) -->",
+                )
+            }
         return deckHtml.replace("</body>", "$script</body>")
     }
 
@@ -148,26 +155,32 @@ object RevealJsDeckHtml {
      * [audioPathByIndex]. Lines containing a self-closed `<section>` are left
      * untouched (same rule as the original line scan).
      */
-    fun injectDataSlideAudio(deckHtml: String, audioPathByIndex: Map<Int, String>): String =
-        deckHtml.lines().map { line ->
-            if (line.contains("<section") && !line.contains("</section>")) {
-                var mutableLine = line
-                for ((index, audioPath) in audioPathByIndex) {
-                    if (line.contains("data-capsule-slide=\"$index\"") ||
-                        line.contains("data-capsule-slide='$index'")
-                    ) {
-                        mutableLine = mutableLine.replace(
-                            "<section",
-                            "<section data-audio=\"file://$audioPath\""
-                        )
-                        break
+    fun injectDataSlideAudio(
+        deckHtml: String,
+        audioPathByIndex: Map<Int, String>,
+    ): String =
+        deckHtml
+            .lines()
+            .map { line ->
+                if (line.contains("<section") && !line.contains("</section>")) {
+                    var mutableLine = line
+                    for ((index, audioPath) in audioPathByIndex) {
+                        if (line.contains("data-capsule-slide=\"$index\"") ||
+                            line.contains("data-capsule-slide='$index'")
+                        ) {
+                            mutableLine =
+                                mutableLine.replace(
+                                    "<section",
+                                    "<section data-audio=\"file://$audioPath\"",
+                                )
+                            break
+                        }
                     }
+                    mutableLine
+                } else {
+                    line
                 }
-                mutableLine
-            } else {
-                line
-            }
-        }.joinToString("\n")
+            }.joinToString("\n")
 
     /**
      * Fallback used when the deck lacks the `data-capsule-slide` marker: walks
@@ -175,7 +188,10 @@ object RevealJsDeckHtml {
      * audio of the matching segment positionally ([orderedAudioPaths] aligned
      * with the deck's sections).
      */
-    fun injectSequentialAudio(deckHtml: String, orderedAudioPaths: List<String>): String {
+    fun injectSequentialAudio(
+        deckHtml: String,
+        orderedAudioPaths: List<String>,
+    ): String {
         val sections = HtmlSectionParser.findTopLevelSectionOpenTags(deckHtml)
         return buildString {
             var lastEnd = 0

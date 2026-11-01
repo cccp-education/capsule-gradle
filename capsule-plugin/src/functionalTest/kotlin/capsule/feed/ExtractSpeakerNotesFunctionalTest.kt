@@ -1,13 +1,12 @@
 package capsule.feed
 
+import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.gradle.testkit.runner.GradleRunner
-import org.junit.jupiter.api.io.TempDir
 
 class ExtractSpeakerNotesFunctionalTest {
-
     @field:TempDir
     lateinit var projectDir: File
 
@@ -16,14 +15,19 @@ class ExtractSpeakerNotesFunctionalTest {
 
     private fun setupBuild() {
         settingsFile.writeText("")
-        buildFile.writeText("""
+        buildFile.writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
     }
 
-    private fun writeDeck(name: String, content: String) {
+    private fun writeDeck(
+        name: String,
+        content: String,
+    ) {
         val miscDir = projectDir.resolve("slides/misc").apply { mkdirs() }
         miscDir.resolve("$name.adoc").writeText(content.trimIndent())
     }
@@ -31,7 +35,9 @@ class ExtractSpeakerNotesFunctionalTest {
     @Test
     fun `extractSpeakerNotes writes a script file for a deck with speaker notes`() {
         setupBuild()
-        writeDeck("demo", """
+        writeDeck(
+            "demo",
+            """
             = Demo Deck
 
             == Intro
@@ -47,14 +53,17 @@ class ExtractSpeakerNotesFunctionalTest {
             --
             Deep dive on the topic.
             --
-        """)
+        """,
+        )
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("extractSpeakerNotes")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("extractSpeakerNotes")
+                .withProjectDir(projectDir)
+                .build()
 
         val scriptFile = projectDir.resolve("build/capsule/demo-script.txt")
         assertTrue(scriptFile.exists(), "Expected script file: ${scriptFile.absolutePath}")
@@ -70,20 +79,25 @@ class ExtractSpeakerNotesFunctionalTest {
     @Test
     fun `extractSpeakerNotes skips a deck without speaker notes`() {
         setupBuild()
-        writeDeck("noNotes", """
+        writeDeck(
+            "noNotes",
+            """
             = No Notes Deck
 
             == Slide
 
             No speaker note here.
-        """)
+        """,
+        )
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("extractSpeakerNotes")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("extractSpeakerNotes")
+                .withProjectDir(projectDir)
+                .build()
 
         val scriptFile = projectDir.resolve("build/capsule/noNotes-script.txt")
         assertTrue(!scriptFile.exists(), "No script should be written for a deck without speaker notes")
@@ -93,7 +107,9 @@ class ExtractSpeakerNotesFunctionalTest {
     @Test
     fun `extractSpeakerNotes produces one script per deck when multiple decks are present`() {
         setupBuild()
-        writeDeck("deck-a", """
+        writeDeck(
+            "deck-a",
+            """
             = Deck A
 
             == A
@@ -102,8 +118,11 @@ class ExtractSpeakerNotesFunctionalTest {
             --
             Note A.
             --
-        """)
-        writeDeck("deck-b", """
+        """,
+        )
+        writeDeck(
+            "deck-b",
+            """
             = Deck B
 
             == B
@@ -112,9 +131,11 @@ class ExtractSpeakerNotesFunctionalTest {
             --
             Note B.
             --
-        """)
+        """,
+        )
 
-        GradleRunner.create()
+        GradleRunner
+            .create()
             .forwardOutput()
             .withPluginClasspath()
             .withArguments("extractSpeakerNotes")
@@ -133,12 +154,14 @@ class ExtractSpeakerNotesFunctionalTest {
     fun `extractSpeakerNotes completes gracefully when slides_misc is missing`() {
         setupBuild()
 
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("extractSpeakerNotes")
-            .withProjectDir(projectDir)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("extractSpeakerNotes")
+                .withProjectDir(projectDir)
+                .build()
 
         // Task runs without error and produces no script files
         val capsuleDir = projectDir.resolve("build/capsule")

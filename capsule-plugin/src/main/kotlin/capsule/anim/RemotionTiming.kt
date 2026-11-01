@@ -15,7 +15,6 @@ package capsule.anim
  * of the animation timing, kept free of any runtime so it can run anywhere.
  */
 object RemotionTiming {
-
     /** Pose duration of a block, in seconds (see Capsule.jsx `REVEAL_SECS`). */
     const val REVEAL_SECS: Double = 0.55
 
@@ -42,20 +41,27 @@ object RemotionTiming {
     const val DEFAULT_BEAT_SECS: Double = 1.6
 
     /** Beats (seconds since slide start) for the named block selectors. */
-    val BEATS_SECS: Map<String, Double> = mapOf(
-        "rule" to 0.5,
-        "lede" to 1.0,
-        "stat" to 4.5,
-        "statlabel" to 5.0,
-    )
+    val BEATS_SECS: Map<String, Double> =
+        mapOf(
+            "rule" to 0.5,
+            "lede" to 1.0,
+            "stat" to 4.5,
+            "statlabel" to 5.0,
+        )
 
     /**
      * Blocks carried by the cross-fade itself (no own beat): they appear with
      * the slide background, never on their own fade.
      */
-    val CARRIED_BY_TRANSITION: List<String> = listOf(
-        "brand", "num", "grid", "kicker", "h1", "h2",
-    )
+    val CARRIED_BY_TRANSITION: List<String> =
+        listOf(
+            "brand",
+            "num",
+            "grid",
+            "kicker",
+            "h1",
+            "h2",
+        )
 
     /** Last beat of the scale, used to compress shorter slides. */
     val LAST_BEAT_SECS: Double = BEATS_SECS.values.max() + REVEAL_SECS
@@ -73,11 +79,12 @@ object RemotionTiming {
         x1: Double,
         y0: Double,
         y1: Double,
-    ): Double = when {
-        value <= x0 -> y0
-        value >= x1 -> y1
-        else -> y0 + (value - x0) * (y1 - y0) / (x1 - x0)
-    }
+    ): Double =
+        when {
+            value <= x0 -> y0
+            value >= x1 -> y1
+            else -> y0 + (value - x0) * (y1 - y0) / (x1 - x0)
+        }
 
     /**
      * Beat (seconds since slide start) at which [blockClass] poses.
@@ -107,11 +114,12 @@ object RemotionTiming {
             val (tag, before, at, after) = match.destructured
             val decl = "--d: ${at.toDouble()};"
             val all = "$before$after"
-            val styled = if ("""\sstyle="""".toRegex().containsMatchIn(all)) {
-                all.replaceFirst("""\sstyle="""".toRegex(), """ style="$decl""")
-            } else {
-                """$all style="$decl""""
-            }
+            val styled =
+                if ("""\sstyle="""".toRegex().containsMatchIn(all)) {
+                    all.replaceFirst("""\sstyle="""".toRegex(), """ style="$decl""")
+                } else {
+                    """$all style="$decl""""
+                }
             "<$tag$styled>"
         }
     }
@@ -122,7 +130,10 @@ object RemotionTiming {
      * Bounded by [MAX_SPEEDUP]/[MIN_SLOWDOWN]; a missing clip (<= 0 frames)
      * plays at natural speed (1.0). Mirrors `Animation.playbackRate`.
      */
-    fun clipPlaybackRate(clipDurationInFrames: Int, durationInFrames: Int): Double {
+    fun clipPlaybackRate(
+        clipDurationInFrames: Int,
+        durationInFrames: Int,
+    ): Double {
         if (clipDurationInFrames <= 0) return 1.0
         val raw = clipDurationInFrames.toDouble() / durationInFrames.toDouble()
         return raw.coerceIn(MIN_SLOWDOWN, MAX_SPEEDUP)
@@ -132,8 +143,7 @@ object RemotionTiming {
      * Compression factor for a slide shorter than the beat scale: its cues are
      * pulled in instead of never posing. Mirrors `Slide.compress`.
      */
-    fun compress(slideSecs: Double): Double =
-        if (slideSecs >= LAST_BEAT_SECS) 1.0 else slideSecs / LAST_BEAT_SECS
+    fun compress(slideSecs: Double): Double = if (slideSecs >= LAST_BEAT_SECS) 1.0 else slideSecs / LAST_BEAT_SECS
 
     /**
      * Background opacity fraction of a slide at [frame] within its sequence.
@@ -141,7 +151,11 @@ object RemotionTiming {
      * First slide is fully shown; others fade in over [CROSSFADE_FRAMES].
      * Mirrors `Slide.appear` fed through `EASE_OUT`.
      */
-    fun backgroundAppear(frame: Int, crossfadeFrames: Int = CROSSFADE_FRAMES, first: Boolean): Double {
+    fun backgroundAppear(
+        frame: Int,
+        crossfadeFrames: Int = CROSSFADE_FRAMES,
+        first: Boolean,
+    ): Double {
         if (first) return 1.0
         val t = interpolate(frame.toDouble(), 0.0, crossfadeFrames.toDouble(), 0.0, 1.0)
         return easeOut(t)

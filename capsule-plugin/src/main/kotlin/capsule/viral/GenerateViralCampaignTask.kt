@@ -5,7 +5,6 @@ import capsule.ai.CapsuleLlmService.resolveModel
 import codebase.koog.llm.service.LlmBuildService
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -59,7 +58,6 @@ import java.io.File
  */
 @DisableCachingByDefault(because = "Viral campaign assembly — reads a storyboard + copy, may call the LLM")
 abstract class GenerateViralCampaignTask : DefaultTask() {
-
     /** Master switch — when false (default), the task is a no-op skip. */
     @get:Input
     abstract val viralEnabled: Property<Boolean>
@@ -161,23 +159,25 @@ abstract class GenerateViralCampaignTask : DefaultTask() {
         val hook = resolveHook(storyboard)
 
         val platforms = resolvePlatforms()
-        val variants = ViralBatchPlanner.plan(
-            languages = languages.get(),
-            platforms = platforms,
-            duration = targetDurationSeconds.get(),
-        )
+        val variants =
+            ViralBatchPlanner.plan(
+                languages = languages.get(),
+                platforms = platforms,
+                duration = targetDurationSeconds.get(),
+            )
 
         val copySource = FileMarketCopySource(firstCopyDir())
         val videoDir = File(project.projectDir, renderedVideoDir.get())
-        val bundles = ViralCampaignAssembler.assemble(
-            storyboard = storyboard,
-            variants = variants,
-            hook = hook,
-            copySource = copySource,
-            videoPathFor = { variant -> File(videoDir, "${variant.id}.mp4").absolutePath },
-            thumbnailFor = { variant -> File(videoDir, ViralThumbnailBuilder.fileNameFor(variant.id)).absolutePath },
-            subtitleFor = { variant -> File(videoDir, KaraokeSubtitleBuilder.fileNameFor(variant.id)).absolutePath },
-        )
+        val bundles =
+            ViralCampaignAssembler.assemble(
+                storyboard = storyboard,
+                variants = variants,
+                hook = hook,
+                copySource = copySource,
+                videoPathFor = { variant -> File(videoDir, "${variant.id}.mp4").absolutePath },
+                thumbnailFor = { variant -> File(videoDir, ViralThumbnailBuilder.fileNameFor(variant.id)).absolutePath },
+                subtitleFor = { variant -> File(videoDir, KaraokeSubtitleBuilder.fileNameFor(variant.id)).absolutePath },
+            )
 
         val storyboardOut = storyboardOutput.get().asFile
         storyboardOut.parentFile.mkdirs()
@@ -233,12 +233,15 @@ abstract class GenerateViralCampaignTask : DefaultTask() {
 
     /** Builds a minimal storyboard from the configured hook/cta (gate disabled). */
     private fun synthesizeStoryboard(): ViralStoryboard {
-        val hook = configuredHook.get().ifBlank {
-            error("CAPSULE VIRAL → storyboardRequired=false but no hook configured to synthesize a storyboard.")
-        }
+        val hook =
+            configuredHook.get().ifBlank {
+                error("CAPSULE VIRAL → storyboardRequired=false but no hook configured to synthesize a storyboard.")
+            }
         val cta = configuredCta.get().ifBlank { hook }
-        val duration = targetDurationSeconds.get()
-            .coerceIn(ViralConfig.MIN_DURATION_SECONDS, ViralConfig.MAX_DURATION_SECONDS)
+        val duration =
+            targetDurationSeconds
+                .get()
+                .coerceIn(ViralConfig.MIN_DURATION_SECONDS, ViralConfig.MAX_DURATION_SECONDS)
 
         // The synthesized storyboard must satisfy the editorial validator:
         // no beat exceeds MAX_BEAT_SECONDS, and the summed beats stay within
@@ -249,7 +252,11 @@ abstract class GenerateViralCampaignTask : DefaultTask() {
         val developmentTotal = (duration - hookSeconds - ctaSeconds).coerceAtLeast(0.0)
         val beats = mutableListOf(StoryboardBeat(role = "hook", intent = hook, durationSeconds = hookSeconds))
         if (developmentTotal > 0.0) {
-            val count = kotlin.math.ceil(developmentTotal / ViralStoryboardValidator.MAX_BEAT_SECONDS).toInt().coerceAtLeast(1)
+            val count =
+                kotlin.math
+                    .ceil(developmentTotal / ViralStoryboardValidator.MAX_BEAT_SECONDS)
+                    .toInt()
+                    .coerceAtLeast(1)
             val per = developmentTotal / count
             repeat(count) { beats += StoryboardBeat(role = "development", intent = hook, durationSeconds = per) }
         }
@@ -276,15 +283,16 @@ abstract class GenerateViralCampaignTask : DefaultTask() {
         if (explicit.isNotBlank()) {
             return ViralHook(hook = explicit, message = storyboard.message, cta = configuredCta.get())
         }
-        val plan = ViralHookPlan(
-            deckName = storyboard.message.take(40),
-            segments = emptyList(),
-            language = storyboard.language,
-            platform = storyboard.platform,
-            targetDurationSeconds = storyboard.targetDurationSeconds,
-            augmentedContext = augmentedContext,
-            outputPath = manifestOutput.get().asFile.absolutePath,
-        )
+        val plan =
+            ViralHookPlan(
+                deckName = storyboard.message.take(40),
+                segments = emptyList(),
+                language = storyboard.language,
+                platform = storyboard.platform,
+                targetDurationSeconds = storyboard.targetDurationSeconds,
+                augmentedContext = augmentedContext,
+                outputPath = manifestOutput.get().asFile.absolutePath,
+            )
         val provider = project.aiProvider
         val model = project.resolveModel(provider, llmService)
         return ChatModelViralHookGenerator(model).generate(plan)
@@ -299,15 +307,17 @@ abstract class GenerateViralCampaignTask : DefaultTask() {
 
     /** Matrix platforms: the CSV list, falling back to the single configured preset. */
     private fun resolvePlatforms(): List<ViralPlatform> {
-        val configured = platforms.get().mapNotNull { name ->
-            name.takeIf { it.isNotBlank() }?.let { ViralPlatform.fromString(it) }
-        }.distinct()
+        val configured =
+            platforms
+                .get()
+                .mapNotNull { name ->
+                    name.takeIf { it.isNotBlank() }?.let { ViralPlatform.fromString(it) }
+                }.distinct()
         return configured.ifEmpty { listOf(ViralPlatform.fromString(platform.get())) }
     }
 
     /** Directory holding bakery copy pieces (first resolved file's parent, or blank). */
-    private fun firstCopyDir(): File =
-        copyFiles.files.firstOrNull()?.parentFile ?: File(project.projectDir, "build/capsule/viral/copy")
+    private fun firstCopyDir(): File = copyFiles.files.firstOrNull()?.parentFile ?: File(project.projectDir, "build/capsule/viral/copy")
 
     private companion object {
         /** Synthesized hook beat duration (seconds) — within MAX_BEAT_SECONDS. */

@@ -12,7 +12,10 @@ import java.time.Duration
  * @property status the HTTP status code.
  * @property body   the raw response bytes (a WAV payload on success).
  */
-data class FishAudioResponse(val status: Int, val body: ByteArray) {
+data class FishAudioResponse(
+    val status: Int,
+    val body: ByteArray,
+) {
     val isSuccess: Boolean get() = status in 200..299
 
     override fun equals(other: Any?): Boolean {
@@ -34,7 +37,11 @@ data class FishAudioResponse(val status: Int, val body: ByteArray) {
  * Implementations must not log the `headers` (they carry the `Bearer` secret).
  */
 fun interface FishAudioTransport {
-    fun post(endpoint: String, headers: Map<String, String>, body: ByteArray): FishAudioResponse
+    fun post(
+        endpoint: String,
+        headers: Map<String, String>,
+        body: ByteArray,
+    ): FishAudioResponse
 }
 
 /**
@@ -50,11 +57,16 @@ class HttpClientFishAudioTransport(
     private val client: HttpClient = HttpClient.newHttpClient(),
     private val timeoutSeconds: Long = 300,
 ) : FishAudioTransport {
-
-    override fun post(endpoint: String, headers: Map<String, String>, body: ByteArray): FishAudioResponse {
-        val builder = HttpRequest.newBuilder(URI.create(endpoint))
-            .timeout(Duration.ofSeconds(timeoutSeconds))
-            .POST(HttpRequest.BodyPublishers.ofByteArray(body))
+    override fun post(
+        endpoint: String,
+        headers: Map<String, String>,
+        body: ByteArray,
+    ): FishAudioResponse {
+        val builder =
+            HttpRequest
+                .newBuilder(URI.create(endpoint))
+                .timeout(Duration.ofSeconds(timeoutSeconds))
+                .POST(HttpRequest.BodyPublishers.ofByteArray(body))
         headers.forEach { (name, value) -> builder.header(name, value) }
         val response = client.send(builder.build(), HttpResponse.BodyHandlers.ofByteArray())
         return FishAudioResponse(response.statusCode(), response.body())

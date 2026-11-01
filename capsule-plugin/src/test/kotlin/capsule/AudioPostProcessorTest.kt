@@ -2,16 +2,14 @@ package capsule
 
 import capsule.audio.AudioPostCommand
 import capsule.audio.AudioPostConfig
-import capsule.audio.AudioPostException
-import capsule.audio.AudioPostProcessor
 import capsule.audio.AudioPostProcessorImpl
 import capsule.audio.NoOpAudioPostProcessor
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import java.io.File
 
 /**
  * TDD unit tests for CAP-AUDIO US-2 — `AudioPostProcessor` (interface +
@@ -29,7 +27,6 @@ import java.io.File
  * keeps the original video, degraded mode backward compat).
  */
 class AudioPostProcessorTest {
-
     // ─── AudioPostCommand.buildFilterGraph (pure, no I/O) ─────────
 
     @Test
@@ -128,7 +125,8 @@ class AudioPostProcessorTest {
             val result = processor.process(video, output, config)
             assertFalse(result, "Should return false when ffmpeg unavailable (degraded)")
         } finally {
-            video.delete(); output.delete()
+            video.delete()
+            output.delete()
         }
     }
 
@@ -142,7 +140,8 @@ class AudioPostProcessorTest {
             val result = processor.process(video, output, config)
             assertFalse(result, "Should return false when BGM enabled but file blank (degraded, keep original)")
         } finally {
-            video.delete(); output.delete()
+            video.delete()
+            output.delete()
         }
     }
 
@@ -165,7 +164,8 @@ class AudioPostProcessorTest {
             val result = processor.process(video, output, config)
             assertFalse(result, "NoOp should return false (no real audio post, keep original)")
         } finally {
-            video.delete(); output.delete()
+            video.delete()
+            output.delete()
         }
     }
 
@@ -180,21 +180,23 @@ class AudioPostProcessorTest {
 
     @Test
     fun `resolveAudioPostProcessor unavailable and non-strict falls back to NoOp`() {
-        val resolved = CapsuleFactory.resolveAudioPostProcessor(
-            ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
-            strict = false
-        )
+        val resolved =
+            CapsuleFactory.resolveAudioPostProcessor(
+                ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
+                strict = false,
+            )
         assertTrue(resolved is NoOpAudioPostProcessor, "unavailable + non-strict → NoOp fallback")
     }
 
     @Test
     fun `resolveAudioPostProcessor unavailable and strict throws IllegalStateException`() {
-        val ex = assertFailsWith<IllegalStateException> {
-            CapsuleFactory.resolveAudioPostProcessor(
-                ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
-                strict = true
-            )
-        }
+        val ex =
+            assertFailsWith<IllegalStateException> {
+                CapsuleFactory.resolveAudioPostProcessor(
+                    ffmpegPath = "/nonexistent/ffmpeg/path_xyz",
+                    strict = true,
+                )
+            }
         assertTrue(ex.message!!.contains("ffmpeg"), "error should name ffmpeg")
         assertTrue(ex.message!!.contains("/nonexistent/ffmpeg/path_xyz"), "error should mention the path")
         assertTrue(ex.message!!.contains("strictMode"), "error should suggest disabling strictMode")

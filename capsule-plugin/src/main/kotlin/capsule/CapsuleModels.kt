@@ -1,497 +1,691 @@
 package capsule
 
-import capsule.audio.AudioPostConfig
 import capsule.transcript.TranscriptStrategy
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import javax.inject.Inject
 
-open class CapsuleExtension @Inject constructor(objects: ObjectFactory) {
-    /** Path to the capsule-context.yml configuration file. Defaults to "capsule-context.yml" in the project root. */
-    val configPath: Property<String> = objects.property(String::class.java)
-        .convention("capsule-context.yml")
+open class CapsuleExtension
+    @Inject
+    constructor(
+        objects: ObjectFactory,
+    ) {
+        /** Path to the capsule-context.yml configuration file. Defaults to "capsule-context.yml" in the project root. */
+        val configPath: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("capsule-context.yml")
 
-    /**
-     * CAP-FISH-AUDIO — path to the fish-audio key pool file. This file holds a
-     * **secret** and is git-ignored (never committed); it supplies the
-     * `fish-audio` member of [CapsuleConfig]. Defaults to "fish.yaml" in the
-     * project root; absent → the `fish` engine is unavailable (degraded).
-     */
-    val fishAudioConfigPath: Property<String> = objects.property(String::class.java)
-        .convention("fish.yaml")
+        /**
+         * CAP-FISH-AUDIO — path to the fish-audio key pool file. This file holds a
+         * **secret** and is git-ignored (never committed); it supplies the
+         * `fish-audio` member of [CapsuleConfig]. Defaults to "fish.yaml" in the
+         * project root; absent → the `fish` engine is unavailable (degraded).
+         */
+        val fishAudioConfigPath: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("fish.yaml")
 
-    /** Active UI language for task descriptions and log messages. Defaults to "en". */
-    val language: Property<String> = objects.property(String::class.java)
-        .convention("en")
+        /** Active UI language for task descriptions and log messages. Defaults to "en". */
+        val language: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("en")
 
-    /** CAP-CR3-2 — strict mode: fail build instead of NoOp fallback when a tool is missing. Defaults to false. */
-    val strictMode: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
+        /** CAP-CR3-2 — strict mode: fail build instead of NoOp fallback when a tool is missing. Defaults to false. */
+        val strictMode: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
 
-    /** CAP-DOCCONTEXT-1 — glob patterns for documentary corpus feeding the Docs channel. Defaults to empty. */
-    val docsGlobs: ListProperty<String> = objects.listProperty(String::class.java)
-        .convention(emptyList())
+        /** CAP-DOCCONTEXT-1 — glob patterns for documentary corpus feeding the Docs channel. Defaults to empty. */
+        val docsGlobs: ListProperty<String> =
+            objects
+                .listProperty(String::class.java)
+                .convention(emptyList())
 
-    /** CAP-SCENARIO-3 — path to a pedagogical scenario directory (metadata.json + .adoc) or direct .adoc. Defaults to empty. */
-    val scenarioFile: Property<String> = objects.property(String::class.java)
-        .convention("")
+        /** CAP-SCENARIO-3 — path to a pedagogical scenario directory (metadata.json + .adoc) or direct .adoc. Defaults to empty. */
+        val scenarioFile: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
 
-    /** CAP-GLOSSARY-2 — path to a glossary AsciiDoc file (`== Glossary` section + `- term: definition` bullets). Defaults to empty. */
-    val glossaryFile: Property<String> = objects.property(String::class.java)
-        .convention("")
+        /** CAP-GLOSSARY-2 — path to a glossary AsciiDoc file (`== Glossary` section + `- term: definition` bullets). Defaults to empty. */
+        val glossaryFile: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
 
-    val ttsEngine: Property<String> = objects.property(String::class.java)
-        .convention("piper")
+        val ttsEngine: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("piper")
 
-    val ttsVoice: Property<String> = objects.property(String::class.java)
-        .convention("fr_FR-siwis-medium")
+        val ttsVoice: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("fr_FR-siwis-medium")
 
-    val piperExecutablePath: Property<String> = objects.property(String::class.java)
-        .convention("piper")
+        val piperExecutablePath: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("piper")
 
-    val ttsFallbackEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(true)
+        val ttsFallbackEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(true)
 
-    val outputDir: Property<String> = objects.property(String::class.java)
-        .convention("capsule")
+        val outputDir: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("capsule")
 
-    val sliderScriptDir: Property<String> = objects.property(String::class.java)
-        .convention("capsule")
+        val sliderScriptDir: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("capsule")
 
-    val viewportWidth: Property<Int> = objects.property(Int::class.java)
-        .convention(1408)
+        val viewportWidth: Property<Int> =
+            objects
+                .property(Int::class.java)
+                .convention(1408)
 
-    val viewportHeight: Property<Int> = objects.property(Int::class.java)
-        .convention(792)
+        val viewportHeight: Property<Int> =
+            objects
+                .property(Int::class.java)
+                .convention(792)
 
-    val playwrightTimeout: Property<Double> = objects.property(Double::class.java)
-        .convention(120_000.0)
+        val playwrightTimeout: Property<Double> =
+            objects
+                .property(Double::class.java)
+                .convention(120_000.0)
 
-    val chromiumExecutablePath: Property<String> = objects.property(String::class.java)
-        .convention("")
+        val chromiumExecutablePath: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
 
-    val deckSourceDir: Property<String> = objects.property(String::class.java)
-        .convention("docs/asciidocRevealJs")
+        val deckSourceDir: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("docs/asciidocRevealJs")
 
-    /** CAP-CR3-4 — path to slider's build output directory (fallback for script/deck resolution). */
-    val sliderBuildDir: Property<String> = objects.property(String::class.java)
-        .convention("")
+        /** CAP-CR3-4 — path to slider's build output directory (fallback for script/deck resolution). */
+        val sliderBuildDir: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
 
-    val ffmpegExecutablePath: Property<String> = objects.property(String::class.java)
-        .convention("ffmpeg")
+        val ffmpegExecutablePath: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("ffmpeg")
 
-    val distribOutputWidth: Property<Int> = objects.property(Int::class.java)
-        .convention(1080)
+        val distribOutputWidth: Property<Int> =
+            objects
+                .property(Int::class.java)
+                .convention(1080)
 
-    val distribOutputHeight: Property<Int> = objects.property(Int::class.java)
-        .convention(1920)
+        val distribOutputHeight: Property<Int> =
+            objects
+                .property(Int::class.java)
+                .convention(1920)
 
-    val compositeContextOutputFile: Property<String> = objects.property(String::class.java)
-        .convention("capsule/capsule-context.json")
+        val compositeContextOutputFile: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("capsule/capsule-context.json")
 
-    val slideDurationSeconds: Property<Double> = objects.property(Double::class.java)
-        .convention(5.0)
+        val slideDurationSeconds: Property<Double> =
+            objects
+                .property(Double::class.java)
+                .convention(5.0)
 
-    val espeakVoice: Property<String> = objects.property(String::class.java)
-        .convention("fr")
+        val espeakVoice: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("fr")
 
-    val espeakSpeed: Property<Int> = objects.property(Int::class.java)
-        .convention(150)
+        val espeakSpeed: Property<Int> =
+            objects
+                .property(Int::class.java)
+                .convention(150)
 
-    val ttsLanguage: Property<String> = objects.property(String::class.java)
-        .convention("fr")
+        val ttsLanguage: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("fr")
 
-    /** PRT-01 — `true` to speak the "dit/lu" pronunciation form and key the TTS cache on the spoken text. Defaults to false. */
-    val ttsPronunciationEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
+        /** PRT-01 — `true` to speak the "dit/lu" pronunciation form and key the TTS cache on the spoken text. Defaults to false. */
+        val ttsPronunciationEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
 
-    /** CAP-FISH-AUDIO — cloned voice id (`reference_id`) for the `fish` engine. Defaults to empty (required by fish). */
-    val ttsFishVoice: Property<String> = objects.property(String::class.java)
-        .convention("")
+        /** CAP-FISH-AUDIO — cloned voice id (`reference_id`) for the `fish` engine. Defaults to empty (required by fish). */
+        val ttsFishVoice: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
 
-    /** CAP-FISH-AUDIO — the Fish model header. Defaults to `speech-1.6`. */
-    val ttsFishModel: Property<String> = objects.property(String::class.java)
-        .convention("speech-1.6")
+        /** CAP-FISH-AUDIO — the Fish model header. Defaults to `speech-1.6`. */
+        val ttsFishModel: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("speech-1.6")
 
-    /** CAP-FISH-AUDIO — the requested container. Defaults to `wav`. */
-    val ttsFishFormat: Property<String> = objects.property(String::class.java)
-        .convention("wav")
+        /** CAP-FISH-AUDIO — the requested container. Defaults to `wav`. */
+        val ttsFishFormat: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("wav")
 
-    /** CAP-FISH-AUDIO — sampling temperature. Defaults to 0.85. */
-    val ttsFishTemperature: Property<Double> = objects.property(Double::class.java)
-        .convention(0.85)
+        /** CAP-FISH-AUDIO — sampling temperature. Defaults to 0.85. */
+        val ttsFishTemperature: Property<Double> =
+            objects
+                .property(Double::class.java)
+                .convention(0.85)
 
-    /** CAP-FISH-AUDIO — nucleus sampling (`top_p`). Defaults to 0.88. */
-    val ttsFishTopP: Property<Double> = objects.property(Double::class.java)
-        .convention(0.88)
+        /** CAP-FISH-AUDIO — nucleus sampling (`top_p`). Defaults to 0.88. */
+        val ttsFishTopP: Property<Double> =
+            objects
+                .property(Double::class.java)
+                .convention(0.88)
 
-    /** CAP-FISH-AUDIO — the Fish Audio TTS endpoint. Defaults to `https://api.fish.audio/v1/tts`. */
-    val ttsFishEndpoint: Property<String> = objects.property(String::class.java)
-        .convention("https://api.fish.audio/v1/tts")
+        /** CAP-FISH-AUDIO — the Fish Audio TTS endpoint. Defaults to `https://api.fish.audio/v1/tts`. */
+        val ttsFishEndpoint: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("https://api.fish.audio/v1/tts")
 
-    val manimExecutablePath: Property<String> = objects.property(String::class.java)
-        .convention("manim")
+        val manimExecutablePath: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("manim")
 
-    val manimQuality: Property<String> = objects.property(String::class.java)
-        .convention("l")
+        val manimQuality: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("l")
 
-    val manimScriptsDir: Property<String> = objects.property(String::class.java)
-        .convention("src/manim")
+        val manimScriptsDir: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("src/manim")
 
-    val manimOutputDir: Property<String> = objects.property(String::class.java)
-        .convention("build/capsule/manim")
+        val manimOutputDir: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("build/capsule/manim")
 
-    val manimParallelRender: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
+        val manimParallelRender: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
 
-    val manimParallelRenderThreads: Property<Int> = objects.property(Int::class.java)
-        .convention(4)
+        val manimParallelRenderThreads: Property<Int> =
+            objects
+                .property(Int::class.java)
+                .convention(4)
 
-    val parallelCaptureEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
+        val parallelCaptureEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
 
-    val parallelCaptureThreads: Property<Int> = objects.property(Int::class.java)
-        .convention(4)
+        val parallelCaptureThreads: Property<Int> =
+            objects
+                .property(Int::class.java)
+                .convention(4)
 
-    val captureTimeoutMinutes: Property<Int> = objects.property(Int::class.java)
-        .convention(5)
+        val captureTimeoutMinutes: Property<Int> =
+            objects
+                .property(Int::class.java)
+                .convention(5)
 
-    val subtitleEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
+        val subtitleEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
 
-    val subtitleFormat: Property<String> = objects.property(String::class.java)
-        .convention("srt")
+        val subtitleFormat: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("srt")
 
-    val subtitleBurnIn: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
+        val subtitleBurnIn: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
 
-    val subtitleBurnInFontSize: Property<Int> = objects.property(Int::class.java)
-        .convention(24)
+        val subtitleBurnInFontSize: Property<Int> =
+            objects
+                .property(Int::class.java)
+                .convention(24)
 
-    val subtitleBurnInFontColor: Property<String> = objects.property(String::class.java)
-        .convention("&H00FFFFFF")
+        val subtitleBurnInFontColor: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("&H00FFFFFF")
 
-    val subtitleBurnInOutlineColor: Property<String> = objects.property(String::class.java)
-        .convention("&H00000000")
+        val subtitleBurnInOutlineColor: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("&H00000000")
 
-    val subtitleBurnInPosition: Property<String> = objects.property(String::class.java)
-        .convention("bottom")
+        val subtitleBurnInPosition: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("bottom")
 
-    /**
-     * PRT-03 — when true, the speaker note is split into readable "cartons"
-     * (cues) instead of one cue per slide, with the slide duration distributed
-     * across them proportionally. Defaults to false (backward compat).
-     */
-    val subtitleCartonsEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
+        /**
+         * PRT-03 — when true, the speaker note is split into readable "cartons"
+         * (cues) instead of one cue per slide, with the slide duration distributed
+         * across them proportionally. Defaults to false (backward compat).
+         */
+        val subtitleCartonsEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
 
-    /** PRT-03 — maximum characters per subtitle carton. Defaults to 42. */
-    val subtitleMaxChars: Property<Int> = objects.property(Int::class.java)
-        .convention(42)
+        /** PRT-03 — maximum characters per subtitle carton. Defaults to 42. */
+        val subtitleMaxChars: Property<Int> =
+            objects
+                .property(Int::class.java)
+                .convention(42)
 
-    /**
-     * PRT-06 — `true` to reuse a previously captured deck video when its render
-     * signature is unchanged AND the file still decodes. Defaults to false
-     * (opt-in — a re-capture always happens unless explicitly enabled).
-     */
-    val reuseCapturedVideoEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
+        /**
+         * PRT-06 — `true` to reuse a previously captured deck video when its render
+         * signature is unchanged AND the file still decodes. Defaults to false
+         * (opt-in — a re-capture always happens unless explicitly enabled).
+         */
+        val reuseCapturedVideoEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
 
-    /** CAP-CR3-3 — capture strategy: PLAYWRIGHT (real-time recording) or SCREENSHOT (PNG+FFmpeg per slide). Defaults to PLAYWRIGHT. */
-    val captureStrategy: Property<CaptureStrategy> = objects.property(CaptureStrategy::class.java)
-        .convention(CaptureStrategy.PLAYWRIGHT)
+        /** CAP-CR3-3 — capture strategy: PLAYWRIGHT (real-time recording) or SCREENSHOT (PNG+FFmpeg per slide). Defaults to PLAYWRIGHT. */
+        val captureStrategy: Property<CaptureStrategy> =
+            objects
+                .property(CaptureStrategy::class.java)
+                .convention(CaptureStrategy.PLAYWRIGHT)
 
-    /** Groovy DSL helper: accepts a case-insensitive string ("playwright" / "screenshot" / "remotion"). */
-    fun captureStrategy(value: String) {
-        captureStrategy.set(CaptureStrategy.fromString(value))
+        /** Groovy DSL helper: accepts a case-insensitive string ("playwright" / "screenshot" / "remotion"). */
+        fun captureStrategy(value: String) {
+            captureStrategy.set(CaptureStrategy.fromString(value))
+        }
+
+        /** CAP-ANIM — where the bundled Remotion composition is materialised, under the build dir. */
+        val remotionProjectDir: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("capsule/remotion")
+
+        /** CAP-ANIM — the `node` binary driving the Remotion render. */
+        val remotionNodeExecutablePath: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("node")
+
+        /** CAP-ANIM — how many frames Remotion renders in parallel (its multi-core knob). */
+        val remotionConcurrency: Property<Int> =
+            objects
+                .property(Int::class.java)
+                .convention(4)
+
+        /** CAP-ANIM — frame rate of the animated render. */
+        val remotionFps: Property<Int> =
+            objects
+                .property(Int::class.java)
+                .convention(30)
+
+        /** CAP-MP4 — output format: WEBM (default), MP4 (H.264 transcode), or BOTH. Defaults to WEBM. */
+        val outputFormat: Property<OutputFormat> =
+            objects
+                .property(OutputFormat::class.java)
+                .convention(OutputFormat.WEBM)
+
+        /** Groovy DSL helper: accepts a case-insensitive string ("webm" / "mp4" / "both"). */
+        fun outputFormat(value: String) {
+            outputFormat.set(OutputFormat.fromString(value))
+        }
+
+        /**
+         * PRT-09 residual — tag the MP4 as BT.709 (broadcast colorimetry:
+         * `-color_primaries bt709 -color_trc bt709 -colorspace bt709`). Opt-in,
+         * defaults to false (backward compat — argv unchanged when disabled).
+         */
+        val outputBt709: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
+
+        /** CAP-CR3-1 — duration validation: probe video duration and compare to audio sum. Defaults to false. */
+        val durationValidationEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
+
+        /** CAP-CR3-1 — tolerance in seconds for duration validation. Defaults to 2.0. */
+        val durationValidationToleranceSecs: Property<Double> =
+            objects
+                .property(Double::class.java)
+                .convention(2.0)
+
+        /**
+         * PRT-04 — decode-validity validation: a media file must actually DECODE, not
+         * merely exist with a plausible duration. Defaults to false (opt-in, backward
+         * compat). See `.agents` / the prepa code-review PRT-04.
+         */
+        val integrityValidationEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
+
+        /**
+         * PRT-05 — `true` to run the content pre-flight (`preflightCapsuleContent`)
+         * before any metered TTS synthesis. Defaults to false (opt-in).
+         */
+        val qcPreflightEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
+
+        /** PRT-05 — maximum characters per speaker note before a `long-note` warning. Defaults to 500. */
+        val qcMaxNoteChars: Property<Int> =
+            objects
+                .property(Int::class.java)
+                .convention(500)
+
+        /** PRT-08 — `true` to render the visual QC boards (`renderQcBoards`). Defaults to false (opt-in). */
+        val qcBoardsEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
+
+        /** CAP-AUDIO — `true` to mix background music under the voice track. Defaults to false (opt-in). */
+        val audioPostBgmEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
+
+        /** CAP-AUDIO — path to the BGM audio file. Defaults to empty (no BGM). */
+        val audioPostBgmFile: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
+
+        /** CAP-AUDIO — BGM level in dB. Defaults to -18.0 (music bed under voice). */
+        val audioPostBgmLevel: Property<Double> =
+            objects
+                .property(Double::class.java)
+                .convention(-18.0)
+
+        /** CAP-AUDIO — target loudness in LUFS (EBU R128). Defaults to -16.0 (streaming web). */
+        val audioPostLoudnessTarget: Property<Double> =
+            objects
+                .property(Double::class.java)
+                .convention(-16.0)
+
+        /** CAP-AUDIO — `true` to lower BGM when voice speaks (sidechain compression). Defaults to false. */
+        val audioPostDuckingEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
+
+        /**
+         * PRT-09 — `true` to normalise loudness in TWO passes (measure then apply,
+         * exact) instead of a single approximate pass. Single-input (no BGM) only.
+         * Defaults to false (backward compat).
+         */
+        val audioPostTwoPassLoudnessEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
+
+        /** CAP-TRANSCRIPT — `true` to generate an AsciiDoc transcript article from the capsule. Defaults to false (opt-in). */
+        val transcriptEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
+
+        /** CAP-TRANSCRIPT — generation strategy: TEMPLATE (default, deterministic, no LLM) or LLM (enrichment via LlmBuildService). */
+        val transcriptStrategy: Property<TranscriptStrategy> =
+            objects
+                .property(TranscriptStrategy::class.java)
+                .convention(TranscriptStrategy.TEMPLATE)
+
+        /** Groovy DSL helper: accepts a case-insensitive string ("template" / "llm"). */
+        fun transcriptStrategy(value: String) {
+            transcriptStrategy.set(TranscriptStrategy.fromString(value))
+        }
+
+        /** CAP-PODCAST — `true` to concatenate per-slide MP3s into a podcast MP3. Defaults to false (opt-in). */
+        val podcastEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
+
+        /** CAP-PODCAST — output path for the podcast MP3. Defaults to empty (task resolves a default under build/capsule/). */
+        val podcastOutputFile: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
+
+        /** CAP-PREVIEW — dry-run mode: capture PNG screenshots only, skip FFmpeg encode/concat/video/audio. Defaults to false. */
+        val previewOnly: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
+
+        /** CAP-CHAPITRE — `true` to generate Matroska chapter metadata and optional intro/outro cards. Defaults to false (opt-in). */
+        val chaptersEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
+
+        /** CAP-CHAPITRE — custom text for the intro card title (default `""` — uses deck name). */
+        val chaptersIntroText: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
+
+        /** CAP-CHAPITRE — custom text for the outro card title (default `""` — uses "Thank you"). */
+        val chaptersOutroText: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
+
+        /** CAP-VIRAL — `true` to enable viral campaign generation (short-form vertical). Defaults to false (opt-in). */
+        val viralEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
+
+        /** CAP-VIRAL — target platform preset (`YOUTUBE_SHORT`/`TIKTOK`/`REELS`). Defaults to `TIKTOK`. */
+        val viralPlatform: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("TIKTOK")
+
+        /** CAP-VIRAL — target video duration in seconds (coerced to 15-60 s). Defaults to 30. */
+        val viralTargetDurationSeconds: Property<Int> =
+            objects
+                .property(Int::class.java)
+                .convention(30)
+
+        /** CAP-VIRAL — opening 3-second hook / message angle. Defaults to empty. */
+        val viralHook: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
+
+        /** CAP-VIRAL — closing call-to-action. Defaults to empty. */
+        val viralCta: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
+
+        /** CAP-VIRAL — when `true`, no video is rendered before a validated storyboard exists. Defaults to true (editorial gate). */
+        val viralStoryboardRequired: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(true)
+
+        /** CAP-VIRAL — path to the storyboard AsciiDoc. Defaults to empty (resolved per campaign). */
+        val viralStoryboardFile: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
+
+        /** CAP-VIRAL — batch languages (CSV via `-Pcapsule.viral.languages`; default = deck language). */
+        val viralLanguages: ListProperty<String> = objects.listProperty(String::class.java)
+
+        /** CAP-VIRAL — batch platforms (CSV via `-Pcapsule.viral.platforms`; default = configured preset). */
+        val viralPlatforms: ListProperty<String> = objects.listProperty(String::class.java)
+
+        /** CAP-QC-VOICE US-2 — `true` to run the voice-quality QC (`verifyCapsuleVoice`). Defaults to false (opt-in). */
+        val voiceVerifyEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
+
+        /** CAP-QC-VOICE US-2 — word error rate ceiling accepted before a take fails. Defaults to 0.15. */
+        val voiceMaxWordErrorRate: Property<Double> =
+            objects
+                .property(Double::class.java)
+                .convention(0.15)
+
+        /** CAP-QC-VOICE US-2 — background headroom floor (dB) before a take fails. Defaults to 66.0. */
+        val voiceMinSnrDb: Property<Double> =
+            objects
+                .property(Double::class.java)
+                .convention(66.0)
+
+        /** CAP-QC-VOICE US-2 — extra transcribed words signalling a hallucination. Defaults to 3. */
+        val voiceSurplusThreshold: Property<Int> =
+            objects
+                .property(Int::class.java)
+                .convention(3)
+
+        /** CAP-QC-VOICE US-2 — the ASR binary (`whisper`, `faster-whisper`…). Defaults to `whisper`. */
+        val voiceAsrExecutablePath: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("whisper")
+
+        /** CAP-QC-VOICE US-2 — ASR model name (blank = CLI default). Defaults to empty. */
+        val voiceAsrModel: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
+
+        /** CAP-QC-VOICE US-2 — ASR language hint (ISO-639-1). Defaults to `fr`. */
+        val voiceLanguage: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("fr")
+
+        /** CAP-QC-VOICE US-3 — `true` to select the best take among candidates (`selectBestVoiceTake`). Defaults to false. */
+        val voiceSelectBestTake: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
+
+        internal val conventions: CapsuleConventions =
+            CapsuleConventions(
+                outputDir = "capsule",
+                sliderScriptDir = "capsule",
+                deckSourceDir = "docs/asciidocRevealJs",
+                sliderBuildDir = "",
+                chromiumExecutablePath = "",
+                ttsEngine = "piper",
+                ttsVoice = "fr_FR-siwis-medium",
+                piperExecutablePath = "piper",
+                ttsFallbackEnabled = true,
+                espeakVoice = "fr",
+                espeakSpeed = 150,
+                ttsLanguage = "fr",
+                ttsPronunciationEnabled = false,
+                ttsFishVoice = "",
+                ttsFishModel = "speech-1.6",
+                ttsFishFormat = "wav",
+                ttsFishTemperature = 0.85,
+                ttsFishTopP = 0.88,
+                ttsFishEndpoint = "https://api.fish.audio/v1/tts",
+                viewportWidth = 1408,
+                viewportHeight = 792,
+                playwrightTimeout = 120_000.0,
+                slideDurationSeconds = 5.0,
+                parallelCaptureEnabled = false,
+                parallelCaptureThreads = 4,
+                captureTimeoutMinutes = 5,
+                subtitleEnabled = false,
+                subtitleFormat = "srt",
+                subtitleBurnIn = false,
+                subtitleBurnInFontSize = 24,
+                subtitleBurnInFontColor = "&H00FFFFFF",
+                subtitleBurnInOutlineColor = "&H00000000",
+                subtitleBurnInPosition = "bottom",
+                subtitleCartonsEnabled = false,
+                subtitleMaxChars = 42,
+                reuseCapturedVideoEnabled = false,
+                captureStrategy = CaptureStrategy.PLAYWRIGHT,
+                outputFormat = OutputFormat.WEBM,
+                outputBt709 = false,
+                ffmpegExecutablePath = "ffmpeg",
+                distribOutputWidth = 1080,
+                distribOutputHeight = 1920,
+                manimExecutablePath = "manim",
+                manimQuality = "l",
+                manimScriptsDir = "src/manim",
+                manimOutputDir = "build/capsule/manim",
+                manimParallelRender = false,
+                manimParallelRenderThreads = 4,
+                durationValidationEnabled = false,
+                durationValidationToleranceSecs = 2.0,
+                integrityValidationEnabled = false,
+                qcPreflightEnabled = false,
+                qcMaxNoteChars = 500,
+                qcBoardsEnabled = false,
+                audioPostBgmEnabled = false,
+                audioPostBgmFile = "",
+                audioPostBgmLevel = -18.0,
+                audioPostLoudnessTarget = -16.0,
+                audioPostDuckingEnabled = false,
+                audioPostTwoPassLoudnessEnabled = false,
+                transcriptEnabled = false,
+                transcriptStrategy = TranscriptStrategy.TEMPLATE,
+                remotionProjectDir = "capsule/remotion",
+                remotionNodeExecutablePath = "node",
+                remotionConcurrency = 4,
+                remotionFps = 30,
+                podcastEnabled = false,
+                podcastOutputFile = "",
+                previewOnly = false,
+                chaptersEnabled = false,
+                chaptersIntroText = "",
+                chaptersOutroText = "",
+                viralEnabled = false,
+                viralPlatform = "TIKTOK",
+                viralTargetDurationSeconds = 30,
+                viralHook = "",
+                viralCta = "",
+                viralStoryboardRequired = true,
+                viralStoryboardFile = "",
+                voiceVerifyEnabled = false,
+                voiceMaxWordErrorRate = 0.15,
+                voiceMinSnrDb = 66.0,
+                voiceSurplusThreshold = 3,
+                voiceAsrExecutablePath = "whisper",
+                voiceAsrModel = "",
+                voiceLanguage = "fr",
+                voiceSelectBestTake = false,
+            )
     }
-
-    /** CAP-ANIM — where the bundled Remotion composition is materialised, under the build dir. */
-    val remotionProjectDir: Property<String> = objects.property(String::class.java)
-        .convention("capsule/remotion")
-
-    /** CAP-ANIM — the `node` binary driving the Remotion render. */
-    val remotionNodeExecutablePath: Property<String> = objects.property(String::class.java)
-        .convention("node")
-
-    /** CAP-ANIM — how many frames Remotion renders in parallel (its multi-core knob). */
-    val remotionConcurrency: Property<Int> = objects.property(Int::class.java)
-        .convention(4)
-
-    /** CAP-ANIM — frame rate of the animated render. */
-    val remotionFps: Property<Int> = objects.property(Int::class.java)
-        .convention(30)
-
-    /** CAP-MP4 — output format: WEBM (default), MP4 (H.264 transcode), or BOTH. Defaults to WEBM. */
-    val outputFormat: Property<OutputFormat> = objects.property(OutputFormat::class.java)
-        .convention(OutputFormat.WEBM)
-
-    /** Groovy DSL helper: accepts a case-insensitive string ("webm" / "mp4" / "both"). */
-    fun outputFormat(value: String) {
-        outputFormat.set(OutputFormat.fromString(value))
-    }
-
-    /**
-     * PRT-09 residual — tag the MP4 as BT.709 (broadcast colorimetry:
-     * `-color_primaries bt709 -color_trc bt709 -colorspace bt709`). Opt-in,
-     * defaults to false (backward compat — argv unchanged when disabled).
-     */
-    val outputBt709: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
-
-    /** CAP-CR3-1 — duration validation: probe video duration and compare to audio sum. Defaults to false. */
-    val durationValidationEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
-
-    /** CAP-CR3-1 — tolerance in seconds for duration validation. Defaults to 2.0. */
-    val durationValidationToleranceSecs: Property<Double> = objects.property(Double::class.java)
-        .convention(2.0)
-
-    /**
-     * PRT-04 — decode-validity validation: a media file must actually DECODE, not
-     * merely exist with a plausible duration. Defaults to false (opt-in, backward
-     * compat). See `.agents` / the prepa code-review PRT-04.
-     */
-    val integrityValidationEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
-
-    /**
-     * PRT-05 — `true` to run the content pre-flight (`preflightCapsuleContent`)
-     * before any metered TTS synthesis. Defaults to false (opt-in).
-     */
-    val qcPreflightEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
-
-    /** PRT-05 — maximum characters per speaker note before a `long-note` warning. Defaults to 500. */
-    val qcMaxNoteChars: Property<Int> = objects.property(Int::class.java)
-        .convention(500)
-
-    /** PRT-08 — `true` to render the visual QC boards (`renderQcBoards`). Defaults to false (opt-in). */
-    val qcBoardsEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
-
-    /** CAP-AUDIO — `true` to mix background music under the voice track. Defaults to false (opt-in). */
-    val audioPostBgmEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
-
-    /** CAP-AUDIO — path to the BGM audio file. Defaults to empty (no BGM). */
-    val audioPostBgmFile: Property<String> = objects.property(String::class.java)
-        .convention("")
-
-    /** CAP-AUDIO — BGM level in dB. Defaults to -18.0 (music bed under voice). */
-    val audioPostBgmLevel: Property<Double> = objects.property(Double::class.java)
-        .convention(-18.0)
-
-    /** CAP-AUDIO — target loudness in LUFS (EBU R128). Defaults to -16.0 (streaming web). */
-    val audioPostLoudnessTarget: Property<Double> = objects.property(Double::class.java)
-        .convention(-16.0)
-
-    /** CAP-AUDIO — `true` to lower BGM when voice speaks (sidechain compression). Defaults to false. */
-    val audioPostDuckingEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
-
-    /**
-     * PRT-09 — `true` to normalise loudness in TWO passes (measure then apply,
-     * exact) instead of a single approximate pass. Single-input (no BGM) only.
-     * Defaults to false (backward compat).
-     */
-    val audioPostTwoPassLoudnessEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
-
-    /** CAP-TRANSCRIPT — `true` to generate an AsciiDoc transcript article from the capsule. Defaults to false (opt-in). */
-    val transcriptEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
-
-    /** CAP-TRANSCRIPT — generation strategy: TEMPLATE (default, deterministic, no LLM) or LLM (enrichment via LlmBuildService). */
-    val transcriptStrategy: Property<TranscriptStrategy> = objects.property(TranscriptStrategy::class.java)
-        .convention(TranscriptStrategy.TEMPLATE)
-
-    /** Groovy DSL helper: accepts a case-insensitive string ("template" / "llm"). */
-    fun transcriptStrategy(value: String) {
-        transcriptStrategy.set(TranscriptStrategy.fromString(value))
-    }
-
-    /** CAP-PODCAST — `true` to concatenate per-slide MP3s into a podcast MP3. Defaults to false (opt-in). */
-    val podcastEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
-
-    /** CAP-PODCAST — output path for the podcast MP3. Defaults to empty (task resolves a default under build/capsule/). */
-    val podcastOutputFile: Property<String> = objects.property(String::class.java)
-        .convention("")
-
-    /** CAP-PREVIEW — dry-run mode: capture PNG screenshots only, skip FFmpeg encode/concat/video/audio. Defaults to false. */
-    val previewOnly: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
-
-    /** CAP-CHAPITRE — `true` to generate Matroska chapter metadata and optional intro/outro cards. Defaults to false (opt-in). */
-    val chaptersEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
-
-    /** CAP-CHAPITRE — custom text for the intro card title (default `""` — uses deck name). */
-    val chaptersIntroText: Property<String> = objects.property(String::class.java)
-        .convention("")
-
-    /** CAP-CHAPITRE — custom text for the outro card title (default `""` — uses "Thank you"). */
-    val chaptersOutroText: Property<String> = objects.property(String::class.java)
-        .convention("")
-
-    /** CAP-VIRAL — `true` to enable viral campaign generation (short-form vertical). Defaults to false (opt-in). */
-    val viralEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
-
-    /** CAP-VIRAL — target platform preset (`YOUTUBE_SHORT`/`TIKTOK`/`REELS`). Defaults to `TIKTOK`. */
-    val viralPlatform: Property<String> = objects.property(String::class.java)
-        .convention("TIKTOK")
-
-    /** CAP-VIRAL — target video duration in seconds (coerced to 15-60 s). Defaults to 30. */
-    val viralTargetDurationSeconds: Property<Int> = objects.property(Int::class.java)
-        .convention(30)
-
-    /** CAP-VIRAL — opening 3-second hook / message angle. Defaults to empty. */
-    val viralHook: Property<String> = objects.property(String::class.java)
-        .convention("")
-
-    /** CAP-VIRAL — closing call-to-action. Defaults to empty. */
-    val viralCta: Property<String> = objects.property(String::class.java)
-        .convention("")
-
-    /** CAP-VIRAL — when `true`, no video is rendered before a validated storyboard exists. Defaults to true (editorial gate). */
-    val viralStoryboardRequired: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(true)
-
-    /** CAP-VIRAL — path to the storyboard AsciiDoc. Defaults to empty (resolved per campaign). */
-    val viralStoryboardFile: Property<String> = objects.property(String::class.java)
-        .convention("")
-
-    /** CAP-VIRAL — batch languages (CSV via `-Pcapsule.viral.languages`; default = deck language). */
-    val viralLanguages: ListProperty<String> = objects.listProperty(String::class.java)
-
-    /** CAP-VIRAL — batch platforms (CSV via `-Pcapsule.viral.platforms`; default = configured preset). */
-    val viralPlatforms: ListProperty<String> = objects.listProperty(String::class.java)
-
-    /** CAP-QC-VOICE US-2 — `true` to run the voice-quality QC (`verifyCapsuleVoice`). Defaults to false (opt-in). */
-    val voiceVerifyEnabled: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
-
-    /** CAP-QC-VOICE US-2 — word error rate ceiling accepted before a take fails. Defaults to 0.15. */
-    val voiceMaxWordErrorRate: Property<Double> = objects.property(Double::class.java)
-        .convention(0.15)
-
-    /** CAP-QC-VOICE US-2 — background headroom floor (dB) before a take fails. Defaults to 66.0. */
-    val voiceMinSnrDb: Property<Double> = objects.property(Double::class.java)
-        .convention(66.0)
-
-    /** CAP-QC-VOICE US-2 — extra transcribed words signalling a hallucination. Defaults to 3. */
-    val voiceSurplusThreshold: Property<Int> = objects.property(Int::class.java)
-        .convention(3)
-
-    /** CAP-QC-VOICE US-2 — the ASR binary (`whisper`, `faster-whisper`…). Defaults to `whisper`. */
-    val voiceAsrExecutablePath: Property<String> = objects.property(String::class.java)
-        .convention("whisper")
-
-    /** CAP-QC-VOICE US-2 — ASR model name (blank = CLI default). Defaults to empty. */
-    val voiceAsrModel: Property<String> = objects.property(String::class.java)
-        .convention("")
-
-    /** CAP-QC-VOICE US-2 — ASR language hint (ISO-639-1). Defaults to `fr`. */
-    val voiceLanguage: Property<String> = objects.property(String::class.java)
-        .convention("fr")
-
-    /** CAP-QC-VOICE US-3 — `true` to select the best take among candidates (`selectBestVoiceTake`). Defaults to false. */
-    val voiceSelectBestTake: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(false)
-
-    internal val conventions: CapsuleConventions = CapsuleConventions(
-        outputDir = "capsule",
-        sliderScriptDir = "capsule",
-        deckSourceDir = "docs/asciidocRevealJs",
-        sliderBuildDir = "",
-        chromiumExecutablePath = "",
-        ttsEngine = "piper",
-        ttsVoice = "fr_FR-siwis-medium",
-        piperExecutablePath = "piper",
-        ttsFallbackEnabled = true,
-        espeakVoice = "fr",
-        espeakSpeed = 150,
-        ttsLanguage = "fr",
-        ttsPronunciationEnabled = false,
-        ttsFishVoice = "",
-        ttsFishModel = "speech-1.6",
-        ttsFishFormat = "wav",
-        ttsFishTemperature = 0.85,
-        ttsFishTopP = 0.88,
-        ttsFishEndpoint = "https://api.fish.audio/v1/tts",
-        viewportWidth = 1408,
-        viewportHeight = 792,
-        playwrightTimeout = 120_000.0,
-        slideDurationSeconds = 5.0,
-        parallelCaptureEnabled = false,
-        parallelCaptureThreads = 4,
-        captureTimeoutMinutes = 5,
-        subtitleEnabled = false,
-        subtitleFormat = "srt",
-        subtitleBurnIn = false,
-        subtitleBurnInFontSize = 24,
-        subtitleBurnInFontColor = "&H00FFFFFF",
-        subtitleBurnInOutlineColor = "&H00000000",
-        subtitleBurnInPosition = "bottom",
-        subtitleCartonsEnabled = false,
-        subtitleMaxChars = 42,
-        reuseCapturedVideoEnabled = false,
-        captureStrategy = CaptureStrategy.PLAYWRIGHT,
-        outputFormat = OutputFormat.WEBM,
-        outputBt709 = false,
-        ffmpegExecutablePath = "ffmpeg",
-        distribOutputWidth = 1080,
-        distribOutputHeight = 1920,
-        manimExecutablePath = "manim",
-        manimQuality = "l",
-        manimScriptsDir = "src/manim",
-        manimOutputDir = "build/capsule/manim",
-        manimParallelRender = false,
-        manimParallelRenderThreads = 4,
-        durationValidationEnabled = false,
-        durationValidationToleranceSecs = 2.0,
-        integrityValidationEnabled = false,
-        qcPreflightEnabled = false,
-        qcMaxNoteChars = 500,
-        qcBoardsEnabled = false,
-        audioPostBgmEnabled = false,
-        audioPostBgmFile = "",
-        audioPostBgmLevel = -18.0,
-        audioPostLoudnessTarget = -16.0,
-        audioPostDuckingEnabled = false,
-        audioPostTwoPassLoudnessEnabled = false,
-        transcriptEnabled = false,
-        transcriptStrategy = TranscriptStrategy.TEMPLATE,
-        remotionProjectDir = "capsule/remotion",
-        remotionNodeExecutablePath = "node",
-        remotionConcurrency = 4,
-        remotionFps = 30,
-        podcastEnabled = false,
-        podcastOutputFile = "",
-        previewOnly = false,
-        chaptersEnabled = false,
-        chaptersIntroText = "",
-        chaptersOutroText = "",
-        viralEnabled = false,
-        viralPlatform = "TIKTOK",
-        viralTargetDurationSeconds = 30,
-        viralHook = "",
-        viralCta = "",
-        viralStoryboardRequired = true,
-        viralStoryboardFile = "",
-        voiceVerifyEnabled = false,
-        voiceMaxWordErrorRate = 0.15,
-        voiceMinSnrDb = 66.0,
-        voiceSurplusThreshold = 3,
-        voiceAsrExecutablePath = "whisper",
-        voiceAsrModel = "",
-        voiceLanguage = "fr",
-        voiceSelectBestTake = false
-    )
-}
 
 data class CapsuleConventions(
     val outputDir: String,
@@ -580,5 +774,5 @@ data class CapsuleConventions(
     val voiceAsrExecutablePath: String,
     val voiceAsrModel: String,
     val voiceLanguage: String,
-    val voiceSelectBestTake: Boolean
+    val voiceSelectBestTake: Boolean,
 )

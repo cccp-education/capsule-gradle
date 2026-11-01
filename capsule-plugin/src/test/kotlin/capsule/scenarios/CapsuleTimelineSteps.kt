@@ -15,19 +15,24 @@ import org.junit.jupiter.api.Assertions.assertEquals
  * prefixed with "timeline" (S-088 — the glue is classpath-wide).
  */
 class CapsuleTimelineSteps {
-
     private var durations: List<Double> = emptyList()
     private var config: TimelineConfig = TimelineConfig()
     private var timeline: Timeline? = null
 
     @Given("a timeline with durations {string} at {int} fps")
-    fun aTimelineWithDurations(durationsCsv: String, fps: Int) {
+    fun aTimelineWithDurations(
+        durationsCsv: String,
+        fps: Int,
+    ) {
         durations = durationsCsv.split(",").map { it.trim().toDouble() }
         config = TimelineConfig(fps = fps)
     }
 
     @Given("the timeline lead is {double} seconds and tail is {double} seconds")
-    fun theTimelineLeadAndTail(lead: Double, tail: Double) {
+    fun theTimelineLeadAndTail(
+        lead: Double,
+        tail: Double,
+    ) {
         config = config.copy(leadSeconds = lead, tailSeconds = tail)
     }
 
@@ -52,14 +57,21 @@ class CapsuleTimelineSteps {
     }
 
     @Then("timeline slide {int} starts at frame {long} with {long} frames")
-    fun timelineSlideStarts(slideIndex: Int, startFrame: Long, frameCount: Long) {
+    fun timelineSlideStarts(
+        slideIndex: Int,
+        startFrame: Long,
+        frameCount: Long,
+    ) {
         val entry = timeline!!.entries[slideIndex]
         assertEquals(startFrame, entry.startFrame)
         assertEquals(frameCount, entry.frameCount)
     }
 
     @Then("timeline slide {int} voice starts at frame {long}")
-    fun timelineSlideVoiceStarts(slideIndex: Int, voiceStartFrame: Long) {
+    fun timelineSlideVoiceStarts(
+        slideIndex: Int,
+        voiceStartFrame: Long,
+    ) {
         assertEquals(voiceStartFrame, timeline!!.entries[slideIndex].voiceStartFrame)
     }
 }

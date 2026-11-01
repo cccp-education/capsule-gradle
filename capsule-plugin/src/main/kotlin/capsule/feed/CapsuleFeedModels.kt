@@ -20,16 +20,18 @@ import java.io.File
 enum class SlideType { HTML, MANIM }
 
 /** Maps the legacy [SlideType] to the neutral [VideoKind]. */
-fun SlideType.toVideoKind(): VideoKind = when (this) {
-    SlideType.HTML -> VideoKind.VISUAL
-    SlideType.MANIM -> VideoKind.ANIMATION
-}
+fun SlideType.toVideoKind(): VideoKind =
+    when (this) {
+        SlideType.HTML -> VideoKind.VISUAL
+        SlideType.MANIM -> VideoKind.ANIMATION
+    }
 
 /** Maps the neutral [VideoKind] back to the legacy [SlideType]. */
-fun VideoKind.toSlideType(): SlideType = when (this) {
-    VideoKind.VISUAL -> SlideType.HTML
-    VideoKind.ANIMATION -> SlideType.MANIM
-}
+fun VideoKind.toSlideType(): SlideType =
+    when (this) {
+        VideoKind.VISUAL -> SlideType.HTML
+        VideoKind.ANIMATION -> SlideType.MANIM
+    }
 
 /**
  * Backward-compatible alias — a `SlideSegment` **is** a [VideoSegment]
@@ -71,7 +73,6 @@ val VideoScript.deckName: String get() = name
  * ```
  */
 object CapsuleScriptWriter {
-
     /**
      * Serializes [script] into the `-script.txt` contract.
      *
@@ -89,6 +90,5 @@ object CapsuleScriptWriter {
  * [RevealJsScriptContract] so existing call-sites keep working.
  */
 object CapsuleScriptReader {
-
     fun read(file: File): VideoScript = RevealJsScriptContract.read(file)
 }

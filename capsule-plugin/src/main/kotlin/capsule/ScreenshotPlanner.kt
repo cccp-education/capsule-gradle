@@ -18,7 +18,6 @@ import java.io.File
  * - the final merged WebM path (`capsule.webm`).
  */
 object ScreenshotPlanner {
-
     /**
      * Name of the concatenated deck video produced by the SCREENSHOT strategy.
      * Consumers must select this file, never a per-slide `slide-N.webm`.
@@ -33,20 +32,24 @@ object ScreenshotPlanner {
      * @param slideDurations  one duration (seconds) per slide, non-empty
      * @return the capture plan
      */
-    fun plan(outputDir: File, slideDurations: List<Double>): ScreenshotCapturePlan {
+    fun plan(
+        outputDir: File,
+        slideDurations: List<Double>,
+    ): ScreenshotCapturePlan {
         require(slideDurations.isNotEmpty()) { "slideDurations must not be empty" }
-        val entries = slideDurations.mapIndexed { index, duration ->
-            ScreenshotSlideEntry(
-                index = index,
-                pngFile = outputDir.resolve("slide-$index.png"),
-                webmFile = outputDir.resolve("slide-$index.webm"),
-                durationSecs = duration
-            )
-        }
+        val entries =
+            slideDurations.mapIndexed { index, duration ->
+                ScreenshotSlideEntry(
+                    index = index,
+                    pngFile = outputDir.resolve("slide-$index.png"),
+                    webmFile = outputDir.resolve("slide-$index.webm"),
+                    durationSecs = duration,
+                )
+            }
         return ScreenshotCapturePlan(
             slides = entries,
             concatListFile = outputDir.resolve("concat-list.txt"),
-            finalWebm = outputDir.resolve(FINAL_WEBM_NAME)
+            finalWebm = outputDir.resolve(FINAL_WEBM_NAME),
         )
     }
 
@@ -55,8 +58,7 @@ object ScreenshotPlanner {
      *
      * Format: one `file 'slide-N.webm'` line per slide, in order.
      */
-    fun renderConcatList(plan: ScreenshotCapturePlan): String =
-        plan.slides.joinToString("\n") { "file '${it.webmFile.name}'" } + "\n"
+    fun renderConcatList(plan: ScreenshotCapturePlan): String = plan.slides.joinToString("\n") { "file '${it.webmFile.name}'" } + "\n"
 
     /**
      * Builds the FFmpeg command line (argv) to convert a single PNG into a
@@ -71,35 +73,58 @@ object ScreenshotPlanner {
         viewportWidth: Int,
         viewportHeight: Int,
         ffmpegPath: String = "ffmpeg",
-    ): List<String> = listOf(
-        ffmpegPath, "-y",
-        "-loop", "1",
-        "-framerate", "1",
-        "-i", entry.pngFile.absolutePath,
-        "-t", entry.durationSecs.toString(),
-        "-c:v", "libvpx",
-        "-b:v", "500k",
-        "-vf", "scale=$viewportWidth:$viewportHeight",
-        "-pix_fmt", "yuv420p",
-        "-auto-alt-ref", "0",
-        "-r", "1",
-        "-cpu-used", "8",
-        "-deadline", "realtime",
-        entry.webmFile.absolutePath
-    )
+    ): List<String> =
+        listOf(
+            ffmpegPath,
+            "-y",
+            "-loop",
+            "1",
+            "-framerate",
+            "1",
+            "-i",
+            entry.pngFile.absolutePath,
+            "-t",
+            entry.durationSecs.toString(),
+            "-c:v",
+            "libvpx",
+            "-b:v",
+            "500k",
+            "-vf",
+            "scale=$viewportWidth:$viewportHeight",
+            "-pix_fmt",
+            "yuv420p",
+            "-auto-alt-ref",
+            "0",
+            "-r",
+            "1",
+            "-cpu-used",
+            "8",
+            "-deadline",
+            "realtime",
+            entry.webmFile.absolutePath,
+        )
 
     /**
      * Builds the FFmpeg concat demuxer command line (argv) to merge
      * per-slide WebMs into the final `capsule.webm`.
      */
-    fun ffmpegConcatArgs(plan: ScreenshotCapturePlan, ffmpegPath: String = "ffmpeg"): List<String> = listOf(
-        ffmpegPath, "-y",
-        "-f", "concat",
-        "-safe", "0",
-        "-i", plan.concatListFile.absolutePath,
-        "-c", "copy",
-        plan.finalWebm.absolutePath
-    )
+    fun ffmpegConcatArgs(
+        plan: ScreenshotCapturePlan,
+        ffmpegPath: String = "ffmpeg",
+    ): List<String> =
+        listOf(
+            ffmpegPath,
+            "-y",
+            "-f",
+            "concat",
+            "-safe",
+            "0",
+            "-i",
+            plan.concatListFile.absolutePath,
+            "-c",
+            "copy",
+            plan.finalWebm.absolutePath,
+        )
 }
 
 /**
@@ -108,7 +133,7 @@ object ScreenshotPlanner {
 data class ScreenshotCapturePlan(
     val slides: List<ScreenshotSlideEntry>,
     val concatListFile: File,
-    val finalWebm: File
+    val finalWebm: File,
 ) {
     val size: Int get() = slides.size
     val isEmpty: Boolean get() = slides.isEmpty()
@@ -121,5 +146,5 @@ data class ScreenshotSlideEntry(
     val index: Int,
     val pngFile: File,
     val webmFile: File,
-    val durationSecs: Double
+    val durationSecs: Double,
 )

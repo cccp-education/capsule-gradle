@@ -9,7 +9,6 @@ package capsule.viral
  * proceed to rendering.
  */
 sealed class StoryboardValidationResult {
-
     /** The storyboard satisfies every editorial rule. */
     object Valid : StoryboardValidationResult()
 
@@ -18,7 +17,9 @@ sealed class StoryboardValidationResult {
      *
      * @property reasons non-empty list of human-readable violations.
      */
-    data class Invalid(val reasons: List<String>) : StoryboardValidationResult() {
+    data class Invalid(
+        val reasons: List<String>,
+    ) : StoryboardValidationResult() {
         init {
             require(reasons.isNotEmpty()) { "StoryboardValidationResult.Invalid must carry at least one reason" }
         }
@@ -48,7 +49,6 @@ sealed class StoryboardValidationResult {
  * Pure — no Gradle, no I/O.
  */
 object ViralStoryboardValidator {
-
     /** A single beat may not exceed this many seconds. */
     const val MAX_BEAT_SECONDS: Double = 10.0
 
@@ -76,7 +76,8 @@ object ViralStoryboardValidator {
         val target = storyboard.targetDurationSeconds.toDouble()
         val deviation = kotlin.math.abs(total - target) / target
         if (deviation > DURATION_TOLERANCE_RATIO) {
-            reasons += "summed beat duration ${total}s deviates more than ${(DURATION_TOLERANCE_RATIO * 100).toInt()}% from target ${storyboard.targetDurationSeconds}s"
+            reasons +=
+                "summed beat duration ${total}s deviates more than ${(DURATION_TOLERANCE_RATIO * 100).toInt()}% from target ${storyboard.targetDurationSeconds}s"
         }
 
         storyboard.beats.forEachIndexed { index, beat ->

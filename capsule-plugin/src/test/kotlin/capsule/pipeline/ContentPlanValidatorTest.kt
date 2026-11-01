@@ -13,8 +13,8 @@ import kotlin.test.assertTrue
  * No Gradle, no LLM, no I/O — only Jackson + the N0 `LanguageCatalog`.
  */
 class ContentPlanValidatorTest {
-
-    private val validPlan = """
+    private val validPlan =
+        """
         {
           "deckName": "kotlin-coroutines",
           "languageCode": "fr",
@@ -22,7 +22,7 @@ class ContentPlanValidatorTest {
           "speakerNotesFile": "kotlin-coroutines-speaker-notes.adoc",
           "ttsScriptFile": "kotlin-coroutines-script.txt"
         }
-    """.trimIndent()
+        """.trimIndent()
 
     @Test
     fun `valid content plan passes`() {
@@ -110,14 +110,15 @@ class ContentPlanValidatorTest {
 
     @Test
     fun `missing ttsScriptFile fails`() {
-        val json = """
+        val json =
+            """
             {
               "deckName": "kotlin-coroutines",
               "languageCode": "fr",
               "slideCount": 24,
               "speakerNotesFile": "kotlin-coroutines-speaker-notes.adoc"
             }
-        """.trimIndent()
+            """.trimIndent()
         val result = ContentPlanValidator.validate(json)
         assertIs<ContentPlanValidationResult.Invalid>(result)
         assertTrue(result.error.contains("ttsScriptFile"))

@@ -9,16 +9,15 @@ package capsule
  * are preserved verbatim so BDD assertions stay green.
  */
 object CapsuleConfigLogger {
+    fun formatConfigLog(config: CapsuleConfig): List<String> =
+        listOf(
+            formatTtsLine(config.tts),
+            formatCaptureLine(config.capture),
+            formatSubtitleLine(config.capture),
+            formatManimLine(config.manim),
+        )
 
-    fun formatConfigLog(config: CapsuleConfig): List<String> = listOf(
-        formatTtsLine(config.tts),
-        formatCaptureLine(config.capture),
-        formatSubtitleLine(config.capture),
-        formatManimLine(config.manim)
-    )
-
-    private fun formatTtsLine(tts: TtsConfig): String =
-        "Capsule TTS: engine=${tts.engine}, voice=${tts.voice}, language=${tts.language}"
+    private fun formatTtsLine(tts: TtsConfig): String = "Capsule TTS: engine=${tts.engine}, voice=${tts.voice}, language=${tts.language}"
 
     private fun formatCaptureLine(capture: CaptureConfig): String =
         "Capsule Capture: vw=${capture.viewportWidth}x${capture.viewportHeight}, parallel=${capture.parallelCaptureEnabled}"

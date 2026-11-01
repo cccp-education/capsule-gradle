@@ -23,7 +23,6 @@ import java.io.File
  * second run skips the existing valid copy.
  */
 class CapsuleDistribSteps {
-
     private var projectDir: File? = null
     private var destRoot: File? = null
     private var lastBuildOutput: String = ""
@@ -31,12 +30,14 @@ class CapsuleDistribSteps {
 
     @Given("a capsule distrib project with a fake WebM {string} in the build output directory")
     fun aCapsuleDistribProjectWithAFakeWebM(webmName: String) {
-        projectDir = File(System.getProperty("java.io.tmpdir"))
-            .resolve("cucumber-distrib-${System.currentTimeMillis()}")
-            .also { it.mkdirs() }
+        projectDir =
+            File(System.getProperty("java.io.tmpdir"))
+                .resolve("cucumber-distrib-${System.currentTimeMillis()}")
+                .also { it.mkdirs() }
 
         projectDir!!.resolve("settings.gradle").writeText("")
-        projectDir!!.resolve("build.gradle").writeText("""
+        projectDir!!.resolve("build.gradle").writeText(
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -44,7 +45,8 @@ class CapsuleDistribSteps {
                 ttsEngine = "noop"
                 outputDir = "capsules"
             }
-        """.trimIndent())
+            """.trimIndent(),
+        )
 
         val capDir = projectDir!!.resolve("build/capsules").also { it.mkdirs() }
         capDir.resolve(webmName).writeText("fake-webm-content-for-distrib-cucumber-test")
@@ -60,41 +62,48 @@ class CapsuleDistribSteps {
 
     @When("the distrib tasks are listed in the {string} group")
     fun theDistribTasksAreListedInTheGroup(group: String) {
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments("tasks", "--group", group)
-            .withProjectDir(projectDir!!)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments("tasks", "--group", group)
+                .withProjectDir(projectDir!!)
+                .build()
         lastBuildOutput = result.output
     }
 
     @When("the distributeCapsuleVideo task is run with versioning {string}")
     fun theDistributeCapsuleVideoTaskIsRunWithVersioning(versioning: String) {
         val destPath = destRoot!!.absolutePath
-        val args = listOf(
-            "distributeCapsuleVideo",
-            "-Poutput.videoDestinationDir=$destPath",
-            "-Poutput.versioning=$versioning",
-        )
+        val args =
+            listOf(
+                "distributeCapsuleVideo",
+                "-Poutput.videoDestinationDir=$destPath",
+                "-Poutput.versioning=$versioning",
+            )
         lastCliArgs = args
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(args)
-            .withProjectDir(projectDir!!)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(args)
+                .withProjectDir(projectDir!!)
+                .build()
         lastBuildOutput = result.output
     }
 
     @When("the distributeCapsuleVideo task is run again with the same arguments")
     fun theDistributeCapsuleVideoTaskIsRunAgainWithTheSameArguments() {
-        val result = GradleRunner.create()
-            .forwardOutput()
-            .withPluginClasspath()
-            .withArguments(lastCliArgs)
-            .withProjectDir(projectDir!!)
-            .build()
+        val result =
+            GradleRunner
+                .create()
+                .forwardOutput()
+                .withPluginClasspath()
+                .withArguments(lastCliArgs)
+                .withProjectDir(projectDir!!)
+                .build()
         lastBuildOutput = result.output
     }
 
@@ -132,10 +141,11 @@ class CapsuleDistribSteps {
     fun theVideoFileIsCopiedToTheVersionedDestination(videoFileName: String) {
         val root = destRoot ?: error("Destination root not set up")
         val versionDirs = root.listFiles { f -> f.isDirectory }?.toList() ?: emptyList()
-        val found = versionDirs.any { dir ->
-            val video = File(dir, videoFileName)
-            video.exists() && video.length() > 0
-        }
+        val found =
+            versionDirs.any { dir ->
+                val video = File(dir, videoFileName)
+                video.exists() && video.length() > 0
+            }
         Assertions.assertTrue(found, "Expected $videoFileName to be copied to a versioned dir under ${root.absolutePath}")
     }
 }

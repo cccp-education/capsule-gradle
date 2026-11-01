@@ -14,7 +14,6 @@ import java.io.File
  * large-v3 transcription step).
  */
 fun interface SpeechRecognizer {
-
     /**
      * @param audio    the audio file to transcribe.
      * @param language the language hint (ISO-639-1).
@@ -22,5 +21,8 @@ fun interface SpeechRecognizer {
      * @throws Exception when the underlying recogniser cannot run — the caller
      *         treats this as a degraded take, never as clean.
      */
-    fun transcribe(audio: File, language: String): String
+    fun transcribe(
+        audio: File,
+        language: String,
+    ): String
 }

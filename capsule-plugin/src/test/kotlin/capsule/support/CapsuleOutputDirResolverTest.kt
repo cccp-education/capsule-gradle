@@ -18,10 +18,10 @@ import kotlin.test.assertNotNull
  * configured directory instead of hardcoding a single path.
  */
 class CapsuleOutputDirResolverTest {
-
     @Test
     fun `resolves custom outputDir from capsule block`() {
-        val buildGradle = """
+        val buildGradle =
+            """
             plugins {
                 id('education.cccp.capsule')
             }
@@ -33,32 +33,34 @@ class CapsuleOutputDirResolverTest {
                 ffmpegExecutablePath = "ffmpeg"
                 outputDir = "capsules"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         assertEquals("capsules", CapsuleOutputDirResolver.resolveOutputDir(buildGradle))
     }
 
     @Test
     fun `returns default when outputDir absent`() {
-        val buildGradle = """
+        val buildGradle =
+            """
             plugins {
                 id('education.cccp.capsule')
             }
             capsule {
                 ttsEngine = "noop"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         assertEquals("capsule", CapsuleOutputDirResolver.resolveOutputDir(buildGradle))
     }
 
     @Test
     fun `returns default when capsule block absent`() {
-        val buildGradle = """
+        val buildGradle =
+            """
             plugins {
                 id('education.cccp.capsule')
             }
-        """.trimIndent()
+            """.trimIndent()
 
         assertEquals("capsule", CapsuleOutputDirResolver.resolveOutputDir(buildGradle))
     }
@@ -70,22 +72,24 @@ class CapsuleOutputDirResolverTest {
 
     @Test
     fun `resolves outputDir with surrounding single quotes`() {
-        val buildGradle = """
+        val buildGradle =
+            """
             capsule {
                 outputDir = 'custom-out'
             }
-        """.trimIndent()
+            """.trimIndent()
 
         assertEquals("custom-out", CapsuleOutputDirResolver.resolveOutputDir(buildGradle))
     }
 
     @Test
     fun `resolves build output path under build directory`() {
-        val buildGradle = """
+        val buildGradle =
+            """
             capsule {
                 outputDir = "capsules"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val projectDir = createTempDir(prefix = "resolver-test")
         try {
@@ -99,11 +103,12 @@ class CapsuleOutputDirResolverTest {
 
     @Test
     fun `resolves default build output path when outputDir absent`() {
-        val buildGradle = """
+        val buildGradle =
+            """
             capsule {
                 ttsEngine = "noop"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val projectDir = createTempDir(prefix = "resolver-test")
         try {
@@ -116,11 +121,12 @@ class CapsuleOutputDirResolverTest {
 
     @Test
     fun `resolves subtitle file path honoring configured outputDir`() {
-        val buildGradle = """
+        val buildGradle =
+            """
             capsule {
                 outputDir = "capsules"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val projectDir = createTempDir(prefix = "resolver-test")
         try {
@@ -144,6 +150,5 @@ class CapsuleOutputDirResolverTest {
         }
     }
 
-    private fun createTempDir(prefix: String): File =
-        File(System.getProperty("java.io.tmpdir"), "$prefix-${System.currentTimeMillis()}").also { it.mkdirs() }
+    private fun createTempDir(prefix: String): File = File(System.getProperty("java.io.tmpdir"), "$prefix-${System.currentTimeMillis()}").also { it.mkdirs() }
 }

@@ -4,8 +4,8 @@ import capsule.feed.SlideSegment
 import org.gradle.api.logging.Logging
 import java.io.File
 import java.util.concurrent.Callable
-import java.util.concurrent.Executors
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
 
 /**
  * Renders multiple Manim slides in parallel using a thread pool.
@@ -35,7 +35,7 @@ interface ManimParallelRenderer {
         slides: List<SlideSegment>,
         manimEngine: ManimEngine,
         scriptsDir: File,
-        outputDir: File
+        outputDir: File,
     ): Map<Int, File>
 
     /** Returns true if the renderer is available */
@@ -50,7 +50,6 @@ interface ManimParallelRenderer {
  * Used when parallelism is 1 or when the thread pool is not desired.
  */
 class NoOpManimParallelRenderer : ManimParallelRenderer {
-
     private val logger = Logging.getLogger(NoOpManimParallelRenderer::class.java)
 
     override fun isAvailable(): Boolean = true
@@ -61,7 +60,7 @@ class NoOpManimParallelRenderer : ManimParallelRenderer {
         slides: List<SlideSegment>,
         manimEngine: ManimEngine,
         scriptsDir: File,
-        outputDir: File
+        outputDir: File,
     ): Map<Int, File> {
         val results = mutableMapOf<Int, File>()
         for (seg in slides) {
@@ -100,9 +99,8 @@ class NoOpManimParallelRenderer : ManimParallelRenderer {
  * @param parallelism Number of threads in the pool (default: 4)
  */
 class ManimParallelRendererImpl(
-    val parallelism: Int = 4
+    val parallelism: Int = 4,
 ) : ManimParallelRenderer {
-
     private val logger = Logging.getLogger(ManimParallelRendererImpl::class.java)
 
     override fun isAvailable(): Boolean = true
@@ -113,7 +111,7 @@ class ManimParallelRendererImpl(
         slides: List<SlideSegment>,
         manimEngine: ManimEngine,
         scriptsDir: File,
-        outputDir: File
+        outputDir: File,
     ): Map<Int, File> {
         if (slides.isEmpty()) return emptyMap()
 
@@ -122,28 +120,31 @@ class ManimParallelRendererImpl(
         val executor = Executors.newFixedThreadPool(effectiveParallelism)
 
         try {
-            val futures = slides.map { seg ->
-                executor.submit(Callable {
-                    val sceneName = seg.manimScene ?: return@Callable null
-                    val scriptPath = scriptsDir.resolve("$sceneName.py")
-                    if (!scriptPath.exists()) {
-                        logger.warn("    Manim render skipped: no script '{}.py' under {} (scene: {})", sceneName, scriptsDir, sceneName)
-                        return@Callable null
-                    }
+            val futures =
+                slides.map { seg ->
+                    executor.submit(
+                        Callable {
+                            val sceneName = seg.manimScene ?: return@Callable null
+                            val scriptPath = scriptsDir.resolve("$sceneName.py")
+                            if (!scriptPath.exists()) {
+                                logger.warn("    Manim render skipped: no script '{}.py' under {} (scene: {})", sceneName, scriptsDir, sceneName)
+                                return@Callable null
+                            }
 
-                    val sceneOutputDir = File(outputDir, sceneName)
-                    sceneOutputDir.mkdirs()
+                            val sceneOutputDir = File(outputDir, sceneName)
+                            sceneOutputDir.mkdirs()
 
-                    try {
-                        val rendered = manimEngine.render(sceneName, scriptPath, sceneOutputDir)
-                        results[seg.index] = rendered
-                        logger.lifecycle("    Manim parallel render: slide {} → {} (scene: {})", seg.index, rendered.name, sceneName)
-                    } catch (e: ManimException) {
-                        logger.warn("    Manim parallel render failed for scene '{}': {}", sceneName, e.message)
-                    }
-                    null
-                })
-            }
+                            try {
+                                val rendered = manimEngine.render(sceneName, scriptPath, sceneOutputDir)
+                                results[seg.index] = rendered
+                                logger.lifecycle("    Manim parallel render: slide {} → {} (scene: {})", seg.index, rendered.name, sceneName)
+                            } catch (e: ManimException) {
+                                logger.warn("    Manim parallel render failed for scene '{}': {}", sceneName, e.message)
+                            }
+                            null
+                        },
+                    )
+                }
 
             // Wait for all tasks to complete
             futures.forEach { it.get() }

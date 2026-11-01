@@ -25,15 +25,16 @@ import org.gradle.work.DisableCachingByDefault
  */
 @DisableCachingByDefault(because = "Reads script files; the verdict is a cheap function of their content")
 open class PreflightCapsuleContentTask : DefaultTask() {
-
     /** Master switch — when false, the task is a no-op (opt-in, backward compat). */
     @get:Input
     val enabled: Property<Boolean> = project.objects.property(Boolean::class.java).convention(false)
 
     /** Maximum characters per speaker note before a `long-note` warning. */
     @get:Input
-    val maxNoteChars: Property<Int> = project.objects.property(Int::class.java)
-        .convention(PreflightRules.DEFAULT_MAX_NOTE_CHARS)
+    val maxNoteChars: Property<Int> =
+        project.objects
+            .property(Int::class.java)
+            .convention(PreflightRules.DEFAULT_MAX_NOTE_CHARS)
 
     /** When true, warnings fail the build too. */
     @get:Input
@@ -41,10 +42,12 @@ open class PreflightCapsuleContentTask : DefaultTask() {
 
     @get:Internal
     internal var capsuleExtension: CapsuleExtension
-        get() = _capsuleExtension ?: project.extensions.getByType(CapsuleExtension::class.java).also { _capsuleExtension = it }
-        set(value) { _capsuleExtension = value }
+        get() = capsuleExtensionCache ?: project.extensions.getByType(CapsuleExtension::class.java).also { capsuleExtensionCache = it }
+        set(value) {
+            capsuleExtensionCache = value
+        }
 
-    private var _capsuleExtension: CapsuleExtension? = null
+    private var capsuleExtensionCache: CapsuleExtension? = null
 
     @TaskAction
     fun run() {
@@ -76,7 +79,7 @@ open class PreflightCapsuleContentTask : DefaultTask() {
 
         if (errors > 0 || (strict.get() && warnings > 0)) {
             throw GradleException(
-                "Content pre-flight failed: $errors error(s), $warnings warning(s) (strict=${strict.get()})"
+                "Content pre-flight failed: $errors error(s), $warnings warning(s) (strict=${strict.get()})",
             )
         }
     }

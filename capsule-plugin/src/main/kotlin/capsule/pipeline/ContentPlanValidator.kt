@@ -33,7 +33,6 @@ import contracts.i18n.LanguageCatalog
  * `slider.pipeline.DeckContextValidator` (object pur, returns sealed result).
  */
 object ContentPlanValidator {
-
     private val jsonMapper: ObjectMapper = ObjectMapper()
 
     /**
@@ -49,11 +48,12 @@ object ContentPlanValidator {
             return ContentPlanValidationResult.Invalid("Content plan JSON is blank")
         }
 
-        val root: JsonNode = try {
-            jsonMapper.readTree(json)
-        } catch (e: Exception) {
-            return ContentPlanValidationResult.Invalid("Content plan JSON is malformed: ${e.message}")
-        }
+        val root: JsonNode =
+            try {
+                jsonMapper.readTree(json)
+            } catch (e: Exception) {
+                return ContentPlanValidationResult.Invalid("Content plan JSON is malformed: ${e.message}")
+            }
 
         if (root.isMissingNode || !root.isObject) {
             return ContentPlanValidationResult.Invalid("Content plan JSON must be a JSON object")

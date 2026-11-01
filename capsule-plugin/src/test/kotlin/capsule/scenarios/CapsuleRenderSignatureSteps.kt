@@ -14,12 +14,15 @@ import org.junit.jupiter.api.Assertions.assertTrue
  * prefixed with "render signature" (S-088 — the glue is classpath-wide).
  */
 class CapsuleRenderSignatureSteps {
-
     private var first: String = ""
     private var second: String = ""
 
     @Given("a render signature built from engine {string} content {string} and timeline {string}")
-    fun aRenderSignatureBuiltFrom(engine: String, content: String, timeline: String) {
+    fun aRenderSignatureBuiltFrom(
+        engine: String,
+        content: String,
+        timeline: String,
+    ) {
         val signature = RenderSignature.of(engine, content, timeline)
         if (first.isEmpty()) first = signature else second = signature
     }

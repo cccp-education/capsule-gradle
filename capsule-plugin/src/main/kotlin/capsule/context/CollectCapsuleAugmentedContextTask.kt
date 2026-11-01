@@ -47,7 +47,6 @@ import org.gradle.work.DisableCachingByDefault
  */
 @DisableCachingByDefault(because = "Augmented context collection — governance files, non-cacheable")
 abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
-
     /** EAGER governance files of the consumer project (missing files skipped). */
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -118,12 +117,13 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
 
     @TaskAction
     fun run() {
-        val eager = eagerFiles.files
-            .filter { it.exists() }
-            .sortedBy { it.name }
-            .joinToString("\n\n") { file ->
-                "--- ${file.name} ---\n${file.readText().trim()}"
-            }
+        val eager =
+            eagerFiles.files
+                .filter { it.exists() }
+                .sortedBy { it.name }
+                .joinToString("\n\n") { file ->
+                    "--- ${file.name} ---\n${file.readText().trim()}"
+                }
 
         val budget = ChannelBudget(totalTokenBudget = tokenBudget.get())
 
@@ -133,22 +133,24 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
 
         val glossarySection = resolveGlossarySection(budget)
 
-        val composite = CompositeContext(
-            eagerSection = eager,
-            ragSection = ragContent.orNull.orEmpty(),
-            graphifySection = graphifyContent.orNull.orEmpty(),
-            docsSection = docsSection,
-            config = CompositeContextConfig(),
-        )
+        val composite =
+            CompositeContext(
+                eagerSection = eager,
+                ragSection = ragContent.orNull.orEmpty(),
+                graphifySection = graphifyContent.orNull.orEmpty(),
+                docsSection = docsSection,
+                config = CompositeContextConfig(),
+            )
         val tracker = ProvenanceTracker()
         trackSources(tracker)
-        val context = CapsuleContextBuilder.build(
-            composite = composite,
-            budget = budget,
-            scenarioSection = scenarioSection,
-            glossarySection = glossarySection,
-            tracker = tracker,
-        )
+        val context =
+            CapsuleContextBuilder.build(
+                composite = composite,
+                budget = budget,
+                scenarioSection = scenarioSection,
+                glossarySection = glossarySection,
+                tracker = tracker,
+            )
 
         val output = outputFile.asFile.get()
         output.parentFile.mkdirs()
@@ -192,7 +194,11 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
     }
 
     private fun trackSources(tracker: ProvenanceTracker) {
-        val eagerSources = eagerFiles.files.filter { it.exists() }.sortedBy { it.name }.map(::provenanceOf)
+        val eagerSources =
+            eagerFiles.files
+                .filter { it.exists() }
+                .sortedBy { it.name }
+                .map(::provenanceOf)
         tracker.trackChannel("EAGER", eagerSources)
 
         val rag = ragContent.orNull.orEmpty()
@@ -224,28 +230,33 @@ abstract class CollectCapsuleAugmentedContextTask : DefaultTask() {
         }
 
         val docsFilesResolved = docsFiles.files.filter { it.exists() }.sortedBy { it.name }
-        val docsSources = if (docsFilesResolved.isNotEmpty()) {
-            docsFilesResolved.map(::provenanceOf)
-        } else {
-            val legacy = docsContent.orNull.orEmpty()
-            if (legacy.isBlank()) emptyList()
-            else listOf(
-                ProvenanceSource(
-                    fileName = "docs-injected",
-                    chars = legacy.length,
-                    tokens = ContextChannel.estimateTokens(legacy),
-                ),
-            )
-        }
+        val docsSources =
+            if (docsFilesResolved.isNotEmpty()) {
+                docsFilesResolved.map(::provenanceOf)
+            } else {
+                val legacy = docsContent.orNull.orEmpty()
+                if (legacy.isBlank()) {
+                    emptyList()
+                } else {
+                    listOf(
+                        ProvenanceSource(
+                            fileName = "docs-injected",
+                            chars = legacy.length,
+                            tokens = ContextChannel.estimateTokens(legacy),
+                        ),
+                    )
+                }
+            }
         tracker.trackChannel("DOCS", docsSources)
 
         val scenarioTarget = scenarioFile.files.firstOrNull()
         if (scenarioTarget != null && scenarioTarget.exists()) {
-            val resolved = if (scenarioTarget.isDirectory) {
-                scenarioTarget.listFiles()?.firstOrNull { it.extension.equals("adoc", ignoreCase = true) }
-            } else {
-                scenarioTarget
-            }
+            val resolved =
+                if (scenarioTarget.isDirectory) {
+                    scenarioTarget.listFiles()?.firstOrNull { it.extension.equals("adoc", ignoreCase = true) }
+                } else {
+                    scenarioTarget
+                }
             if (resolved != null && resolved.exists()) {
                 tracker.trackChannel(
                     ContextProvenance.SCENARIO_CHANNEL,
