@@ -60,11 +60,16 @@ class CapsuleCucumberShardCoverageTest {
             .toList()
     }
 
-    private fun runnerTags(runner: File): String =
-        Regex("""FILTER_TAGS_PROPERTY_NAME,\s*value = "([^"]*)"""")
-            .find(runner.readText())
+    private fun runnerTags(runner: File): String {
+        // ktlint reflows a long `value = "..."` onto the next line (S-244/S-325 F34
+        // trap): collapse whitespace first so the guard is insensitive to
+        // line/indent changes in the runner annotations.
+        val text = runner.readText().replace(Regex("\\s+"), " ")
+        return Regex("""FILTER_TAGS_PROPERTY_NAME,\s*value = "([^"]*)"""")
+            .find(text)
             ?.groupValues
             ?.get(1) ?: ""
+    }
 
     @Test
     fun `the shards cover every feature, and a feature is split only by tag filters`() {
