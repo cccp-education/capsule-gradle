@@ -650,6 +650,15 @@ dependencies {
     implementation(libs.langchain4j)
     implementation(libs.langchain4j.ollama)
 
+    // Arrow resilience — Schedule-driven retries (XF-FP2-4, Fish Audio TTS).
+    // `arrow-resilience` publishes no api variant, so the Arrow API it compiles
+    // against (Either/Schedule) is declared explicitly; same 2.3.0 as the
+    // workspace catalogue (the pinned BOM 0.0.115 still constrains 2.2.2).
+    implementation(libs.arrow.core)
+    implementation(libs.arrow.fx.coroutines)
+    implementation(libs.arrow.resilience)
+    implementation(libs.kotlinx.coroutines.core)
+
     // N0 contracts — i18n (LanguageCatalog 10 languages, cross-borough translation alliance)
     implementation(libs.i18n.contracts)
     // N1 engine-neutral video kernel (model + ports), extracted (US-5).

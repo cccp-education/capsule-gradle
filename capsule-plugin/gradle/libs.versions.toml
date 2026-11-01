@@ -15,6 +15,10 @@ codebase = "0.0.18"
 # Plugin Gradle `education.cccp.codebase` — aligné sur la lib (0.0.18).
 codebase-gradle-plugin = "0.0.18"
 koog = "1.3.0"
+# Arrow — aligné sur le catalogue workspace MEMPHIS (`[versions].arrow = 2.3.0`).
+# `arrow-resilience` (Schedule/retry) n'est pas versionné par la BOM 0.0.115
+# (qui précède l'import `arrow-stack`) : version locale explicite, zéro bump BOM.
+arrow = "2.3.0"
 # BOM N0 courante (aligné sur le catalogue workspace MEMPHIS 0.0.113).
 workspace-bom = "0.0.115"
 i18n-contracts = "0.0.4"
@@ -34,6 +38,10 @@ jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", ver
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 koog-agents = { module = "ai.koog:koog-agents", version.ref = "koog" }
+arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
+arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines", version.ref = "arrow" }
+arrow-resilience = { module = "io.arrow-kt:arrow-resilience", version.ref = "arrow" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core" }
 codebase-plugin = { module = "education.cccp:codebase-plugin", version.ref = "codebase" }
 langchain4j = { module = "dev.langchain4j:langchain4j" }
 langchain4j-ollama = { module = "dev.langchain4j:langchain4j-ollama" }
