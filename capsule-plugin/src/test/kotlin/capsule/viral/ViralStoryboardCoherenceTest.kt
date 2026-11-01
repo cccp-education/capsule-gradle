@@ -76,7 +76,7 @@ class ViralStoryboardCoherenceTest {
         val sb = storyboard(qqoqcp = qqoqcp())
         val r = ViralStoryboardValidator.validate(sb)
         assertTrue(r is StoryboardValidationResult.Invalid)
-        assertTrue((r as StoryboardValidationResult.Invalid).reasons.any { it.contains("partial") })
+        assertTrue(r.reasons.any { it.contains("partial") })
     }
 
     @Test
@@ -90,6 +90,6 @@ class ViralStoryboardCoherenceTest {
             )
         val r = ViralStoryboardValidator.validate(sb)
         assertTrue(r is StoryboardValidationResult.Invalid)
-        assertTrue((r as StoryboardValidationResult.Invalid).reasons.any { it.contains("transition") })
+        assertTrue(r.reasons.any { it.contains("transition") })
     }
 }

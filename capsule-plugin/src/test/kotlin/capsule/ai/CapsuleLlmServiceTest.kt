@@ -3,7 +3,8 @@ package capsule.ai
 import capsule.ai.CapsuleLlmService.aiProvider
 import capsule.ai.CapsuleLlmService.registerLlmBuildService
 import capsule.ai.CapsuleLlmService.resolveModel
-import dev.langchain4j.model.chat.ChatModel
+import codebase.koog.llm.adapter.LlmProviderChatModelAdapter
+import dev.langchain4j.model.ollama.OllamaChatModel
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -60,23 +61,20 @@ class CapsuleLlmServiceTest {
     fun `resolveModel returns an OllamaChatModel when -Pollama-baseUrl is set`() {
         val p = project(mapOf("ollama.baseUrl" to "http://localhost:0"))
         val model = p.resolveModel("ollama", p.registerLlmBuildService())
-        assertNotNull(model)
-        assertTrue(model is ChatModel)
+        assertTrue(model is OllamaChatModel)
     }
 
     @Test
     fun `resolveModel returns a ChatModel via LlmBuildService when no mock url`() {
         val p = project()
         val model = p.resolveModel("ollama", p.registerLlmBuildService())
-        assertNotNull(model)
-        assertTrue(model is ChatModel)
+        assertTrue(model is LlmProviderChatModelAdapter)
     }
 
     @Test
     fun `resolveModel with a custom provider name routes through LlmBuildService`() {
         val p = project()
         val model = p.resolveModel("gpt-oss:120b-cloud", p.registerLlmBuildService())
-        assertNotNull(model)
-        assertTrue(model is ChatModel)
+        assertTrue(model is LlmProviderChatModelAdapter)
     }
 }

@@ -36,7 +36,7 @@ class RemotionTemplateTest {
             val path = "capsule/remotion/$relative"
             val res = javaClass.classLoader.getResourceAsStream(path)
             assertTrue(res != null, "Missing template resource: $path")
-            res!!.use { assertTrue(it.readBytes().isNotEmpty(), "Empty resource: $path") }
+            res.use { assertTrue(it.readBytes().isNotEmpty(), "Empty resource: $path") }
         }
     }
 

@@ -5,8 +5,7 @@ import capsule.feed.CapsuleScriptReader
 import capsule.feed.CapsuleScriptWriter
 import capsule.feed.SlideSegment
 import capsule.feed.SlideType
-import capsule.feed.deckName
-import capsule.feed.type
+import capsule.feed.toSlideType
 import io.cucumber.datatable.DataTable
 import io.cucumber.java.en.And
 import io.cucumber.java.en.Given
@@ -79,7 +78,7 @@ class ConsolidatedCapsuleModelSteps {
 
     @Then("the read script deck name should be {string}")
     fun theReadScriptDeckNameShouldBe(expected: String) {
-        Assertions.assertEquals(expected, readScript?.deckName)
+        Assertions.assertEquals(expected, readScript?.name)
     }
 
     @And("the read script should contain {int} segment(s)")
@@ -102,7 +101,7 @@ class ConsolidatedCapsuleModelSteps {
         note: String,
     ) {
         val seg = findSegment(index)
-        Assertions.assertEquals(note, seg.speakerNote)
+        Assertions.assertEquals(note, seg.narration)
     }
 
     @And("the segment {int} should have type {string}")
@@ -112,7 +111,7 @@ class ConsolidatedCapsuleModelSteps {
     ) {
         val seg = findSegment(index)
         val expected = if (typeRaw.uppercase() == "MANIM") SlideType.MANIM else SlideType.HTML
-        Assertions.assertEquals(expected, seg.type)
+        Assertions.assertEquals(expected, seg.kind.toSlideType())
     }
 
     @And("the segment {int} should have manimScene {string}")
@@ -122,7 +121,7 @@ class ConsolidatedCapsuleModelSteps {
     ) {
         val seg = findSegment(index)
         val expected: String? = sceneRaw.takeIf { it != "null" && it.isNotBlank() }
-        Assertions.assertEquals(expected, seg.manimScene)
+        Assertions.assertEquals(expected, seg.scene)
     }
 
     private fun findSegment(index: Int): SlideSegment {

@@ -181,8 +181,9 @@ class CapsuleVideoPlannerTest {
             )
 
         val entry = plan.entries.first()
-        assertTrue(entry.deckFile.exists())
-        assertTrue(entry.deckFile.name.endsWith("_fr-deck.html"))
+        assertTrue(entry.visual.file.exists())
+        val visualName = entry.visual.file.name
+        assertTrue(visualName.endsWith("_fr-deck.html"))
     }
 
     @Test

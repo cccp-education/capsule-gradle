@@ -33,14 +33,14 @@ class AsciidocSpeakerNoteParserTest {
 
         val script = AsciidocSpeakerNoteParser.parse(adoc, deckName = "deck")
 
-        assertThat(script.deckName).isEqualTo("deck")
+        assertThat(script.name).isEqualTo("deck")
         assertThat(script.segments).hasSize(2)
         assertThat(script.segments[0].index).isEqualTo(1)
         assertThat(script.segments[0].title).isEqualTo("Slide One")
-        assertThat(script.segments[0].speakerNote).isEqualTo("First speaker note.")
+        assertThat(script.segments[0].narration).isEqualTo("First speaker note.")
         assertThat(script.segments[1].index).isEqualTo(2)
         assertThat(script.segments[1].title).isEqualTo("Slide Two")
-        assertThat(script.segments[1].speakerNote).isEqualTo("Second speaker note.")
+        assertThat(script.segments[1].narration).isEqualTo("Second speaker note.")
     }
 
     @Test
@@ -85,7 +85,7 @@ class AsciidocSpeakerNoteParserTest {
 
         val script = AsciidocSpeakerNoteParser.parse(adoc, deckName = "deck")
 
-        assertThat(script.segments[0].speakerNote).isEqualTo("Line one.\nLine two.\nLine three.")
+        assertThat(script.segments[0].narration).isEqualTo("Line one.\nLine two.\nLine three.")
     }
 
     @Test
@@ -105,7 +105,7 @@ class AsciidocSpeakerNoteParserTest {
         val script = AsciidocSpeakerNoteParser.parse(adoc, deckName = "deck")
 
         assertThat(script.segments).hasSize(1)
-        assertThat(script.segments[0].speakerNote).isEqualTo("Note text.")
+        assertThat(script.segments[0].narration).isEqualTo("Note text.")
     }
 
     @Test

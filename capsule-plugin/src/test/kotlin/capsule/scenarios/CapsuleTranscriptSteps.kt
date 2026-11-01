@@ -107,7 +107,7 @@ class CapsuleTranscriptSteps {
         val actual = generatedTranscript ?: throw IllegalStateException("Transcript not generated")
         val plan = transcriptPlan ?: throw IllegalStateException("Transcript plan not set")
         plan.segments.forEach { segment ->
-            assertThat(actual).contains(segment.speakerNote)
+            assertThat(actual).contains(segment.narration)
         }
         if (plan.language == "en") {
             assertThat(actual).isNotBlank()
@@ -119,7 +119,7 @@ class CapsuleTranscriptSteps {
         val actual = generatedTranscript ?: throw IllegalStateException("Transcript not generated")
         val plan = transcriptPlan ?: throw IllegalStateException("Transcript plan not set")
         plan.segments.forEach { segment ->
-            assertThat(actual).contains(segment.speakerNote)
+            assertThat(actual).contains(segment.narration)
         }
     }
 

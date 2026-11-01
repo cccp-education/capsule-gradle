@@ -3,7 +3,6 @@ package capsule.scenarios
 import capsule.feed.AsciidocSpeakerNoteParser
 import capsule.feed.CapsuleScript
 import capsule.feed.CapsuleScriptWriter
-import capsule.feed.deckName
 import io.cucumber.java.en.And
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
@@ -66,7 +65,7 @@ class CapsuleSpeakerNotesSteps {
 
     @Then("the script deck name should be {string}")
     fun theScriptDeckNameShouldBe(expected: String) {
-        Assertions.assertEquals(expected, script?.deckName)
+        Assertions.assertEquals(expected, script?.name)
     }
 
     @And("the script should contain {int} segment(s)")
@@ -87,7 +86,7 @@ class CapsuleSpeakerNotesSteps {
         idx: Int,
         note: String,
     ) {
-        Assertions.assertEquals(note, script?.segments?.get(idx - 1)?.speakerNote)
+        Assertions.assertEquals(note, script?.segments?.get(idx - 1)?.narration)
     }
 
     @And("the segment {int} should have index {int}")

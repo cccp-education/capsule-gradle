@@ -10,8 +10,8 @@ class SlideSegmentExtendedModelTest {
     fun `SlideSegment defaults type to HTML and manimScene to null`() {
         val segment = SlideSegment(index = 1, title = "Intro", narration = "Note.")
 
-        assertThat(segment.type).isEqualTo(SlideType.HTML)
-        assertThat(segment.manimScene).isNull()
+        assertThat(segment.kind.toSlideType()).isEqualTo(SlideType.HTML)
+        assertThat(segment.scene).isNull()
     }
 
     @Test
@@ -25,8 +25,8 @@ class SlideSegmentExtendedModelTest {
                 scene = "MoveSquare",
             )
 
-        assertThat(segment.type).isEqualTo(SlideType.MANIM)
-        assertThat(segment.manimScene).isEqualTo("MoveSquare")
+        assertThat(segment.kind.toSlideType()).isEqualTo(SlideType.MANIM)
+        assertThat(segment.scene).isEqualTo("MoveSquare")
     }
 
     @Test
@@ -39,7 +39,7 @@ class SlideSegmentExtendedModelTest {
                 kind = VideoKind.VISUAL,
             )
 
-        assertThat(segment.type).isEqualTo(SlideType.HTML)
+        assertThat(segment.kind.toSlideType()).isEqualTo(SlideType.HTML)
     }
 
     @Test
@@ -52,8 +52,8 @@ class SlideSegmentExtendedModelTest {
                 kind = VideoKind.ANIMATION,
             )
 
-        assertThat(segment.type).isEqualTo(SlideType.MANIM)
-        assertThat(segment.manimScene).isNull()
+        assertThat(segment.kind.toSlideType()).isEqualTo(SlideType.MANIM)
+        assertThat(segment.scene).isNull()
     }
 
     @Test
@@ -93,10 +93,10 @@ class SlideSegmentExtendedModelTest {
             )
 
         assertThat(script.segments).hasSize(3)
-        assertThat(script.segments[0].type).isEqualTo(SlideType.HTML)
-        assertThat(script.segments[1].type).isEqualTo(SlideType.MANIM)
-        assertThat(script.segments[1].manimScene).isEqualTo("Scene1")
-        assertThat(script.segments[2].type).isEqualTo(SlideType.HTML)
+        assertThat(script.segments[0].kind.toSlideType()).isEqualTo(SlideType.HTML)
+        assertThat(script.segments[1].kind.toSlideType()).isEqualTo(SlideType.MANIM)
+        assertThat(script.segments[1].scene).isEqualTo("Scene1")
+        assertThat(script.segments[2].kind.toSlideType()).isEqualTo(SlideType.HTML)
     }
 
     @Test

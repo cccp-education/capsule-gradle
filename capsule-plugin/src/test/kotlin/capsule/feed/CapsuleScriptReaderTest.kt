@@ -23,7 +23,7 @@ class CapsuleScriptReaderTest {
 
         val parsed = CapsuleScriptReader.read(scriptFile)
 
-        assertThat(parsed.deckName).isEqualTo("cours")
+        assertThat(parsed.name).isEqualTo("cours")
     }
 
     @Test
@@ -46,10 +46,10 @@ class CapsuleScriptReaderTest {
         assertThat(parsed.segments).hasSize(2)
         assertThat(parsed.segments[0].index).isEqualTo(1)
         assertThat(parsed.segments[0].title).isEqualTo("Intro")
-        assertThat(parsed.segments[0].speakerNote).isEqualTo("Welcome.")
+        assertThat(parsed.segments[0].narration).isEqualTo("Welcome.")
         assertThat(parsed.segments[1].index).isEqualTo(2)
         assertThat(parsed.segments[1].title).isEqualTo("Topic")
-        assertThat(parsed.segments[1].speakerNote).isEqualTo("Details here.")
+        assertThat(parsed.segments[1].narration).isEqualTo("Details here.")
     }
 
     @Test
@@ -66,8 +66,8 @@ class CapsuleScriptReaderTest {
 
         val parsed = CapsuleScriptReader.read(scriptFile)
 
-        assertThat(parsed.segments[0].type).isEqualTo(SlideType.HTML)
-        assertThat(parsed.segments[0].manimScene).isNull()
+        assertThat(parsed.segments[0].kind.toSlideType()).isEqualTo(SlideType.HTML)
+        assertThat(parsed.segments[0].scene).isNull()
     }
 
     @Test
@@ -91,12 +91,12 @@ class CapsuleScriptReaderTest {
         val parsed = CapsuleScriptReader.read(scriptFile)
 
         assertThat(parsed.segments).hasSize(3)
-        assertThat(parsed.segments[0].type).isEqualTo(SlideType.HTML)
-        assertThat(parsed.segments[0].manimScene).isNull()
-        assertThat(parsed.segments[1].type).isEqualTo(SlideType.MANIM)
-        assertThat(parsed.segments[1].manimScene).isEqualTo("MoveSquare")
+        assertThat(parsed.segments[0].kind.toSlideType()).isEqualTo(SlideType.HTML)
+        assertThat(parsed.segments[0].scene).isNull()
+        assertThat(parsed.segments[1].kind.toSlideType()).isEqualTo(SlideType.MANIM)
+        assertThat(parsed.segments[1].scene).isEqualTo("MoveSquare")
         assertThat(parsed.segments[1].title).isEqualTo("Anim")
-        assertThat(parsed.segments[2].type).isEqualTo(SlideType.HTML)
+        assertThat(parsed.segments[2].kind.toSlideType()).isEqualTo(SlideType.HTML)
         assertThat(parsed.segments[2].title).isEqualTo("Fin")
     }
 
@@ -115,7 +115,7 @@ class CapsuleScriptReaderTest {
 
         val parsed = CapsuleScriptReader.read(scriptFile)
 
-        assertThat(parsed.segments[0].speakerNote).isEqualTo("Line one.\nLine two.")
+        assertThat(parsed.segments[0].narration).isEqualTo("Line one.\nLine two.")
     }
 
     @Test
@@ -130,7 +130,7 @@ class CapsuleScriptReaderTest {
 
         val parsed = CapsuleScriptReader.read(scriptFile)
 
-        assertThat(parsed.deckName).isEqualTo("mydeck-script")
+        assertThat(parsed.name).isEqualTo("mydeck-script")
     }
 
     @Test
@@ -165,8 +165,8 @@ class CapsuleScriptReaderTest {
 
         val parsed = CapsuleScriptReader.read(scriptFile)
 
-        assertThat(parsed.segments[0].speakerNote).doesNotContain("\n\n")
-        assertThat(parsed.segments[1].speakerNote).isEqualTo("Details.")
+        assertThat(parsed.segments[0].narration).doesNotContain("\n\n")
+        assertThat(parsed.segments[1].narration).isEqualTo("Details.")
     }
 
     private fun writeScript(content: String): File {

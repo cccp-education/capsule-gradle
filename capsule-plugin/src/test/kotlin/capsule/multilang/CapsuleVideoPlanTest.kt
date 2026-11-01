@@ -141,7 +141,7 @@ class CapsuleVideoPlanTest {
         val outputVideo = tempDir.resolve("out/kotlin-basics_fr.webm").toFile()
         val language = supportedLanguage("fr")
         val entry = CapsuleVideoEntry(FileVisualSource(deckFile), scriptFile, language, outputVideo)
-        assertEquals(deckFile, entry.deckFile)
+        assertEquals(deckFile, entry.visual.file)
         assertEquals(scriptFile, entry.scriptFile)
         assertEquals(language, entry.language)
         assertEquals(outputVideo, entry.outputVideo)

@@ -2,9 +2,8 @@ package capsule.scenarios
 
 import capsule.feed.SlideSegment
 import capsule.feed.SlideType
+import capsule.feed.toSlideType
 import capsule.feed.toVideoKind
-import capsule.feed.type
-import capsule.multilang.deckFile
 import contracts.i18n.LanguageCatalog
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
@@ -100,7 +99,7 @@ class CapsuleKernelModelSteps {
     @Then("its legacy accessor type is {string}")
     fun itsLegacyAccessorTypeIs(expected: String) {
         @Suppress("DEPRECATION")
-        assertEquals(expected, segment?.type?.name)
+        assertEquals(expected, segment?.kind?.toSlideType()?.name)
     }
 
     @Given("a kernel production entry backed by the visual file {string}")
@@ -124,6 +123,6 @@ class CapsuleKernelModelSteps {
     @Then("its legacy deck file name is {string}")
     fun itsLegacyDeckFileNameIs(expected: String) {
         @Suppress("DEPRECATION")
-        assertEquals(expected, entry?.deckFile?.name)
+        assertEquals(expected, entry?.visual?.file?.name)
     }
 }

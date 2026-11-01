@@ -110,8 +110,8 @@ class ViralStoryboardTest {
         val rNoCta = ViralStoryboardValidator.validate(noCta)
         assertTrue(rNoHook is StoryboardValidationResult.Invalid)
         assertTrue(rNoCta is StoryboardValidationResult.Invalid)
-        assertTrue((rNoHook as StoryboardValidationResult.Invalid).reasons.any { it.contains("hook") })
-        assertTrue((rNoCta as StoryboardValidationResult.Invalid).reasons.any { it.contains("cta") })
+        assertTrue(rNoHook.reasons.any { it.contains("hook") })
+        assertTrue(rNoCta.reasons.any { it.contains("cta") })
     }
 
     @Test
@@ -123,7 +123,7 @@ class ViralStoryboardTest {
             )
         val r = ViralStoryboardValidator.validate(tooShort)
         assertTrue(r is StoryboardValidationResult.Invalid)
-        assertTrue((r as StoryboardValidationResult.Invalid).reasons.any { it.contains("deviates") })
+        assertTrue(r.reasons.any { it.contains("deviates") })
     }
 
     @Test
@@ -134,6 +134,6 @@ class ViralStoryboardTest {
             )
         val r = ViralStoryboardValidator.validate(sb)
         assertTrue(r is StoryboardValidationResult.Invalid)
-        assertTrue((r as StoryboardValidationResult.Invalid).reasons.any { it.contains("(> 10.0s)") })
+        assertTrue(r.reasons.any { it.contains("(> 10.0s)") })
     }
 }
