@@ -53,21 +53,55 @@ class CucumberRunnerEngineTest {
         text.contains("""@IncludeEngines("cucumber")""") ||
             text.contains("io.cucumber.junit.platform.engine.Cucumber")
 
+    private fun runners(): List<File> =
+        repoRoot
+            .resolve("capsule-plugin/src/test/kotlin/capsule/scenarios")
+            .walkTopDown()
+            .filter { it.isFile && it.name.endsWith("CucumberRunner.kt") }
+            .toList()
+
     @Test
     fun `every cucumber runner declares the junit platform engine`() {
-        val runners =
-            repoRoot
-                .resolve("capsule-plugin/src/test/kotlin/capsule/scenarios")
-                .walkTopDown()
-                .filter { it.isFile && it.name.endsWith("CucumberRunner.kt") }
-                .toList()
+        val all = runners()
 
-        assertThat(runners).isNotEmpty()
-        val offenders =
-            runners
-                .filterNot { usesPlatformEngine(it.readText()) }
-                .map { it.name }
-                .sorted()
+        assertThat(all).isNotEmpty()
+        val offenders = all.filterNot { usesPlatformEngine(it.readText()) }.map { it.name }.sorted()
+        assertThat(offenders).isEmpty()
+    }
+
+    @Test
+    fun `every cucumber runner selects feature files that exist`() {
+        val featuresDir = repoRoot.resolve("capsule-plugin/src/test/features")
+        val classpathFeature = Regex("""@SelectClasspathResource\("features/([^"]+\.feature)"\)""")
+        val featuresProperty = Regex("""FEATURES_PROPERTY_NAME,\s*value\s*=\s*"([^"]*)"""")
+        val offenders = mutableListOf<String>()
+
+        runners().forEach { runner ->
+            val text = runner.readText()
+            // A runner may select the whole `features` directory (aggregate / tag partition).
+            if (text.contains("""@SelectClasspathResource("features")""")) return@forEach
+
+            val selected =
+                classpathFeature
+                    .findAll(text)
+                    .map { it.groupValues[1] }
+                    .toSet()
+            // `FEATURES_PROPERTY_NAME` is optional (most runners only use the classpath
+            // resource); when present it must point at an existing feature too.
+            val declared =
+                featuresProperty
+                    .findAll(text)
+                    .flatMap { it.groupValues[1].split(",") }
+                    .map { it.trim().removePrefix("src/test/features/") }
+                    .filter { it.isNotEmpty() }
+                    .toSet()
+
+            if (selected.isEmpty()) offenders += "${runner.name}: no feature selected"
+            (selected + declared)
+                .filterNot { featuresDir.resolve(it).isFile }
+                .forEach { offenders += "${runner.name}: missing feature file $it" }
+        }
+
         assertThat(offenders).isEmpty()
     }
 }
