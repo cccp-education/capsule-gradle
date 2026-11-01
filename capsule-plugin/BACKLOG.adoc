@@ -1028,3 +1028,58 @@ _Total_ : 30 EPICs terminés (0 TODO). _Baseline courante_ (S-136, exacte) :
 * Catalogue : `slider-plugin`, slider 0.0.18, codebase 0.0.14 (lib + plugin Gradle alignés, dépin S-136), BOM 0.0.27
 * CAP-PREVIEW = mode dry-run (previewOnly → PNG only, skip mux WebM)
 * FFmpeg = local ProcessBuilder (pas Docker). Docker FFmpeg reporté MVP1.
+== Observations — audit accessibilité (2026-11-01)
+
+_Constat mesuré sur disque (grep sur `src/main`)._
+
+[cols="1,4,2", options="header"]
+|===
+| # | Constat | Recommandation
+
+| O-1
+| Sous-titres VTT/SRT, burn-in et style configurable existent (`CAP-27`, `SubtitleCartons`, `SubtitleBurnInCommand`) : le livrable est **accessible aux personnes sourdes**.
+| Conserver ; ajouter la transcription écrite comme livrable explicite (déjà couverte par `CAP-TRANSCRIPT`).
+
+| O-2
+| **Aucune audiodescription** dans le code (grep `audio.description`/`descrit` = 0). Une vidéo pédagogique reste inaccessible aux personnes aveugles.
+| Créer une piste d'audiodescription à partir du script/notes présentateur, avec mixage sous la narration et export en piste audio séparée.
+
+| O-3
+| Aucune porte d'acceptation d'accessibilité sur le rendu vidéo.
+| Ajouter une vérification : sous-titres présents, transcription présente, audiodescription présente si activée ; sinon `Degraded` explicite.
+|===
+
+== EPIC CAP-AUDIODESC — Audiodescription vidéo (~8 pts)
+
+*Statut* : 🔴 À FAIRE. *Dépend de* : `GBL-011` (EPIC transverse), `CAP-TRANSCRIPT` ✅.
+*Principe* : décrire ce qui est **vu** (visuels, gestes, changements d'écran) dans les
+silences de la narration. Si les silences sont insuffisants, la limite est déclarée
+(pas d'audiodescription étendue dans cette version).
+
+|===
+| US | Contenu | Pts | Statut
+
+| CAP-AUDIODESC-1
+| Domaine pur `capsule.a11y` : `AudioDescriptionSegment` (texte + fenêtre temporelle), `AudioDescriptionScript`, `AudioDescriptionPlanner` (place les segments dans les silences disponibles, ordre déterministe, jamais de chevauchement avec la narration)
+| 3
+| 🔴 À FAIRE
+
+| CAP-AUDIODESC-2
+| Source du texte : script dérivé du SPD/notes présentateur (champ d'accessibilité authoré par `training`) ou fichier explicite ; dégradation silencieuse si absent
+| 1
+| 🔴 À FAIRE
+
+| CAP-AUDIODESC-3
+| Synthèse TTS de la description + mixage (ducking sous la narration) + piste audio séparée, exportée dans MP4/WebM
+| 3
+| 🔴 À FAIRE
+
+| CAP-AUDIODESC-4
+| Configuration 4 sources (`a11y.audioDescriptionEnabled`), BDD `@audiodesc`, porte d'acceptation (sous-titres + transcription + audiodescription), déclaration des limites
+| 1
+| 🔴 À FAIRE
+|===
+
+*Critère de sortie* : une capsule de référence produit sous-titres + transcription +
+audiodescription, le mixage ne masque pas la narration, et le rapport d'acceptation
+atteste les trois.
