@@ -53,7 +53,7 @@ object BeatsBoardPlanner {
                     QcCell(
                         label = "${slide.index}. ${slide.title}",
                         image = imagesByIndex[slide.index],
-                        caption = slide.speakerNote.replace(Regex("\\s+"), " ").trim(),
+                        caption = slide.narration.replace(Regex("\\s+"), " ").trim(),
                     )
                 },
         )

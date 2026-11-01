@@ -3,7 +3,6 @@ package capsule.qc
 import capsule.CapsuleExtension
 import capsule.CapsuleFactory
 import capsule.feed.CapsuleScriptReader
-import capsule.feed.deckName
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
@@ -78,22 +77,22 @@ abstract class RenderQcBoardsTask : DefaultTask() {
         for (script in scripts) {
             val parsed = CapsuleScriptReader.read(script)
             if (parsed.segments.isEmpty()) continue
-            val deckDir = File(outputRoot, parsed.deckName)
+            val deckDir = File(outputRoot, parsed.name)
             val images =
                 parsed.segments.associate { segment ->
                     segment.index to File(deckDir, "slide-%02d.png".format(segment.index)).takeIf { it.isFile }
                 }
 
             QcBoardRenderer.render(
-                BeatsBoardPlanner.plan(parsed.deckName, parsed.segments, images.filterValues { it != null }.mapValues { it.value!! }),
-                File(qcDir, "${parsed.deckName}-beats.png"),
+                BeatsBoardPlanner.plan(parsed.name, parsed.segments, images.filterValues { it != null }.mapValues { it.value!! }),
+                File(qcDir, "${parsed.name}-beats.png"),
             )
             QcBoardRenderer.render(
                 DitMontreBoardPlanner.plan(
-                    parsed.deckName,
-                    parsed.segments.map { DitMontre(it.index, it.title, images[it.index], it.speakerNote) },
+                    parsed.name,
+                    parsed.segments.map { DitMontre(it.index, it.title, images[it.index], it.narration) },
                 ),
-                File(qcDir, "${parsed.deckName}-dit-montre.png"),
+                File(qcDir, "${parsed.name}-dit-montre.png"),
             )
             boards += 2
         }

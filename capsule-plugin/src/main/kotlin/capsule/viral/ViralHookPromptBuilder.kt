@@ -40,7 +40,7 @@ object ViralHookPromptBuilder {
             appendLine()
             appendLine("Deck slide segments:")
             plan.segments.forEach { segment ->
-                appendLine("- ${segment.title}: ${segment.speakerNote.trim()}")
+                appendLine("- ${segment.title}: ${segment.narration.trim()}")
             }
             appendLine()
             appendLine("Produce a single strict JSON object with fields:")

@@ -4,7 +4,6 @@ import capsule.CapsuleFactory
 import capsule.CapsuleVideoTask
 import capsule.MediaProbeUtil
 import capsule.feed.CapsuleScriptReader
-import capsule.feed.deckName
 import contracts.i18n.LanguageCatalog
 import contracts.i18n.SupportedLanguage
 import org.gradle.api.tasks.TaskAction
@@ -89,13 +88,13 @@ open class GenerateCapsuleVideoAllLanguagesTask : CapsuleVideoTask() {
         }
 
         val outDir = entry.outputVideo.parentFile
-        val audioDir = outDir.resolve(parsed.deckName)
+        val audioDir = outDir.resolve(parsed.name)
         audioDir.mkdirs()
 
         val engine = resolveTtsEngine()
         synthesizeTtsForScript(parsed, audioDir, engine)
 
-        val modifiedDeck = injectAudio(entry.deckFile, parsed, audioDir)
+        val modifiedDeck = injectAudio(entry.visual.file, parsed, audioDir)
         val videoOutputDir = audioDir.resolve("video")
         videoOutputDir.mkdirs()
 
@@ -114,7 +113,7 @@ open class GenerateCapsuleVideoAllLanguagesTask : CapsuleVideoTask() {
             captureDeckSequential(parsed, modifiedDeck, videoOutputDir, audioDir, outDir, slideDurations, subtitleFile)
         }
 
-        val renderedVideo = outDir.resolve("${parsed.deckName}.webm")
+        val renderedVideo = outDir.resolve("${parsed.name}.webm")
         if (renderedVideo.exists() && renderedVideo.absolutePath != entry.outputVideo.absolutePath) {
             logger.lifecycle("  Aligning output name '{}' → '{}' (plan contract)", renderedVideo.name, entry.outputVideo.name)
         }

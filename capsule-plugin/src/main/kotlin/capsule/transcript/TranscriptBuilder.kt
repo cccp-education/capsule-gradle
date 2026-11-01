@@ -1,7 +1,6 @@
 package capsule.transcript
 
-import capsule.feed.SlideType
-import capsule.feed.type
+import video.kernel.segment.VideoKind
 
 /**
  * Pure, deterministic builder of a transcript AsciiDoc article from a
@@ -40,11 +39,11 @@ object TranscriptBuilder {
             appendLine(INTRO)
             appendLine()
             for (segment in plan.segments) {
-                if (segment.type == SlideType.MANIM) continue
+                if (segment.kind == VideoKind.ANIMATION) continue
                 append("== ")
                 appendLine(segment.title)
                 appendLine()
-                appendLine(segment.speakerNote.trim())
+                appendLine(segment.narration.trim())
                 appendLine()
             }
             appendLine(OUTRO)

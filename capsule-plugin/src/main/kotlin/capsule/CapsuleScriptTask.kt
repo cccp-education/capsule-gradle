@@ -1,7 +1,6 @@
 package capsule
 
 import capsule.feed.CapsuleScriptReader
-import capsule.feed.deckName
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.Internal
@@ -42,7 +41,7 @@ open class CapsuleScriptTask : DefaultTask() {
             val parsed = CapsuleScriptReader.read(script)
             logger.lifecycle(
                 "Capsule script '{}' → {} slides",
-                parsed.deckName,
+                parsed.name,
                 parsed.segments.size,
             )
             for (seg in parsed.segments) {
@@ -50,7 +49,7 @@ open class CapsuleScriptTask : DefaultTask() {
                     "  [{}] {} ({} chars)",
                     seg.index,
                     seg.title,
-                    seg.speakerNote.length,
+                    seg.narration.length,
                 )
             }
         }

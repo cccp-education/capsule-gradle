@@ -22,7 +22,7 @@ object SubtitleTimingCalculator {
                     index = slide.index,
                     startTime = currentTime,
                     endTime = endTime,
-                    text = slide.speakerNote,
+                    text = slide.narration,
                 ),
             )
 
@@ -60,7 +60,7 @@ object SubtitleTimingCalculator {
         for (i in slides.indices) {
             val slide = slides[i]
             val duration = durations.getOrElse(i) { 0.0 }
-            val display = SubtitleTextNormalizer.spokenToDisplay(slide.speakerNote, reversals)
+            val display = SubtitleTextNormalizer.spokenToDisplay(slide.narration, reversals)
             val cartons = SubtitleCartoner.split(display, maxChars)
 
             if (cartons.isNotEmpty()) {

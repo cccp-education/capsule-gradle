@@ -78,7 +78,7 @@ object ContentPreflight {
         val firstSeen = LinkedHashMap<String, Int>()
 
         for (slide in slides) {
-            val note = slide.speakerNote
+            val note = slide.narration
 
             if (note.length > rules.maxNoteChars) {
                 findings.add(

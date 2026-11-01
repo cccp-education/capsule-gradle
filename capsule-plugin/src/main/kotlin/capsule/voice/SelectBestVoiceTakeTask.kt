@@ -3,7 +3,6 @@ package capsule.voice
 import capsule.CapsuleExtension
 import capsule.CapsuleFactory
 import capsule.feed.CapsuleScriptReader
-import capsule.feed.deckName
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.ConfigurableFileCollection
@@ -153,7 +152,7 @@ abstract class SelectBestVoiceTakeTask : DefaultTask() {
         val takes = mutableListOf<VoiceTake>()
         for (script in scripts) {
             val parsed = CapsuleScriptReader.read(script)
-            val deckDir = File(outputRoot, parsed.deckName)
+            val deckDir = File(outputRoot, parsed.name)
             for (segment in parsed.segments) {
                 val prefix = "slide-%02d".format(segment.index)
                 deckDir
@@ -161,7 +160,7 @@ abstract class SelectBestVoiceTakeTask : DefaultTask() {
                     ?.sortedBy { it.name }
                     ?.forEach { candidate ->
                         if (candidate.length() > 0) {
-                            takes += VoiceTake(parsed.deckName, segment.index, segment.speakerNote, candidate)
+                            takes += VoiceTake(parsed.name, segment.index, segment.narration, candidate)
                         }
                     }
             }

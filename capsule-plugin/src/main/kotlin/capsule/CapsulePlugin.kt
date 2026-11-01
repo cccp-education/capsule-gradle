@@ -96,17 +96,18 @@ class CapsulePlugin : Plugin<Project> {
     /**
      * Collects CLI -P params that start with "capsule." and converts them
      * to the flat key format used by ConfigMerger (e.g. "capsule.tts.engine" → "tts.engine").
+     *
+     * Reads the Gradle properties (command line `-P`, `gradle.properties`,
+     * `ORG_GRADLE_PROJECT_*`) through the provider API instead of the deprecated
+     * `Project.getProperties()`. The prefix stripping is idempotent, so keys are
+     * normalised whichever way the provider reports them.
      */
     internal fun collectCliParams(project: Project): Map<String, Any?> {
-        val cliParams = mutableMapOf<String, Any?>()
         val prefix = "capsule."
-        project.properties.forEach { (key, value) ->
-            if (key.startsWith(prefix)) {
-                val flatKey = key.removePrefix(prefix)
-                cliParams[flatKey] = value
-            }
-        }
-        return cliParams
+        return project.providers
+            .gradlePropertiesPrefixedBy(prefix)
+            .get()
+            .mapKeys { (key, _) -> key.removePrefix(prefix) }
     }
 
     /**

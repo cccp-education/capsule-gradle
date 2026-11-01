@@ -1,7 +1,6 @@
 package capsule
 
 import capsule.feed.CapsuleScriptReader
-import capsule.feed.deckName
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
@@ -56,7 +55,7 @@ open class CapsuleCompositeContextTask : DefaultTask() {
 
         for (script in scripts) {
             val parsed = CapsuleScriptReader.read(script)
-            val deckName = parsed.deckName
+            val deckName = parsed.name
 
             val originalVideo = capDir.resolve("$deckName.webm")
             val distribVideo = distDir.resolve("$deckName.webm")
@@ -66,7 +65,7 @@ open class CapsuleCompositeContextTask : DefaultTask() {
                     mapOf(
                         "index" to seg.index,
                         "title" to seg.title,
-                        "speakerNoteLength" to seg.speakerNote.length,
+                        "speakerNoteLength" to seg.narration.length,
                     )
                 }
 

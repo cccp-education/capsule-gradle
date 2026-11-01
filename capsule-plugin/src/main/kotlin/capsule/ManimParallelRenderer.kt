@@ -64,7 +64,7 @@ class NoOpManimParallelRenderer : ManimParallelRenderer {
     ): Map<Int, File> {
         val results = mutableMapOf<Int, File>()
         for (seg in slides) {
-            val sceneName = seg.manimScene ?: continue
+            val sceneName = seg.scene ?: continue
             val scriptPath = scriptsDir.resolve("$sceneName.py")
             if (!scriptPath.exists()) {
                 // A missing script is an authoring error (scene name must match the
@@ -124,7 +124,7 @@ class ManimParallelRendererImpl(
                 slides.map { seg ->
                     executor.submit(
                         Callable {
-                            val sceneName = seg.manimScene ?: return@Callable null
+                            val sceneName = seg.scene ?: return@Callable null
                             val scriptPath = scriptsDir.resolve("$sceneName.py")
                             if (!scriptPath.exists()) {
                                 logger.warn("    Manim render skipped: no script '{}.py' under {} (scene: {})", sceneName, scriptsDir, sceneName)

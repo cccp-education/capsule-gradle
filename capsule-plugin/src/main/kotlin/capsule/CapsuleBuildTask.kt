@@ -1,7 +1,6 @@
 package capsule
 
 import capsule.feed.CapsuleScriptReader
-import capsule.feed.deckName
 import capsule.multilang.MultiLanguageResolver
 import capsule.voice.PronunciationLexicon
 import org.gradle.api.DefaultTask
@@ -169,13 +168,13 @@ open class CapsuleBuildTask : DefaultTask() {
 
         for (script in scripts) {
             val parsed = CapsuleScriptReader.read(script)
-            val deckOutputDir = outDir.resolve(parsed.deckName)
+            val deckOutputDir = outDir.resolve(parsed.name)
             deckOutputDir.mkdirs()
 
             for (seg in parsed.segments) {
                 val idx = String.format("%02d", seg.index)
                 val ttsFile = deckOutputDir.resolve("slide-$idx.mp3")
-                val spoken = if (pronunciation) PronunciationLexicon.spoken(seg.speakerNote) else seg.speakerNote
+                val spoken = if (pronunciation) PronunciationLexicon.spoken(seg.narration) else seg.narration
                 val cacheKey = if (pronunciation) PronunciationLexicon.cacheKey(spoken) else null
 
                 futures.add(
