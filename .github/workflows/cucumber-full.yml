@@ -32,6 +32,8 @@ jobs:
 
       - name: Install ffmpeg + espeak
         run: |
+          # MEM-CI-GATE-2.4 (S-340) — errexit on the install pair.
+          set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y ffmpeg espeak espeak-data
 
