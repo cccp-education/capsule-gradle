@@ -12,11 +12,11 @@ buildscript {
 }
 
 plugins {
-    id("education.cccp.build.gradle-plugin") version "0.0.9"
-    id("education.cccp.build.publishing") version "0.0.9"
-    id("education.cccp.build.functional-test") version "0.0.9"
-    id("education.cccp.build.cucumber") version "0.0.9"
-    id("education.cccp.build.lint") version "0.0.9"
+    id("education.cccp.build.gradle-plugin") version "0.0.10"
+    id("education.cccp.build.publishing") version "0.0.10"
+    id("education.cccp.build.functional-test") version "0.0.10"
+    id("education.cccp.build.cucumber") version "0.0.10"
+    id("education.cccp.build.lint") version "0.0.10"
     alias(libs.plugins.kover)
     alias(libs.plugins.codebase)
     alias(libs.plugins.youtube.auth)
