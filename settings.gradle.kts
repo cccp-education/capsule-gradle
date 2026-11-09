@@ -15,5 +15,4 @@ pluginManagement.resolutionStrategy.eachPlugin {
     }
 }
 
-
 rootProject.name = "capsule-gradle"
