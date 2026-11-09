@@ -240,3 +240,9 @@ vide = silence) ; `VoiceQualityGate.REASON_SILENT_AUDIO` ; `VoiceVerifier`
 (inchangés). **CI verte** : `Test` `41205458553` + `Full Tests` `41205459199`
 **25/25 jobs**. Zéro bump, zéro publication, zéro secret. Rapport
 `.agents/sessions/209-cap-audio-silence.adoc`.
+
+== Session 213 — JitPack mirror (CNV-16) — 2026-11-09
+
+Publication JitPack de capsule-plugin 0.0.15. JitPack : 0.0.15 — POM HTTP 200. Shim `useModule` pour
+`education.cccp.build.*` (tag JitPack `0.0.15`). Rapport
+`capsule-plugin/.agents/sessions/213-jitpack-mirror.adoc`.

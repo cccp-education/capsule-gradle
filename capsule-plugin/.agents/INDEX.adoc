@@ -265,3 +265,7 @@ _Décision architecture_ : Docker FFmpeg reporté MVP1 (fausse bonne idée
 pour MVP0 — gain fonctionnel nul, complexité ajoutée). FFmpeg reste local
 via `ProcessRunner` (wrapper `ProcessBuilder`). KINSHASA (`container-provision-gradle`) disponible
 pour MVP1 si besoin.
+
+== Session 213 — JitPack mirror (CNV-16)
+
+Publication JitPack de capsule-plugin 0.0.15. JitPack : 0.0.15 — POM HTTP 200.
