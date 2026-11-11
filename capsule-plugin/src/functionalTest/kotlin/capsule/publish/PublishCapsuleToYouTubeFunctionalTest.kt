@@ -79,6 +79,57 @@ class PublishCapsuleToYouTubeFunctionalTest {
         val SKIPPED_TRUE = Regex(""""skipped"\s*:\s*true""")
     }
 
+    @Test
+    fun `the publish task depends on the chapter generation`() {
+        val result = runner("publishCapsuleToYouTube", "--dry-run")
+
+        assertContains(result.output, ":generateCapsuleChapters")
+    }
+
+    @Test
+    fun `a generated chapters file feeds the publication description`() {
+        // A chapter timeline that starts after 0 is invalid: reading it proves the
+        // publication consumes the `generateCapsuleChapters` output.
+        renderedVideo().writeText("MOCK-MP4")
+        projectDir
+            .resolve("build/capsule/chapters/chapters.txt")
+            .apply { parentFile.mkdirs() }
+            .writeText("0:30 Late\n1:30 End\n")
+        propertiesFile.writeText(
+            """
+            capsule.publish.enabled=true
+            capsule.publish.title=A title
+            capsule.publish.categoryId=27
+            """.trimIndent(),
+        )
+
+        val result = runner("publishCapsuleToYouTube")
+
+        assertContains(result.output, "publication invalid")
+        assertContains(report().readText(), "publication invalid")
+    }
+
+    @Test
+    fun `a valid generated chapter timeline keeps the publication valid`() {
+        renderedVideo().writeText("MOCK-MP4")
+        projectDir
+            .resolve("build/capsule/chapters/chapters.txt")
+            .apply { parentFile.mkdirs() }
+            .writeText("0:00 Intro\n1:00 Part\n2:00 End\n")
+        propertiesFile.writeText(
+            """
+            capsule.publish.enabled=true
+            capsule.publish.title=A title
+            capsule.publish.categoryId=27
+            """.trimIndent(),
+        )
+
+        val result = runner("publishCapsuleToYouTube")
+
+        assertContains(result.output, "degraded")
+        assertContains(report().readText(), "credentials")
+    }
+
     private fun renderedVideo(): File = projectDir.resolve("build/capsule/test-video.mp4").apply { parentFile.mkdirs() }
 
     private fun report(): File = projectDir.resolve("build/capsule/publish/publication.json")

@@ -1,44 +1,38 @@
-= PROMPT_REPRISE — Capsule Gradle (Détroit)
-:session: 213
+= PROMPT_REPRISE — Capsule Gradle (Détroit) (Session 214 TERMINÉE → 215)
+:session: 215
 :borough: Détroit
-:session_precedente: 212 — Adoption `video-kernel 0.7.0` + youtube-auth + release `0.0.15` ✅
+:session_precedente: 214 — Chapitres YouTube + sélection vidéo déterministe ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
-== Session 212 (TERMINÉE)
+== Session 214 (TERMINÉE)
 
-* **PUBLISH-ADAPTER-N1 adopté** : `ChapterLineParser`, `YouTubeCredentials`
-  (+ loader), `YouTubePublishCommand` (sans Jackson), `DisabledVideoPublisher`,
-  seam HTTP déplacés au noyau `video-kernel 0.7.0` ; copies N2 supprimées.
-* **`youtube-auth-plugin 0.0.2` adopté** (`alias(libs.plugins.youtube.auth)`) —
-  upload YouTube toujours **gelé**.
-* **Release `capsule-plugin 0.0.15`** : `workspace-bom 0.0.115`,
-  `video-kernel 0.7.0` ; Central bundle `309d98c6`, propagation 200.
-
-Rapport `.agents/sessions/212-adoption-n1-youtube-auth-release-0.0.15.adoc`.
+* **Chapitres YouTube câblés** : `publishCapsuleToYouTube` lit
+  `build/capsule/chapters/chapters.txt` (`@InputFiles @Optional`) et dépend de
+  `generateCapsuleChapters` — fin du `chapters = []` forcé.
+* **Sélection vidéo déterministe** : `PublicationInputSelection.selectVideo`
+  (MP4 unique, sinon suffixe `_<lang>` via `publish.languageCode`, sinon premier
+  + avertissement) — fin du `firstOrNull` arbitraire en multi-langue.
+* `PublicationInputSelection.chapterLines` (fichier prioritaire, repli config).
+* Tests : 8 unit `PublicationInputSelectionTest` + 3 fonctionnels TestKit
+  (dépendance, chapitres invalides, timeline valide).
+* Local = Build : compiles ×3 + `ktlintCheck` VERTS. Version `0.0.15 → 0.0.16`.
 
 == État
 
-* `capsule-plugin 0.0.15` Central ; `video-kernel 0.7.0` ; BOM/catalog `0.0.115`.
-* **YouTube reste gelé** (décision pilote S-037).
+* YouTube (upload réel) **bloqué** côté Google (~48 h) ; preflight disponible
+  dans `youtube-auth-plugin 0.0.5` (source, non publiée).
 * Aucun EPIC métier ouvert.
 
-== Mission Session 213 — au choix pilote
+== Mission Session 215 — au choix pilote
 
-. CI `Test` + `Full Tests` du commit de release.
-. Dogfooding local (sans upload) : fond média / parallaxe hyperframes, audio.
-. Maintenance / repin éventuel.
-. YouTube : ne pas rouvrir.
-
-== Prochaine session transverse
-
-Le backlog restant est côté **MEMPHIS** : publication `plantuml-contracts:0.0.1`,
-gardes `MEM-CI-CONSISTENCY` US-3/4/5, `CI-1.4` (Ollama qwen3), `MEM-3.5` (BDD
-i18n). Voir `workspace-bom/PROMPT_REPRISE.adoc`. YouTube (upload) reste gelé.
+. Publication `capsule-plugin 0.0.16` (après CI verte) + adoption
+  `youtube-auth 0.0.5`.
+. Reprise du déploiement YouTube (voir `hyperframes` S-048 + cadrage §10).
+. Maintenance / repin.
 
 == Points d'attention
 
-* **Local = Build, Tests = CI** : jamais `test`/`check` local.
-* **Règle 2 — PUBLISH** : accord pilote permanent (toujours granted, décision 2026-10-31).
+* **Local = Build, Tests = CI** ; **Règle 2** accord permanent.
 * **Règle 7** : capsule ne modifie jamais le deck source.
 * Zéro secret ; zéro Python ; English only code/tests/features.
 * Runner dédié par feature (S-082), steps préfixés (S-088), shards CI à jour.

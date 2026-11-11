@@ -47,6 +47,18 @@ abstract class PublishCapsuleToYouTubeTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val videoFiles: ConfigurableFileCollection
 
+    /**
+     * Chapter lines (`M:SS Title`) produced by `generateCapsuleChapters`.
+     *
+     * Tolerant on purpose (`@InputFiles` + an absent/blank file falls back to the
+     * `chapters` list): chapters are opt-in, and a disabled chapter task must not
+     * fail the publication validation.
+     */
+    @get:InputFiles
+    @get:Optional
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val chaptersFile: ConfigurableFileCollection
+
     /** Report directory (receives `publication.json`). */
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
@@ -124,9 +136,7 @@ abstract class PublishCapsuleToYouTubeTask : DefaultTask() {
             return
         }
 
-        val video =
-            videoFiles.files.firstOrNull { it.extension.equals("mp4", ignoreCase = true) }
-                ?: videoFiles.files.firstOrNull()
+        val video = resolveVideo()
         val base = buildPublication(video)
         val publication = base.copy(description = VideoDescriptionComposer.compose(base))
 
@@ -164,6 +174,35 @@ abstract class PublishCapsuleToYouTubeTask : DefaultTask() {
         }
     }
 
+    /**
+     * Deterministic video selection (see [PublicationInputSelection.selectVideo]).
+     *
+     * A capsule build can hold several MP4s (multi-language render). Picking
+     * `files.first()` silently uploaded an arbitrary one; the ambiguity is now an
+     * explicit warning, never a silent choice.
+     */
+    private fun resolveVideo(): File? {
+        val selection = PublicationInputSelection.selectVideo(videoFiles.files, languageCode.orNull.orEmpty())
+        if (selection.ambiguous) {
+            logger.warn(
+                "publishCapsuleToYouTube: ${selection.candidates} candidate videos, selecting " +
+                    "'${selection.file?.name}' (set publish.languageCode to disambiguate)",
+            )
+        }
+        return selection.file
+    }
+
+    /**
+     * Chapter lines from `generateCapsuleChapters` (`chapters.txt`) when present,
+     * else the configured `chapters` list (see [PublicationInputSelection.chapterLines]).
+     * An empty chapter list means "no YouTube timeline" — never an invalid one.
+     */
+    private fun resolveChapterLines(): List<String> =
+        PublicationInputSelection.chapterLines(
+            chaptersFile.files.firstOrNull { it.exists() && it.isFile },
+            chapters.getOrElse(emptyList()),
+        )
+
     private fun buildPublication(video: File?): VideoPublication {
         val thumbnail =
             thumbnailFile.orNull
@@ -176,7 +215,7 @@ abstract class PublishCapsuleToYouTubeTask : DefaultTask() {
             description = publishDescription.orNull.orEmpty(),
             tags = tags.getOrElse(emptyList()),
             hashtags = hashtags.getOrElse(emptyList()),
-            chapters = ChapterLineParser.parse(chapters.getOrElse(emptyList())),
+            chapters = ChapterLineParser.parse(resolveChapterLines()),
             links =
                 VideoLinks(
                     entries = links.getOrElse(emptyList()).mapNotNull(::parseLink),

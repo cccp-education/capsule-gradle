@@ -1,0 +1,52 @@
+= Rapport de session 214 — Chapitres YouTube + sélection vidéo déterministe
+:session: 214
+:borough: Détroit (capsule)
+:date: 2026-11-11
+:statut: ✅ TERMINÉ (code compilé ; tests délégués CI)
+
+== Mission
+
+Débloquer le déploiement YouTube réel (transverse video-kernel / hyperframes /
+capsule) : corriger deux défauts qui rendraient une publication incorrecte.
+
+== Constats
+
+* [C1] `CapsuleCoreRegistrar.registerPublishCapsuleToYouTubeTask` forçait
+  `task.chapters.set(emptyList())` : les chapitres YouTube n'étaient **jamais**
+  envoyés, alors que `generateCapsuleChapters` produit `chapters.txt`
+  (`YouTubeChaptersFormatter`) et `description.txt`.
+* [C2] La tâche choisissait `videoFiles.files.firstOrNull { mp4 }` : en rendu
+  multi-langue (`<deck>_<lang>.mp4`), la vidéo publiée était **arbitraire**.
+
+== Livré
+
+* `PublicationInputSelection` (domaine pur, `capsule.publish`) :
+  * `selectVideo(videos, languageCode)` — un seul MP4 ; sinon le MP4 suffixé
+    `_<lang>` quand `publish.languageCode` est renseigné ; sinon le premier
+    (ordre lexicographique) **et** `ambiguous = true` (l'appelant avertit,
+    jamais silencieux) ;
+  * `chapterLines(chaptersFile, configured)` — `chapters.txt` s'il a du contenu,
+    sinon la liste configurée.
+* `PublishCapsuleToYouTubeTask` : input tolérant `chaptersFile`
+  (`@InputFiles @Optional`), sélection vidéo déléguée, avertissement sur
+  ambiguïté.
+* `CapsuleCoreRegistrar` : `chaptersFile` câblé sur
+  `build/capsule/chapters/chapters.txt` + `dependsOn("generateCapsuleChapters")`.
+
+== Tests (délégués CI)
+
+* `PublicationInputSelectionTest` (8) : sélection (unique, langue, ambiguïté,
+  fichiers absents) + chapitres (fichier prioritaire, repli).
+* Fonctionnel TestKit : dépendance `generateCapsuleChapters` (`--dry-run`),
+  chapitres générés invalides → `publication invalid`, timeline valide →
+  publication valide (dégradation credentials), zéro réseau.
+
+== Gates locaux
+
+`compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` +
+`ktlintCheck` **VERTS**. Version locale `0.0.15 → 0.0.16`.
+
+== Note
+
+`hyperframes` n'a pas le défaut C2 : son input publication est un fichier
+unique (`<outputName>.mp4`). Aucun changement nécessaire.

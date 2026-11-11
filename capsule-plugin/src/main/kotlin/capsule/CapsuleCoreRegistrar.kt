@@ -43,6 +43,10 @@ internal object CapsuleCoreRegistrar {
                     dir.asFileTree.matching { it.include("**/*.mp4") }
                 },
             )
+            // CAP-CHAPITRE → YouTube timeline: the chapters produced by
+            // `generateCapsuleChapters` feed the description and the validation.
+            task.chaptersFile.from(layout.buildDirectory.file("capsule/chapters/chapters.txt"))
+            task.dependsOn("generateCapsuleChapters")
             task.outputDir.set(layout.buildDirectory.dir("capsule/publish"))
             task.publishEnabled.set(publish.enabled)
             task.platform.set(publish.platform)
