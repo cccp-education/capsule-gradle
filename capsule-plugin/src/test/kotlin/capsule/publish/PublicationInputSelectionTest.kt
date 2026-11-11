@@ -58,7 +58,7 @@ class PublicationInputSelectionTest {
 
         val selection = PublicationInputSelection.selectVideo(listOf(fr, en), languageCode = "")
 
-        assertEquals(fr, selection.file)
+        assertEquals(en, selection.file)
         assertTrue(selection.ambiguous)
     }
 
@@ -69,7 +69,7 @@ class PublicationInputSelectionTest {
 
         val selection = PublicationInputSelection.selectVideo(listOf(fr, en), languageCode = "de")
 
-        assertEquals(fr, selection.file)
+        assertEquals(en, selection.file)
         assertTrue(selection.ambiguous)
     }
 
