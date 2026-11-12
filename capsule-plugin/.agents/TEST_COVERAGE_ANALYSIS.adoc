@@ -721,3 +721,10 @@ cucumberTestPodcast en cours).
 
 _Anciennes sections (S-032 → S-119) archivées_ — reconstitubles depuis
 `.agents/sessions/`.
+== Session 214 (2026-11-12) — chapitres YouTube + sélection vidéo
+
+`PublicationInputSelectionTest` (8 unit : MP4 unique, langue, ambiguïté, fichiers
+absents, chapitres fichier/repli) + `PublishCapsuleToYouTubeFunctionalTest` (+3 FT :
+dépendance `generateCapsuleChapters`, chapitres invalides → `publication invalid`,
+timeline valide). Local = Build ; CI `Test` verte (après relance du flake
+préexistant `CapsulePluginTest`).
