@@ -15,7 +15,7 @@ _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 * `PublicationInputSelection.chapterLines` (fichier prioritaire, repli config).
 * Tests : 8 unit `PublicationInputSelectionTest` + 3 fonctionnels TestKit
   (dépendance, chapitres invalides, timeline valide).
-* Local = Build : compiles ×3 + `ktlintCheck` VERTS. Version `0.0.15 → 0.0.16`.
+* Local = Build : compiles ×3 + `ktlintCheck` VERTS. Version `0.0.15 → 0.0.20` (+ correctif packaging JitPack `annotations`).
 
 == État
 
@@ -25,7 +25,7 @@ _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 == Mission Session 215 — au choix pilote
 
-. Publication `capsule-plugin 0.0.16` (après CI verte) + adoption
+. Publication `capsule-plugin 0.0.20` (après CI verte) + adoption
   `youtube-auth 0.0.5`.
 . Reprise du déploiement YouTube (voir `hyperframes` S-048 + cadrage §10).
 . Maintenance / repin.

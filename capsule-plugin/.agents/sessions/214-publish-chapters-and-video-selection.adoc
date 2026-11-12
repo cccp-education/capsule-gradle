@@ -44,7 +44,22 @@ capsule) : corriger deux défauts qui rendraient une publication incorrecte.
 == Gates locaux
 
 `compileKotlin` + `compileTestKotlin` + `compileFunctionalTestKotlin` +
-`ktlintCheck` **VERTS**. Version locale `0.0.15 → 0.0.16`.
+`ktlintCheck` **VERTS**. Version locale `0.0.15 → 0.0.20`.
+
+== Correctif de packaging JitPack (0.0.16 → 0.0.20)
+
+La première publication JitPack (`0.0.16`) a révélé un défaut de consumption :
+dans un consommateur Kotlin DSL, le classpath du buildscript échoue sur
+`org.jetbrains:annotations` (« Pinned to the embedded Kotlin » `strictly 13.0`
+vs `requires 26.0.2-1`). Origine : la contrainte `annotations:26.0.2-1` portée
+par la BOM transitives de `codebase-plugin:0.0.18` (BOM `0.0.92`).
+
+Correctif (patron déjà appliqué à `koog`) : `exclude(group = "org.jetbrains",
+module = "annotations")` sur `codebase-plugin`, `arrow-core`,
+`arrow-fx-coroutines`, `arrow-resilience` et `kotlinx-coroutines-core`.
+Preuve : consommateur Kotlin DSL transitoire appliquant
+`education.cccp.capsule:0.0.20` → `publishCapsuleToYouTube` visible, zéro
+conflit. `0.0.16` est **superseded** (tag conservé, ne pas consommer).
 
 == Note
 

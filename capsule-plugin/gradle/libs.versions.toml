@@ -1,5 +1,5 @@
 [versions]
-capsule = "0.0.16"
+capsule = "0.0.20"
 youtube-auth = "0.0.2"
 slider = "0.0.20"
 kotlin = "2.4.10"

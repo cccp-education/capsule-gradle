@@ -628,7 +628,7 @@ afterEvaluate {
 }
 
 dependencies {
-    implementation(platform("education.cccp:workspace-bom:${libs.versions.workspace.bom.get()}"))
+    compileOnly(platform("education.cccp:workspace-bom:${libs.versions.workspace.bom.get()}"))
     implementation(kotlin("stdlib-jdk8"))
 
     compileOnly(libs.slider)
@@ -638,7 +638,9 @@ dependencies {
     implementation(libs.jackson.dataformat.yaml)
 
     // N1 codebase — LLM socle (CAP-ARCH-1): LlmBuildService + LlmProvider
-    implementation(libs.codebase.plugin)
+    implementation(libs.codebase.plugin) {
+        exclude(group = "org.jetbrains", module = "annotations")
+    }
 
     // koog-agents — orchestration DSL (CAP-ARCH-3). Not transitive via codebase
     // (codebase exposes it as `implementation`), so capsule depends directly via BOM.
@@ -654,10 +656,18 @@ dependencies {
     // `arrow-resilience` publishes no api variant, so the Arrow API it compiles
     // against (Either/Schedule) is declared explicitly; same 2.3.0 as the
     // workspace catalogue (the pinned BOM 0.0.115 still constrains 2.2.2).
-    implementation(libs.arrow.core)
-    implementation(libs.arrow.fx.coroutines)
-    implementation(libs.arrow.resilience)
-    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.arrow.core) {
+        exclude(group = "org.jetbrains", module = "annotations")
+    }
+    implementation(libs.arrow.fx.coroutines) {
+        exclude(group = "org.jetbrains", module = "annotations")
+    }
+    implementation(libs.arrow.resilience) {
+        exclude(group = "org.jetbrains", module = "annotations")
+    }
+    implementation(libs.kotlinx.coroutines.core) {
+        exclude(group = "org.jetbrains", module = "annotations")
+    }
 
     // N0 contracts — i18n (LanguageCatalog 10 languages, cross-borough translation alliance)
     implementation(libs.i18n.contracts)
