@@ -65,3 +65,12 @@ conflit. `0.0.16` est **superseded** (tag conservé, ne pas consommer).
 
 `hyperframes` n'a pas le défaut C2 : son input publication est un fichier
 unique (`<outputName>.mp4`). Aucun changement nécessaire.
+
+== Publication JitPack (2026-11-11)
+
+* Tag `v0.0.20` poussé (CI `Test` verte sur `e483af3`).
+* Artefacts servis HTTP 200 : POM, JAR, marker
+  `com.github.cccp-education.capsule-gradle:capsule-plugin:0.0.20`.
+* Preuve consommateur (Kotlin DSL, repo `jitpack.io` + shim `useModule`) :
+  `publishCapsuleToYouTube` et `generateCapsuleChapters` visibles, zéro conflit.
+* `0.0.16` reste publié mais **superseded** (métadonnées non consommables).
