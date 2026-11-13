@@ -1,5 +1,5 @@
 [versions]
-capsule = "0.0.20"
+capsule = "0.0.21"
 plugin-publish = "2.2.1"
 youtube-auth = "0.0.2"
 slider = "0.0.20"
