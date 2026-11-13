@@ -446,6 +446,42 @@ open class CapsuleExtension
                 .property(Boolean::class.java)
                 .convention(false)
 
+        /** HF-MUSIC-LIBRARY US-6 — path to a `music-library.json` manifest (BGM resolved from the library). Defaults to empty (disabled). */
+        val audioPostBgmLibraryFile: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
+
+        /** HF-MUSIC-LIBRARY US-6 — library track id to resolve as BGM. Defaults to empty. */
+        val audioPostBgmTrack: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
+
+        /** HF-MUSIC-LIBRARY US-6 — library mood to resolve when no track id is set. Defaults to empty. */
+        val audioPostBgmMood: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
+
+        /** CAP-AUDIODESC — `true` to mix an audio description under the narration. Defaults to false (opt-in). */
+        val a11yAudioDescriptionEnabled: Property<Boolean> =
+            objects
+                .property(Boolean::class.java)
+                .convention(false)
+
+        /** CAP-AUDIODESC — explicit description script (`durée | texte`). Defaults to empty. */
+        val a11yAudioDescriptionFile: Property<String> =
+            objects
+                .property(String::class.java)
+                .convention("")
+
+        /** CAP-AUDIODESC — description level in dB under the narration. Defaults to -6.0. */
+        val a11yAudioDescriptionLevelDb: Property<Double> =
+            objects
+                .property(Double::class.java)
+                .convention(-6.0)
+
         /** CAP-TRANSCRIPT — `true` to generate an AsciiDoc transcript article from the capsule. Defaults to false (opt-in). */
         val transcriptEnabled: Property<Boolean> =
             objects
@@ -657,6 +693,12 @@ open class CapsuleExtension
                 audioPostLoudnessTarget = -16.0,
                 audioPostDuckingEnabled = false,
                 audioPostTwoPassLoudnessEnabled = false,
+                audioPostBgmLibraryFile = "",
+                audioPostBgmTrack = "",
+                audioPostBgmMood = "",
+                a11yAudioDescriptionEnabled = false,
+                a11yAudioDescriptionFile = "",
+                a11yAudioDescriptionLevelDb = -6.0,
                 transcriptEnabled = false,
                 transcriptStrategy = TranscriptStrategy.TEMPLATE,
                 remotionProjectDir = "capsule/remotion",
@@ -748,6 +790,12 @@ data class CapsuleConventions(
     val audioPostLoudnessTarget: Double,
     val audioPostDuckingEnabled: Boolean,
     val audioPostTwoPassLoudnessEnabled: Boolean,
+    val audioPostBgmLibraryFile: String,
+    val audioPostBgmTrack: String,
+    val audioPostBgmMood: String,
+    val a11yAudioDescriptionEnabled: Boolean,
+    val a11yAudioDescriptionFile: String,
+    val a11yAudioDescriptionLevelDb: Double,
     val transcriptEnabled: Boolean,
     val transcriptStrategy: TranscriptStrategy,
     val remotionProjectDir: String,

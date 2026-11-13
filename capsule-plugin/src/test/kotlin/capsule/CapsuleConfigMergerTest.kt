@@ -1559,6 +1559,9 @@ class CapsuleConfigMergerTest {
         assertEquals(-18.0, merged.audioPost.bgmLevel, 0.001, "audioPost.bgmLevel should default to -18.0")
         assertEquals(-16.0, merged.audioPost.loudnessTarget, 0.001, "audioPost.loudnessTarget should default to -16.0")
         assertEquals(false, merged.audioPost.duckingEnabled, "audioPost.duckingEnabled should default to false")
+        assertEquals("", merged.audioPost.bgmLibraryFile, "audioPost.bgmLibraryFile should default to empty")
+        assertEquals("", merged.audioPost.bgmTrack, "audioPost.bgmTrack should default to empty")
+        assertEquals("", merged.audioPost.bgmMood, "audioPost.bgmMood should default to empty")
     }
 
     @Test
@@ -1626,6 +1629,9 @@ class CapsuleConfigMergerTest {
             capsule.audioPost.bgmLevel=-19.0
             capsule.audioPost.loudnessTarget=-15.0
             capsule.audioPost.duckingEnabled=true
+            capsule.audioPost.bgmLibraryFile=/lib/music-library.json
+            capsule.audioPost.bgmTrack=calm-piano
+            capsule.audioPost.bgmMood=calm
             """.trimIndent(),
         )
         val merged = CapsuleConfigMerger.merge(projectDir, CapsuleConfig(), emptyMap(), yamlLoaded = false)
@@ -1634,6 +1640,9 @@ class CapsuleConfigMergerTest {
         assertEquals(-19.0, merged.audioPost.bgmLevel, 0.001, "props audioPost.bgmLevel should be honored")
         assertEquals(-15.0, merged.audioPost.loudnessTarget, 0.001, "props audioPost.loudnessTarget should be honored")
         assertEquals(true, merged.audioPost.duckingEnabled, "props audioPost.duckingEnabled should be honored")
+        assertEquals("/lib/music-library.json", merged.audioPost.bgmLibraryFile, "props bgmLibraryFile should be honored")
+        assertEquals("calm-piano", merged.audioPost.bgmTrack, "props bgmTrack should be honored")
+        assertEquals("calm", merged.audioPost.bgmMood, "props bgmMood should be honored")
     }
 
     @Test

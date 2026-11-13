@@ -89,6 +89,9 @@ jobs:
           - name: "BDD · audio-post"
             task: cucumberTestShardAudioPost
             binaries: ffmpeg
+          - name: "BDD · audiodesc"
+            task: cucumberTestShardAudiodesc
+            binaries: ffmpeg
           - name: "BDD · ai+viral"
             task: cucumberTestShardAiViral
             binaries: ffmpeg

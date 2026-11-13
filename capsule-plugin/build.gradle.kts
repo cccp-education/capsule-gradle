@@ -3,6 +3,7 @@
 // codebase-plugin exclut koog-agents mais les sous-modules koog transitifs
 // contournent l'exclusion. Solution : forcer annotations:26.0.2-1 (pattern slider).
 import build.CucumberTaskSpec
+import org.gradle.plugin.compatibility.compatibility
 buildscript {
     repositories {
         mavenLocal()
@@ -20,6 +21,7 @@ plugins {
     id("education.cccp.build.kover") version "0.0.14"
     alias(libs.plugins.codebase)
     alias(libs.plugins.youtube.auth)
+    alias(libs.plugins.plugin.publish)
 }
 
 group = "education.cccp"
@@ -107,6 +109,11 @@ cucumberConventions {
             CucumberTaskSpec(
                 name = "cucumberTestShardAudioPost",
                 runnerClass = "capsule.scenarios.CucumberShardAudioPostRunner",
+                timeoutMinutes = 30,
+            ),
+            CucumberTaskSpec(
+                name = "cucumberTestShardAudiodesc",
+                runnerClass = "capsule.scenarios.CucumberShardAudiodescRunner",
                 timeoutMinutes = 30,
             ),
             // The heavy multi-language generation scenario is split into 4 language groups.
@@ -628,7 +635,11 @@ afterEvaluate {
 }
 
 dependencies {
-    compileOnly(platform("education.cccp:workspace-bom:${libs.versions.workspace.bom.get()}"))
+    // Published as a `<dependencyManagement><scope>import</scope>` in the POM:
+    // the BOM versions the versionless dependencies below (langchain4j,
+    // arrow-core-jvm, …). `compileOnly` would omit it from the POM and Central
+    // rejects versionless dependencies (MEMPHIS-BOM-FIX pattern).
+    implementation(platform("education.cccp:workspace-bom:${libs.versions.workspace.bom.get()}"))
     implementation(kotlin("stdlib-jdk8"))
 
     compileOnly(libs.slider)
@@ -707,7 +718,18 @@ gradlePlugin {
     val capsule by plugins.creating {
         id = "education.cccp.capsule"
         implementationClass = "capsule.CapsulePlugin"
+        displayName = "Capsule Gradle Plugin"
+        description = "Generation automatisee de capsules video depuis des decks reveal.js (TTS, capture, sous-titres, audio post, audiodescription)."
+        tags.set(listOf("asciidoc", "video", "revealjs", "tts", "mp4", "accessibility", "kotlin"))
+        compatibility {
+            features {
+                configurationCache.set(false)
+                isolatedProjects.set(false)
+            }
+        }
     }
+    website = "https://github.com/cccp-education/capsule-gradle"
+    vcsUrl = "https://github.com/cccp-education/capsule-gradle.git"
 }
 
 koverConventions {

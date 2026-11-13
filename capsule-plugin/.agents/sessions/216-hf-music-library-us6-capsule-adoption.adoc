@@ -1,0 +1,66 @@
+= Session 216 — HF-MUSIC-LIBRARY US-6 (adoption capsule, session pilotée hyperframes)
+:toc:
+
+:_date_: 2026-11-12
+:_borough_: capsule (N2) — code livré ici, session **pilotée** par hyperframes S-057
+:_session_precedente_: 215
+:_statut_: ✅ US-6 TERMINÉE — EPIC transverse `HF-MUSIC-LIBRARY` TERMINÉ 9/9
+
+'''
+
+== Contexte
+
+Dernière US de `HF-MUSIC-LIBRARY` : le BGM capsule doit pouvoir venir de la
+bibliothèque `music-library.json` (newpipe), sans dépendance de code à newpipe
+et sans réintroduire `video-kernel 0.8.0` (JitPack only) dans un POM publié.
+Décision (cadrage D8/D11, PROMPT hyperframes) : **copie N2 assumée** du modèle +
+sélecteur, comme hyperframes, à supprimer au reset Central.
+
+'''
+
+== Livré
+
+* `capsule.audio.music` :
+  - `MusicLicence` (fail-closed), `MusicTrack`, `MusicLibrary`,
+    `MusicSelection`/`MusicTrackSelector` (déterministe : id > mood > n'importe
+    quelle piste utilisable, tie-break `id`) ;
+  - `MusicLibraryManifestLoader` (Jackson, clés inconnues tolérées, manifeste
+    absent = bibliothèque vide) ;
+  - `MusicAssetResolver` (sélection → `sourcePath`/`targetName`/`sha256`/
+    attribution) + `needsCopy` (skip `sha256`, Économie d'encre).
+* Config `AudioPostConfig` : `bgmLibraryFile`, `bgmTrack`, `bgmMood` (additifs,
+  défauts `""`) — 4 sources : `CapsuleConfigMerger` (ENV `CAPSULE_AUDIO_POST_BGM_*`,
+  props `capsule.audioPost.*`, YAML Jackson, CLI), `CapsuleExtension` (3
+  `Property<String>`), `CapsuleConventions`, `CapsulePlugin.pushConfigIntoExtension`.
+* `CapsuleVideoTask.resolveBgmFile()` : `bgmFile` explicite **prioritaire**
+  (rétro-compat D6) ; sinon manifeste + sélection → copie dans
+  `build/capsule/assets/audio/` ; toute erreur **dégrade** (warning, vidéo
+  conservée, jamais cassée).
+
+'''
+
+== Tests
+
+* `MusicLibraryManifestLoaderTest` — 6.
+* `MusicTrackSelectorTest` — 6.
+* `MusicAssetResolverTest` — 6.
+* `CapsuleConfigMergerTest` — défauts des 3 clés + lecture `gradle.properties`.
+
+'''
+
+== Gates (Local = Build)
+
+----
+./gradlew compileKotlin compileTestKotlin   → BUILD SUCCESSFUL (1m02s)
+./gradlew ktlintCheck                        → BUILD SUCCESSFUL
+----
+
+Zéro test exécuté en local. Zéro bump, zéro publication, zéro secret.
+
+'''
+
+== Reste
+
+* **CAP-AUDIODESC US-2→4** (EPIC capsule, vision GBL-011-4) — prochaine session 217.
+* Dette : copies N2 `video.kernel.music` (capsule + hyperframes) au reset Central.
+* Release `capsule-plugin 0.0.20` + adoption `youtube-auth 0.0.5` : au choix pilote.

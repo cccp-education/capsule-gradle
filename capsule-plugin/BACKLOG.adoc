@@ -1,6 +1,34 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-10-31 (S-211 — Release `capsule-plugin 0.0.14` : adoption `video-kernel 0.6.0` + CAP-AUDIO-SILENCE. YouTube gelé.)
+:last_update: 2026-11-13 (S-220 — release 0.0.20 BLOQUÉE par le quota Sonatype (reset 2026-12-01) ; POM corrigé (import BOM) ; S-219 CAP-AUDIODESC 4/4.)
+
+'''
+== ⚠️ Release `capsule-plugin 0.0.20` — BLOQUÉE (quota Sonatype, reset 2026-12-01) — S-220
+
+* `publishToMavenLocal` VERT : `0.0.20` signé, artefact + marker publiés en local.
+* **Défaut latent corrigé** : le POM `0.0.20` omettait l'import `workspace-bom`
+  (`compileOnly(platform(...))` → `implementation(platform(...))`). Sans lui,
+  `langchain4j`, `langchain4j-ollama`, `kotlinx-coroutines-core` restaient
+  **versionless** → Central aurait rejeté l'artefact (pattern MEMPHIS-BOM-FIX).
+  Le POM corrigé importe `workspace-bom:0.0.115` (déjà publié) ; les 4 dépendances
+  versionless sont couvertes par cet import.
+* `publishAggregationToCentralPortal` **REFUSÉ** par Sonatype :
+  `Publishing blocked: your organization has reached its monthly release count limit.
+  Grace period ended 2026-11-05. Usage resets 2026-12-01.`
+  → bundle `460fba3e-7446-443e-b712-13e104938346` **non publié** (repo1
+  `0.0.20` = **404** ; `0.0.15` = 200).
+* Décision : **ne pas forcer** (ni JitPack, ni contournement). Reprise à partir du
+  **2026-12-01** (Central) — ou Portal si la propriété du groupe est corrigée.
+* **Portal Gradle Plugin Portal (tenté S-220)** : `plugin-publish 2.2.1` câblé
+  (`compatibility` false/false, website/vcsUrl/tags) → `publishPlugins` **REFUSÉ** :
+  `You are not the owner of group education.cccp`. Les clés `GRADLE_PUBLISH_KEY/SECRET`
+  de l'environnement ne sont pas celles du compte propriétaire (`cccp-education`) —
+  fournir ces clés ou transférer le groupe. Le câblage Portal est **prêt** ; aucun
+  workflow CI capsule ne publie (release manuelle locale).
+* MEMPHIS **non touché** : working tree sale (session `S-350 catalog-contracts` en
+  cours) ; le catalogue `capsule-plugin 0.0.20` sera fait par cette session / la
+  suivante, après la publication réelle.
+* Rapport `.agents/sessions/220-release-0.0.20-blocked.adoc`.
 
 '''
 == ✅ Release `capsule-plugin 0.0.14` — Maven Central (S-211)
@@ -14,6 +42,27 @@ Contenu depuis 0.0.13 : `CAP-AUDIO-SILENCE` US-1 (take muet indépendant de
 l'ASR) + US-2 (adoption `video-kernel.audio.*`) + fix `AudioEnvelopeExtractor`
 (`-y`). `video-kernel 0.6.0`, BOM `0.0.113`. Rapport
 `.agents/sessions/211-release-0.0.14.adoc`.
+
+'''
+== ✅ HF-MUSIC-LIBRARY US-6 — BGM résolu depuis la bibliothèque (S-216)
+
+_Origine_ : EPIC transverse `HF-MUSIC-LIBRARY` (hyperframes, piloté S-057) — la
+bibliothèque `music-library.json` (newpipe) devient une source de BGM pour
+l'audio-post capsule, sans dépendance de code à newpipe.
+
+* `audioPost { bgmLibraryFile; bgmTrack; bgmMood }` (3 clés, 4 sources
+  ENV/props/YAML/CLI, défauts `""` — rétro-compatibles).
+* Domaine `capsule.audio.music` : `MusicLicence` (fail-closed), `MusicTrack`,
+  `MusicLibrary`, `MusicTrackSelector` (déterministe), `MusicLibraryManifestLoader`
+  (Jackson, clés inconnues tolérées), `MusicAssetResolver` (`sourcePath`,
+  `targetName`, `sha256`, attribution) + `needsCopy`.
+* `CapsuleVideoTask.resolveBgmFile()` : `bgmFile` explicite **prioritaire** ;
+  sinon sélection + copie dans `build/capsule/assets/audio/` (skip `sha256`) ;
+  toute erreur **dégrade** (warning, vidéo conservée).
+* Dette assumée : copie N2 de `video.kernel.music` (0.8.0 = JitPack only) — même
+  dette que hyperframes, à supprimer au reset Central.
+* Tests : 6 manifest + 6 sélecteur + 6 resolver + merger (défauts + props).
+* Rapport `.agents/sessions/216-hf-music-library-us6-capsule-adoption.adoc`.
 
 '''
 == ✅ EPIC CAP-AUDIO-SILENCE — TERMINÉ 2/2 (S-209 + S-210)
@@ -1051,7 +1100,7 @@ _Constat mesuré sur disque (grep sur `src/main`)._
 
 == EPIC CAP-AUDIODESC — Audiodescription vidéo (~8 pts)
 
-*Statut* : 🔴 À FAIRE. *Dépend de* : `GBL-011` (EPIC transverse), `CAP-TRANSCRIPT` ✅.
+*Statut* : ✅ TERMINÉ 4/4 — **US-1 ✅ S-215**, **US-2 ✅ S-217**, **US-3 ✅ S-218**, **US-4 ✅ S-219**. *Dépend de* : `GBL-011` (EPIC transverse, 🟡), `CAP-TRANSCRIPT` ✅.
 *Principe* : décrire ce qui est **vu** (visuels, gestes, changements d'écran) dans les
 silences de la narration. Si les silences sont insuffisants, la limite est déclarée
 (pas d'audiodescription étendue dans cette version).
@@ -1062,22 +1111,22 @@ silences de la narration. Si les silences sont insuffisants, la limite est décl
 | CAP-AUDIODESC-1
 | Domaine pur `capsule.a11y` : `AudioDescriptionSegment` (texte + fenêtre temporelle), `AudioDescriptionScript`, `AudioDescriptionPlanner` (place les segments dans les silences disponibles, ordre déterministe, jamais de chevauchement avec la narration)
 | 3
-| 🔴 À FAIRE
+| ✅ S-215 (`NarrationWindow`/`AudioDescriptionCue`/`AudioDescriptionSegment`/`AudioDescriptionScript` + `AudioDescriptionPlanner` first-fit, limite déclarée via `unplaced`, 14 unit)
 
 | CAP-AUDIODESC-2
 | Source du texte : script dérivé du SPD/notes présentateur (champ d'accessibilité authoré par `training`) ou fichier explicite ; dégradation silencieuse si absent
 | 1
-| 🔴 À FAIRE
+| ✅ S-217 (fichier explicite : `AudioDescriptionScriptParser` `durée \| texte`, lignes invalides ignorées, fichier absent = vide ; le dérivé SPD/notes reste branché sur `training`/GBL-011)
 
 | CAP-AUDIODESC-3
 | Synthèse TTS de la description + mixage (ducking sous la narration) + piste audio séparée, exportée dans MP4/WebM
 | 3
-| 🔴 À FAIRE
+| ✅ S-218 (`AudioDescriptionMixCommand` pur + `applyAudioDescriptionIfEnabled` : fenêtres de narration dérivées des durées `slide-NN.mp3`, TTS existant, `adelay`/`amix`/`sidechaincompress`, piste `<deck>-audiodesc.m4a`, dégradation silencieuse ; config section `a11y` 4 sources)
 
 | CAP-AUDIODESC-4
 | Configuration 4 sources (`a11y.audioDescriptionEnabled`), BDD `@audiodesc`, porte d'acceptation (sous-titres + transcription + audiodescription), déclaration des limites
 | 1
-| 🔴 À FAIRE
+| ✅ S-219 (config `a11y` 4 sources déjà câblée S-218 + `A11yAcceptance` pur : `A11yInputs`/`A11yVerdict` Accepted/Degraded, limite `extended audio description is not supported in v1` **toujours déclarée** ; BDD `capsule_audiodesc.feature` 6 scénarios `@audiodesc` + shard CI `cucumberTestShardAudiodesc`)
 |===
 
 *Critère de sortie* : une capsule de référence produit sous-titres + transcription +

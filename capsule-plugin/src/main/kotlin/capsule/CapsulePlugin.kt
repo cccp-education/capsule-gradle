@@ -248,6 +248,24 @@ class CapsulePlugin : Plugin<Project> {
         if (!ext.audioPostTwoPassLoudnessEnabled.isPresent || ext.audioPostTwoPassLoudnessEnabled.get() == conventions.audioPostTwoPassLoudnessEnabled) {
             ext.audioPostTwoPassLoudnessEnabled.set(config.audioPost.twoPassLoudnessEnabled)
         }
+        if (!ext.audioPostBgmLibraryFile.isPresent || ext.audioPostBgmLibraryFile.get() == conventions.audioPostBgmLibraryFile) {
+            ext.audioPostBgmLibraryFile.set(config.audioPost.bgmLibraryFile)
+        }
+        if (!ext.audioPostBgmTrack.isPresent || ext.audioPostBgmTrack.get() == conventions.audioPostBgmTrack) {
+            ext.audioPostBgmTrack.set(config.audioPost.bgmTrack)
+        }
+        if (!ext.audioPostBgmMood.isPresent || ext.audioPostBgmMood.get() == conventions.audioPostBgmMood) {
+            ext.audioPostBgmMood.set(config.audioPost.bgmMood)
+        }
+        if (!ext.a11yAudioDescriptionEnabled.isPresent || ext.a11yAudioDescriptionEnabled.get() == conventions.a11yAudioDescriptionEnabled) {
+            ext.a11yAudioDescriptionEnabled.set(config.a11y.audioDescriptionEnabled)
+        }
+        if (!ext.a11yAudioDescriptionFile.isPresent || ext.a11yAudioDescriptionFile.get() == conventions.a11yAudioDescriptionFile) {
+            ext.a11yAudioDescriptionFile.set(config.a11y.audioDescriptionFile)
+        }
+        if (!ext.a11yAudioDescriptionLevelDb.isPresent || ext.a11yAudioDescriptionLevelDb.get() == conventions.a11yAudioDescriptionLevelDb) {
+            ext.a11yAudioDescriptionLevelDb.set(config.a11y.audioDescriptionLevelDb)
+        }
 
         // Remotion section (CAP-ANIM)
         if (ext.remotionProjectDir.get() == conventions.remotionProjectDir) {

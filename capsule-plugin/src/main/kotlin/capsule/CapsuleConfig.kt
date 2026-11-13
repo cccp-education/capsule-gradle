@@ -29,6 +29,11 @@ data class CapsuleConfig(
     val validation: ValidationConfig = ValidationConfig(),
     val qc: QcConfig = QcConfig(),
     val audioPost: AudioPostConfig = AudioPostConfig(),
+    /**
+     * CAP-AUDIODESC — the `a11y` section: audio description (what is *seen*,
+     * spoken into the narration silences). Disabled by default.
+     */
+    val a11y: A11yConfig = A11yConfig(),
     val transcript: TranscriptConfig = TranscriptConfig(),
     val remotion: RemotionConfig = RemotionConfig(),
     val podcast: PodcastConfig = PodcastConfig(),
@@ -51,6 +56,19 @@ data class CapsuleConfig(
      */
     @JsonProperty("fish-audio")
     val fishAudio: List<FishAudioKey> = emptyList(),
+)
+
+/**
+ * CAP-AUDIODESC — accessibility audio description (US-3/US-4).
+ *
+ * @property audioDescriptionEnabled opt-in (default false)
+ * @property audioDescriptionFile explicit script (`durée | texte`), blank = none
+ * @property audioDescriptionLevelDb description level under the narration (default -6.0)
+ */
+data class A11yConfig(
+    val audioDescriptionEnabled: Boolean = false,
+    val audioDescriptionFile: String = "",
+    val audioDescriptionLevelDb: Double = -6.0,
 )
 
 /**

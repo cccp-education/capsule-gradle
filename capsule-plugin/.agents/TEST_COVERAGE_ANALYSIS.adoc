@@ -1,7 +1,60 @@
 = TEST_COVERAGE_ANALYSIS — capsule-gradle
-:date: 2026-10-17
-:session: 207 BDD `@publish` + fonctionnel ; 206 US-3b publish ; 204 release 0.0.12 ; 203 fix audio-post ; 202 ports vidéo partagés
+:date: 2026-11-12
+:session: 215 CAP-AUDIODESC US-1 (domaine pur `capsule.a11y`)
 :rotation: 2026-08-29 (S-131) — sections antérieures à S-120 archivées. Historique reconstituable depuis `.agents/sessions/`.
+
+== Couverture — 12 novembre 2026 (après session 219)
+
+.CAP-AUDIODESC US-4 — porte d'acceptation + BDD
+|===
+| Élément | Changement | Tests
+
+| `src/main/kotlin/capsule/a11y/A11yAcceptance.kt` (créé) | verdict Accepted/Degraded + limite v1 déclarée | 5 `A11yAcceptanceTest`
+| `src/test/features/capsule_audiodesc.feature` + `CapsuleAudiodescSteps` | 6 scénarios `@audiodesc` | shard `cucumberTestShardAudiodesc`
+| `CucumberShardAudiodescRunner` + build.gradle.kts + full-tests.yml | shard CI dédié | `CapsuleCucumberShardCoverageTest`
+|===
+
+== Couverture — 12 novembre 2026 (après session 218)
+
+.CAP-AUDIODESC US-3 — TTS + mixage ducking + piste séparée
+|===
+| Élément | Changement | Tests
+
+| `src/main/kotlin/capsule/a11y/AudioDescriptionMixCommand.kt` (créé) | graph + argv (adelay, amix, sidechaincompress, asplit aout/asep) | 7 `AudioDescriptionMixCommandTest`
+| `CapsuleVideoTask.applyAudioDescriptionIfEnabled` + `narrationWindows` | wiring TTS/mix, dégradation | compile/review (Local = Build)
+| `CapsuleConfig`/merger/`CapsuleModels`/`CapsulePlugin` | section `a11y` (3 clés, 4 sources) | — (compile)
+|===
+
+== Couverture — 12 novembre 2026 (après session 217)
+
+.CAP-AUDIODESC US-2 — source du texte explicite
+|===
+| Élément | Changement | Tests
+
+| `src/main/kotlin/capsule/a11y/AudioDescriptionScriptParser.kt` (créé) | format `durée \| texte`, dégradation silencieuse | 7 `AudioDescriptionScriptParserTest`
+|===
+
+== Couverture — 12 novembre 2026 (après session 216)
+
+.HF-MUSIC-LIBRARY US-6 — BGM depuis la bibliothèque (session pilotée hyperframes)
+|===
+| Élément | Changement | Tests
+
+| `src/main/kotlin/capsule/audio/music/MusicLibrary.kt` (créé) | modèle + sélecteur déterministe (copie N2) | 6 `MusicTrackSelectorTest`
+| `src/main/kotlin/capsule/audio/music/MusicLibraryManifestLoader.kt` (créé) | lecture `music-library.json` | 6 `MusicLibraryManifestLoaderTest`
+| `src/main/kotlin/capsule/audio/music/MusicAssetResolver.kt` (créé) | résolution + `needsCopy` | 6 `MusicAssetResolverTest`
+| `capsule/audio/AudioPostConfig.kt` + merger + `CapsuleModels` + `CapsulePlugin` | 3 clés 4 sources | merger (défauts + props)
+| `capsule/CapsuleVideoTask.kt` | `resolveBgmFile()` + copie sha256 | compile/review (Local = Build)
+|===
+
+== Couverture — 12 novembre 2026 (après session 215)
+
+.CAP-AUDIODESC US-1 — domaine pur `capsule.a11y`
+|===
+| Élément | Changement | Tests
+
+| `src/main/kotlin/capsule/a11y/AudioDescriptionPlanner.kt` (créé) | `NarrationWindow`, `AudioDescriptionCue`, `AudioDescriptionSegment`, `AudioDescriptionScript` (+ `unplaced`), `AudioDescriptionPlanner` (first-fit déterministe, jamais de chevauchement) | +14 `AudioDescriptionPlannerTest`
+|===
 
 == Couverture — 17 octobre 2026 (après session 207)
 

@@ -1,0 +1,70 @@
+= Session 218 — CAP-AUDIODESC US-3 (TTS + mixage ducking + piste séparée)
+:toc:
+
+:_date_: 2026-11-12
+:_borough_: capsule (N2)
+:_session_precedente_: 217
+:_statut_: ✅ US-3 TERMINÉE (reste US-4)
+
+'''
+
+== Contexte
+
+Le planificateur (US-1) et la source explicite (US-2) existent. Il manquait le
+**mixage** : synthèse TTS des cues placés, mixage sous la narration avec ducking,
+et **piste audio séparée** exportée avec la vidéo.
+
+'''
+
+== Livré
+
+* **Pure** `capsule.a11y.AudioDescriptionMixCommand` :
+  - chaque cue est un input (`[i+1:a]volume=<level>dB,adelay=<ms>|<ms>[dN]`) ;
+  - les cues sont mixés (`amix … duration=longest`) avant le ducking ;
+  - `[0:a]asplit=2[voice][key]` ; `[desc][key]sidechaincompress=…[ducked]` ;
+  - `[voice][ducked]amix=…,asplit=2[aout][asep]` — un pad de filtre est
+    mono-usage, d'où le `asplit` avant les deux sorties ;
+  - argv unique ffmpeg : vidéo mixée (`[aout]`) + piste `<deck>-audiodesc.m4a`
+    (`[asep]`, AAC).
+* **Wiring** `CapsuleVideoTask.applyAudioDescriptionIfEnabled(finalVideo,
+  audioDir, slides)` :
+  - opt-in `a11y.audioDescriptionEnabled` ;
+  - script chargé (`AudioDescriptionScriptParser.load`) ;
+  - **fenêtres de narration** dérivées des durées `slide-NN.mp3` (le mix audio
+    est leur concaténation, cf. `mixAudioWithVideo`) ;
+  - `AudioDescriptionPlanner.plan(..., totalSeconds = fin de narration)` ;
+  - synthèse TTS par cue (moteur existant), skip si indisponible/inéchec ;
+  - mix + remplacement atomique + piste séparée ;
+  - **dégradation silencieuse** à chaque absence (script vide, plan vide, TTS
+    indisponible, ffmpeg en échec) : la vidéo garde sa narration.
+* Appelé **après** `mixAudioWithVideo` et **avant** l'audio-post (le loudness
+  EBU R128 s'applique alors au mix final), dans les deux chemins de capture.
+* **Config** section `a11y` : `audioDescriptionEnabled` (false),
+  `audioDescriptionFile` (""), `audioDescriptionLevelDb` (-6.0) — 4 sources +
+  `CapsuleExtension`/`CapsuleConventions`/`pushConfigIntoExtension`.
+
+'''
+
+== Tests
+
+`AudioDescriptionMixCommandTest` — **7** : cue unique (delay + ducking), cues
+multiples, sans ducking, niveau configurable, argv deux sorties, liste vide,
+settings invalides.
+
+'''
+
+== Gates (Local = Build)
+
+----
+./gradlew compileKotlin compileTestKotlin   → BUILD SUCCESSFUL (3m48s)
+./gradlew ktlintCheck                        → BUILD SUCCESSFUL
+----
+
+Zéro test exécuté en local. Zéro bump, zéro publication, zéro secret.
+
+'''
+
+== Reste (EPIC CAP-AUDIODESC)
+
+* **US-4** : BDD `@audiodesc` (fake TTS), porte d'acceptation (sous-titres +
+  transcription + audiodescription), déclaration des limites, doc README.

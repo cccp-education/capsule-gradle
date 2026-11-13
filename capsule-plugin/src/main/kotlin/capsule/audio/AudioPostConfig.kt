@@ -26,6 +26,14 @@ package capsule.audio
  * @param duckingEnabled  `true` to enable sidechain compression that
  *        lowers the BGM when the voice speaks (default `false` —
  *        opt-in, requires [bgmEnabled] to have an effect).
+ * @param twoPassLoudnessEnabled `true` to normalise loudness in two passes
+ *        (default `false` — single-input only).
+ * @param bgmLibraryFile  path to a `music-library.json` manifest (default `""`).
+ *        When set and [bgmFile] is blank, the BGM is resolved from the library
+ *        (HF-MUSIC-LIBRARY US-6).
+ * @param bgmTrack        library track id to resolve (default `""`).
+ * @param bgmMood         library mood to resolve when no track id is set
+ *        (default `""`).
  */
 data class AudioPostConfig(
     val bgmEnabled: Boolean = false,
@@ -34,4 +42,7 @@ data class AudioPostConfig(
     val loudnessTarget: Double = -16.0,
     val duckingEnabled: Boolean = false,
     val twoPassLoudnessEnabled: Boolean = false,
+    val bgmLibraryFile: String = "",
+    val bgmTrack: String = "",
+    val bgmMood: String = "",
 )

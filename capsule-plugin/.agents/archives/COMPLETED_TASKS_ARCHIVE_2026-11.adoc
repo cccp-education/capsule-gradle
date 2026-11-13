@@ -1,0 +1,69 @@
+= COMPLETED_TASKS_ARCHIVE — Novembre 2026
+:date: 2026-11-12
+
+== Session 215 — CAP-AUDIODESC US-1 : domaine pur `capsule.a11y` ✅
+
+* [x] EPIC `CAP-AUDIODESC` (vision `GBL-011-4`) **synchronisé** : il existait en
+  `BACKLOG.adoc` mais pas dans la roadmap `INDEX.adoc` (qui affirmait à tort
+  « tous les EPICs actionnables sont clos »).
+* [x] `capsule.a11y` : `NarrationWindow`, `AudioDescriptionCue`,
+  `AudioDescriptionSegment`, `AudioDescriptionScript` (limite **déclarée** via
+  `unplaced`), `AudioDescriptionPlanner` (placement first-fit déterministe dans
+  les silences, fenêtres triées/fusionnées, jamais de chevauchement).
+* [x] 14 unit `AudioDescriptionPlannerTest`.
+* [x] Local = Build : compiles + `ktlintCheck` VERTS.
+* [ ] US-2 (source du texte), US-3 (TTS + mixage + piste séparée), US-4 (config
+  + BDD + porte d'acceptation).
+* [x] Rapport `.agents/sessions/215-cap-audiodesc-us1.adoc`.
+
+== Session 216 — HF-MUSIC-LIBRARY US-6 : BGM depuis la bibliothèque ✅ (session pilotée hyperframes S-057)
+
+* [x] `audioPost { bgmLibraryFile; bgmTrack; bgmMood }` (4 sources) + domaine
+  `capsule.audio.music` (modèle, loader, sélecteur N2, `MusicAssetResolver`).
+* [x] `CapsuleVideoTask.resolveBgmFile()` : `bgmFile` prioritaire, copie `sha256`,
+  dégradation silencieuse.
+* [x] 18 tests (6+6+6) + merger ; compiles + `ktlintCheck` VERTS.
+* [x] **EPIC `HF-MUSIC-LIBRARY` TERMINÉ 9/9**.
+* [ ] CAP-AUDIODESC US-2→4 (session 217).
+* [x] Rapport `.agents/sessions/216-hf-music-library-us6-capsule-adoption.adoc`.
+
+== Session 217 — CAP-AUDIODESC US-2 : source du texte explicite ✅
+
+* [x] `capsule.a11y.AudioDescriptionScriptParser` (`durée | texte`, commentaires,
+  ligne malformée ignorée, `load(file)` tolérant = dégradation silencieuse).
+* [x] 7 unit `AudioDescriptionScriptParserTest`.
+* [x] Compiles + `ktlintCheck` VERTS ; zéro bump, zéro publication.
+* [ ] CAP-AUDIODESC US-3 (TTS + mixage + piste séparée), US-4 (config + BDD + porte).
+* [x] Rapport `.agents/sessions/217-cap-audiodesc-us2.adoc`.
+
+== Session 218 — CAP-AUDIODESC US-3 : TTS + mixage ducking + piste séparée ✅
+
+* [x] `AudioDescriptionMixCommand` pur (adelay, amix, sidechaincompress, asplit
+  aout/asep, argv une invocation vidéo + piste séparée).
+* [x] `CapsuleVideoTask.applyAudioDescriptionIfEnabled` (fenêtres de narration
+  depuis les durées slide-NN.mp3, TTS existant, dégradation silencieuse).
+* [x] Section `a11y` (3 clés, 4 sources) + extension/conventions/push.
+* [x] 7 unit ; compiles + `ktlintCheck` VERTS ; zéro bump, zéro publication.
+* [ ] US-4 (BDD @audiodesc + porte d'acceptation + limites + doc README).
+* [x] Rapport `.agents/sessions/218-cap-audiodesc-us3.adoc`.
+
+== Session 219 — CAP-AUDIODESC US-4 : porte d'acceptation + BDD ✅ (EPIC TERMINÉ 4/4)
+
+* [x] `A11yAcceptance` pure (Accepted/Degraded, limite v1 toujours déclarée).
+* [x] BDD `capsule_audiodesc.feature` (6 scénarios) + steps + shard CI dédié
+  (`cucumberTestShardAudiodesc`, build + full-tests.yml, partition gardée).
+* [x] 5 unit ; compiles + `ktlintCheck` VERTS ; zéro bump, zéro publication.
+* [x] Rapport `.agents/sessions/219-cap-audiodesc-us4.adoc`.
+
+== Session 220 — Release 0.0.20 : BLOQUÉE (quota Sonatype) + défaut POM corrigé ⚠️
+
+* [x] Défaut latent POM corrigé : `compileOnly(platform(workspace-bom))` →
+  `implementation(platform(...))` (le POM importe `workspace-bom:0.0.115` ;
+  4 dépendances versionless sinon rejetées par Central).
+* [x] `publishToMavenLocal` VERT (0.0.20 signé, marker OK) ; `ktlintCheck` VERT.
+* [!] `publishAggregationToCentralPortal` REFUSÉ : quota mensuel Sonatype
+  (`Usage resets 2026-12-01`), bundle `460fba3e` non publié, repo1 0.0.20 = 404.
+* [!] MEMPHIS non touché (working tree sale, session S-350 `catalog-contracts`).
+* [ ] Reprise ≥ 2026-12-01 : re-upload 0.0.20 puis catalogue MEMPHIS (`0.0.20`,
+  BOM 0.0.130). Alternative : wiring Portal (`plugin-publish`).
+* [x] Rapport `.agents/sessions/220-release-0.0.20-blocked.adoc`.

@@ -1,0 +1,101 @@
+= Session 220 — release `capsule-plugin 0.0.20` : BLOQUÉE (quota Sonatype) + défaut POM corrigé
+:toc:
+
+:_date_: 2026-11-13
+:_borough_: capsule (N2)
+:_session_precedente_: 219
+:_statut_: ⚠️ release NON publiée — quota Sonatype (reset 2026-12-01) ; POM corrigé
+
+'''
+
+== Contexte
+
+Feu vert pilote pour la release `capsule-plugin 0.0.20` (contenu : HF-MUSIC-LIBRARY
+US-6 + CAP-AUDIODESC US-1→4). Décision de ne **pas** toucher MEMPHIS : son working
+tree est sale (session `S-350 catalog-contracts` en cours) ; le POM capsule est
+auto-suffisant (il importe un BOM déjà publié), donc l'artefact est publiable seul.
+
+'''
+
+== Défaut latent trouvé et corrigé (avant upload)
+
+`build.gradle.kts` :
+
+```diff
+-compileOnly(platform("education.cccp:workspace-bom:…"))
++implementation(platform("education.cccp:workspace-bom:…"))
+```
+
+* `compileOnly` n'est **pas** publié dans le POM → le POM `0.0.20` initial était
+  **sans import BOM**, avec 4 dépendances **versionless** (`langchain4j`,
+  `langchain4j-ollama`, `kotlinx-coroutines-core`, `kotlin-stdlib-jdk8`) ;
+  Central aurait rejeté l'artefact (« Dependency version information is missing »,
+  pattern MEMPHIS-BOM-FIX).
+* `implementation(platform(...))` publie `<dependencyManagement><scope>import</scope>`
+  (`workspace-bom:0.0.115`, déjà sur Central) ; les 4 dépendances sont couvertes.
+* Vérifié : `publishToMavenLocal` VERT, POM inspecté (import présent, `0.0.20`,
+  marker `education.cccp.capsule.gradle.plugin:0.0.20`), `ktlintCheck` VERT.
+* Constat annexe : les POM locaux `0.0.18`/`0.0.19` étaient invalides pour la même
+  raison — **jamais publiés** sur Central (aucun artefact corrompu en ligne).
+
+'''
+
+== Publication tentée
+
+```
+./gradlew publishAggregationToCentralPortal --no-daemon
+```
+
+```
+Nmcp: deployment bundle '460fba3e-7446-443e-b712-13e104938346' uploaded.
+Nmcp: deployment status is 'VALIDATING'…
+FAILED: Publishing blocked: your organization has reached its monthly release
+count limit. Grace period ended 2026-11-05. Usage resets 2026-12-01.
+```
+
+* Bundle **non publié** (validation refusée). Vérification repo1 :
+  `capsule-plugin/0.0.20` → **404** ; `0.0.15` → **200**.
+* Aucun contournement appliqué (ni JitPack, ni re-upload forcé).
+
+'''
+
+== Décision
+
+* **Attendre le 2026-12-01** (reset quota) ; le POM corrigé est prêt, la release
+  se résume à re-uploader. Puis MEMPHIS (`capsule-plugin 0.0.20` + BOM 0.0.130).
+* **Alternative** : wiring Gradle Plugin Portal (`plugin-publish`) — travail séparé.
+* Le quota est **par organisation** (`cccp.education`) : ne pas enchaîner d'autres
+  releases N0/N1/N2 avant le reset.
+
+'''
+
+== Gates (Local = Build)
+
+----
+./gradlew publishToMavenLocal   → BUILD SUCCESSFUL (0.0.20 signé)
+./gradlew ktlintCheck            → BUILD SUCCESSFUL
+----
+
+Zéro test exécuté en local. Zéro secret.
+
+'''
+
+== Second canal tenté : Gradle Plugin Portal (politique par défaut jusqu'au 2026-12-01)
+
+`plugin-publish 2.2.1` câblé (toml + `alias(libs.plugins.plugin.publish)`, block
+`gradlePlugin` complété : `displayName`, `description`, `tags`, `compatibility`
+`configurationCache=false`/`isolatedProjects=false`, `website`/`vcsUrl`).
+
+```
+./gradlew publishPlugins --no-daemon
+→ FAILED: Failed to post to server.
+  Server responded with: You are not the owner of group education.cccp
+```
+
+* Les clés `GRADLE_PUBLISH_KEY`/`GRADLE_PUBLISH_SECRET` présentes dans
+  l'environnement **ne sont pas celles du compte propriétaire** (`cccp-education`) ;
+  même blocage que `newpipe` (S-005). Action pilote : fournir les clés du compte
+  `cccp-education` ou transférer le groupe `education.cccp`.
+* Le câblage Portal est **prêt** (build vert, tâche `publishPlugins` enregistrée) ;
+  aucun workflow CI capsule ne publie (release manuelle locale).
+* **Aucun artefact publié** sur l'un ou l'autre canal.

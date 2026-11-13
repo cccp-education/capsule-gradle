@@ -1,0 +1,63 @@
+= Session 217 — CAP-AUDIODESC US-2 (source du texte explicite)
+:toc:
+
+:_date_: 2026-11-12
+:_borough_: capsule (N2)
+:_session_precedente_: 216
+:_statut_: ✅ US-2 TERMINÉE
+
+'''
+
+== Contexte
+
+`CAP-AUDIODESC` (vision `GBL-011-4`) : le planificateur pur (US-1) place des
+cues dans les silences. Il manquait la **source du texte**. L'auteur peut
+fournir un **fichier explicite** ; le dérivé SPD/notes présentateur reste
+branché sur `training`/GBL-011 (côté auteur). Règle de l'EPIC : toute absence
+dégénère en **silence**, jamais en échec.
+
+'''
+
+== Livré
+
+`capsule.a11y.AudioDescriptionScriptParser` (pur, avec `load(file)` tolérant) :
+
+* format `durée | texte` :
+  ```
+  # commentaire
+  2.5 | Un conteneur apparaît à gauche.
+  3.0 | Le terminal affiche l'échec du build.
+  ```
+* commentaires `#` et lignes blanches ignorés ;
+* ligne malformée (pas de `|`, durée non numérique, durée `<= 0`, texte vide)
+  **ignorée** — pas d'exception ;
+* le texte peut contenir `|` (seul le **premier** séparateur compte) ;
+* `load(file)` : fichier absent/illisible = liste vide (**dégradation
+  silencieuse**) ;
+* `AudioDescriptionCue` réutilisé (invariants déjà posés par US-1).
+
+'''
+
+== Tests
+
+`AudioDescriptionScriptParserTest` — **7** : parsing, commentaires/blancs,
+ligne malformée ignorée, `|` conservé dans le texte, script vide, fichier
+absent, fichier réel.
+
+'''
+
+== Gates (Local = Build)
+
+----
+./gradlew compileKotlin compileTestKotlin ktlintCheck   → BUILD SUCCESSFUL (28s)
+----
+
+Zéro test exécuté en local. Zéro bump, zéro publication, zéro secret.
+
+'''
+
+== Reste (EPIC CAP-AUDIODESC)
+
+* **US-3** — TTS + mixage ducking + piste audio séparée (MP4/WebM).
+* **US-4** — config 4 sources, BDD `@audiodesc`, porte d'acceptation
+  (sous-titres + transcription + audiodescription) + déclaration des limites.

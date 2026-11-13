@@ -1,5 +1,6 @@
 [versions]
 capsule = "0.0.20"
+plugin-publish = "2.2.1"
 youtube-auth = "0.0.2"
 slider = "0.0.20"
 kotlin = "2.4.10"
@@ -52,6 +53,7 @@ codebase-contracts = { module = "education.cccp:codebase-contracts", version.ref
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 capsule = { id = "education.cccp.capsule", version.ref = "capsule" }
+plugin-publish = { id = "com.gradle.plugin-publish", version.ref = "plugin-publish" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 codebase = { id = "education.cccp.codebase", version.ref = "codebase-gradle-plugin" }
 youtube-auth = { id = "education.cccp.video.auth", version.ref = "youtube-auth" }

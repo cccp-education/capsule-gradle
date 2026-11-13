@@ -1,0 +1,77 @@
+= Session 215 — CAP-AUDIODESC US-1 (domaine pur `capsule.a11y`)
+:toc:
+
+:_date_: 2026-11-12
+:_borough_: capsule (N2)
+:_session_precedente_: 214
+:_statut_: ✅ US-1 TERMINÉE — EPIC créé/synchronisé (vision GBL-011-4)
+
+'''
+
+== Contexte
+
+Deux défauts de traçabilité ont motivé cette session :
+
+. **La vision n'était pas descendue en EPIC de borough visible** :
+  `CAP-AUDIODESC` (audiodescription vidéo, `GBL-011-4`) existait en bas de
+  `BACKLOG.adoc` mais **pas dans la roadmap `INDEX.adoc`**, et l'INDEX affirmait
+  deux fois « Tous les EPICs actionnables sont clos ».
+. **La vision `VISION_PIPELINE_FORMATION` promet une vidéo sous-titrée** ;
+  l'accessibilité aveugle (audiodescription) n'avait aucun code
+  (`grep audio.desc*` = 0, constat O-2 de l'audit accessibilité du 2026-11-01).
+
+Cette session corrige la traçabilité et consomme la première US de l'EPIC.
+
+'''
+
+== Livré
+
+Domaine pur `capsule.a11y` (`src/main/kotlin/capsule/a11y/AudioDescriptionPlanner.kt`) :
+
+* `NarrationWindow(startSeconds, endSeconds)` — fenêtre de narration, invariants
+  `start >= 0`, `end > start`.
+* `AudioDescriptionCue(text, durationSeconds)` — description authorée + durée
+  parlée **estimée** (le planner est pur : pas de TTS, pas de mesure).
+* `AudioDescriptionSegment(text, startSeconds, endSeconds)` — segment placé.
+* `AudioDescriptionScript(segments, unplaced)` — plan ; `unplaced` **déclare la
+  limite** quand les silences sont insuffisants (rien n'est silencieusement
+  jeté, rien n'est écrasé sur la narration).
+* `AudioDescriptionPlanner.plan(cues, narration, minGapSeconds, totalDurationSeconds)` :
+  - narration triée + fenêtres chevauchantes fusionnées ;
+  - silences = complément sur `[0, dernière narration]` (+ silence de fin si
+    `totalDurationSeconds` fourni) ;
+  - placement **first-fit** dans l'ordre des cues → déterministe ;
+  - un segment est **toujours** disjoint de la narration ;
+  - seuil `minGapSeconds` (défaut `0.5 s`) : un silence trop court est inutilisable.
+
+'''
+
+== Tests
+
+`AudioDescriptionPlannerTest` — **14 tests** : silence d'entrée, silence entre
+deux fenêtres, non-chevauchement, ordre first-fit, `unplaced`, silence de fin,
+seuil de gap, fusion des chevauchements, somme des durées, plan vide, paramètres
+invalides (fenêtre, cue blanc, durée non positive, gap négatif).
+
+'''
+
+== Gates (Local = Build)
+
+----
+./gradlew compileKotlin compileTestKotlin   → BUILD SUCCESSFUL (2m41s)
+./gradlew ktlintCheck                        → BUILD SUCCESSFUL
+----
+
+Zéro test exécuté en local. Zéro secret. Zéro bump, zéro publication.
+
+'''
+
+== Reste (EPIC CAP-AUDIODESC)
+
+* **US-2** — source du texte (SPG/notes présentateur ou fichier explicite,
+  dégradation silencieuse).
+* **US-3** — TTS + mixage ducking + piste audio séparée (MP4/WebM).
+* **US-4** — config 4 sources, BDD `@audiodesc`, porte d'acceptation
+  (sous-titres + transcription + audiodescription) et déclaration des limites.
+* EPIC transverse `GBL-011` : `GBL-011-1` (`a11y-contracts` N0) reste piloté
+  par workspace-bom ; `GBL-011-4` = cet EPIC.

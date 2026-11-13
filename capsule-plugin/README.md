@@ -135,9 +135,9 @@ External tools (not Maven dependencies): **Piper** (local offline TTS, default),
 
 ## Configuration
 
-`CapsuleConfig` has **18 sections**: `input`, `tts`, `capture`, `distrib`, `manim`,
-`output`, `strictMode`, `context`, `validation`, `qc`, `audioPost`, `transcript`,
-`remotion`, `podcast`, `preview`, `chapters`, `viral`, `voice`.
+`CapsuleConfig` has **19 sections**: `input`, `tts`, `capture`, `distrib`, `manim`,
+`output`, `strictMode`, `context`, `validation`, `qc`, `audioPost`, `a11y`,
+`transcript`, `remotion`, `podcast`, `preview`, `chapters`, `viral`, `voice`.
 
 Every value is resolved from **4 sources** (precedence **CLI > YAML > gradle.properties > ENV**):
 
@@ -152,12 +152,32 @@ CAPSULE_OUTPUT_FORMAT=mp4
 
 New capabilities are **opt-in (default `false`)** for backward compatibility.
 
+### Accessibility audio description (`a11y`)
+
+The `a11y` section describes what is **seen** (diagrams, gestures, screen
+changes) in the narration silences:
+
+```yaml
+a11y:
+  audioDescriptionEnabled: true
+  audioDescriptionFile: docs/description.txt      # `duration | text` per line
+  audioDescriptionLevelDb: -6.0
+```
+
+The script lists one cue per line (`2.5 | A container appears.`). Cues that do
+not fit a silence are **declared** (never squeezed over the narration); the
+description is mixed with ducking and a separate `<deck>-audiodesc.m4a` track is
+written next to the video. Any missing input (script, TTS, FFmpeg) degrades
+silently to the narration-only video. The acceptance gate
+(`capsule.a11y.A11yAcceptance`) returns `Accepted`/`Degraded` and always
+declares the v1 limit: extended audio description is not supported.
+
 ## Test matrix
 
 | Task | Scope | Details |
 |------|-------|---------|
 | `test` | JUnit5 unit tests | Excludes `capsule.scenarios.**`. `@integration` tests are *not* filtered out: they self-skip when the external tool (Chromium, espeak, FFmpeg, Manim) is missing |
-| `cucumberTest` | Cucumber BDD | features under `src/test/features` (44 `.feature` files), `forkEvery = 1`, `maxParallelForks = 1`, heap 1g. Skipped unless `-PrunCucumber` or `CI=true` (CR-10) |
+| `cucumberTest` | Cucumber BDD | features under `src/test/features` (50 `.feature` files), `forkEvery = 1`, `maxParallelForks = 1`, heap 1g. Skipped unless `-PrunCucumber` or `CI=true` (CR-10) |
 | `functionalTest` | Gradle TestKit | Plugin application functional tests |
 | `check` | All | Depends on `test` + `cucumberTest` + `functionalTest` |
 

@@ -1,38 +1,54 @@
-= PROMPT_REPRISE — Capsule Gradle (Détroit) (Session 214 TERMINÉE → 215)
-:session: 215
+= PROMPT_REPRISE — Capsule Gradle (Détroit) (Session 220 TERMINÉE → 221)
+:session: 221
 :borough: Détroit
-:session_precedente: 214 — Chapitres YouTube + sélection vidéo déterministe ✅
+:session_precedente: 220 — release `0.0.20` tentée, BLOQUÉE par le quota Sonatype ; POM corrigé
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
-== Session 214 (TERMINÉE)
+== Session 220 (TERMINÉE) — release tentée (feu vert pilote)
 
-* **Chapitres YouTube câblés** : `publishCapsuleToYouTube` lit
-  `build/capsule/chapters/chapters.txt` (`@InputFiles @Optional`) et dépend de
-  `generateCapsuleChapters` — fin du `chapters = []` forcé.
-* **Sélection vidéo déterministe** : `PublicationInputSelection.selectVideo`
-  (MP4 unique, sinon suffixe `_<lang>` via `publish.languageCode`, sinon premier
-  + avertissement) — fin du `firstOrNull` arbitraire en multi-langue.
-* `PublicationInputSelection.chapterLines` (fichier prioritaire, repli config).
-* Tests : 8 unit `PublicationInputSelectionTest` + 3 fonctionnels TestKit
-  (dépendance, chapitres invalides, timeline valide).
-* Local = Build : compiles ×3 + `ktlintCheck` VERTS. Version `0.0.15 → 0.0.20` (+ correctif packaging JitPack `annotations`).
+* `publishToMavenLocal` VERT (0.0.20 signé).
+* **Défaut latent corrigé** : `build.gradle.kts` — `compileOnly(platform(workspace-bom))`
+  → `implementation(platform(...))`. Le POM importe désormais `workspace-bom:0.0.115`
+  (`<scope>import</scope>`) ; sans lui, `langchain4j`, `langchain4j-ollama`,
+  `kotlinx-coroutines-core` restaient versionless → rejet Central garanti
+  (pattern MEMPHIS-BOM-FIX). Les 0.0.18/0.0.19 locales étaient invalides pour la
+  même raison (jamais publiées).
+* `publishAggregationToCentralPortal` **REFUSÉ** :
+  `Publishing blocked: your organization has reached its monthly release count limit.
+  Grace period ended 2026-11-05. Usage resets 2026-12-01.`
+  bundle `460fba3e-7446-443e-b712-13e104938346` **non publié**. repo1 :
+  `0.0.20` = 404, `0.0.15` = 200.
+* **Portal câblé puis REFUSÉ** : `plugin-publish 2.2.1` ajouté (compatibility
+  false/false, displayName/description/tags/website/vcsUrl) ; `publishPlugins` →
+  `You are not the owner of group education.cccp`. Les clés `GRADLE_PUBLISH_KEY/SECRET`
+  de l'environnement ne sont pas celles du compte propriétaire (`cccp-education`).
+* MEMPHIS **non touché** (working tree sale, session S-350 `catalog-contracts`).
+* Rapport `.agents/sessions/220-release-0.0.20-blocked.adoc`.
 
 == État
 
-* YouTube (upload réel) **bloqué** côté Google (~48 h) ; preflight disponible
-  dans `youtube-auth-plugin 0.0.5` (source, non publiée).
-* Aucun EPIC métier ouvert.
+* Source `0.0.20` (POM corrigé, prêt) ; Central `0.0.15` ; **quota Central épuisé
+  jusqu'au 2026-12-01**.
+* Aucun EPIC/US métier ouvert. Tous clos.
+* Dettes : copies N2 `video.kernel.music` ; catalogue MEMPHIS `capsule-plugin 0.0.20`.
 
-== Mission Session 215 — au choix pilote
+== Mission Session 221 — débloquer la release (Portal d'abord)
 
-. Publication `capsule-plugin 0.0.20` (après CI verte) + adoption
-  `youtube-auth 0.0.5`.
-. Reprise du déploiement YouTube (voir `hyperframes` S-048 + cadrage §10).
-. Maintenance / repin.
+. **Portal (politique par défaut)** : fournir les clés du compte **`cccp-education`**
+   (`GRADLE_PUBLISH_KEY`/`GRADLE_PUBLISH_SECRET`) ou transférer le groupe
+   `education.cccp` → `./gradlew publishPlugins --no-daemon` (le câblage est prêt).
+   Vérifier `https://plugins.gradle.org/plugin/education.cccp.capsule`.
+. **Sinon Central ≥ 2026-12-01** : `./gradlew publishAggregationToCentralPortal --no-daemon`
+   (POM corrigé prêt), vérifier repo1 (`capsule-plugin/0.0.20` + marker).
+. **Seulement ensuite** MEMPHIS : `capsule-plugin = "0.0.20"` + BOM/catalogue
+   `0.0.130`, publication N0 (coordonner avec S-350 si son working tree est encore sale).
+
+* **Interdit** : forcer par JitPack, réutiliser une version déjà publiée, ou
+  enchaîner des tentatives Central (le quota est **par organisation**).
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** ; **Règle 2** accord permanent.
-* **Règle 7** : capsule ne modifie jamais le deck source.
+* Le quota Sonatype est **par organisation** (`cccp.education`) : toute autre
+  release N0/N1/N2 sera refusée jusqu'au reset — ne pas enchaîner des tentatives.
 * Zéro secret ; zéro Python ; English only code/tests/features.
-* Runner dédié par feature (S-082), steps préfixés (S-088), shards CI à jour.

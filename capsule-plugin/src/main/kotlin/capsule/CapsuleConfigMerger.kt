@@ -52,6 +52,7 @@ object CapsuleConfigMerger {
             validation = mergeValidationConfig(envConfig.validation, propertiesConfig.validation, yaml?.validation, cliParams),
             qc = mergeQcConfig(envConfig.qc, propertiesConfig.qc, yaml?.qc, cliParams),
             audioPost = mergeAudioPostConfig(envConfig.audioPost, propertiesConfig.audioPost, yaml?.audioPost, cliParams),
+            a11y = mergeA11yConfig(envConfig.a11y, propertiesConfig.a11y, yaml?.a11y, cliParams),
             transcript = mergeTranscriptConfig(envConfig.transcript, propertiesConfig.transcript, yaml?.transcript, cliParams),
             remotion = mergeRemotionConfig(envConfig.remotion, propertiesConfig.remotion, yaml?.remotion, cliParams),
             podcast = mergePodcastConfig(envConfig.podcast, propertiesConfig.podcast, yaml?.podcast, cliParams),
@@ -200,6 +201,15 @@ object CapsuleConfigMerger {
                     loudnessTarget = env["CAPSULE_AUDIO_POST_LOUDNESS_TARGET"]?.toDoubleOrNull() ?: -16.0,
                     duckingEnabled = env["CAPSULE_AUDIO_POST_DUCKING_ENABLED"]?.toBoolean() ?: false,
                     twoPassLoudnessEnabled = env["CAPSULE_AUDIO_POST_TWO_PASS_LOUDNESS_ENABLED"]?.toBoolean() ?: false,
+                    bgmLibraryFile = env["CAPSULE_AUDIO_POST_BGM_LIBRARY_FILE"] ?: "",
+                    bgmTrack = env["CAPSULE_AUDIO_POST_BGM_TRACK"] ?: "",
+                    bgmMood = env["CAPSULE_AUDIO_POST_BGM_MOOD"] ?: "",
+                ),
+            a11y =
+                A11yConfig(
+                    audioDescriptionEnabled = env["CAPSULE_A11Y_AUDIO_DESCRIPTION_ENABLED"]?.toBoolean() ?: false,
+                    audioDescriptionFile = env["CAPSULE_A11Y_AUDIO_DESCRIPTION_FILE"] ?: "",
+                    audioDescriptionLevelDb = env["CAPSULE_A11Y_AUDIO_DESCRIPTION_LEVEL_DB"]?.toDoubleOrNull() ?: -6.0,
                 ),
             transcript =
                 TranscriptConfig(
@@ -373,6 +383,15 @@ object CapsuleConfigMerger {
                     loudnessTarget = props["capsule.audioPost.loudnessTarget"]?.toDoubleOrNull() ?: -16.0,
                     duckingEnabled = props["capsule.audioPost.duckingEnabled"]?.toBoolean() ?: false,
                     twoPassLoudnessEnabled = props["capsule.audioPost.twoPassLoudnessEnabled"]?.toBoolean() ?: false,
+                    bgmLibraryFile = props["capsule.audioPost.bgmLibraryFile"] ?: "",
+                    bgmTrack = props["capsule.audioPost.bgmTrack"] ?: "",
+                    bgmMood = props["capsule.audioPost.bgmMood"] ?: "",
+                ),
+            a11y =
+                A11yConfig(
+                    audioDescriptionEnabled = props["capsule.a11y.audioDescriptionEnabled"]?.toBoolean() ?: false,
+                    audioDescriptionFile = props["capsule.a11y.audioDescriptionFile"] ?: "",
+                    audioDescriptionLevelDb = props["capsule.a11y.audioDescriptionLevelDb"]?.toDoubleOrNull() ?: -6.0,
                 ),
             transcript =
                 TranscriptConfig(
@@ -652,6 +671,21 @@ object CapsuleConfigMerger {
             loudnessTarget = mergeDouble(cli, "audioPost.loudnessTarget", yaml?.loudnessTarget, props.loudnessTarget),
             duckingEnabled = mergeBoolean(cli, "audioPost.duckingEnabled", yaml?.duckingEnabled, props.duckingEnabled),
             twoPassLoudnessEnabled = mergeBoolean(cli, "audioPost.twoPassLoudnessEnabled", yaml?.twoPassLoudnessEnabled, props.twoPassLoudnessEnabled),
+            bgmLibraryFile = mergeStr(cli, "audioPost.bgmLibraryFile", yaml?.bgmLibraryFile, props.bgmLibraryFile, env.bgmLibraryFile),
+            bgmTrack = mergeStr(cli, "audioPost.bgmTrack", yaml?.bgmTrack, props.bgmTrack, env.bgmTrack),
+            bgmMood = mergeStr(cli, "audioPost.bgmMood", yaml?.bgmMood, props.bgmMood, env.bgmMood),
+        )
+
+    private fun mergeA11yConfig(
+        env: A11yConfig,
+        props: A11yConfig,
+        yaml: A11yConfig?,
+        cli: Map<String, Any?>,
+    ): A11yConfig =
+        A11yConfig(
+            audioDescriptionEnabled = mergeBoolean(cli, "a11y.audioDescriptionEnabled", yaml?.audioDescriptionEnabled, props.audioDescriptionEnabled),
+            audioDescriptionFile = mergeStr(cli, "a11y.audioDescriptionFile", yaml?.audioDescriptionFile, props.audioDescriptionFile, env.audioDescriptionFile),
+            audioDescriptionLevelDb = mergeDouble(cli, "a11y.audioDescriptionLevelDb", yaml?.audioDescriptionLevelDb, props.audioDescriptionLevelDb),
         )
 
     private fun mergeTranscriptConfig(

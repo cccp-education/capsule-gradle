@@ -1,11 +1,21 @@
 package capsule
 
+import capsule.a11y.AudioDescriptionInput
+import capsule.a11y.AudioDescriptionMixCommand
+import capsule.a11y.AudioDescriptionMixSettings
+import capsule.a11y.AudioDescriptionPlanner
+import capsule.a11y.AudioDescriptionScriptParser
+import capsule.a11y.NarrationWindow
 import capsule.adapter.revealjs.RevealJsCaptureSettings
 import capsule.adapter.revealjs.RevealJsDeckHtml
 import capsule.adapter.revealjs.RevealJsEngineAdapter
 import capsule.adapter.revealjs.RevealJsRenderPlan
 import capsule.audio.AudioPostConfig
 import capsule.audio.NoOpAudioPostProcessor
+import capsule.audio.music.MusicAssetResolver
+import capsule.audio.music.MusicLibraryManifestLoader
+import capsule.audio.music.MusicResolution
+import capsule.audio.music.ResolvedMusicAsset
 import capsule.feed.CapsuleScript
 import capsule.feed.CapsuleScriptReader
 import capsule.feed.SlideSegment
@@ -21,6 +31,9 @@ import video.kernel.FileVisualSource
 import video.kernel.VideoRenderRequest
 import video.kernel.segment.VideoKind
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import java.security.MessageDigest
 
 @DisableCachingByDefault(because = "Filesystem-bound: injects audio into HTML deck and captures video via Playwright")
 open class CapsuleVideoTask : DefaultTask() {
@@ -385,6 +398,7 @@ open class CapsuleVideoTask : DefaultTask() {
             val finalVideo = outDir.resolve("${parsed.name}.${generatedVideo.extension}")
             generatedVideo.copyTo(finalVideo, overwrite = true)
             mixAudioWithVideo(finalVideo, audioDir, parsed.segments)
+            applyAudioDescriptionIfEnabled(finalVideo, audioDir, parsed.segments)
             burnInSubtitlesIfEnabled(finalVideo, subtitleFile)
             applyAudioPostIfEnabled(finalVideo)
             val finalOutput = convertFormatIfEnabled(finalVideo)
@@ -426,6 +440,7 @@ open class CapsuleVideoTask : DefaultTask() {
             val finalVideo = outDir.resolve("${parsed.name}.${concatVideo.extension}")
             concatVideo.copyTo(finalVideo, overwrite = true)
             mixAudioWithVideo(finalVideo, audioDir, parsed.segments)
+            applyAudioDescriptionIfEnabled(finalVideo, audioDir, parsed.segments)
             burnInSubtitlesIfEnabled(finalVideo, subtitleFile)
             applyAudioPostIfEnabled(finalVideo)
             val produced = convertFormatIfEnabled(finalVideo)
@@ -740,7 +755,7 @@ open class CapsuleVideoTask : DefaultTask() {
         val config =
             AudioPostConfig(
                 bgmEnabled = bgmEnabled,
-                bgmFile = capsuleExtension.audioPostBgmFile.get(),
+                bgmFile = resolveBgmFile(),
                 bgmLevel = capsuleExtension.audioPostBgmLevel.get(),
                 loudnessTarget = capsuleExtension.audioPostLoudnessTarget.get(),
                 duckingEnabled = duckingEnabled,
@@ -765,6 +780,206 @@ open class CapsuleVideoTask : DefaultTask() {
             if (tmpFile.exists()) tmpFile.delete()
         }
     }
+
+    /**
+     * Mixes the audio description into the final video (CAP-AUDIODESC US-3).
+     *
+     * Opt-in ([CapsuleExtension.a11yAudioDescriptionEnabled]). The cues are read
+     * from the explicit script ([AudioDescriptionScriptParser]), placed into the
+     * narration silences by the pure [AudioDescriptionPlanner], synthesized by the
+     * existing TTS engine, then mixed under the narration with ducking; a
+     * **separate audio track** is written next to the video. Every failure
+     * degrades silently to the narration-only video.
+     */
+    internal fun applyAudioDescriptionIfEnabled(
+        finalVideo: File,
+        audioDir: File,
+        slides: List<SlideSegment>,
+    ) {
+        if (!capsuleExtension.a11yAudioDescriptionEnabled.get()) return
+
+        val scriptFile = capsuleExtension.a11yAudioDescriptionFile.get()
+        if (scriptFile.isBlank()) {
+            logger.warn("Audio description: enabled but no script configured — skipping")
+            return
+        }
+        val cues = AudioDescriptionScriptParser.load(File(scriptFile))
+        if (cues.isEmpty()) {
+            logger.warn("Audio description: no cue in '{}' — skipping", scriptFile)
+            return
+        }
+
+        val windows = narrationWindows(audioDir, slides)
+        if (windows.isEmpty()) {
+            logger.warn("Audio description: no narration window — skipping")
+            return
+        }
+        val plan = AudioDescriptionPlanner.plan(cues, windows, totalDurationSeconds = windows.last().endSeconds)
+        if (plan.segments.isEmpty()) {
+            logger.warn("Audio description: {} cue(s) do not fit the narration silences — skipping", plan.unplaced.size)
+            return
+        }
+
+        val engine =
+            runCatching { resolveTtsEngine() }
+                .getOrElse { error ->
+                    logger.warn("Audio description: TTS engine unavailable ({}) — skipping", error.message)
+                    return
+                }
+        if (!engine.isAvailable()) {
+            logger.warn("Audio description: TTS '{}' unavailable — skipping", engine.name())
+            return
+        }
+
+        val descriptionDir = audioDir.resolve("audiodescription").also { it.mkdirs() }
+        val inputs =
+            plan.segments.mapIndexedNotNull { index, segment ->
+                val output = descriptionDir.resolve("description-${String.format("%02d", index + 1)}.mp3")
+                if (!output.exists()) {
+                    runCatching { engine.synthesize(segment.text, output) }
+                        .onFailure { logger.warn("Audio description: TTS failed for cue {} — skipped", index + 1) }
+                }
+                output.takeIf { it.isFile && it.length() > 0 }?.let { AudioDescriptionInput(it, segment.startSeconds) }
+            }
+        if (inputs.isEmpty()) {
+            logger.warn("Audio description: no synthesized cue — narration only")
+            return
+        }
+
+        val settings = AudioDescriptionMixSettings(levelDb = capsuleExtension.a11yAudioDescriptionLevelDb.get())
+        val ffmpegPath = capsuleExtension.ffmpegExecutablePath.get()
+        val mixed = File(finalVideo.absolutePath + ".audiodesc.${finalVideo.extension}")
+        val separate = File(finalVideo.parentFile, finalVideo.nameWithoutExtension + "-audiodesc.m4a")
+        val argv =
+            AudioDescriptionMixCommand.buildArgv(
+                videoFile = finalVideo,
+                inputs = inputs,
+                outputVideo = mixed,
+                separateAudio = separate,
+                settings = settings,
+                audioCodec = AudioCodecs.forContainer(finalVideo.extension),
+                ffmpegPath = ffmpegPath,
+            )
+
+        try {
+            val result = ProcessRunner.run(argv)
+            if (result.isSuccess && mixed.exists()) {
+                if (FileReplace.moveOver(mixed, finalVideo)) {
+                    logger.lifecycle(
+                        "Audio description: {} cue(s) mixed, separate track → {}",
+                        inputs.size,
+                        separate.name,
+                    )
+                } else {
+                    logger.error("Audio description: could not put the mixed file in place of {} — narration only", finalVideo.name)
+                }
+            } else {
+                logger.warn("Audio description mix failed (ffmpeg exit code {}), narration only: {}", result.exitCode, result.tail(8))
+            }
+        } catch (e: Exception) {
+            logger.warn("Audio description mix error: {} — narration only", e.message)
+        } finally {
+            if (mixed.exists()) mixed.delete()
+        }
+    }
+
+    /**
+     * Narration windows from the per-slide audio durations, in document order
+     * (the video audio is the concatenation of those files — see
+     * [mixAudioWithVideo]).
+     */
+    private fun narrationWindows(
+        audioDir: File,
+        slides: List<SlideSegment>,
+    ): List<NarrationWindow> {
+        var cursor = 0.0
+        val windows = mutableListOf<NarrationWindow>()
+        for (segment in slides) {
+            val index = String.format("%02d", segment.index)
+            val audio = audioDir.resolve("slide-$index.mp3")
+            if (!audio.isFile) continue
+            val duration = MediaProbeUtil.probeDuration(audio)
+            if (duration <= 0.0) continue
+            windows.add(NarrationWindow(cursor, cursor + duration))
+            cursor += duration
+        }
+        return windows
+    }
+
+    /**
+     * Resolves the BGM file for audio post (HF-MUSIC-LIBRARY US-6).
+     *
+     * Precedence: an explicit [CapsuleExtension.audioPostBgmFile] wins (backward
+     * compat); otherwise a library manifest
+     * ([CapsuleExtension.audioPostBgmLibraryFile]) is read and the track/mood
+     * selection is resolved and copied into the build output (sha256 skip).
+     * Any failure degrades silently to "no BGM" (the video is never broken).
+     */
+    internal fun resolveBgmFile(): String {
+        val explicit = capsuleExtension.audioPostBgmFile.get()
+        if (explicit.isNotBlank()) return explicit
+        val libraryFile = capsuleExtension.audioPostBgmLibraryFile.get()
+        if (libraryFile.isBlank()) return ""
+
+        val manifest = File(libraryFile)
+        if (!manifest.isFile) {
+            logger.warn("Audio post: music library manifest not found ('{}') — keeping original", libraryFile)
+            return ""
+        }
+        val library =
+            runCatching { MusicLibraryManifestLoader.load(manifest) }
+                .getOrElse { error ->
+                    logger.warn("Audio post: invalid music library manifest ('{}') — keeping original", error.message)
+                    return ""
+                }
+        val audioRoot = manifest.absoluteFile.parentFile?.absolutePath ?: ""
+        val resolution =
+            MusicAssetResolver.resolve(
+                library = library,
+                audioRoot = audioRoot,
+                trackId = capsuleExtension.audioPostBgmTrack.get(),
+                mood = capsuleExtension.audioPostBgmMood.get(),
+            )
+        return when (resolution) {
+            is MusicResolution.Rejected -> {
+                logger.warn("Audio post: library BGM not resolved — {}", resolution.reason)
+                ""
+            }
+            is MusicResolution.Resolved -> copyResolvedBgm(resolution.asset)
+        }
+    }
+
+    /** Copies a resolved library asset into the build output (sha256 skip). */
+    private fun copyResolvedBgm(asset: ResolvedMusicAsset): String {
+        val source = File(asset.sourcePath)
+        if (!source.isFile) {
+            logger.warn("Audio post: library audio file not found ('{}') — keeping original", asset.sourcePath)
+            return ""
+        }
+        val targetDir = outputDir.get().asFile.resolve("assets/audio")
+        targetDir.mkdirs()
+        val target = targetDir.resolve(asset.targetName)
+        val existingSha = target.takeIf { it.isFile }?.let { sha256(it) }
+        if (MusicAssetResolver.needsCopy(existingSha, asset.sha256)) {
+            Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            logger.lifecycle("Audio post: copied library BGM '{}' → {}", asset.trackId, target.absolutePath)
+        }
+        return target.absolutePath
+    }
+
+    private fun sha256(file: File): String? =
+        runCatching {
+            val digest = MessageDigest.getInstance("SHA-256")
+            file.inputStream().use { input ->
+                val buffer = ByteArray(8192)
+                var read = input.read(buffer)
+                while (read >= 0) {
+                    digest.update(buffer, 0, read)
+                    read = input.read(buffer)
+                }
+            }
+            digest.digest().joinToString("") { "%02x".format(it) }
+        }.getOrNull()
 
     /**
      * Post-burnIn format conversion (CAP-MP4 US-2). Dispatches on

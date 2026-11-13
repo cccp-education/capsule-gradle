@@ -1,0 +1,67 @@
+= Session 219 — CAP-AUDIODESC US-4 (porte d'acceptation + BDD) — EPIC TERMINÉ 4/4
+:toc:
+
+:_date_: 2026-11-12
+:_borough_: capsule (N2)
+:_session_precedente_: 218
+:_statut_: ✅ US-4 TERMINÉE — `CAP-AUDIODESC` TERMINÉ 4/4
+
+'''
+
+== Contexte
+
+Le mixage (US-3) et la source (US-2) existent. Il restait à **prouver** la
+chaîne et à **déclarer les limites** : BDD `@audiodesc`, porte d'acceptation
+(sous-titres + transcription + audiodescription), et une limite explicite
+(pas d'audiodescription étendue en v1).
+
+'''
+
+== Livré
+
+* **Porte pure** `capsule.a11y.A11yAcceptance` :
+  - entrée `A11yInputs(subtitlesPresent, transcriptPresent,
+    audioDescriptionRequested, audioDescriptionPresent)` ;
+  - sortie `A11yVerdict.Accepted(limitations)` /
+    `A11yVerdict.Degraded(reasons, limitations)` ;
+  - règles : sous-titres et transcription toujours attendus ; audiodescription
+    attendue **seulement si demandée** ; toute absence **dégrade** (jamais
+    d'exception) ;
+  - `limitations` **toujours** renvoyée : `extended audio description is not
+    supported in v1`.
+* **BDD** `capsule_audiodesc.feature` — 6 scénarios `@audiodesc` :
+  placement dans un silence, limite déclarée (`unplaced`), ducking/adely,
+  verdict accepté, transcription manquante, audiodescription demandée absente.
+* `CapsuleAudiodescSteps` (préfixes anti-collision, S-088) + **shard CI dédié**
+  `CucumberShardAudiodescRunner` / `cucumberTestShardAudiodesc` (build +
+  `full-tests.yml`) — partition gardée par `CapsuleCucumberShardCoverageTest`.
+* `A11yAcceptanceTest` — **5** tests.
+
+'''
+
+== Gates (Local = Build)
+
+----
+./gradlew compileKotlin compileTestKotlin   → BUILD SUCCESSFUL (1m59s)
+./gradlew ktlintCheck                        → BUILD SUCCESSFUL
+----
+
+Zéro test exécuté en local (Local = Build, Tests = CI). Preuve = CI du push.
+Zéro bump, zéro publication, zéro secret.
+
+'''
+
+== Bilan EPIC CAP-AUDIODESC (4/4)
+
+* US-1 S-215 — domaine pur (`AudioDescriptionPlanner`, limite via `unplaced`).
+* US-2 S-217 — source explicite (`AudioDescriptionScriptParser`, dégradation).
+* US-3 S-218 — mixage (`AudioDescriptionMixCommand`, TTS, piste séparée, config `a11y`).
+* US-4 S-219 — porte d'acceptation + BDD + shard CI + limites déclarées.
+
+'''
+
+== Reste
+
+* **Aucune US métier ouverte.** Release `capsule-plugin 0.0.20` au choix pilote.
+* Dettes : copies N2 `video.kernel.music` (capsule + hyperframes) au reset Central.
+* `HF-SPEAKER-NOTES` (hyperframes) reste bloqué par la publication `video-kernel 0.9.0`.
