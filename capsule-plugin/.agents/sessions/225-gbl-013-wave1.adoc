@@ -1,0 +1,19 @@
+= Session 225 — GBL-013 vague 1 : job `fast` dans l'image
+:date: 2026-11-14
+:borough: Détroit (capsule-gradle)
+
+== Livré
+
+* `ci/run.sh` (`fast` = `ktlintCheck test` ; `test` = `test`).
+* `.github/workflows/test.yml` migré : `container:` épinglé sur
+  `cccpeducation/cccp-ci-base@sha256:4722c1bc…`, suppression de `setup-java`,
+  `ci/run.sh fast` (même daemon, même gate ktlint + unit).
+
+== Preuve
+
+Run `43490380362` **VERT** (`Fast Tests (PR Gate)` dans le conteneur).
+
+== Suivant
+
+Migrer `full-tests.yml` (shards BDD/functional + Playwright réel) reste optionnel ;
+les navigateurs Playwright ne sont pas bakés dans l'image (deps seulement).

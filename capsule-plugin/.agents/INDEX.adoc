@@ -279,3 +279,6 @@ pour MVP1 si besoin.
 == Session 213 — JitPack mirror (CNV-16)
 
 Publication JitPack de capsule-plugin 0.0.15. JitPack : 0.0.15 — POM HTTP 200.
+
+== Session 225 — GBL-013 (clôture) — 2026-11-14
+Job fast dans l'image ; run 43490380362.

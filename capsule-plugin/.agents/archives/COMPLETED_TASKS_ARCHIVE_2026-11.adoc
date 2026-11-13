@@ -86,3 +86,5 @@
 * [x] Feature alignée `1.0` pour `{double}`. Test-only, zéro production.
 * [x] Preuve = shard CI `cucumberTestShardAudiodesc` ; zéro bump, zéro publication.
 * [x] Rapport `.agents/sessions/222-audiodesc-bdd-steps-fix.adoc`.
+
+* GBL-013 — portabilité CI (session close) : voir `.agents/sessions/` (rapport dédié).

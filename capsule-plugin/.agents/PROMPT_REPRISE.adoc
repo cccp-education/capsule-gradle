@@ -42,3 +42,8 @@ _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 * **Local = Build, Tests = CI** ; **Règle 2** accord permanent.
 * Zéro secret ; zéro Python ; English only code/tests/features.
 * JitPack ne sert pas le marker au groupId de l'id → shim obligatoire.
+
+== GBL-013 (clôture) — 2026-11-14
+Portabilité CI livrée : image \`cccp-ci-base\`, \`ci/run.sh\`, adapter fin.
+Rapport \`.agents/sessions/225-gbl-013-wave1.adoc\`. Reste : US-5→US-9 (cadrage racine
+\`.agents/CADRAGE_EPIC_GBL_013_PORTABILITE_CI.adoc\`).

@@ -264,3 +264,7 @@ vide = silence) ; `VoiceQualityGate.REASON_SILENT_AUDIO` ; `VoiceVerifier`
 Publication JitPack de capsule-plugin 0.0.15. JitPack : 0.0.15 — POM HTTP 200. Shim `useModule` pour
 `education.cccp.build.*` (tag JitPack `0.0.15`). Rapport
 `capsule-plugin/.agents/sessions/213-jitpack-mirror.adoc`.
+
+== Session 225 — GBL-013 vague 1 : job fast dans l'image — 2026-11-14
+
+ci/run.sh (fast = ktlintCheck test) + test.yml migré (container cccp-ci-base@sha256:4722…). Run 43490380362 VERT. Rapport `.agents/sessions/225-gbl-013-wave1.adoc`.
