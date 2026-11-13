@@ -1,6 +1,23 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-11-13 (S-220 — release 0.0.20 BLOQUÉE par le quota Sonatype (reset 2026-12-01) ; POM corrigé (import BOM) ; S-219 CAP-AUDIODESC 4/4.)
+:last_update: 2026-11-13 (S-223 — CNV-17 : JitPack canal unique (coordonnées + plateforme `0.0.136`) ; S-222 steps `@audiodesc` ; S-221 JitPack `v0.0.21`.)
+
+'''
+== ✅ Session 223 — CNV-17 (JitPack canal unique)
+
+* Décision pilote : JitPack = canal **unique** des artefacts publics ; un
+  artefact = un canal = un nom = une version (N0 `workspace-bom 0.0.136`,
+  conventions `0.0.17`).
+* Coordonnées de consommation JitPack : `codebase-plugin`
+  (`com.github.cccp-education.codebase-gradle`), `i18n-contracts` et
+  `codebase-contracts` `0.0.136` (`workspace-bom`), `video-kernel`
+  (`com.github.cccp-education:video-kernel-gradle`).
+* Plateforme `com.github.cccp-education.workspace-bom:workspace-bom:0.0.136`
+  (littéral JitPack) ; shim conventions `0.0.17` + dépôt `jitpack.io` en
+  résolution (racine + sous-build).
+* Aucun test modifié. CI verte : `Test` `43469627369` + `Full Tests`
+  `43469627355` (commit `0c74e1b`).
+* Rapport `.agents/sessions/223-cnv-17-jitpack-channel.adoc`.
 
 '''
 == ✅ Publication JitPack `capsule-plugin v0.0.21` (S-221)
@@ -1157,3 +1174,20 @@ silences de la narration. Si les silences sont insuffisants, la limite est décl
 *Critère de sortie* : une capsule de référence produit sous-titres + transcription +
 audiodescription, le mixage ne masque pas la narration, et le rapport d'acceptation
 atteste les trois.
+
+== EPIC GBL-013 — Portabilité de la CI (transverse) — S-226
+
+_Cadrage racine : `.agents/CADRAGE_EPIC_GBL_013_PORTABILITE_CI.adoc` (jardin secret)._
+_Vague 1 : migrer ce dépôt sur l'image `cccp-ci-base` + `ci/run.sh <job>` ; adapter
+GitHub Actions réduit à `uses:`/`ci/run.sh`. Points portés par l'EPIC racine (pas de
+double compte)._
+
+|===
+| US | Contenu | Pts | Statut
+
+| GBL-013-4
+| Vague 1 — migrer `capsule-gradle` (image + scripts + adapter), preuve P1→P4 en CI
+| —
+| 🟡 À FAIRE
+|===
+

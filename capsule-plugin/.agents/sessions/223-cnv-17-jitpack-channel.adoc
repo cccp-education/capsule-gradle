@@ -1,0 +1,59 @@
+= Session 223 — CNV-17 : JitPack canal unique (capsule)
+:toc:
+
+:_date_: 2026-11-13
+:_borough_: Détroit (capsule-gradle, N2)
+:_session_precedente_: 222 (liaison des steps BDD `@audiodesc`)
+:_statut_: ✅ coordonnées JitPack + plateforme BOM `0.0.136`
+
+== Contexte
+
+Décision pilote « mise en sécurité de la chaîne de publication en optant pour la
+**totalité** vers JitPack » : JitPack = canal unique des artefacts publics ; un
+artefact = un canal = un nom = une version. `foundry/private/**` et `office/**`
+exclus. N0 amont : `workspace-bom 0.0.136` et `conventions-plugin 0.0.17`.
+Cadrage :
+`conventions-gradle/conventions-plugin/.agents/CADRAGE_EPIC_CNV_17_JITPACK_PRIMARY.adoc`.
+
+== Changements
+
+* `settings.gradle.kts` (racine) : dépôt `https://jitpack.io` ajouté à
+  `dependencyResolutionManagement` ; shim `useModule` épinglé `0.0.17` (sans `v`).
+* `capsule-plugin/settings.gradle.kts` : même pin shim + dépôt de résolution.
+* `capsule-plugin/build.gradle.kts` : plateforme
+  `com.github.cccp-education.workspace-bom:workspace-bom:0.0.136` (littéral
+  JitPack — plus de `libs.versions.workspace.bom` pour la plateforme).
+* `capsule-plugin/gradle/libs.versions.toml` : modules N1/N0 en coordonnées
+  JitPack — `codebase-plugin` (`com.github.cccp-education.codebase-gradle`),
+  `i18n-contracts` et `codebase-contracts` (`0.0.136`,
+  `com.github.cccp-education.workspace-bom`), `video-kernel`
+  (`com.github.cccp-education:video-kernel-gradle`).
+* Aucun test modifié dans cette session.
+
+== Preuves CI
+
+|===
+| Run | Commit | Workflow | Verdict
+
+| `43469627369` | `0c74e1b` | `Test` | ✅ **success**
+| `43469627355` | `0c74e1b` | `Full Tests` | ✅ **success**
+| `43463701788` | `b224fbf` | `Test` | ✅ **success**
+| `43463701959` | `b224fbf` | `Full Tests` | ✅ **success**
+|===
+
+Le canal unique est prouvé à chaque maillon : coordonnées JitPack (`b224fbf`),
+puis pin shim `0.0.17` (`0c74e1b`).
+
+== Fichiers touchés
+
+* `settings.gradle.kts`
+* `capsule-plugin/settings.gradle.kts`
+* `capsule-plugin/build.gradle.kts`
+* `capsule-plugin/gradle/libs.versions.toml`
+
+== Suite
+
+Maintenance. Central/Portal restent bloqués (quota Sonatype, reset 2026-12-01 ;
+propriété du groupe `education.cccp`). Ne jamais réutiliser un tag JitPack publié
+(`v0.0.21` est immuable) et ne pas réintroduire de coordonnée `education.cccp:*`
+dans les pins de consommation.
