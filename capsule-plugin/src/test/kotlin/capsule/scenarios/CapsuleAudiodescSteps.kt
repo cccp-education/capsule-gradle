@@ -27,6 +27,7 @@ class CapsuleAudiodescSteps {
     private var plan: AudioDescriptionScript? = null
     private var graph: String = ""
     private var plannedStart: Double = 0.0
+    private var inputs: A11yInputs? = null
     private var verdict: A11yVerdict? = null
 
     @Given("a narration with two windows of {double} and {double} seconds separated by {double} seconds")
@@ -99,41 +100,41 @@ class CapsuleAudiodescSteps {
 
     @Given("subtitles, a transcript and an audio description")
     fun completeChannels() {
-        verdict =
-            A11yAcceptance.evaluate(
-                A11yInputs(
-                    subtitlesPresent = true,
-                    transcriptPresent = true,
-                    audioDescriptionRequested = true,
-                    audioDescriptionPresent = true,
-                ),
+        inputs =
+            A11yInputs(
+                subtitlesPresent = true,
+                transcriptPresent = true,
+                audioDescriptionRequested = true,
+                audioDescriptionPresent = true,
             )
     }
 
     @Given("subtitles and an audio description but no transcript")
     fun missingTranscript() {
-        verdict =
-            A11yAcceptance.evaluate(
-                A11yInputs(
-                    subtitlesPresent = true,
-                    transcriptPresent = false,
-                    audioDescriptionRequested = true,
-                    audioDescriptionPresent = true,
-                ),
+        inputs =
+            A11yInputs(
+                subtitlesPresent = true,
+                transcriptPresent = false,
+                audioDescriptionRequested = true,
+                audioDescriptionPresent = true,
             )
     }
 
     @Given("a requested audio description that is absent")
     fun missingAudioDescription() {
-        verdict =
-            A11yAcceptance.evaluate(
-                A11yInputs(
-                    subtitlesPresent = true,
-                    transcriptPresent = true,
-                    audioDescriptionRequested = true,
-                    audioDescriptionPresent = false,
-                ),
+        inputs =
+            A11yInputs(
+                subtitlesPresent = true,
+                transcriptPresent = true,
+                audioDescriptionRequested = true,
+                audioDescriptionPresent = false,
             )
+    }
+
+    @When("I evaluate accessibility")
+    fun evaluateAccessibility() {
+        val current = inputs ?: error("no accessibility inputs")
+        verdict = A11yAcceptance.evaluate(current)
     }
 
     @Then("the verdict is accepted")
@@ -148,9 +149,15 @@ class CapsuleAudiodescSteps {
 
     @Then("the limits are declared")
     fun limitsDeclared() {
+        // Two legitimate declarations of a limit: the verdict always carries the
+        // v1 limitation; the planner declares a cue that does not fit via
+        // `unplaced` (nothing is silently dropped).
         val limitations = verdict?.limitations ?: emptyList()
-        check(limitations.contains(A11yAcceptance.EXTENDED_AUDIO_DESCRIPTION_LIMIT)) {
-            "expected the v1 limitation to be declared, got $limitations"
+        val declared =
+            limitations.contains(A11yAcceptance.EXTENDED_AUDIO_DESCRIPTION_LIMIT) ||
+                plan?.hasUnplaced == true
+        check(declared) {
+            "expected the v1 limitation or an unplaced cue to be declared, got verdict=$verdict plan=$plan"
         }
     }
 

@@ -19,7 +19,7 @@ Feature: CAP-AUDIODESC — audio description of the video
     And the limits are declared
 
   Scenario: The mix ducks the description under the narration
-    Given a planned cue at 1 second
+    Given a planned cue at 1.0 seconds
     When I build the audio description mix
     Then the mix delays the cue to 1000 milliseconds
     And the mix ducks the description with a sidechain
