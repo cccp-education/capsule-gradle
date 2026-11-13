@@ -88,3 +88,4 @@
 * [x] Rapport `.agents/sessions/222-audiodesc-bdd-steps-fix.adoc`.
 
 * GBL-013 — portabilité CI (session close) : voir `.agents/sessions/` (rapport dédié).
+* Session 226 — EAGER : publication JitPack canal unique (AGENT/PROMPT_REPRISE alignés ; Central/Portal retirés) — 2026-11-14.
