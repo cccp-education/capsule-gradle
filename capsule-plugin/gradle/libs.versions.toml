@@ -10,7 +10,7 @@ playwright = "1.52.0"
 kover = "0.9.8"
 cucumber = "7.34.3"
 jackson = "2.21.2"
-# Bibliothèque N1 (education.cccp:codebase-plugin) — KOOG-PIPELINE-DEDUP BS-2 :
+# Bibliothèque N1 (com.github.cccp-education.codebase-gradle:codebase-plugin) — KOOG-PIPELINE-DEDUP BS-2 :
 # expose le squelette partagé `codebase.koog.pipeline`.
 codebase = "0.0.18"
 # Plugin Gradle `education.cccp.codebase` — aligné sur la lib (0.0.18).
@@ -22,9 +22,9 @@ koog = "1.3.0"
 arrow = "2.3.0"
 # BOM N0 courante (aligné sur le catalogue workspace MEMPHIS 0.0.113).
 workspace-bom = "0.0.115"
-i18n-contracts = "0.0.4"
+i18n-contracts = "0.0.136"
 video-kernel = "0.7.0"
-codebase-contracts = "0.0.2"
+codebase-contracts = "0.0.136"
 
 [libraries]
 kotlin-test-junit5 = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit5", version.ref = "kotlin" }
@@ -43,12 +43,12 @@ arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines", version.ref = "arrow" }
 arrow-resilience = { module = "io.arrow-kt:arrow-resilience", version.ref = "arrow" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core" }
-codebase-plugin = { module = "education.cccp:codebase-plugin", version.ref = "codebase" }
+codebase-plugin = { module = "com.github.cccp-education.codebase-gradle:codebase-plugin", version.ref = "codebase" }
 langchain4j = { module = "dev.langchain4j:langchain4j" }
 langchain4j-ollama = { module = "dev.langchain4j:langchain4j-ollama" }
-i18n-contracts = { module = "education.cccp:i18n-contracts", version.ref = "i18n-contracts" }
-video-kernel = { module = "education.cccp:video-kernel", version.ref = "video-kernel" }
-codebase-contracts = { module = "education.cccp:codebase-contracts", version.ref = "codebase-contracts" }
+i18n-contracts = { module = "com.github.cccp-education.workspace-bom:i18n-contracts", version.ref = "i18n-contracts" }
+video-kernel = { module = "com.github.cccp-education:video-kernel-gradle", version.ref = "video-kernel" }
+codebase-contracts = { module = "com.github.cccp-education.workspace-bom:codebase-contracts", version.ref = "codebase-contracts" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

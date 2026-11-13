@@ -639,7 +639,7 @@ dependencies {
     // the BOM versions the versionless dependencies below (langchain4j,
     // arrow-core-jvm, …). `compileOnly` would omit it from the POM and Central
     // rejects versionless dependencies (MEMPHIS-BOM-FIX pattern).
-    implementation(platform("education.cccp:workspace-bom:${libs.versions.workspace.bom.get()}"))
+    implementation(platform("com.github.cccp-education.workspace-bom:workspace-bom:0.0.136"))
     implementation(kotlin("stdlib-jdk8"))
 
     compileOnly(libs.slider)
