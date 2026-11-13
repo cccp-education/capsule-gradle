@@ -268,3 +268,9 @@ Publication JitPack de capsule-plugin 0.0.15. JitPack : 0.0.15 — POM HTTP 200.
 == Session 225 — GBL-013 vague 1 : job fast dans l'image — 2026-11-14
 
 ci/run.sh (fast = ktlintCheck test) + test.yml migré (container cccp-ci-base@sha256:4722…). Run 43490380362 VERT. Rapport `.agents/sessions/225-gbl-013-wave1.adoc`.
+
+== Session 226 — EAGER : publication JitPack canal unique — 2026-11-14
+
+Alignement EAGER : JitPack canal unique ; Maven Central/Sonatype et
+Gradle Plugin Portal **retirés**. Aucun code, aucun test, aucune
+publication. Rapport `.agents/sessions/226-eager-publication-jitpack-only.adoc`.
