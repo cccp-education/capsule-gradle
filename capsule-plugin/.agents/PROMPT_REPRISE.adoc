@@ -31,10 +31,8 @@ _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
 . Vérifier qu'aucun pin résiduel `education.cccp:*` ne subsiste dans les
    dépendances de consommation.
-. **Central ≥ 2026-12-01** : publier `0.0.21` (POM valide), puis MEMPHIS
-   (`capsule-plugin 0.0.21`).
-. **Portal** : dès que les clés du compte `cccp-education` sont fournies,
-   `./gradlew publishPlugins` (câblage prêt).
+. **JitPack** : publier `0.0.21` (tag `v0.0.21`) puis MEMPHIS
+   (`capsule-plugin 0.0.21`) ; Maven Central et Plugin Portal sont **retirés**.
 . Ne jamais réutiliser une version/tag publié (JitPack immuable).
 
 == Points d'attention
