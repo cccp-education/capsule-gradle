@@ -1,0 +1,67 @@
+= Session 221 — Publication JitPack `capsule-plugin v0.0.21`
+:toc:
+
+:_date_: 2026-11-13
+:_borough_: capsule (N2)
+:_session_precedente_: 220
+:_statut_: ✅ `capsule-plugin v0.0.21` publié sur JitPack (POM/JAR/marker 200)
+
+'''
+
+== Contexte
+
+Demande pilote : **publier sur JitPack** (Central bloqué par le quota mensuel,
+Gradle Plugin Portal bloqué par la propriété du groupe `education.cccp`).
+
+Découverte : le tag **`v0.0.20` existait déjà** sur le dépôt (`e483af3`,
+2026-11-12), et JitPack l'a **déjà construit** (`status: ok`, modules publiés).
+Ce code est **stale** (pré-CAP-AUDIODESC, pré-HF-MUSIC US-6, pré-fix POM). Un tag
+JitPack publié est **immuable** → `0.0.20` n'est pas réutilisable.
+
+Décision : nouvelle version **`0.0.21`**.
+
+'''
+
+== Livré
+
+* Commit `bce7f3f` — contenu : `CAP-AUDIODESC` 4/4, `HF-MUSIC-LIBRARY` US-6,
+  import `workspace-bom` dans le POM, docs/gouvernance.
+* Commit `8aa6b2e` — bump `capsule = "0.0.21"`.
+* Tag annoté **`v0.0.21`** poussé (`main` + tag).
+* JitPack : build **`ok`** (commit `8aa6b2e`), modules `capsule-plugin` +
+  `education.cccp.capsule.gradle.plugin`.
+
+.Preuves (HTTP 200)
+|===
+| Artefact | URL
+
+| POM | `jitpack.io/com/github/cccp-education/capsule-gradle/capsule-plugin/v0.0.21/capsule-plugin-v0.0.21.pom`
+| JAR | `…/capsule-plugin-v0.0.21.jar` (1 184 486 o)
+| Marker POM | `…/education.cccp.capsule.gradle.plugin/v0.0.21/…-v0.0.21.pom`
+|===
+
+* Le POM importe `education.cccp:workspace-bom:0.0.115`
+  (`<dependencyManagement><scope>import</scope>`) — POM valide.
+* Le JAR contient `capsule/a11y/A11yAcceptance.class`,
+  `capsule/a11y/AudioDescriptionMixCommand.class`,
+  `capsule/audio/music/MusicTrackSelector.class` → **contenu de la session**.
+* Coordonnée **repo-level + préfixe `v`** : consommateur `plugins {}` = shim
+  `useModule("com.github.cccp-education.capsule-gradle:capsule-plugin:v0.0.21")`
+  (le marker n'est pas servi au groupId de l'id).
+
+'''
+
+== Gates / hygiène
+
+* Pré-vol JitPack simulé en local : `CI=true ./gradlew -p capsule-plugin publishToMavenLocal` → **SUCCESS**.
+* Aucun secret commité (scan du diff) ; zéro test local (Local = Build) ;
+  `main` + tag poussés (`bce7f3f`, `8aa6b2e`, `v0.0.21`).
+
+'''
+
+== Reste
+
+* **Central** (`0.0.21` désormais) : bloqué jusqu'au **2026-12-01** (quota).
+* **Portal** : bloqué par les clés du compte `cccp-education` (câblage prêt).
+* **MEMPHIS** : catalogue `capsule-plugin 0.0.21` (après une publication Central,
+  ou à trancher pour JitPack).

@@ -3,6 +3,31 @@
 :last_update: 2026-11-13 (S-220 — release 0.0.20 BLOQUÉE par le quota Sonatype (reset 2026-12-01) ; POM corrigé (import BOM) ; S-219 CAP-AUDIODESC 4/4.)
 
 '''
+== ✅ Publication JitPack `capsule-plugin v0.0.21` (S-221)
+
+* Demande pilote : **publier sur JitPack** (Central bloqué par le quota, Portal
+  bloqué par la propriété du groupe).
+* `v0.0.20` **existait déjà** sur JitPack (tag du 2026-11-12 sur `e483af3`, code
+  **stale** pré-audiodesc / pré-fix POM) — un tag JitPack publié est **immuable**,
+  donc **non réutilisable**.
+* Nouvelle version **`0.0.21`** (toml) : commit `bce7f3f` (contenu : audiodesc 4/4,
+  HF-MUSIC US-6, import BOM) + `8aa6b2e` (bump), tag annoté **`v0.0.21`** poussé.
+* JitPack : **build `ok`**, commit `8aa6b2e`, modules `capsule-plugin` +
+  `education.cccp.capsule.gradle.plugin`.
+* Artefacts vérifiés **HTTP 200** :
+  - `com.github.cccp-education.capsule-gradle:capsule-plugin:v0.0.21` (POM + JAR) ;
+  - marker `...:education.cccp.capsule.gradle.plugin:v0.0.21` ;
+  - POM importe `education.cccp:workspace-bom:0.0.115` (`<scope>import</scope>`) ;
+  - JAR contient `capsule/a11y/A11yAcceptance.class`,
+    `capsule/a11y/AudioDescriptionMixCommand.class`,
+    `capsule/audio/music/MusicTrackSelector.class` → **contenu de la session présent**.
+* Coordonnée **repo-level + préfixe `v`** (`:v0.0.21`) : un consommateur `plugins {}`
+  exige le **shim** `useModule("com.github.cccp-education.capsule-gradle:capsule-plugin:v0.0.21")`
+  (JitPack ne sert pas le marker au groupId de l'id).
+* Central `0.0.20`/`0.0.21` : toujours bloqué (quota, reset **2026-12-01**) ;
+  Portal : clés du compte `cccp-education` manquantes.
+
+'''
 == ⚠️ Release `capsule-plugin 0.0.20` — BLOQUÉE (quota Sonatype, reset 2026-12-01) — S-220
 
 * `publishToMavenLocal` VERT : `0.0.20` signé, artefact + marker publiés en local.

@@ -67,3 +67,13 @@
 * [ ] Reprise ≥ 2026-12-01 : re-upload 0.0.20 puis catalogue MEMPHIS (`0.0.20`,
   BOM 0.0.130). Alternative : wiring Portal (`plugin-publish`).
 * [x] Rapport `.agents/sessions/220-release-0.0.20-blocked.adoc`.
+
+== Session 221 — Publication JitPack `capsule-plugin v0.0.21` ✅
+
+* [x] `v0.0.20` déjà publié par JitPack (stale) → version `0.0.21` (commits
+  `bce7f3f` contenu + `8aa6b2e` bump, tag `v0.0.21`).
+* [x] JitPack build ok ; POM/JAR/marker HTTP 200 ; POM importe `workspace-bom:0.0.115` ;
+  JAR contient `capsule/a11y/*` + `capsule/audio/music/*`.
+* [ ] Central `0.0.21` (≥ 2026-12-01, quota) ; Portal (clés `cccp-education`) ;
+  catalogue MEMPHIS `capsule-plugin 0.0.21`.
+* [x] Rapport `.agents/sessions/221-jitpack-release.adoc`.
