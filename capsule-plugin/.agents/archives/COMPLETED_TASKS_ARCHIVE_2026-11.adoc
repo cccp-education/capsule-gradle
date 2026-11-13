@@ -77,3 +77,12 @@
 * [ ] Central `0.0.21` (≥ 2026-12-01, quota) ; Portal (clés `cccp-education`) ;
   catalogue MEMPHIS `capsule-plugin 0.0.21`.
 * [x] Rapport `.agents/sessions/221-jitpack-release.adoc`.
+
+== Session 222 — CAP-AUDIODESC : liaison des steps BDD `@audiodesc` ✅
+
+* [x] Step manquant `When I evaluate accessibility` ajouté ; `Given` = inputs,
+  `When` = verdict.
+* [x] `the limits are declared` accepte la limite v1 **ou** `plan.hasUnplaced`.
+* [x] Feature alignée `1.0` pour `{double}`. Test-only, zéro production.
+* [x] Preuve = shard CI `cucumberTestShardAudiodesc` ; zéro bump, zéro publication.
+* [x] Rapport `.agents/sessions/222-audiodesc-bdd-steps-fix.adoc`.

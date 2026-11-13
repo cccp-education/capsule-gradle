@@ -1151,7 +1151,7 @@ silences de la narration. Si les silences sont insuffisants, la limite est décl
 | CAP-AUDIODESC-4
 | Configuration 4 sources (`a11y.audioDescriptionEnabled`), BDD `@audiodesc`, porte d'acceptation (sous-titres + transcription + audiodescription), déclaration des limites
 | 1
-| ✅ S-219 (config `a11y` 4 sources déjà câblée S-218 + `A11yAcceptance` pur : `A11yInputs`/`A11yVerdict` Accepted/Degraded, limite `extended audio description is not supported in v1` **toujours déclarée** ; BDD `capsule_audiodesc.feature` 6 scénarios `@audiodesc` + shard CI `cucumberTestShardAudiodesc`)
+| ✅ S-219 (config `a11y` 4 sources déjà câblée S-218 + `A11yAcceptance` pur : `A11yInputs`/`A11yVerdict` Accepted/Degraded, limite `extended audio description is not supported in v1` **toujours déclarée** ; BDD `capsule_audiodesc.feature` 6 scénarios `@audiodesc` + shard CI `cucumberTestShardAudiodesc`) — **steps liés S-222** (step `When` manquant, limite v1 ou `unplaced`, test-only)
 |===
 
 *Critère de sortie* : une capsule de référence produit sous-titres + transcription +

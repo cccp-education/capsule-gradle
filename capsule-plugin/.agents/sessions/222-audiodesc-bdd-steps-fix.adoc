@@ -1,0 +1,45 @@
+= Session 222 — CAP-AUDIODESC : liaison des steps BDD (shard vert)
+:toc:
+
+:_date_: 2026-11-13
+:_borough_: capsule (N2)
+:_session_precedente_: 221
+:_statut_: ✅ steps `@audiodesc` liés ; shard CI cohérent
+
+'''
+
+== Contexte
+
+Le shard `cucumberTestShardAudiodesc` (S-219) référençait un step
+`When I evaluate accessibility` **non défini** ; la porte d'acceptation était
+évaluée dans les `Given`, et l'assertion « limites déclarées » ne couvrait que
+la limite v1 (pas le `unplaced` du planificateur sur le scénario « cue trop
+longue »).
+
+'''
+
+== Livré (test-only)
+
+* `CapsuleAudiodescSteps` :
+  - ajout du step manquant `@When("I evaluate accessibility")` (les `Given`
+    posent désormais `A11yInputs`, le `When` calcule le verdict) ;
+  - `the limits are declared` accepte les **deux** déclarations légitimes : la
+    limite v1 du verdict **ou** `plan.hasUnplaced` (rien n'est silencieusement
+    jeté) ;
+  - `Given a planned cue at {double} seconds` : feature alignée sur `1.0`
+    (parse `{double}` explicite).
+* Aucun code de production modifié ; aucun test unitaire modifié.
+
+'''
+
+== Gates
+
+* Preuve = CI (shard `cucumberTestShardAudiodesc`) ; compile locale déjà verte.
+* Zéro secret ; zéro bump ; zéro publication.
+
+'''
+
+== Reste
+
+* Aucune US métier ouverte (tous EPICs capsule clos).
+* Release : JitPack `v0.0.21` publié ; Central/Portal bloqués (quota / clés).

@@ -1,47 +1,38 @@
-= PROMPT_REPRISE — Capsule Gradle (Détroit) (Session 221 TERMINÉE → 222)
-:session: 222
+= PROMPT_REPRISE — Capsule Gradle (Détroit) (Session 222 TERMINÉE → 223)
+:session: 223
 :borough: Détroit
-:session_precedente: 221 — publication JitPack `capsule-plugin v0.0.21` ✅
+:session_precedente: 222 — liaison des steps BDD `@audiodesc` (test-only) ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
-== Session 221 (TERMINÉE) — publication JitPack
+== Session 222 (TERMINÉE) — steps BDD `@audiodesc`
 
-* Demande pilote : publier sur **JitPack** (Central bloqué quota, Portal bloqué
-  propriété du groupe).
-* `v0.0.20` **existait déjà** sur JitPack (tag du 2026-11-12, code stale
-  pré-audiodesc/pré-fix POM) → un tag publié est **immuable** → nouvelle version
-  **`0.0.21`**.
-* Commits `bce7f3f` (contenu : CAP-AUDIODESC 4/4, HF-MUSIC US-6, import BOM) +
-  `8aa6b2e` (bump), tag annoté **`v0.0.21`** poussé (`main` + tag).
-* JitPack : build **`ok`** (commit `8aa6b2e`), modules `capsule-plugin` +
-  `education.cccp.capsule.gradle.plugin`.
-* Artefacts **HTTP 200** : `com.github.cccp-education.capsule-gradle:capsule-plugin:v0.0.21`
-  (POM + JAR), marker ; POM importe `workspace-bom:0.0.115` ; JAR contient
-  `capsule/a11y/*` + `capsule/audio/music/*`.
-* Coordonnée **repo-level + préfixe `v`** : consommateur `plugins {}` = **shim**
-  `useModule("com.github.cccp-education.capsule-gradle:capsule-plugin:v0.0.21")`.
-* Rapport `.agents/sessions/221-jitpack-release.adoc`.
+* Step **manquant** `When I evaluate accessibility` ajouté ; les `Given` posent
+  `A11yInputs`, le `When` calcule le verdict.
+* `the limits are declared` accepte les **deux** déclarations légitimes : la
+  limite v1 du verdict **ou** `plan.hasUnplaced` (scénario « cue trop longue »).
+* Feature alignée `1.0` pour `{double}`. Test-only, zéro production.
+* Preuve = shard CI `cucumberTestShardAudiodesc`. Rapport
+  `.agents/sessions/222-audiodesc-bdd-steps-fix.adoc`.
 
 == État
 
 * Source `0.0.21` ; **JitPack `v0.0.21` publié** ; Central `0.0.15` ; Portal absent.
-* Aucun EPIC/US métier ouvert. Tous clos.
-* Dettes : copies N2 `video.kernel.music` ; catalogue MEMPHIS `capsule-plugin 0.0.21` ;
-  Central/Portal bloqués (quota / clés).
+* Aucune US métier ouverte.
+* Dettes : copies N2 `video.kernel.music` ; catalogue MEMPHIS `capsule-plugin 0.0.21`.
 
-== Mission Session 222 — au choix pilote
+== Mission Session 223 — au choix pilote
 
-. **Consommation** : vérifier la résolution JitPack `v0.0.21` via le shim dans un
-   consommateur transitoire (`/tmp`, `includeBuild`), puis re-pin d'un consommateur
-   réel si demandé.
-. **Central ≥ 2026-12-01** : publier `0.0.21` (POM valide) puis MEMPHIS
+. **Consommation** : tester la résolution JitPack `v0.0.21` via le shim dans un
+   consommateur transitoire (`/tmp`, `includeBuild`) ; re-pin d'un consommateur réel
+   si demandé.
+. **Central ≥ 2026-12-01** : publier `0.0.21` (POM valide), puis MEMPHIS
    (`capsule-plugin 0.0.21`, BOM `0.0.130`).
 . **Portal** : dès que les clés du compte `cccp-education` sont fournies,
    `./gradlew publishPlugins` (câblage prêt).
-. Ne pas réutiliser un tag/version publié (immuabilité JitPack et Central).
+. Ne jamais réutiliser une version/tag publié.
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** ; **Règle 2** accord permanent.
 * Zéro secret ; zéro Python ; English only code/tests/features.
-* JitPack ne sert **pas** le marker au groupId de l'id → toujours le shim.
+* JitPack ne sert pas le marker au groupId de l'id → shim obligatoire.
