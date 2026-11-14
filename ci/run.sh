@@ -10,13 +10,15 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT/capsule-plugin"
 
 job="${1:-}"
+# GBL-014 — publication channel (jitpack default until the Sonatype reset).
+channel="${CHANNEL:-jitpack}"
 
 case "$job" in
   fast)
-    ./gradlew ktlintCheck test --no-daemon --console=plain
+    ./gradlew ktlintCheck test verifyChannel -Pchannel="$channel" --no-daemon --console=plain
     ;;
   test)
-    ./gradlew test --no-daemon --console=plain
+    ./gradlew test verifyChannel -Pchannel="$channel" --no-daemon --console=plain
     ;;
   *)
     printf 'unsupported job for capsule-gradle: %s\n' "${job:-<none>}" >&2
