@@ -1,47 +1,43 @@
-= PROMPT_REPRISE — Capsule Gradle (Détroit) (Session 223 TERMINÉE → 224)
-:session: 224
+= PROMPT_REPRISE — Capsule Gradle (Détroit) (Session 227 TERMINÉE → 228)
+:session: 228
 :borough: Détroit
-:session_precedente: 223 — CNV-17 : JitPack canal unique ✅
+:session_precedente: 227 — GBL-014-5 pilote canal de publication ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
-== Session 223 (TERMINÉE) — CNV-17 : JitPack canal unique
+== Session 227 (TERMINÉE) — GBL-014-5 pilote
 
-* `settings.gradle.kts` racine : shim conventions `0.0.17` (sans `v`) + dépôt
-  `https://jitpack.io` en `dependencyResolutionManagement`.
-* `capsule-plugin/settings.gradle.kts` : même pin shim + dépôt de résolution.
-* `capsule-plugin/build.gradle.kts` : plateforme
-  `com.github.cccp-education.workspace-bom:workspace-bom:0.0.136` (littéral
-  JitPack, plus de `libs.versions.workspace.bom`).
-* `capsule-plugin/gradle/libs.versions.toml` : modules en coordonnées JitPack —
-  `codebase-plugin` (`com.github.cccp-education.codebase-gradle`),
-  `i18n-contracts`/`codebase-contracts` `0.0.136`, `video-kernel`
-  (`com.github.cccp-education:video-kernel-gradle`).
-* Aucun test modifié. CI **verte** : `Test` `43469627369` + `Full Tests`
-  `43469627355` (commit `0c74e1b`), et `b224fbf` (coordonnées).
-* Rapport `.agents/sessions/223-cnv-17-jitpack-channel.adoc`.
+* `settings.gradle.kts` racine + `capsule-plugin/settings.gradle.kts` :
+  `publicationChannel = -Pchannel` (défaut `jitpack`) ; dépôt JitPack + shim
+  `useModule(...)` **seulement** en mode `jitpack` ; shim `0.0.17` → **`0.0.18`**.
+* `ci/run.sh` : `CHANNEL` (défaut `jitpack`), `-Pchannel` sur chaque invocation,
+  `verifyChannel` ajouté aux jobs `fast` et `test`.
+* Preuves : `verifyChannel -Pchannel=jitpack` OK (le build résout conventions
+  `0.0.18`) ; `Test` CI `43654327622` verte (commit `7b3851a`) ; `Full Tests`
+  `43654327549`.
+* Aucun test modifié, aucune publication, aucun secret.
+* Rapport `.agents/sessions/227-gbl-014-5-channel-pilot.adoc`.
 
 == État
 
-* Source `0.0.21` ; **JitPack `v0.0.21` publié** ; Central `0.0.15` ; Portal absent.
-* N0 amont : `workspace-bom 0.0.136`, conventions `0.0.17` (JitPack).
-* Aucune US métier ouverte.
-* Dettes : copies N2 `video.kernel.music` ; catalogue MEMPHIS `capsule-plugin 0.0.21`.
+* Source capsule `0.0.21` ; JitPack `v0.0.21` ; Central `0.0.15` ; Portal absent.
+* N0 amont : `workspace-bom 0.0.136` (BOM/catalogue channel-aware), conventions
+  `0.0.18` (JitPack).
+* `CHANNEL=central` n'est pas encore exécutable : les markers conventions
+  `0.0.18` ne sont pas sur Central/Portal (US-7, après 2026-12-01).
 
-== Mission Session 224 — maintenance, au choix pilote
+== Mission Session 228 — reste US-5
 
-. Vérifier qu'aucun pin résiduel `education.cccp:*` ne subsiste dans les
-   dépendances de consommation.
-. **JitPack** : publier `0.0.21` (tag `v0.0.21`) puis MEMPHIS
-   (`capsule-plugin 0.0.21`) ; Maven Central et Plugin Portal sont **retirés**.
-. Ne jamais réutiliser une version/tag publié (JitPack immuable).
+1. Généraliser le modèle aux 19 autres dépôts publics : settings conditionnels,
+   shim `0.0.18`, `ci/run.sh -Pchannel` + `verifyChannel`, preuve CI par dépôt.
+2. Cas `bakery` : retirer la plateforme Central (`education.cccp:workspace-bom`)
+   du build JitPack (alignement par le catalogue JitPack) ou basculer le dépôt
+   en `channel=central`.
+3. Ne pas modifier les tests sans permission explicite ; ne pas republier une
+   version/tag existant.
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** ; **Règle 2** accord permanent.
-* Zéro secret ; zéro Python ; English only code/tests/features.
-* JitPack ne sert pas le marker au groupId de l'id → shim obligatoire.
-
-== GBL-013 (clôture) — 2026-11-14
-Portabilité CI livrée : image \`cccp-ci-base\`, \`ci/run.sh\`, adapter fin.
-Rapport \`.agents/sessions/225-gbl-013-wave1.adoc\`. Reste : US-5→US-9 (cadrage racine
-\`.agents/CADRAGE_EPIC_GBL_013_PORTABILITE_CI.adoc\`).
+* Ne jamais publier une même version sur les deux canaux (un tag = un commit).
+* `capsule-plugin` garde `publishing {}`/`plugin-publish` pour le canal central ;
+  en jitpack, `publishPlugins` est refusé par `PublishChannelGuard`.

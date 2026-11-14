@@ -1,0 +1,67 @@
+= Session 227 — GBL-014-5 pilote : canal de publication dans la CI
+:date: 2026-11-14
+:scope: capsule-gradle — settings conditionnels, shim `0.0.18`, `ci/run.sh -Pchannel`
+:statut: ✅ PILOTE LIVRÉ — `Test` CI `43654327622` VERTE
+
+== Contexte
+
+US-5 (GBL-014) doit aligner les 20 dépôts publics sur le canal dual :
+`ci/run.sh` passe `-Pchannel`, shims `conventions 0.0.18`, settings
+conditionnels. Cette session livre un **pilote** sur `capsule-gradle` (dépôt
+public, CI migrée GBL-013) avant généralisation.
+
+== Changements
+
+[cols="2,4", options="header"]
+|===
+| Fichier | Contenu
+
+| `settings.gradle.kts` (racine)
+| `val publicationChannel = providers.gradleProperty("channel").getOrElse("jitpack")`
+  ; le dépôt JitPack et le shim `useModule(conventions 0.0.18)` sont déclarés
+  **seulement** si `channel=jitpack`.
+
+| `capsule-plugin/settings.gradle.kts`
+| Même condition ; le shim passe `0.0.17` → **`0.0.18`** ; le dépôt JitPack de
+  `dependencyResolutionManagement` est conditionnel.
+
+| `ci/run.sh`
+| `channel="${CHANNEL:-jitpack}"` ; les jobs `fast` et `test` exécutent
+  `verifyChannel -Pchannel="$channel"` (le garde `check` n'est pas exécuté par
+  les jobs `test` de capsule).
+|===
+
+== Preuves
+
+* `./gradlew verifyChannel -Pchannel=jitpack` →
+  `CHANNEL OK: settings.gradle.kts is consistent with channel=jitpack` (le build
+  résout bien conventions `0.0.18` via le shim).
+* CI `Test` **`43654327622` VERTE** (commit `7b3851a`), job
+  « Lint and run fast tests (unit) ».
+* `Full Tests` : run `43654327549` (suite complète, en cours au moment de la
+  rédaction ; même commit).
+* Aucun test modifié, aucune publication, aucun secret.
+
+== Limites du pilote
+
+* `CHANNEL=central` n'est pas encore exécutable : les markers
+  `education.cccp.build.*` **0.0.18** ne sont pas publiés sur Central/Portal
+  (JitPack seulement) ; le mode central sera utilisable après US-7
+  (reset 2026-12-01).
+* Le mélange `bakery` (`platform("education.cccp:workspace-bom:…")` dans un
+  build JitPack) n'est **pas** traité ici.
+* Les 19 autres dépôts gardent le shim `0.0.17` et un `ci/run.sh` sans
+  `-Pchannel`.
+
+== Modèle de rollout (reste US-5)
+
+. Pour chaque dépôt : envelopper le dépôt JitPack + le shim dans
+   `if (publicationChannel == "jitpack")`, bumper le shim à `0.0.18`.
+. `ci/run.sh` : `channel="${CHANNEL:-jitpack}"` + `-Pchannel="$channel"` sur
+   chaque invocation Gradle ; ajouter `verifyChannel` au job qui n'exécute pas
+   `check`.
+. Cas `bakery` : retirer la plateforme Central du build JitPack (alignement par
+   le catalogue JitPack), ou basculer le dépôt en `channel=central`.
+. Preuve par dépôt : CI du commit + `verifyChannel` vert.
+
+Rapport global : `workspace-bom` S-359 (BOM) + conventions S-050 (US-1/2).
