@@ -1191,3 +1191,10 @@ double compte)._
 | ✅ S-226 — job `fast` dans `cccp-ci-base@sha256:4722…` via `ci/run.sh fast`, run `43490380362` **VERT**.
 |===
 
+== GBL-014 — canal de publication dual
+
+* **US-5 pilote ✅ S-227** : settings conditionnels (racine + plugin),
+  shim conventions `0.0.18`, `ci/run.sh -Pchannel` + `verifyChannel`.
+* `Test` `43654327622` verte (commit `7b3851a`).
+* Rapport `.agents/sessions/227-gbl-014-5-channel-pilot.adoc`.
+
