@@ -89,3 +89,10 @@
 
 * GBL-013 — portabilité CI (session close) : voir `.agents/sessions/` (rapport dédié).
 * Session 226 — EAGER : publication JitPack canal unique (AGENT/PROMPT_REPRISE alignés ; Central/Portal retirés) — 2026-11-14.
+
+== S-227 — GBL-014-5 pilote canal ✅
+
+* Settings conditionnels (racine + plugin) sur `-Pchannel`, shim conventions
+  `0.0.18`, `ci/run.sh -Pchannel` + `verifyChannel`.
+* `Test` `43654327622` verte (commit `7b3851a`) ; `Full Tests` `43654327549`.
+* Rapport `.agents/sessions/227-gbl-014-5-channel-pilot.adoc`.

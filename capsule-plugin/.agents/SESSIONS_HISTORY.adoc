@@ -274,3 +274,10 @@ ci/run.sh (fast = ktlintCheck test) + test.yml migré (container cccp-ci-base@sh
 Alignement EAGER : JitPack canal unique ; Maven Central/Sonatype et
 Gradle Plugin Portal **retirés**. Aucun code, aucun test, aucune
 publication. Rapport `.agents/sessions/226-eager-publication-jitpack-only.adoc`.
+
+== Session 227 — GBL-014-5 pilote canal — 2026-11-14
+
+Settings conditionnels (racine + plugin) sur `-Pchannel`, shim conventions
+`0.0.18`, `ci/run.sh -Pchannel` + `verifyChannel`. `Test` `43654327622` verte
+(commit `7b3851a`) ; `Full Tests` `43654327549`. Aucun test modifié, aucune
+publication. Rapport `.agents/sessions/227-gbl-014-5-channel-pilot.adoc`.
