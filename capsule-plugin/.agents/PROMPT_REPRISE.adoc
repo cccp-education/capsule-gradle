@@ -1,34 +1,44 @@
-= PROMPT_REPRISE — Capsule Gradle (Détroit) (Session 227 TERMINÉE → 228)
-:session: 228
+= PROMPT_REPRISE — Capsule Gradle (Détroit) (Session 228 TERMINÉE → 229)
+:session: 229
 :borough: Détroit
-:session_precedente: 227 — GBL-014-5 pilote canal de publication ✅
+:date: 2026-11-15
+:etat: ✅ S-228 — GBL-014-4 (shim `conventions-plugin 0.0.19`) + GBL-013-10 (actions `node24`-natives, image `cccp-ci-base` Node 26 LTS)
+:session_precedente: 228 — transversal du 2026-11-15 ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
+
+== Session 228 (TERMINÉE) — transversal du 2026-11-15
+
+* **GBL-014-4** (`1d57908`) : shim `useModule(...)` `0.0.18 → 0.0.19` (racine +
+  plugin) ; condition `channel == "jitpack"` conservée. `Test` `43674484212` +
+  `Full Tests` `43674484265` vertes.
+* **GBL-013-10** (`ebc9809`) : actions `node24`-natives — `checkout@v7`,
+  `setup-java@v6`, `setup-gradle@v6`, `upload-artifact@v7`, `cache@v6` sur
+  `test.yml`, `full-tests.yml`, `cucumber-full.yml`, `llm-smoke.yml` **et les
+  deux actions composites** (`setup-ollama`, `setup-playwright`).
+* **GBL-013-10** (`82740e0`) : digest
+  `sha256:4722c1bc… → sha256:03ead378…` (image Node 26.13.1) ;
+  `Full Tests` `43683466818` et `43690893554` vertes.
+* Aucun test modifié, aucune publication, aucun secret.
+* Rapport `.agents/sessions/228-gbl-014-4-and-node-lts.adoc`.
 
 == Session 227 (TERMINÉE) — GBL-014-5 pilote
 
-* `settings.gradle.kts` racine + `capsule-plugin/settings.gradle.kts` :
-  `publicationChannel = -Pchannel` (défaut `jitpack`) ; dépôt JitPack + shim
-  `useModule(...)` **seulement** en mode `jitpack` ; shim `0.0.17` → **`0.0.18`**.
-* `ci/run.sh` : `CHANNEL` (défaut `jitpack`), `-Pchannel` sur chaque invocation,
-  `verifyChannel` ajouté aux jobs `fast` et `test`.
-* Preuves : `verifyChannel -Pchannel=jitpack` OK (le build résout conventions
-  `0.0.18`) ; `Test` CI `43654327622` verte (commit `7b3851a`) ; `Full Tests`
-  `43654327549`.
-* Aucun test modifié, aucune publication, aucun secret.
+* Settings conditionnels `-Pchannel` (racine + plugin), `ci/run.sh -Pchannel`
+  + `verifyChannel` ; `Test` `43654327622` / `Full Tests` `43654327549`.
 * Rapport `.agents/sessions/227-gbl-014-5-channel-pilot.adoc`.
 
 == État
 
 * Source capsule `0.0.21` ; JitPack `v0.0.21` ; Central `0.0.15` ; Portal absent.
-* N0 amont : `workspace-bom 0.0.136` (BOM/catalogue channel-aware), conventions
-  `0.0.18` (JitPack).
-* `CHANNEL=central` n'est pas encore exécutable : les markers conventions
-  `0.0.18` ne sont pas sur Central/Portal (US-7, après 2026-12-01).
+* N0 amont : `workspace-bom 0.0.136` (BOM/catalogue channel-aware) ; shim
+  conventions **`0.0.19`** (JitPack, `0.0.20` non propagé ici).
+* `CHANNEL=central` n'est pas encore exécutable : les markers conventions ne
+  sont pas sur Central/Portal (US-7, après 2026-12-01).
 
-== Mission Session 228 — reste US-5
+== Mission Session 229 — reste US-5
 
-1. Généraliser le modèle aux 19 autres dépôts publics : settings conditionnels,
-   shim `0.0.18`, `ci/run.sh -Pchannel` + `verifyChannel`, preuve CI par dépôt.
+1. Généraliser le modèle aux dépôts publics restants : settings conditionnels,
+   shim `0.0.20`, `ci/run.sh -Pchannel` + `verifyChannel`, preuve CI par dépôt.
 2. Cas `bakery` : retirer la plateforme Central (`education.cccp:workspace-bom`)
    du build JitPack (alignement par le catalogue JitPack) ou basculer le dépôt
    en `channel=central`.
@@ -41,3 +51,4 @@ _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 * Ne jamais publier une même version sur les deux canaux (un tag = un commit).
 * `capsule-plugin` garde `publishing {}`/`plugin-publish` pour le canal central ;
   en jitpack, `publishPlugins` est refusé par `PublishChannelGuard`.
+* Zéro Python, English only (code/tests/features), aucun secret.

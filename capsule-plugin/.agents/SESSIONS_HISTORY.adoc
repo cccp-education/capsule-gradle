@@ -281,3 +281,13 @@ Settings conditionnels (racine + plugin) sur `-Pchannel`, shim conventions
 `0.0.18`, `ci/run.sh -Pchannel` + `verifyChannel`. `Test` `43654327622` verte
 (commit `7b3851a`) ; `Full Tests` `43654327549`. Aucun test modifié, aucune
 publication. Rapport `.agents/sessions/227-gbl-014-5-channel-pilot.adoc`.
+
+== Session 228 — GBL-014-4 + GBL-013-10 : shim 0.0.19 et Node 26 LTS — 2026-11-15
+
+Shim `conventions-plugin` `0.0.18 → 0.0.19` (racine + plugin) ; actions
+`node24`-natives (`checkout@v7`, `setup-java@v6`, `setup-gradle@v6`,
+`upload-artifact@v7`, `cache@v6`) sur les workflows **et** les actions
+composites `setup-ollama`/`setup-playwright` ; digest `cccp-ci-base`
+`sha256:03ead378…` (Node 26.13.1). `Test` `43674484212`, `Full Tests`
+`43674484265`, `43683466818`, `43690893554` vertes. Aucun code, aucun test,
+aucune publication. Rapport `.agents/sessions/228-gbl-014-4-and-node-lts.adoc`.

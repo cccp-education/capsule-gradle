@@ -1,0 +1,89 @@
+= Session 228 — GBL-014-4/GBL-013-10 : shim 0.0.19, actions `node24`, image Node 26 LTS
+:date: 2026-11-15
+:scope: capsule-gradle — pin du shim conventions, actions GitHub (dont actions composites) et digest de l'image CI
+:statut: ✅ LIVRÉ — `Test` `43674484212`, `Full Tests` `43674484265`, `43683466818`, `43690893554` VERTES
+
+== Contexte
+
+Session globale 229 (travaux du 2026-11-15), suite de la clôture S-227
+(pilote de canal). Trois changements transverses : pin du shim
+`conventions-plugin` (GBL-014-4), migration des actions vers leurs majeures
+`node24`-natives (GBL-013-10) et repin du digest de l'image `cccp-ci-base`
+reconstruite sur Node 26 LTS. Aucun code métier, aucun test, aucune
+configuration de canal modifiée.
+
+== 1. GBL-014-4 — shim `conventions-plugin` `0.0.18 → 0.0.19`
+
+Commit `1d57908` — `settings.gradle.kts` racine + `capsule-plugin/settings.gradle.kts`.
+
+* `useModule("com.github.cccp-education.conventions-gradle:conventions-plugin:0.0.19")`
+  remplace `0.0.18` ; la garde `if (publicationChannel == "jitpack")` de S-227
+  est conservée.
+* `0.0.19` apporte la `ChannelConsistency` sémantique et la gate
+  `verifyChannel` dans `.lint`/`.publishing` (conventions S-051).
+* CI : `Test` **`43674484212`** + `Full Tests` **`43674484265`** VERTES.
+
+== 2. GBL-013-10 — actions `node24`-natives
+
+Commit `ebc9809` — 6 fichiers, 24 lignes remplacées.
+
+[cols="3,1,1", options="header"]
+|===
+| Fichier | Action | Avant → Après
+
+| `.github/actions/setup-ollama/action.yml` | `actions/cache` ×2 | `v4 → v6`
+| `.github/actions/setup-playwright/action.yml` | `actions/cache` | `v4 → v6`
+| `.github/workflows/cucumber-full.yml` | `checkout`, `setup-java`, `setup-gradle` | `v4 → v7` / `v4 → v6` / `v4 → v6`
+| `.github/workflows/full-tests.yml` | `checkout`, `setup-java`, `setup-gradle`, `upload-artifact` | `v4 → v7` / `v4 → v6` / `v4 → v6` / `v4 → v7`
+| `.github/workflows/llm-smoke.yml` | `checkout`, `setup-java`, `setup-gradle` | `v4 → v7` / `v4 → v6` / `v4 → v6`
+| `.github/workflows/test.yml` | `checkout`, `setup-java`, `setup-gradle`, `upload-artifact` | `v4 → v7` / `v4 → v6` / `v4 → v6` / `v4 → v7`
+|===
+
+Les deux actions composites (`setup-ollama`, `setup-playwright`) sont des
+points d'entrée souvent oubliés : elles portaient encore `actions/cache@v4` et
+alimentaient les avertissements « Node.js 20 is deprecated ». Elles sont
+alignées ici.
+
+Capsule ne déclare pas `setup-node` : Node n'est requis que pour Playwright et
+pour l'outillage image, porté par `cccp-ci-base`.
+
+== 3. GBL-013-10 — repin du digest `cccp-ci-base`
+
+Commit `82740e0` — `.github/workflows/test.yml` :
+
+----
+cccp-ci-base@sha256:4722c1bc… → cccp-ci-base@sha256:03ead3787ed8f09068cc582191e4cd8f5e48e3ce696fe53836ecd826de57ea1f
+----
+
+Image reconstruite par `conventions-gradle` S-053 (NodeSource `setup_26.x`),
+smoke `node --version` = **v26.13.1**. Digest identique dans les quatre dépôts
+de la vague.
+
+== Preuves CI
+
+[cols="1,2,1", options="header"]
+|===
+| Commit | Run | Résultat
+
+| `1d57908` | `43674484212` (`Test`) | ✅
+| `1d57908` | `43674484265` (`Full Tests`) | ✅
+| `ebc9809` | `43683466818` (`Full Tests`) | ✅
+| `82740e0` | `43690893554` (`Full Tests`) | ✅
+|===
+
+`Full Tests` couvre les 25 jobs (dont `BDD · qc+voice` et les shards
+Playwright), donc la migration d'actions est prouvée sur les jobs qui
+téléchargent réellement navigateurs et images.
+
+== Fichiers
+
+`.agents` uniquement en clôture (ce rapport, `PROMPT_REPRISE`,
+`.agents/INDEX.adoc`, `.agents/SESSIONS_HISTORY.adoc`, archive 2026-11).
+Aucun fichier `src/`, aucun test, aucun secret.
+
+== Reste
+
+. GBL-014-5 — généralisation du canal aux dépôts publics restants ; le shim
+  reste `0.0.19` ici (rollout `0.0.20` non propagé).
+. Cas `bakery` (plateforme Central dans un build JitPack) toujours ouvert.
+. `CHANNEL=central` inopérant avant US-7 (markers après 2026-12-01).

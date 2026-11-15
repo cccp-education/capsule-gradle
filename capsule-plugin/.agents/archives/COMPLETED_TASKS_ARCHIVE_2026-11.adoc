@@ -96,3 +96,11 @@
   `0.0.18`, `ci/run.sh -Pchannel` + `verifyChannel`.
 * `Test` `43654327622` verte (commit `7b3851a`) ; `Full Tests` `43654327549`.
 * Rapport `.agents/sessions/227-gbl-014-5-channel-pilot.adoc`.
+
+== S-228 — GBL-014-4 + GBL-013-10 ✅
+
+* Shim conventions `0.0.18 → 0.0.19` (`1d57908`), condition `-Pchannel` conservée.
+* Actions `node24`-natives, actions composites incluses (`ebc9809`).
+* Digest image `sha256:03ead378…` (Node 26.13.1, `82740e0`).
+* CI `43674484212`, `43674484265`, `43683466818`, `43690893554` vertes.
+* Rapport `.agents/sessions/228-gbl-014-4-and-node-lts.adoc`.
