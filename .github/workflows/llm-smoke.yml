@@ -30,10 +30,10 @@ jobs:
       OLLAMA_TEST_MODEL: ${{ github.event.inputs.model }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up JDK 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: '25'
           distribution: 'temurin'
@@ -41,7 +41,7 @@ jobs:
       # Gradle cache (wrapper + dependencies + build cache) so no job re-downloads
       # the toolchain or the dependency graph.
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Setup Ollama (cached image + model)
         uses: ./.github/actions/setup-ollama
