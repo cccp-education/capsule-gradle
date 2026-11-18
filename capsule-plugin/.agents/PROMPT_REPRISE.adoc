@@ -1,54 +1,43 @@
-= PROMPT_REPRISE — Capsule Gradle (Détroit) (Session 228 TERMINÉE → 229)
-:session: 229
+= PROMPT_REPRISE — Capsule Gradle (Détroit) (Session 229 TERMINÉE → 230)
+:session: 230
 :borough: Détroit
-:date: 2026-11-15
-:etat: ✅ S-228 — GBL-014-4 (shim `conventions-plugin 0.0.19`) + GBL-013-10 (actions `node24`-natives, image `cccp-ci-base` Node 26 LTS)
+:date: 2026-11-18
+:etat: ✅ S-229 — adoption N1 `video-kernel 0.9.2` (notes d'orateur + music), copies N2 supprimées
 :session_precedente: 228 — transversal du 2026-11-15 ✅
 _note_ : fichier canonique = `.agents/PROMPT_REPRISE.adoc`.
 
-== Session 228 (TERMINÉE) — transversal du 2026-11-15
+== Session 229 (TERMINÉE) — adoption `video-kernel 0.9.2`
 
-* **GBL-014-4** (`1d57908`) : shim `useModule(...)` `0.0.18 → 0.0.19` (racine +
-  plugin) ; condition `channel == "jitpack"` conservée. `Test` `43674484212` +
-  `Full Tests` `43674484265` vertes.
-* **GBL-013-10** (`ebc9809`) : actions `node24`-natives — `checkout@v7`,
-  `setup-java@v6`, `setup-gradle@v6`, `upload-artifact@v7`, `cache@v6` sur
-  `test.yml`, `full-tests.yml`, `cucumber-full.yml`, `llm-smoke.yml` **et les
-  deux actions composites** (`setup-ollama`, `setup-playwright`).
-* **GBL-013-10** (`82740e0`) : digest
-  `sha256:4722c1bc… → sha256:03ead378…` (image Node 26.13.1) ;
-  `Full Tests` `43683466818` et `43690893554` vertes.
-* Aucun test modifié, aucune publication, aucun secret.
-* Rapport `.agents/sessions/228-gbl-014-4-and-node-lts.adoc`.
-
-== Session 227 (TERMINÉE) — GBL-014-5 pilote
-
-* Settings conditionnels `-Pchannel` (racine + plugin), `ci/run.sh -Pchannel`
-  + `verifyChannel` ; `Test` `43654327622` / `Full Tests` `43654327549`.
-* Rapport `.agents/sessions/227-gbl-014-5-channel-pilot.adoc`.
+* `video-kernel 0.7.0 → 0.9.2` (`libs.versions.toml`).
+* `RevealJsSpeakerNoteParser` délègue à `video.kernel.notes.SpeakerNoteBlockParser`
+  (parité legacy conservée : niveau 2, première note gagne, index `1..n`).
+* `capsule/audio/music/MusicLibrary.kt` supprimé → types `video.kernel.music.*`
+  (loader Jackson + `MusicAssetResolver` restent N2, zéro changement de
+  comportement).
+* Gates locaux : `compileKotlin`/`compileTestKotlin` + `ktlintCheck` VERTS.
+  CI `Test` `44221128811` ✅. Rapport `.agents/sessions/229-video-kernel-adoption.adoc`.
 
 == État
 
-* Source capsule `0.0.21` ; JitPack `v0.0.21` ; Central `0.0.15` ; Portal absent.
-* N0 amont : `workspace-bom 0.0.136` (BOM/catalogue channel-aware) ; shim
-  conventions **`0.0.19`** (JitPack, `0.0.20` non propagé ici).
-* `CHANNEL=central` n'est pas encore exécutable : les markers conventions ne
-  sont pas sur Central/Portal (US-7, après 2026-12-01).
+* Source capsule `0.0.21` — **non bumpée** : l'artefact publié (JitPack
+  `v0.0.21`) ne porte pas l'adoption `0.9.2`.
+* Central `0.0.15` (quota org épuisé, reset **2026-12-01**) ; Portal bloqué
+  (propriété du groupe `education.cccp`).
+* N0 amont : `workspace-bom 0.0.136` ; shim conventions `0.0.19`.
 
-== Mission Session 229 — reste US-5
+== Mission Session 230 — servir l'adoption (DAG) puis `GBL-002`
 
-1. Généraliser le modèle aux dépôts publics restants : settings conditionnels,
-   shim `0.0.20`, `ci/run.sh -Pchannel` + `verifyChannel`, preuve CI par dépôt.
-2. Cas `bakery` : retirer la plateforme Central (`education.cccp:workspace-bom`)
-   du build JitPack (alignement par le catalogue JitPack) ou basculer le dépôt
-   en `channel=central`.
-3. Ne pas modifier les tests sans permission explicite ; ne pas republier une
-   version/tag existant.
+. **Release `capsule-plugin 0.0.22`** : MEMPHIS déclare `capsule-plugin 0.0.22`
+   au catalogue, puis bump `0.0.22` + tag JitPack ; vérifier POM/JAR 200 et
+   que le POM importe `video-kernel` `0.9.2`.
+. Puis **`GBL-002`** (distribution) : `GBL-002-1` TikTok (adaptateur N2
+   réutilisant le seam `HttpTransport`), `GBL-002-2` calendrier éditorial,
+   `GBL-002-3` analytics — cadrage racine `.agents/`.
+. Ne jamais republier une version/tag existant.
 
 == Points d'attention
 
 * **Local = Build, Tests = CI** ; **Règle 2** accord permanent.
-* Ne jamais publier une même version sur les deux canaux (un tag = un commit).
-* `capsule-plugin` garde `publishing {}`/`plugin-publish` pour le canal central ;
-  en jitpack, `publishPlugins` est refusé par `PublishChannelGuard`.
+* YouTube (`US-3c` chapitres, `US-4b` upload réel) reste **gelé** (S-037).
+* `capsule` produit, `GBL-002` distribue, `bakery` écrit — un propriétaire par verbe.
 * Zéro Python, English only (code/tests/features), aucun secret.

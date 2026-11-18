@@ -1,6 +1,28 @@
 = BACKLOG — capsule-gradle (Détroit)
 :toc:
-:last_update: 2026-11-13 (S-223 — CNV-17 : JitPack canal unique (coordonnées + plateforme `0.0.136`) ; S-222 steps `@audiodesc` ; S-221 JitPack `v0.0.21`.)
+:last_update: 2026-11-18 (S-229 — adoption `video-kernel 0.9.2` : notes d'orateur + music, copies N2 supprimées.)
+
+== ✅ Adoption `video-kernel 0.9.2` — notes d'orateur + musique (S-229)
+
+_Déclencheurs_ : `VK-SPEAKER-NOTES US-1b` (adoption capsule, bloquée par une
+prémisse de canal devenue fausse : `0.9.2` est servi par JitPack) et la dette
+`video.kernel.music` (copie N2 de `capsule.audio.music`).
+
+* `gradle/libs.versions.toml` : `video-kernel 0.7.0 → 0.9.2`
+  (coordonnée `com.github.cccp-education:video-kernel-gradle`, JitPack).
+* `capsule.adapter.revealjs.RevealJsSpeakerNoteParser` : **délègue** désormais à
+  `video.kernel.notes.SpeakerNoteBlockParser` (niveau de titre 2, parité legacy
+  « la première note gagne ») ; le mapping `SpeakerNoteBlock → VideoSegment`
+  (index `1..n`, titre + narration) est le seul code conservé.
+* `capsule/audio/music/MusicLibrary.kt` **supprimé** — `MusicLicence`,
+  `MusicTrack`, `MusicLibrary`, `MusicSelection`, `MusicTrackSelector` viennent
+  de `video.kernel.music.*` (loader Jackson et `MusicAssetResolver` restent N2).
+* Zéro changement de comportement : les tests du domaine musique sont inchangés
+  (seuls les imports changent).
+* Gates locaux : `compileKotlin`/`compileTestKotlin` + `ktlintCheck` VERTS.
+* CI : `Test` `44221128811` ✅ (`Full Tests` au rapport de session).
+* **Reste** : l'artefact publié (`capsule-plugin 0.0.21`) ne porte pas encore
+  l'adoption → release `0.0.22` au DAG MEMPHIS (session dédiée).
 
 '''
 == ✅ Session 223 — CNV-17 (JitPack canal unique)
@@ -46,6 +68,13 @@
 
 '''
 == ⚠️ Release `capsule-plugin 0.0.20` — BLOQUÉE (quota Sonatype, reset 2026-12-01) — S-220
+
+*Re-vérifié le 2026-11-18* : la limite est **mensuelle et par organisation**
+(`Publishing blocked: your organization has reached its monthly release count
+limit … resets 2026-12-01`). Aucune action locale ne peut la lever ; tenter une
+publication ne produirait qu'un bundle rejeté. Reprise = **2026-12-01**, même
+commit/tag que le canal JitPack. La version à publier sera `0.0.22` (elle porte
+l'adoption `video-kernel 0.9.2`), pas `0.0.20`.
 
 * `publishToMavenLocal` VERT : `0.0.20` signé, artefact + marker publiés en local.
 * **Défaut latent corrigé** : le POM `0.0.20` omettait l'import `workspace-bom`
