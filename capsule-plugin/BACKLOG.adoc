@@ -73,8 +73,19 @@ prémisse de canal devenue fausse : `0.9.2` est servi par JitPack) et la dette
 (`Publishing blocked: your organization has reached its monthly release count
 limit … resets 2026-12-01`). Aucune action locale ne peut la lever ; tenter une
 publication ne produirait qu'un bundle rejeté. Reprise = **2026-12-01**, même
-commit/tag que le canal JitPack. La version à publier sera `0.0.22` (elle porte
-l'adoption `video-kernel 0.9.2`), pas `0.0.20`.
+commit/tag que le canal JitPack. Deux publications distinctes sont à prévoir :
+`0.0.21` (depuis le tag `v0.0.21`, **sans bump** — version jamais publiée sur
+Central) pour clore le blocage, puis `0.0.22` (avec l'adoption `video-kernel
+0.9.2`, qui exige un bump car son tag est postérieur).
+
+*Tentative réelle du 2026-11-18 (demande pilote)* : publication lancée depuis le
+**tag `v0.0.21`** (worktree détaché, commit `8aa6b2e`) — signature GPG OK,
+bundle **`99afe9de-0f49-422d-bbf1-c904326a72ab` uploadé**, validation refusée en
+quelques secondes :
+`{"common":["Publishing blocked: your organization has reached its monthly release count limit. Grace period ended 2026-11-05. Usage resets 2026-12-01."]}`.
+**Rien n'est publié** (repo1 `0.0.21` = 404). Le blocage est donc confirmé
+côté serveur, pas une lecture de log. La chaîne locale est prouvée opérationnelle
+(signature, agrégation nmcp, upload) : seule la limite de quota s'oppose.
 
 * `publishToMavenLocal` VERT : `0.0.20` signé, artefact + marker publiés en local.
 * **Défaut latent corrigé** : le POM `0.0.20` omettait l'import `workspace-bom`

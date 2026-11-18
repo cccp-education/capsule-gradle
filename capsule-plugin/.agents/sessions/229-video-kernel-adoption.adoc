@@ -47,3 +47,24 @@ adoption ; il ne la sert donc pas. Servir exige :
 
 Central reste bloqué par le quota de l'organisation (reset **2026-12-01**) ; le
 Gradle Plugin Portal par la propriété du groupe `education.cccp`.
+
+== Tentative de publication Central (demande pilote, 2026-11-18)
+
+Publication lancée **depuis le tag `v0.0.21`** (worktree détaché, commit
+`8aa6b2e`) — pas depuis HEAD, pour ne pas produire « même version, contenu
+différent » entre JitPack et Central.
+
+Résultat :
+
+* signature GPG : OK ;
+* agrégation nmcp : OK ;
+* bundle **`99afe9de-0f49-422d-bbf1-c904326a72ab`** : uploadé ;
+* validation : **refusée** —
+  `Publishing blocked: your organization has reached its monthly release count
+  limit. Grace period ended 2026-11-05. Usage resets 2026-12-01.`
+* repo1 `capsule-plugin 0.0.21` : **404** (rien publié).
+
+Conclusion : la chaîne locale est prouvée opérationnelle (signature, agrégation,
+upload) ; **seul le quota d'organisation** bloque. `0.0.21` ne nécessite aucun
+bump (version jamais publiée sur Central) ; l'adoption `0.9.2` exigera `0.0.22`
+(tag postérieur). Reprise après le **2026-12-01**.
