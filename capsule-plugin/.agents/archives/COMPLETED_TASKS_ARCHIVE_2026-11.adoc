@@ -104,3 +104,15 @@
 * Digest image `sha256:03ead378…` (Node 26.13.1, `82740e0`).
 * CI `43674484212`, `43674484265`, `43683466818`, `43690893554` vertes.
 * Rapport `.agents/sessions/228-gbl-014-4-and-node-lts.adoc`.
+
+== S-229 — adoption `video-kernel 0.9.2` (notes + music) ✅
+
+* `video-kernel 0.7.0 → 0.9.2` (`libs.versions.toml`).
+* `RevealJsSpeakerNoteParser` délègue à `video.kernel.notes.SpeakerNoteBlockParser`
+  (parité legacy : niveau 2, première note gagne, index `1..n`).
+* `capsule/audio/music/MusicLibrary.kt` supprimé → types `video.kernel.music.*`
+  (`MusicAssetResolver` + loader Jackson restent N2).
+* `compileKotlin`/`compileTestKotlin` + `ktlintCheck` VERTS ; CI `Test`
+  `44221128811` + `Full Tests` `44221128705` vertes.
+* Adoption non servie (artefact `0.0.21`) → release `0.0.22` au DAG.
+* Rapport `.agents/sessions/229-video-kernel-adoption.adoc`.

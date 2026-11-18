@@ -781,3 +781,13 @@ absents, chapitres fichier/repli) + `PublishCapsuleToYouTubeFunctionalTest` (+3 
 dépendance `generateCapsuleChapters`, chapitres invalides → `publication invalid`,
 timeline valide). Local = Build ; CI `Test` verte (après relance du flake
 préexistant `CapsulePluginTest`).
+
+== Couverture — 18 novembre 2026 (après session 229)
+
+.Aucun test ajouté — adoption N1, imports et délégation seulement
+|===
+| Élément | Changement | Tests
+
+| `capsule/adapter/revealjs/RevealJsSpeakerNoteParser.kt` | délègue à `SpeakerNoteBlockParser` (noyau `0.9.2`) | suites existantes (`capsule.feed` / speaker notes) inchangées
+| `capsule/audio/music/MusicLibrary.kt` (supprimé) | types remplacés par `video.kernel.music.*` | `MusicTrackSelectorTest`, `MusicLibraryManifestLoaderTest`, `MusicAssetResolverTest` inchangés (imports seulement)
+|===
