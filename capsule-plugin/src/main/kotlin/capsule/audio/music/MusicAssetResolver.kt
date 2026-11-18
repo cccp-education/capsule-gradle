@@ -1,5 +1,9 @@
 package capsule.audio.music
 
+import video.kernel.music.MusicLibrary
+import video.kernel.music.MusicSelection
+import video.kernel.music.MusicTrackSelector
+
 /**
  * One library asset resolved to real paths (HF-MUSIC-LIBRARY US-6).
  *

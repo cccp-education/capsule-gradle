@@ -23,7 +23,7 @@ arrow = "2.3.0"
 # BOM N0 courante (aligné sur le catalogue workspace MEMPHIS 0.0.113).
 workspace-bom = "0.0.115"
 i18n-contracts = "0.0.136"
-video-kernel = "0.7.0"
+video-kernel = "0.9.2"
 codebase-contracts = "0.0.136"
 
 [libraries]

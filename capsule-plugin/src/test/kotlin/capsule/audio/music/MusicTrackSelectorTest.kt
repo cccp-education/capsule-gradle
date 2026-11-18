@@ -1,5 +1,10 @@
 package capsule.audio.music
 
+import video.kernel.music.MusicLibrary
+import video.kernel.music.MusicLicence
+import video.kernel.music.MusicSelection
+import video.kernel.music.MusicTrack
+import video.kernel.music.MusicTrackSelector
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs

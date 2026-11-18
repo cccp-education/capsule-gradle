@@ -1,97 +1,46 @@
 package capsule.adapter.revealjs
 
+import video.kernel.notes.SpeakerNoteBlockParser
 import video.kernel.segment.VideoScript
 import video.kernel.segment.VideoSegment
 
 /**
- * Reveal.js speaker-note parser — the AsciiDoc-deck parsing extracted from
- * `capsule.feed.AsciidocSpeakerNoteParser` (CAP-ENGINE-DECOUPLING US-3).
+ * Reveal.js speaker-note parser — the AsciiDoc-deck adapter of the shared
+ * grammar contract (CAP-ENGINE-DECOUPLING US-3, VK-SPEAKER-NOTES US-1b).
  *
- * Parses an AsciiDoc deck source and extracts a [VideoScript] made of the
- * segments that carry a `[NOTE.speaker]` open-block. Segments without a speaker
- * note block are skipped (they cannot be narrated by capsule-gradle).
+ * The **grammar** lives in the kernel ([SpeakerNoteBlockParser]): a
+ * `[NOTE.speaker]` marker followed by a `--` block, attached to the preceding
+ * level-2 heading. This adapter only maps the neutral blocks onto the
+ * capsule video model:
+ * - one [VideoSegment] per note block, re-indexed `1..n` in document order;
+ * - [VideoSegment.title] = section heading, [VideoSegment.narration] = note body.
  *
- * Recognised segment heading: a level-2 AsciiDoc heading `== Title`.
- * Attribute lines preceding the heading (e.g. `[.slide,data-transition="zoom"]`)
- * are tolerated — only the `== ` line itself is used as the segment title.
- * Level-3+ headings (`===`, `====`...) are NOT treated as segments.
- *
- * Speaker note block delimiters:
- * ```
- * [NOTE.speaker]            or   [NOTE.speaker, ...attrs]
- * --
- * note body
- * --
- * ```
+ * Segments without a note are not segments for capsule (they cannot be
+ * narrated); a second note under the same heading is dropped (first wins —
+ * legacy parity, enforced by the kernel parser).
  *
  * Pure — no I/O, no Gradle, no Playwright.
  */
 object RevealJsSpeakerNoteParser {
+    /** Level-2 heading (`== Title`) starts a reveal.js slide. */
+    private const val SLIDE_HEADING_LEVEL: Int = 2
+
     fun parse(
         adocContent: String,
         deckName: String,
     ): VideoScript {
         require(deckName.isNotBlank()) { "deckName must not be blank" }
 
-        val lines = adocContent.lines()
-        val rawSegments = mutableListOf<VideoSegment>()
-
-        var currentTitle: String? = null
-        var inNote = false
-        var noteOpened = false
-        val noteLines = mutableListOf<String>()
-
-        for (line in lines) {
-            when {
-                isSlideHeading(line) -> {
-                    flush(rawSegments, currentTitle, noteLines)
-                    currentTitle = line.removePrefix("==").trim()
-                    inNote = false
-                    noteOpened = false
-                    noteLines.clear()
+        val segments =
+            SpeakerNoteBlockParser
+                .parse(adocContent, headingLevel = SLIDE_HEADING_LEVEL)
+                .mapIndexed { index, block ->
+                    VideoSegment(
+                        index = index + 1,
+                        title = block.title,
+                        narration = block.text,
+                    )
                 }
-                isSpeakerNoteStart(line) -> {
-                    inNote = true
-                    noteOpened = false
-                    noteLines.clear()
-                }
-                inNote && !noteOpened && line.trimStart().startsWith("--") -> {
-                    noteOpened = true
-                }
-                inNote && noteOpened && line.trimStart().startsWith("--") -> {
-                    flush(rawSegments, currentTitle, noteLines)
-                    currentTitle = null
-                    inNote = false
-                    noteOpened = false
-                    noteLines.clear()
-                }
-                inNote && noteOpened -> noteLines.add(line)
-            }
-        }
-        flush(rawSegments, currentTitle, noteLines)
-
-        val reindexed =
-            rawSegments.mapIndexed { i, seg ->
-                VideoSegment(index = i + 1, title = seg.title, narration = seg.narration)
-            }
-        return VideoScript(name = deckName, segments = reindexed)
-    }
-
-    private fun flush(
-        sink: MutableList<VideoSegment>,
-        title: String?,
-        noteLines: List<String>,
-    ) {
-        if (title == null) return
-        val note = noteLines.joinToString("\n").trim()
-        if (note.isBlank()) return
-        sink.add(VideoSegment(index = -1, title = title, narration = note))
-    }
-
-    private fun isSlideHeading(line: String): Boolean = line.startsWith("== ") && !line.startsWith("=== ")
-
-    private fun isSpeakerNoteStart(line: String): Boolean {
-        val t = line.trimStart()
-        return t.startsWith("[NOTE.speaker]") || t.startsWith("[NOTE.speaker,")
+        return VideoScript(name = deckName, segments = segments)
     }
 }
